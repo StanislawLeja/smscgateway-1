@@ -1,0 +1,753 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "${ent.filename}">
+%BOOK_ENTITIES;
+]>
+
+<chapter
+	id="configuring_jss7">
+	<title>Configuring</title>
+<section id="configuring">
+		<title>
+			Configuring &THIS.PLATFORM; SS7 Service
+		</title>
+		<para>Configuration is done through an XML descriptor named <filename>jboss-beans.xml</filename> and is 
+		located at <filename>$JBOSS_HOME/server/profile_name/deploy/telscale-ss7-service/META-INF</filename>, where 
+		<application>profile_name</application> is the server profile name.</para>
+		
+		<para>The &THIS.PLATFORM; SS7 Layer 4 (<literal>SCCP, ISUP</literal>) leverages either of following <literal>MTP</literal> 
+		layers to exchange signalling messages with remote signalling points</para>
+		
+		<itemizedlist>
+			<listitem>
+				<para><literal>M3UA</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>dahdi</literal></para>
+			</listitem>			
+			<listitem>
+				<para><literal>dialogic</literal></para>
+			</listitem>			
+		</itemizedlist>
+		
+		<para>The ss7 service will be configured with either of these services.</para>
+		
+		<section id="configuring_Rem_SGW">
+			<title>Configuring M3UA</title>
+			<para> 
+                    <literal>M3UAManagement</literal> is only needed if the underlying SS7 service will leverage <literal>M3UA</literal>.
+                    <!--<classname>M3UAManagement</classname> configuration is further explained in <xref linkend="Section-Shell_M3UA.xml" /> -->
+            </para>
+			
+					<programlisting language="XML" role="XML"><![CDATA[
+	<bean name="SCTPManagement" class="org.telscale.protocols.sctp.ManagementImpl">
+		<constructor>
+			<parameter>SCTPManagement</parameter>
+		</constructor>
+		<property name="persistDir">${jboss.server.data.dir}</property>
+		<property name="singleThread">true</property>
+		<property name="connectDelay">30000</property>
+	</bean>
+
+	<!-- ==================================================================== -->
+	<!-- M3UA -->
+	<!-- M3UAManagement is managing the m3ua side commands -->
+	<!-- ==================================================================== -->
+	<!-- -->
+	<bean name="Mtp3UserPart" class="org.telscale.protocols.ss7.m3ua.impl.M3UAManagement">
+		<constructor>
+			<parameter>Mtp3UserPart</parameter>
+		</constructor>
+		<property name="persistDir">${jboss.server.data.dir}</property>
+		<property name="transportManagement">
+			<inject bean="SCTPManagement" />
+		</property>
+	</bean>
+
+	<bean name="M3UAShellExecutor"
+		class="org.telscale.protocols.ss7.m3ua.impl.oam.M3UAShellExecutor">
+		<property name="m3uaManagement">
+			<inject bean="Mtp3UserPart" />
+		</property>
+		<property name="sctpManagement">
+			<inject bean="SCTPManagement" />
+		</property>
+	</bean>]]>
+                        </programlisting>		
+			 <para>
+                     <classname>org.telscale.protocols.sctp.ManagementImpl</classname> takes <classname>String</classname> as constructor
+                     argument. The name is prepend to <literal>xml</literal> file created by SCTP stack for persisting state of SCTP resources. 
+                     The <literal>xml</literal> is stored in path specified by <literal>persistDir</literal> property above.
+             </para>
+             <para>
+                     For example in above case, when &THIS.PLATFORM; SS7 Service is started file <filename>SCTPManagement_sctp.xml</filename> 
+                     will be created at <filename>$JBOSS_HOME/server/profile_name/data</filename> directory
+             </para>
+             <para>                          
+                      Stack has following properties: 
+                      <variablelist>
+                              <varlistentry>
+                                      <term>singleThread</term>
+                                      <listitem>
+                                              <para>SCTP stack is implemented such that 1 thread is dedicated for IO and by default 1 thread for calling application above SCTP. Its possible to configure 
+                                              multiple threads for calling applications above in which case <literal>singleThread</literal> should be set to false and set <literal>workerThreads</literal> 
+                                              to number of threads you want.  </para>
+                                      </listitem>
+                              </varlistentry>  
+                              <varlistentry>
+                                      <term>workerThreads</term>
+                                      <listitem>
+                                              <para>Number of worker threads to call the application above SCTP. By default only one thread is used.</para>
+                                      </listitem>
+                              </varlistentry>                                                             
+                              <varlistentry>
+                                      <term>connectDelay</term>
+                                      <listitem>
+                                              <para>
+                                                      If the SCTP Socket is client-side, connectDelay specifies the delay time in milliseconds before which connection with the server will attempted.
+                                                      This delay is necessary when there is network disruption and connection between client and server breaks so that SCTP stack doesn't continuously 
+                                                      attempt to reconnect. 
+                                              </para>
+                                      </listitem>
+                              </varlistentry>                                 
+                      </variablelist>
+              </para>             
+             <para>
+                     <classname>org.telscale.protocols.ss7.m3ua.impl.M3UAManagement</classname> takes <classname>String</classname> as constructor
+                     argument. The name is prepend to <literal>xml</literal> file created by M3UA stack for persisting state of M3UA resources. 
+                     The <literal>xml</literal> is stored in path specified by <literal>persistDir</literal> property above.
+             </para>
+             <para>
+                     For example in above case, when &THIS.PLATFORM; SS7 Service is started file <filename>Mtp3UserPart_m3ua.xml</filename> 
+                     will be created at <filename>$JBOSS_HOME/server/profile_name/data</filename> directory
+             </para>
+
+	    </section>
+<section id="configuring_LinksetFactory">
+			<title>Configuring dahdi</title>
+			<para><literal>Dahdi</literal> based MTP layer will only be used when you have installed dahdi based SS7 hardware (Sangoma or Diguim cards). 
+			
+			<literal>DahdiLinksetFactory</literal> is responsible to create 
+			new instances of corresponding <literal>DahdiLinkset</literal> when instructed by <literal>LinksetManager</literal>. 
+			</para>
+			
+			<itemizedlist>
+				<listitem>
+					<para><literal>DahdiLinksetFactory</literal> </para>
+					<programlisting language="XML" role="XML"><![CDATA[
+	<bean name="DahdiLinksetFactory"
+		class="org.telscale.ss7.hardware.dahdi.oam.DahdiLinksetFactory">
+	</bean>]]>
+                        </programlisting>					
+				</listitem>
+			</itemizedlist>					
+			
+			<para> <literal>LinksetFactoryFactory</literal> is just a call-back class listening for new factories deployed 
+			and maintains Map of available factory name vs factory. You should never touch this bean.</para>
+			
+		<section id="configuring_LinksetManager">
+			<title>Configuring LinksetManager</title>
+			<para> 
+				<literal>LinksetManager</literal> is responsible for managing <literal>Linkset</literal> and <literal>Link</literal>.
+			</para>
+			<programlisting language="XML" role="XML"><![CDATA[<!-- ================================================ -->
+    <!-- Linkset manager Service                                              -->
+    <!-- ================================================ -->
+	<bean name="LinksetManager"
+		class="org.telscale.ss7.linkset.oam.LinksetManager">
+
+		<property name="linksetFactoryFactory">
+			<inject bean="LinksetFactoryFactory" />
+		</property>
+		<property name="persistDir">${jboss.server.data.dir}</property>
+	</bean>
+	
+	<bean name="LinksetExecutor"
+		class="org.telscale.ss7.linkset.oam.LinksetExecutor">
+		<property name="linksetManager">
+			<inject bean="LinksetManager" />
+		</property>
+	</bean>]]></programlisting>		
+			<para>LinksetManager when started looks for file  <filename>linksetmanager.xml</filename> containing serialized information about 
+			underlying linksets and links. The directory path is configurable by changing value of <literal>persistDir</literal> property.</para>
+			<warning><para><filename>linksetmanager.xml</filename> should never be edited by hand. Always use Shell Client to connect to 
+			&THIS.PLATFORM; &THIS.APPLICATION; and execute commands.</para></warning>	
+			<para><literal>LinksetExecutor</literal> accepts the <literal>linkset</literal> commands and executes necessary operations.</para>
+		</section>	
+		</section>
+		
+		<section id="configuring_dialogic">
+			<title>Configuring dialogic</title>
+			<para><literal>Dialogic</literal> based MTP layer will only be used when you have installed Dialogic cards. 
+			
+			<literal>DialogicMtp3UserPart</literal> communicates with Dialogic hardware. Its asumed here that MTP3 and MTP2 is leveraged from
+			Dialogic stack either on-board or on-host. 
+			</para>
+			
+
+					<programlisting language="XML" role="XML"><![CDATA[
+	<!-- ==================================================================== -->
+	<!-- Dialogic Mtp3UserPart -->
+	<!-- ==================================================================== -->
+		<bean name="Mtp3UserPart" class="org.telscale.ss7.hardware.dialogic.DialogicMtp3UserPart"> 
+			<property name="sourceModuleId">61</property> <property name="destinationModuleId">34</property> 
+		</bean>]]>
+                        </programlisting>					
+			
+			<para> <literal>sourceModuleId</literal> is source module id and should match with configured in 
+			system.txt used by dialogic drivers. Here 61 is assigned for telscale process. <literal>destinationModuleId</literal> 
+			is destination module id. 34 is Dialogic MTP3 module id.</para>
+		</section>
+		
+                <section id="configuring_SCCP">
+                        <title>Configuring SCCP</title>
+                        <para> 
+                                As name suggests <literal>SccpStack</literal> initiates the SCCP stack routines. 
+                        </para>
+                        <programlisting language="XML" role="XML"><![CDATA[     <!-- ==================================================================== -->
+        <!-- SCCP Service -->
+        <!-- ==================================================================== -->
+	<bean name="SccpStack" class="org.telscale.protocols.ss7.sccp.impl.SccpStackImpl">
+		<constructor>
+			<parameter>SccpStack</parameter>
+		</constructor>
+		<property name="persistDir">${jboss.server.data.dir}</property>
+		<property name="removeSpc">true</property>
+		<property name="mtp3UserParts">
+			<map keyClass="java.lang.Integer" valueClass="org.telscale.protocols.ss7.mtp.Mtp3UserPart">
+				<entry>
+					<key>1</key>
+					<value>
+						<inject bean="Mtp3UserPart" />
+					</value>
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+	<bean name="SccpExecutor"
+		class="org.telscale.protocols.ss7.sccp.impl.oam.SccpExecutor">
+		<property name="sccpStack">
+			<inject bean="SccpStack" />
+		</property>
+	</bean>]]></programlisting>     
+                        <para>
+                                <classname>org.telscale.protocols.ss7.sccp.impl.SccpStackImpl</classname> takes <classname>String</classname> as constructor
+                                argument. The name is prepend to <literal>xml</literal> file created by SCCP stack for persisting state of SCCP resources. 
+                                The <literal>xml</literal> is stored in path specified by <literal>persistDir</literal> property above.
+                        </para>
+                        <para>
+                                For example in above case, when &THIS.PLATFORM; SS7 Service is started two file's <filename>SccpStack_sccpresource.xml</filename> 
+                                and <filename>SccpStack_sccprouter.xml</filename> will be created at <filename>$JBOSS_HOME/server/profile_name/data</filename> directory
+                        </para>                         
+                        <para>                          
+                                Stack has following properties: 
+                                <variablelist>
+                                        <varlistentry>
+                                                <term>persistDir</term>
+                                                <listitem>
+                                                        <para>As explained above</para>
+                                                </listitem>
+                                        </varlistentry>                                 
+                                        <varlistentry>
+                                                <term>removeSpc</term>
+                                                <listitem>
+                                                        <para>
+                                                                After Global Title Translation, if the SCCP address includes the destination point code (DPC)
+                                                                however Address Indicator (AI) indicates route on Global Title and <literal>removeSpc</literal> is
+                                                                set to true, DPC will be removed from SCCP Address. The same rule applies for both calling as
+                                                                well as called party SCCP Address. 
+                                                        </para>
+                                                </listitem>
+                                        </varlistentry>                                 
+                                        <varlistentry>
+                                                <term>mtp3UserParts</term>
+                                                <listitem>
+                                                        <para>specifies SS7 Level 3 to be used as transport medium(  be it SS7 card or M3UA). &THIS.PLATFORM; &THIS.APPLICATION; SCCP allows configuring multiple MTP3 layers for 
+                                                        same SCCP stack. This allows to have multiple local point-code and connecting to various networks while SCCP layer remains same </para>
+                                                </listitem>
+                                        </varlistentry>
+                                </variablelist>
+                        </para>
+
+                        <para> <literal>SccpExecutor</literal> accepts <literal>sccp</literal> commands and executes necessary operations</para>
+                </section>                      
+                <section id="configuring_ShellExecutor">
+                        <title>Configuring ShellExecutor</title>
+                        <para> 
+                                <literal>ShellExecutor</literal> is responsible for listening incoming commands. Received commands are executed on local resources to 
+                                perform actions like creation and management of <literal>SCCP</literal> routing rule, management of <literal>SCTP</literal> and 
+                                management of <literal>M3UA</literal> stack.
+                        </para>
+                        <programlisting language="XML" role="XML"><![CDATA[<!-- ================================================ -->
+    <!-- Shell Service                                                        -->
+    <!-- ================================================ -->
+        <!-- Define Shell Executor -->
+        <bean name="ShellExecutor" class="org.telscale.ss7.ShellExecutor">
+                <property name="address">${jboss.bind.address}</property>
+                <property name="port">3435</property>
+
+                <property name="sccpExecutor">
+                        <inject bean="SccpExecutor" />
+                </property>
+                <property name="m3UAShellExecutor">
+                        <inject bean="M3UAShellExecutor" />
+                </property>
+        </bean>]]></programlisting>             
+                        <para>By default ShellExecutor listens at <literal>jboss.bind.address</literal> and port <literal>3435</literal>. 
+                        You may set the <literal>address</literal> property to any valid IP address that your host is assigned. 
+                        The shell commands are exchanged over TCP/IP.</para>
+                        <note><para>To understand JBoss bind options look at 
+                        <ulink url="http://docs.jboss.org/jbossas/docs/Installation_And_Getting_Started_Guide/5/html_single/index.html">Installation_And_Getting_Started_Guide</ulink> </para> </note>
+                                
+                </section>   
+                
+
+                <section id="configuring_TCAP">
+                        <title>Configuring TCAP</title>
+                        <para> 
+                                <literal>TcapStack</literal> initiates the TCAP stack routines. 
+                        </para>
+                        <programlisting language="XML" role="XML"><![CDATA[     	<!-- ==================================================================== -->
+	<!-- TCAP Service -->
+	<!-- ==================================================================== -->	
+	<bean name="TcapStack" class="org.telscale.protocols.ss7.tcap.TCAPStackImpl">
+		<constructor>
+			<parameter><inject bean="SccpStack" property="sccpProvider" /></parameter>
+			<parameter>8</parameter>
+		</constructor>
+		<property name="dialogIdleTimeout">60000</property>
+		<property name="invokeTimeout">30000</property>
+		<property name="maxDialogs">25000</property>
+	</bean>]]></programlisting>   
+                        <para>
+                                <classname>org.telscale.protocols.ss7.tcap.TCAPStackImpl</classname> takes <classname>SccpStack</classname> as constructor
+                                argument. TCAP uses passed SCCP stack. It also takes the sub system number (SSN) which is registered with passed SCCP stack.
+                        </para>	
+	  
+                        <para>                          
+                                Stack has following properties: 
+                                <variablelist>
+                                        <varlistentry>
+                                                <term>dialogIdleTimeout</term>
+                                                <listitem>
+                                                        <para>The TCAP Dialog idle timeout in milli-seconds </para>
+                                                </listitem>
+                                        </varlistentry>                                 
+                                        <varlistentry>
+                                                <term>invokeTimeout</term>
+                                                <listitem>
+                                                        <para>
+                                                                Component invoke timeout value in milli-seconds 
+                                                        </para>
+                                                </listitem>
+                                        </varlistentry>                                 
+                                        <varlistentry>
+                                                <term>maxDialogs</term>
+                                                <listitem>
+                                                        <para>Maximum concurrent dialog's allowed at any given point of time. If application tries to create more dialog than this, exception is thrown</para>
+                                                </listitem>
+                                        </varlistentry>
+                                </variablelist>
+                        </para>
+                </section>  
+
+                <section id="configuring_MAP">
+                        <title>Configuring MAP</title>
+                        <para> 
+                                <literal>MapStack</literal> initiates the MAP stack routines. 
+                        </para>
+                        <programlisting language="XML" role="XML"><![CDATA[     		<!-- ==================================================================== -->
+	<!-- MAP Service -->
+	<!-- ==================================================================== -->	
+	<bean name="MapStack" class="org.telscale.protocols.ss7.map.MAPStackImpl">
+		<constructor>
+			<parameter><inject bean="TcapStack" property="provider" /></parameter>
+		</constructor>
+	</bean>	]]></programlisting>     
+                         <para>
+                                <classname>org.telscale.protocols.ss7.map.MAPStackImpl</classname> takes <classname>TcapStack</classname> as constructor
+                                argument. MAP uses passed TCAP stack. 
+                        </para>	
+                </section> 
+                                   
+                <section id="configuring_SS7Service">
+                        <title>Configuring SS7Service</title>
+                        <para> 
+                                <literal>SS7Service</literal> acts as core engine binding all the components together. 
+                        </para>
+                        <programlisting language="XML" role="XML"><![CDATA[     	<!-- ==================================================================== -->
+	<!-- telscale SS7 Service -->
+	<!-- ==================================================================== -->
+	<bean name="SS7Service" class="org.telscale.ss7.SS7Service">
+		<annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="org.telscale.ss7:service=SS7Service",exposedInterface=org.telscale.ss7.SS7ServiceMBean.class,registerDirectly=true)
+		</annotation>
+		<property name="jndiName">java:/telscale/ss7/map</property>
+		<property name="stack">
+			<inject bean="MapStack" property="MAPProvider" />
+		</property>
+	</bean>]]></programlisting>             
+                        <para> SS7 service binds MapStack to JNDI <literal>java:/telscale/ss7/map</literal>. 
+                        The JNDI name can be configured to any valid JNDI name specific to your application.</para>
+                </section>  		
+	</section>	
+<section id="configuring_sgw">
+		<title>
+			Configuring &THIS.PLATFORM; Signaling Gateway
+		</title>
+		<para>Configuration is done through an XML descriptor named <filename>sgw-beans.xml</filename> and is 
+		located at <filename>telscale-sgw/deploy</filename>, </para>
+		
+		<section id="configuring_SGWP">
+			<title>Configuring M3AU (Signaling Gateway)</title>
+			<para> 
+				SGW will expose the SS7 signals received from legacy network to IP network over M3AU
+			</para>
+			
+					<programlisting language="XML" role="XML"><![CDATA[
+	<bean name="SCTPManagement" class="org.telscale.protocols.sctp.ManagementImpl">
+		<constructor>
+			<parameter>SCTPManagement</parameter>
+		</constructor>
+		<property name="persistDir">${sgw.home.dir}/ss7</property>
+		<property name="singleThread">true</property>
+		<property name="connectDelay">30000</property>
+	</bean>
+
+	<bean name="Mtp3UserPart" class="org.telscale.protocols.ss7.m3ua.impl.M3UAManagement">
+		<constructor>
+			<parameter>Mtp3UserPart</parameter>
+		</constructor>
+		<property name="persistDir">${sgw.home.dir}/ss7</property>
+		<property name="transportManagement">
+			<inject bean="SCTPManagement" />
+		</property>
+	</bean>
+
+	<bean name="M3UAShellExecutor"
+		class="org.telscale.protocols.ss7.m3ua.impl.oam.M3UAShellExecutor">
+		<property name="m3uaManagement">
+			<inject bean="Mtp3UserPart" />
+		</property>
+		<property name="sctpManagement">
+			<inject bean="SCTPManagement" />
+		</property>
+	</bean>]]>
+                        </programlisting>	
+		</section>
+					
+		<section id="sgw_configuring_LinksetFactory">
+			<title>Configuring LinksetFactory</title>
+			<para> Concrete implementation of <literal>LinksetFactory</literal> is responsible to create 
+			new instances of corresponding <literal>Linkset</literal> when instructed by <literal>LinksetManager</literal>. 
+			&THIS.PLATFORM; Signaling Gateway defines two linkset factories : </para>
+			
+			<itemizedlist>
+				<listitem>
+					<para><literal>DahdiLinksetFactory</literal> </para>
+					<programlisting language="XML" role="XML"><![CDATA[
+	<bean name="DahdiLinksetFactory"
+		class="org.telscale.ss7.hardware.dahdi.oam.DahdiLinksetFactory">
+	</bean>]]>
+                        </programlisting>					
+				</listitem>
+				<listitem>
+					<para><literal>DialogicLinksetFactory</literal></para>
+					 <programlisting language="XML" role="XML"><![CDATA[
+	<bean name="DialogicLinksetFactory"
+		class="org.telscale.ss7.hardware.dialogic.oam.DialogicLinksetFactory">
+	</bean>]]>
+                        </programlisting>
+				</listitem>
+			</itemizedlist>					
+			<para>Its highly unlikely that you would require both the factories on same gateway. If you have <literal>dahdi</literal> based 
+			SS7 card installed, keep <literal>DahdiLinksetFactory</literal> and remove other. If you have <literal>dialogic</literal> based 
+			SS7 card installed, keep <literal>DialogicLinksetFactory</literal> and remove other. 
+			</para>
+			<para> <literal>LinksetFactoryFactory</literal> is just a call-back class listening for new factories deployed 
+			and maintains Map of available factory name vs factory. You should never touch this bean.</para>
+		</section>	
+		<section id="sgw_configuring_LinksetManager">
+			<title>Configuring LinksetManager</title>
+			<para> 
+				<literal>LinksetManager</literal> is responsible for managing <literal>Linkset</literal> and <literal>Link</literal>.
+			</para>
+			<programlisting language="XML" role="XML"><![CDATA[<!-- ================================================ -->
+    <!-- Linkset manager Service                                              -->
+    <!-- ================================================ -->
+	<bean name="LinksetManager"
+		class="org.telscale.ss7.linkset.oam.LinksetManager">
+
+		<property name="linksetFactoryFactory">
+			<inject bean="LinksetFactoryFactory" />
+		</property>
+		<property name="persistDir">${linkset.persist.dir}</property>
+	</bean>
+	
+	<bean name="LinksetExecutor"
+		class="org.telscale.ss7.linkset.oam.LinksetExecutor">
+		<property name="linksetManager">
+			<inject bean="LinksetManager" />
+		</property>
+	</bean>]]></programlisting>		
+			<para>LinksetManager when started looks for file  <filename>linksetmanager.xml</filename> containing serialized information about 
+			underlying linksets and links. The directory path is configurable by changing value of <literal>persistDir</literal> property.</para>
+			<warning><para><filename>linksetmanager.xml</filename> should never be edited by hand. Always use Shell Client to connect to 
+			&THIS.PLATFORM; Signaling Gateway and execute commands.</para></warning>	
+			<para><literal>LinksetExecutor</literal> accepts the <literal>linkset</literal> commands and executes necessary operations.</para>
+		</section>	
+		
+		<section id="sgw_configuring_ShellExecutor">
+			<title>Configuring ShellExecutor</title>
+			<para> 
+				<literal>ShellExecutor</literal> is responsible for listening to incoming command. Received commands are executed on local resources to 
+				perform actions like creation and management of <literal>Linkset</literal>, 
+				management of <literal>M3UA</literal> stack.
+			</para>
+			<programlisting language="XML" role="XML"><![CDATA[<!-- ================================================ -->
+    <!-- Shell Service                                                        -->
+    <!-- ================================================ -->
+	<bean name="ShellExecutor"
+		class="org.telscale.ss7.sgw.ShellExecutor">
+		<property name="address">${sgw.bind.address}</property>
+		<property name="port">3436</property>
+		<property name="linksetExecutor">
+			<inject bean="LinksetExecutor" />
+		</property>
+		<property name="m3UAShellExecutor">
+			<inject bean="M3UAShellExecutor" />
+		</property>
+	</bean>]]></programlisting>		
+			<para>By default ShellExecutor listens at <literal>sgw.bind.address</literal> and port <literal>3436</literal>. 
+			You may set the <literal>address</literal> property to any valid IP address that your host is assigned. 
+			The shell commands are exchanged over TCP/IP.</para>
+		</section>	
+		
+		<section id="sgw_configuring_SGW">
+			<title>Configuring SignalingGateway</title>
+			<para> 
+				<literal>SignalingGateway</literal> acts as core engine binding all the components together. 
+			</para>
+			<programlisting language="XML" role="XML"><![CDATA[        <!-- ================================================ -->
+    <!-- telscale Signaling Gateway                                      -->
+    <!-- ================================================ -->
+	<bean name="SignalingGateway"
+		class="org.telscale.ss7.sgw.SignalingGateway">
+
+		<property name="shellExecutor">
+			<inject bean="ShellExecutor" />
+		</property>
+
+		<property name="nodalInterworkingFunction">
+			<inject bean="NodalInterworkingFunction" />
+		</property>
+
+	</bean>]]></programlisting>		
+			<para>The <literal>NodalInterworkingFunction</literal> sits between the SS7 netwrok and IP network and routes messages 
+			to/from both the MTP3 and the M3UA layer, based on the SS7 DPC or DPC/SI address information</para>
+		</section>			
+	</section>
+<section id="configuring_standalone">
+	<title>Configuring and using &THIS.PLATFORM; &THIS.APPLICATION; as a Standalone library</title>
+	<para>If you intend to use the Stack as a standalone library without using JBoss Application Server or JSLEE RAs, then you must manually build each of the protocols, configure individually, and bind them together.</para> 
+	<section id="standalone_SCTP">
+			<title>Building SCTP</title>
+			<para>This is an example of a typical SCTP startup procedure, in one line of code, using automatic configuration file detection: 
+			<programlisting>
+		org.mobicents.protocols.api.Management sctpManagement = null;
+		sctpManagement = org.mobicents.protocols.sctp.ManagementImpl("Client");
+		this.sctpManagement.setSingleThread(true);
+		this.sctpManagement.setConnectDelay(10000);
+		this.sctpManagement.start();
+			</programlisting>
+			</para>
+			<para>
+				How did jSS7 know where the configuration file was located and which one to load? 
+			</para>
+			<para>
+				When <literal>this.sctpManagement.start()</literal> is called, jSS7 searches for a file named <filename>Client_sctp.xml</filename> in the directory path set by user by calling 
+				<literal>this.sctpManagement.setPersistDir(&quot;&lt;your directory path&gt;&quot;)</literal>. For example in case of linux you can pass something like 
+				<literal>this.sctpManagement.setPersistDir(&quot;/home/abhayani/workarea/mobicents/git/jss7/master/map/load/client&quot;)</literal>. If directory path is not set, Management searches for system property 
+				<literal>sctp.persist.dir</literal> to get the path for directory. Even if <literal>sctp.persist.dir</literal> system property is not set, Management will look at System set property 
+				<literal>user.dir</literal>. 
+			</para>
+			<para>
+				Once you know SCTP layer is configured and started, next step is add the Association and/or Server depending on whether this setup will be acting as client or server or both. 
+				<itemizedlist>
+					<listitem><para>For client side : <literal>sctpManagement.addAssociation(CLIENT_IP, CLIENT_PORT, SERVER_IP, SERVER_PORT, CLIENT_ASSOCIATION_NAME, ipChannelType, null);</literal> </para>
+					</listitem>
+					<listitem><para>For server side : <literal>sctpManagement.addServerAssociation(CLIENT_IP, CLIENT_PORT, SERVER_NAME, SERVER_ASSOCIATION_NAME, ipChannelType);</literal></para>
+					</listitem>
+				</itemizedlist>
+			</para>
+			<para>
+				Before adding server side association the server should also be defined and started as below:
+				<programlisting>
+		sctpManagement.addServer(SERVER_NAME, SERVER_IP, SERVER_PORT, ipChannelType, null);
+		sctpManagement.addServerAssociation(CLIENT_IP, CLIENT_PORT, SERVER_NAME, SERVER_ASSOCIATION_NAME, ipChannelType);
+		sctpManagement.startServer(SERVER_NAME);
+				</programlisting>
+				<note><para>You should never start the Association programatically. Association will be started automatically when layer above M3UA's ASP is started. </para>
+				</note>
+				This completes the SCTP configuration and start-up.
+		</para>		
+	</section>
+	<section id="Building_m3ua_standalone">
+		<title>Building M3UA</title>
+			<para>Configuring the M3UA layer is similar to the steps followed for SCTP.
+				<programlisting>
+                org.mobicents.protocols.ss7.m3ua.impl clientM3UAMgmt = null;
+                this.clientM3UAMgmt = new M3UAManagement("Client");
+                this.clientM3UAMgmt.setTransportManagement(this.sctpManagement);
+                this.clientM3UAMgmt.start();
+				</programlisting>
+			</para> 
+			<para>
+				For M3UA, it should know which underlying SCTP layer to use <literal>this.clientM3UAMgmt.setTransportManagement(this.sctpManagement);</literal>.
+			</para>	
+			<para>
+				Once M3UA is configured and started, next step is to add the As, Asp and routing rules for M3UA. These depends on whether stack acts as Application Server side or Signaling Gateway side or just 
+				peer-to-peer (IPSP) client/server side. Below is an example of IPSP peer acting as client.
+				<programlisting>
+		RoutingContext rc = factory.createRoutingContext(new long[] { 100l });
+                TrafficModeType trafficModeType = factory.createTrafficModeType(TrafficModeType.Loadshare);
+                this.clientM3UAMgmt.createAs("AS1", Functionality.AS, ExchangeType.SE, IPSPType.CLIENT, rc, trafficModeType, null);
+                // Step 2 : Create ASP
+                this.clientM3UAMgmt.createAspFactory("ASP1", CLIENT_ASSOCIATION_NAME);
+                // Step3 : Assign ASP to AS
+                Asp asp = this.clientM3UAMgmt.assignAspToAs("AS1", "ASP1");
+                // Step 4: Add Route. Remote point code is 2
+                clientM3UAMgmt.addRoute(SERVET_SPC, -1, -1, "AS1");
+				</programlisting>
+			</para>
+			<para>
+				This completes the M3UA configuration and start-up. Once M3UA is configured depending on whether you are trying to build voice application that depends on ISUP or 
+				advanced network features such as those offered by supplementary services that depends on MAP, you would configure ISUP or SCCP 
+			</para>
+	</section>
+	<section id="building_sccp">
+		<title>Building SCCP</title>
+		<para>
+			Configuring the SCCP layer follows exactly same architecture of persisting configuration in xml file. 
+			<programlisting>
+		org.mobicents.protocols.ss7.sccp.SccpStack sccpStack = null;
+               this.sccpStack = new SccpStackImpl("MapLoadClientSccpStack");
+               this.sccpStack.setMtp3UserPart(1, this.clientM3UAMgmt);
+               this.sccpStack.start();
+			</programlisting>
+		</para>
+		<para>
+			Before starting SCCP stack all it needs to know is underlying MTP3 layer. Above sections explained building SCTP and M3UA, 
+			however if you are using Dialogic boards or dahdi based boards (Diguim/Sangoma), you need to build and configure respective MTP3 layers depending on hardware used and set 
+			those in SCCP Stack <literal>this.sccpStack.setMtp3UserPart(1, this.clientM3UAMgmt)</literal>. 
+		</para>	
+		<para>
+			One of the best features of jSS7 is it supports multiple MTP3 layers and hence you can have combination of many MTP3 layers (each of different or same type like M3UA, Dialogic and Dahid; 
+			all used at same time).
+		</para>
+		<para>
+			Once SCCP stack is started, it should be configured for local and remote signaling point-code, network indicator, remote sub system number and routing rules. 
+			<programlisting>
+               RemoteSignalingPointCode rspc = new RemoteSignalingPointCode(SERVET_SPC, 0, 0);
+               RemoteSubSystem rss = new RemoteSubSystem(SERVET_SPC, SSN, 0, false);
+               this.sccpStack.getSccpResource().addRemoteSpc(0, rspc);
+               this.sccpStack.getSccpResource().addRemoteSsn(0, rss);
+               Mtp3ServiceAccessPoint sap = new Mtp3ServiceAccessPoint(1, CLIENT_SPC, NETWORK_INDICATOR);
+               Mtp3Destination dest = new Mtp3Destination(SERVET_SPC, SERVET_SPC, 0, 255, 255);
+               this.sccpStack.getRouter().addMtp3ServiceAccessPoint(1, sap);
+               this.sccpStack.getRouter().addMtp3Destination(1, 1, dest);
+			</programlisting>
+		</para>
+		<para>
+		Once SCCP is configured and started, next step it to build TCAP layer 
+		</para>
+	</section>		
+	<section id="building_tcap">
+		<title>Building TCAP</title>
+		<para>
+			There is no configuration to persist in case of TCAP.
+		<programlisting>
+                org.mobicents.protocols.ss7.tcap.api tcapStack = null;
+                this.tcapStack = new TCAPStackImpl(this.sccpStack.getSccpProvider(), SSN);
+                this.tcapStack.setDialogIdleTimeout(60000);
+                this.tcapStack.setInvokeTimeout(30000);
+                this.tcapStack.setMaxDialogs(2000);
+                this.tcapStack.start();
+		</programlisting> 
+		</para>
+		<para>
+			Configuring TCAP is probably very simple as config reamins same irrespective of whether its used on client side or server side. 
+		</para>
+	</section>
+	<section id="building_map">
+		<title>Building MAP</title>
+		<para>
+			There is no configuration to persist in case of MAP; however MAP stack can take TCAPProvider from TCAPStack which is already configured for specific SSN as shown below:
+			<programlisting>
+                this.mapStack = new MAPStackImpl(this.tcapStack.getProvider());
+			</programlisting>
+			Or it can also directly take SccpProvider and pass SSN to MAP Stack as shown below. In this case MAPStack itself creates the TCAPStack and leverages TCAPProvider:
+			<programlisting>
+                this.mapStack = new MAPStackImpl(this.sccpStack.getSccpProvider(), SSN);
+			</programlisting>
+		</para>
+		<para>
+			Before MAPStack can be started, the Application interested in particualr MAP Service should register it-self as listener and activate that service:
+		<programlisting>
+		this.mapProvider = this.mapStack.getMAPProvider();
+                this.mapProvider.addMAPDialogListener(this);
+                this.mapProvider.getMAPServiceSupplementary().addMAPServiceListener(this);
+                this.mapProvider.getMAPServiceSupplementary().acivate();
+                this.mapStack.start();
+		</programlisting>
+
+		</para>
+		<para>
+			Below is how the Application code looks like:
+			<programlisting>
+		 public class Client extends MAPDialogListener, MAPServiceSupplementaryListener  {
+                	//Implemet all MAPDialogListener methods here
+
+
+                	//Implement all MAPServiceSupplementaryListener methods here
+        	}
+			</programlisting>
+		</para>
+	</section>
+	<section id="common_code">
+		<title>Common Code</title>
+		<para>All above snippet of code refers to below defined constants:</para>
+		<programlisting>
+        // MTP Details
+        protected final int CLIENT_SPC = 1;
+        protected final int SERVET_SPC = 2;
+        protected final int NETWORK_INDICATOR = 2;
+        protected final int SERVICE_INIDCATOR = 3; //SCCP
+        protected final int SSN = 8;
+
+        protected final String CLIENT_IP = "127.0.0.1";
+        protected final int CLIENT_PORT = 2345;
+
+        protected final String SERVER_IP = "127.0.0.1";
+        protected final int SERVER_PORT = 3434;
+
+        protected final int ROUTING_CONTEXT = 100;
+        
+        protected final String SERVER_ASSOCIATION_NAME = "serverAsscoiation";
+        protected final String CLIENT_ASSOCIATION_NAME = "clientAsscoiation";
+        
+        protected final String SERVER_NAME = "testserver";
+
+.....
+.....
+		</programlisting>
+		<para>
+		Once you have completed development of your application, next thing is setting the classpath, compiling and starting application. You must set the classpath to point to 
+		telscale-ss7-X.Y.Z/ss7/telscale-ss7-service/lib. It has all the libraries needed to compile and start your application.
+		Don't forget to include your compiled Application class file in classpath before starting the Application. 
+		</para>
+	</section>
+
+</section>
+
+</chapter>

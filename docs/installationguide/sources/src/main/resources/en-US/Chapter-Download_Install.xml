@@ -1,0 +1,174 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "${ent.filename}">
+%BOOK_ENTITIES;
+]>
+
+<chapter
+	id="setup_downloading">
+	<title>Downloading</title>
+	<para>Installing &THIS.PLATFORM; &THIS.APPLICATION; is easy and quick with the binary download. You can either download the binary release or download the source code and set up from source.</para> 
+	<section id="downloading_binary">
+		<title>Binary Download</title>
+		<para>The binary release is available for download at TeleStax Customer Support Portal <ulink url="&THIS.RELEASE_BINARY_URL;" /> </para>
+		<procedure>
+					<title>
+						Binary Download
+					</title>
+					<step>
+						<para>
+							Download the zip file <literal>&lt;filename&gt;</literal> to any folder of your choice.
+						</para>
+					</step>
+					<step>
+						<para>Extract the contents of the zip file.
+						<screen>Downloads]$ unzip &lt;filename&gt;</screen>
+						</para>
+					</step>
+					<step>
+						<para>Verify the contents of the newly created directory.</para>
+					</step>
+</procedure>
+	<para>
+		When you download the binary release, you will notice that the top level directory is named <literal>telscale-ss7-&lt;version&gt;</literal> and immediately below this are three subdirectories named <literal>asn</literal>, <literal>sctp</literal> and <literal>ss7</literal>,  encompassing the major services and libraries that make up &THIS.PLATFORM; &THIS.APPLICATION;. For details on what is included in the sub-directories, please refer to the &THIS.PLATFORM; &THIS.APPLICATION; User Guide.
+</para>
+<para>
+The major functional modules of the &THIS.APPLICATION; are:
+	<orderedlist>
+		<listitem><para>SS7 Service [dir: <filename>telscale-ss7-service</filename>]</para></listitem>
+		<listitem><para>Signalling Gateway [dir: <filename>telscale-sgw</filename>]</para></listitem>
+		<listitem><para>Shell [dir: <filename>shell</filename>]</para></listitem>
+		<listitem><para>SS7 Simulator [dir: <filename>telscale-ss7-simulator</filename>]</para></listitem>
+	</orderedlist>
+</para>
+<screen><![CDATA[
+|- telscale-ss7-<version>
+		|- asn
+				|+ docs
+		|- sctp
+				|+ docs
+		|- ss7
+				|+ docs
+				|+ telscale-sgw
+				|+ telscale-ss7-service
+				|+ telscale-ss7-simulator 
+				|+ native
+				|+ protocols
+				|+ shell
+
+]]>
+</screen>
+  	
+</section>
+<!--End of Binary layout section -->			  
+		
+	<section
+		id="source_code">
+		<title>
+			Setup from Source 
+		</title>
+		<para>&THIS.PLATFORM; &THIS.APPLICATION; is an open source project and you have the freedom to build from source. Building from source means you can stay on top with the latest features. Whilst aspects of &THIS.PLATFORM; &THIS.APPLICATION; are quite 
+		complicated, you may find ways to become contributors.</para>
+		
+		<para>&THIS.PLATFORM; &THIS.APPLICATION; works with JDK1.5 or above (But if you are using M3UA, you must have JDK1.7 or above ). In addition you must have the following tools installed.</para>
+		
+		<itemizedlist>
+			<listitem>
+				<para><literal>Git Client 1.6</literal> : Instructions for using GIT, including install, can be found at <ulink
+								url="http://git-scm.com/book" /></para>
+			</listitem>		
+			<listitem>
+				<para><literal>Subversion Client 1.4</literal> : Instructions for using SVN, including install, can be found at <ulink
+								url="http://subversion.tigris.org" /></para>
+			</listitem>
+			<listitem>
+				<para><literal>Maven 2.0.9</literal> : Instructions for using Maven, including install, can be found at <ulink
+								url="http://maven.apache.org/" /></para>
+			</listitem>	
+			<listitem>
+				<para><literal>Ant 1.7.0</literal> : Instructions for using Ant, including install, can be found at <ulink
+								url="http://ant.apache.org" /></para>
+			</listitem>	
+		</itemizedlist>
+<!--TODO not clear for Telscale 
+		<para>INSTRUCTIONS NOT AVAILABLE</para>-->
+<!-- -->
+		<section
+			id="source_building">
+			<title>Release Source Code Building</title>
+			<procedure>
+				<step>
+					<title>Downloading the source code</title>
+					
+					<para>Use GIT to checkout a specific release source, the base URL is &THIS.TRUNK_SOURCE_CODE_URL;,
+						then add the specific release version, lets consider release-2.0.0.BETA1.
+					</para>
+					<programlisting>
+[usr]$ git clone &THIS.TRUNK_SOURCE_CODE_URL;
+[usr]$ cd jss7
+[usr]$ git checkout release-2.0.0.BETA1					
+					</programlisting>
+				
+				</step>
+				<step>
+					<title>Building the source code</title>
+					<para>Now that we have the source the next step is to build and install the source. 
+					&THIS.PLATFORM; &THIS.APPLICATION; uses Maven 2 to build the system. There are three profiles. The Default profile builds only java source. The other two profiles "dahdilinux" and "dialogiclinux" 
+					additionaly compile native modules.</para>
+					<note>
+						<para>
+							Native modules are supported only for linux OS for now.
+						</para>
+					</note>					
+					<para>Use "dahdilinux" profile if the linux server on which this code is built already has dahdi module installed. 
+					Make sure you pass "include.zap" system property pointing to correct directory where dahdi is installed</para>
+					<programlisting>
+[usr]$ cd jss7
+[usr]$ mvn install -Pdahdilinux -Dinclude.zap=/usr/include/dahdi
+				    </programlisting>
+				    
+					<para>Use "dialogiclinux" profile if the linux server on which this code is built already has dialogic module installed. 
+					Make sure you pass "include.dialogic" and "include.dialogic.gctlib" system property pointing to correct directory where 
+					dialogic libraries are installed. include.dialogic.gctlib points to directory where <literal>gctload</literal> is present (generally
+					/opt/dpklnx for linux OS)</para>
+					<programlisting>
+[usr]$ cd jss7
+[usr]$ mvn install -Pdialogclinux -Dinclude.dialogic=/opt/dpklnx/INC -Dinclude.dialogic.gctlib=/opt/dpklnx
+				    </programlisting>	
+				    
+				   	<para>To build &THIS.PLATFORM; &THIS.APPLICATION; without building any native libraries use</para>
+					<programlisting>
+[usr]$ cd jss7
+[usr]$ mvn install 
+				    </programlisting>
+					<note>
+						<para>
+							If you are using &THIS.PLATFORM; &THIS.APPLICATION; without any native dependencies, &THIS.PLATFORM; &THIS.APPLICATION; can run on any OS.
+						</para>
+					</note>
+									    
+							    
+					<para>Use Ant to build the binary .</para>
+					<programlisting>
+[usr]$ cd &THIS.APPLICATION.DIRNAME;-&THIS.VERSION;/release
+[usr]$ ant
+				    </programlisting>
+
+				</step>
+			</procedure>
+		</section>
+
+		<section
+			id="trunk_source_building">
+			<title>Development Trunk Source Building</title>
+			<para>
+				Similar process as for
+				<xref
+					linkend="source_building" />,
+				the only change is don't switch to specific tag.
+			</para>
+		</section>
+
+	</section>
+</chapter>
+

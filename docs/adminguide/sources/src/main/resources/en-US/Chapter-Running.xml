@@ -1,0 +1,249 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "${ent.filename}">
+%BOOK_ENTITIES;
+]>
+
+<chapter
+	id="running_jss7">
+
+	<title>Running &THIS.PLATFORM; &THIS.APPLICATION;</title>
+	<para>
+		You must ensure that you follow the steps outlined in the &THIS.PLATFORM; &THIS.APPLICATION; Installation Guide to install the Components. As explained in the Installation Guide, you may install 
+		&THIS.APPLICATION; as a standalone library or as a JBoss AS SS7 Service or as a Signalling Gateway. Once installed, you can run the different Components as described in the sections below.
+	</para>
+	<section
+			id="running_ss7_service">
+			<title>Running &THIS.PLATFORM; SS7 Service</title>
+			<!--<para>
+				Starting or stopping &THIS.PLATFORM; SS7 Service is no different than starting or stopping JBoss Application Server.
+			</para>-->
+			<procedure>
+				<title>Start SS7 Service</title>
+				<step><para>Pre-requisite: You must have SS7 Service deployed in the JBoss Application Server as explained in the Installation Guide.</para></step>	
+				<step><para>All you have to do to start the Service is start the JBoss AS. This will automatically start the SS7 Service. To start the JBoss Server you must execute the <filename>run.sh</filename> (Unix) or <filename>run.bat</filename> (Microsoft Windows)
+					startup script in the <filename>&lt;jboss_install_directory&gt;/bin</filename> folder (on Unix or Windows). 
+					</para></step>
+				<step><para>Result: If the service started properly you should see following lines in the Unix terminal or Command Prompt depending on your environment:
+<screen><![CDATA[
+....
+11:47:06,049 INFO  [SccpStackImpl-SccpStack] Starting ...
+11:47:06,062 INFO  [Router] SCCP Router configuration file path /home/abhayani/workarea/mobicents/jboss-5.1.0.GA/server/default/data/SccpStack_sccprouter.xml
+11:47:06,062 INFO  [Router] Started SCCP Router
+11:47:06,063 INFO  [SccpResource] SCCP Resource configuration file path /home/abhayani/workarea/mobicents/jboss-5.1.0.GA/server/default/data/SccpStack_sccpresource.xml
+11:47:06,064 INFO  [SccpResource] Started Sccp Resource
+11:47:06,064 INFO  [SccpStackImpl-SccpStack] Starting routing engine...
+11:47:06,064 INFO  [SccpStackImpl-SccpStack] Starting management ...
+11:47:06,064 INFO  [SccpStackImpl-SccpStack] Starting MSU handler...
+11:47:06,081 INFO  [ShellExecutor] Starting SS7 management shell environment
+11:47:06,086 INFO  [ShellExecutor] ShellExecutor listening at /127.0.0.1:3435
+11:47:06,114 INFO  [TCAPStackImpl] Starting ...org.mobicents.protocols.ss7.tcap.TCAPProviderImpl@614d756c
+11:47:06,114 INFO  [TCAPProviderImpl] Starting TCAP Provider
+11:47:06,114 INFO  [TCAPProviderImpl] Registered SCCP listener with address 8
+11:47:06,231 INFO  [SS7Service]  [[[[[[[[[ TelScale jSS7 2.0.0.BETA1 service started ]]]]]]]]] 
+
+]]>
+				</screen>	
+</para>
+</step>
+<step>
+<para>If you are starting &THIS.APPLICATION.DIRNAME;-&THIS.VERSION; for the first time, <literal>SS7</literal> is not configured. 
+				You need to use the Shell Client to connect to &THIS.APPLICATION.DIRNAME;-&THIS.VERSION;. Using <literal>CLI</literal> you can configure how service interacts with SS7 network, that is you configure either installed SS7 card and its native library
+				, or <literal>M3UA</literal> layer.Once configured, the state and configuration of <literal>SS7</literal> is persisted which stands server re-start.</para> 
+</step>
+			</procedure>
+			<procedure>
+				<title>Stop SS7 Service</title>
+				<step><para>To stop the SS7 service, you must shut down the JBoss Application Server. To shut down the server(s) you must execute the <command>shutdown.sh -s</command> (Unix) or 
+					<command>shutdown.bat -s</command> (Microsoft Windows) script in the <filename>&lt;jboss_install_directory&gt;/bin</filename> 
+					directory (on Unix or Windows).</para></step>
+				<step><para> If the Service stopped properly, you will see the following three lines as the 
+					last output in the Unix terminal or Command Prompt:
+                        <screen><![CDATA[[Server] Shutdown complete
+Halting VM]]></screen></para></step>
+			</procedure>		
+		</section>
+		
+		<section
+			id="running_sgw_binary">
+			<title>Running &THIS.PLATFORM; Signaling Gateway</title>
+			
+
+			<section id="starting_sgw_binary">
+			<title>Start the Gateway</title>			
+				<procedure>
+					<title>
+						Start the &THIS.PLATFORM; Signaling Gateway on <productname>Linux</productname>
+					</title>
+					<step>
+						<para>
+							Change the working directory to the installation
+							directory (the one into which the zip file's
+							contents was extracted to)
+						</para>
+						<screen>downloads]$ cd telscale-ss7-&lt;version&gt;/ss7/telscale-sgw</screen>
+					</step>
+					<step>
+						<para>
+							(Optional) Ensure that the
+							<filename>bin/run.sh</filename>
+							start script is executable.
+						</para>
+						<screen>telscale-sgw$ chmod +x bin/run.sh</screen>
+					</step>
+					<step>
+						<para>
+							Execute the
+							<filename>run.sh</filename>
+							Bourne shell script.
+						</para>
+						<screen>telscale-sgw$ ./bin/run.sh</screen>
+					</step>
+<step><para>
+				In the Linux terminal, the
+				&THIS.PLATFORM; Signaling Gateway has started successfully if the
+				last line of output is similar to the following
+			</para>
+			<programlisting><![CDATA[15:51:18,247 INFO  [MainDeployer] [[[[[[[[[ telscale Signaling Gateway: release.version=]]>&THIS.VERSION; <![CDATA[Started ]]]]]]]]]]]></programlisting>
+</step>
+				</procedure>
+	
+				<procedure>
+					<title>
+						Start the &THIS.PLATFORM; Signaling Gateway on <productname>Windows</productname>
+					</title>
+					<step>
+						<para>
+							Using Windows Explorer, navigate to the <filename>telscale-ss7-&lt;version&gt;/ss7/telscale-sgw/bin</filename> subfolder in the installation directory.
+						</para>
+					</step>
+					<step>
+						<para>
+							The preferred way to start the &THIS.PLATFORM; Signaling Gateway is from the Command Prompt. The command
+							line interface displays details of the startup
+							process, including any problems encountered
+							during the startup process.
+						</para>
+						<para>
+							Open the Command Prompt via the <guilabel>Start</guilabel> menu and navigate to the correct folder:
+						</para>
+						<screen>C:\Users\&lt;user&gt;\My	Downloads&gt;cd &quot;telscale-ss7-&lt;version&gt;\ss7\telscale-sgw&quot;</screen>
+					</step>
+					<step>
+						<para>
+							Start the Gateway by executing the <filename>run.bat</filename> file:
+							<itemizedlist>
+								<listitem>
+									<para>
+										<filename>run.bat</filename>
+										batch file:
+									</para>
+									<screen>C:\Users\&lt;user&gt;\My Downloads\mms-standalone&lt;version&gt;&gt;bin\run.bat</screen>
+								</listitem>
+							</itemizedlist>
+						</para>
+					</step>
+				</procedure>	
+			</section>		
+			
+			<section id="sgw-Stopping">
+				<title>Stop the Gateway</title>
+				<para>
+					The only option to stop the gateway is by pressing <literal>Ctrl c</literal>  and bringing down the JVM or killing the process.
+				</para>
+			</section>
+			<section id="sgw-Running-alter">
+				<title>Bind the Gateway to IP </title>
+				<para>
+					Using <literal>run.sh</literal> without any arguments binds the gateway to <literal>127.0.0.1</literal>. 
+					To bind the Gateway to a different IP, pass the IP address as value to the <literal>-b</literal> command line option. 
+					For example to bind the server to <literal>115.252.103.220</literal> you will use the command as below:
+				</para>
+				<screen>telscale-sgw$ ./bin/run.sh -b 115.252.103.220</screen>
+			</section>						
+		</section>			
+		<section id="running_standalone">
+			<title>Running &THIS.APPLICATION; as a Standalone library</title>
+			<para>If you do not wish to use the JBoss Container and do not require JSLEE RAs you can configure and run the Stack as a Standalone library. For more details, refer to <xref linkend="configuring_standalone" /></para>
+		</section>
+		<section id="running_shell">
+			<title>Running the Shell</title>	
+<section
+		id="shell_start">
+		<title>Start the Shell Client</title>
+		<para>
+			Shell client can be started with following command from
+			<filename>$JBOSS_HOME/bin</filename>
+			:
+		</para>
+		<programlisting>[$] ./ss7-run.sh</programlisting>
+		<para>Once console starts, it will print following information:</para>
+		<screen>
+=========================================================================
+
+telscale SS7: release.version=2.0.0
+This is free software, with components licensed under the GNU General Public License
+version 2 and other licenses. For further details visit http://telscale.org
+=========================================================================
+
+telscale>
+		</screen>
+
+
+
+
+		<para>
+			The
+			<literal>ss7-run</literal>
+			script supports the following options
+		</para>
+
+		<screen><![CDATA[
+Usage: SS7 [OPTIONS]
+Valid Options
+-v           Display version number and exit
+-h           This help screen
+]]>
+		</screen>
+</section>
+<section id="connect_shell">
+		<title>Connect to Managed Instance</title>
+		<para>Shell needs to connect to managed instance. Command to connect has following structure:</para>
+		<programlisting>
+ss7 connect &lt;IP&gt; &lt;PORT&gt; </programlisting>
+		<example>
+			<title>Connect to remote machine</title>
+			<screen>
+telscale>ss7 connect 10.65.208.215 3435
+
+telscale(10.65.208.215:3435)>
+			</screen>
+		</example>
+		<note>
+			<para>
+				Host IP and port are optional, if not specified, shell will try to connect to
+				<literal>127.0.0.1:3435</literal>
+			</para>
+		</note>
+   </section>	
+   <section id="disconnect_shell">
+		<title>Disconnect</title>
+		<para>Command to disconnect has following structure:</para>
+		<programlisting>ss7 discconnect </programlisting>
+		<example>
+			<title>Disconnect</title>
+			<screen>
+telscale(10.65.208.215:3435)>ss7 disconnect
+
+Bye
+telscale>
+			</screen>
+		</example>
+	</section>
+
+
+	
+		</section>
+
+</chapter>
+			
