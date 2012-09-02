@@ -23,8 +23,10 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppServerTransactionACIFac
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
 
+import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.pdu.DataSmResp;
 import com.cloudhopper.smpp.pdu.SubmitSmResp;
+import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.type.RecoverablePduException;
 
 public abstract class TxSmppServerSbb implements Sbb {
@@ -86,6 +88,14 @@ public abstract class TxSmppServerSbb implements Sbb {
 		smsEvent.setDataCoding(event.getDataCoding());
 		smsEvent.setDefaultMsgId(event.getDefaultMsgId());
 		smsEvent.setShortMessage(event.getShortMessage());
+
+		if (event.getShortMessageLength() == 0) {
+			// Probably the message_payload Optional Parameter is being used
+			Tlv messagePaylod = event.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
+			if (messagePaylod != null) {
+				smsEvent.setShortMessage(messagePaylod.getValue());
+			}
+		}
 
 		this.processSms(smsEvent);
 
