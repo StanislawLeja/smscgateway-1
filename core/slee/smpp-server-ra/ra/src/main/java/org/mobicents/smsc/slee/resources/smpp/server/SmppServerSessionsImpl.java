@@ -125,7 +125,7 @@ public class SmppServerSessionsImpl implements SmppServerSessions {
 							.getConfiguration().getSystemId()));
 				}
 			} else {
-				tracer.warning(String.format("Session destroyed for=%, but was not maintained in list of sessions",
+				tracer.warning(String.format("Session destroyed for=%s, but was not maintained in list of sessions",
 						session.getConfiguration().getSystemId()));
 			}
 		}

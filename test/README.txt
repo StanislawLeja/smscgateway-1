@@ -1,5 +1,8 @@
 //Mobicents SMSC Server
 
+
+//SS7 configs
+
 sctp association create <assoc-name> <CLIENT | SERVER> <server-name> <peer-ip> <peer-port> <host-ip> <host-port>
 sctp association create SCTPAssoc1 CLIENT 127.0.0.1 2775 127.0.0.1 2776
 
@@ -46,9 +49,18 @@ m3ua asp start ASP1
 
 
 //Create ESME
-smsc esme create 1234567890 password 127.0.0.1 2775 TRANSCEIVER esme-ton 0 esme-npi 0 esme-range [0-9a-zA-Z]
+smsc esme create 1234567890 password 127.0.0.1 2775 TRANSCEIVER esme-ton 0 esme-npi 0 esme-range ^[0-9a-zA-Z]*
 
+//SMSC Configs
+smsc set scgt 923330053058
 
+smsc set scssn 8
+
+smsc set hlrssn 6
+
+smsc set mscssn 8
+
+smsc set maxmapv 3
 
 //Test SMSC
 sctp server create SCTPServer1 127.0.0.1 2775

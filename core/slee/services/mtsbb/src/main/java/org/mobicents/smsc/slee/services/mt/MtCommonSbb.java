@@ -41,6 +41,7 @@ import org.mobicents.protocols.ss7.indicator.RoutingIndicator;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
+import org.mobicents.protocols.ss7.map.api.MAPSmsTpduParameterFactory;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
@@ -100,6 +101,7 @@ public abstract class MtCommonSbb implements Sbb {
 	protected MAPContextInterfaceFactory mapAcif;
 	protected MAPProvider mapProvider;
 	protected MAPParameterFactory mapParameterFactory;
+	protected MAPSmsTpduParameterFactory mapSmsTpduParameterFactory;
 
 	private AddressString serviceCenterAddress;
 	private SccpAddress serviceCenterSCCPAddress = null;
@@ -320,6 +322,7 @@ public abstract class MtCommonSbb implements Sbb {
 			this.mapAcif = (MAPContextInterfaceFactory) ctx.lookup("slee/resources/map/2.0/acifactory");
 			this.mapProvider = (MAPProvider) ctx.lookup("slee/resources/map/2.0/provider");
 			this.mapParameterFactory = this.mapProvider.getMAPParameterFactory();
+			this.mapSmsTpduParameterFactory = this.mapProvider.getMAPSmsTpduParameterFactory();
 
 			this.logger = this.sbbContext.getTracer(this.className);
 

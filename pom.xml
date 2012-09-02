@@ -34,7 +34,6 @@
 	</properties>
 
 	<modules>
-		<module>docs</module>
 		<module>core</module>
 		<module>test</module>
 	</modules>
@@ -42,7 +41,9 @@
 	<profiles>
 		<profile>
 			<id>maven-release</id>
-			<modules />
+			<modules>
+				<module>docs</module>
+			</modules>
 			<build>
 				<plugins>
 					<plugin>
@@ -59,7 +60,9 @@
 		</profile>
 		<profile>
 			<id>release</id>
-			<modules />
+			<modules>
+				<module>docs</module>
+			</modules>
 		</profile>
 		<profile>
 			<id>release-sign-artifacts</id>
