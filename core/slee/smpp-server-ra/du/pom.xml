@@ -3,9 +3,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.mobicents.smsc</groupId>
+		<groupId>com.telscale.smsc</groupId>
 		<artifactId>smpp-server-ra</artifactId>
-		<version>1.0.0.ALPHA-SNAPSHOT</version>
+		<version>6.1.2-TelScale-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>smpp-server-ra-du</artifactId>

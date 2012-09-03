@@ -4,9 +4,9 @@
     <packaging>jar</packaging>
 
 	<parent>
-		<groupId>org.mobicents.smsc</groupId>
+		<groupId>com.telscale.smsc</groupId>
 		<artifactId>test</artifactId>
-		<version>1.0.0.ALPHA-SNAPSHOT</version>
+		<version>6.1.2-TelScale-SNAPSHOT</version>
 	</parent>
 
     <artifactId>test-mapmodule</artifactId>

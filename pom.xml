@@ -31,6 +31,13 @@
 		<ss7.version>2.0.0-SNAPSHOT</ss7.version>
 		<log4j.version>1.2.14</log4j.version>
 		<junit.version>3.8.1</junit.version>
+
+		<!-- cloudhopper smpp -->
+		<ch.smpp.version>4.1.2</ch.smpp.version>
+		
+		<jslee.ext.version>1.0.0.BETA2</jslee.ext.version>
+		
+		<mobicents.resources.map.version>2.0.0-SNAPSHOT</mobicents.resources.map.version>
 	</properties>
 
 	<modules>

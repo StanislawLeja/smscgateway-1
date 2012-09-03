@@ -5,9 +5,9 @@
 	<packaging>pom</packaging>
 
 	<parent>
-		<groupId>org.mobicents.smsc</groupId>
-		<artifactId>parent</artifactId>
-		<version>1.0.0.ALPHA-SNAPSHOT</version>
+		<artifactId>telscale-smsc-parent</artifactId>
+		<groupId>com.telscale.smsc</groupId>
+		<version>6.1.2-TelScale-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>test</artifactId>
