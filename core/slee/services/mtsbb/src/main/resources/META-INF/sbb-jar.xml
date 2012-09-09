@@ -241,8 +241,9 @@
 				<cmp-field><cmp-field-name>nullActivityEventContext</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>networkNode</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>serviceCentreTimeStamp</cmp-field-name></cmp-field>
-				<cmp-field><cmp-field-name>mesageSegmentCount</cmp-field-name></cmp-field>
-				<cmp-field><cmp-field-name>mesageSegmentNumber</cmp-field-name></cmp-field>		
+				<cmp-field><cmp-field-name>messageSegmentCount</cmp-field-name></cmp-field>
+				<cmp-field><cmp-field-name>messageSegmentNumber</cmp-field-name></cmp-field>	
+				<cmp-field><cmp-field-name>messageReferenceNumber</cmp-field-name></cmp-field>	
 				<cmp-field><cmp-field-name>smRpDa</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>smRpOa</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>dataCodingScheme</cmp-field-name></cmp-field>

@@ -190,7 +190,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		rxSMS.setDestAddr(destinationAddress.getAddressValue());
 		rxSMS.setDestAddrNpi((byte) destinationAddress.getNumberingPlanIdentification().getCode());
-		rxSMS.setSourceAddrTon((byte) destinationAddress.getTypeOfNumber().getCode());
+		rxSMS.setDestAddrTon((byte) destinationAddress.getTypeOfNumber().getCode());
 		//
 		// deliveryReport.setSystemId(original.getSystemId());
 		//

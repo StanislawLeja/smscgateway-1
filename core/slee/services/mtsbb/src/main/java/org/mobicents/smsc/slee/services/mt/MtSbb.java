@@ -64,6 +64,10 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
 
+import com.cloudhopper.smpp.SmppConstants;
+import com.cloudhopper.smpp.tlv.Tlv;
+import com.cloudhopper.smpp.tlv.TlvConvertException;
+
 /**
  * 
  * @author amit bhayani
@@ -250,9 +254,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	 * 
 	 * @param mesageSegmentCount
 	 */
-	public abstract void setMesageSegmentCount(int mesageSegmentCount);
+	public abstract void setMessageSegmentCount(int mesageSegmentCount);
 
-	public abstract int getMesageSegmentCount();
+	public abstract int getMessageSegmentCount();
 
 	/**
 	 * Set the counter as which SMS is sent. Max sending can be equal to
@@ -260,9 +264,13 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	 * 
 	 * @param mesageSegmentNumber
 	 */
-	public abstract void setMesageSegmentNumber(int mesageSegmentNumber);
+	public abstract void setMessageSegmentNumber(int mesageSegmentNumber);
 
-	public abstract int getMesageSegmentNumber();
+	public abstract int getMessageSegmentNumber();
+
+	public abstract void setMessageReferenceNumber(int mesageReferenceNumber);
+
+	public abstract int getMessageReferenceNumber();
 
 	/**
 	 * Destination Address
@@ -299,8 +307,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	private void handleSmsResponse(MAPDialogSms mapDialogSms, ActivityContextInterface aci) {
 		SmsEvent smsEvent = this.getOriginalSmsEvent();
 
-		int mesageSegmentCount = this.getMesageSegmentCount();
-		int mesageSegmentNumber = this.getMesageSegmentNumber();
+		int mesageSegmentCount = this.getMessageSegmentCount();
+		int mesageSegmentNumber = this.getMessageSegmentNumber();
 		if (mesageSegmentCount != 0 && (mesageSegmentCount >= mesageSegmentNumber)) {
 			// we have more messages to be sent yet
 			// try {
@@ -372,7 +380,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 	private void sendPartMtSms(MAPDialogSms mapDialogSms, SmsEvent smsEvent, SM_RP_DA sm_RP_DA, SM_RP_OA sm_RP_OA,
 			DataCodingScheme dataCodingScheme, AbsoluteTimeStamp serviceCentreTimeStamp, int mesageSegmentCount,
-			int mesageSegmentNumber) throws MAPException {
+			int mesageSegmentNumber, int messageReferenceNumber) throws MAPException {
 
 		MAPApplicationContext mapApplicationContext = mapDialogSms.getApplicationContext();
 		byte[] shortMessage = smsEvent.getShortMessage();
@@ -390,7 +398,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 			userDataHeader = this.mapSmsTpduParameterFactory.createUserDataHeader();
 			UserDataHeaderElement concatenatedShortMessagesIdentifier = this.mapSmsTpduParameterFactory
-					.createConcatenatedShortMessagesIdentifier(false, 1, mesageSegmentCount, mesageSegmentNumber);
+					.createConcatenatedShortMessagesIdentifier(false, messageReferenceNumber, mesageSegmentCount,
+							mesageSegmentNumber);
 			userDataHeader.addInformationElement(concatenatedShortMessagesIdentifier);
 
 			// Now slice message
@@ -420,7 +429,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		}
 
 		// Lets increase the mesageSegmentNumber for next cycle
-		this.setMesageSegmentNumber(mesageSegmentNumber + 1);
+		this.setMessageSegmentNumber(mesageSegmentNumber + 1);
 
 		ActivityContextInterface mtFOSmsDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);
 		mtFOSmsDialogACI.attach(this.sbbContext.getSbbLocalObject());
@@ -461,54 +470,81 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			byte[] shortMessage = smsEvent.getShortMessage();
 
 			// How many sliced SMS to be sent
-			int mesageSegmentCount = this.getMesageSegmentCount();
-			int mesageSegmentNumber = this.getMesageSegmentNumber();
+			int mesageSegmentCount = this.getMessageSegmentCount();
+			int mesageSegmentNumber = this.getMessageSegmentNumber();
+			int messageReferenceNumber = this.getMessageReferenceNumber();
 
 			if (mesageSegmentCount == 0) {
 
 				// Counter of which SMS is to be delivered now. Starts from 1
 				mesageSegmentNumber = 1;
 
-				switch (dataCodingScheme.getCharacterSet()) {
-				case GSM7:
-					if (shortMessage.length > 160) {
-						// we need concatination. Max 152
-						mesageSegmentCount = shortMessage.length / 152;
-						if (shortMessage.length % 152 != 0) {
-							mesageSegmentCount++;
+				// TODO messageReferenceNumber should be generated
+				messageReferenceNumber = 1;
+
+				Tlv sarMsgRefNum = smsEvent.getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
+				Tlv sarTotalSegments = smsEvent.getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
+				Tlv sarSegmentSeqnum = smsEvent.getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
+
+				if (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null) {
+					mesageSegmentCount = sarTotalSegments.getValueAsUnsignedByte();
+					mesageSegmentNumber = sarSegmentSeqnum.getValueAsUnsignedByte();
+					messageReferenceNumber = sarMsgRefNum.getValueAsUnsignedByte();
+				} else {
+
+					switch (dataCodingScheme.getCharacterSet()) {
+					case GSM7:
+						if (shortMessage.length > 160) {
+							// we need concatination. Max 152
+							mesageSegmentCount = shortMessage.length / 152;
+							if (shortMessage.length % 152 != 0) {
+								mesageSegmentCount++;
+							}
 						}
-					}
-					break;
-				case GSM8:
-					if (shortMessage.length > 140) {
-						// we need concatination. Max 134
-						if (shortMessage.length % 134 != 0) {
-							mesageSegmentCount++;
+						break;
+					case GSM8:
+						if (shortMessage.length > 140) {
+							// we need concatination. Max 134
+							if (shortMessage.length % 134 != 0) {
+								mesageSegmentCount++;
+							}
 						}
-					}
-					break;
-				case UCS2:
-					if (shortMessage.length > 140) {
-						// we need concatination. Max 134
-						if (shortMessage.length % 134 != 0) {
-							mesageSegmentCount++;
+						break;
+					case UCS2:
+						if (shortMessage.length > 140) {
+							// we need concatination. Max 134
+							if (shortMessage.length % 134 != 0) {
+								mesageSegmentCount++;
+							}
 						}
+						break;
 					}
-					break;
 				}
 
-				this.setMesageSegmentCount(mesageSegmentCount);
-				this.setMesageSegmentNumber(mesageSegmentNumber);
+				this.setMessageSegmentCount(mesageSegmentCount);
+				this.setMessageSegmentNumber(mesageSegmentNumber);
+				this.setMessageReferenceNumber(messageReferenceNumber);
 			}
 
 			// TODO : Take care of esm_class to include UDHI. See SMPP specs
 
 			this.sendPartMtSms(mapDialogSms, smsEvent, sm_RP_DA, sm_RP_OA, dataCodingScheme, serviceCentreTimeStamp,
-					mesageSegmentCount, mesageSegmentNumber);
+					mesageSegmentCount, mesageSegmentNumber, messageReferenceNumber);
 
 		} catch (MAPException e) {
 			// TODO : Take care of error
 			logger.severe("Error while trying to send MtForwardShortMessageRequestIndication", e);
+			// something horrible, release MAPDialog and free resources
+			if (mapDialogSms != null) {
+				mapDialogSms.release();
+			}
+
+			MtActivityContextInterface mtSbbActivityContextInterface = this.asSbbActivityContextInterface(this
+					.getNullActivityEventContext().getActivityContextInterface());
+			this.resumeNullActivityEventDelivery(mtSbbActivityContextInterface, this.getNullActivityEventContext());
+		} catch (TlvConvertException e) {
+			// TODO : Take care of error
+			logger.severe("TlvConvertException while trying to send MtForwardShortMessageRequestIndication", e);
 			// something horrible, release MAPDialog and free resources
 			if (mapDialogSms != null) {
 				mapDialogSms.release();

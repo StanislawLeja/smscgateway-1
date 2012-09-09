@@ -1,6 +1,7 @@
 package org.mobicents.smsc.slee.services.smpp.server.tx;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -95,6 +96,12 @@ public abstract class TxSmppServerSbb implements Sbb {
 			if (messagePaylod != null) {
 				smsEvent.setShortMessage(messagePaylod.getValue());
 			}
+		}
+
+		ArrayList<Tlv> optionalParameters = event.getOptionalParameters();
+		if (optionalParameters != null && optionalParameters.size() > 0) {
+			// Set it for our smsEvent
+			smsEvent.addAllOptionalParameter(optionalParameters);
 		}
 
 		this.processSms(smsEvent);
