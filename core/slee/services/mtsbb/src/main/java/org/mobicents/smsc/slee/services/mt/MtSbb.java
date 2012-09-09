@@ -489,7 +489,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				if (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null) {
 					mesageSegmentCount = sarTotalSegments.getValueAsUnsignedByte();
 					mesageSegmentNumber = sarSegmentSeqnum.getValueAsUnsignedByte();
-					messageReferenceNumber = sarMsgRefNum.getValueAsUnsignedByte();
+					messageReferenceNumber = sarMsgRefNum.getValueAsUnsignedShort();
 				} else {
 
 					switch (dataCodingScheme.getCharacterSet()) {
