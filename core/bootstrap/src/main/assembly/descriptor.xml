@@ -15,8 +15,8 @@
 			<scope>runtime</scope>
 			<includes>
 				<!-- SMSC libraris -->
-				<include>org.mobicents.smsc:bootstrap</include>
-				<include>org.mobicents.smsc:smpp</include>
+				<include>com.telscale.smsc:bootstrap</include>
+				<include>com.telscale.smsc:smpp</include>
 
 				<!-- cloudhopper library -->
 				<include>cloudhopper:ch-smpp</include>
