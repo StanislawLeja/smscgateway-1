@@ -469,28 +469,31 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 			byte[] shortMessage = smsEvent.getShortMessage();
 
-			// How many sliced SMS to be sent
 			int mesageSegmentCount = this.getMessageSegmentCount();
 			int mesageSegmentNumber = this.getMessageSegmentNumber();
 			int messageReferenceNumber = this.getMessageReferenceNumber();
+			
+			Tlv sarMsgRefNum = smsEvent.getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
+			Tlv sarTotalSegments = smsEvent.getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
+			Tlv sarSegmentSeqnum = smsEvent.getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
 
-			if (mesageSegmentCount == 0) {
+			
+			if (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null) {
+				mesageSegmentCount = sarTotalSegments.getValueAsUnsignedByte();
+				mesageSegmentNumber = sarSegmentSeqnum.getValueAsUnsignedByte();
+				messageReferenceNumber = sarMsgRefNum.getValueAsUnsignedShort();
+			} else {
+				// How many sliced SMS to be sent
 
-				// Counter of which SMS is to be delivered now. Starts from 1
-				mesageSegmentNumber = 1;
+				if (mesageSegmentCount == 0) {
 
-				// TODO messageReferenceNumber should be generated
-				messageReferenceNumber = 1;
+					// Counter of which SMS is to be delivered now. Starts from
+					// 1
+					mesageSegmentNumber = 1;
 
-				Tlv sarMsgRefNum = smsEvent.getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
-				Tlv sarTotalSegments = smsEvent.getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
-				Tlv sarSegmentSeqnum = smsEvent.getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
+					// TODO messageReferenceNumber should be generated
+					messageReferenceNumber = 1;
 
-				if (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null) {
-					mesageSegmentCount = sarTotalSegments.getValueAsUnsignedByte();
-					mesageSegmentNumber = sarSegmentSeqnum.getValueAsUnsignedByte();
-					messageReferenceNumber = sarMsgRefNum.getValueAsUnsignedShort();
-				} else {
 
 					switch (dataCodingScheme.getCharacterSet()) {
 					case GSM7:
@@ -519,11 +522,11 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 						}
 						break;
 					}
-				}
 
-				this.setMessageSegmentCount(mesageSegmentCount);
-				this.setMessageSegmentNumber(mesageSegmentNumber);
-				this.setMessageReferenceNumber(messageReferenceNumber);
+					this.setMessageSegmentCount(mesageSegmentCount);
+					this.setMessageSegmentNumber(mesageSegmentNumber);
+					this.setMessageReferenceNumber(messageReferenceNumber);
+				}
 			}
 
 			// TODO : Take care of esm_class to include UDHI. See SMPP specs
