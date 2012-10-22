@@ -338,7 +338,7 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 		MAPDialogSms mapDialogSms = event.getMAPDialog();
 
 		try {
-			mapDialogSms.addSendRoutingInfoForSMResponse(event.getInvokeId(), imsi, li, null);
+			mapDialogSms.addSendRoutingInfoForSMResponse(event.getInvokeId(), imsi, li, null, null);
 			mapDialogSms.close(false);
 		} catch (MAPException e) {
 			e.printStackTrace();
