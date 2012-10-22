@@ -55,8 +55,8 @@
 			</excludes>
 			<includes>
 				<!-- SMSC libraris -->
-				<include>org.mobicents.smsc:test-mapmodule</include>
-				<include>org.mobicents.smsc:test-oam</include>
+				<include>com.telscale.smsc:test-mapmodule</include>
+				<include>com.telscale.smsc:test-oam</include>
 
 				<!-- Common libraries -->
 				<include>log4j:log4j</include>
