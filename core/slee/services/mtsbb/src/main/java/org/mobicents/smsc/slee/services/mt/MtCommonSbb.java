@@ -68,6 +68,11 @@ import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.util.SmppUtil;
 
+/**
+ * 
+ * @author amit bhayani
+ * 
+ */
 public abstract class MtCommonSbb implements Sbb {
 
 	private static final byte ESME_DELIVERY_ACK = 0x08;
@@ -326,7 +331,8 @@ public abstract class MtCommonSbb implements Sbb {
 
 			this.logger = this.sbbContext.getTracer(this.className);
 
-			this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement.getMaxMapVersion());
+			this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement
+					.getMaxMapVersion());
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
@@ -431,6 +437,8 @@ public abstract class MtCommonSbb implements Sbb {
 		// TODO check if SmppSession available for this SystemId, if not send to
 		// SnF module
 
+		this.generateCdr(original, CdrGenerator.CDR_FAILED);
+
 		byte registeredDelivery = original.getRegisteredDelivery();
 
 		// Send Delivery Receipt only if requested
@@ -480,6 +488,8 @@ public abstract class MtCommonSbb implements Sbb {
 	protected void sendSuccessDeliverSmToEsms(SmsEvent original) {
 		// TODO check if SmppSession available for this SystemId, if not send to
 		// SnF module
+
+		this.generateCdr(original, CdrGenerator.CDR_SUCCESS);
 
 		byte registeredDelivery = original.getRegisteredDelivery();
 
@@ -531,5 +541,19 @@ public abstract class MtCommonSbb implements Sbb {
 			first20CharOfSms = first20CharOfSms.substring(0, 20);
 		}
 		return first20CharOfSms;
+	}
+
+	protected void generateCdr(SmsEvent smsEvent, String status) {
+		// Format is
+		// SUBMIT_DATE,SOURCE_ADDRESS,SOURCE_TON,SOURCE_NPI,DESTINATION_ADDRESS,DESTINATION_TON,DESTINATION_NPI,STATUS
+		StringBuffer sb = new StringBuffer();
+		sb.append(smsEvent.getSubmitDate()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddr())
+				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrTon())
+				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrNpi())
+				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getDestAddr()).append(CdrGenerator.CDR_SEPARATOR)
+				.append(smsEvent.getDestAddrTon()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getDestAddrNpi())
+				.append(CdrGenerator.CDR_SEPARATOR).append(status);
+
+		CdrGenerator.generateCdr(sb.toString());
 	}
 }
