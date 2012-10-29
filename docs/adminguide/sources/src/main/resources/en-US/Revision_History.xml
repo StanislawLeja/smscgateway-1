@@ -10,14 +10,14 @@
 		<revhistory>		
 			<revision>
 				<revnumber>1.0</revnumber>
-				<date>June 2 2012</date>
+				<date>October 12 2012</date>
 				<author>
 					<firstname>Vinu S</firstname>
 					<surname>Renish</surname>
 				</author>
 				<revdescription>
 					<simplelist>
-						<member>First Release of the &THIS.PLATFORM; &THIS.APPLICATION; Installation Guide.</member>
+						<member>First Release of the &THIS.PLATFORM; &THIS.APPLICATION; Admin Guide.</member>
 					</simplelist>
 				</revdescription>
 			</revision>

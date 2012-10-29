@@ -8,7 +8,7 @@
 	id="setup_hardware">
 	<title>Hardware Setup</title>
 	<para>
-		You do not require any specific hardware if you intend to use only SIGTRAN (M3UA). But if you wish to use legacy SS7 links, then you must have relevant SS7 cards installed along with their native libraries.
+		For legacy SS7 links, you must have relevant SS7 cards installed along with their native libraries.
 	</para>
 	<para>
 	&THIS.PLATFORM; &THIS.APPLICATION; supports <literal>dahdi</literal> based SS7 cards like <literal>diguim</literal> and <literal>sangoma</literal> as well as <literal>dialogic</literal> cards. Since <literal>dahdi</literal> based SS7 crads do not have MTP2/MTP3 support on board they rely on external software to provide these services. But <literal>dialogic</literal> based SS7 cards have on board support for MTP2/MTP3.

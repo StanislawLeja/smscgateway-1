@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
-<!ENTITY % BOOK_ENTITIES SYSTEM "SMSC_Gateway_Release_Notes.ent">
+<!ENTITY % BOOK_ENTITIES SYSTEM "${ent.filename}">
 %BOOK_ENTITIES;
 ]>
 
@@ -18,24 +18,25 @@
 	<section id="notes_doc">
 		<title>Documentation</title>
 		<para>
-		When you download the binary release and extract the contents of the zip file, you will notice that the top level directory is named <literal>telscale-ss7-&lt;version&gt;</literal> and within the <literal>telscale-ss7-&lt;version&gt;/ss7/docs</literal> folder you will find the &THIS.PLATFORM; &THIS.APPLICATION; Installation Guide and User Guide. For installation and usage guidance, please refer to these guides that will help you install and set up the SS7 Stack and use it.
+		When you download the binary release and extract the contents of the zip file, you will notice that the top level directory is named <literal>telscale-smscgateway-&lt;version&gt;</literal> and within the <literal>telscale-smscgateway-&lt;version&gt;/docs/smsc</literal> folder you will find the &THIS.PLATFORM; &THIS.APPLICATION; Installation Guide and User Guide. For installation and usage guidance, please refer to these guides that will help you to install and configure the Gateway.
 		</para>
 	</section>
 	<section id="notes_whats_included">
 		<title>What's Included?</title>
 		<para>
-		This release includes: 
+		This binary release includes: 
 		<itemizedlist>
-			<listitem><para>ASN</para></listitem>
-			<listitem><para>SCTP</para></listitem>
-			<listitem><para>SS7</para></listitem>
+			<listitem><para>docs: Contains all relevant documentation.</para></listitem>
+			<listitem><para>jboss-5.1.0.GA: The core server with two profiles "default" and "simulator". The "default" profile is a clean profile where you will have to start from scratch and configure the entire SS7 Stack and SMSC Gateway. The "simulator" profile is a pre-configured profile to work with jss7-simulator.</para></listitem>
+			<listitem><para>resources: Contains SLEE MAP</para></listitem>
+			<listitem><para>tools: Contains SLEE tools and jss7-simulator.</para></listitem>
 		</itemizedlist>
 		</para>
 	</section>
 	<section id="notes_support">
 		<title>Support</title>
 		<para>
-			&THIS.PLATFORM; &THIS.APPLICATION; 6.1.1.GA is fully supported by TeleStax. For help with the software or to raise bugs please login to your account at <ulink url="https://telestax.zendesk.com/home" /> and follow the instructions.
+			&THIS.PLATFORM; &THIS.APPLICATION; is fully supported by TeleStax. For help with the software or to raise bugs please login to your account at <ulink url="https://telestax.zendesk.com/home" /> and follow the instructions.
 		</para>
 	</section>
 	

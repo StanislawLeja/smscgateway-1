@@ -7,30 +7,31 @@
 
 <chapter id="introduction">
 	<title>Introduction</title>
-   <!-- <section id="jss7_overview">
-    	<title>Overview</title>-->
-		<para>
-&THIS.PLATFORM; &THIS.APPLICATION; (Java SS7) is the only Open Source Java based implementation of the SS7 protocol stack. It provides implementation for <literal>MTP2</literal>, <literal>MTP3</literal>, <literal>ISUP</literal>, <literal>SCCP</literal>, <literal>TCAP</literal>, <literal>CAMEL</literal> and <literal>MAP</literal> protocols
-for a dedicated equipment and also has in-built support for <literal>SIGTRAN (M3UA)</literal> over IP. &THIS.PLATFORM; &THIS.APPLICATION; strictly adheres to the standards and specifications defined by the International Telecommunications Union (ITU). </para>
-		<para>
-The platform offers developers with a flexible API set that hides the lower layer details (legacy SS7 links or SIGTRAN) and therefore makes it simple and easy to develop SS7 applications as well as to migrate your applications from TDM equipments to M3UA. &THIS.PLATFORM; &THIS.APPLICATION; is based on an easily scalable and configurable load-balancing architecture.
-		</para>
+   <para>&THIS.PLATFORM; &THIS.APPLICATION; is an Open Source Java based SMSC Gateway built on a modern extensible middleware platform. &THIS.PLATFORM; SMSC enables operators to provide core SMSC features like mobile subscriber to subscriber SMS messaging, broadcasting campaigns and group messaging between subscribers. In addition it also enables value added services through integration with OTT social networks and microblogs such as Facebook and Twitter.  
+	</para>
+	<para>&THIS.PLATFORM; &THIS.APPLICATION; is an easy-to-install and easy-to-deploy platform that can be set up and configured very quickly. Since it is built on a modern and extensible JSLEE platform it automatically provides out-of-the-box integration with various communication protocols such as SIP, Diameter, HTTP, XCAP, XMPP, MGCP and others in addition to the base SMPP protocol for connectivity to ESMEs. 
+	</para>
+<para>
+		&THIS.PLATFORM; &THIS.APPLICATION; is cloud-ready. It can be deployed on dedicated hardware, private cloud infrastructure or public laaS such as AWS. &THIS.PLATFORM; &THIS.APPLICATION; supports TDM hardware offered by major vendors in the market, namely Intel family boards (Dialogic) and 
+		Zaptel/Dahdi (Digium, Sangoma). TeleStax also has in-house SS7 cards also known as TelScale SS7 Cards. TelScale SS7 cards have MTP2/3 support on-board and therefore the processing load on the server hosting the 
+		&THIS.PLATFORM; &THIS.APPLICATION; platform will be low when you use these SS7 cards.    
+	</para>
 
 <para>
-&THIS.PLATFORM; &THIS.APPLICATION; supports TDM hardware offered by major vendors in the market, namely Intel family boards (Dialogic) and 
-Zaptel/Dahdi (Digium, Sangoma). TeleStax is working on developing in-house SS7 cards and will soon offer stable, fast and effective SS7 hardware cards. TeleStax SS7 cards will have MTP2/3 support on-board and therefore the processing load on the server hosting the &THIS.PLATFORM; &THIS.APPLICATION; platform will be low when you use TeleStax SS7 cards.    
-		</para>
-		<para> 
-If you intend to use only <literal>M3UA</literal> you can install the &THIS.APPLICATION; on any Operating System that supports Java. However if you wish to use SS7 cards, the native libaries for these are only compiled for Linux at the moment. </para>
-<para>
-&THIS.PLATFORM; &THIS.APPLICATION; comes with JSLEE MAP and ISUP Resource Adaptors (RA) that enable developers to build SS7 
-applications with ease. Developers only require an understanding of Resource Adaptors and can focus on building applications quickly and efficiently rather than worry about the SS7 stack. If you wish to use JSLEE Resource Adapters or the Command Line Interface (CLI - Shell Management tool) for run-time configuration, then you must have JBoss Application Server installed and running. However if you do not wish to use the Resource Adaptors or CLI then &THIS.PLATFORM; &THIS.APPLICATION; can work as a standalone library.
-		</para>
-		<para>
-The Open Source Software gives you the flexibility to understand the readily available source code and customise the product for your Enterprise needs.
-		</para>
-		<para>
-This guide will assist you in installing &THIS.PLATFORM; &THIS.APPLICATION;. For more details on configuring and using the platform or for information regarding the supported protocols and compliant standards, please refer to the &THIS.PLATFORM; &THIS.APPLICATION; User Guide. 
-		</para>
-    <!--</section>-->
+A single &THIS.PLATFORM; SMSC node can process up to 1000 SMS/sec. Multiple SMSC nodes can be arranged in a cluster across one or more geographically distributed data centers to scale up throughput and provide various levels of redundancy, high availability and fault tolerance.
+</para>
+	<para>&THIS.PLATFORM; &THIS.APPLICATION;
+		is based on the robust and proven &THIS.PLATFORM;
+		JAIN SLEE 1.1 Server and &THIS.PLATFORM;
+		jSS7 Stack.
+	&THIS.PLATFORM;
+		JAIN SLEE Server is a highly scalable event-driven application server with a robust component model and fault tolerant execution environment. It provides a set of connectors to a
+		variety of networks elements: SS7 MAP, TCAP, INAP, ISUP, SMPP, XMPP, SIP, MGCP, HTTP, XDM, XCAP, Diameter and many others. It is fully compliant with JSR 240 (JSLEE 1.1).
+	&THIS.PLATFORM;
+		jSS7 is a software based implementation of the SS7 protocol. It provides implementation for Level 2 and above in the SS7 protocol Stack. &THIS.PLATFORM;
+		jSS7 Stack User Guide is bundled within and you can refer to the guide for more details on the Stack.
+	</para>
+	<para>
+		This guide will assist you in installing &THIS.PLATFORM; &THIS.APPLICATION;. For more details on configuring and using the platform, please refer to the &THIS.PLATFORM; &THIS.APPLICATION; User Guide. 
+	</para>
 </chapter>

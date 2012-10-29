@@ -6,14 +6,14 @@
 
 <chapter
 	id="setup_downloading">
-	<title>Downloading</title>
+	<title>Downloading and Installing</title>
 	<para>Installing &THIS.PLATFORM; &THIS.APPLICATION; is easy and quick with the binary download. You can either download the binary release or download the source code and set up from source.</para> 
 	<section id="downloading_binary">
-		<title>Binary Download</title>
+		<title>Binary Download and Installation</title>
 		<para>The binary release is available for download at TeleStax Customer Support Portal <ulink url="&THIS.RELEASE_BINARY_URL;" /> </para>
 		<procedure>
 					<title>
-						Binary Download
+						Binary Download and Installation
 					</title>
 					<step>
 						<para>
@@ -29,33 +29,43 @@
 						<para>Verify the contents of the newly created directory.</para>
 					</step>
 </procedure>
+	</section>
+	<section id="dir_structure">
+		<title>Directory Structure</title>
 	<para>
-		When you download the binary release, you will notice that the top level directory is named <literal>telscale-ss7-&lt;version&gt;</literal> and immediately below this are three subdirectories named <literal>asn</literal>, <literal>sctp</literal> and <literal>ss7</literal>,  encompassing the major services and libraries that make up &THIS.PLATFORM; &THIS.APPLICATION;. For details on what is included in the sub-directories, please refer to the &THIS.PLATFORM; &THIS.APPLICATION; User Guide.
+		When you download the binary release, you will notice that the top level directory is named <literal>telscale-smscgateway-&lt;version&gt;</literal> and immediately below this are four sub-directories as explained below:
 </para>
-<para>
-The major functional modules of the &THIS.APPLICATION; are:
-	<orderedlist>
-		<listitem><para>SS7 Service [dir: <filename>telscale-ss7-service</filename>]</para></listitem>
-		<listitem><para>Signalling Gateway [dir: <filename>telscale-sgw</filename>]</para></listitem>
-		<listitem><para>Shell [dir: <filename>shell</filename>]</para></listitem>
-		<listitem><para>SS7 Simulator [dir: <filename>telscale-ss7-simulator</filename>]</para></listitem>
-	</orderedlist>
-</para>
-<screen><![CDATA[
-|- telscale-ss7-<version>
-		|- asn
-				|+ docs
-		|- sctp
-				|+ docs
-		|- ss7
-				|+ docs
-				|+ telscale-sgw
-				|+ telscale-ss7-service
-				|+ telscale-ss7-simulator 
-				|+ native
-				|+ protocols
-				|+ shell
+<itemizedlist>
+			<listitem><para>docs: Contains all relevant documentation in respective subfolders for JSLEE, jSS7 and SMSC.</para></listitem>
+			<listitem><para>jboss-5.1.0.GA: The core server with two profiles "default" and "simulator". The "default" profile is a clean profile where you will have to start from scratch and configure the entire SS7 Stack and SMSC Gateway. The "simulator" profile is a pre-configured profile to work with jss7-simulator. Refer to the Admin Guide for instructions on how to start the server in either of the profiles.</para></listitem>
+			<listitem><para>resources: Contains SLEE MAP RA jars.</para></listitem>
+			<listitem><para>tools: Contains SLEE tools and jss7-simulator.</para></listitem>
+		</itemizedlist>
 
+<screen><![CDATA[
+|- telscale-smscgateway-<version>
+		|- docs
+				|+ jss7
+				|+ slee
+				|+ smsc
+		|- jboss-5.1.0.GA
+				|+ bin    //contains start up and shutdown scripts for the Server and the start up script for Shell.
+				|+ client
+				|+ common
+				|+ docs
+				|+ lib
+				|- server
+					|+ default	//clean profile to set up from scratch
+					|+ simulator	//pre-configured profile to work with the jss7-simulator
+		|- resources
+				|+ map
+		|- tools
+				|+ eclipslee
+				|+ jopr-plugin
+				|+ jss7-simulator
+				|+ remote-slee-connection
+				|+ test-msc-simulator
+				|+ twiddle
 ]]>
 </screen>
   	
@@ -70,7 +80,7 @@ The major functional modules of the &THIS.APPLICATION; are:
 		<para>&THIS.PLATFORM; &THIS.APPLICATION; is an open source project and you have the freedom to build from source. Building from source means you can stay on top with the latest features. Whilst aspects of &THIS.PLATFORM; &THIS.APPLICATION; are quite 
 		complicated, you may find ways to become contributors.</para>
 		
-		<para>&THIS.PLATFORM; &THIS.APPLICATION; works with JDK1.5 or above (But if you are using M3UA, you must have JDK1.7 or above ). In addition you must have the following tools installed.</para>
+		<para>&THIS.PLATFORM; &THIS.APPLICATION; works with JDK1.7 or above. In addition you must have the following tools installed.
 		
 		<itemizedlist>
 			<listitem>
@@ -90,6 +100,7 @@ The major functional modules of the &THIS.APPLICATION; are:
 								url="http://ant.apache.org" /></para>
 			</listitem>	
 		</itemizedlist>
+</para>
 <!--TODO not clear for Telscale 
 		<para>INSTRUCTIONS NOT AVAILABLE</para>-->
 <!-- -->
@@ -101,58 +112,22 @@ The major functional modules of the &THIS.APPLICATION; are:
 					<title>Downloading the source code</title>
 					
 					<para>Use GIT to checkout a specific release source, the base URL is &THIS.TRUNK_SOURCE_CODE_URL;,
-						then add the specific release version, lets consider release-2.0.0.BETA1.
+						then add the specific release version.
 					</para>
 					<programlisting>
-[usr]$ git clone &THIS.TRUNK_SOURCE_CODE_URL;
-[usr]$ cd jss7
-[usr]$ git checkout release-2.0.0.BETA1					
+[usr]$ git clone https://userid@bitbucket.org/telestax/telscale-smscgateway.git 
+[usr]$ cd telscale-smscgateway
+[usr]$ git checkout &lt;version&gt;					
 					</programlisting>
 				
 				</step>
 				<step>
 					<title>Building the source code</title>
 					<para>Now that we have the source the next step is to build and install the source. 
-					&THIS.PLATFORM; &THIS.APPLICATION; uses Maven 2 to build the system. There are three profiles. The Default profile builds only java source. The other two profiles "dahdilinux" and "dialogiclinux" 
-					additionaly compile native modules.</para>
-					<note>
-						<para>
-							Native modules are supported only for linux OS for now.
-						</para>
-					</note>					
-					<para>Use "dahdilinux" profile if the linux server on which this code is built already has dahdi module installed. 
-					Make sure you pass "include.zap" system property pointing to correct directory where dahdi is installed</para>
-					<programlisting>
-[usr]$ cd jss7
-[usr]$ mvn install -Pdahdilinux -Dinclude.zap=/usr/include/dahdi
-				    </programlisting>
-				    
-					<para>Use "dialogiclinux" profile if the linux server on which this code is built already has dialogic module installed. 
-					Make sure you pass "include.dialogic" and "include.dialogic.gctlib" system property pointing to correct directory where 
-					dialogic libraries are installed. include.dialogic.gctlib points to directory where <literal>gctload</literal> is present (generally
-					/opt/dpklnx for linux OS)</para>
-					<programlisting>
-[usr]$ cd jss7
-[usr]$ mvn install -Pdialogclinux -Dinclude.dialogic=/opt/dpklnx/INC -Dinclude.dialogic.gctlib=/opt/dpklnx
-				    </programlisting>	
-				    
-				   	<para>To build &THIS.PLATFORM; &THIS.APPLICATION; without building any native libraries use</para>
-					<programlisting>
-[usr]$ cd jss7
-[usr]$ mvn install 
-				    </programlisting>
-					<note>
-						<para>
-							If you are using &THIS.PLATFORM; &THIS.APPLICATION; without any native dependencies, &THIS.PLATFORM; &THIS.APPLICATION; can run on any OS.
-						</para>
-					</note>
-									    
-							    
-					<para>Use Ant to build the binary .</para>
-					<programlisting>
-[usr]$ cd &THIS.APPLICATION.DIRNAME;-&THIS.VERSION;/release
-[usr]$ ant
-				    </programlisting>
+					&THIS.PLATFORM; &THIS.APPLICATION; uses Maven 2 to build the system. You must ensure that <literal>JAVA_HOME</literal> environment variable is set properly prior to building the source.</para>
+<programlisting>
+[usr]$ mvn clean install
+</programlisting>
 
 				</step>
 			</procedure>
