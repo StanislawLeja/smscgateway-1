@@ -32,18 +32,24 @@
 							<tbody>
 								<row>
 									<entry>System Requirements</entry>
-									<entry>Intel Pentium 1 GHz or faster for simple applications. Hard disk space of at least 20MB. RAM of at least 1.5 GB</entry>	
+									<entry>Intel Pentium 1 GHz or faster for simple applications. Hard disk space of at least 10GB. RAM of at least 1.5 GB</entry>	
 									<entry>Higher the RAM and processing power, better is the throughput</entry>	
 								</row>
 								<row>
-									<entry>TDM Hardware</entry>
-									<entry>&THIS.PLATFORM; &THIS.APPLICATION; supports legacy E1/T1 links via SS7 cards. You must have <literal>dahdi</literal> or <literal>dialogic</literal> cards installed along with their native libraries.</entry>	
-									<entry> </entry>	
+									<entry>TDM Hardware (Optional)</entry>
+									<entry>
+										&THIS.PLATFORM; &THIS.APPLICATION; supports legacy E1/T1 links via SS7 cards. You must have <literal>dahdi</literal> or <literal>dialogic</literal> cards installed along with their native libraries.
+										&THIS.PLATFORM; &THIS.APPLICATION; also supports SIGTRAN (M3UA). 
+									</entry>	
+									<entry>In case if you are connecting to core network via SIGTRAN, TDM hardware is not needed.</entry>	
 								</row>
 								<row>
 									<entry>Operating System</entry>
-									<entry>The platform can be installed on any OS that supports Java and SCTP. But native libraries for SS7 cards are compiled only for Linux at the moment and therefore supported only on Linux Operating System.</entry>
-									<entry>The libraries will be compiled for Windows in future releases.</entry>	
+									<entry>
+										The platform can be installed on any OS that supports Java.
+										But native libraries for SS7 cards are compiled only for Linux at the moment and therefore supported only on Linux Operating System.
+									</entry>
+									<entry>The libraries for SS7 cards will be compiled for Windows in future releases. For SIGTRAN the OS should support SCTP protocol.</entry>
 								</row>
 								<row>
 									<entry>Java</entry>

@@ -1,5 +1,6 @@
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<parent>
 		<artifactId>telscale-smsc-adminguide</artifactId>
@@ -30,7 +31,8 @@
 								<configuration>
 									<tasks>
 										<!-- copy docs -->
-										<copy overwrite="true" todir="${basedir}/../../release/${release.name}/docs">
+										<copy overwrite="true"
+											todir="${basedir}/../../release/${release.name}/docs">
 											<fileset dir="${basedir}/target/docbook/docbook/publish" />
 										</copy>
 									</tasks>
@@ -81,21 +83,11 @@
 						<artifactId>telestax-xslt-ns</artifactId>
 						<version>1.2.0</version>
 					</dependency>
-					 <dependency>
-                                                <groupId>org.mobicents.jdocbook</groupId>
-                                                <artifactId>telestax-telscale-style</artifactId>
-                                                <type>jdocbook-style</type>
-                                                <version>1.2.0</version>
-                                        </dependency>
 					<dependency>
-						<groupId>xml-resolver</groupId>
-						<artifactId>xml-resolver</artifactId>
-						<version>1.1</version>
-					</dependency>
-					<dependency>
-						<groupId>saxon</groupId>
-						<artifactId>saxon</artifactId>
-						<version>6.5.3</version>
+						<groupId>org.mobicents.jdocbook</groupId>
+						<artifactId>telestax-telscale-style</artifactId>
+						<type>jdocbook-style</type>
+						<version>1.2.0</version>
 					</dependency>
 				</dependencies>
 				<configuration>

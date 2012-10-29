@@ -26,12 +26,12 @@ A single &THIS.PLATFORM; SMSC node can process up to 1000 SMS/sec. Multiple SMSC
 		jSS7 Stack.
 	&THIS.PLATFORM;
 		JAIN SLEE Server is a highly scalable event-driven application server with a robust component model and fault tolerant execution environment. It provides a set of connectors to a
-		variety of networks elements: SS7 MAP, TCAP, INAP, ISUP, SMPP, XMPP, SIP, MGCP, HTTP, XDM, XCAP, Diameter and many others. It is fully compliant with JSR 240 (JSLEE 1.1).
+		variety of networks elements: SS7 MAP, CAP, INAP, TCAP, ISUP, SMPP, XMPP, SIP, MGCP, HTTP, XDM, XCAP, Diameter and many others. It is fully compliant with JSR 240 (JSLEE 1.1).
 	&THIS.PLATFORM;
 		jSS7 is a software based implementation of the SS7 protocol. It provides implementation for Level 2 and above in the SS7 protocol Stack. &THIS.PLATFORM;
 		jSS7 Stack User Guide is bundled within and you can refer to the guide for more details on the Stack.
 	</para>
 	<para>
-		This guide will assist you in installing &THIS.PLATFORM; &THIS.APPLICATION;. For more details on configuring and using the platform, please refer to the &THIS.PLATFORM; &THIS.APPLICATION; User Guide. 
+		This guide will assist you in installing &THIS.PLATFORM; &THIS.APPLICATION;. For more details on configuring and using the platform, please refer to the &THIS.PLATFORM; &THIS.APPLICATION; Admin Guide. 
 	</para>
 </chapter>

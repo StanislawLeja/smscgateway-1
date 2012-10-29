@@ -14,10 +14,10 @@
 	<properties>
 		<THIS.PLATFORM>TelScale</THIS.PLATFORM>
 		<JEE.PLATFORM>JBoss Application Server</JEE.PLATFORM>
-		<THIS.ISSUE_TRACKER_URL>http://code.google.com/p/smscgateway/issues/list</THIS.ISSUE_TRACKER_URL>
-		<THIS.RELEASE_SOURCE_CODE_URL>http://code.google.com/p/smscgateway/source/browse/</THIS.RELEASE_SOURCE_CODE_URL>
-		<THIS.TRUNK_SOURCE_CODE_URL>http://code.google.com/p/smscgateway/source/checkout</THIS.TRUNK_SOURCE_CODE_URL>
-		<THIS.RELEASE_BINARY_URL>http://code.google.com/p/smscgateway/downloads/list</THIS.RELEASE_BINARY_URL>
+		<THIS.ISSUE_TRACKER_URL>https://bitbucket.org/telestax/telscale-smscgateway/issues</THIS.ISSUE_TRACKER_URL>
+		<THIS.RELEASE_SOURCE_CODE_URL>https://bitbucket.org/telestax/telscale-smscgateway/src</THIS.RELEASE_SOURCE_CODE_URL>
+		<THIS.TRUNK_SOURCE_CODE_URL>https://bitbucket.org/telestax/telscale-smscgateway/src</THIS.TRUNK_SOURCE_CODE_URL>
+		<THIS.RELEASE_BINARY_URL>https://telestax.zendesk.com/forums/20768031-premium-content</THIS.RELEASE_BINARY_URL>
 		<author.email.amit>amit.bhayani (at) telestax.com</author.email.amit>
 		<author.email.bartosz>baranowb (at) telestax.com</author.email.bartosz>
 		<author.email.sergey>serg.vetyutnev (at) telestax.com</author.email.sergey>
