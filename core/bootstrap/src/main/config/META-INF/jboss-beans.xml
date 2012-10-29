@@ -120,7 +120,7 @@
 	<!-- Shell Service -->
 	<!-- ==================================================================== -->
 	<!-- Define Shell Executor -->
-	<bean name="ShellExecutor" class="org.mobicents.ss7.management.console.ShellServer">
+	<bean name="ShellExecutor" class="com.telscale.ss7.management.console.ShellServer">
 		<constructor>
 			<parameter>
 				<inject bean="SS7Scheduler" />
@@ -137,6 +137,9 @@
 
 		<property name="address">${jboss.bind.address}</property>
 		<property name="port">3435</property>
+		<!-- Enale secured CLI by un-commenting below line
+		<property name="securityDomain">java:/jaas/jmx-console</property>
+		 -->		
 	</bean>
 
 	<!-- ==================================================================== -->
