@@ -20,9 +20,112 @@
 	</section>
 	<section id="setting_smsc_parameters">
 		<title>Configuring the Gateway</title>
-		<para>Once you have configured the SS7 stack you can continue with SMSC configuration. Start the Shell as explained in the previous chapter and connect to the managed instance. Prior to configuring the Gateway you must ensure that you have configured the SS7 Stack, following the instructions in the TelScale SS7 Stack User Guide and according to your requirements.			
+		<para>Once you have configured the SS7 stack you can continue with SMSC configuration. Start the Shell as explained in the previous chapter and connect to the managed instance. Prior to configuring the Gateway you must ensure that you have configured the SS7 Stack, following the instructions in the TelScale SS7 Stack User Guide and according to your requirements.	
+		</para>
+<section id="set_scgt">
+				<title>Set SMSC Global Title</title>
+					<variablelist>
+					<varlistentry>
+					<term>COMMAND</term>
+					<listitem><para>smsc set scgt</para></listitem>
+					</varlistentry>
+					<varlistentry>
+					<term>SYNOPSIS</term>
+					<listitem><para>smsc set scgt &lt;globalTitle&gt;</para></listitem>
+					</varlistentry>
+					<varlistentry>
+					<term>DESCRIPTION</term>
+					<listitem><para>This command is used to set a value for SMSC Global Title. You can verify this by issuing the 
+	<command>smsc get scgt</command> command which will display the value set for this property.</para></listitem>
+					</varlistentry>
+					
+				</variablelist>
+				</section>
+				<section id="set_scssn">
+				<title>Set SMSC Sub System Number (SSN)</title>
+					<variablelist>
+					<varlistentry>
+					<term>COMMAND</term>
+					<listitem><para>smsc set scssn</para></listitem>
+					</varlistentry>
+					<varlistentry>
+					<term>SYNOPSIS</term>
+					<listitem><para>smsc set scssn &lt;smscSubSystemNumber&gt;</para></listitem>
+					</varlistentry>
+					<varlistentry>
+					<term>DESCRIPTION</term>
+					<listitem><para>This command is used to set the value of SMSC Sub System Number (SSN). Issuing 
+	this command in CLI will set the SSN value but you must ensure that the SSN number
+	is properly configured in the TCAP Stack in the xml descriptor file
+	<filename>telscale-smscgateway-version/jboss-5.1.0.GA/server/default/deploy/telscale-smsc-server/META-INF/jboss-beans.xml</filename>. You can verify this by issuing the 
+	<command>smsc get scssn</command> command which will display the value set for this property.</para></listitem>
+					</varlistentry>
+					
+				</variablelist>
+				</section>
+				<section id="set_hlrssn">
+				<title>Set HLR Sub System Number (SSN)</title>
+					<variablelist>
+					<varlistentry>
+					<term>COMMAND</term>
+					<listitem><para>smsc set hlrssn</para></listitem>
+					</varlistentry>
+					<varlistentry>
+					<term>SYNOPSIS</term>
+					<listitem><para>smsc set hlrssn &lt;hlrSubSystemNumber&gt;</para></listitem>
+					</varlistentry>
+					<varlistentry>
+					<term>DESCRIPTION</term>
+					<listitem><para>This command is used to set the value of HLR Sub System Number (SSN). You can verify this by issuing the <command>smsc get hlrssn</command> command which will display the value set for this property.</para></listitem>
+					</varlistentry>
+					
+				</variablelist>
+				</section>
+				<section id="set_mscssn">
+				<title>Set MSC Sub System Number (SSN)</title>
+					<variablelist>
+					<varlistentry>
+					<term>COMMAND</term>
+					<listitem><para>smsc set mscssn</para></listitem>
+					</varlistentry>
+					<varlistentry>
+					<term>SYNOPSIS</term>
+					<listitem><para>smsc set mscssn &lt;mscSubSystemNumber&gt;</para></listitem>
+					</varlistentry>
+					<varlistentry>
+					<term>DESCRIPTION</term>
+					<listitem><para>This command is used to set the value of MSC Sub System Number (SSN). You can verify this by issuing the <command>smsc get mscssn</command> command which will display the value set for this property.</para></listitem>
+					</varlistentry>
+					
+				</variablelist>
+				</section>
+				<section id="set_maxmapv">
+				<title>Set MAP Application Context version</title>
+					<variablelist>
+					<varlistentry>
+					<term>COMMAND</term>
+					<listitem><para>smsc set maxmapv</para></listitem>
+					</varlistentry>
+					<varlistentry>
+					<term>SYNOPSIS</term>
+					<listitem><para>smsc set maxmapv &lt;version-number&gt;</para></listitem>
+					</varlistentry>
+					<varlistentry>
+					<term>DESCRIPTION</term>
+					<listitem><para>This command is used to set the value of MAP Application Context version. You can verify this by issuing the <command>smsc get mscssn</command> command which will display the value set for this property. The 
+	version number set here will be used for SMS messages exchanged. &THIS.PLATFORM; &THIS.APPLICATION; supports version negotiation. So if you set this to a higher version (say 
+	for example version 3, however your network only understands version 2), the SMSC Gateway
+	will automatically do the version negotiation and exchange V2 messages when V3 
+	exchange fails. However this causes additional messages to be exchanged and 
+	increases the overall load on the system. Therefore it is advisable to always set 
+	the correct version.</para></listitem>
+					</varlistentry>
+					
+				</variablelist>
+				</section>
+				<section id="configuring_new_esme">
+				<title>Configuring a new ESME</title>
 				<variablelist>
-					<title>Configuring a new ESME</title>
 					<varlistentry>
 					<term>COMMAND</term>
 					<listitem><para>smsc esme create</para></listitem>
@@ -47,8 +150,175 @@ smsc esme create 1234567890 password 127.0.0.1 2775 TRANSCEIVER esme-ton 0 esme-
 
 				</para></listitem>
 					</varlistentry>
+					
 				</variablelist>
-			</para>
+				</section>				
 
+	</section>
+	<section id="setting_smpp">
+		<title>Configuring SMPP Service</title>
+		<para>Configuration is done through an XML descriptor named <filename>jboss-beans.xml</filename> located at <filename>smsc-telscale-slee-version/jboss-5.1.0.GA/server/profile_name/deploy/telscale-smsc-server/META-INF</filename>, where profile_name is the server profile name. The SMPP server bean is named as <literal>SMPPServer</literal> and the contents of the XML file are as depicted below. For every successful bind request from ESME, a JMX bean is registered with the JBoss MBean Server and the <literal>ObjectName</literal> is <literal>org.mobicents.smsc:type=Application.SMPP.&lt;Session Index&gt;Sessions,name=&lt;sessionId&gt;</literal>. This MBean exposes all the statistics for this particular SMPP Connection.
+	</para>
+<para>
+<screen><![CDATA[
+	<!-- ==================================================================== -->
+	<!-- SMPP Server Stack -->
+	<!-- ==================================================================== -->
+	<bean name="SMPPServer" class="org.mobicents.smsc.smpp.SmppServer">
+		<!-- the name of the server that is used for some logging and naming of 
+			threads -->
+		<property name="name">SmppServer</property>
+
+		<!-- Port where server socket is bound -->
+		<property name="port">2776</property>
+
+		<!-- Set the amount of time to allow a connection to finish binding into 
+			the server before the server automatically closes the connection. -->
+		<property name="bindTimeout">5000</property>
+
+		<!-- Set the system id that will be returned in a bind response. -->
+		<property name="systemId">MobicentsSMSC</property>
+
+		<!-- Enables or disables auto sc_interface_version negotiation. If the 
+			version from the client <= 3.3 then the client version is 3.3. If the version 
+			from the client >= 3.4 then the client version will be 3.4 and the prepared 
+			bind response will include the optional parameter sc_interface_version. -->
+		<property name="autoNegotiateInterfaceVersion">true</property>
+
+		<!-- SMPP version supported by SMSC. Only 3.4 or 3.3 -->
+		<property name="interfaceVersion">3.4</property>
+
+		<!-- Set the maximum number of connections this server is configured to 
+			handle. -->
+		<property name="maxConnectionSize">10</property>
+
+		<!-- The window "size" is the amount of unacknowledged requests that are 
+			permitted to be outstanding/unacknowledged at any given time. -->
+		<property name="defaultWindowSize">100</property>
+
+		<!-- Set the amount of time to wait until a slot opens up in the sendWindow -->
+		<property name="defaultWindowWaitTimeout">30000</property>
+
+		<!-- Set the amount of time to wait for an endpoint to respond to a request 
+			before it expires. Defaults to disabled (-1). -->
+		<property name="defaultRequestExpiryTimeout">30000</property>
+
+		<!-- Sets the amount of time between executions of monitoring the window 
+			for requests that expire. It's recommended that this generally either matches 
+			or is half the value of requestExpiryTimeout. Therefore, at worst a request 
+			would could take up 1.5X the requestExpiryTimeout to clear out. -->
+		<property name="defaultWindowMonitorInterval">15000</property>
+
+		<!-- Tracks counters for SMPP operations -->
+		<property name="defaultSessionCountersEnabled">true</property>
+	</bean>
+
+	<!-- ==================================================================== -->
+	<!-- SMPP Server Service -->
+	<!-- ==================================================================== -->
+	<bean name="SMPPServerService" class="org.mobicents.smsc.smpp.SMPPServerService">
+		<annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="org.mobicents.smsc:service=SMPPServerService",exposedInterface=org.mobicents.smsc.smpp.SMPPServerServiceMBean.class,registerDirectly=true)
+		</annotation>
+		<property name="jndiName">java:/mobicents/smsc/smpphandler</property>
+		<property name="defaultSmppServerHandler">
+			<inject bean="SMPPServer" property="defaultSmppServerHandler" />
+		</property>
+	</bean>
+
+	<!-- ==================================================================== -->
+	<!-- SMSC -->
+	<!-- SmscManagement is managing the all Smsc server commands -->
+	<!-- ==================================================================== -->
+	<bean name="SmscManagement" class="org.mobicents.smsc.smpp.SmscManagement">
+		<constructor>
+			<parameter>SmscManagement</parameter>
+		</constructor>
+		<property name="persistDir">${jboss.server.data.dir}</property>
+		<property name="smppServer">
+			<inject bean="SMPPServer" />
+		</property>
+	</bean>
+
+	<bean name="SMSCShellExecutor" class="org.mobicents.smsc.smpp.SMSCShellExecutor">
+		<property name="smscManagement">
+			<inject bean="SmscManagement" />
+		</property>
+	</bean>
+]]>
+</screen>
+</para>
+	<para>
+		The SMPP Server has the following properties as described in the table below.
+	<table
+		frame="all"
+		pgwide="1">
+		<title>SMPP Server Properties</title>
+		<tgroup cols='2' colsep='1' rowsep='1'>
+			<colspec
+				colnum="1"
+				colname="c0" />
+			<colspec
+				colnum="2"
+				colname="c1" />
+			<thead>
+				<row>
+					<entry>Property</entry>
+					<entry>Description</entry>
+				</row>
+			</thead>
+			<tbody>
+				<row>
+					<entry>name</entry>
+					<entry>Name of the Server. This name will be used for logging purposes as well as for naming threads.</entry>
+				</row>
+				<row>
+					<entry>port</entry>
+					<entry>Port where the server socket is bound.</entry>
+				</row>
+				<row>
+					<entry>bindTimeout</entry>
+					<entry>Time (in milliseconds) allowed for a connection to finish binding (SMPP BIND request) into the server before the server automatically closes the connection.</entry>
+				</row>
+				<row>
+					<entry>systemId</entry>
+					<entry>System Id that will be returned in a bind response.</entry>
+				</row>
+				<row>
+					<entry>autoNegotiateInterfaceVersion</entry>
+					<entry>Enables or disables auto <literal>sc_interface_version</literal> negotiation. If the 
+version from the client is &lt;= 3.3, then the client version is 3.3. If the version from the client is &gt;= 3.4, then the client version will be 3.4 and the prepared bind response will include the optional parameter <literal>sc_interface_version</literal>.</entry>
+				</row>
+				<row>
+					<entry>interfaceVersion</entry>
+					<entry>SMPP version supported by SMSC. This is either 3.4 or 3.3 since these are the only supported versions.</entry>
+				</row>
+				<row>
+					<entry>maxConnectionSize</entry>
+					<entry>The maximum number of SMPP connections this server is configured to handle.</entry>
+				</row>
+				<row>
+					<entry>defaultWindowSize</entry>
+					<entry>The window "size" is the maximum number of unacknowledged requests that are permitted to be outstanding (unacknowledged) at any given time. For larger latency networks, this value can be higher. However a high value for this will impact the memory because unacknowledged SMPP Requests are stored in memory.</entry>
+				</row>
+				<row>
+					<entry>defaultWindowWaitTimeout</entry>
+					<entry>Time (in milliseconds) to wait until a slot opens up in the sendWindow.</entry>
+				</row>
+				<row>
+					<entry>defaultRequestExpiryTimeout</entry>
+					<entry>Time (in milliseconds) to wait for an end-point to respond to a request before it expires. By default this is disabled (-1).</entry>
+				</row>
+				<row>
+					<entry>defaultWindowMonitorInterval</entry>
+					<entry>Time (in milliseconds) between executions of monitoring the window for requests that expire. It is recommended that this parameter is generally set to either match the value or half the value of <literal>requestExpiryTimeout</literal>. By doing this you can ensure that in a worst case scenario, a request would take a maximum of 1.5 times the value of <literal>requestExpiryTimeout</literal> to clear out.</entry>
+				</row>
+				<row>
+					<entry>defaultSessionCountersEnabled</entry>
+					<entry>If this is set to true, the counter for SMPP operations is maintained.</entry>
+				</row>
+			</tbody>
+		</tgroup>
+	</table>
+	</para>
 	</section>
 </chapter>
