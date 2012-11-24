@@ -17,7 +17,7 @@
 		<!-- MTP3 -->
 		<dependency>
 			<groupId>org.mobicents.protocols.ss7.management</groupId>
-			<artifactId>shell</artifactId>
+			<artifactId>shell-client</artifactId>
 			<version>${ss7.version}</version>
 		</dependency>
 	</dependencies>

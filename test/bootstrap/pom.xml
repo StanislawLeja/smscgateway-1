@@ -20,12 +20,13 @@
 			<artifactId>test-mapmodule</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>${pom.groupId}</groupId>
 			<artifactId>test-oam</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
-
+ 		-->
 		<dependency>
 			<groupId>urbanophile</groupId>
 			<artifactId>java-getopt</artifactId>

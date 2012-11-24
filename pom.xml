@@ -24,11 +24,12 @@
 		<compiler.plugin.version>2.0.2</compiler.plugin.version>
 		<compile.source>1.5</compile.source>
 		<!-- mobicents but not strictly ss7 -->
-		<asn.version>2.0.0.FINAL</asn.version>
+		<asn.version>2.0.1.FINAL</asn.version>
 		<stream.version>1.0.0.CR1</stream.version>
-		<sctp.version>1.0.0-SNAPSHOT</sctp.version>
+		<sctp.version>1.0.0.FINAL</sctp.version>
 		<commons.version>1.0.0.CR1</commons.version>
-		<ss7.version>2.0.0-SNAPSHOT</ss7.version>
+		<ss7.version>2.0.0.BETA3</ss7.version>
+		<jss7.telscale.version>6.1.2-TelScale-SNAPSHOT</jss7.telscale.version>
 		<log4j.version>1.2.14</log4j.version>
 		<junit.version>3.8.1</junit.version>
 
