@@ -20,13 +20,7 @@
 			<artifactId>test-mapmodule</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>${pom.groupId}</groupId>
-			<artifactId>test-oam</artifactId>
-			<version>${pom.version}</version>
-		</dependency>
- 		-->
+
 		<dependency>
 			<groupId>urbanophile</groupId>
 			<artifactId>java-getopt</artifactId>
@@ -57,7 +51,7 @@
 			<groupId>org.jboss.aop</groupId>
 			<artifactId>jboss-aop</artifactId>
 		</dependency>
-		
+
 		<!-- SS7 CLI -->
 		
 		<!-- jreadline -->
@@ -67,7 +61,7 @@
 			<version>0.17</version>
 			<scope>runtime</scope>
 		</dependency>
-		
+
 		<!-- M3UA CLI -->
 		<dependency>
 			<groupId>org.mobicents.protocols.ss7.m3ua</groupId>
@@ -89,7 +83,7 @@
 			<version>${ss7.version}</version>
 			<scope>runtime</scope>
 		</dependency>
-						
+
 	</dependencies>
 
 	<!-- -->

@@ -18,11 +18,6 @@
 
 
 		<!-- Deploy -->
-		<!-- file> <source>src/main/config/avprofile-beans.xml</source> <destName>deploy/avprofile-beans.xml</destName> 
-			</file> <file> <source>src/main/config/components-beans.xml</source> <destName>deploy/comp-beans.xml</destName> 
-			</file> <file> <source>src/main/config/connection-beans.xml</source> <destName>deploy/connection-beans.xml</destName> 
-			</file> <file> <source>src/main/config/connection-states-beans.xml</source> 
-			<destName>deploy/connection-states-beans.xml</destName> </file> -->
 		<file>
 			<source>src/main/config/oam-beans.xml</source>
 			<destName>deploy/oam-beans.xml</destName>
@@ -36,13 +31,5 @@
 			<source>src/main/config/map-beans.xml</source>
 			<destName>deploy/map-beans.xml</destName>
 		</file>
-
-		<!-- Endpoints -->
-		<!-- file> <source>src/main/config/ann-beans.xml</source> <destName>deploy/endpoints/ann-beans.xml</destName> 
-			</file> <file> <source>src/main/config/cnf-beans.xml</source> <destName>deploy/endpoints/cnf-beans.xml</destName> 
-			</file> <file> <source>src/main/config/ivr-beans.xml</source> <destName>deploy/endpoints/ivr-beans.xml</destName> 
-			</file> <file> <source>src/main/config/packetrelay-beans.xml</source> <destName>deploy/endpoints/packetrelay-beans.xml</destName> 
-			</file -->
-		<!-- control -->
 	</files>
 </component>

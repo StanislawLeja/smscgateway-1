@@ -1,6 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<rule/>
-<primaryAddress/>
+<rule>
+	<id value="1"/>
+	<value ruleType="Solitary" loadSharingAlgo="Undefined" mask="K" paddress="1" saddress="-1">
+		<patternSccpAddress pc="0" ssn="8">
+			<ai value="18"/>
+			<gt type="GT0100" tt="0" es="2" np="1" nai="4" digits="923330053058"/>
+		</patternSccpAddress>
+	</value>
+	<id value="2"/>
+	<value ruleType="Solitary" loadSharingAlgo="Undefined" mask="K" paddress="2" saddress="-1">
+		<patternSccpAddress pc="0" ssn="0">
+			<ai value="16"/>
+			<gt type="GT0100" tt="0" es="1" np="1" nai="4" digits="*"/>
+		</patternSccpAddress>
+	</value>
+</rule>
+<primaryAddress>
+	<id value="1"/>
+	<sccpAddress pc="1" ssn="8">
+		<ai value="19"/>
+		<gt type="GT0100" tt="0" es="2" np="1" nai="4" digits="923330053058"/>
+	</sccpAddress>
+	<id value="2"/>
+	<sccpAddress pc="2" ssn="0">
+		<ai value="17"/>
+		<gt type="GT0100" tt="0" es="1" np="1" nai="4" digits="-"/>
+	</sccpAddress>
+</primaryAddress>
 <backupAddress/>
 <longMessageRule/>
 <sap/>

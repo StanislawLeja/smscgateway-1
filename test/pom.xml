@@ -76,6 +76,11 @@
 		</dependency>
 		<!-- Management Shell -->
 		<dependency>
+			<artifactId>shell-client</artifactId>
+			<groupId>org.mobicents.protocols.ss7.management</groupId>
+			<version>${ss7.version}</version>
+		</dependency>		
+		<dependency>
 			<artifactId>shell-server-api</artifactId>
 			<groupId>org.mobicents.protocols.ss7.management</groupId>
 			<version>${ss7.version}</version>
