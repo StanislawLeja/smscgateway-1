@@ -545,14 +545,17 @@ public abstract class MtCommonSbb implements Sbb {
 
 	protected void generateCdr(SmsEvent smsEvent, String status) {
 		// Format is
-		// SUBMIT_DATE,SOURCE_ADDRESS,SOURCE_TON,SOURCE_NPI,DESTINATION_ADDRESS,DESTINATION_TON,DESTINATION_NPI,STATUS
+		// SUBMIT_DATE,SOURCE_ADDRESS,SOURCE_TON,SOURCE_NPI,DESTINATION_ADDRESS,DESTINATION_TON,DESTINATION_NPI,STATUS,SYSTEM-ID,MESSAGE-ID,First
+		// 20 char of SMS
 		StringBuffer sb = new StringBuffer();
 		sb.append(smsEvent.getSubmitDate()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddr())
 				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrTon())
 				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrNpi())
 				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getDestAddr()).append(CdrGenerator.CDR_SEPARATOR)
 				.append(smsEvent.getDestAddrTon()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getDestAddrNpi())
-				.append(CdrGenerator.CDR_SEPARATOR).append(status);
+				.append(CdrGenerator.CDR_SEPARATOR).append(status).append(CdrGenerator.CDR_SEPARATOR)
+				.append(smsEvent.getSystemId()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getMessageId())
+				.append(CdrGenerator.CDR_SEPARATOR).append(this.getFirst20CharOfSMS(smsEvent.getShortMessage()));
 
 		CdrGenerator.generateCdr(sb.toString());
 	}
