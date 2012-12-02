@@ -241,6 +241,14 @@ public abstract class MtCommonSbb implements Sbb {
 
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
 		this.logger.severe("Rx :  onDialogTimeout" + evt);
+		
+		SmsEvent original = this.getOriginalSmsEvent();
+
+		if (original != null) {
+			if (original.getSystemId() != null) {
+				this.sendFailureDeliverSmToEsms(original);
+			}
+		}
 	}
 
 	public void onDialogRequest(DialogRequest evt, ActivityContextInterface aci) {
