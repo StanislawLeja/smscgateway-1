@@ -1,3 +1,24 @@
+/*
+ * TeleStax, Open Source Cloud Communications  Copyright 2012. 
+ * TeleStax and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.mobicents.smsc.slee.services.alert;
 
 import javax.naming.Context;
@@ -12,6 +33,7 @@ import javax.slee.facilities.Tracer;
 
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
+import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
@@ -43,7 +65,6 @@ public abstract class AlertSbb implements Sbb {
 	protected MAPProvider mapProvider;
 	protected MAPParameterFactory mapParameterFactory;
 
-	private MAPApplicationContext shortMsgAlertContext = null;
 
 	public AlertSbb() {
 	}
@@ -134,10 +155,14 @@ public abstract class AlertSbb implements Sbb {
 
 	public void onAlertServiceCentreRequest(AlertServiceCentreRequest evt, ActivityContextInterface aci) {
 		try {
+			
 			MAPDialogSms mapDialogSms = evt.getMAPDialog();
-			mapDialogSms.addAlertServiceCentreResponse(evt.getInvokeId());
-
-			mapDialogSms.close(false);
+			MAPApplicationContext mapApplicationContext = mapDialogSms.getApplicationContext();
+			if(mapApplicationContext.getApplicationContextVersion() == MAPApplicationContextVersion.version2){
+				//Send back response only for V2
+				mapDialogSms.addAlertServiceCentreResponse(evt.getInvokeId());
+				mapDialogSms.close(false);
+			}
 		} catch (MAPException e) {
 			logger.severe("Exception while trying to send back AlertServiceCentreResponse", e);
 		}
