@@ -1,7 +1,11 @@
-/target
-/.classpath
-/.project
+#maven
 target
+#eclipse
+.classpath
+.project
+.settings
+#something
 /Notes
 /ACNNotSupportedAnalysis.ods
+#linux editor tmp file
 *.*~
