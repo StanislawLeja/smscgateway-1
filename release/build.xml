@@ -84,6 +84,9 @@
 	</target>
 	
 	<target name="clean-up-telscale-slee">
+		<move todir="${release.dir}/jboss-5.1.0.GA/server/simulator" failonerror="false">
+		    <fileset dir="${release.dir}/jboss-5.1.0.GA/server/all"/>
+	    </move>		
 		<delete includeemptydirs="true" failonerror="true">
             <fileset dir="${release.dir}/docs/resources">
                     <include name="**" />
@@ -108,9 +111,6 @@
 		<delete dir="${release.dir}/examples" includeemptydirs="true" failonerror="true" />
 		<delete file="${release.dir}/readme.txt" failonerror="true" />
 		<delete file="${release.dir}/sources.zip" failonerror="true" />
-		<move todir="${release.dir}/jboss-5.1.0.GA/server/simulator" failonerror="false">
-		    <fileset dir="${release.dir}/jboss-5.1.0.GA/server/all"/>
-	    </move>		
 		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/cluster" includeemptydirs="true" failonerror="true" />
 		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/deploy.last" includeemptydirs="true" failonerror="true" />
 		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/snmp-adaptor.sar" includeemptydirs="true" failonerror="true" />
