@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>slee</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.1.2-TelScale-SNAPSHOT</version>
+		<version>6.1.3.GA-TelScale</version>
 	</parent>
 
 	<artifactId>services-parent</artifactId>
@@ -40,6 +40,41 @@
 				<artifactId>mobicents-slee-ra-map-ratype</artifactId>
 				<version>${mobicents.resources.map.version}</version>
 			</dependency>
+			
+			<dependency>
+				<artifactId>asn</artifactId>
+				<groupId>org.mobicents.protocols.asn</groupId>
+				<version>${asn.version}</version>
+			</dependency>
+			
+			<dependency>
+				<artifactId>map-api</artifactId>
+				<groupId>org.mobicents.protocols.ss7.map</groupId>
+				<version>${ss7.version}</version>
+			</dependency>
+			
+			<dependency>
+				<artifactId>map-impl</artifactId>
+				<groupId>org.mobicents.protocols.ss7.map</groupId>
+				<version>${ss7.version}</version>
+			</dependency>
+	
+			<dependency>
+				<artifactId>tcap-api</artifactId>
+				<groupId>org.mobicents.protocols.ss7.tcap</groupId>
+				<version>${ss7.version}</version>
+			</dependency>
+			<dependency>
+				<artifactId>tcap-impl</artifactId>
+				<groupId>org.mobicents.protocols.ss7.tcap</groupId>
+				<version>${ss7.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mobicents.protocols.ss7.congestion</groupId>
+				<artifactId>congestion</artifactId>
+				<version>${ss7.version}</version>
+			</dependency>
+			
 		</dependencies>
 	</dependencyManagement>
 </project>
