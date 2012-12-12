@@ -1,0 +1,39 @@
+Name
+	smsc esme create
+
+SYNOPSIS
+	smsc esme create <Any 4/5 digit number> <password> <host-ip> <port> system-type 
+	<sms | vms | ota> interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton> 
+	esme-npi <esmeaddress npi> esme-range <esme address range>
+
+DESCRIPTION
+	This command is used to configure a new ESME.
+
+PARAMETERS
+	System Id		- Should match with the BIND request coming from ESME
+
+	Password		- Should match with the BIND request coming from ESME
+
+	host-ip			- Ignored, so pass any value
+
+	port			- Ignored, so pass any value
+
+	esme-range		- Mandatory for TRANSCEIVER/RECEIVER because this is used 
+				  to match the incoming SMS (MoForwards) destination 
+				  number to route to ESME
+
+	system-type		- Optional
+	
+	interface-version	- Optional
+
+EXAMPLES
+	smsc esme create 1234567890 password 127.0.0.1 2775 TRANSCEIVER esme-ton 0 
+	esme-npi 0 esme-range [0-9a-zA-Z]
+
+SEE ALSO
+	smsc get scgt, smsc set scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
+	smsc set hlrssn, smsc get mscssn, smsc set mscssn, smsc get maxmapv, 
+	smsc set maxmapv
+
+
+
