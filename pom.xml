@@ -35,7 +35,7 @@
 		<ss7.version>${project.version}</ss7.version>
 		<jss7.telscale.version>${project.version}</jss7.telscale.version>
 		<jslee.ext.version>${ts.slee.version}</jslee.ext.version>
-		<mobicents.resources.map.version>${ts.slee.version}</mobicents.resources.map.version>
+		<mobicents.resources.map.version>${project.version}</mobicents.resources.map.version>
 		<!-- cloudhopper smpp -->
 		<ch.smpp.version>4.1.2</ch.smpp.version>
 	</properties>
