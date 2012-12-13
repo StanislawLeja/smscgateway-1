@@ -42,10 +42,21 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
 import org.mobicents.protocols.ss7.map.api.MAPSmsTpduParameterFactory;
+import org.mobicents.protocols.ss7.map.api.dialog.MAPAbortProviderReason;
+import org.mobicents.protocols.ss7.map.api.dialog.MAPProviderError;
+import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
+import org.mobicents.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
+import org.mobicents.protocols.ss7.map.api.dialog.ProcedureCancellationReason;
+import org.mobicents.protocols.ss7.map.api.dialog.ResourceUnavailableReason;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessageSMDeliveryFailure;
+import org.mobicents.protocols.ss7.map.api.errors.SMEnumeratedDeliveryFailureCause;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
+import org.mobicents.protocols.ss7.tcap.asn.comp.Problem;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.slee.resource.map.MAPContextInterfaceFactory;
 import org.mobicents.slee.resource.map.events.DialogAccept;
@@ -76,6 +87,30 @@ import com.cloudhopper.smpp.util.SmppUtil;
 public abstract class MtCommonSbb implements Sbb {
 
 	private static final byte ESME_DELIVERY_ACK = 0x08;
+
+	/**
+	 * MAP Error Code from MAPErrorCode TODO : May be MAPErrorCode must be Enum?
+	 */
+	private static final String MAP_ERR_CODE_SYSTEM_FAILURE = "systemFailure";
+	private static final String MAP_ERR_CODE_DATA_MISSING = "dataMissing";
+	private static final String MAP_ERR_CODE_UNEXPECTED_DATA_VALUE = "unexpectedDataValue";
+	private static final String MAP_ERR_CODE_FACILITY_NOT_SUPPORTED = "facilityNotSupported";
+	private static final String MAP_ERR_CODE_INCOMPATIBLE_TERMINAL = "incompatibleTerminal";
+	private static final String MAP_ERR_CODE_RESOURCE_LIMITATION = "resourceLimitation";
+
+	private static final String MAP_ERR_CODE_SUBSCRIBER_BUSY_FOR_MTSMS = "subscriberBusyForMTSMS";
+	private static final String MAP_ERR_CODE_SM_DELIVERY_FAILURE = "smDeliveryFailure_";
+	private static final String MAP_ERR_CODE_MESSAGE_WAITING_LIST_FULL = "messageWaitingListFull";
+	private static final String MAP_ERR_CODE_ABSENT_SUBSCRIBER_SM = "absentSubscriberSM";
+	private static final String MAP_ERR_CODE_UNKNOWN = "errorComponent_unknown_";
+
+	private static final String MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON = "userSpecificReason";
+	private static final String MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION = "userResourceLimitation";
+	private static final String MAP_USER_ABORT_CHOICE_UNKNOWN = "DialogUserAbort_Unknown";
+
+	private static final String DIALOG_TIMEOUT = "dialogTimeout";
+
+	private static final String CDR_SUCCESS_NO_REASON = "";
 
 	private static final String DELIVERY_ACK_ID = "id:";
 	private static final String DELIVERY_ACK_SUB = " sub:";
@@ -136,11 +171,14 @@ public abstract class MtCommonSbb implements Sbb {
 		// this.sendReportSMDeliveryStatusRequest(SMDeliveryOutcome.absentSubscriber);
 		// }
 
+		MAPErrorMessage mapErrorMessage = event.getMAPErrorMessage();
+		String reason = this.getErrorComponentReason(mapErrorMessage);
+
 		SmsEvent original = this.getOriginalSmsEvent();
 
 		if (original != null) {
 			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original);
+				this.sendFailureDeliverSmToEsms(original, reason);
 			}
 		}
 	}
@@ -148,11 +186,12 @@ public abstract class MtCommonSbb implements Sbb {
 	public void onProviderErrorComponent(ProviderErrorComponent event, ActivityContextInterface aci) {
 		this.logger.severe("Rx :  onProviderErrorComponent" + event);
 
+		MAPProviderError mapProviderError = event.getMAPProviderError();
 		SmsEvent original = this.getOriginalSmsEvent();
 
 		if (original != null) {
 			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original);
+				this.sendFailureDeliverSmToEsms(original, mapProviderError.toString());
 			}
 		}
 	}
@@ -160,11 +199,31 @@ public abstract class MtCommonSbb implements Sbb {
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
 		this.logger.severe("Rx :  onRejectComponent" + event);
 
+		Problem problem = event.getProblem();
+		String reason = null;
+		switch (problem.getType()) {
+		case General:
+			reason = problem.getGeneralProblemType().toString();
+			break;
+		case Invoke:
+			reason = problem.getInvokeProblemType().toString();
+			break;
+		case ReturnResult:
+			reason = problem.getReturnResultProblemType().toString();
+			break;
+		case ReturnError:
+			reason = problem.getReturnErrorProblemType().toString();
+			break;
+		default:
+			reason = "RejectComponent_unknown_" + problem.getType();
+			break;
+		}
+
 		SmsEvent original = this.getOriginalSmsEvent();
 
 		if (original != null) {
 			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original);
+				this.sendFailureDeliverSmToEsms(original, reason);
 			}
 		}
 	}
@@ -192,11 +251,13 @@ public abstract class MtCommonSbb implements Sbb {
 
 		// TODO : Error condition. Take care
 
+		MAPRefuseReason refuseReason = evt.getRefuseReason();
+
 		SmsEvent original = this.getOriginalSmsEvent();
 
 		if (original != null) {
 			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original);
+				this.sendFailureDeliverSmToEsms(original, refuseReason.toString());
 			}
 		}
 	}
@@ -205,12 +266,27 @@ public abstract class MtCommonSbb implements Sbb {
 		this.logger.severe("Rx :  onDialogUserAbort=" + evt);
 
 		// TODO : Error condition. Take care
+		MAPUserAbortChoice userReason = evt.getUserReason();
+		String reason = null;
+		if (userReason.isUserSpecificReason()) {
+			reason = MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON;
+		} else if (userReason.isUserResourceLimitation()) {
+			reason = MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION;
+		} else if (userReason.isResourceUnavailableReason()) {
+			ResourceUnavailableReason resourceUnavailableReason = userReason.getResourceUnavailableReason();
+			reason = resourceUnavailableReason.toString();
+		} else if (userReason.isProcedureCancellationReason()) {
+			ProcedureCancellationReason procedureCancellationReason = userReason.getProcedureCancellationReason();
+			reason = procedureCancellationReason.toString();
+		} else {
+			reason = MAP_USER_ABORT_CHOICE_UNKNOWN;
+		}
 
 		SmsEvent original = this.getOriginalSmsEvent();
 
 		if (original != null) {
 			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original);
+				this.sendFailureDeliverSmToEsms(original, reason);
 			}
 		}
 	}
@@ -218,11 +294,13 @@ public abstract class MtCommonSbb implements Sbb {
 	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
 		this.logger.severe("Rx :  onDialogProviderAbort=" + evt);
 
+		MAPAbortProviderReason abortProviderReason = evt.getAbortProviderReason();
+
 		SmsEvent original = this.getOriginalSmsEvent();
 
 		if (original != null) {
 			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original);
+				this.sendFailureDeliverSmToEsms(original, abortProviderReason.toString());
 			}
 		}
 	}
@@ -241,12 +319,12 @@ public abstract class MtCommonSbb implements Sbb {
 
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
 		this.logger.severe("Rx :  onDialogTimeout" + evt);
-		
+
 		SmsEvent original = this.getOriginalSmsEvent();
 
 		if (original != null) {
 			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original);
+				this.sendFailureDeliverSmToEsms(original, DIALOG_TIMEOUT);
 			}
 		}
 	}
@@ -441,11 +519,11 @@ public abstract class MtCommonSbb implements Sbb {
 		return smsEvent;
 	}
 
-	protected void sendFailureDeliverSmToEsms(SmsEvent original) {
+	protected void sendFailureDeliverSmToEsms(SmsEvent original, String reason) {
 		// TODO check if SmppSession available for this SystemId, if not send to
 		// SnF module
 
-		this.generateCdr(original, CdrGenerator.CDR_FAILED);
+		this.generateCdr(original, CdrGenerator.CDR_FAILED, reason);
 
 		byte registeredDelivery = original.getRegisteredDelivery();
 
@@ -497,7 +575,7 @@ public abstract class MtCommonSbb implements Sbb {
 		// TODO check if SmppSession available for this SystemId, if not send to
 		// SnF module
 
-		this.generateCdr(original, CdrGenerator.CDR_SUCCESS);
+		this.generateCdr(original, CdrGenerator.CDR_SUCCESS, CDR_SUCCESS_NO_REASON);
 
 		byte registeredDelivery = original.getRegisteredDelivery();
 
@@ -551,10 +629,11 @@ public abstract class MtCommonSbb implements Sbb {
 		return first20CharOfSms;
 	}
 
-	protected void generateCdr(SmsEvent smsEvent, String status) {
+	protected void generateCdr(SmsEvent smsEvent, String status, String reason) {
 		// Format is
 		// SUBMIT_DATE,SOURCE_ADDRESS,SOURCE_TON,SOURCE_NPI,DESTINATION_ADDRESS,DESTINATION_TON,DESTINATION_NPI,STATUS,SYSTEM-ID,MESSAGE-ID,First
-		// 20 char of SMS
+		// 20 char of SMS, REASON
+
 		StringBuffer sb = new StringBuffer();
 		sb.append(smsEvent.getSubmitDate()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddr())
 				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrTon())
@@ -563,8 +642,81 @@ public abstract class MtCommonSbb implements Sbb {
 				.append(smsEvent.getDestAddrTon()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getDestAddrNpi())
 				.append(CdrGenerator.CDR_SEPARATOR).append(status).append(CdrGenerator.CDR_SEPARATOR)
 				.append(smsEvent.getSystemId()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getMessageId())
-				.append(CdrGenerator.CDR_SEPARATOR).append(this.getFirst20CharOfSMS(smsEvent.getShortMessage()));
+				.append(CdrGenerator.CDR_SEPARATOR).append(this.getFirst20CharOfSMS(smsEvent.getShortMessage()))
+				.append(CdrGenerator.CDR_SEPARATOR).append(reason);
 
 		CdrGenerator.generateCdr(sb.toString());
 	}
+
+	private String getErrorComponentReason(MAPErrorMessage mapErrorMessage) {
+		String reason = null;
+		int errCode = mapErrorMessage.getErrorCode().intValue();
+		switch (errCode) {
+		case MAPErrorCode.systemFailure:
+			reason = MAP_ERR_CODE_SYSTEM_FAILURE;
+			break;
+		case MAPErrorCode.dataMissing:
+			reason = MAP_ERR_CODE_DATA_MISSING;
+			break;
+		case MAPErrorCode.unexpectedDataValue:
+			reason = MAP_ERR_CODE_UNEXPECTED_DATA_VALUE;
+			break;
+		case MAPErrorCode.facilityNotSupported:
+			reason = MAP_ERR_CODE_FACILITY_NOT_SUPPORTED;
+			break;
+		case MAPErrorCode.incompatibleTerminal:
+			reason = MAP_ERR_CODE_INCOMPATIBLE_TERMINAL;
+			break;
+		case MAPErrorCode.resourceLimitation:
+			reason = MAP_ERR_CODE_RESOURCE_LIMITATION;
+			break;
+		// case MAPErrorCode.noRoamingNumberAvailable:
+		// reason = "noRoamingNumberAvailable";
+		// break;
+		// case MAPErrorCode.absentSubscriber:
+		// reason = "absentSubscriber";
+		// break;
+		// case MAPErrorCode.busySubscriber:
+		// reason = "busySubscriber";
+		// break;
+		// case MAPErrorCode.noSubscriberReply:
+		// reason = "noSubscriberReply";
+		// break;
+		// case MAPErrorCode.callBarred:
+		// reason = "callBarred";
+		// break;
+		// case MAPErrorCode.forwardingFailed:
+		// reason = "forwardingFailed";
+		// break;
+		// case MAPErrorCode.orNotAllowed:
+		// reason = "orNotAllowed";
+		// break;
+		// case MAPErrorCode.forwardingViolation:
+		// reason = "forwardingViolation";
+		// break;
+		// case MAPErrorCode.cugReject:
+		// reason = "cugReject";
+		// break;
+		case MAPErrorCode.subscriberBusyForMTSMS:
+			reason = MAP_ERR_CODE_SUBSCRIBER_BUSY_FOR_MTSMS;
+			break;
+		case MAPErrorCode.smDeliveryFailure:
+			MAPErrorMessageSMDeliveryFailure mapErrorMessageSMDeliveryFailure = mapErrorMessage
+					.getEmSMDeliveryFailure();
+			SMEnumeratedDeliveryFailureCause smEnumeratedDeliveryFailureCause = mapErrorMessageSMDeliveryFailure
+					.getSMEnumeratedDeliveryFailureCause();
+			reason = MAP_ERR_CODE_SM_DELIVERY_FAILURE + smEnumeratedDeliveryFailureCause.toString();
+			break;
+		case MAPErrorCode.messageWaitingListFull:
+			reason = MAP_ERR_CODE_MESSAGE_WAITING_LIST_FULL;
+			break;
+		case MAPErrorCode.absentSubscriberSM:
+			reason = MAP_ERR_CODE_ABSENT_SUBSCRIBER_SM;
+			break;
+		default:
+			reason = MAP_ERR_CODE_UNKNOWN + errCode;
+		}
+		return reason;
+	}
+
 }
