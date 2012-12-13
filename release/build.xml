@@ -38,8 +38,7 @@
 		</classpath>
 	</taskdef>
 	
-	<!--target name="release" depends="clean,get-deps,extract-deps,clean-up-telscale-slee, build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip" /-->
-	<target name="release" depends="get-map,get-deps,extract-deps,clean-up-telscale-slee, build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip" />
+	<target name="release" depends="clean,get-deps,extract-deps,clean-up-telscale-slee, build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip" />
 	
     <target name="deploy">
     	<ant antfile="${ant.file.telscale.smscgw.release}" target="release">
@@ -170,6 +169,16 @@
         </copy>
     	
         <echo>Copy SMS server</echo>
+		<!--default-->
+        <copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/telscale-smsc-server" failonerror="true">
+                <fileset dir="${telscale.smsc.dir}/core/bootstrap/target/telscale-smsc-server">
+                        <include name="**" />
+                </fileset>
+        </copy>
+        <copy file="${telscale.smsc.dir}/core/slee/smpp-server-ra/du/target/smpp-server-ra-du-${telscale.smsc.release.version}-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${telscale.smsc.dir}/core/slee/services/du/target/smsc-service-du-${telscale.smsc.release.version}-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-${telscale-jss7.version}-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+    	<mkdir dir="${release.dir}/jboss-5.1.0.GA/server/default/data"/>
 		<!--simulator-->
         <copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/telscale-smsc-server" failonerror="true">
                 <fileset dir="${telscale.smsc.dir}/core/bootstrap/target/telscale-smsc-server">
@@ -180,7 +189,7 @@
 	    <copy file="${telscale.smsc.dir}/core/slee/services/du/target/smsc-service-du-${telscale.smsc.release.version}-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
 	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-${telscale-jss7.version}-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
         <copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/data" failonerror="true">
-                <fileset dir="${base.dir}/data">
+                <fileset dir="${telscale.smsc.dir}/core/bootstrap/src/main/config/data">
                         <include name="**" />
                 </fileset>
         </copy>
