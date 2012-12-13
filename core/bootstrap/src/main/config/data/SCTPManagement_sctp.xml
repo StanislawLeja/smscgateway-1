@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<servers/>
+<associations>
+	<name value="SCTPAssoc1"/>
+	<association name="SCTPAssoc1" assoctype="CLIENT" hostAddress="127.0.0.1" hostPort="2776" peerAddress="127.0.0.1" peerPort="2775" ipChannelType="0" extraHostAddresseSize="0"/>
+</associations>

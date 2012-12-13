@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<esmeList>
+	<esme systemId="1234567890" password="password" host="127.0.0.1" port="2775" smppBindType="TRANSCEIVER" smppVersion="3.4" ton="0" npi="0" addressRange="^[0-9a-zA-Z]*"/>
+</esmeList>
