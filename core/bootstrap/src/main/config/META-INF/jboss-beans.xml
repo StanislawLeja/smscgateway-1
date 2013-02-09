@@ -235,5 +235,33 @@
 			<inject bean="SmscManagement" />
 		</property>
 	</bean>
+	
+	<!-- ==================================================================== -->
+	<!-- TelScale jSS7 Managemenet Service -->
+	<!-- ==================================================================== -->
+	<bean name="Ss7Management" class="com.telscale.protocols.ss7.oam.common.jmxss7.Ss7Management">
+		<annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="com.telscale.ss7:service=Ss7Management",exposedInterface=com.telscale.protocols.ss7.oam.common.jmxss7.Ss7ManagementMBean.class,registerDirectly=true)
+		</annotation>
+		<property name="agentId">jboss</property>
+	</bean>
 
+	<bean name="TelScaleSctpManagement" class="com.telscale.protocols.ss7.oam.common.sctp.SctpManagementJmx">
+		<constructor>
+			<parameter><inject bean="Ss7Management" /></parameter>
+			<parameter><inject bean="SCTPManagement" /></parameter>
+		</constructor>
+	</bean>
+	
+	<bean name="TelscaleM3uaManagement" class="com.telscale.protocols.ss7.oam.common.m3ua.M3uaManagementJmx">
+		<constructor>
+			<parameter><inject bean="Ss7Management" /></parameter>
+			<parameter><inject bean="Mtp3UserPart" /></parameter>
+		</constructor>
+	</bean>	
+	<bean name="TelscaleSccpManagement" class="com.telscale.protocols.ss7.oam.common.sccp.SccpManagementJmx">
+		<constructor>
+			<parameter><inject bean="Ss7Management" /></parameter>
+			<parameter><inject bean="SccpStack" /></parameter>
+		</constructor>
+	</bean>	
 </deployment>

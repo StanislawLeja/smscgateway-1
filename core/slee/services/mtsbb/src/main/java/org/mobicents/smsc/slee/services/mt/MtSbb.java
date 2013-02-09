@@ -362,15 +362,31 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		switch (dataCodingScheme.getCharacterSet()) {
 		case GSM7:
 			srcPos = (mesageSegmentNumber - 1) * 152;
-			length = Math.min(152, (shortMessage.length - srcPos));
+			if((shortMessage.length - srcPos) > -1){
+				length = Math.min(152, (shortMessage.length - srcPos));
+			} else {
+				length = shortMessage.length;
+				srcPos = 0; //This is case for split sms in SMPP
+			}
+				
 			break;
 		case GSM8:
 			srcPos = (mesageSegmentNumber - 1) * 134;
-			length = Math.min(134, (shortMessage.length - srcPos));
+			if((shortMessage.length - srcPos) > -1){
+				length = Math.min(134, (shortMessage.length - srcPos));
+			} else {
+				length = shortMessage.length;
+				srcPos = 0; //This is case for split sms in SMPP
+			}
 			break;
 		case UCS2:
 			srcPos = (mesageSegmentNumber - 1) * 134;
-			length = Math.min(134, (shortMessage.length - srcPos));
+			if((shortMessage.length - srcPos) > -1){
+				length = Math.min(134, (shortMessage.length - srcPos));
+			} else {
+				length = shortMessage.length;
+				srcPos = 0; //This is case for split sms in SMPP
+			}			
 			break;
 		}
 		slicedMessage = new byte[length];

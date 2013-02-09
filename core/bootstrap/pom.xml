@@ -176,15 +176,39 @@
 		<!-- TelScale jSS7 -->
 		<dependency>
 			<artifactId>jmx</artifactId>
-			<groupId>com.telscale.protocols.ss7.oam</groupId>
+			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
 			<version>${jss7.telscale.version}</version>
 		</dependency>
 		<dependency>
 			<artifactId>shell-server-impl</artifactId>
 			<groupId>com.telscale.protocols.ss7.oam</groupId>
 			<version>${jss7.telscale.version}</version>
+		</dependency>		
+		<dependency>
+			<artifactId>alarm</artifactId>
+			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
+			<version>${jss7.telscale.version}</version>
 		</dependency>	
-		
+		<dependency>
+			<artifactId>jmxss7</artifactId>
+			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
+			<version>${jss7.telscale.version}</version>
+		</dependency>	
+		<dependency>
+			<artifactId>sctp-oam</artifactId>
+			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
+			<version>${jss7.telscale.version}</version>
+		</dependency>	
+		<dependency>
+			<artifactId>m3ua-oam</artifactId>
+			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
+			<version>${jss7.telscale.version}</version>
+		</dependency>		
+		<dependency>
+			<artifactId>sccp-oam</artifactId>
+			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
+			<version>${jss7.telscale.version}</version>
+		</dependency>																	
 	</dependencies>
 
 	<!-- -->

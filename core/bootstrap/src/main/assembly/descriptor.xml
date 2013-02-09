@@ -56,8 +56,13 @@
 				<include>org.mobicents.protocols.ss7.congestion:congestion</include>
 				
 				<!-- TelScale SS7 Libs -->
-				<include>com.telscale.protocols.ss7.oam:jmx</include>
-				<include>com.telscale.protocols.ss7.oam:shell-server-impl</include>		
+				<include>com.telscale.protocols.ss7.oam.common:jmx</include>
+				<include>com.telscale.protocols.ss7.oam:shell-server-impl</include>
+				<include>com.telscale.protocols.ss7.oam.common:jmxss7</include>
+				<include>com.telscale.protocols.ss7.oam.common:alarm</include>
+				<include>com.telscale.protocols.ss7.oam.common:sctp-oam</include>
+				<include>com.telscale.protocols.ss7.oam.common:m3ua-oam</include>
+				<include>com.telscale.protocols.ss7.oam.common:sccp-oam</include>
 
 			</includes>
 		</dependencySet>
