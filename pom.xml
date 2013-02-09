@@ -38,7 +38,7 @@
 		
 		<jslee.ext.version>1.0.0.BETA2</jslee.ext.version>
 		
-		<mobicents.resources.map.version>2.0.0-SNAPSHOT</mobicents.resources.map.version>
+		<mobicents.resources.map.version>2.0.0.BETA3</mobicents.resources.map.version>
 	</properties>
 
 	<modules>
