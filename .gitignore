@@ -9,3 +9,4 @@ target
 /ACNNotSupportedAnalysis.ods
 #linux editor tmp file
 *.*~
+/SmppSimulatorParameters.xml
