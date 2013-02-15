@@ -31,6 +31,7 @@ import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -40,6 +41,8 @@ import org.apache.log4j.BasicConfigurator;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * 
@@ -51,6 +54,10 @@ public class SmppSimulatorForm {
 	protected JFrame frmSmppSimulator;
 	private static SmppSimulatorParameters initPar = null;
 	private SmppSimulatorParameters par;
+	
+	private SmppTestingForm testingForm;
+	private JButton btnConfigure;
+	private JButton btnRun;
 
 	public static void main(String[] args) {
 
@@ -97,6 +104,18 @@ public class SmppSimulatorForm {
 
 	private void initialize() {
 		frmSmppSimulator = new JFrame();
+		frmSmppSimulator.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent arg0) {
+				if (frmSmppSimulator.getDefaultCloseOperation() == JDialog.DO_NOTHING_ON_CLOSE) {
+					JOptionPane.showMessageDialog(getJFrame(), "Before exiting you must close a test window form");
+				} else {
+//					if (hostImpl != null) {
+//						hostImpl.quit();
+//					}
+				}
+			}
+		});
 		frmSmppSimulator.setResizable(false);
 		frmSmppSimulator.setTitle("SMPP Simulator");
 		frmSmppSimulator.setBounds(100, 100, 510, 299);
@@ -106,7 +125,7 @@ public class SmppSimulatorForm {
 		frmSmppSimulator.getContentPane().add(panel, BorderLayout.CENTER);
 		panel.setLayout(null);
 		
-		JButton btnConfigure = new JButton("Configure");
+		btnConfigure = new JButton("Configure");
 		btnConfigure.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				SmppParametersForm frame = new SmppParametersForm(getJFrame());
@@ -132,12 +151,37 @@ public class SmppSimulatorForm {
 		btnConfigure.setBounds(10, 25, 183, 23);
 		panel.add(btnConfigure);
 		
-		JButton btbRun = new JButton("Run test");
-		btbRun.setBounds(10, 59, 183, 23);
-		panel.add(btbRun);
+		btnRun = new JButton("Run test");
+		btnRun.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				runTest();
+			}
+		});
+		btnRun.setBounds(10, 59, 183, 23);
+		panel.add(btnRun);
 	}
 
 	private JFrame getJFrame() {
 		return this.frmSmppSimulator;
+	}
+
+	private void enableButtons(boolean enable) {
+		this.btnConfigure.setEnabled(enable);
+		this.btnRun.setEnabled(enable);
+	}
+
+	private void runTest() {
+		SmppTestingForm dlg = new SmppTestingForm(getJFrame());
+		this.enableButtons(false);
+		frmSmppSimulator.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+		testingForm = dlg;
+		dlg.setData(this, this.par);
+		dlg.setVisible(true);
+	}
+
+	public void testingFormClose() {
+		testingForm = null;
+		this.enableButtons(true);
+		frmSmppSimulator.setDefaultCloseOperation(JDialog.EXIT_ON_CLOSE);
 	}
 }

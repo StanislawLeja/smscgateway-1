@@ -50,24 +50,29 @@ public class SmppParametersForm extends JDialog {
 	private JComboBox<SmppBindType> cbBindType;
 	private JTextField tbHost;
 	private JTextField tbPort;
+	private JTextField tbConnectTimeout;
+	private JTextField tbSystemId;
+	private JTextField tbPassword;
+	private JTextField tbRequestExpiryTimeout;
+	private JTextField tbWindowMonitorInterval;
 
 	public SmppParametersForm(JFrame owner) {
 		super(owner, true);
 		setTitle("SMPP parameters");
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 620, 286);
+		setBounds(100, 100, 620, 382);
 		
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.CENTER);
 		panel.setLayout(null);
 		
 		JLabel lblSmppWindowSize = new JLabel("<html>SMPP window size. The maximum number of requests \r\n<br>permitted to be outstanding (unacknowledged) at a given time\r\n</html>");
-		lblSmppWindowSize.setBounds(10, 11, 401, 33);
+		lblSmppWindowSize.setBounds(10, 174, 401, 33);
 		panel.add(lblSmppWindowSize);
 		
 		tbWindowSize = new JTextField();
-		tbWindowSize.setBounds(424, 10, 86, 20);
+		tbWindowSize.setBounds(424, 173, 86, 20);
 		panel.add(tbWindowSize);
 		tbWindowSize.setColumns(10);
 		
@@ -77,7 +82,7 @@ public class SmppParametersForm extends JDialog {
 				doCancel();
 			}
 		});
-		btCancel.setBounds(468, 224, 136, 23);
+		btCancel.setBounds(468, 320, 136, 23);
 		panel.add(btCancel);
 		
 		JButton btOK = new JButton("OK");
@@ -86,34 +91,79 @@ public class SmppParametersForm extends JDialog {
 				doOK();
 			}
 		});
-		btOK.setBounds(327, 224, 136, 23);
+		btOK.setBounds(327, 320, 136, 23);
 		panel.add(btOK);
 		
 		JLabel lblSmppBindType = new JLabel("SMPP bind type");
-		lblSmppBindType.setBounds(10, 50, 401, 14);
+		lblSmppBindType.setBounds(10, 129, 401, 14);
 		panel.add(lblSmppBindType);
 		
 		cbBindType = new JComboBox();
-		cbBindType.setBounds(424, 47, 180, 20);
+		cbBindType.setBounds(424, 126, 180, 20);
 		panel.add(cbBindType);
 		
 		JLabel lblSmscHost = new JLabel("SMSC host");
-		lblSmscHost.setBounds(10, 81, 401, 14);
+		lblSmscHost.setBounds(10, 70, 401, 14);
 		panel.add(lblSmscHost);
 		
 		JLabel lblSmscPort = new JLabel("SMSC port");
-		lblSmscPort.setBounds(10, 112, 401, 14);
+		lblSmscPort.setBounds(10, 101, 401, 14);
 		panel.add(lblSmscPort);
 		
 		tbHost = new JTextField();
 		tbHost.setColumns(10);
-		tbHost.setBounds(424, 78, 180, 20);
+		tbHost.setBounds(424, 67, 180, 20);
 		panel.add(tbHost);
 		
 		tbPort = new JTextField();
 		tbPort.setColumns(10);
-		tbPort.setBounds(424, 109, 86, 20);
+		tbPort.setBounds(424, 98, 86, 20);
 		panel.add(tbPort);
+		
+		JLabel lblConnecttimeoutmilliseconds = new JLabel("ConnectTimeout (milliseconds)");
+		lblConnecttimeoutmilliseconds.setBounds(10, 214, 401, 14);
+		panel.add(lblConnecttimeoutmilliseconds);
+		
+		tbConnectTimeout = new JTextField();
+		tbConnectTimeout.setColumns(10);
+		tbConnectTimeout.setBounds(424, 211, 86, 20);
+		panel.add(tbConnectTimeout);
+		
+		JLabel lblSystemid = new JLabel("SystemId");
+		lblSystemid.setBounds(10, 14, 401, 14);
+		panel.add(lblSystemid);
+		
+		tbSystemId = new JTextField();
+		tbSystemId.setColumns(10);
+		tbSystemId.setBounds(424, 11, 180, 20);
+		panel.add(tbSystemId);
+		
+		JLabel lblPassword = new JLabel("Password");
+		lblPassword.setBounds(10, 42, 401, 14);
+		panel.add(lblPassword);
+		
+		tbPassword = new JTextField();
+		tbPassword.setColumns(10);
+		tbPassword.setBounds(424, 39, 180, 20);
+		panel.add(tbPassword);
+		
+		JLabel lblRequestexpirytimeoutmilliseconds = new JLabel("RequestExpiryTimeout (milliseconds)");
+		lblRequestexpirytimeoutmilliseconds.setBounds(10, 242, 401, 14);
+		panel.add(lblRequestexpirytimeoutmilliseconds);
+		
+		tbRequestExpiryTimeout = new JTextField();
+		tbRequestExpiryTimeout.setColumns(10);
+		tbRequestExpiryTimeout.setBounds(424, 239, 86, 20);
+		panel.add(tbRequestExpiryTimeout);
+		
+		JLabel lblWindowmonitorintervalmilliseconds = new JLabel("WindowMonitorInterval (milliseconds)");
+		lblWindowmonitorintervalmilliseconds.setBounds(10, 270, 401, 14);
+		panel.add(lblWindowmonitorintervalmilliseconds);
+		
+		tbWindowMonitorInterval = new JTextField();
+		tbWindowMonitorInterval.setColumns(10);
+		tbWindowMonitorInterval.setBounds(424, 267, 86, 20);
+		panel.add(tbWindowMonitorInterval);
 
 	}
 
@@ -121,6 +171,11 @@ public class SmppParametersForm extends JDialog {
 		this.tbWindowSize.setText(((Integer) data.getWindowSize()).toString());
 		this.tbHost.setText(data.getHost());
 		this.tbPort.setText(((Integer) data.getPort()).toString());
+		this.tbSystemId.setText(data.getSystemId());
+		this.tbPassword.setText(data.getPassword());
+		this.tbConnectTimeout.setText(((Long) data.getConnectTimeout()).toString());
+		this.tbRequestExpiryTimeout.setText(((Long) data.getRequestExpiryTimeout()).toString());
+		this.tbWindowMonitorInterval.setText(((Long) data.getWindowMonitorInterval()).toString());
 
 		this.cbBindType.removeAllItems();
 		SmppBindType[] vall = SmppBindType.values();
@@ -132,8 +187,6 @@ public class SmppParametersForm extends JDialog {
 		}
 		if (dv != null)
 			this.cbBindType.setSelectedItem(dv);
-
-		// ...........................
 	}
 
 	public SmppSimulatorParameters getData() {
@@ -144,6 +197,8 @@ public class SmppParametersForm extends JDialog {
 		this.data = new SmppSimulatorParameters();
 
 		this.data.setHost(this.tbHost.getText());
+		this.data.setSystemId(this.tbSystemId.getText());
+		this.data.setPassword(this.tbPassword.getText());
 
 		int intVal = 0;
 		try {
@@ -161,9 +216,30 @@ public class SmppParametersForm extends JDialog {
 			return;
 		}
 
-		this.data.setBindType((SmppBindType) cbBindType.getSelectedItem());
+		long longVal = 0;
+		try {
+			longVal = Long.parseLong(this.tbConnectTimeout.getText());
+			this.data.setConnectTimeout(longVal);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this, "Exception when parsing ConnectTimeout value: " + e.toString());
+			return;
+		}
+		try {
+			longVal = Long.parseLong(this.tbRequestExpiryTimeout.getText());
+			this.data.setRequestExpiryTimeout(longVal);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this, "Exception when parsing RequestExpiryTimeout value: " + e.toString());
+			return;
+		}
+		try {
+			longVal = Long.parseLong(this.tbWindowMonitorInterval.getText());
+			this.data.setWindowMonitorInterval(longVal);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this, "Exception when parsing WindowMonitorInterval value: " + e.toString());
+			return;
+		}
 
-		// ............................
+		this.data.setBindType((SmppBindType) cbBindType.getSelectedItem());
 
 		this.dispose();
 	}
