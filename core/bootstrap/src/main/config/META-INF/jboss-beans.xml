@@ -239,6 +239,7 @@
 	<!-- ==================================================================== -->
 	<!-- TelScale jSS7 Managemenet Service -->
 	<!-- ==================================================================== -->
+	<!-- 
 	<bean name="Ss7Management" class="com.telscale.protocols.ss7.oam.common.jmxss7.Ss7Management">
 		<annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="com.telscale.ss7:service=Ss7Management",exposedInterface=com.telscale.protocols.ss7.oam.common.jmxss7.Ss7ManagementMBean.class,registerDirectly=true)
 		</annotation>
@@ -264,4 +265,5 @@
 			<parameter><inject bean="SccpStack" /></parameter>
 		</constructor>
 	</bean>	
+	 -->
 </deployment>
