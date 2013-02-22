@@ -142,6 +142,13 @@ public class SmppServerSessionsImpl implements SmppServerSessions {
 		@Override
 		public PduResponse firePduRequestReceived(PduRequest pduRequest) {
 
+			// !!!!-
+			// .....................
+			tracer.severe(String.format("Received : PduRequest=XXXXX."));
+			tracer.severe(String.format("Received : PduRequest=%s.", pduRequest.toString()));
+			// !!!!-
+			
+
 			PduResponse response = pduRequest.createResponse();
 			try {
 				SmppServerTransactionImpl smppServerTransaction = null;
@@ -157,11 +164,10 @@ public class SmppServerSessionsImpl implements SmppServerSessions {
 							pduRequest.getSequenceNumber(), SmppTransactionType.INCOMING);
 					smppServerTransaction = new SmppServerTransactionImpl(pduRequest, this.smppServerSessionImpl,
 							smppServerTransactionHandle, smppServerResourceAdaptor);
-
 					smppServerResourceAdaptor.startNewSmppServerTransactionActivity(smppServerTransaction);
 					smppServerResourceAdaptor.fireEvent(EventsType.SUBMIT_SM,
 							smppServerTransaction.getActivityHandle(), (SubmitSm) pduRequest);
-
+					
 					// Return null. Let SBB send response back
 					return null;
 				case SmppConstants.CMD_ID_DATA_SM:
@@ -171,8 +177,19 @@ public class SmppServerSessionsImpl implements SmppServerSessions {
 					smppServerTransaction = new SmppServerTransactionImpl(pduRequest, this.smppServerSessionImpl,
 							smppServerTransactionHandle, smppServerResourceAdaptor);
 					smppServerResourceAdaptor.startNewSmppServerTransactionActivity(smppServerTransaction);
+
+					// !!!!-
+					// .....................
+					tracer.severe(String.format("Sending onSms event"));
+					// !!!!-
+					
 					smppServerResourceAdaptor.fireEvent(EventsType.DATA_SM, smppServerTransaction.getActivityHandle(),
 							(DataSm) pduRequest);
+
+					// !!!!-
+					// .....................
+					tracer.severe(String.format("Sent onSms event"));
+					// !!!!-
 
 					// Return null. Let SBB send response back
 					return null;

@@ -45,7 +45,7 @@ public class SmppParametersForm extends JDialog {
 
 	private static final long serialVersionUID = -8945615083883278369L;
 
-	SmppSimulatorParameters data;
+	private SmppSimulatorParameters data;
 	private JTextField tbWindowSize;
 	private JComboBox<SmppBindType> cbBindType;
 	private JTextField tbHost;
@@ -58,7 +58,8 @@ public class SmppParametersForm extends JDialog {
 
 	public SmppParametersForm(JFrame owner) {
 		super(owner, true);
-		setTitle("SMPP parameters");
+
+		setTitle("SMPP general parameters");
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 620, 382);
@@ -168,6 +169,8 @@ public class SmppParametersForm extends JDialog {
 	}
 
 	public void setData(SmppSimulatorParameters data) {
+		this.data = data;
+
 		this.tbWindowSize.setText(((Integer) data.getWindowSize()).toString());
 		this.tbHost.setText(data.getHost());
 		this.tbPort.setText(((Integer) data.getPort()).toString());
@@ -194,7 +197,7 @@ public class SmppParametersForm extends JDialog {
 	}
 
 	private void doOK() {
-		this.data = new SmppSimulatorParameters();
+//		this.data = new SmppSimulatorParameters();
 
 		this.data.setHost(this.tbHost.getText());
 		this.data.setSystemId(this.tbSystemId.getText());
@@ -245,6 +248,7 @@ public class SmppParametersForm extends JDialog {
 	}
 
 	private void doCancel() {
+		this.data = null;
 		this.dispose();
 	}
 }

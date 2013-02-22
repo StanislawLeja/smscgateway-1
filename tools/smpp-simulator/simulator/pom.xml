@@ -8,7 +8,7 @@
 
 	<artifactId>smpp-simulator</artifactId>
 
-	<name>Mobicents SS7 Simulator :: Simulator</name>
+	<name>Mobicents SMPP Simulator :: Simulator</name>
 
 	<dependencies>
 

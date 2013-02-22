@@ -41,6 +41,10 @@ public class SmppSimulatorParameters {
 	private long requestExpiryTimeout = 30000;
 	private long windowMonitorInterval = 15000;
 
+	private String messageText = "Hello!";
+	private EncodingType encodingType = EncodingType.GSM7;
+	private SplittingType splittingType = SplittingType.DoNotSplit;
+
 	public int getWindowSize() {
 		return windowSize;
 	}
@@ -127,5 +131,40 @@ public class SmppSimulatorParameters {
         this.windowMonitorInterval = windowMonitorInterval;
     }
 
+    
+    
+
+    public String getMessageText() {
+        return this.messageText;
+    }
+
+    public void setMessageText(String value) {
+        this.messageText = value;
+    }
+
+	public EncodingType getEncodingType() {
+		return encodingType;
+	}
+
+	public void setEncodingType(EncodingType val) {
+		encodingType = val;
+	}
+
+	public SplittingType getSplittingType() {
+		return splittingType;
+	}
+
+	public void setSplittingType(SplittingType val) {
+		splittingType = val;
+	}
+
+
+    public enum EncodingType {
+    	GSM7, UCS2,
+    }
+
+    public enum SplittingType {
+    	DoNotSplit, SplitWithParameters, SplitWithUdh,
+    }
 }
 

@@ -35,22 +35,36 @@ import javax.swing.JScrollPane;
 import java.awt.Component;
 import javax.swing.JTable;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+
 import java.awt.Color;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JButton;
 
+import com.cloudhopper.commons.util.windowing.WindowFuture;
 import com.cloudhopper.smpp.SmppSession;
 import com.cloudhopper.smpp.SmppSessionConfiguration;
 import com.cloudhopper.smpp.impl.DefaultSmppClient;
 import com.cloudhopper.smpp.impl.DefaultSmppSessionHandler;
-import com.cloudhopper.smpp.type.SmppBindException;
+import com.cloudhopper.smpp.pdu.PduRequest;
+import com.cloudhopper.smpp.pdu.PduResponse;
+import com.cloudhopper.smpp.pdu.SubmitSm;
+import com.cloudhopper.smpp.type.Address;
+import com.cloudhopper.smpp.type.RecoverablePduException;
 import com.cloudhopper.smpp.type.SmppChannelException;
 import com.cloudhopper.smpp.type.SmppTimeoutException;
 import com.cloudhopper.smpp.type.UnrecoverablePduException;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.beans.XMLEncoder;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.util.Date;
+import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -66,6 +80,8 @@ public class SmppTestingForm extends JDialog {
 
 	private static final long serialVersionUID = 4969830723671541575L;
 
+	private DefaultTableModel model = new DefaultTableModel();
+	private EventForm eventForm;
 	private SmppSimulatorForm mainForm;
 	private SmppSimulatorParameters param;
 	private JTable tNotif;
@@ -84,7 +100,7 @@ public class SmppTestingForm extends JDialog {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				if (getDefaultCloseOperation() == JDialog.DO_NOTHING_ON_CLOSE) {
-					JOptionPane.showMessageDialog(getJFrame(), "Before exiting you must Stop the testing process");
+					JOptionPane.showMessageDialog(getJDialog(), "Before exiting you must Stop the testing process");
 				} else {
 					closingWindow();
 				}
@@ -104,18 +120,43 @@ public class SmppTestingForm extends JDialog {
 		panel_1.add(scrollPane);
 		
 		tNotif = new JTable();
-		tNotif.setModel(new DefaultTableModel(
-			new Object[][] {
-			},
-			new String[] {
-				"New column", "New column", "New column", "New column"
-			}
-		));
-		tNotif.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tNotif.setFillsViewportHeight(true);
 		tNotif.setBorder(new LineBorder(new Color(0, 0, 0)));
+		tNotif.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tNotif.setModel(new DefaultTableModel(new Object[][] {}, new String[] { "TimeStamp", "Message", "UserData" }) {
+			Class[] columnTypes = new Class[] { String.class, String.class, String.class };
+
+			public Class getColumnClass(int columnIndex) {
+				return columnTypes[columnIndex];
+			}
+
+			boolean[] columnEditables = new boolean[] { false, false, false };
+
+			public boolean isCellEditable(int row, int column) {
+				return columnEditables[column];
+			}
+		});
+		tNotif.getColumnModel().getColumn(0).setPreferredWidth(46);
+		tNotif.getColumnModel().getColumn(1).setPreferredWidth(221);
+		tNotif.getColumnModel().getColumn(2).setPreferredWidth(254);
+
 		scrollPane.setViewportView(tNotif);
-		
+
+		model = (DefaultTableModel) tNotif.getModel();
+
+		tNotif.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) {
+
+				if (e.getValueIsAdjusting())
+					return;
+				if (eventForm == null)
+					return;
+
+				// Номер текущей строки таблицы
+				setEventMsg();
+			}
+		});
+
 		JPanel panel_2 = new JPanel();
 		panel.add(panel_2);
 		panel_2.setLayout(null);
@@ -157,10 +198,90 @@ public class SmppTestingForm extends JDialog {
 		btOpeEventWindow.setBounds(357, 11, 159, 23);
 		panel_2.add(btOpeEventWindow);
 		
+		JButton btConfigSubmitData = new JButton("Configure data for a message submitting");
+		btConfigSubmitData.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				SmppMessageParamForm frame = new SmppMessageParamForm(getJDialog());
+				frame.setData(param);
+				frame.setVisible(true);
+
+				SmppSimulatorParameters newPar = frame.getData();
+				if (newPar != null) {
+					param = newPar;
+
+					try {
+						BufferedOutputStream bis = new BufferedOutputStream(new FileOutputStream("SmppSimulatorParameters.xml"));
+						XMLEncoder d = new XMLEncoder(bis);
+						d.writeObject(newPar);
+						d.close();
+					} catch (Exception ee) {
+						ee.printStackTrace();
+						JOptionPane.showMessageDialog(null, "Failed when saving the parameter file SmppSimulatorParameters.xml: " + ee.getMessage());
+					}
+				}
+			}
+		});
+		btConfigSubmitData.setBounds(11, 46, 341, 23);
+		panel_2.add(btConfigSubmitData);
+		
+		JButton btSendMessage = new JButton("Submit a message");
+		btSendMessage.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				submitMessage();
+			}
+		});
+		btSendMessage.setBounds(11, 80, 341, 23);
+		panel_2.add(btSendMessage);
+		
+	}
+
+	private void submitMessage() {
+		// ...............................
+        try {
+            SubmitSm pdu = new SubmitSm();
+
+            pdu.setSourceAddress(new Address((byte)0x03, (byte)0x00, "40404"));
+            pdu.setDestAddress(new Address((byte)0x01, (byte)0x01, "44555519205"));
+
+            pdu.setShortMessage(this.param.getMessageText().getBytes());
+
+            WindowFuture<Integer,PduRequest,PduResponse> future0 = session0.sendRequestPdu(pdu, 10000, true);
+            
+            this.addMessage("Sending SubmitSm", pdu.toString());
+		} catch (RecoverablePduException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnrecoverablePduException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SmppTimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SmppChannelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	private void setEventMsg() {
+		ListSelectionModel l = tNotif.getSelectionModel();
+		if (!l.isSelectionEmpty()) {
+			int index = l.getMinSelectionIndex();
+			String s1 = (String) model.getValueAt(index, 0);
+			String s2 = (String) model.getValueAt(index, 1);
+			String s3 = (String) model.getValueAt(index, 2);
+			eventForm.setData(s1, s2, s3);
+		}
 	}
 
 	private void start() {
-        this.executor = (ThreadPoolExecutor)Executors.newCachedThreadPool();
+		this.addMessage("Trying to start a new session", "");
+
+		this.executor = (ThreadPoolExecutor)Executors.newCachedThreadPool();
         this.monitorExecutor = (ScheduledThreadPoolExecutor)Executors.newScheduledThreadPool(1, new ThreadFactory() {
             private AtomicInteger sequence = new AtomicInteger(0);
             @Override
@@ -192,15 +313,23 @@ public class SmppTestingForm extends JDialog {
         try {
 			session0 = clientBootstrap.bind(config0, sessionHandler);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			this.addMessage("Failure to start a new session", e.toString());
+			return;
 		}
 
         enableStart(false);
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+
+		this.addMessage("Session has been successfully started", "");
 	}
 
-	private void stop() {
+	public void stop() {
+		this.addMessage("Trying to stop a session", "");
+
+		this.doStop();
+	}
+	
+	public void doStop() {
 		if (session0 != null) {
 			session0.unbind(5000);
 			session0.destroy();
@@ -208,9 +337,13 @@ public class SmppTestingForm extends JDialog {
 		}
 
 		if (clientBootstrap != null) {
-			clientBootstrap.destroy();
-			executor.shutdownNow();
-			monitorExecutor.shutdownNow();
+			try {
+				clientBootstrap.destroy();
+				executor.shutdownNow();
+				monitorExecutor.shutdownNow();
+			} catch (Exception e) {
+
+			}
 
 			clientBootstrap = null;
 			executor = null;
@@ -219,6 +352,8 @@ public class SmppTestingForm extends JDialog {
 
 		enableStart(true);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		
+		this.addMessage("Session has been stopped", "");
 	}
 
 	private void enableStart(boolean enabled) {
@@ -227,10 +362,6 @@ public class SmppTestingForm extends JDialog {
 	}
 
 	private void refreshState() {
-		// .................
-	}
-
-	private void openEventWindow() {
 		// .................
 	}
 
@@ -246,7 +377,7 @@ public class SmppTestingForm extends JDialog {
 //		this.tm.start();
 	}
 
-	private JDialog getJFrame() {
+	private JDialog getJDialog() {
 		return this;
 	}
 
@@ -254,7 +385,30 @@ public class SmppTestingForm extends JDialog {
 		this.mainForm.testingFormClose();
 	}
 
+	public void eventFormClose() {
+		this.eventForm = null;
+	}
+	
+	private void openEventWindow() {
+		if (this.eventForm != null)
+			return;
+
+		this.eventForm = new EventForm(this);
+		this.eventForm.setVisible(true);
+		setEventMsg();
+	}
+
 	public synchronized void addMessage(String msg, String info) {
-		// ............................
+		
+		Date d1 = new Date();
+		String s1 = d1.toLocaleString();
+
+		Vector newRow = new Vector();
+		newRow.add(s1);
+		newRow.add(msg);
+		newRow.add(info);
+		model.getDataVector().add(0,newRow);
+
+		model.newRowsAdded(new TableModelEvent(model));
 	}
 }

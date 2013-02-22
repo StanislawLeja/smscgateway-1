@@ -10,7 +10,6 @@ import org.mobicents.protocols.ss7.map.api.MAPMessage;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPAbortProviderReason;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPAbortSource;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPNoticeProblemDiagnostic;
-import org.mobicents.protocols.ss7.map.api.dialog.MAPProviderError;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
@@ -99,12 +98,12 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 
 	}
 
-	@Override
-	public void onDialogReject(MAPDialog arg0, MAPRefuseReason arg1, MAPProviderError arg2,
-			ApplicationContextName arg3, MAPExtensionContainer arg4) {
-		// TODO Auto-generated method stub
-
-	}
+//	@Override
+//	public void onDialogReject(MAPDialog arg0, MAPRefuseReason arg1, MAPProviderError arg2,
+//			ApplicationContextName arg3, MAPExtensionContainer arg4) {
+//		// TODO Auto-generated method stub
+//
+//	}
 
 	@Override
 	public void onDialogRelease(MAPDialog arg0) {
@@ -159,17 +158,17 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 
 	}
 
-	@Override
-	public void onProviderErrorComponent(MAPDialog arg0, Long arg1, MAPProviderError arg2) {
-		// TODO Auto-generated method stub
+//	@Override
+//	public void onProviderErrorComponent(MAPDialog arg0, Long arg1, MAPProviderError arg2) {
+//		// TODO Auto-generated method stub
+//
+//	}
 
-	}
-
-	@Override
-	public void onRejectComponent(MAPDialog arg0, Long arg1, Problem arg2) {
-		// TODO Auto-generated method stub
-
-	}
+//	@Override
+//	public void onRejectComponent(MAPDialog arg0, Long arg1, Problem arg2) {
+//		// TODO Auto-generated method stub
+//
+//	}
 
 	/**
 	 * SMS Listener
@@ -349,5 +348,18 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 	public void onSendRoutingInfoForSMResponse(SendRoutingInfoForSMResponse arg0) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void onRejectComponent(MAPDialog mapDialog, Long invokeId, Problem problem, boolean isLocalOriginated) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onDialogReject(MAPDialog mapDialog, MAPRefuseReason refuseReason, ApplicationContextName alternativeApplicationContext,
+			MAPExtensionContainer extensionContainer) {
+		// TODO Auto-generated method stub
+		
 	}
 }
