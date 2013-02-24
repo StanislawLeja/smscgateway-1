@@ -72,13 +72,6 @@ public abstract class SriSbb extends MtCommonSbb {
 
 	public void onSms(SmsEvent event, ActivityContextInterface aci, EventContext eventContext) {
 
-
-		// !!!!-
-		// .....................
-		this.logger.severe(String.format("Received onSms event"));
-		// !!!!-
-		
-
 		// Reduce the events pending to be fired on this ACI
 		MtActivityContextInterface mtSbbActivityContextInterface = this.asSbbActivityContextInterface(aci);
 		int pendingEventsOnNullActivity = mtSbbActivityContextInterface.getPendingEventsOnNullActivity();

@@ -236,35 +236,21 @@ public class SmppTestingForm extends JDialog {
 	}
 
 	private void submitMessage() {
-		// ...............................
         try {
             SubmitSm pdu = new SubmitSm();
 
-            pdu.setSourceAddress(new Address((byte)0x03, (byte)0x00, "40404"));
+            pdu.setSourceAddress(new Address((byte)0x01, (byte)0x00, "40404"));
             pdu.setDestAddress(new Address((byte)0x01, (byte)0x01, "44555519205"));
 
             pdu.setShortMessage(this.param.getMessageText().getBytes());
 
-            WindowFuture<Integer,PduRequest,PduResponse> future0 = session0.sendRequestPdu(pdu, 10000, true);
+            WindowFuture<Integer,PduRequest,PduResponse> future0 = session0.sendRequestPdu(pdu, 10000, false);
             
-            this.addMessage("Sending SubmitSm", pdu.toString());
-		} catch (RecoverablePduException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnrecoverablePduException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SmppTimeoutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SmppChannelException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            this.addMessage("SubmitSm sent", pdu.toString());
+		} catch (Exception e) {
+			this.addMessage("Failure to submit message", e.toString());
+			return;
 		}
-
 	}
 
 	private void setEventMsg() {

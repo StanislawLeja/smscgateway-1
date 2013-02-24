@@ -34,7 +34,7 @@
 		<junit.version>3.8.1</junit.version>
 
 		<!-- cloudhopper smpp -->
-		<ch.smpp.version>4.1.2</ch.smpp.version>
+		<ch.smpp.version>5.0.0</ch.smpp.version>
 		
 		<jslee.ext.version>1.0.0.BETA2</jslee.ext.version>
 

@@ -142,13 +142,6 @@ public class SmppServerSessionsImpl implements SmppServerSessions {
 		@Override
 		public PduResponse firePduRequestReceived(PduRequest pduRequest) {
 
-			// !!!!-
-			// .....................
-			tracer.severe(String.format("Received : PduRequest=XXXXX."));
-			tracer.severe(String.format("Received : PduRequest=%s.", pduRequest.toString()));
-			// !!!!-
-			
-
 			PduResponse response = pduRequest.createResponse();
 			try {
 				SmppServerTransactionImpl smppServerTransaction = null;

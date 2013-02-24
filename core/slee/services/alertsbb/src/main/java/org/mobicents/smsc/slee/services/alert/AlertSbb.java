@@ -157,10 +157,12 @@ public abstract class AlertSbb implements Sbb {
 			
 			MAPDialogSms mapDialogSms = evt.getMAPDialog();
 			MAPApplicationContext mapApplicationContext = mapDialogSms.getApplicationContext();
-			if(mapApplicationContext.getApplicationContextVersion() == MAPApplicationContextVersion.version2){
-				//Send back response only for V2
+			if (mapApplicationContext.getApplicationContextVersion() == MAPApplicationContextVersion.version2) {
+				// Send back response only for V2
 				mapDialogSms.addAlertServiceCentreResponse(evt.getInvokeId());
 				mapDialogSms.close(false);
+			} else {
+				mapDialogSms.release();
 			}
 		} catch (MAPException e) {
 			logger.severe("Exception while trying to send back AlertServiceCentreResponse", e);
