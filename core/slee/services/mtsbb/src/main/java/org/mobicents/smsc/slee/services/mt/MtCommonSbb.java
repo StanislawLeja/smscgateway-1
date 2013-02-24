@@ -43,7 +43,6 @@ import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
 import org.mobicents.protocols.ss7.map.api.MAPSmsTpduParameterFactory;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPAbortProviderReason;
-import org.mobicents.protocols.ss7.map.api.dialog.MAPProviderError;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
 import org.mobicents.protocols.ss7.map.api.dialog.ProcedureCancellationReason;
@@ -71,7 +70,6 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
-import org.mobicents.slee.resource.map.events.ProviderErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
@@ -183,18 +181,18 @@ public abstract class MtCommonSbb implements Sbb {
 		}
 	}
 
-	public void onProviderErrorComponent(ProviderErrorComponent event, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onProviderErrorComponent" + event);
-
-		MAPProviderError mapProviderError = event.getMAPProviderError();
-		SmsEvent original = this.getOriginalSmsEvent();
-
-		if (original != null) {
-			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original, mapProviderError.toString());
-			}
-		}
-	}
+//	public void onProviderErrorComponent(ProviderErrorComponent event, ActivityContextInterface aci) {
+//		this.logger.severe("Rx :  onProviderErrorComponent" + event);
+//
+//		MAPProviderError mapProviderError = event.getMAPProviderError();
+//		SmsEvent original = this.getOriginalSmsEvent();
+//
+//		if (original != null) {
+//			if (original.getSystemId() != null) {
+//				this.sendFailureDeliverSmToEsms(original, mapProviderError.toString());
+//			}
+//		}
+//	}
 
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
 		this.logger.severe("Rx :  onRejectComponent" + event);

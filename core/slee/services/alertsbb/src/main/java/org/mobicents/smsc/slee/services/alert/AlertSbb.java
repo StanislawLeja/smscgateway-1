@@ -53,7 +53,6 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
-import org.mobicents.slee.resource.map.events.ProviderErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 
 public abstract class AlertSbb implements Sbb {
@@ -86,9 +85,9 @@ public abstract class AlertSbb implements Sbb {
 		}
 	}
 
-	public void onProviderErrorComponent(ProviderErrorComponent event, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onProviderErrorComponent" + event);
-	}
+//	public void onProviderErrorComponent(ProviderErrorComponent event, ActivityContextInterface aci) {
+//		this.logger.severe("Rx :  onProviderErrorComponent" + event);
+//	}
 
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
 		this.logger.severe("Rx :  onRejectComponent" + event);
@@ -158,10 +157,12 @@ public abstract class AlertSbb implements Sbb {
 			
 			MAPDialogSms mapDialogSms = evt.getMAPDialog();
 			MAPApplicationContext mapApplicationContext = mapDialogSms.getApplicationContext();
-			if(mapApplicationContext.getApplicationContextVersion() == MAPApplicationContextVersion.version2){
-				//Send back response only for V2
+			if (mapApplicationContext.getApplicationContextVersion() == MAPApplicationContextVersion.version2) {
+				// Send back response only for V2
 				mapDialogSms.addAlertServiceCentreResponse(evt.getInvokeId());
 				mapDialogSms.close(false);
+			} else {
+				mapDialogSms.release();
 			}
 		} catch (MAPException e) {
 			logger.severe("Exception while trying to send back AlertServiceCentreResponse", e);
