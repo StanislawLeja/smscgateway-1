@@ -68,7 +68,8 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
 
     @Override
     public void fireExpectedPduResponseReceived(PduAsyncResponse pduAsyncResponse) {
-		testingForm.addMessage("ExpectedPduResponseReceived: Request=" + pduAsyncResponse.getRequest().getName(), pduAsyncResponse.getRequest().toString());
+		testingForm.addMessage("Response=" + pduAsyncResponse.getResponse().getName(), "Req: " + pduAsyncResponse.getRequest().toString() + "\nResp: "
+				+ pduAsyncResponse.getResponse().toString());
     }
 
     @Override

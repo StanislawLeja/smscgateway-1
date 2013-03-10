@@ -170,20 +170,8 @@ public class SmppServerSessionsImpl implements SmppServerSessions {
 					smppServerTransaction = new SmppServerTransactionImpl(pduRequest, this.smppServerSessionImpl,
 							smppServerTransactionHandle, smppServerResourceAdaptor);
 					smppServerResourceAdaptor.startNewSmppServerTransactionActivity(smppServerTransaction);
-
-					// !!!!-
-					// .....................
-					tracer.severe(String.format("Sending onSms event"));
-					// !!!!-
-					
 					smppServerResourceAdaptor.fireEvent(EventsType.DATA_SM, smppServerTransaction.getActivityHandle(),
 							(DataSm) pduRequest);
-
-					// !!!!-
-					// .....................
-					tracer.severe(String.format("Sent onSms event"));
-					// !!!!-
-
 					// Return null. Let SBB send response back
 					return null;
 				default:

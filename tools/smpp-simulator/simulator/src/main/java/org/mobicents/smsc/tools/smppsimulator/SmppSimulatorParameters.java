@@ -41,6 +41,11 @@ public class SmppSimulatorParameters {
 	private long requestExpiryTimeout = 30000;
 	private long windowMonitorInterval = 15000;
 
+	private TON ton = TON.International;
+	private NPI npi = NPI.ISDN;
+	private String sourceAddress = "0000001";
+	private String destAddress = "0000002";
+
 	private String messageText = "Hello!";
 	private EncodingType encodingType = EncodingType.GSM7;
 	private SplittingType splittingType = SplittingType.DoNotSplit;
@@ -131,10 +136,41 @@ public class SmppSimulatorParameters {
         this.windowMonitorInterval = windowMonitorInterval;
     }
 
-    
-    
 
-    public String getMessageText() {
+    public TON getTON() {
+        return this.ton;
+    }
+
+    public void setTON(TON value) {
+        this.ton = value;
+    }
+
+    public NPI getNPI() {
+        return this.npi;
+    }
+
+    public void setNPI(NPI value) {
+        this.npi = value;
+    }
+    
+    public String getSourceAddress() {
+        return this.sourceAddress;
+    }
+
+    public void setSourceAddress(String value) {
+        this.sourceAddress = value;
+    }
+    
+    public String getDestAddress() {
+        return this.destAddress;
+    }
+
+    public void setDestAddress(String value) {
+        this.destAddress = value;
+    }
+
+
+	public String getMessageText() {
         return this.messageText;
     }
 
@@ -165,6 +201,34 @@ public class SmppSimulatorParameters {
 
     public enum SplittingType {
     	DoNotSplit, SplitWithParameters, SplitWithUdh,
+    }
+
+    public enum TON {
+		Unknown(0), International(1), National(2), Network_Specific(3), Subscriber_Number(4), Alfanumeric(5), Abbreviated(6);
+
+		private int code;
+
+		private TON(int val) {
+			this.code = val;
+		}
+
+		public int getCode() {
+			return this.code;
+		}
+    }
+
+    public enum NPI {
+		Unknown(0), ISDN(1), Data(3), Telex(4), Land_Mobile(6), National(8), Private(9), ERMES(10), Internet_IP(14), WAP_Client_Id(18);
+
+		private int code;
+
+		private NPI(int val) {
+			this.code = val;
+		}
+
+		public int getCode() {
+			return this.code;
+		}
     }
 }
 

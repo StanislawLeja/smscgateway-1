@@ -15,6 +15,7 @@
 
 	<modules>
 		<module>smpp-server-ra</module>
+		<module>hector-client-ra</module>
 		<module>services</module>
 	</modules>
 

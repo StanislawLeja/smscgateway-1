@@ -33,6 +33,7 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 
 /**
  * 
@@ -48,6 +49,10 @@ public class SmppMessageParamForm extends JDialog {
 	private JTextArea tbMessage;
 	private JComboBox<SmppSimulatorParameters.EncodingType> cbEncodingType;
 	private JComboBox<SmppSimulatorParameters.SplittingType> cbSplittingType;
+	private JComboBox<SmppSimulatorParameters.TON> cbTON;
+	private JComboBox<SmppSimulatorParameters.NPI> cbNPI;
+	private JTextField tbSourceAddress;
+	private JTextField tbDestAddress;
 
 	public SmppMessageParamForm(JDialog owner) {
 		super(owner, true);
@@ -106,12 +111,48 @@ public class SmppMessageParamForm extends JDialog {
 						JScrollPane scrollPane = new JScrollPane(tbMessage);
 						scrollPane.setBounds(0, 40, 604, 58);
 						panel.add(scrollPane);
+						
+						JLabel lblTypeOfNumber = new JLabel("Type of number");
+						lblTypeOfNumber.setBounds(10, 168, 329, 14);
+						panel.add(lblTypeOfNumber);
+						
+						cbTON = new JComboBox<SmppSimulatorParameters.TON>();
+						cbTON.setBounds(349, 165, 255, 20);
+						panel.add(cbTON);
+						
+						JLabel lblNumberingPlanIndicator = new JLabel("Numbering plan indicator");
+						lblNumberingPlanIndicator.setBounds(10, 196, 329, 14);
+						panel.add(lblNumberingPlanIndicator);
+						
+						cbNPI = new JComboBox<SmppSimulatorParameters.NPI>();
+						cbNPI.setBounds(349, 193, 255, 20);
+						panel.add(cbNPI);
+						
+						tbSourceAddress = new JTextField();
+						tbSourceAddress.setBounds(349, 224, 255, 20);
+						panel.add(tbSourceAddress);
+						tbSourceAddress.setColumns(10);
+						
+						JLabel lblSourceAddress = new JLabel("Source address");
+						lblSourceAddress.setBounds(10, 227, 329, 14);
+						panel.add(lblSourceAddress);
+						
+						tbDestAddress = new JTextField();
+						tbDestAddress.setColumns(10);
+						tbDestAddress.setBounds(349, 255, 255, 20);
+						panel.add(tbDestAddress);
+						
+						JLabel lblDestinationAddress = new JLabel("Destination address");
+						lblDestinationAddress.setBounds(10, 258, 329, 14);
+						panel.add(lblDestinationAddress);
 	}
 
 	public void setData(SmppSimulatorParameters data) {
 		this.data = data;
 
 		this.tbMessage.setText(data.getMessageText());
+		this.tbSourceAddress.setText(data.getSourceAddress());
+		this.tbDestAddress.setText(data.getDestAddress());
 
 		this.cbEncodingType.removeAllItems();
 		SmppSimulatorParameters.EncodingType[] vallET = SmppSimulatorParameters.EncodingType.values();
@@ -134,6 +175,28 @@ public class SmppMessageParamForm extends JDialog {
 		}
 		if (dv != null)
 			this.cbSplittingType.setSelectedItem(dvST);
+
+		this.cbTON.removeAllItems();
+		SmppSimulatorParameters.TON[] vallTON = SmppSimulatorParameters.TON.values();
+		SmppSimulatorParameters.TON dvTON = null;
+		for (SmppSimulatorParameters.TON v : vallTON) {
+			this.cbTON.addItem(v);
+			if (v == data.getTON())
+				dvTON = v;
+		}
+		if (dv != null)
+			this.cbTON.setSelectedItem(dvTON);
+
+		this.cbNPI.removeAllItems();
+		SmppSimulatorParameters.NPI[] vallNPI = SmppSimulatorParameters.NPI.values();
+		SmppSimulatorParameters.NPI dvNPI = null;
+		for (SmppSimulatorParameters.NPI v : vallNPI) {
+			this.cbNPI.addItem(v);
+			if (v == data.getNPI())
+				dvNPI = v;
+		}
+		if (dv != null)
+			this.cbNPI.setSelectedItem(dvNPI);
 	}
 
 	public SmppSimulatorParameters getData() {
@@ -144,9 +207,13 @@ public class SmppMessageParamForm extends JDialog {
 //		this.data = new SmppSimulatorParameters();
 
 		this.data.setMessageText(this.tbMessage.getText());
+		this.data.setSourceAddress(this.tbSourceAddress.getText());
+		this.data.setDestAddress(this.tbDestAddress.getText());
 
 		this.data.setEncodingType((SmppSimulatorParameters.EncodingType) cbEncodingType.getSelectedItem());
 		this.data.setSplittingType((SmppSimulatorParameters.SplittingType) cbSplittingType.getSelectedItem());
+		this.data.setTON((SmppSimulatorParameters.TON) cbTON.getSelectedItem());
+		this.data.setNPI((SmppSimulatorParameters.NPI) cbNPI.getSelectedItem());
 
 		this.dispose();
 	}

@@ -53,10 +53,6 @@ import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
 import com.cloudhopper.smpp.pdu.SubmitSm;
 import com.cloudhopper.smpp.type.Address;
-import com.cloudhopper.smpp.type.RecoverablePduException;
-import com.cloudhopper.smpp.type.SmppChannelException;
-import com.cloudhopper.smpp.type.SmppTimeoutException;
-import com.cloudhopper.smpp.type.UnrecoverablePduException;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -239,14 +235,14 @@ public class SmppTestingForm extends JDialog {
         try {
             SubmitSm pdu = new SubmitSm();
 
-            pdu.setSourceAddress(new Address((byte)0x01, (byte)0x00, "40404"));
-            pdu.setDestAddress(new Address((byte)0x01, (byte)0x01, "44555519205"));
+            pdu.setSourceAddress(new Address((byte)this.param.getTON().getCode(), (byte)this.param.getNPI().getCode(), this.param.getSourceAddress()));
+            pdu.setDestAddress(new Address((byte)this.param.getTON().getCode(), (byte)this.param.getNPI().getCode(), this.param.getDestAddress()));
 
             pdu.setShortMessage(this.param.getMessageText().getBytes());
 
             WindowFuture<Integer,PduRequest,PduResponse> future0 = session0.sendRequestPdu(pdu, 10000, false);
-            
-            this.addMessage("SubmitSm sent", pdu.toString());
+
+            this.addMessage("Request=" + pdu.getName(), pdu.toString());
 		} catch (Exception e) {
 			this.addMessage("Failure to submit message", e.toString());
 			return;

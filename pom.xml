@@ -35,7 +35,10 @@
 
 		<!-- cloudhopper smpp -->
 		<ch.smpp.version>5.0.0</ch.smpp.version>
-		
+
+		<!-- hector -->
+		<hector-core.version>1.0-5</hector-core.version>
+
 		<jslee.ext.version>1.0.0.BETA2</jslee.ext.version>
 
 		<mobicents.resources.map.version>2.8.0-SNAPSHOT</mobicents.resources.map.version>
