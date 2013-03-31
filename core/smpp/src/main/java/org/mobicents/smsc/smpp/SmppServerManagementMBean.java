@@ -21,6 +21,11 @@
  */
 package org.mobicents.smsc.smpp;
 
+/**
+ * 
+ * @author Amit Bhayani
+ *
+ */
 public interface SmppServerManagementMBean {
 
 	public void start() throws Exception;

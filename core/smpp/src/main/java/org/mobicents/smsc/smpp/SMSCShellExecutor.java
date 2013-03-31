@@ -276,12 +276,79 @@ public class SMSCShellExecutor implements ShellExecutor {
 				return this.manageSet(args);
 			} else if (args[1].equals("get")) {
 				return this.manageGet(args);
+			} else if (args[1].equals("smppserver")) {
+				String rasCmd = args[2];
+				if (rasCmd == null) {
+					return SMSCOAMMessages.INVALID_COMMAND;
+				}
+
+				if (rasCmd.equals("set")) {
+					return this.manageSmppServerSet(args);
+				} else if (rasCmd.equals("get")) {
+					return this.manageSmppServerGet(args);
+				}
+
+				return SMSCOAMMessages.INVALID_COMMAND;
 			}
+
 			return SMSCOAMMessages.INVALID_COMMAND;
 		} catch (Exception e) {
 			logger.error(String.format("Error while executing comand %s", Arrays.toString(args)), e);
 			return e.getMessage();
 		}
+	}
+
+	/**
+	 * Command is smsc smppserver set <variable> <value>
+	 * 
+	 * @param options
+	 * @return
+	 * @throws Exception
+	 */
+	private String manageSmppServerSet(String[] options) throws Exception {
+		if (options.length != 5) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		SmppServerManagement smppServerManagement = this.smscManagement.getSmppServerManagement();
+
+		String parName = options[3].toLowerCase();
+		if (parName.equals("port")) {
+			smppServerManagement.setBindPort(Integer.parseInt(options[4]));
+		} else if (parName.equals("bind-timeout")) {
+			int val = Integer.parseInt(options[4]);
+			smppServerManagement.setBindTimeout(val);
+		} else if (parName.equals("system-id")) {
+			smppServerManagement.setSystemId(options[4]);
+		} else if (parName.equals("auto-negotiate-version")) {
+			boolean val = Boolean.parseBoolean(options[4]);
+			smppServerManagement.setAutoNegotiateInterfaceVersion(val);
+		} else if (parName.equals("interface-version")) {
+			double val = Double.parseDouble(options[4]);
+			smppServerManagement.setInterfaceVersion(val);
+		} else if (parName.equals("max-connection-size")) {
+			int val = Integer.parseInt(options[4]);
+			smppServerManagement.setMaxConnectionSize(val);
+		} else if (parName.equals("default-window-size")) {
+			int val = Integer.parseInt(options[4]);
+			smppServerManagement.setDefaultWindowSize(val);
+		} else if (parName.equals("default-window-wait-timeout")) {
+			int val = Integer.parseInt(options[4]);
+			smppServerManagement.setDefaultWindowWaitTimeout(val);
+		} else if (parName.equals("default-request-expiry-timeout")) {
+			int val = Integer.parseInt(options[4]);
+			smppServerManagement.setDefaultRequestExpiryTimeout(val);
+		} else if (parName.equals("default-window-monitor-interval")) {
+			int val = Integer.parseInt(options[4]);
+			smppServerManagement.setDefaultWindowMonitorInterval(val);
+		} else if (parName.equals("default-session-counters-enabled")) {
+			boolean val = Boolean.parseBoolean(options[4]);
+			smppServerManagement.setDefaultSessionCountersEnabled(val);
+		} else {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		return SMSCOAMMessages.SMPP_SERVER_PARAMETER_SUCCESSFULLY_SET;
 	}
 
 	private String manageSet(String[] options) throws Exception {
@@ -309,6 +376,100 @@ public class SMSCShellExecutor implements ShellExecutor {
 		}
 
 		return SMSCOAMMessages.PARAMETER_SUCCESSFULLY_SET;
+	}
+
+	/**
+	 * Command is smsc smppserver get <variable>
+	 * 
+	 * @param options
+	 * @return
+	 * @throws Exception
+	 */
+	private String manageSmppServerGet(String[] options) throws Exception {
+
+		SmppServerManagement smppServerManagement = this.smscManagement.getSmppServerManagement();
+
+		if (options.length == 4) {
+			String parName = options[3].toLowerCase();
+
+			StringBuilder sb = new StringBuilder();
+			sb.append(options[3]);
+			sb.append(" = ");
+			if (parName.equals("port")) {
+				sb.append(smppServerManagement.getBindPort());
+			} else if (parName.equals("bind-timeout")) {
+				sb.append(smppServerManagement.getBindTimeout());
+			} else if (parName.equals("system-id")) {
+				sb.append(smppServerManagement.getSystemId());
+			} else if (parName.equals("auto-negotiate-version")) {
+				sb.append(smppServerManagement.isAutoNegotiateInterfaceVersion());
+			} else if (parName.equals("interface-version")) {
+				sb.append(smppServerManagement.getInterfaceVersion());
+			} else if (parName.equals("max-connection-size")) {
+				sb.append(smppServerManagement.getMaxConnectionSize());
+			} else if (parName.equals("default-window-size")) {
+				sb.append(smppServerManagement.getDefaultWindowSize());
+			} else if (parName.equals("default-window-wait-timeout")) {
+				sb.append(smppServerManagement.getDefaultWindowWaitTimeout());
+			} else if (parName.equals("default-request-expiry-timeout")) {
+				sb.append(smppServerManagement.getDefaultRequestExpiryTimeout());
+			} else if (parName.equals("default-window-monitor-interval")) {
+				sb.append(smppServerManagement.getDefaultWindowMonitorInterval());
+			} else if (parName.equals("default-session-counters-enabled")) {
+				sb.append(smppServerManagement.isDefaultSessionCountersEnabled());
+			} else {
+				return SMSCOAMMessages.INVALID_COMMAND;
+			}
+
+			return sb.toString();
+		} else {
+			StringBuilder sb = new StringBuilder();
+			sb.append("port = ");
+			sb.append(smppServerManagement.getBindPort());
+			sb.append("\n");
+
+			sb.append("bind-timeout = ");
+			sb.append(smppServerManagement.getBindTimeout());
+			sb.append("\n");
+
+			sb.append("system-id = ");
+			sb.append(smppServerManagement.getSystemId());
+			sb.append("\n");
+
+			sb.append("auto-negotiate-version = ");
+			sb.append(smppServerManagement.isAutoNegotiateInterfaceVersion());
+			sb.append("\n");
+
+			sb.append("interface-version = ");
+			sb.append(smppServerManagement.getInterfaceVersion());
+			sb.append("\n");
+
+			sb.append("max-connection-size = ");
+			sb.append(smppServerManagement.getMaxConnectionSize());
+			sb.append("\n");
+
+			sb.append("default-window-size = ");
+			sb.append(smppServerManagement.getDefaultWindowSize());
+			sb.append("\n");
+
+			sb.append("default-window-wait-timeout = ");
+			sb.append(smppServerManagement.getDefaultWindowWaitTimeout());
+			sb.append("\n");
+
+			sb.append("default-request-expiry-timeout = ");
+			sb.append(smppServerManagement.getDefaultRequestExpiryTimeout());
+			sb.append("\n");
+
+			sb.append("default-window-monitor-interval = ");
+			sb.append(smppServerManagement.getDefaultWindowMonitorInterval());
+			sb.append("\n");
+
+			sb.append("default-session-counters-enabled = ");
+			sb.append(smppServerManagement.isDefaultSessionCountersEnabled());
+			sb.append("\n");
+
+			return sb.toString();
+		}
 	}
 
 	private String manageGet(String[] options) throws Exception {

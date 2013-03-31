@@ -50,7 +50,7 @@ public interface SMSCOAMMessages {
 	public static final String CREATE_ESME_SUCCESSFULL = "Successfully created ESME name=%s";
 
 	public static final String CREATE_EMSE_FAIL_ALREADY_EXIST = "Creation of EMSE failed. Other ESME with name=%s already exist";
-	
+
 	public static final String CREATE_EMSE_FAIL_PORT_CANNOT_BE_LESS_THAN_ZERO = "Creation of EMSE failed. Port cannot be less than 0 for CLIENT Sessions";
 
 	public static final String CREATE_EMSE_FAIL_PRIMARY_KEY_ALREADY_EXIST = "Creation of EMSE failed. Other ESME with same SystemId=%s host=%s and port=%d already exist";
@@ -72,7 +72,7 @@ public interface SMSCOAMMessages {
 	public static final String DELETE_ESME_FAILED_ESME_STARTED = "Cannot remove ESME. Please stop ESME before removing";
 
 	public static final String DELETE_ESME_SUCCESSFUL = "Successfully deleted Esme with given name %s";
-	
+
 	public static final String START_ESME_FAILED_ALREADY_STARTED = "Esme with given name %s is already started";
 
 	public static final String INVALID_SMPP_BIND_TYPE = "Invalid SMPP Bind Type %s. Allowed are TRANSCEIVER, TRANSMITTER or RECEIVER";
@@ -80,6 +80,8 @@ public interface SMSCOAMMessages {
 	public static final String NULL_ESME_ADDRESS_RANGE = "esme-range is compulsory for TRANSCEIVER and RECEIVER";
 
 	public static final String PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set";
+
+	public static final String SMPP_SERVER_PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set. The changed value will take effect after SmppServer is restarted";
 	/**
 	 * Generic constants
 	 */

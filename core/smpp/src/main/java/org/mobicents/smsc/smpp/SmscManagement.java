@@ -226,6 +226,7 @@ public class SmscManagement implements SmscManagementMBean {
 		// Step 6 Start SMPP Server
 		this.smppServerManagement = new SmppServerManagement(this.name, this.esmeManagement,
 				this.smppSessionHandlerInterface, this.executor, this.monitorExecutor);
+		this.smppServerManagement.setPersistDir(this.persistDir);
 		this.smppServerManagement.start();
 
 		ObjectName smppServerManaObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="

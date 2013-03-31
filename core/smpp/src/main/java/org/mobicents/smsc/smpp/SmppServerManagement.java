@@ -21,8 +21,18 @@
  */
 package org.mobicents.smsc.smpp;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import javolution.text.TextBuilder;
+import javolution.xml.XMLBinding;
+import javolution.xml.XMLObjectReader;
+import javolution.xml.XMLObjectWriter;
+import javolution.xml.stream.XMLStreamException;
 
 import org.apache.log4j.Logger;
 
@@ -39,12 +49,33 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 
 	private static final Logger logger = Logger.getLogger(SmppServerManagement.class);
 
+	private static final String PORT = "port";
+	private static final String BIND_TIMEOUT = "bindTimeout";
+	private static final String SYSTEM_ID = "systemId";
+	private static final String AUTO_NEGOTIATION_VERSION = "autoNegotiateInterfaceVersion";
+	private static final String INTERFACE_VERSION = "interfaceVersion";
+	private static final String MAX_CONNECTION_SIZE = "maxConnectionSize";
+	private static final String DEFAULT_WINDOW_SIZE = "defaultWindowSize";
+	private static final String DEFAULT_WINDOW_WAIT_TIMEOUT = "defaultWindowWaitTimeout";
+	private static final String DEFAULT_REQUEST_EXPIRY_TIMEOUT = "defaultRequestExpiryTimeout";
+	private static final String DEFAULT_WINDOW_MONITOR_INTERVAL = "defaultWindowMonitorInterval";
+	private static final String DEFAULT_SESSION_COUNTERS_ENABLED = "defaultSessionCountersEnabled";
+
+	private static final String TAB_INDENT = "\t";
+	private static final String CLASS_ATTRIBUTE = "type";
+	private static final XMLBinding binding = new XMLBinding();
+	private static final String PERSIST_FILE_NAME = "smppserver.xml";
+
+	private final TextBuilder persistFile = TextBuilder.newInstance();
+
+	private String persistDir = null;
+
 	final private String name;
 	private final ThreadPoolExecutor executor;
 	private final ScheduledThreadPoolExecutor monitorExecutor;
 	private final EsmeManagement esmeManagement;
 
-	private int port = 2775;
+	private int port = 2776;
 	// length of time to wait for a bind request
 	private long bindTimeout = 5000;
 	private String systemId = "TelscaleSMSC";
@@ -59,11 +90,11 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 	// data from sockets and the thread things will be processed under
 	private int maxConnectionSize = SmppConstants.DEFAULT_SERVER_MAX_CONNECTION_SIZE;
 
-	private int defaultWindowSize = SmppConstants.DEFAULT_WINDOW_SIZE;
-	private long defaultWindowWaitTimeout = SmppConstants.DEFAULT_WINDOW_WAIT_TIMEOUT;
-	private long defaultRequestExpiryTimeout = SmppConstants.DEFAULT_REQUEST_EXPIRY_TIMEOUT;
-	private long defaultWindowMonitorInterval = SmppConstants.DEFAULT_WINDOW_MONITOR_INTERVAL;
-	private boolean defaultSessionCountersEnabled = false;
+	private int defaultWindowSize = 100;
+	private long defaultWindowWaitTimeout = 30000;
+	private long defaultRequestExpiryTimeout = 30000;
+	private long defaultWindowMonitorInterval = 15000;
+	private boolean defaultSessionCountersEnabled = true;
 
 	private DefaultSmppServer defaultSmppServer = null;
 
@@ -77,56 +108,96 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 		this.monitorExecutor = monitorExecutor;
 		this.esmeManagement = esmeManagement;
 		this.smppSessionHandlerInterface = smppSessionHandlerInterface;
+
+		binding.setClassAttribute(CLASS_ATTRIBUTE);
 	}
 
 	public String getName() {
 		return name;
 	}
 
+	public String getPersistDir() {
+		return persistDir;
+	}
+
+	public void setPersistDir(String persistDir) {
+		this.persistDir = persistDir;
+	}
+
 	public void setBindTimeout(long bindTimeout) {
 		this.bindTimeout = bindTimeout;
+		this.store();
 	}
 
 	public void setSystemId(String systemId) {
 		this.systemId = systemId;
+		this.store();
 	}
 
 	public void setAutoNegotiateInterfaceVersion(boolean autoNegotiateInterfaceVersion) {
 		this.autoNegotiateInterfaceVersion = autoNegotiateInterfaceVersion;
+		this.store();
 	}
 
 	public void setInterfaceVersion(double interfaceVersion) {
 		this.interfaceVersion = interfaceVersion;
+		this.store();
 	}
 
 	public void setMaxConnectionSize(int maxConnectionSize) {
 		this.maxConnectionSize = maxConnectionSize;
+		this.store();
 	}
 
 	public void setDefaultWindowSize(int defaultWindowSize) {
 		this.defaultWindowSize = defaultWindowSize;
+		this.store();
 	}
 
 	public void setDefaultWindowWaitTimeout(long defaultWindowWaitTimeout) {
 		this.defaultWindowWaitTimeout = defaultWindowWaitTimeout;
+		this.store();
 	}
 
 	public void setDefaultRequestExpiryTimeout(long defaultRequestExpiryTimeout) {
 		this.defaultRequestExpiryTimeout = defaultRequestExpiryTimeout;
+		this.store();
 	}
 
 	public void setDefaultWindowMonitorInterval(long defaultWindowMonitorInterval) {
 		this.defaultWindowMonitorInterval = defaultWindowMonitorInterval;
+		this.store();
 	}
 
 	public void setDefaultSessionCountersEnabled(boolean defaultSessionCountersEnabled) {
 		this.defaultSessionCountersEnabled = defaultSessionCountersEnabled;
+		this.store();
 	}
 
 	public void start() throws Exception {
 
 		if (this.smppSessionHandlerInterface == null) {
 			throw new Exception("SmppSessionHandlerInterface is not set!");
+		}
+
+		this.persistFile.clear();
+
+		if (persistDir != null) {
+			this.persistFile.append(persistDir).append(File.separator).append(this.name).append("_")
+					.append(PERSIST_FILE_NAME);
+		} else {
+			persistFile
+					.append(System.getProperty(SmscManagement.SMSC_PERSIST_DIR_KEY,
+							System.getProperty(SmscManagement.USER_DIR_KEY))).append(File.separator).append(this.name)
+					.append("_").append(PERSIST_FILE_NAME);
+		}
+
+		logger.info(String.format("Loading SMPP Server Properties from %s", persistFile.toString()));
+
+		try {
+			this.load();
+		} catch (FileNotFoundException e) {
+			logger.warn(String.format("Failed to load the SMSC configuration file. \n%s", e.getMessage()));
 		}
 
 		// create a server configuration
@@ -175,6 +246,8 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 		this.defaultSmppServer.destroy();
 		logger.info("SMPP server stopped");
 		logger.info(String.format("Server counters: %s", this.defaultSmppServer.getCounters()));
+
+		this.store();
 	}
 
 	@Override
@@ -185,6 +258,7 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 	@Override
 	public void setBindPort(int port) {
 		this.port = port;
+		this.store();
 	}
 
 	@Override
@@ -351,5 +425,68 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 			return this.defaultSmppServer.getSessionDestroyed();
 		}
 		return 0;
+	}
+
+	/**
+	 * Persist
+	 */
+	public void store() {
+
+		// TODO : Should we keep reference to Objects rather than recreating
+		// everytime?
+		try {
+			XMLObjectWriter writer = XMLObjectWriter.newInstance(new FileOutputStream(persistFile.toString()));
+			writer.setBinding(binding);
+			// Enables cross-references.
+			// writer.setReferenceResolver(new XMLReferenceResolver());
+			writer.setIndentation(TAB_INDENT);
+
+			writer.write(this.port, PORT, Integer.class);
+			writer.write(this.bindTimeout, BIND_TIMEOUT, Long.class);
+			writer.write(this.systemId, SYSTEM_ID, String.class);
+			writer.write(this.autoNegotiateInterfaceVersion, AUTO_NEGOTIATION_VERSION, Boolean.class);
+			writer.write(this.interfaceVersion, INTERFACE_VERSION, Double.class);
+			writer.write(this.maxConnectionSize, MAX_CONNECTION_SIZE, Integer.class);
+			writer.write(this.defaultWindowSize, DEFAULT_WINDOW_SIZE, Integer.class);
+			writer.write(this.defaultWindowWaitTimeout, DEFAULT_WINDOW_WAIT_TIMEOUT, Long.class);
+			writer.write(this.defaultRequestExpiryTimeout, DEFAULT_REQUEST_EXPIRY_TIMEOUT, Long.class);
+			writer.write(this.defaultWindowMonitorInterval, DEFAULT_WINDOW_MONITOR_INTERVAL, Long.class);
+			writer.write(this.defaultSessionCountersEnabled, DEFAULT_SESSION_COUNTERS_ENABLED, Boolean.class);
+
+			writer.close();
+		} catch (Exception e) {
+			logger.error("Error while persisting the Rule state in file", e);
+		}
+	}
+
+	/**
+	 * Load and create LinkSets and Link from persisted file
+	 * 
+	 * @throws Exception
+	 */
+	public void load() throws FileNotFoundException {
+
+		XMLObjectReader reader = null;
+		try {
+			reader = XMLObjectReader.newInstance(new FileInputStream(persistFile.toString()));
+
+			reader.setBinding(binding);
+			this.port = reader.read(PORT, Integer.class);
+			this.bindTimeout = reader.read(BIND_TIMEOUT, Long.class);
+			this.systemId = reader.read(SYSTEM_ID, String.class);
+			this.autoNegotiateInterfaceVersion = reader.read(AUTO_NEGOTIATION_VERSION, Boolean.class);
+			this.interfaceVersion = reader.read(INTERFACE_VERSION, Double.class);
+			this.maxConnectionSize = reader.read(MAX_CONNECTION_SIZE, Integer.class);
+			this.defaultWindowSize = reader.read(DEFAULT_WINDOW_SIZE, Integer.class);
+			this.defaultWindowWaitTimeout = reader.read(DEFAULT_WINDOW_WAIT_TIMEOUT, Integer.class);
+			this.defaultRequestExpiryTimeout = reader.read(DEFAULT_REQUEST_EXPIRY_TIMEOUT, Integer.class);
+			this.defaultWindowMonitorInterval = reader.read(DEFAULT_WINDOW_MONITOR_INTERVAL, Integer.class);
+			this.defaultSessionCountersEnabled = reader.read(DEFAULT_SESSION_COUNTERS_ENABLED, Boolean.class);
+
+			reader.close();
+		} catch (XMLStreamException ex) {
+			// this.logger.info(
+			// "Error while re-creating Linksets from persisted file", ex);
+		}
 	}
 }
