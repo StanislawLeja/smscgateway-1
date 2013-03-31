@@ -1,6 +1,6 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -34,6 +34,11 @@ import javolution.xml.stream.XMLStreamException;
 
 import org.apache.log4j.Logger;
 
+/**
+ * 
+ * @author Amit Bhayani
+ *
+ */
 public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final Logger logger = Logger.getLogger(SmscPropertiesManagement.class);
 

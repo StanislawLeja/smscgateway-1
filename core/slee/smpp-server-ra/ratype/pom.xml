@@ -18,6 +18,11 @@
 		</dependency>
 		<dependency>
 			<groupId>${pom.groupId}</groupId>
+			<artifactId>smpp-server-ra-library</artifactId>
+			<version>${pom.version}</version>
+		</dependency>		
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
 			<artifactId>smpp-server-ra-events</artifactId>
 			<version>${pom.version}</version>
 		</dependency>

@@ -1,6 +1,6 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -24,7 +24,7 @@ package org.mobicents.smsc.smpp;
 
 /**
  * 
- * @author zaheer abbas
+ * @author Amit Bhayani
  * 
  */
 public interface SMSCOAMMessages {
@@ -49,9 +49,11 @@ public interface SMSCOAMMessages {
 
 	public static final String CREATE_ESME_SUCCESSFULL = "Successfully created ESME name=%s";
 
-	public static final String CREATE_EMSE_FAIL_ALREADY_EXIST = "Creation of EMSE failed. Other ESME with name=%s already exist"; // name
-																																	// =
-																																	// systemid
+	public static final String CREATE_EMSE_FAIL_ALREADY_EXIST = "Creation of EMSE failed. Other ESME with name=%s already exist";
+	
+	public static final String CREATE_EMSE_FAIL_PORT_CANNOT_BE_LESS_THAN_ZERO = "Creation of EMSE failed. Port cannot be less than 0 for CLIENT Sessions";
+
+	public static final String CREATE_EMSE_FAIL_PRIMARY_KEY_ALREADY_EXIST = "Creation of EMSE failed. Other ESME with same SystemId=%s host=%s and port=%d already exist";
 
 	public static final String CREATE_ROUTING_RULE_SUCCESSFULL = "Successfully created Routing rule name=%s";
 
@@ -65,12 +67,18 @@ public interface SMSCOAMMessages {
 
 	public static final String NO_ROUTING_RULE_DEFINED_YET = "No Routing rule defined yet";
 
-	public static final String DELETE_ESME_FAILED_NO_ESME_FOUND = "No Esme found with given systemId %s";
+	public static final String DELETE_ESME_FAILED_NO_ESME_FOUND = "No Esme found with given name %s";
 
-	public static final String DELETE_ESME_SUCCESSFUL = "Successfully deleted Esme with given systemId %s";
+	public static final String DELETE_ESME_FAILED_ESME_STARTED = "Cannot remove ESME. Please stop ESME before removing";
+
+	public static final String DELETE_ESME_SUCCESSFUL = "Successfully deleted Esme with given name %s";
+	
+	public static final String START_ESME_FAILED_ALREADY_STARTED = "Esme with given name %s is already started";
+
+	public static final String INVALID_SMPP_BIND_TYPE = "Invalid SMPP Bind Type %s. Allowed are TRANSCEIVER, TRANSMITTER or RECEIVER";
 
 	public static final String NULL_ESME_ADDRESS_RANGE = "esme-range is compulsory for TRANSCEIVER and RECEIVER";
-	
+
 	public static final String PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set";
 	/**
 	 * Generic constants
@@ -86,8 +94,10 @@ public interface SMSCOAMMessages {
 	 */
 	public static final String SHOW_ASSIGNED_TO = "Assigned to :\n";
 
-	public static final String SHOW_ESME_SYSTEM_ID = "ESME systemId=";
-	
+	public static final String SHOW_ESME_NAME = "ESME name=";
+
+	public static final String SHOW_ESME_SYSTEM_ID = " systemId=";
+
 	public static final String SHOW_ESME_STATE = " state=";
 
 	public static final String SHOW_ESME_PASSWORD = " password=";
@@ -113,5 +123,7 @@ public interface SMSCOAMMessages {
 	public static final String SHOW_STARTED = " started=";
 
 	public static final String SHOW_ADDRESS = " address=";
+
+	public static final String SHOW_CLUSTER_NAME = " clusterName=";
 
 }

@@ -1,6 +1,6 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -21,35 +21,33 @@
  */
 package org.mobicents.smsc.smpp;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import javax.management.StandardMBean;
 
 import org.apache.log4j.Logger;
-import org.jboss.mx.util.MBeanServerLocator;
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppServerConfiguration;
-import com.cloudhopper.smpp.SmppServerHandler;
 import com.cloudhopper.smpp.impl.DefaultSmppServer;
-import com.cloudhopper.smpp.jmx.DefaultSmppServerMXBean;
-import com.cloudhopper.smpp.type.SmppChannelException;
 
-public class SmppServer {
-	
-	private static final Logger logger = Logger.getLogger(SmppServer.class);
+/**
+ * 
+ * @author Amit Bhayani
+ * 
+ */
+public class SmppServerManagement implements SmppServerManagementMBean {
 
-	private String name = "SmppServer";
+	private static final Logger logger = Logger.getLogger(SmppServerManagement.class);
+
+	final private String name;
+	private final ThreadPoolExecutor executor;
+	private final ScheduledThreadPoolExecutor monitorExecutor;
+	private final EsmeManagement esmeManagement;
+
 	private int port = 2775;
 	// length of time to wait for a bind request
 	private long bindTimeout = 5000;
-	private String systemId = "MobicentsSMSC";
+	private String systemId = "TelscaleSMSC";
 	// if true, <= 3.3 for interface version normalizes to version 3.3
 	// if true, >= 3.4 for interface version normalizes to version 3.4 and
 	// optional sc_interface_version is set to 3.4
@@ -69,31 +67,20 @@ public class SmppServer {
 
 	private DefaultSmppServer defaultSmppServer = null;
 
-	private SmppServerHandler smppServerHandler = null;
+	private SmppSessionHandlerInterface smppSessionHandlerInterface;
 
-	private MBeanServer mbeanServer = null;
-	
-	private EsmeManagement esmeManagement = null;
-
-	public SmppServer() {
-
-	}
-
-	public void setEsmeManagement(EsmeManagement esmeManagement) {
-		this.esmeManagement = esmeManagement;
-		((DefaultSmppServerHandler)this.smppServerHandler).setEsmeManagement(esmeManagement);
-	}
-
-	public void setName(String name) {
+	public SmppServerManagement(String name, EsmeManagement esmeManagement,
+			SmppSessionHandlerInterface smppSessionHandlerInterface, ThreadPoolExecutor executor,
+			ScheduledThreadPoolExecutor monitorExecutor) {
 		this.name = name;
+		this.executor = executor;
+		this.monitorExecutor = monitorExecutor;
+		this.esmeManagement = esmeManagement;
+		this.smppSessionHandlerInterface = smppSessionHandlerInterface;
 	}
 
-	protected String getName() {
+	public String getName() {
 		return name;
-	}
-
-	public void setPort(int port) {
-		this.port = port;
 	}
 
 	public void setBindTimeout(long bindTimeout) {
@@ -108,10 +95,7 @@ public class SmppServer {
 		this.autoNegotiateInterfaceVersion = autoNegotiateInterfaceVersion;
 	}
 
-	public void setInterfaceVersion(double interfaceVersion) throws Exception {
-		if (interfaceVersion != 3.4 && interfaceVersion != 3.3) {
-			throw new Exception("Only SMPP version 3.4 or 3.3 is supported");
-		}
+	public void setInterfaceVersion(double interfaceVersion) {
 		this.interfaceVersion = interfaceVersion;
 	}
 
@@ -139,31 +123,11 @@ public class SmppServer {
 		this.defaultSessionCountersEnabled = defaultSessionCountersEnabled;
 	}
 
-	public void start() throws SmppChannelException {
-		// for monitoring thread use, it's preferable to create your own
-		// instance of an executor and cast it to a ThreadPoolExecutor from
-		// Executors.newCachedThreadPool() this permits exposing thinks like
-		// executor.getActiveCount() via JMX possible no point renaming the
-		// threads in a factory since underlying Netty framework does not easily
-		// allow you to customize your thread names
-		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+	public void start() throws Exception {
 
-		// to enable automatic expiration of requests, a second scheduled
-		// executor
-		// is required which is what a monitor task will be executed with - this
-		// is probably a thread pool that can be shared with between all client
-		// bootstraps
-		ScheduledThreadPoolExecutor monitorExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1,
-				new ThreadFactory() {
-					private AtomicInteger sequence = new AtomicInteger(0);
-
-					@Override
-					public Thread newThread(Runnable r) {
-						Thread t = new Thread(r);
-						t.setName("SmppServerSessionWindowMonitorPool-" + sequence.getAndIncrement());
-						return t;
-					}
-				});
+		if (this.smppSessionHandlerInterface == null) {
+			throw new Exception("SmppSessionHandlerInterface is not set!");
+		}
 
 		// create a server configuration
 		SmppServerConfiguration configuration = new SmppServerConfiguration();
@@ -197,54 +161,195 @@ public class SmppServer {
 		// We bind to JBoss MBean
 		configuration.setJmxEnabled(false);
 
-		this.smppServerHandler = new DefaultSmppServerHandler();
-
 		// create a server, start it up
-		this.defaultSmppServer = new DefaultSmppServer(configuration, smppServerHandler, executor, monitorExecutor);
-		this.registerMBean();
+		this.defaultSmppServer = new DefaultSmppServer(configuration, new DefaultSmppServerHandler(esmeManagement,
+				this.smppSessionHandlerInterface), executor, monitorExecutor);
 		logger.info("Starting SMPP server...");
 		this.defaultSmppServer.start();
 		logger.info("SMPP server started");
+
 	}
 
-	public void stop() {
+	public void stop() throws Exception {
 		logger.info("Stopping SMPP server...");
-		this.defaultSmppServer.stop();
+		this.defaultSmppServer.destroy();
 		logger.info("SMPP server stopped");
 		logger.info(String.format("Server counters: %s", this.defaultSmppServer.getCounters()));
 	}
 
-	public void destroy() {
-		this.unregisterMBean();
+	@Override
+	public int getBindPort() {
+		return this.port;
 	}
 
-	private void registerMBean() {
+	@Override
+	public void setBindPort(int port) {
+		this.port = port;
+	}
 
-		try {
-			this.mbeanServer = MBeanServerLocator.locateJBoss();
-			ObjectName name = new ObjectName(SmscManagement.JMX_DOMAIN + ":name=" + this.name);
-			final StandardMBean mxBean = new StandardMBean(this.defaultSmppServer, DefaultSmppServerMXBean.class, true);
-			this.mbeanServer.registerMBean(mxBean, name);
+	@Override
+	public long getBindTimeout() {
+		return this.bindTimeout;
+	}
 
-		} catch (Exception e) {
-			// log the error, but don't throw an exception for this datasource
-			logger.error(String.format("Unable to register DefaultSmppServerMXBean %s", this.name), e);
+	@Override
+	public String getSystemId() {
+		return this.systemId;
+	}
+
+	@Override
+	public boolean isAutoNegotiateInterfaceVersion() {
+		return this.autoNegotiateInterfaceVersion;
+	}
+
+	@Override
+	public double getInterfaceVersion() {
+		return this.interfaceVersion;
+	}
+
+	@Override
+	public int getMaxConnectionSize() {
+		return this.maxConnectionSize;
+	}
+
+	@Override
+	public int getDefaultWindowSize() {
+		return this.defaultWindowSize;
+	}
+
+	@Override
+	public long getDefaultWindowWaitTimeout() {
+		return this.defaultWindowWaitTimeout;
+	}
+
+	@Override
+	public long getDefaultRequestExpiryTimeout() {
+		return this.defaultRequestExpiryTimeout;
+	}
+
+	@Override
+	public long getDefaultWindowMonitorInterval() {
+		return this.defaultWindowMonitorInterval;
+	}
+
+	@Override
+	public boolean isDefaultSessionCountersEnabled() {
+		return this.defaultSessionCountersEnabled;
+	}
+
+	@Override
+	public boolean isStarted() {
+		return (this.defaultSmppServer != null && this.defaultSmppServer.isStarted());
+	}
+
+	@Override
+	public void resetCounters() {
+		if (this.defaultSmppServer != null) {
+			this.defaultSmppServer.resetCounters();
 		}
 	}
 
-	private void unregisterMBean() {
-		try {
-			if (this.mbeanServer != null) {
-				ObjectName name = new ObjectName(SmscManagement.JMX_DOMAIN + ":name=" + this.name);
-				this.mbeanServer.unregisterMBean(name);
-			}
-		} catch (Exception e) {
-			logger.error(String.format("Unable to unregister DefaultSmppServerMXBean %s", this.name), e);
+	@Override
+	public int getSessionSize() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.getSessionSize();
 		}
+		return 0;
 	}
 
-	public DefaultSmppServerHandler getDefaultSmppServerHandler() {
-		return (DefaultSmppServerHandler) smppServerHandler;
+	@Override
+	public int getTransceiverSessionSize() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.getTransceiverSessionSize();
+		}
+		return 0;
 	}
 
+	@Override
+	public int getTransmitterSessionSize() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.getTransmitterSessionSize();
+		}
+		return 0;
+	}
+
+	@Override
+	public int getReceiverSessionSize() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.getReceiverSessionSize();
+		}
+		return 0;
+	}
+
+	@Override
+	public int getConnectionSize() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.getConnectionSize();
+		}
+		return 0;
+	}
+
+	@Override
+	public boolean isNonBlockingSocketsEnabled() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.isNonBlockingSocketsEnabled();
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isReuseAddress() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.isReuseAddress();
+		}
+		return false;
+	}
+
+	@Override
+	public int getChannelConnects() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.getChannelConnects();
+		}
+		return 0;
+	}
+
+	@Override
+	public int getChannelDisconnects() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.getChannelDisconnects();
+		}
+		return 0;
+	}
+
+	@Override
+	public int getBindTimeouts() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.getBindTimeouts();
+		}
+		return 0;
+	}
+
+	@Override
+	public int getBindRequested() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.getBindRequested();
+		}
+		return 0;
+	}
+
+	@Override
+	public int getSessionCreated() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.getSessionCreated();
+		}
+		return 0;
+	}
+
+	@Override
+	public int getSessionDestroyed() {
+		if (this.defaultSmppServer != null) {
+			return this.defaultSmppServer.getSessionDestroyed();
+		}
+		return 0;
+	}
 }

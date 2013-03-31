@@ -1,6 +1,6 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -24,16 +24,31 @@ package org.mobicents.smsc.smpp;
 import java.util.List;
 
 import com.cloudhopper.smpp.SmppBindType;
+import com.cloudhopper.smpp.SmppSession;
 import com.cloudhopper.smpp.type.Address;
 
+/**
+ * 
+ * @author Amit Bhayani
+ * 
+ */
 public interface EsmeManagementMBean {
 	public List<Esme> getEsmes();
 
-	public Esme getEsme(String systemId);
+	public Esme getEsmeByName(String esmeName);
 
-	public Esme createEsme(String systemId, String password, String host, String port, SmppBindType smppBindType,
-			String systemType, SmppInterfaceVersionType smppIntVersion, Address address) throws Exception;
+	public Esme getEsmeByClusterName(String esmeClusterName);
 
-	public Esme destroyEsme(String systemId) throws Exception;
+	public Esme createEsme(String name, String systemId, String password, String host, int port,
+			SmppBindType smppBindType, String systemType, SmppInterfaceVersionType smppIntVersion, Address address,
+			SmppSession.Type smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
+			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
+			int enquireLinkDelay) throws Exception;
+
+	public Esme destroyEsme(String esmeName) throws Exception;
+
+	public void startEsme(String esmeName) throws Exception;
+
+	public void stopEsme(String esmeName) throws Exception;
 
 }

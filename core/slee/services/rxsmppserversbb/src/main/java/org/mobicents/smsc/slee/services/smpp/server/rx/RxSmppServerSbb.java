@@ -12,12 +12,12 @@ import javax.slee.facilities.Tracer;
 import javax.slee.nullactivity.NullActivity;
 
 import org.mobicents.slee.SbbContextExt;
-import org.mobicents.smsc.slee.resources.smpp.server.SmppServerSession;
-import org.mobicents.smsc.slee.resources.smpp.server.SmppServerSessions;
-import org.mobicents.smsc.slee.resources.smpp.server.SmppServerTransaction;
-import org.mobicents.smsc.slee.resources.smpp.server.SmppServerTransactionACIFactory;
+import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
+import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
+import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
+import org.mobicents.smsc.smpp.Esme;
 
 import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.pdu.DeliverSmResp;
@@ -29,8 +29,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 	private Tracer logger;
 	private SbbContextExt sbbContext;
 
-	private SmppServerTransactionACIFactory smppServerTransactionACIFactory = null;
-	private SmppServerSessions smppServerSessions = null;
+	private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
+	private SmppSessions smppServerSessions = null;
 
 	public RxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -39,27 +39,12 @@ public abstract class RxSmppServerSbb implements Sbb {
 	public void onDeliverSm(SmsEvent event, ActivityContextInterface aci, EventContext eventContext) {
 
 		try {
-			String systemId = event.getSystemId();
-			SmppServerSession smppServerSession = null;
-			if (systemId == null) {
-				//Try to find SmppServerSession from dest TON, NPI and Range
-				smppServerSession = smppServerSessions.getSmppSession(event.getDestAddrTon(), event.getDestAddrNpi(),
-						event.getDestAddr());
-			} else {
-				smppServerSession = smppServerSessions.getSmppSession(systemId);
-			}
+			// TODO Change the API of SmsEvent to getEsmeName
+			String esmeName = event.getSystemId();
+			Esme esme = this.smppServerSessions.getEsme(esmeName);
 
-			if (smppServerSession == null) {
-				this.logger.severe(String.format("Received DELIVER_SM SmsEvent=%s but no SmppServerSession found",
-						event));
-				return;
-			}
-
-			if (!smppServerSession.isBound()) {
-				this.logger.severe(String.format(
-						"Received DELIVER_SM SmsEvent=%s but SmppServerSession=%s is not BOUND", event,
-						smppServerSession.getSystemId()));
-				// TODO : Add to SnF module
+			if (esme == null) {
+				this.logger.severe(String.format("Received DELIVER_SM SmsEvent=%s but no Esme found", event));
 				return;
 			}
 
@@ -72,7 +57,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 			// TODO : waiting for 2 secs for window to accept our request, is it
 			// good? Should time be more here?
-			SmppServerTransaction smppServerTransaction = smppServerSession.sendRequestPdu(deliverSm, 2000);
+			SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, deliverSm, 2000);
 			ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory
 					.getActivityContextInterface(smppServerTransaction);
 			smppTxaci.attach(this.sbbContext.getSbbLocalObject());
@@ -166,9 +151,9 @@ public abstract class RxSmppServerSbb implements Sbb {
 		try {
 			Context ctx = (Context) new InitialContext().lookup("java:comp/env");
 
-			this.smppServerTransactionACIFactory = (SmppServerTransactionACIFactory) ctx
+			this.smppServerTransactionACIFactory = (SmppTransactionACIFactory) ctx
 					.lookup("slee/resources/smppp/server/1.0/acifactory");
-			this.smppServerSessions = (SmppServerSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
+			this.smppServerSessions = (SmppSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
 
 			this.logger = this.sbbContext.getTracer(getClass().getSimpleName());
 		} catch (Exception ne) {

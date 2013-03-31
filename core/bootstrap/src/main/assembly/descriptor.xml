@@ -19,12 +19,12 @@
 				<include>com.telscale.smsc:smpp</include>
 
 				<!-- cloudhopper library -->
-				<include>cloudhopper:ch-smpp</include>
-				<include>cloudhopper:ch-commons-charset</include>
-				<include>cloudhopper:ch-commons-util</include>
-				<include>joda:joda-time</include>
-				<include>slf4j:slf4j-api</include>
-				<include>jboss:netty</include>
+				<include>com.cloudhopper:ch-smpp</include>
+				<include>com.cloudhopper:ch-commons-charset</include>
+				<include>com.cloudhopper:ch-commons-util</include>
+				<include>joda-time:joda-time</include>
+				<include>org.slf4j:slf4j-api</include>
+				<include>io.netty:netty</include>
 
 				<!-- Not strictly SS7, But needed by SS7 -->
 				<include>javolution:javolution</include>

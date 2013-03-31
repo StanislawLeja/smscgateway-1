@@ -27,6 +27,7 @@
 			<artifactId>ch-smpp</artifactId>
 			<version>${ch.smpp.version}</version>
 		</dependency>
+		
 		<!-- javolution -->
 		<dependency>
 			<groupId>javolution</groupId>

@@ -26,7 +26,7 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.resources.smpp.server.SmppServerSessions;
+import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 
 public abstract class MoCommonSbb implements Sbb {
 
@@ -39,7 +39,7 @@ public abstract class MoCommonSbb implements Sbb {
 	protected MAPProvider mapProvider;
 	protected MAPParameterFactory mapParameterFactory;
 	
-	protected SmppServerSessions smppServerSessions = null;
+	protected SmppSessions smppServerSessions = null;
 
 	public MoCommonSbb(String className) {
 		this.className = className;
@@ -200,7 +200,7 @@ public abstract class MoCommonSbb implements Sbb {
 			this.mapProvider = (MAPProvider) ctx.lookup("slee/resources/map/2.0/provider");
 			this.mapParameterFactory = this.mapProvider.getMAPParameterFactory();
 			
-			this.smppServerSessions = (SmppServerSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
+			this.smppServerSessions = (SmppSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
 
 			this.logger = this.sbbContext.getTracer(this.className);
 

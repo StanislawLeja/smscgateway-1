@@ -17,12 +17,12 @@ import javax.slee.facilities.Tracer;
 import javax.slee.nullactivity.NullActivity;
 
 import org.mobicents.slee.SbbContextExt;
-import org.mobicents.smsc.slee.resources.smpp.server.SmppServerSession;
-import org.mobicents.smsc.slee.resources.smpp.server.SmppServerSessions;
-import org.mobicents.smsc.slee.resources.smpp.server.SmppServerTransaction;
-import org.mobicents.smsc.slee.resources.smpp.server.SmppServerTransactionACIFactory;
+import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
+import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
+import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
+import org.mobicents.smsc.smpp.Esme;
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.pdu.DataSmResp;
@@ -35,8 +35,8 @@ public abstract class TxSmppServerSbb implements Sbb {
 	private Tracer logger;
 	private SbbContextExt sbbContext;
 
-	private SmppServerTransactionACIFactory smppServerTransactionACIFactory = null;
-	private SmppServerSessions smppServerSessions = null;
+	private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
+	private SmppSessions smppServerSessions = null;
 
 	public TxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -48,12 +48,12 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 	public void onSubmitSm(com.cloudhopper.smpp.pdu.SubmitSm event, ActivityContextInterface aci) {
 
-		SmppServerTransaction smppServerTransaction = (SmppServerTransaction) aci.getActivity();
-		SmppServerSession smppServerSession = smppServerTransaction.getSmppSession();
-		String systemId = smppServerSession.getSystemId();
+		SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
+		Esme esme = smppServerTransaction.getEsme();
+		String esmeName = esme.getName();
 
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received SUBMIT_SM = " + event + " from SystemId=" + systemId);
+			this.logger.info("Received SUBMIT_SM = " + event + " from Esme name=" + esmeName);
 		}
 
 		String messageId = this.smppServerSessions.getNextMessageId();
@@ -61,7 +61,9 @@ public abstract class TxSmppServerSbb implements Sbb {
 		SmsEvent smsEvent = new SmsEvent();
 		smsEvent.setSubmitDate(new Timestamp(System.currentTimeMillis()));
 		smsEvent.setMessageId(messageId);
-		smsEvent.setSystemId(systemId);
+
+		// TODO Change API to esmeName from SystemId
+		smsEvent.setSystemId(esmeName);
 
 		smsEvent.setSourceAddrTon(event.getSourceAddress().getTon());
 		smsEvent.setSourceAddrNpi(event.getSourceAddress().getNpi());
@@ -110,25 +112,25 @@ public abstract class TxSmppServerSbb implements Sbb {
 		SubmitSmResp response = event.createResponse();
 		response.setMessageId(messageId);
 		try {
-			smppServerSession.sendResponsePdu(event, response);
+			this.smppServerSessions.sendResponsePdu(esme, event, response);
 		} catch (Exception e) {
 			this.logger.severe("Error while trying to send SubmitSmResponse=" + response, e);
 		}
 	}
 
 	public void onDataSm(com.cloudhopper.smpp.pdu.DataSm event, ActivityContextInterface aci) {
-		SmppServerTransaction smppServerTransaction = (SmppServerTransaction) aci.getActivity();
-		SmppServerSession smppServerSession = smppServerTransaction.getSmppSession();
-		String systemId = smppServerSession.getSystemId();
+		SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
+		Esme esme = smppServerTransaction.getEsme();
+		String esmeName = esme.getName();
 
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received DATA_SM = " + event + " from SystemId=" + systemId);
+			this.logger.info("Received DATA_SM = " + event + " from Esme name=" + esmeName);
 		}
 
 		DataSmResp response = event.createResponse();
 		// Lets send the Response here
 		try {
-			smppServerSession.sendResponsePdu(event, response);
+			this.smppServerSessions.sendResponsePdu(esme, event, response);
 		} catch (Exception e) {
 			this.logger.severe("Error while trying to send DataSmResponse=" + response, e);
 		}
@@ -208,9 +210,9 @@ public abstract class TxSmppServerSbb implements Sbb {
 		try {
 			Context ctx = (Context) new InitialContext().lookup("java:comp/env");
 
-			this.smppServerTransactionACIFactory = (SmppServerTransactionACIFactory) ctx
+			this.smppServerTransactionACIFactory = (SmppTransactionACIFactory) ctx
 					.lookup("slee/resources/smppp/server/1.0/acifactory");
-			this.smppServerSessions = (SmppServerSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
+			this.smppServerSessions = (SmppSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
 
 			this.logger = this.sbbContext.getTracer(getClass().getSimpleName());
 		} catch (Exception ne) {

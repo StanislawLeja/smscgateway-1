@@ -24,8 +24,8 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.SmsSubmitTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
 import org.mobicents.slee.resource.map.events.DialogRequest;
-import org.mobicents.smsc.slee.resources.smpp.server.SmppServerSession;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
+import org.mobicents.smsc.smpp.Esme;
 
 import com.cloudhopper.smpp.SmppConstants;
 
@@ -209,22 +209,25 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		// TODO More parameters
 
-		SmppServerSession smppSession = smppServerSessions.getSmppSession(rxSMS.getDestAddrTon(),
-				rxSMS.getDestAddrNpi(), rxSMS.getDestAddr());
+		String esmeName = this.smppServerSessions.getEsmeName(rxSMS.getDestAddrTon(), rxSMS.getDestAddrNpi(),
+				rxSMS.getDestAddr());
 
-		if (smppSession == null) {
+		Esme esme = this.smppServerSessions.getEsme(esmeName);
+
+		if (esme == null) {
 			if (this.logger.isInfoEnabled()) {
-				this.logger.info(String.format("No SmppServerSession for MoSMS=%s Will send to to Mt module", rxSMS));
+				this.logger.info(String.format("No Esme for MoSMS=%s Will send to to Mt module", rxSMS));
 			}
 
 			this.processSubmitSM(rxSMS);
 
-		} else if (!smppSession.isBound()) {
-			this.logger.severe(String.format("Received MoSMS=%s but SmppSession=%s is not BOUND", rxSMS,
-					smppSession.getSystemId()));
+			// } else if (!smppSession.isBound()) {
+			// this.logger.severe(String.format("Received MoSMS=%s but SmppSession=%s is not BOUND",
+			// rxSMS,
+			// smppSession.getSystemId()));
 			// TODO : Add to SnF module
 		} else {
-			rxSMS.setSystemId(smppSession.getSystemId());
+			rxSMS.setSystemId(esme.getName());
 
 			NullActivity nullActivity = this.sbbContext.getNullActivityFactory().createNullActivity();
 			ActivityContextInterface nullActivityContextInterface = this.sbbContext
