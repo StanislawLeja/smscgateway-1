@@ -27,6 +27,6 @@ package org.mobicents.smsc.smpp;
  */
 public interface SmsRoutingRule {
 
-	public String getSystemId(byte ton, byte npi, String address);
+	public String getEsmeClusterName(byte ton, byte npi, String address);
 
 }

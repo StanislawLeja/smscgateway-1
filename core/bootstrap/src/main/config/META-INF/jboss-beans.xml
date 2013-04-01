@@ -164,8 +164,9 @@
 			<parameter>SmscManagement</parameter>
 		</constructor>
 		<property name="persistDir">${jboss.server.data.dir}</property>
-		<property name="smsRoutingRuleClass">org.mobicents.smsc.smpp.DatabaseSmsRoutingRule
-		</property>
+		<!-- 
+		<property name="smsRoutingRuleClass">org.mobicents.smsc.smpp.DatabaseSmsRoutingRule</property>
+		 -->
 	</bean>
 
 	<bean name="SMSCShellExecutor" class="org.mobicents.smsc.smpp.SMSCShellExecutor">

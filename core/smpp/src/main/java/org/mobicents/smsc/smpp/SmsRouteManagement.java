@@ -50,8 +50,8 @@ public class SmsRouteManagement {
 		this.smsRoutingRule = smsRoutingRule;
 	}
 
-	public String getSystemId(byte ton, byte npi, String address) {
-		return this.smsRoutingRule.getSystemId(ton, npi, address);
+	public String getEsmeClusterName(byte ton, byte npi, String address) {
+		return this.smsRoutingRule.getEsmeClusterName(ton, npi, address);
 	}
 
 }

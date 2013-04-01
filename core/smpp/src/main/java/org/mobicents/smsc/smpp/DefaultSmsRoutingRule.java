@@ -50,7 +50,7 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 	 * java.lang.String)
 	 */
 	@Override
-	public String getSystemId(byte ton, byte npi, String address) {
+	public String getEsmeClusterName(byte ton, byte npi, String address) {
 
 		for (FastList.Node<Esme> n = this.esmeManagement.esmes.head(), end = this.esmeManagement.esmes.tail(); (n = n
 				.getNext()) != end;) {
@@ -64,7 +64,7 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 				}
 				Matcher m = p.matcher(address);
 				if (m.matches()) {
-					return esme.getSystemId();
+					return esme.getClusterName();
 				}
 			}
 		}

@@ -41,7 +41,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 		try {
 			// TODO Change the API of SmsEvent to getEsmeName
 			String esmeName = event.getSystemId();
-			Esme esme = this.smppServerSessions.getEsme(esmeName);
+			Esme esme = this.smppServerSessions.getEsmeByClusterName(esmeName);
 
 			if (esme == null) {
 				this.logger.severe(String.format("Received DELIVER_SM SmsEvent=%s but no Esme found", event));

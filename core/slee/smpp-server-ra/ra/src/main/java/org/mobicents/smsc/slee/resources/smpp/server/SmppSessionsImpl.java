@@ -59,25 +59,11 @@ public class SmppSessionsImpl implements SmppSessions {
 
 	}
 
-	public String getSystemId(byte ton, byte npi, String address) {
-		String systemId = this.smsRouteManagement.getSystemId(ton, npi, address);
-		if (systemId == null) {
-			tracer.warning(String.format("No systemId found for address range=%s", address));
-		}
-		return systemId;
+	public String getEsmeClusterName(byte ton, byte npi, String address) {
+		return this.smsRouteManagement.getEsmeClusterName(ton, npi, address);
 	}
 
-	public String getEsmeName(byte ton, byte npi, String address) {
-		Esme esme = null;
-		// TODO find ESME by name
-		if (esme == null) {
-			tracer.warning(String.format("No Esme found for address range=%s", address));
-			return null;
-		}
-		return esme.getName();
-	}
-
-	public Esme getEsme(String esmeName) {
+	public Esme getEsmeByClusterName(String esmeName) {
 		// TODO get ESME
 		return null;
 	}

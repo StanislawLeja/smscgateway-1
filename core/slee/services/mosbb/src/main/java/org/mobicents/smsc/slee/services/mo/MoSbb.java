@@ -209,10 +209,10 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		// TODO More parameters
 
-		String esmeName = this.smppServerSessions.getEsmeName(rxSMS.getDestAddrTon(), rxSMS.getDestAddrNpi(),
+		String esmeName = this.smppServerSessions.getEsmeClusterName(rxSMS.getDestAddrTon(), rxSMS.getDestAddrNpi(),
 				rxSMS.getDestAddr());
 
-		Esme esme = this.smppServerSessions.getEsme(esmeName);
+		Esme esme = this.smppServerSessions.getEsmeByClusterName(esmeName);
 
 		if (esme == null) {
 			if (this.logger.isInfoEnabled()) {

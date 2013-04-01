@@ -17,9 +17,9 @@ public interface SmppSessions {
 
 	// TODO : May be rename this method as we want SmppServerSession to send SMS
 	// to ESME
-	public String getEsmeName(byte ton, byte npi, String address);
+	public String getEsmeClusterName(byte ton, byte npi, String address);
 
-	public Esme getEsme(String name);
+	public Esme getEsmeByClusterName(String esmeClusterName);
 
 	public String getNextMessageId();
 

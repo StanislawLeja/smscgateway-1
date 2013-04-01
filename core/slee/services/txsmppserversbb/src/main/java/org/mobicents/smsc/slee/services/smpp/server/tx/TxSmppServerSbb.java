@@ -1,7 +1,25 @@
+/*
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.mobicents.smsc.slee.services.smpp.server.tx;
-
-import java.sql.Timestamp;
-import java.util.ArrayList;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -11,23 +29,16 @@ import javax.slee.EventContext;
 import javax.slee.RolledBackContext;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
-import javax.slee.facilities.ActivityContextNamingFacility;
-import javax.slee.facilities.NameAlreadyBoundException;
 import javax.slee.facilities.Tracer;
-import javax.slee.nullactivity.NullActivity;
 
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
-import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
 import org.mobicents.smsc.smpp.Esme;
 
-import com.cloudhopper.smpp.SmppConstants;
-import com.cloudhopper.smpp.pdu.DataSmResp;
 import com.cloudhopper.smpp.pdu.SubmitSmResp;
-import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.type.RecoverablePduException;
 
 public abstract class TxSmppServerSbb implements Sbb {
@@ -56,61 +67,12 @@ public abstract class TxSmppServerSbb implements Sbb {
 			this.logger.info("Received SUBMIT_SM = " + event + " from Esme name=" + esmeName);
 		}
 
-		String messageId = this.smppServerSessions.getNextMessageId();
-
-		SmsEvent smsEvent = new SmsEvent();
-		smsEvent.setSubmitDate(new Timestamp(System.currentTimeMillis()));
-		smsEvent.setMessageId(messageId);
-
-		// TODO Change API to esmeName from SystemId
-		smsEvent.setSystemId(esmeName);
-
-		smsEvent.setSourceAddrTon(event.getSourceAddress().getTon());
-		smsEvent.setSourceAddrNpi(event.getSourceAddress().getNpi());
-		smsEvent.setSourceAddr(event.getSourceAddress().getAddress());
-
-		// TODO : Normalise Dest Address
-		smsEvent.setDestAddrTon(event.getDestAddress().getTon());
-		smsEvent.setDestAddrNpi(event.getDestAddress().getNpi());
-		smsEvent.setDestAddr(event.getDestAddress().getAddress());
-
-		smsEvent.setEsmClass(event.getEsmClass());
-		smsEvent.setProtocolId(event.getProtocolId());
-		smsEvent.setPriority(event.getPriority());
-
-		// TODO : respect schedule delivery
-		smsEvent.setScheduleDeliveryTime(event.getScheduleDeliveryTime());
-
-		// TODO : Check for validity period. If validity period null, set SMSC
-		// default validity period
-		smsEvent.setValidityPeriod(event.getValidityPeriod());
-		smsEvent.setRegisteredDelivery(event.getRegisteredDelivery());
-
-		// TODO : Respect replace if present
-		smsEvent.setReplaceIfPresent(event.getReplaceIfPresent());
-		smsEvent.setDataCoding(event.getDataCoding());
-		smsEvent.setDefaultMsgId(event.getDefaultMsgId());
-		smsEvent.setShortMessage(event.getShortMessage());
-
-		if (event.getShortMessageLength() == 0) {
-			// Probably the message_payload Optional Parameter is being used
-			Tlv messagePaylod = event.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
-			if (messagePaylod != null) {
-				smsEvent.setShortMessage(messagePaylod.getValue());
-			}
-		}
-
-		ArrayList<Tlv> optionalParameters = event.getOptionalParameters();
-		if (optionalParameters != null && optionalParameters.size() > 0) {
-			// Set it for our smsEvent
-			smsEvent.addAllOptionalParameter(optionalParameters);
-		}
-
-		this.processSms(smsEvent);
+		//SmsEvent smsEvent = this.createSmsEvent(event);
+		//this.processSms(smsEvent);
 
 		// Lets send the Response here
 		SubmitSmResp response = event.createResponse();
-		response.setMessageId(messageId);
+		//response.setMessageId(smsEvent.getMessageId());
 		try {
 			this.smppServerSessions.sendResponsePdu(esme, event, response);
 		} catch (Exception e) {
@@ -123,17 +85,43 @@ public abstract class TxSmppServerSbb implements Sbb {
 		Esme esme = smppServerTransaction.getEsme();
 		String esmeName = esme.getName();
 
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received DATA_SM = " + event + " from Esme name=" + esmeName);
-		}
+//		if (this.logger.isInfoEnabled()) {
+//			this.logger.info("Received DATA_SM = " + event + " from Esme name=" + esmeName);
+//		}
+//
+//		SmsEvent smsEvent = this.createSmsEvent(event);
+//		this.processSms(smsEvent);
+//
+//		DataSmResp response = event.createResponse();
+//		response.setMessageId(smsEvent.getMessageId());
+//		// Lets send the Response here
+//		try {
+//			this.smppServerSessions.sendResponsePdu(esme, event, response);
+//		} catch (Exception e) {
+//			this.logger.severe("Error while trying to send DataSmResponse=" + response, e);
+//		}
+	}
 
-		DataSmResp response = event.createResponse();
-		// Lets send the Response here
-		try {
-			this.smppServerSessions.sendResponsePdu(esme, event, response);
-		} catch (Exception e) {
-			this.logger.severe("Error while trying to send DataSmResponse=" + response, e);
-		}
+	public void onDeliverSm(com.cloudhopper.smpp.pdu.DeliverSm event, ActivityContextInterface aci) {
+		SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
+		Esme esme = smppServerTransaction.getEsme();
+		String esmeName = esme.getName();
+
+//		if (this.logger.isInfoEnabled()) {
+//			this.logger.info("Received DELIVER_SM = " + event + " from Esme name=" + esmeName);
+//		}
+//
+//		SmsEvent smsEvent = this.createSmsEvent(event);
+//		this.processSms(smsEvent);
+//
+//		DeliverSmResp response = event.createResponse();
+//		response.setMessageId(smsEvent.getMessageId());
+//		// Lets send the Response here
+//		try {
+//			this.smppServerSessions.sendResponsePdu(esme, event, response);
+//		} catch (Exception e) {
+//			this.logger.severe("Error while trying to send DeliverSmResp=" + response, e);
+//		}
 	}
 
 	public void onPduRequestTimeout(PduRequestTimeout event, ActivityContextInterface aci, EventContext eventContext) {
@@ -146,8 +134,6 @@ public abstract class TxSmppServerSbb implements Sbb {
 		logger.severe(String.format("onRecoverablePduException : RecoverablePduException=%s", event));
 		// TODO : Handle this
 	}
-
-	public abstract void fireSms(SmsEvent event, ActivityContextInterface aci, javax.slee.Address address);
 
 	@Override
 	public void sbbActivate() {
@@ -227,90 +213,66 @@ public abstract class TxSmppServerSbb implements Sbb {
 	}
 
 	/**
-	 * Sbb ACI
-	 */
-	public abstract TxSmppServerSbbActivityContextInterface asSbbActivityContextInterface(ActivityContextInterface aci);
-
-	/**
 	 * Private
 	 */
+//	private SmsEvent createSmsEvent(BaseSm event) {
+//
+//		String esmeClusterName = this.smppServerSessions.getEsmeClusterName(event.getDestAddress().getTon(), event
+//				.getDestAddress().getNpi(), event.getDestAddress().getAddress());
+//
+//		String messageId = this.smppServerSessions.getNextMessageId();
+//
+//		SmsEvent smsEvent = new SmsEvent();
+//		smsEvent.setSubmitDate(new Timestamp(System.currentTimeMillis()));
+//		smsEvent.setMessageId(messageId);
+//		smsEvent.setSystemId(esmeClusterName);
+//
+//		smsEvent.setSourceAddrTon(event.getSourceAddress().getTon());
+//		smsEvent.setSourceAddrNpi(event.getSourceAddress().getNpi());
+//		smsEvent.setSourceAddr(event.getSourceAddress().getAddress());
+//
+//		// TODO : Normalise Dest Address
+//		smsEvent.setDestAddrTon(event.getDestAddress().getTon());
+//		smsEvent.setDestAddrNpi(event.getDestAddress().getNpi());
+//		smsEvent.setDestAddr(event.getDestAddress().getAddress());
+//
+//		smsEvent.setEsmClass(event.getEsmClass());
+//		smsEvent.setProtocolId(event.getProtocolId());
+//		smsEvent.setPriority(event.getPriority());
+//
+//		// TODO : respect schedule delivery
+//		smsEvent.setScheduleDeliveryTime(event.getScheduleDeliveryTime());
+//
+//		// TODO : Check for validity period. If validity period null, set SMSC
+//		// default validity period
+//		smsEvent.setValidityPeriod(event.getValidityPeriod());
+//		smsEvent.setRegisteredDelivery(event.getRegisteredDelivery());
+//
+//		// TODO : Respect replace if present
+//		smsEvent.setReplaceIfPresent(event.getReplaceIfPresent());
+//		smsEvent.setDataCoding(event.getDataCoding());
+//		smsEvent.setDefaultMsgId(event.getDefaultMsgId());
+//		smsEvent.setShortMessage(event.getShortMessage());
+//
+//		if (event.getShortMessageLength() == 0) {
+//			// Probably the message_payload Optional Parameter is being used
+//			Tlv messagePaylod = event.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
+//			if (messagePaylod != null) {
+//				smsEvent.setShortMessage(messagePaylod.getValue());
+//			}
+//		}
+//
+//		ArrayList<Tlv> optionalParameters = event.getOptionalParameters();
+//		if (optionalParameters != null && optionalParameters.size() > 0) {
+//			// Set it for our smsEvent
+//			smsEvent.addAllOptionalParameter(optionalParameters);
+//		}
+//
+//		return smsEvent;
+//	}
 
-	public void processSms(SmsEvent event) {
-
-		String destAddr = event.getDestAddr();
-
-		ActivityContextNamingFacility activityContextNamingFacility = this.sbbContext
-				.getActivityContextNamingFacility();
-
-		ActivityContextInterface nullActivityContextInterface = null;
-		try {
-			nullActivityContextInterface = activityContextNamingFacility.lookup(destAddr);
-		} catch (Exception e) {
-			logger.severe(String.format(
-					"Exception while lookup NullActivityContextInterface for jndi name=%s for SmsEvent=%s", destAddr,
-					event), e);
-		}
-
-		NullActivity nullActivity = null;
-		if (nullActivityContextInterface == null) {
-			// If null means there are no SMS handled by Mt for this destination
-			// address. Lets create new NullActivity and bind it to
-			// naming-facility
-			if (this.logger.isInfoEnabled()) {
-				this.logger.info(String
-						.format("lookup of NullActivityContextInterface returned null, create new NullActivity"));
-			}
-
-			nullActivity = this.sbbContext.getNullActivityFactory().createNullActivity();
-			nullActivityContextInterface = this.sbbContext.getNullActivityContextInterfaceFactory()
-					.getActivityContextInterface(nullActivity);
-
-			try {
-				activityContextNamingFacility.bind(nullActivityContextInterface, destAddr);
-			} catch (NameAlreadyBoundException e) {
-				// Kill existing nullActivity
-				nullActivity.endActivity();
-
-				// If name already bound, we do lookup again because this is one
-				// of the race conditions
-				try {
-					nullActivityContextInterface = activityContextNamingFacility.lookup(destAddr);
-				} catch (Exception ex) {
-					logger.severe(
-							String.format(
-									"Exception while second lookup NullActivityContextInterface for jndi name=%s for SmsEvent=%s",
-									destAddr, event), ex);
-					// TODO take care of error conditions.
-					return;
-				}
-
-			} catch (Exception e) {
-				logger.severe(String.format(
-						"Exception while binding NullActivityContextInterface to jndi name=%s for SmsEvent=%s",
-						destAddr, event), e);
-
-				if (nullActivity != null) {
-					nullActivity.endActivity();
-				}
-
-				// TODO take care of error conditions.
-				return;
-
-			}
-		}// if (nullActivityContextInterface == null)
-
-		TxSmppServerSbbActivityContextInterface txSmppServerSbbActivityContextInterface = this
-				.asSbbActivityContextInterface(nullActivityContextInterface);
-		int pendingEventsOnNullActivity = txSmppServerSbbActivityContextInterface.getPendingEventsOnNullActivity();
-		pendingEventsOnNullActivity = pendingEventsOnNullActivity + 1;
-
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info(String.format("pendingEventsOnNullActivity = %d", pendingEventsOnNullActivity));
-		}
-
-		txSmppServerSbbActivityContextInterface.setPendingEventsOnNullActivity(pendingEventsOnNullActivity);
-		// We have NullActivityContextInterface, lets fire SmsEvent on this
-		this.fireSms(event, nullActivityContextInterface, null);
-
-	}
+//	public void processSms(SmsEvent event) {
+//		// TODO Persist in Cassandra here
+//
+//	}
 }
