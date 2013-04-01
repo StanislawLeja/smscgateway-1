@@ -21,7 +21,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
-import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
+import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.smpp.Esme;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -58,12 +58,12 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		String messageId = this.smppServerSessions.getNextMessageId();
 
-		SmsEvent smsEvent = new SmsEvent();
+		Sms smsEvent = new Sms();
 		smsEvent.setSubmitDate(new Timestamp(System.currentTimeMillis()));
 		smsEvent.setMessageId(messageId);
 
 		// TODO Change API to esmeName from SystemId
-		smsEvent.setSystemId(esmeName);
+		smsEvent.setOrigSystemId(esmeName);
 
 		smsEvent.setSourceAddrTon(event.getSourceAddress().getTon());
 		smsEvent.setSourceAddrNpi(event.getSourceAddress().getNpi());
@@ -147,7 +147,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		// TODO : Handle this
 	}
 
-	public abstract void fireSms(SmsEvent event, ActivityContextInterface aci, javax.slee.Address address);
+	public abstract void fireSms(Sms event, ActivityContextInterface aci, javax.slee.Address address);
 
 	@Override
 	public void sbbActivate() {
@@ -235,7 +235,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 	 * Private
 	 */
 
-	public void processSms(SmsEvent event) {
+	public void processSms(Sms event) {
 
 		String destAddr = event.getDestAddr();
 

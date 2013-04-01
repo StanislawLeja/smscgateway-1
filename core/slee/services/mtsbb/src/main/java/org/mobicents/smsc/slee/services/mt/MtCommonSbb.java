@@ -71,7 +71,7 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
+import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.commons.charset.CharsetUtil;
@@ -172,10 +172,10 @@ public abstract class MtCommonSbb implements Sbb {
 		MAPErrorMessage mapErrorMessage = event.getMAPErrorMessage();
 		String reason = this.getErrorComponentReason(mapErrorMessage);
 
-		SmsEvent original = this.getOriginalSmsEvent();
+		Sms original = this.getOriginalSmsEvent();
 
 		if (original != null) {
-			if (original.getSystemId() != null) {
+			if (original.getOrigSystemId() != null) {
 				this.sendFailureDeliverSmToEsms(original, reason);
 			}
 		}
@@ -217,10 +217,10 @@ public abstract class MtCommonSbb implements Sbb {
 			break;
 		}
 
-		SmsEvent original = this.getOriginalSmsEvent();
+		Sms original = this.getOriginalSmsEvent();
 
 		if (original != null) {
-			if (original.getSystemId() != null) {
+			if (original.getOrigSystemId() != null) {
 				this.sendFailureDeliverSmToEsms(original, reason);
 			}
 		}
@@ -251,10 +251,10 @@ public abstract class MtCommonSbb implements Sbb {
 
 		MAPRefuseReason refuseReason = evt.getRefuseReason();
 
-		SmsEvent original = this.getOriginalSmsEvent();
+		Sms original = this.getOriginalSmsEvent();
 
 		if (original != null) {
-			if (original.getSystemId() != null) {
+			if (original.getOrigSystemId() != null) {
 				this.sendFailureDeliverSmToEsms(original, refuseReason.toString());
 			}
 		}
@@ -280,10 +280,10 @@ public abstract class MtCommonSbb implements Sbb {
 			reason = MAP_USER_ABORT_CHOICE_UNKNOWN;
 		}
 
-		SmsEvent original = this.getOriginalSmsEvent();
+		Sms original = this.getOriginalSmsEvent();
 
 		if (original != null) {
-			if (original.getSystemId() != null) {
+			if (original.getOrigSystemId() != null) {
 				this.sendFailureDeliverSmToEsms(original, reason);
 			}
 		}
@@ -294,10 +294,10 @@ public abstract class MtCommonSbb implements Sbb {
 
 		MAPAbortProviderReason abortProviderReason = evt.getAbortProviderReason();
 
-		SmsEvent original = this.getOriginalSmsEvent();
+		Sms original = this.getOriginalSmsEvent();
 
 		if (original != null) {
-			if (original.getSystemId() != null) {
+			if (original.getOrigSystemId() != null) {
 				this.sendFailureDeliverSmToEsms(original, abortProviderReason.toString());
 			}
 		}
@@ -318,10 +318,10 @@ public abstract class MtCommonSbb implements Sbb {
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
 		this.logger.severe("Rx :  onDialogTimeout" + evt);
 
-		SmsEvent original = this.getOriginalSmsEvent();
+		Sms original = this.getOriginalSmsEvent();
 
 		if (original != null) {
-			if (original.getSystemId() != null) {
+			if (original.getOrigSystemId() != null) {
 				this.sendFailureDeliverSmToEsms(original, DIALOG_TIMEOUT);
 			}
 		}
@@ -436,7 +436,7 @@ public abstract class MtCommonSbb implements Sbb {
 	 * @param aci
 	 * @param address
 	 */
-	public abstract void fireSendDeliveryReportSms(SmsEvent event, ActivityContextInterface aci,
+	public abstract void fireSendDeliveryReportSms(Sms event, ActivityContextInterface aci,
 			javax.slee.Address address);
 
 	/**
@@ -504,11 +504,11 @@ public abstract class MtCommonSbb implements Sbb {
 		}
 	}
 
-	protected SmsEvent getOriginalSmsEvent() {
+	protected Sms getOriginalSmsEvent() {
 		EventContext nullActivityEventContext = this.getNullActivityEventContext();
-		SmsEvent smsEvent = null;
+		Sms smsEvent = null;
 		try {
-			smsEvent = (SmsEvent) nullActivityEventContext.getEvent();
+			smsEvent = (Sms) nullActivityEventContext.getEvent();
 		} catch (Exception e) {
 			this.logger.severe(
 					String.format("Exception while trying to retrieve SmsEvent from NullActivity EventContext"), e);
@@ -517,7 +517,7 @@ public abstract class MtCommonSbb implements Sbb {
 		return smsEvent;
 	}
 
-	protected void sendFailureDeliverSmToEsms(SmsEvent original, String reason) {
+	protected void sendFailureDeliverSmToEsms(Sms original, String reason) {
 		// TODO check if SmppSession available for this SystemId, if not send to
 		// SnF module
 
@@ -528,7 +528,7 @@ public abstract class MtCommonSbb implements Sbb {
 		// Send Delivery Receipt only if requested
 		if (SmppUtil.isSmscDeliveryReceiptRequested(registeredDelivery)
 				|| SmppUtil.isSmscDeliveryReceiptOnFailureRequested(registeredDelivery)) {
-			SmsEvent deliveryReport = new SmsEvent();
+			Sms deliveryReport = new Sms();
 			deliveryReport.setSourceAddr(original.getDestAddr());
 			deliveryReport.setSourceAddrNpi(original.getDestAddrNpi());
 			deliveryReport.setSourceAddrTon(original.getDestAddrTon());
@@ -540,7 +540,7 @@ public abstract class MtCommonSbb implements Sbb {
 			// Setting SystemId as null, so RxSmppServerSbb actually tries to
 			// find real SmppServerSession from Destination TON, NPI and address
 			// range
-			deliveryReport.setSystemId(null);
+			deliveryReport.setOrigSystemId(null);
 
 			deliveryReport.setSubmitDate(original.getSubmitDate());
 
@@ -569,7 +569,7 @@ public abstract class MtCommonSbb implements Sbb {
 		}
 	}
 
-	protected void sendSuccessDeliverSmToEsms(SmsEvent original) {
+	protected void sendSuccessDeliverSmToEsms(Sms original) {
 		// TODO check if SmppSession available for this SystemId, if not send to
 		// SnF module
 
@@ -579,7 +579,7 @@ public abstract class MtCommonSbb implements Sbb {
 
 		// Send Delivery Receipt only if requested
 		if (SmppUtil.isSmscDeliveryReceiptRequested(registeredDelivery)) {
-			SmsEvent deliveryReport = new SmsEvent();
+			Sms deliveryReport = new Sms();
 			deliveryReport.setSourceAddr(original.getDestAddr());
 			deliveryReport.setSourceAddrNpi(original.getDestAddrNpi());
 			deliveryReport.setSourceAddrTon(original.getDestAddrTon());
@@ -591,7 +591,7 @@ public abstract class MtCommonSbb implements Sbb {
 			// Setting SystemId as null, so RxSmppServerSbb actually tries to
 			// find real SmppServerSession from Destination TON, NPI and address
 			// range
-			deliveryReport.setSystemId(null);
+			deliveryReport.setOrigSystemId(null);
 
 			deliveryReport.setSubmitDate(original.getSubmitDate());
 
@@ -627,7 +627,7 @@ public abstract class MtCommonSbb implements Sbb {
 		return first20CharOfSms;
 	}
 
-	protected void generateCdr(SmsEvent smsEvent, String status, String reason) {
+	protected void generateCdr(Sms smsEvent, String status, String reason) {
 		// Format is
 		// SUBMIT_DATE,SOURCE_ADDRESS,SOURCE_TON,SOURCE_NPI,DESTINATION_ADDRESS,DESTINATION_TON,DESTINATION_NPI,STATUS,SYSTEM-ID,MESSAGE-ID,First
 		// 20 char of SMS, REASON
@@ -639,7 +639,7 @@ public abstract class MtCommonSbb implements Sbb {
 				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getDestAddr()).append(CdrGenerator.CDR_SEPARATOR)
 				.append(smsEvent.getDestAddrTon()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getDestAddrNpi())
 				.append(CdrGenerator.CDR_SEPARATOR).append(status).append(CdrGenerator.CDR_SEPARATOR)
-				.append(smsEvent.getSystemId()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getMessageId())
+				.append(smsEvent.getOrigSystemId()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getMessageId())
 				.append(CdrGenerator.CDR_SEPARATOR).append(this.getFirst20CharOfSMS(smsEvent.getShortMessage()))
 				.append(CdrGenerator.CDR_SEPARATOR).append(reason);
 

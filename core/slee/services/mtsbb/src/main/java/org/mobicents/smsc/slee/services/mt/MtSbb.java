@@ -62,7 +62,7 @@ import org.mobicents.slee.resource.map.events.DialogProviderAbort;
 import org.mobicents.slee.resource.map.events.DialogReject;
 import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
-import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
+import org.mobicents.smsc.slee.services.persistence.Sms;
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.tlv.Tlv;
@@ -137,7 +137,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext
 					.getInstance(tcapApplicationContextName.getOid());
 
-			SmsEvent event = this.getOriginalSmsEvent();
+			Sms event = this.getOriginalSmsEvent();
 
 			this.sendMtSms(event, supportedMAPApplicationContext);
 
@@ -222,7 +222,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		this.setSmRpDa(sm_RP_DA);
 		this.setSmRpOa(sm_RP_OA);
 
-		SmsEvent smsEvent = (SmsEvent) nullActivityEventContext.getEvent();
+		Sms smsEvent = (Sms) nullActivityEventContext.getEvent();
 
 		this.sendMtSms(smsEvent, this.getMtFoSMSMAPApplicationContext());
 	}
@@ -305,7 +305,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	 */
 
 	private void handleSmsResponse(MAPDialogSms mapDialogSms, ActivityContextInterface aci) {
-		SmsEvent smsEvent = this.getOriginalSmsEvent();
+		Sms smsEvent = this.getOriginalSmsEvent();
 
 		int mesageSegmentCount = this.getMessageSegmentCount();
 		int mesageSegmentNumber = this.getMessageSegmentNumber();
@@ -340,7 +340,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 			if (smsEvent != null) {
 				try {
-					if (smsEvent.getSystemId() != null) {
+					if (smsEvent.getOrigSystemId() != null) {
 						sendSuccessDeliverSmToEsms(smsEvent);
 					} else {
 						// TODO : This is destined for Mobile user, send
@@ -394,7 +394,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		return slicedMessage;
 	}
 
-	private void sendPartMtSms(MAPDialogSms mapDialogSms, SmsEvent smsEvent, SM_RP_DA sm_RP_DA, SM_RP_OA sm_RP_OA,
+	private void sendPartMtSms(MAPDialogSms mapDialogSms, Sms smsEvent, SM_RP_DA sm_RP_DA, SM_RP_OA sm_RP_OA,
 			DataCodingScheme dataCodingScheme, AbsoluteTimeStamp serviceCentreTimeStamp, int mesageSegmentCount,
 			int mesageSegmentNumber, int messageReferenceNumber) throws MAPException {
 
@@ -453,7 +453,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		mapDialogSms.send();
 	}
 
-	private void sendMtSms(SmsEvent smsEvent, MAPApplicationContext mapApplicationContext) {
+	private void sendMtSms(Sms smsEvent, MAPApplicationContext mapApplicationContext) {
 		MAPDialogSms mapDialogSms = null;
 		try {
 			mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,

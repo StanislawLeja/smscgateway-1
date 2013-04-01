@@ -45,7 +45,7 @@ import org.mobicents.slee.resource.map.events.DialogProviderAbort;
 import org.mobicents.slee.resource.map.events.DialogReject;
 import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
-import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
+import org.mobicents.smsc.slee.services.persistence.Sms;
 
 /**
  * 
@@ -70,7 +70,7 @@ public abstract class SriSbb extends MtCommonSbb {
 	 * Event Handlers
 	 */
 
-	public void onSms(SmsEvent event, ActivityContextInterface aci, EventContext eventContext) {
+	public void onSms(Sms event, ActivityContextInterface aci, EventContext eventContext) {
 
 		// Reduce the events pending to be fired on this ACI
 		MtActivityContextInterface mtSbbActivityContextInterface = this.asSbbActivityContextInterface(aci);
@@ -126,7 +126,7 @@ public abstract class SriSbb extends MtCommonSbb {
 			MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext
 					.getInstance(tcapApplicationContextName.getOid());
 
-			SmsEvent event = this.getOriginalSmsEvent();
+			Sms event = this.getOriginalSmsEvent();
 
 			this.sendSRI(event.getDestAddr(), supportedMAPApplicationContext);
 

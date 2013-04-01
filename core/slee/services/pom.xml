@@ -14,8 +14,10 @@
 	<name>Core : SLEE : Services Parent</name>
 
 	<modules>
+		<module>library</module>
 		<module>events</module>
 		<module>alertsbb</module>
+		<module>persistencesbb</module>
 		<module>txsmppserversbb</module>
 		<module>rxsmppserversbb</module>
 		<module>mtsbb</module>
@@ -38,6 +40,11 @@
 			<dependency>
 				<groupId>org.mobicents.resources</groupId>
 				<artifactId>mobicents-slee-ra-map-ratype</artifactId>
+				<version>${mobicents.resources.map.version}</version>
+			</dependency>
+			<dependency>
+				<artifactId>mobicents-slee-ra-map-library</artifactId>
+				<groupId>org.mobicents.resources</groupId>
 				<version>${mobicents.resources.map.version}</version>
 			</dependency>
 		</dependencies>
