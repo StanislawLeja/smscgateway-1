@@ -429,15 +429,15 @@ public abstract class MtCommonSbb implements Sbb {
 
 	}
 
-	/**
-	 * Fire SmsEvent
-	 * 
-	 * @param event
-	 * @param aci
-	 * @param address
-	 */
-	public abstract void fireSendDeliveryReportSms(Sms event, ActivityContextInterface aci,
-			javax.slee.Address address);
+//	/**
+//	 * Fire SmsEvent
+//	 * 
+//	 * @param event
+//	 * @param aci
+//	 * @param address
+//	 */
+//	public abstract void fireSendDeliveryReportSms(Sms event, ActivityContextInterface aci,
+//			javax.slee.Address address);
 
 	/**
 	 * CMPs
@@ -523,50 +523,52 @@ public abstract class MtCommonSbb implements Sbb {
 
 		this.generateCdr(original, CdrGenerator.CDR_FAILED, reason);
 
-		byte registeredDelivery = original.getRegisteredDelivery();
-
-		// Send Delivery Receipt only if requested
-		if (SmppUtil.isSmscDeliveryReceiptRequested(registeredDelivery)
-				|| SmppUtil.isSmscDeliveryReceiptOnFailureRequested(registeredDelivery)) {
-			Sms deliveryReport = new Sms();
-			deliveryReport.setSourceAddr(original.getDestAddr());
-			deliveryReport.setSourceAddrNpi(original.getDestAddrNpi());
-			deliveryReport.setSourceAddrTon(original.getDestAddrTon());
-
-			deliveryReport.setDestAddr(original.getSourceAddr());
-			deliveryReport.setDestAddrNpi(original.getSourceAddrNpi());
-			deliveryReport.setDestAddrTon(original.getSourceAddrTon());
-
-			// Setting SystemId as null, so RxSmppServerSbb actually tries to
-			// find real SmppServerSession from Destination TON, NPI and address
-			// range
-			deliveryReport.setOrigSystemId(null);
-
-			deliveryReport.setSubmitDate(original.getSubmitDate());
-
-			deliveryReport.setMessageId(original.getMessageId());
-
-			// TODO : Set appropriate error code in err:
-			StringBuffer sb = new StringBuffer();
-			sb.append(DELIVERY_ACK_ID).append(original.getMessageId()).append(DELIVERY_ACK_SUB).append("001")
-					.append(DELIVERY_ACK_DLVRD).append("001").append(DELIVERY_ACK_SUBMIT_DATE)
-					.append(DELIVERY_ACK_DATE_FORMAT.format(original.getSubmitDate())).append(DELIVERY_ACK_DONE_DATE)
-					.append(DELIVERY_ACK_DATE_FORMAT.format(new Timestamp(System.currentTimeMillis())))
-					.append(DELIVERY_ACK_STAT).append(DELIVERY_ACK_STATE_UNDELIVERABLE).append(DELIVERY_ACK_ERR)
-					.append("001").append(DELIVERY_ACK_TEXT)
-					.append(this.getFirst20CharOfSMS(original.getShortMessage()));
-
-			byte[] textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_GSM);
-
-			deliveryReport.setShortMessage(textBytes);
-			deliveryReport.setEsmClass(ESME_DELIVERY_ACK);
-
-			NullActivity nullActivity = this.sbbContext.getNullActivityFactory().createNullActivity();
-			ActivityContextInterface nullActivityContextInterface = this.sbbContext
-					.getNullActivityContextInterfaceFactory().getActivityContextInterface(nullActivity);
-
-			this.fireSendDeliveryReportSms(deliveryReport, nullActivityContextInterface, null);
-		}
+		// TODO: storing results into a database 
+		
+//		int registeredDelivery = original.getRegisteredDelivery();
+//
+//		// Send Delivery Receipt only if requested
+//		if (SmppUtil.isSmscDeliveryReceiptRequested((byte)registeredDelivery)
+//				|| SmppUtil.isSmscDeliveryReceiptOnFailureRequested((byte)registeredDelivery)) {
+//			Sms deliveryReport = new Sms();
+//			deliveryReport.setSourceAddr(original.getSmsSet().getDestAddr());
+//			deliveryReport.setSourceAddrNpi(original.getSmsSet().getDestAddrNpi());
+//			deliveryReport.setSourceAddrTon(original.getSmsSet().getDestAddrTon());
+//
+//			deliveryReport.setDestAddr(original.getSourceAddr());
+//			deliveryReport.setDestAddrNpi(original.getSourceAddrNpi());
+//			deliveryReport.setDestAddrTon(original.getSourceAddrTon());
+//
+//			// Setting SystemId as null, so RxSmppServerSbb actually tries to
+//			// find real SmppServerSession from Destination TON, NPI and address
+//			// range
+//			deliveryReport.setOrigSystemId(null);
+//
+//			deliveryReport.setSubmitDate(original.getSubmitDate());
+//
+//			deliveryReport.setMessageId(original.getMessageId());
+//
+//			// TODO : Set appropriate error code in err:
+//			StringBuffer sb = new StringBuffer();
+//			sb.append(DELIVERY_ACK_ID).append(original.getMessageId()).append(DELIVERY_ACK_SUB).append("001")
+//					.append(DELIVERY_ACK_DLVRD).append("001").append(DELIVERY_ACK_SUBMIT_DATE)
+//					.append(DELIVERY_ACK_DATE_FORMAT.format(original.getSubmitDate())).append(DELIVERY_ACK_DONE_DATE)
+//					.append(DELIVERY_ACK_DATE_FORMAT.format(new Timestamp(System.currentTimeMillis())))
+//					.append(DELIVERY_ACK_STAT).append(DELIVERY_ACK_STATE_UNDELIVERABLE).append(DELIVERY_ACK_ERR)
+//					.append("001").append(DELIVERY_ACK_TEXT)
+//					.append(this.getFirst20CharOfSMS(original.getShortMessage()));
+//
+//			byte[] textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_GSM);
+//
+//			deliveryReport.setShortMessage(textBytes);
+//			deliveryReport.setEsmClass(ESME_DELIVERY_ACK);
+//
+//			NullActivity nullActivity = this.sbbContext.getNullActivityFactory().createNullActivity();
+//			ActivityContextInterface nullActivityContextInterface = this.sbbContext
+//					.getNullActivityContextInterfaceFactory().getActivityContextInterface(nullActivity);
+//
+//			this.fireSendDeliveryReportSms(deliveryReport, nullActivityContextInterface, null);
+//		}
 	}
 
 	protected void sendSuccessDeliverSmToEsms(Sms original) {
@@ -575,48 +577,48 @@ public abstract class MtCommonSbb implements Sbb {
 
 		this.generateCdr(original, CdrGenerator.CDR_SUCCESS, CDR_SUCCESS_NO_REASON);
 
-		byte registeredDelivery = original.getRegisteredDelivery();
-
-		// Send Delivery Receipt only if requested
-		if (SmppUtil.isSmscDeliveryReceiptRequested(registeredDelivery)) {
-			Sms deliveryReport = new Sms();
-			deliveryReport.setSourceAddr(original.getDestAddr());
-			deliveryReport.setSourceAddrNpi(original.getDestAddrNpi());
-			deliveryReport.setSourceAddrTon(original.getDestAddrTon());
-
-			deliveryReport.setDestAddr(original.getSourceAddr());
-			deliveryReport.setDestAddrNpi(original.getSourceAddrNpi());
-			deliveryReport.setDestAddrTon(original.getSourceAddrTon());
-
-			// Setting SystemId as null, so RxSmppServerSbb actually tries to
-			// find real SmppServerSession from Destination TON, NPI and address
-			// range
-			deliveryReport.setOrigSystemId(null);
-
-			deliveryReport.setSubmitDate(original.getSubmitDate());
-
-			deliveryReport.setMessageId(original.getMessageId());
-
-			StringBuffer sb = new StringBuffer();
-			sb.append(DELIVERY_ACK_ID).append(original.getMessageId()).append(DELIVERY_ACK_SUB).append("001")
-					.append(DELIVERY_ACK_DLVRD).append("001").append(DELIVERY_ACK_SUBMIT_DATE)
-					.append(DELIVERY_ACK_DATE_FORMAT.format(original.getSubmitDate())).append(DELIVERY_ACK_DONE_DATE)
-					.append(DELIVERY_ACK_DATE_FORMAT.format(new Timestamp(System.currentTimeMillis())))
-					.append(DELIVERY_ACK_STAT).append(DELIVERY_ACK_STATE_DELIVERED).append(DELIVERY_ACK_ERR)
-					.append("000").append(DELIVERY_ACK_TEXT)
-					.append(this.getFirst20CharOfSMS(original.getShortMessage()));
-
-			byte[] textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_GSM);
-
-			deliveryReport.setShortMessage(textBytes);
-			deliveryReport.setEsmClass(ESME_DELIVERY_ACK);
-
-			NullActivity nullActivity = this.sbbContext.getNullActivityFactory().createNullActivity();
-			ActivityContextInterface nullActivityContextInterface = this.sbbContext
-					.getNullActivityContextInterfaceFactory().getActivityContextInterface(nullActivity);
-
-			this.fireSendDeliveryReportSms(deliveryReport, nullActivityContextInterface, null);
-		}
+//		byte registeredDelivery = original.getRegisteredDelivery();
+//
+//		// Send Delivery Receipt only if requested
+//		if (SmppUtil.isSmscDeliveryReceiptRequested(registeredDelivery)) {
+//			Sms deliveryReport = new Sms();
+//			deliveryReport.setSourceAddr(original.getDestAddr());
+//			deliveryReport.setSourceAddrNpi(original.getDestAddrNpi());
+//			deliveryReport.setSourceAddrTon(original.getDestAddrTon());
+//
+//			deliveryReport.setDestAddr(original.getSourceAddr());
+//			deliveryReport.setDestAddrNpi(original.getSourceAddrNpi());
+//			deliveryReport.setDestAddrTon(original.getSourceAddrTon());
+//
+//			// Setting SystemId as null, so RxSmppServerSbb actually tries to
+//			// find real SmppServerSession from Destination TON, NPI and address
+//			// range
+//			deliveryReport.setOrigSystemId(null);
+//
+//			deliveryReport.setSubmitDate(original.getSubmitDate());
+//
+//			deliveryReport.setMessageId(original.getMessageId());
+//
+//			StringBuffer sb = new StringBuffer();
+//			sb.append(DELIVERY_ACK_ID).append(original.getMessageId()).append(DELIVERY_ACK_SUB).append("001")
+//					.append(DELIVERY_ACK_DLVRD).append("001").append(DELIVERY_ACK_SUBMIT_DATE)
+//					.append(DELIVERY_ACK_DATE_FORMAT.format(original.getSubmitDate())).append(DELIVERY_ACK_DONE_DATE)
+//					.append(DELIVERY_ACK_DATE_FORMAT.format(new Timestamp(System.currentTimeMillis())))
+//					.append(DELIVERY_ACK_STAT).append(DELIVERY_ACK_STATE_DELIVERED).append(DELIVERY_ACK_ERR)
+//					.append("000").append(DELIVERY_ACK_TEXT)
+//					.append(this.getFirst20CharOfSMS(original.getShortMessage()));
+//
+//			byte[] textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_GSM);
+//
+//			deliveryReport.setShortMessage(textBytes);
+//			deliveryReport.setEsmClass(ESME_DELIVERY_ACK);
+//
+//			NullActivity nullActivity = this.sbbContext.getNullActivityFactory().createNullActivity();
+//			ActivityContextInterface nullActivityContextInterface = this.sbbContext
+//					.getNullActivityContextInterfaceFactory().getActivityContextInterface(nullActivity);
+//
+//			this.fireSendDeliveryReportSms(deliveryReport, nullActivityContextInterface, null);
+//		}
 	}
 
 	private String getFirst20CharOfSMS(byte[] rawSms) {
@@ -636,8 +638,8 @@ public abstract class MtCommonSbb implements Sbb {
 		sb.append(smsEvent.getSubmitDate()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddr())
 				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrTon())
 				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrNpi())
-				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getDestAddr()).append(CdrGenerator.CDR_SEPARATOR)
-				.append(smsEvent.getDestAddrTon()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getDestAddrNpi())
+				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddr()).append(CdrGenerator.CDR_SEPARATOR)
+				.append(smsEvent.getSmsSet().getDestAddrTon()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddrNpi())
 				.append(CdrGenerator.CDR_SEPARATOR).append(status).append(CdrGenerator.CDR_SEPARATOR)
 				.append(smsEvent.getOrigSystemId()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getMessageId())
 				.append(CdrGenerator.CDR_SEPARATOR).append(this.getFirst20CharOfSMS(smsEvent.getShortMessage()))

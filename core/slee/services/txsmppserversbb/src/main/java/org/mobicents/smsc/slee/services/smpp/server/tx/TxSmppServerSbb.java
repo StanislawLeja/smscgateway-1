@@ -1,7 +1,11 @@
 package org.mobicents.smsc.slee.services.smpp.server.tx;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -23,6 +27,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.smpp.Esme;
+import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.pdu.DataSmResp;
@@ -31,12 +36,15 @@ import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.type.RecoverablePduException;
 
 public abstract class TxSmppServerSbb implements Sbb {
+    private static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
 	private Tracer logger;
 	private SbbContextExt sbbContext;
 
 	private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
 	private SmppSessions smppServerSessions = null;
+
+	private DateFormat dateFormat;
 
 	public TxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -56,7 +64,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			this.logger.info("Received SUBMIT_SM = " + event + " from Esme name=" + esmeName);
 		}
 
-		String messageId = this.smppServerSessions.getNextMessageId();
+		long messageId = this.smppServerSessions.getNextMessageId();
 
 		Sms smsEvent = new Sms();
 		smsEvent.setSubmitDate(new Timestamp(System.currentTimeMillis()));
@@ -70,20 +78,38 @@ public abstract class TxSmppServerSbb implements Sbb {
 		smsEvent.setSourceAddr(event.getSourceAddress().getAddress());
 
 		// TODO : Normalise Dest Address
-		smsEvent.setDestAddrTon(event.getDestAddress().getTon());
-		smsEvent.setDestAddrNpi(event.getDestAddress().getNpi());
-		smsEvent.setDestAddr(event.getDestAddress().getAddress());
+		smsEvent.getSmsSet().setDestAddrTon(event.getDestAddress().getTon());
+		smsEvent.getSmsSet().setDestAddrNpi(event.getDestAddress().getNpi());
+		smsEvent.getSmsSet().setDestAddr(event.getDestAddress().getAddress());
 
 		smsEvent.setEsmClass(event.getEsmClass());
 		smsEvent.setProtocolId(event.getProtocolId());
 		smsEvent.setPriority(event.getPriority());
 
 		// TODO : respect schedule delivery
-		smsEvent.setScheduleDeliveryTime(event.getScheduleDeliveryTime());
+		try{
+    		Date d = this.dateFormat.parse(event.getScheduleDeliveryTime());
+    		smsEvent.setScheduleDeliveryTime(d);
+		}catch(ParseException e){
+		    //TODO:XXX
+		    if(logger.isWarningEnabled()){
+		        logger.warning("Failed to parse Schedule Delivery Time.", e);
+		    }
+		    smsEvent.setScheduleDeliveryTime(new Date());
+		}
 
 		// TODO : Check for validity period. If validity period null, set SMSC
 		// default validity period
-		smsEvent.setValidityPeriod(event.getValidityPeriod());
+		try{
+            Date d = this.dateFormat.parse(event.getValidityPeriod());
+            smsEvent.setValidityPeriod(d);
+        }catch(ParseException e){
+            if(logger.isWarningEnabled()){
+                logger.warning("Failed to parse Validity Period.", e);
+            }
+          //TODO:XXX
+            smsEvent.setValidityPeriod(new Date());
+        }
 		smsEvent.setRegisteredDelivery(event.getRegisteredDelivery());
 
 		// TODO : Respect replace if present
@@ -110,7 +136,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		// Lets send the Response here
 		SubmitSmResp response = event.createResponse();
-		response.setMessageId(messageId);
+		response.setMessageId(Long.toString(messageId));
 		try {
 			this.smppServerSessions.sendResponsePdu(esme, event, response);
 		} catch (Exception e) {
@@ -207,6 +233,9 @@ public abstract class TxSmppServerSbb implements Sbb {
 	public void setSbbContext(SbbContext sbbContext) {
 		this.sbbContext = (SbbContextExt) sbbContext;
 
+		//TODO: XXX get locale?
+		this.dateFormat = new SimpleDateFormat(smscPropertiesManagement.getDateFormat());
+
 		try {
 			Context ctx = (Context) new InitialContext().lookup("java:comp/env");
 
@@ -237,7 +266,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 	public void processSms(Sms event) {
 
-		String destAddr = event.getDestAddr();
+		String destAddr = event.getSmsSet().getDestAddr();
 
 		ActivityContextNamingFacility activityContextNamingFacility = this.sbbContext
 				.getActivityContextNamingFacility();

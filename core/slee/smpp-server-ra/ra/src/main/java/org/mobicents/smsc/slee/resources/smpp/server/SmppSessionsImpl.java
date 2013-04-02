@@ -67,7 +67,7 @@ public class SmppSessionsImpl implements SmppSessions {
 		return systemId;
 	}
 
-	public String getEsmeName(byte ton, byte npi, String address) {
+	public String getEsmeName(int ton, int npi, String address) {
 		Esme esme = null;
 		// TODO find ESME by name
 		if (esme == null) {
@@ -378,8 +378,9 @@ public class SmppSessionsImpl implements SmppSessions {
 	}
 
 	@Override
-	public String getNextMessageId() {
-		return Long.toString(this.messageIdGenerator.incrementAndGet());
+	public long getNextMessageId() {
+//		return Long.toString(this.messageIdGenerator.incrementAndGet());
+		return this.messageIdGenerator.incrementAndGet();
 	}
 
 }

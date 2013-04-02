@@ -106,15 +106,15 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
      * events.SmsEvent, org.mobicents.smsc.slee.services.persistence.SmType,
      * org.mobicents.protocols.ss7.sccp.parameter.SccpAddress, org.mobicents.protocols.ss7.sccp.parameter.SccpAddress)
      */
-    @Override
-    public PersistableSms createInstance(Sms event, SmType type, SccpAddress scAddress, SccpAddress mxAddress) {
-        PersistableSmsImpl persistableSms = new PersistableSmsImpl();
-        persistableSms.setEvent(event);
-        persistableSms.setType(type);
-        persistableSms.setScAddress(scAddress);
-        persistableSms.setMxAddress(mxAddress);
-        return persistableSms;
-    }
+//    @Override
+//    public PersistableSms createInstance(Sms event, SmType type, SccpAddress scAddress, SccpAddress mxAddress) {
+//        PersistableSmsImpl persistableSms = new PersistableSmsImpl();
+//        persistableSms.setEvent(event);
+//        persistableSms.setType(type);
+//        persistableSms.setScAddress(scAddress);
+//        persistableSms.setMxAddress(mxAddress);
+//        return persistableSms;
+//    }
 
     /*
      * (non-Javadoc)

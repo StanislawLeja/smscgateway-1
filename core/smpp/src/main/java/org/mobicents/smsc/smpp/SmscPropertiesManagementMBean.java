@@ -47,4 +47,8 @@ public interface SmscPropertiesManagementMBean {
 	public int getMaxMapVersion();
 
 	public void setMaxMapVersion(int maxMapVersion);
+
+    public String getDateFormat();
+    
+    public void setDateFormat(String v);
 }
