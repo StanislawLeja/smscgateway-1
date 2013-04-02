@@ -3,7 +3,7 @@
                          "http://java.sun.com/dtd/slee-sbb-jar_1_1.dtd">
 <sbb-jar>
 	<sbb id="sriSbb">
-		<description>SBB listening for SmsEvent custom event and route to Sri</description>
+		<description>SBB listening for SmsSetEvent custom event and route to Sri</description>
 		<sbb-name>SriSbb</sbb-name>
 		<sbb-vendor>org.mobicents</sbb-vendor>
 		<sbb-version>1.0</sbb-version>
@@ -38,7 +38,8 @@
 				</sbb-activity-context-interface-name>
 			</sbb-activity-context-interface>
 		</sbb-classes>
-		
+
+<!--		
 		<event event-direction="Fire">
 			<event-name>SendDeliveryReportSms</event-name>
 			<event-type-ref>
@@ -46,7 +47,8 @@
 				<event-type-vendor>org.mobicents</event-type-vendor>
 				<event-type-version>1.0</event-type-version>
 			</event-type-ref>
-		</event>		
+		</event>
+-->
 
 		<event event-direction="Receive" initial-event="True">
 			<event-name>Sms</event-name>
@@ -251,6 +253,7 @@
 			</sbb-activity-context-interface>
 		</sbb-classes>
 
+<!-- 
 		<event event-direction="Fire">
 			<event-name>SendDeliveryReportSms</event-name>
 			<event-type-ref>
@@ -259,6 +262,7 @@
 				<event-type-version>1.0</event-type-version>
 			</event-type-ref>
 		</event>
+-->
 
 		<!-- MAP Dialog Events -->
 		<event event-direction="Receive" initial-event="False">

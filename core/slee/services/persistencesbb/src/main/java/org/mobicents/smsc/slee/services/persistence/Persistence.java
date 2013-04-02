@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.slee.services.persistence;
 
 import java.util.List;
@@ -35,7 +36,7 @@ import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
  */
 public interface Persistence {
 
-    public PersistableSms createInstance(Sms event, SmType type, SccpAddress scAddress, SccpAddress mxAddress);
+//    public PersistableSms createInstance(Sms event, SmType type, SccpAddress scAddress, SccpAddress mxAddress);
 
     public void create(PersistableSms sms) throws PersistenceException;
 

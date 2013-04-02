@@ -188,9 +188,9 @@ public abstract class MoSbb extends MoCommonSbb {
 		rxSMS.setSourceAddrNpi((byte) callingPartyAddress.getNumberingPlan().getIndicator());
 		rxSMS.setSourceAddrTon((byte) callingPartyAddress.getAddressNature().getIndicator());
 
-		rxSMS.setDestAddr(destinationAddress.getAddressValue());
-		rxSMS.setDestAddrNpi((byte) destinationAddress.getNumberingPlanIdentification().getCode());
-		rxSMS.setDestAddrTon((byte) destinationAddress.getTypeOfNumber().getCode());
+		rxSMS.getSmsSet().setDestAddr(destinationAddress.getAddressValue());
+		rxSMS.getSmsSet().setDestAddrNpi((byte) destinationAddress.getNumberingPlanIdentification().getCode());
+		rxSMS.getSmsSet().setDestAddrTon((byte) destinationAddress.getTypeOfNumber().getCode());
 		//
 		// deliveryReport.setSystemId(original.getSystemId());
 		//
@@ -209,8 +209,8 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		// TODO More parameters
 
-		String esmeName = this.smppServerSessions.getEsmeClusterName(rxSMS.getDestAddrTon(), rxSMS.getDestAddrNpi(),
-				rxSMS.getDestAddr());
+		String esmeName = this.smppServerSessions.getEsmeClusterName(rxSMS.getSmsSet().getDestAddrTon(), rxSMS.getSmsSet().getDestAddrNpi(), rxSMS.getSmsSet()
+				.getDestAddr());
 
 		Esme esme = this.smppServerSessions.getEsmeByClusterName(esmeName);
 
@@ -239,7 +239,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
 	private void processSubmitSM(Sms event) {
 
-		String destAddr = event.getDestAddr();
+		String destAddr = event.getSmsSet().getDestAddr();
 
 		ActivityContextNamingFacility activityContextNamingFacility = this.sbbContext
 				.getActivityContextNamingFacility();

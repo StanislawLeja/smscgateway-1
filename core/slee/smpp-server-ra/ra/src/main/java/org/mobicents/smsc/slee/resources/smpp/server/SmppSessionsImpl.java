@@ -364,8 +364,9 @@ public class SmppSessionsImpl implements SmppSessions {
 	}
 
 	@Override
-	public String getNextMessageId() {
-		return Long.toString(this.messageIdGenerator.incrementAndGet());
+	public long getNextMessageId() {
+//		return Long.toString(this.messageIdGenerator.incrementAndGet());
+		return this.messageIdGenerator.incrementAndGet();
 	}
 
 }

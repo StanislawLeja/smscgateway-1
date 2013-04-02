@@ -22,6 +22,7 @@
 package org.mobicents.smsc.slee.services.mt;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 import javax.slee.ActivityContextInterface;
 import javax.slee.EventContext;
@@ -473,7 +474,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			AbsoluteTimeStamp serviceCentreTimeStamp = this.getServiceCentreTimeStamp();
 
 			if (serviceCentreTimeStamp == null) {
-				Timestamp submitDate = smsEvent.getSubmitDate();
+				Date submitDate = smsEvent.getSubmitDate();
 
 				// TODO : TimeZone should be configurable
 				serviceCentreTimeStamp = new AbsoluteTimeStampImpl((submitDate.getYear() % 100),
@@ -593,7 +594,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				smscPropertiesManagement.getMscSsn());
 	}
 
-	private AddressField getSmsTpduOriginatingAddress(byte ton, byte npi, String address) {
+	private AddressField getSmsTpduOriginatingAddress(int ton, int npi, String address) {
 		return new AddressFieldImpl(TypeOfNumber.getInstance(ton), NumberingPlanIdentification.getInstance(npi),
 				address);
 	}

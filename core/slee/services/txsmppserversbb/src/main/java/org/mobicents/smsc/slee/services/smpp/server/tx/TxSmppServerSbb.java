@@ -21,6 +21,13 @@
  */
 package org.mobicents.smsc.slee.services.smpp.server.tx;
 
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.slee.ActivityContextInterface;
@@ -38,17 +45,21 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.smpp.Esme;
+import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.pdu.SubmitSmResp;
 import com.cloudhopper.smpp.type.RecoverablePduException;
 
 public abstract class TxSmppServerSbb implements Sbb {
+    private static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
 	private Tracer logger;
 	private SbbContextExt sbbContext;
 
 	private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
 	private SmppSessions smppServerSessions = null;
+
+	private DateFormat dateFormat;
 
 	public TxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -193,6 +204,9 @@ public abstract class TxSmppServerSbb implements Sbb {
 	@Override
 	public void setSbbContext(SbbContext sbbContext) {
 		this.sbbContext = (SbbContextExt) sbbContext;
+
+		//TODO: XXX get locale?
+		this.dateFormat = new SimpleDateFormat(smscPropertiesManagement.getDateFormat());
 
 		try {
 			Context ctx = (Context) new InitialContext().lookup("java:comp/env");

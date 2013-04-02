@@ -93,7 +93,7 @@ public abstract class SriSbb extends MtCommonSbb {
 		// which case persist this even in database
 
 		// This MSISDN is available. Begin SRI and let Mt process begin
-		this.sendSRI(event.getDestAddr(), this.getSRIMAPApplicationContext());
+		this.sendSRI(event.getSmsSet().getDestAddr(), this.getSRIMAPApplicationContext());
 
 	}
 
@@ -128,7 +128,7 @@ public abstract class SriSbb extends MtCommonSbb {
 
 			Sms event = this.getOriginalSmsEvent();
 
-			this.sendSRI(event.getDestAddr(), supportedMAPApplicationContext);
+			this.sendSRI(event.getSmsSet().getDestAddr(), supportedMAPApplicationContext);
 
 		} else {
 			super.onDialogReject(evt, aci);

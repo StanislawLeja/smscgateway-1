@@ -49,10 +49,10 @@ public abstract class RxSmppServerSbb implements Sbb {
 			}
 
 			DeliverSm deliverSm = new DeliverSm();
-			deliverSm.setSourceAddress(new Address(event.getSourceAddrTon(), event.getSourceAddrNpi(), event
-					.getSourceAddr()));
-			deliverSm.setDestAddress(new Address(event.getDestAddrTon(), event.getDestAddrNpi(), event.getDestAddr()));
-			deliverSm.setEsmClass(event.getEsmClass());
+			deliverSm.setSourceAddress(new Address((byte) event.getSourceAddrTon(), (byte) event.getSourceAddrNpi(), event.getSourceAddr()));
+			deliverSm.setDestAddress(new Address((byte) event.getSmsSet().getDestAddrTon(), (byte) event.getSmsSet().getDestAddrNpi(), event.getSmsSet()
+					.getDestAddr()));
+			deliverSm.setEsmClass((byte)event.getEsmClass());
 			deliverSm.setShortMessage(event.getShortMessage());
 
 			// TODO : waiting for 2 secs for window to accept our request, is it

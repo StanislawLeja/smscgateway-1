@@ -40,8 +40,8 @@ public class SmsSet implements Serializable {
 
 	private static final long serialVersionUID = -627234093407300864L;
 
-	private byte destAddrTon;
-	private byte destAddrNpi;
+	private int destAddrTon;
+	private int destAddrNpi;
 	private String destAddr;
 	
 	private String destClusterName;
@@ -66,22 +66,22 @@ public class SmsSet implements Serializable {
     /**
      * smpp style type of number
      */
-    public byte getDestAddrTon() {
+    public int getDestAddrTon() {
 		return destAddrTon;
 	}
 
-	public void setDestAddrTon(byte destAddrTon) {
+	public void setDestAddrTon(int destAddrTon) {
 		this.destAddrTon = destAddrTon;
 	}
 
     /**
      * smpp style type of numbering plan indicator
      */
-	public byte getDestAddrNpi() {
+	public int getDestAddrNpi() {
 		return destAddrNpi;
 	}
 
-	public void setDestAddrNpi(byte destAddrNpi) {
+	public void setDestAddrNpi(int destAddrNpi) {
 		this.destAddrNpi = destAddrNpi;
 	}
 

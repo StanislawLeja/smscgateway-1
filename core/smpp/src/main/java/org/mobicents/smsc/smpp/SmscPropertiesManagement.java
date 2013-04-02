@@ -52,9 +52,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String CLASS_ATTRIBUTE = "type";
 	private static final XMLBinding binding = new XMLBinding();
 	private static final String PERSIST_FILE_NAME = "smscproperties.xml";
+	private static final String DATE_FORMAT = "format";
 	
 	private static SmscPropertiesManagement instance;
 
+	private static final String DEFAULT_DATE_FORMAT = "yyyy-mm-dd HH:mm:ssZ"; //"d MMM yyyy HH:mm:ss-Z" - this will allow a TZ
+	
 	private final String name;
 
 	private String persistDir = null;
@@ -66,6 +69,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private int hlrSsn = -1;
 	private int mscSsn = -1;
 	private int maxMapVersion = 3;
+	private String dateFormat = DEFAULT_DATE_FORMAT;
 
 	private SmscPropertiesManagement(String name) {
 		this.name = name;
@@ -140,6 +144,16 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.store();
 	}
 
+	public String getDateFormat() {
+        return this.dateFormat;
+    }
+
+    public void setDateFormat(String v) {
+        if(v == null)
+            throw new IllegalArgumentException("Format can not be null.");
+        this.dateFormat = v;
+    }
+
 	public void start() throws Exception {
 
 		this.persistFile.clear();
@@ -187,6 +201,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.hlrSsn, HLR_SSN, Integer.class);
 			writer.write(this.mscSsn, MSC_SSN, Integer.class);
 			writer.write(this.maxMapVersion, MAX_MAP_VERSION, Integer.class);
+			writer.write(this.dateFormat,DATE_FORMAT,String.class);
 
 			writer.close();
 		} catch (Exception e) {
@@ -211,6 +226,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			this.hlrSsn = reader.read(HLR_SSN, Integer.class);
 			this.mscSsn = reader.read(MSC_SSN, Integer.class);
 			this.maxMapVersion = reader.read(MAX_MAP_VERSION, Integer.class);
+			this.dateFormat = reader.read(DATE_FORMAT,String.class);
 
 			reader.close();
 		} catch (XMLStreamException ex) {

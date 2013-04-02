@@ -17,11 +17,11 @@ public interface SmppSessions {
 
 	// TODO : May be rename this method as we want SmppServerSession to send SMS
 	// to ESME
-	public String getEsmeClusterName(byte ton, byte npi, String address);
+	public String getEsmeClusterName(int ton, int npi, String address);
 
 	public Esme getEsmeByClusterName(String esmeClusterName);
 
-	public String getNextMessageId();
+	public long getNextMessageId();
 
 	/**
 	 * Main underlying method for sending a request PDU to the remote endpoint.
