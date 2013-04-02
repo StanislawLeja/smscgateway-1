@@ -56,8 +56,6 @@ public class Sms implements Serializable {
 
 	private String origSystemId;
 	private String origEsmeId;
-	private String destSystemId;
-	private String destEsmeId;
 
 	private Date submitDate;
 	private Date deliverDate;
@@ -174,28 +172,6 @@ public class Sms implements Serializable {
 
 	public void setOrigEsmeId(String origEsmeId) {
 		this.origEsmeId = origEsmeId;
-	}
-
-	/**
-	 * SMPP name of destination esme (“” for MT messages)
-	 */
-	public String getDestSystemId() {
-		return destSystemId;
-	}
-
-	public void setDestSystemId(String destSystemId) {
-		this.destSystemId = destSystemId;
-	}
-
-	/**
-	 * SMSC internal name of destination esme (“” for MT messages)
-	 */
-	public String getDestEsmeId() {
-		return destEsmeId;
-	}
-
-	public void setDestEsmeId(String destEsmeId) {
-		this.destEsmeId = destEsmeId;
 	}
 
 	/**
@@ -492,10 +468,6 @@ public class Sms implements Serializable {
 		sb.append(origSystemId);
 		sb.append(", origEsmeId=");
 		sb.append(origEsmeId);
-		sb.append(", destSystemId=");
-		sb.append(destSystemId);
-		sb.append(", destEsmeId=");
-		sb.append(destEsmeId);
 		sb.append(", submitDate=");
 		sb.append(submitDate);
 		sb.append(", deliverDate=");

@@ -22,10 +22,13 @@
 
 package org.mobicents.smsc.slee.services.persistence;
 
+import java.util.Date;
 import java.util.List;
 
-import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
-import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
+import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
+import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
+
+import com.eaio.uuid.UUID;
 
 /**
  * Business interface for persistence service. This interface defines all methods required for persisting/managing sms data in
@@ -36,58 +39,159 @@ import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
  */
 public interface Persistence {
 
-//    public PersistableSms createInstance(Sms event, SmType type, SccpAddress scAddress, SccpAddress mxAddress);
+	/**
+	 * Searching SmsSet for TargetAddress in LIVE table If found - creates
+	 * SmsSet for this object If not found - creates new record in LIVE and
+	 * SmsSet for this object
+	 * 
+	 * @param ta
+	 *            TargetAddress
+	 * @return SmsSet object that represents TargetAddress (must not be null)
+	 * @throws PersistenceException
+	 */
+	public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException;
 
-    public void create(PersistableSms sms) throws PersistenceException;
+	/**
+	 * Set this TargetAddress as scheduled.
+	 * If (IN_SYSTEM==2 or IN_SYSTEM==1 and newDueDate > currentDueDate)
+	 * IN_SYSTEM=1, DUE_DATE=newDueDate
+	 * 
+	 * @param smsSet
+	 * @param newDueDate
+	 */
+	public void setScheduled(SmsSet smsSet, Date newDueDate) throws PersistenceException;
 
-    public void updateTargetAddress(PersistableSms sms) throws PersistenceException;
+	/**
+	 * Set destination for SmsSet. Database is not updated for these fields
+	 * 
+	 * @param smsSet
+	 * @param destClusterName
+	 * @param destSystemId
+	 * @param destEsmeId
+	 */
+	public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId);
 
-    public void updateDeliveryCount(PersistableSms sms) throws PersistenceException;
+	/**
+	 * Set routing info for SmsSet. Database is not updated for these fields
+	 * 
+	 * @param smsSet
+	 * @param imsi
+	 * @param locationInfoWithLMSI
+	 */
+	public void setRoutingInfo(SmsSet smsSet, IMSI imsi, LocationInfoWithLMSI locationInfoWithLMSI);
 
-    public void markAlertingNotSupported(PersistableSms sms) throws PersistenceException;
+	/**
+	 * Update database for setting smsSet to be under delivering processing:
+	 * IN_SYSTEM=2, DELIVERY_COUNT++ 
+	 * 
+	 * @param smsSet
+	 * @throws PersistenceException
+	 */
+	public void setDeliveryStart(SmsSet smsSet) throws PersistenceException;
 
-    /**
-     * Archives SMS, its present in live DB, its removed and moved to archive. If it does not exist, its just archived.
-     * 
-     * @param sms
-     * @throws PersistenceException
-     */
-    public void archive(PersistableSms sms) throws PersistenceException;
+	/**
+	 * Update database for setting smsSet to be out delivering processing with success
+	 * IN_SYSTEM=0, DUE_DATE=null, SM_STATUS=0
+	 * 
+	 * @param smsSet
+	 * @throws PersistenceException
+	 */
+	public void setDeliverySuccess(SmsSet smsSet) throws PersistenceException;
 
-    /**
-     * This method fetch SMS's that are in "LIVE" DB and are not currently handled by system. 
-     * 
-     * @param msisdn
-     * @return
-     * @throws PersistenceException
-     */
-    public List<PersistableSms> fetchOutstandingSms(ISDNAddressString msisdn) throws PersistenceException;
-    /**
-     * 
-     * @return
-     * @throws PersistenceException
-     */
-    public List<PersistableSms> fetchSchedulableSms() throws PersistenceException;
+	/**
+	 * Update database for setting smsSet to be out delivering processing with delivery failure
+	 * IN_SYSTEM=0, SM_STATUS=smStatus, LAST_DELIVERY=lastDelivery, ALERTING_SUPPORTED=alertingSupported
+	 * 
+	 * @param smsSet
+	 * @param smStatus
+	 * @param lastDelivery
+	 * @param alertingSupported
+	 * @throws PersistenceException
+	 */
+	public void setDeliveryFailure(SmsSet smsSet, ErrorCode smStatus, Date lastDelivery, boolean alertingSupported) throws PersistenceException;
 
-    /**
-     * Passivates SMS. Making it eligible to be returned by {@link #fetchOutstandingSms(String)} method.
-     * Passivation implies update to "DUE_DATE" value in DB.
-     * 
-     * @param sms
-     * @throws PersistenceException
-     */
-    public void passivate(PersistableSms sms) throws PersistenceException;
-    /**
-     * Marks SMS as being processed in system.
-     * @param sms
-     * @throws PersistenceException
-     */
-    public void activate(PersistableSms sms) throws PersistenceException;
+	/**
+	 * Deleting SmsSet record from LIVE table. 
+	 * The record will not be deleted if there are corresponded records in LIVE_SMS table
+	 * 
+	 * @param smsSet
+	 * @return true if success, false if not deleted because of records in LIVE_SMS table exist
+	 * @throws PersistenceException
+	 */
+	public boolean deleteSmsSet(SmsSet smsSet) throws PersistenceException;
 
-    // TODO: XXX: maybe better to have
-    // createInstance
-    // create
-    // persist
-    // archive
-    // ?
+
+	/**
+	 * Creates a record in LIVE_SMS table according to sms parameter
+	 * 
+	 * @param sms
+	 * @throws PersistenceException
+	 */
+	public void createLiveSms(Sms sms) throws PersistenceException;
+
+	/**
+	 * Getting sms from LIVE_SMS table
+	 * 
+	 * @param dbId
+	 * @return sms or null if sms not found
+	 * @throws PersistenceException
+	 */
+	public Sms obtainLiveSms(UUID dbId) throws PersistenceException;
+
+	/**
+	 * Getting sms from LIVE_SMS table
+	 * 
+	 * @param messageId
+	 * @return sms or null if sms not found
+	 * @throws PersistenceException
+	 */
+	public Sms obtainLiveSms(long messageId) throws PersistenceException;
+
+	/**
+	 * Update modified fields in an existing record in LIVE_SMS table
+	 * If record is absent do nothing
+	 * 
+	 * TODO: not yet implemented
+	 * 
+	 * @param sms
+	 * @throws PersistenceException
+	 */
+	public void updateLiveSms(Sms sms) throws PersistenceException;
+
+	/**
+	 * Move sms from LIVE_SMS to ARCHIVE
+	 * SM_STATUS=0
+	 * 
+	 * @param sms
+	 * @throws PersistenceException
+	 */
+	public void archiveDeliveredSms(Sms sms) throws PersistenceException;
+
+	/**
+	 * Move sms from LIVE_SMS to ARCHIVE
+	 * SM_STATUS=value from LIVE_SMS record
+	 * 
+	 * @param sms
+	 * @throws PersistenceException
+	 */
+	public void archiveFailuredSms(Sms sms) throws PersistenceException;
+
+
+	/**
+	 * Get list of SmsSet that DUE_DATE<now and IN_SYSTEM==2
+	 * 
+	 * @param maxRecordCount
+	 * @return
+	 * @throws PersistenceException
+	 */
+	public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount) throws PersistenceException;
+
+	/**
+	 * Fill SmsSet with sms from LIVE_SMS
+	 * 
+	 * @param smsSet
+	 * @throws PersistenceException
+	 */
+	public void fetchSchedulableSms(SmsSet smsSet) throws PersistenceException;
+
 }

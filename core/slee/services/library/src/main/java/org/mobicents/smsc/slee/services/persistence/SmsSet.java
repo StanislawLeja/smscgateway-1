@@ -29,6 +29,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
+import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
+
 
 /**
  * 
@@ -43,8 +46,15 @@ public class SmsSet implements Serializable {
 	private int destAddrTon;
 	private int destAddrNpi;
 	private String destAddr;
-	
+
+	// destination info - not saved in LIVE table
 	private String destClusterName;
+	private String destSystemId;
+	private String destEsmeId;
+
+	// routing info - not saved in LIVE table
+	private IMSI imsi;
+	private LocationInfoWithLMSI locationInfoWithLMSI;
 
 	private Date dueDate;
 
@@ -108,6 +118,50 @@ public class SmsSet implements Serializable {
 	}
 
 	/**
+	 * SMPP name of destination esme (“” for MT messages)
+	 */
+	public String getDestSystemId() {
+		return destSystemId;
+	}
+
+	public void setDestSystemId(String destSystemId) {
+		this.destSystemId = destSystemId;
+	}
+
+	/**
+	 * SMSC internal name of destination esme (“” for MT messages)
+	 */
+	public String getDestEsmeId() {
+		return destEsmeId;
+	}
+
+	public void setDestEsmeId(String destEsmeId) {
+		this.destEsmeId = destEsmeId;
+	}
+
+	/**
+	 * RoutingInfo: imsi
+	 */
+	public IMSI getImsi() {
+		return imsi;
+	}
+
+	public void setImsi(IMSI imsi) {
+		this.imsi = imsi;
+	}
+
+	/**
+	 * RoutingInfo: locationInfoWithLMSI
+	 */
+	public LocationInfoWithLMSI getLocationInfoWithLMSI() {
+		return locationInfoWithLMSI;
+	}
+
+	public void setLocationInfoWithLMSI(LocationInfoWithLMSI locationInfoWithLMSI) {
+		this.locationInfoWithLMSI = locationInfoWithLMSI;
+	}
+
+	/**
 	 * time when next delivery attempts must be done
 	 */
 	public Date getDueDate() {
@@ -163,7 +217,7 @@ public class SmsSet implements Serializable {
 	}
 
 	/**
-	 * true if after SMSC was successfully registerd at HLR after delivery failure
+	 * true if after SMSC was successfully registered at HLR after delivery failure
 	 */
 	public boolean isAlertingSupported() {
 		return alertingSupported;
@@ -208,19 +262,26 @@ public class SmsSet implements Serializable {
 		sb.append(destAddr);
 		sb.append(", destClusterName=");
 		sb.append(destClusterName);
+		sb.append(", destSystemId=");
+		sb.append(destSystemId);
+		sb.append(", destEsmeId=");
+		sb.append(destEsmeId);
+		sb.append(", imsi=");
+		sb.append(imsi);
+		sb.append(", locationInfoWithLMSI=");
+		sb.append(locationInfoWithLMSI);
 		sb.append(", dueDate=");
 		sb.append(dueDate);
-		sb.append(", messageId=");
-		sb.append(status);
 		sb.append(", status=");
-		sb.append(type);
+		sb.append(status);
 		sb.append(", type=");
-		sb.append(deliveryCount);
+		sb.append(type);
 		sb.append(", deliveryCount=");
-		sb.append(lastDelivery);
+		sb.append(deliveryCount);
 		sb.append(", lastDelivery=");
-		sb.append(alertingSupported);
+		sb.append(lastDelivery);
 		sb.append(", alertingSupported=");
+		sb.append(alertingSupported);
 
 		sb.append("]");
 
