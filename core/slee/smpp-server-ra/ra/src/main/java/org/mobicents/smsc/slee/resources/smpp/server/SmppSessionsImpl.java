@@ -59,7 +59,7 @@ public class SmppSessionsImpl implements SmppSessions {
 
 	}
 
-	public String getEsmeClusterName(byte ton, byte npi, String address) {
+	public String getEsmeClusterName(int ton, int npi, String address) {
 		return this.smsRouteManagement.getEsmeClusterName(ton, npi, address);
 	}
 

@@ -110,7 +110,7 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 	 * java.lang.String)
 	 */
 	@Override
-	public String getEsmeClusterName(byte ton, byte npi, String address) {
+	public String getEsmeClusterName(int ton, int npi, String address) {
 
 		// lets convert national to international
 		if (ton == SmppConstants.TON_NATIONAL) {
