@@ -36,6 +36,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
+import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.smpp.Esme;
 
 import com.cloudhopper.smpp.pdu.SubmitSmResp;

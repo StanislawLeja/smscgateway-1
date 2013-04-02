@@ -16,7 +16,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
-import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
+import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.smpp.Esme;
 
 import com.cloudhopper.smpp.pdu.DeliverSm;
@@ -36,11 +36,11 @@ public abstract class RxSmppServerSbb implements Sbb {
 		// TODO Auto-generated constructor stub
 	}
 
-	public void onDeliverSm(SmsEvent event, ActivityContextInterface aci, EventContext eventContext) {
+	public void onDeliverSm(Sms event, ActivityContextInterface aci, EventContext eventContext) {
 
 		try {
 			// TODO Change the API of SmsEvent to getEsmeName
-			String esmeName = event.getSystemId();
+			String esmeName = event.getOrigSystemId();
 			Esme esme = this.smppServerSessions.getEsmeByClusterName(esmeName);
 
 			if (esme == null) {

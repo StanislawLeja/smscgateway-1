@@ -24,7 +24,7 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.SmsSubmitTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
 import org.mobicents.slee.resource.map.events.DialogRequest;
-import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
+import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.smpp.Esme;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -150,7 +150,7 @@ public abstract class MoSbb extends MoCommonSbb {
 	 * @param aci
 	 * @param address
 	 */
-	public abstract void fireSubmitSm(SmsEvent event, ActivityContextInterface aci, javax.slee.Address address);
+	public abstract void fireSubmitSm(Sms event, ActivityContextInterface aci, javax.slee.Address address);
 
 	/**
 	 * Fire DELIVER_SM event to be consumed by RxSmppServerSbb to send it to
@@ -160,7 +160,7 @@ public abstract class MoSbb extends MoCommonSbb {
 	 * @param aci
 	 * @param address
 	 */
-	public abstract void fireDeliverSm(SmsEvent event, ActivityContextInterface aci, javax.slee.Address address);
+	public abstract void fireDeliverSm(Sms event, ActivityContextInterface aci, javax.slee.Address address);
 
 	/**
 	 * Private Methods
@@ -183,7 +183,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		// this.logger.info("decodedMessage SMS_SUBMIT = " + decodedMessage);
 		// }
 
-		SmsEvent rxSMS = new SmsEvent();
+		Sms rxSMS = new Sms();
 		rxSMS.setSourceAddr(callingPartyAddress.getAddress());
 		rxSMS.setSourceAddrNpi((byte) callingPartyAddress.getNumberingPlan().getIndicator());
 		rxSMS.setSourceAddrTon((byte) callingPartyAddress.getAddressNature().getIndicator());
@@ -227,7 +227,7 @@ public abstract class MoSbb extends MoCommonSbb {
 			// smppSession.getSystemId()));
 			// TODO : Add to SnF module
 		} else {
-			rxSMS.setSystemId(esme.getName());
+			rxSMS.setOrigSystemId(esme.getName());
 
 			NullActivity nullActivity = this.sbbContext.getNullActivityFactory().createNullActivity();
 			ActivityContextInterface nullActivityContextInterface = this.sbbContext
@@ -237,7 +237,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 	}
 
-	private void processSubmitSM(SmsEvent event) {
+	private void processSubmitSM(Sms event) {
 
 		String destAddr = event.getDestAddr();
 
