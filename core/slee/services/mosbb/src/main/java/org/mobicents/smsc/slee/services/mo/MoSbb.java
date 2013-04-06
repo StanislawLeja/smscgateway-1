@@ -9,6 +9,7 @@ import javax.slee.facilities.NameAlreadyBoundException;
 import javax.slee.nullactivity.NullActivity;
 
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
+import org.mobicents.protocols.ss7.map.api.MAPDialog;
 import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.service.sms.ForwardShortMessageRequest;
@@ -25,6 +26,7 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsSubmitTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
+import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogRequest;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppServerSession;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
@@ -38,6 +40,19 @@ public abstract class MoSbb extends MoCommonSbb {
 
 	public MoSbb() {
 		super(className);
+	}
+
+	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
+		super.onDialogDelimiter(evt, aci);
+
+		evt.getMAPDialog();
+		MAPDialog dialog = evt.getMAPDialog();
+
+		try {
+			dialog.send();
+		} catch (MAPException e) {
+			logger.severe("Error while sending Continue", e);
+		}
 	}
 
 	/**

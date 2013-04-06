@@ -72,7 +72,6 @@ public abstract class MoCommonSbb implements Sbb {
 	/**
 	 * Dialog Events
 	 */
-
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
 			this.logger.fine("Rx :  onDialogDelimiter=" + evt);
