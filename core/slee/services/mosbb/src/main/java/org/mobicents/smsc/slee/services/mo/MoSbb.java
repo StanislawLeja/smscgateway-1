@@ -19,6 +19,8 @@ import org.mobicents.protocols.ss7.map.api.service.sms.MoForwardShortMessageResp
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AddressField;
+import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsSubmitTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsTpdu;
@@ -27,6 +29,7 @@ import org.mobicents.slee.resource.map.events.DialogRequest;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppServerSession;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
 
+import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.SmppConstants;
 
 public abstract class MoSbb extends MoCommonSbb {
@@ -175,6 +178,8 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		UserData userData = smsSubmitTpdu.getUserData();
 
+		userData.decode();
+
 		// TODO : Is decoding correct? May be we should send the raw data
 		// userData.decode();
 		// String decodedMessage = userData.getDecodedMessage();
@@ -196,7 +201,27 @@ public abstract class MoSbb extends MoCommonSbb {
 		//
 		rxSMS.setSubmitDate(new Timestamp(System.currentTimeMillis()));
 
-		rxSMS.setShortMessage(userData.getEncodedData());
+		DataCodingScheme dataCodingScheme = userData.getDataCodingScheme();
+		byte[] smsPayload = null;
+
+		switch (dataCodingScheme.getCharacterSet()) {
+		case GSM7:
+			smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
+			break;
+		case GSM8:
+			// TODO : Is this correct?
+			smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
+			break;
+		case UCS2:
+			smsPayload = userData.getEncodedData();
+			break;
+		default:
+			logger.warning("Received unrecognized DataCodingScheme " + dataCodingScheme);
+			smsPayload = userData.getEncodedData();
+			break;
+		}
+
+		rxSMS.setShortMessage(smsPayload);
 
 		if (smsSubmitTpdu.getStatusReportRequest()) {
 			rxSMS.setRegisteredDelivery(SmppConstants.REGISTERED_DELIVERY_SMSC_RECEIPT_REQUESTED);
@@ -205,7 +230,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		// How do we set Esm Class?
 		// rxSMS.setEsmClass(ESME_DELIVERY_ACK);
 
-		rxSMS.setDataCoding((byte) userData.getDataCodingScheme().getCode());
+		rxSMS.setDataCoding((byte) dataCodingScheme.getCode());
 
 		// TODO More parameters
 

@@ -69,6 +69,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 			deliverSm.setDestAddress(new Address(event.getDestAddrTon(), event.getDestAddrNpi(), event.getDestAddr()));
 			deliverSm.setEsmClass(event.getEsmClass());
 			deliverSm.setShortMessage(event.getShortMessage());
+			
+			deliverSm.setDataCoding(event.getDataCoding());
 
 			// TODO : waiting for 2 secs for window to accept our request, is it
 			// good? Should time be more here?
