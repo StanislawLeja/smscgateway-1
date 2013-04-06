@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.slee.services.persistence.cassandra;
 
 import java.io.IOException;
@@ -39,17 +40,20 @@ import me.prettyprint.cassandra.model.IndexedSlicesQuery;
 import me.prettyprint.cassandra.serializers.BooleanSerializer;
 import me.prettyprint.cassandra.serializers.ByteBufferSerializer;
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
+import me.prettyprint.cassandra.serializers.CompositeSerializer;
 import me.prettyprint.cassandra.serializers.DateSerializer;
 import me.prettyprint.cassandra.serializers.IntegerSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.cassandra.serializers.TimeUUIDSerializer;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.ColumnSlice;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.OrderedRows;
 import me.prettyprint.hector.api.beans.Row;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.mutation.Mutator;
+import me.prettyprint.hector.api.query.ColumnQuery;
 import me.prettyprint.hector.api.query.QueryResult;
 
 import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
@@ -69,11 +73,14 @@ import org.mobicents.smsc.slee.services.persistence.Persistence;
 import org.mobicents.smsc.slee.services.persistence.PersistenceException;
 import org.mobicents.smsc.slee.services.persistence.SmType;
 import org.mobicents.smsc.slee.services.persistence.Sms;
+import org.mobicents.smsc.slee.services.persistence.SmsSet;
+import org.mobicents.smsc.slee.services.persistence.TargetAddress;
 
 import com.eaio.uuid.UUID;
 
 /**
  * @author baranowb
+ * @author sergey vetyutnev
  * 
  */
 public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
@@ -90,12 +97,64 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
     
     private SbbContextExt sbbContextExt;
     private HectorClientRAInterface raSbbInterface;
-    private Keyspace keyspace;
+    protected Keyspace keyspace;
 
     private Tracer logger;
     // ----------------------------------------
     // SBB LO
     // ----------------------------------------
+ 
+	@Override
+	public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException {
+
+		SmsSet smsSet = null;
+		try {
+			ColumnQuery<String, Composite, ByteBuffer> query = HFactory.createColumnQuery(keyspace, StringSerializer.get(), CompositeSerializer.get(), ByteBufferSerializer.get());
+			query.setColumnFamily(Schema.FAMILY_LIVE);
+			Composite coKey3 = new Composite();
+			coKey3.addComponent(ta.getAddrTon(), IntegerSerializer.get());
+			coKey3.addComponent(ta.getAddrNpi(), IntegerSerializer.get());
+			coKey3.addComponent(Schema.COLUMN_ADDR_DST_TON, StringSerializer.get());
+			query.setName(coKey3);
+			query.setKey(ta.getAddr());
+
+			QueryResult<HColumn<Composite,ByteBuffer>> result = query.execute();
+			
+
+
+//			final IndexedSlicesQuery<String, String, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace, StringSerializer.get(), SERIALIZER_STRING,
+//					ByteBufferSerializer.get());
+//			query.setColumnFamily(Schema.FAMILY_LIVE);
+//			query.setColumnNames(Schema.COLUMNS_LIVE);
+//			query.addEqualsExpression(Schema.COLUMN_ADDR_DST_DIGITS, StringSerializer.get().toByteBuffer(ta.getAddr()));
+//			query.addEqualsExpression(Schema.COLUMN_ADDR_DST_TON, IntegerSerializer.get().toByteBuffer(ta.getAddrTon()));
+//			query.addEqualsExpression(Schema.COLUMN_ADDR_DST_NPI, IntegerSerializer.get().toByteBuffer(ta.getAddrNpi()));
+//
+//			final QueryResult<OrderedRows<String, String, ByteBuffer>> result = query.execute();
+//			final OrderedRows<String, String, ByteBuffer> rows = result.get();
+//			final List<Row<String, String, ByteBuffer>> rowsList = rows.getList();
+
+			// for (Row<UUID, String, ByteBuffer> row : rowsList) {
+			// final ColumnSlice<String, ByteBuffer> cSlice =
+			// row.getColumnSlice();
+			// final UUID key = row.getKey();
+			// try {
+			// PersistableSms psms = createSms(key, true, cSlice);
+			// lst.add(psms);
+			// } catch (IOException e) {
+			// if (logger.isSevereEnabled()) {
+			// logger.severe("Failed to deserialize SMS at key '" + key + "'!",
+			// e);
+			// }
+			// }
+			// }
+		} catch (Exception e) {
+			int i1 = 0;
+		}
+
+		return smsSet;
+	}
+
 
     /*
      * (non-Javadoc)
@@ -470,33 +529,33 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 //        // TODO Auto-generated method stub
 //
 //    }
-//
-//    /*
-//     * (non-Javadoc)
-//     * 
-//     * @see javax.slee.Sbb#setSbbContext(javax.slee.SbbContext)
-//     */
-//    @Override
-//    public void setSbbContext(SbbContext arg0) {
-//        this.sbbContextExt = (SbbContextExt) arg0;
-//        this.logger = this.sbbContextExt.getTracer(getClass().getSimpleName());
-//        this.raSbbInterface = (HectorClientRAInterface) this.sbbContextExt.getResourceAdaptorInterface(HECTOR_ID, LINK);
-//        this.keyspace = this.raSbbInterface.getKeyspace();
-//    }
-//
-//    /*
-//     * (non-Javadoc)
-//     * 
-//     * @see javax.slee.Sbb#unsetSbbContext()
-//     */
-//    @Override
-//    public void unsetSbbContext() {
-//        this.sbbContextExt = null;
-//        this.raSbbInterface = null;
-//        this.keyspace = null;
-//        this.logger = null;
-//    }
-//
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see javax.slee.Sbb#setSbbContext(javax.slee.SbbContext)
+     */
+    @Override
+    public void setSbbContext(SbbContext arg0) {
+        this.sbbContextExt = (SbbContextExt) arg0;
+        this.logger = this.sbbContextExt.getTracer(getClass().getSimpleName());
+        this.raSbbInterface = (HectorClientRAInterface) this.sbbContextExt.getResourceAdaptorInterface(HECTOR_ID, LINK);
+        this.keyspace = this.raSbbInterface.getKeyspace();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see javax.slee.Sbb#unsetSbbContext()
+     */
+    @Override
+    public void unsetSbbContext() {
+        this.sbbContextExt = null;
+        this.raSbbInterface = null;
+        this.keyspace = null;
+        this.logger = null;
+    }
+
 //    // ----------------------------------------
 //    // Helper methods
 //    // ----------------------------------------
