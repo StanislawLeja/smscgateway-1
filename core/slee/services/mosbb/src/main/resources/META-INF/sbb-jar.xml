@@ -13,6 +13,7 @@
 		<sbb-classes>
 			<sbb-abstract-class>
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.mo.MoSbb</sbb-abstract-class-name>
+				<cmp-field><cmp-field-name>processingState</cmp-field-name></cmp-field>
 			</sbb-abstract-class>
 			<sbb-activity-context-interface>
 				<sbb-activity-context-interface-name>

@@ -20,14 +20,20 @@ import org.mobicents.protocols.ss7.map.api.service.sms.MoForwardShortMessageResp
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AddressField;
-import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsSubmitTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
+import org.mobicents.slee.resource.map.events.DialogNotice;
+import org.mobicents.slee.resource.map.events.DialogProviderAbort;
+import org.mobicents.slee.resource.map.events.DialogReject;
 import org.mobicents.slee.resource.map.events.DialogRequest;
+import org.mobicents.slee.resource.map.events.DialogTimeout;
+import org.mobicents.slee.resource.map.events.DialogUserAbort;
+import org.mobicents.slee.resource.map.events.ErrorComponent;
+import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppServerSession;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
 
@@ -42,17 +48,70 @@ public abstract class MoSbb extends MoCommonSbb {
 		super(className);
 	}
 
+	public void onDialogRequest(DialogRequest evt, ActivityContextInterface aci) {
+		super.onDialogRequest(evt, aci);
+
+		this.setProcessingState(MoProcessingState.OnlyRequestRecieved);
+	}
+
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
 		super.onDialogDelimiter(evt, aci);
 
-		evt.getMAPDialog();
-		MAPDialog dialog = evt.getMAPDialog();
+		if (this.getProcessingState() == MoProcessingState.OnlyRequestRecieved) {
+			this.setProcessingState(null);
+			if (this.logger.isInfoEnabled())
+				this.logger.info("MoSBB: onDialogDelimiter - sending empty TC-CONTINUE for " + evt);
+			evt.getMAPDialog();
+			MAPDialog dialog = evt.getMAPDialog();
 
-		try {
-			dialog.send();
-		} catch (MAPException e) {
-			logger.severe("Error while sending Continue", e);
+			try {
+				dialog.send();
+			} catch (MAPException e) {
+				logger.severe("Error while sending Continue", e);
+			}
 		}
+	}
+
+	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
+		super.onErrorComponent(event, aci);
+
+		this.setProcessingState(MoProcessingState.OtherDataRecieved);
+	}
+
+	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
+		super.onRejectComponent(event, aci);
+
+		this.setProcessingState(MoProcessingState.OtherDataRecieved);
+	}
+
+	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
+		super.onDialogReject(evt, aci);
+
+		this.setProcessingState(MoProcessingState.OtherDataRecieved);
+	}
+
+	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
+		super.onDialogUserAbort(evt, aci);
+
+		this.setProcessingState(MoProcessingState.OtherDataRecieved);
+	}
+
+	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
+		super.onDialogProviderAbort(evt, aci);
+
+		this.setProcessingState(MoProcessingState.OtherDataRecieved);
+	}
+
+	public void onDialogNotice(DialogNotice evt, ActivityContextInterface aci) {
+		super.onDialogNotice(evt, aci);
+
+		this.setProcessingState(MoProcessingState.OtherDataRecieved);
+	}
+
+	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
+		super.onDialogTimeout(evt, aci);
+
+		this.setProcessingState(MoProcessingState.OtherDataRecieved);
 	}
 
 	/**
@@ -68,6 +127,8 @@ public abstract class MoSbb extends MoCommonSbb {
 		if (this.logger.isInfoEnabled()) {
 			this.logger.info("Received MO_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
 		}
+
+		this.setProcessingState(MoProcessingState.OtherDataRecieved);
 
 		SmsSignalInfo smsSignalInfo = evt.getSM_RP_UI();
 		SM_RP_OA smRPOA = evt.getSM_RP_OA();
@@ -353,4 +414,12 @@ public abstract class MoSbb extends MoCommonSbb {
 
 	}
 
+	public abstract void setProcessingState(MoProcessingState processingState);
+
+	public abstract MoProcessingState getProcessingState();
+
+	public enum MoProcessingState {
+		OnlyRequestRecieved,
+		OtherDataRecieved,
+	}
 }
