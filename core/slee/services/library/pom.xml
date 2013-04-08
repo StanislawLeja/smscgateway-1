@@ -22,6 +22,11 @@
 			<artifactId>mobicents-slee-ra-map-library</artifactId>
 			<groupId>org.mobicents.resources</groupId>
 		</dependency>
+		<dependency>
+			<groupId>com.github.stephenc.eaio-uuid</groupId>
+			<artifactId>uuid</artifactId>
+			<version>3.2.0</version>
+		</dependency>		
 	</dependencies>
 
 	<build>

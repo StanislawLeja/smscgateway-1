@@ -46,6 +46,7 @@ import org.mobicents.slee.resource.map.events.DialogReject;
 import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.smsc.slee.services.persistence.Sms;
+import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 
 /**
  * 
@@ -70,7 +71,7 @@ public abstract class SriSbb extends MtCommonSbb {
 	 * Event Handlers
 	 */
 
-	public void onSms(Sms event, ActivityContextInterface aci, EventContext eventContext) {
+	public void onSms(SmsSetEvent event, ActivityContextInterface aci, EventContext eventContext) {
 
 		// Reduce the events pending to be fired on this ACI
 		MtActivityContextInterface mtSbbActivityContextInterface = this.asSbbActivityContextInterface(aci);

@@ -16,7 +16,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
-import org.mobicents.smsc.slee.services.persistence.Sms;
+import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.Esme;
 
 import com.cloudhopper.smpp.pdu.DeliverSm;
@@ -36,39 +36,39 @@ public abstract class RxSmppServerSbb implements Sbb {
 		// TODO Auto-generated constructor stub
 	}
 
-	public void onDeliverSm(Sms event, ActivityContextInterface aci, EventContext eventContext) {
+	public void onDeliverSm(SmsSetEvent event, ActivityContextInterface aci, EventContext eventContext) {
 
-		try {
-			// TODO Change the API of SmsEvent to getEsmeName
-			String esmeName = event.getOrigSystemId();
-			Esme esme = this.smppServerSessions.getEsmeByClusterName(esmeName);
-
-			if (esme == null) {
-				this.logger.severe(String.format("Received DELIVER_SM SmsEvent=%s but no Esme found", event));
-				return;
-			}
-
-			DeliverSm deliverSm = new DeliverSm();
-			deliverSm.setSourceAddress(new Address((byte) event.getSourceAddrTon(), (byte) event.getSourceAddrNpi(), event.getSourceAddr()));
-			deliverSm.setDestAddress(new Address((byte) event.getSmsSet().getDestAddrTon(), (byte) event.getSmsSet().getDestAddrNpi(), event.getSmsSet()
-					.getDestAddr()));
-			deliverSm.setEsmClass((byte)event.getEsmClass());
-			deliverSm.setShortMessage(event.getShortMessage());
-
-			// TODO : waiting for 2 secs for window to accept our request, is it
-			// good? Should time be more here?
-			SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, deliverSm, 2000);
-			ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory
-					.getActivityContextInterface(smppServerTransaction);
-			smppTxaci.attach(this.sbbContext.getSbbLocalObject());
-
-		} catch (Exception e) {
-			logger.severe(
-					String.format("Exception while trying to send DELIVERY Report for received SmsEvent=%s", event), e);
-		} finally {
-			NullActivity nullActivity = (NullActivity) aci.getActivity();
-			nullActivity.endActivity();
-		}
+//		try {
+//			// TODO Change the API of SmsEvent to getEsmeName
+//			String esmeName = event.getOrigSystemId();
+//			Esme esme = this.smppServerSessions.getEsmeByClusterName(esmeName);
+//
+//			if (esme == null) {
+//				this.logger.severe(String.format("Received DELIVER_SM SmsEvent=%s but no Esme found", event));
+//				return;
+//			}
+//
+//			DeliverSm deliverSm = new DeliverSm();
+//			deliverSm.setSourceAddress(new Address((byte) event.getSourceAddrTon(), (byte) event.getSourceAddrNpi(), event.getSourceAddr()));
+//			deliverSm.setDestAddress(new Address((byte) event.getSmsSet().getDestAddrTon(), (byte) event.getSmsSet().getDestAddrNpi(), event.getSmsSet()
+//					.getDestAddr()));
+//			deliverSm.setEsmClass((byte)event.getEsmClass());
+//			deliverSm.setShortMessage(event.getShortMessage());
+//
+//			// TODO : waiting for 2 secs for window to accept our request, is it
+//			// good? Should time be more here?
+//			SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, deliverSm, 2000);
+//			ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory
+//					.getActivityContextInterface(smppServerTransaction);
+//			smppTxaci.attach(this.sbbContext.getSbbLocalObject());
+//
+//		} catch (Exception e) {
+//			logger.severe(
+//					String.format("Exception while trying to send DELIVERY Report for received SmsEvent=%s", event), e);
+//		} finally {
+//			NullActivity nullActivity = (NullActivity) aci.getActivity();
+//			nullActivity.endActivity();
+//		}
 
 	}
 
