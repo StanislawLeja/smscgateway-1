@@ -25,6 +25,7 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsSubmitTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
+import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogNotice;
 import org.mobicents.slee.resource.map.events.DialogProviderAbort;
@@ -282,19 +283,36 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		switch (dataCodingScheme.getCharacterSet()) {
 		case GSM7:
-			smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
-			break;
-		case GSM8:
-			// TODO : Is this correct?
-			smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
-			break;
-		case UCS2:
-			smsPayload = userData.getEncodedData();
+			UserDataHeader udh = userData.getDecodedUserDataHeader();
+			if (udh != null) {
+				byte[] buf1 = udh.getEncodedData();
+				if (buf1 != null) {
+					byte[] buf2 = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
+					smsPayload = new byte[buf1.length + buf2.length];
+					System.arraycopy(buf1, 0, smsPayload, 0, buf1.length);
+					System.arraycopy(buf2, 0, smsPayload, buf1.length, buf2.length);
+				} else {
+					smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
+				}
+			} else {
+				smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
+			}
 			break;
 		default:
-			logger.warning("Received unrecognized DataCodingScheme " + dataCodingScheme);
 			smsPayload = userData.getEncodedData();
 			break;
+
+//		case GSM8:
+//			// TODO : Is this correct?
+//			smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
+//			break;
+//		case UCS2:
+//			smsPayload = userData.getEncodedData();
+//			break;
+//		default:
+//			logger.warning("Received unrecognized DataCodingScheme " + dataCodingScheme);
+//			smsPayload = userData.getEncodedData();
+//			break;
 		}
 
 		rxSMS.setShortMessage(smsPayload);
