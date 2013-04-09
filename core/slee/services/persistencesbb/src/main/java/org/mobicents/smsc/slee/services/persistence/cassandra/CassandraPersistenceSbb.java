@@ -25,8 +25,8 @@ package org.mobicents.smsc.slee.services.persistence.cassandra;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.slee.ActivityContextInterface;
 import javax.slee.CreateException;
@@ -45,6 +45,7 @@ import me.prettyprint.cassandra.serializers.DateSerializer;
 import me.prettyprint.cassandra.serializers.IntegerSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.cassandra.serializers.TimeUUIDSerializer;
+import me.prettyprint.cassandra.serializers.UUIDSerializer;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.ColumnSlice;
 import me.prettyprint.hector.api.beans.Composite;
@@ -55,6 +56,7 @@ import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.mutation.Mutator;
 import me.prettyprint.hector.api.query.ColumnQuery;
 import me.prettyprint.hector.api.query.QueryResult;
+import me.prettyprint.hector.api.query.SliceQuery;
 
 import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
@@ -75,8 +77,6 @@ import org.mobicents.smsc.slee.services.persistence.SmType;
 import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.slee.services.persistence.SmsSet;
 import org.mobicents.smsc.slee.services.persistence.TargetAddress;
-
-import com.eaio.uuid.UUID;
 
 /**
  * @author baranowb
@@ -109,18 +109,24 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 
 		SmsSet smsSet = null;
 		try {
-			ColumnQuery<String, Composite, ByteBuffer> query = HFactory.createColumnQuery(keyspace, StringSerializer.get(), CompositeSerializer.get(), ByteBufferSerializer.get());
+//			ColumnQuery<String, Composite, ByteBuffer> query = HFactory.createColumnQuery(keyspace, StringSerializer.get(), CompositeSerializer.get(), ByteBufferSerializer.get());
+			SliceQuery<String, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, StringSerializer.get(), CompositeSerializer.get(), ByteBufferSerializer.get());
 			query.setColumnFamily(Schema.FAMILY_LIVE);
 			Composite coKey3 = new Composite();
 			coKey3.addComponent(ta.getAddrTon(), IntegerSerializer.get());
 			coKey3.addComponent(ta.getAddrNpi(), IntegerSerializer.get());
 			coKey3.addComponent(Schema.COLUMN_ADDR_DST_TON, StringSerializer.get());
-			query.setName(coKey3);
-			query.setKey(ta.getAddr());
+//			query.setNames(coKey3);
+//			query.setColumnNames(arg0);
+//			query.setKey(ta.getAddr());
 
-			QueryResult<HColumn<Composite,ByteBuffer>> result = query.execute();
-			
+//			QueryResult<HColumn<Composite,ByteBuffer>> result = query.execute();
+			QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
+//			HColumn<Composite, ByteBuffer> rows = result.get();
 
+
+			int i1 = 0;
+			i1++;
 
 //			final IndexedSlicesQuery<String, String, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace, StringSerializer.get(), SERIALIZER_STRING,
 //					ByteBufferSerializer.get());
@@ -155,6 +161,83 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		return smsSet;
 	}
 
+	public void createLiveSms(Sms sms) throws PersistenceException {
+
+		try {
+			Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
+
+			this.FillUpdateFields(sms, mutator, Schema.FAMILY_LIVE_SMS);
+
+	        mutator.execute();
+		} catch (Exception e) {
+			int i1 = 0;
+			i1++;
+			return;
+		}
+	}
+
+	private void FillUpdateFields(Sms sms, Mutator<UUID> mutator, String columnFamilyName) {
+		Composite cc = new Composite();
+		cc.addComponent(Schema.COLUMN_ID, StringSerializer.get());
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getDbId(), CompositeSerializer.get(), UUIDSerializer.get()));
+		cc = new Composite();
+		cc.addComponent(Schema.COLUMN_ADDR_DST_DIGITS, StringSerializer.get());
+		mutator.addInsertion(sms.getDbId(), columnFamilyName,
+				HFactory.createColumn(cc, sms.getSmsSet().getDestAddr(), CompositeSerializer.get(), StringSerializer.get()));
+		cc = new Composite();
+		cc.addComponent(Schema.COLUMN_ADDR_DST_TON, StringSerializer.get());
+		mutator.addInsertion(sms.getDbId(), columnFamilyName,
+				HFactory.createColumn(cc, sms.getSmsSet().getDestAddrTon(), CompositeSerializer.get(), IntegerSerializer.get()));
+		cc = new Composite();
+		cc.addComponent(Schema.COLUMN_ADDR_DST_NPI, StringSerializer.get());
+		mutator.addInsertion(sms.getDbId(), columnFamilyName,
+				HFactory.createColumn(cc, sms.getSmsSet().getDestAddrNpi(), CompositeSerializer.get(), IntegerSerializer.get()));
+
+		// ............................
+	}
+
+	public void archiveDeliveredSms(Sms sms) throws PersistenceException {
+		// ............................
+		this.doArchiveDeliveredSms(sms);
+	}
+
+	public void archiveFailuredSms(Sms sms) throws PersistenceException {
+		// ............................
+		this.doArchiveDeliveredSms(sms);
+	}
+
+	private void doArchiveDeliveredSms(Sms sms) {
+		try {
+			Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
+
+			this.FillUpdateFields(sms, mutator, Schema.FAMILY_ARCHIVE);
+
+			Composite cc = new Composite();
+			cc.addComponent(Schema.COLUMN_ADDR_SRC_DIGITS, StringSerializer.get());
+			mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
+					HFactory.createColumn(cc, sms.getSourceAddr(), CompositeSerializer.get(), StringSerializer.get()));
+			cc = new Composite();
+			cc.addComponent(Schema.COLUMN_ADDR_SRC_TON, StringSerializer.get());
+			mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
+					HFactory.createColumn(cc, sms.getSourceAddrTon(), CompositeSerializer.get(), IntegerSerializer.get()));
+			cc = new Composite();
+			cc.addComponent(Schema.COLUMN_ADDR_SRC_NPI, StringSerializer.get());
+			mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
+					HFactory.createColumn(cc, sms.getSourceAddrNpi(), CompositeSerializer.get(), IntegerSerializer.get()));
+
+			// ............................
+
+			mutator.execute();
+		} catch (Exception e) {
+			int i1 = 0;
+			i1++;
+			return;
+		}
+	}
+
+	public Sms obtainLiveSms(UUID dbId) throws PersistenceException {
+		return null;
+	}
 
     /*
      * (non-Javadoc)

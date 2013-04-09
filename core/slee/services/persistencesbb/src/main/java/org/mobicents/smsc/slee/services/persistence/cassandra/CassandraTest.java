@@ -25,6 +25,7 @@ package org.mobicents.smsc.slee.services.persistence.cassandra;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.slee.ActivityContextInterface;
 import javax.slee.CreateException;
@@ -55,11 +56,10 @@ import org.mobicents.smsc.slee.services.persistence.ErrorCode;
 import org.mobicents.smsc.slee.services.persistence.PersistenceException;
 import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.slee.services.persistence.SmsSet;
+import org.mobicents.smsc.slee.services.persistence.TargetAddress;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import com.eaio.uuid.UUID;
 
 /**
  * 
@@ -107,25 +107,54 @@ public class CassandraTest {
 	public void testA() {
 		if (!this.cassandraDbInited)
 			return;		
-		
-		
+
 		try {
-			Cluster cluster = HFactory.getOrCreateCluster("TestCluster", new CassandraHostConfigurator("localhost:9160"));
-			Keyspace keyspace = HFactory.createKeyspace("TelestaxSMSC", cluster);
+			Sms sms = new Sms();
+			SmsSet smsSet = new SmsSet();
+			sms.setSmsSet(smsSet);
+			smsSet.setDestAddr("1111");
+			smsSet.setDestAddrTon(4);
+			smsSet.setDestAddrNpi(1);
+			sms.setDbId(UUID.randomUUID());
 
-			// saving 
-			String addrDstDigits = "1111";
-			Mutator<String> mutator = HFactory.createMutator(keyspace, StringSerializer.get());
-			Composite cc = new Composite();
-			cc.addComponent("ADDR_DST_DIGITS", StringSerializer.get());
-	        mutator.addInsertion(addrDstDigits, "TST", HFactory.createColumn(cc, addrDstDigits, CompositeSerializer.get(), StringSerializer.get()));
-			cc = new Composite();
-			cc.addComponent("IN_SYSTEM", StringSerializer.get());
-	        mutator.addInsertion(addrDstDigits, "TST", HFactory.createColumn(cc, 1, CompositeSerializer.get(), IntegerSerializer.get()));
-//	        mutator.addInsertion(addrDstDigits, "TST", HFactory.createColumn("IN_SYSTEM", 1, StringSerializer.get(), IntegerSerializer.get()));
-//	        mutator.addInsertion(addrDstDigits, "TST", HFactory.createColumn("SM_STATUS", 0, StringSerializer.get(), IntegerSerializer.get()));
-
-	        mutator.execute();
+			this.sbb.createLiveSms(sms);
+			
+			
+			
+			
+			
+			
+//			TargetAddress ta = new TargetAddress(4, 1, "1111");
+//			// int addrTon, int addrNpi, String addr
+//			SmsSet smsSet = this.sbb.obtainSmsSet(ta);
+//
+//			
+//			
+//			Cluster cluster = HFactory.getOrCreateCluster("TestCluster", new CassandraHostConfigurator("localhost:9160"));
+//			Keyspace keyspace = HFactory.createKeyspace("TelestaxSMSC", cluster);
+//
+//			// saving 
+//			String addrDstDigits = "1111";
+//			Mutator<String> mutator = HFactory.createMutator(keyspace, StringSerializer.get());
+//			Composite cc = new Composite();
+//			cc.addComponent(4, IntegerSerializer.get());
+//			cc.addComponent(1, IntegerSerializer.get());
+//			cc.addComponent("ADDR_DST_DIGITS", StringSerializer.get());
+//	        mutator.addInsertion(addrDstDigits, "LIVE", HFactory.createColumn(cc, addrDstDigits, CompositeSerializer.get(), StringSerializer.get()));
+//			cc = new Composite();
+//			cc.addComponent(4, IntegerSerializer.get());
+//			cc.addComponent(1, IntegerSerializer.get());
+//			cc.addComponent("ADDR_DST_TON", StringSerializer.get());
+//	        mutator.addInsertion(addrDstDigits, "LIVE", HFactory.createColumn(cc, 1, CompositeSerializer.get(), IntegerSerializer.get()));
+//			cc = new Composite();
+//			cc.addComponent(4, IntegerSerializer.get());
+//			cc.addComponent(1, IntegerSerializer.get());
+//			cc.addComponent("ADDR_DST_NPI", StringSerializer.get());
+//	        mutator.addInsertion(addrDstDigits, "LIVE", HFactory.createColumn(cc, 4, CompositeSerializer.get(), IntegerSerializer.get()));
+////	        mutator.addInsertion(addrDstDigits, "TST", HFactory.createColumn("IN_SYSTEM", 1, StringSerializer.get(), IntegerSerializer.get()));
+////	        mutator.addInsertion(addrDstDigits, "TST", HFactory.createColumn("SM_STATUS", 0, StringSerializer.get(), IntegerSerializer.get()));
+//
+//	        mutator.execute();
 			
 //			String addrDstDigits = "1111";
 //			int ton = 1;
@@ -251,39 +280,39 @@ public class CassandraTest {
 	//
 //	        if (persistableSms.getMxAddress() != null)
 //	            createSccpAddress(mutator, FAMILY,archiveKey,Schema.SCCP_PREFIX_MX, persistableSms.getMxAddress());
-	        
-	        mutator.execute();
-			
-			// getting
-
-
-			ColumnQuery<Composite, String, String> q = HFactory.createColumnQuery(keyspace, CompositeSerializer.get(), StringSerializer.get(),
-					StringSerializer.get());			
-	        Composite colKey2 = new Composite();
-	        colKey2.addComponent("1111", StringSerializer.get());
-	        colKey2.addComponent(1, IntegerSerializer.get());
-	        colKey2.addComponent(4, IntegerSerializer.get());
-	        q.setColumnFamily(Schema.FAMILY_LIVE);
-	        q.setKey(colKey2);
-	        q.setName(Schema.COLUMN_ADDR_DST_DIGITS);
-	        QueryResult<HColumn<String, String>> qr = q.execute();
-
-			
-			
-			
-			IndexedSlicesQuery<String, String, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace, StringSerializer.get(), StringSerializer.get(),
-					ByteBufferSerializer.get());
-			query.setColumnFamily(Schema.FAMILY_LIVE);
-			query.setColumnNames(Schema.COLUMNS_LIVE);
-			query.addEqualsExpression(Schema.COLUMN_ADDR_DST_DIGITS, StringSerializer.get().toByteBuffer("1111"));
-//			query.addEqualsExpression(Schema.COLUMN_ADDR_DST_TON, IntegerSerializer.get().toByteBuffer(1));
-//			query.addEqualsExpression(Schema.COLUMN_ADDR_DST_NPI+"XXX", IntegerSerializer.get().toByteBuffer(4));
-			// query.addGteExpression(Schema.COLUMN_SCHEDULE_DELIVERY,
-			// SERIALIZER_DATE.toByteBuffer(new Date()));
-
-			final QueryResult<OrderedRows<String, String, ByteBuffer>> result = query.execute();
-			final OrderedRows<String, String, ByteBuffer> rows = result.get();
-			final List<Row<String, String, ByteBuffer>> rowsList = rows.getList();
+//	        
+//	        mutator.execute();
+//			
+//			// getting
+//
+//
+//			ColumnQuery<Composite, String, String> q = HFactory.createColumnQuery(keyspace, CompositeSerializer.get(), StringSerializer.get(),
+//					StringSerializer.get());			
+//	        Composite colKey2 = new Composite();
+//	        colKey2.addComponent("1111", StringSerializer.get());
+//	        colKey2.addComponent(1, IntegerSerializer.get());
+//	        colKey2.addComponent(4, IntegerSerializer.get());
+//	        q.setColumnFamily(Schema.FAMILY_LIVE);
+//	        q.setKey(colKey2);
+//	        q.setName(Schema.COLUMN_ADDR_DST_DIGITS);
+//	        QueryResult<HColumn<String, String>> qr = q.execute();
+//
+//			
+//			
+//			
+//			IndexedSlicesQuery<String, String, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace, StringSerializer.get(), StringSerializer.get(),
+//					ByteBufferSerializer.get());
+//			query.setColumnFamily(Schema.FAMILY_LIVE);
+//			query.setColumnNames(Schema.COLUMNS_LIVE);
+//			query.addEqualsExpression(Schema.COLUMN_ADDR_DST_DIGITS, StringSerializer.get().toByteBuffer("1111"));
+////			query.addEqualsExpression(Schema.COLUMN_ADDR_DST_TON, IntegerSerializer.get().toByteBuffer(1));
+////			query.addEqualsExpression(Schema.COLUMN_ADDR_DST_NPI+"XXX", IntegerSerializer.get().toByteBuffer(4));
+//			// query.addGteExpression(Schema.COLUMN_SCHEDULE_DELIVERY,
+//			// SERIALIZER_DATE.toByteBuffer(new Date()));
+//
+//			final QueryResult<OrderedRows<String, String, ByteBuffer>> result = query.execute();
+//			final OrderedRows<String, String, ByteBuffer> rows = result.get();
+//			final List<Row<String, String, ByteBuffer>> rowsList = rows.getList();
 
 			// SliceQuery<String, String> q = HFactory.createSliceQuery(ko, se,
 			// se, se);
@@ -407,18 +436,6 @@ public class CassandraTest {
 		}
 
 		@Override
-		public void createLiveSms(Sms sms) throws PersistenceException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public Sms obtainLiveSms(UUID dbId) throws PersistenceException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
 		public Sms obtainLiveSms(long messageId) throws PersistenceException {
 			// TODO Auto-generated method stub
 			return null;
@@ -426,18 +443,6 @@ public class CassandraTest {
 
 		@Override
 		public void updateLiveSms(Sms sms) throws PersistenceException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void archiveDeliveredSms(Sms sms) throws PersistenceException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void archiveFailuredSms(Sms sms) throws PersistenceException {
 			// TODO Auto-generated method stub
 			
 		}
@@ -452,6 +457,12 @@ public class CassandraTest {
 		public void fetchSchedulableSms(SmsSet smsSet) throws PersistenceException {
 			// TODO Auto-generated method stub
 			
+		}
+
+		@Override
+		public Sms obtainLiveSms(com.eaio.uuid.UUID dbId) throws PersistenceException {
+			// TODO Auto-generated method stub
+			return null;
 		}
 		
 	}

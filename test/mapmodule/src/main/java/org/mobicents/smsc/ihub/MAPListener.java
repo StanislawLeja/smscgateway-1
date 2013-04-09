@@ -12,6 +12,7 @@ import org.mobicents.protocols.ss7.map.api.dialog.MAPAbortSource;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPNoticeProblemDiagnostic;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
+import org.mobicents.protocols.ss7.map.api.errors.AbsentSubscriberDiagnosticSM;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessageFactory;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
@@ -198,7 +199,7 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 		if (this.currentMapMessageCount % 7 == 0) {
 			// Send back AbsentSubscriber for every 7th MtSMS
 			try {
-				MAPErrorMessage mapErrorMessage = mAPErrorMessageFactory.createMAPErrorMessageAbsentSubscriberSM(1,
+				MAPErrorMessage mapErrorMessage = mAPErrorMessageFactory.createMAPErrorMessageAbsentSubscriberSM(AbsentSubscriberDiagnosticSM.IMSIDetached,
 						null, null);
 				mapDialogSms.sendErrorComponent(event.getInvokeId(), mapErrorMessage);
 				mapDialogSms.close(false);
@@ -285,7 +286,7 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 		if (this.currentMapMessageCount % 7 == 0) {
 			// Send back AbsentSubscriber for every 7th MtSMS
 			try {
-				MAPErrorMessage mapErrorMessage = mAPErrorMessageFactory.createMAPErrorMessageAbsentSubscriberSM(1,
+				MAPErrorMessage mapErrorMessage = mAPErrorMessageFactory.createMAPErrorMessageAbsentSubscriberSM(AbsentSubscriberDiagnosticSM.IMSIDetached,
 						null, null);
 				mapDialogSms.sendErrorComponent(event.getInvokeId(), mapErrorMessage);
 				mapDialogSms.close(false);
