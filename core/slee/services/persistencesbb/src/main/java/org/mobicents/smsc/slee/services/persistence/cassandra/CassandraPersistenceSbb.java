@@ -43,6 +43,7 @@ import me.prettyprint.cassandra.serializers.BytesArraySerializer;
 import me.prettyprint.cassandra.serializers.CompositeSerializer;
 import me.prettyprint.cassandra.serializers.DateSerializer;
 import me.prettyprint.cassandra.serializers.IntegerSerializer;
+import me.prettyprint.cassandra.serializers.LongSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.cassandra.serializers.TimeUUIDSerializer;
 import me.prettyprint.cassandra.serializers.UUIDSerializer;
@@ -193,6 +194,19 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		mutator.addInsertion(sms.getDbId(), columnFamilyName,
 				HFactory.createColumn(cc, sms.getSmsSet().getDestAddrNpi(), CompositeSerializer.get(), IntegerSerializer.get()));
 
+		cc = new Composite();
+		cc.addComponent(Schema.COLUMN_MESSAGE_ID, StringSerializer.get());
+		mutator.addInsertion(sms.getDbId(), columnFamilyName,
+				HFactory.createColumn(cc, sms.getMessageId(), CompositeSerializer.get(), LongSerializer.get()));
+		cc = new Composite();
+		cc.addComponent(Schema.COLUMN_ORIG_ESME_ID, StringSerializer.get());
+		mutator.addInsertion(sms.getDbId(), columnFamilyName,
+				HFactory.createColumn(cc, sms.getOrigEsmeId(), CompositeSerializer.get(), StringSerializer.get()));
+		cc = new Composite();
+		cc.addComponent(Schema.COLUMN_ORIG_SYSTEM_ID, StringSerializer.get());
+		mutator.addInsertion(sms.getDbId(), columnFamilyName,
+				HFactory.createColumn(cc, sms.getOrigSystemId(), CompositeSerializer.get(), StringSerializer.get()));
+		
 		// ............................
 	}
 
@@ -225,6 +239,19 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
 					HFactory.createColumn(cc, sms.getSourceAddrNpi(), CompositeSerializer.get(), IntegerSerializer.get()));
 
+			cc = new Composite();
+			cc.addComponent(Schema.COLUMN_DEST_CLUSTER_NAME, StringSerializer.get());
+			mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
+					HFactory.createColumn(cc, sms.getSmsSet().getDestClusterName(), CompositeSerializer.get(), StringSerializer.get()));
+			cc = new Composite();
+			cc.addComponent(Schema.COLUMN_DEST_ESME_ID, StringSerializer.get());
+			mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
+					HFactory.createColumn(cc, sms.getSmsSet().getDestEsmeId(), CompositeSerializer.get(), StringSerializer.get()));
+			cc = new Composite();
+			cc.addComponent(Schema.COLUMN_DEST_SYSTEM_ID, StringSerializer.get());
+			mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
+					HFactory.createColumn(cc, sms.getSmsSet().getDestSystemId(), CompositeSerializer.get(), StringSerializer.get()));
+			
 			// ............................
 
 			mutator.execute();
