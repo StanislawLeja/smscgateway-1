@@ -10,3 +10,5 @@ target
 #linux editor tmp file
 *.*~
 /SmppSimulatorParameters.xml
+/test-output
+/.gitignore

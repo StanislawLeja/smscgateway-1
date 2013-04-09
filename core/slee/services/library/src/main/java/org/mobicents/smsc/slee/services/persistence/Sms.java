@@ -25,6 +25,7 @@ package org.mobicents.smsc.slee.services.persistence;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.UUID;
 
 
 import javolution.util.FastList;
@@ -32,7 +33,6 @@ import javolution.util.FastList;
 import com.cloudhopper.smpp.pdu.Pdu;
 import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.tlv.TlvConvertException;
-import com.eaio.uuid.UUID;
 
 /**
  * 

@@ -1,119 +1,108 @@
-CREATE KEYSPACE TelestaxSMSC
+CREATE KEYSPACE "TelestaxSMSC"
          WITH REPLICATION = {'CLASS' : 'SimpleStrategy', 'replication_factor': 1};
 
-USE TelestaxSMSC;
+USE "TelestaxSMSC";
 
-CREATE TABLE LIVE (
-	ADDR_DST_DIGITS ascii,
-	ADDR_DST_TON int, 
-	ADDR_DST_NPI int, 
-	DEST_CLASTER_NAME text, 
+CREATE TABLE "LIVE" (
+	"ADDR_DST_DIGITS" ascii,
+	"ADDR_DST_TON" int, 
+	"ADDR_DST_NPI" int, 
 
-	IN_SYSTEM boolean, 
-	DUE_DATE timestamp,
+	"IN_SYSTEM" int, 
+	"DUE_DATE" timestamp,
+	"SM_STATUS" int,
+	"DELIVERY_COUNT" int,
+	"LAST_DELIVERY" timestamp,
+	"ALERTING_SUPPORTED" boolean,
 
-	PRIMARY KEY (ADDR_DST_DIGITS, ADDR_DST_TON, ADDR_DST_NPI) 
+	PRIMARY KEY ("ADDR_DST_DIGITS", "ADDR_DST_TON", "ADDR_DST_NPI") 
 );
 
-CREATE INDEX ON LIVE (IN_SYSTEM);
-CREATE INDEX ON LIVE (DUE_DATE);
+CREATE INDEX ON "LIVE" ("IN_SYSTEM");
+CREATE INDEX ON "LIVE" ("DUE_DATE");
 
-CREATE TABLE LIVE_SMS ( 
-	ID uuid, 
+CREATE TABLE "LIVE_SMS" ( 
+	"ID" uuid, 
 
-	ADDR_DST_DIGITS ascii,
-	ADDR_DST_TON int, 
-	ADDR_DST_NPI int, 
+	"ADDR_DST_DIGITS" ascii,
+	"ADDR_DST_TON" int, 
+	"ADDR_DST_NPI" int, 
 
-	MESSAGE_ID bigint,
-	ORIG_ESME_ID text,
-	ORIG_SYSTEM_ID text, 
-	SUBMIT_DATE timestamp, 
+	"MESSAGE_ID" bigint,
+	"ORIG_ESME_ID" text,
+	"ORIG_SYSTEM_ID" text, 
+	"SUBMIT_DATE" timestamp, 
 
-	ADDR_SRC_DIGITS ascii, 
-	ADDR_SRC_TON int, 
-	ADDR_SRC_NPI int, 
+	"ADDR_SRC_DIGITS" ascii, 
+	"ADDR_SRC_TON" int, 
+	"ADDR_SRC_NPI" int, 
 
-	SERVICE_TYPE text,  
-	ESM_CLASS int , 
-	PROTOCOL_ID int , 
-	PRIORITY int, 
-	REGISTERED_DELIVERY int, 
-	REPLACE int, 
-	DATA_CODING int, 
-	DEFAULT_MSG_ID int, 
+	"SERVICE_TYPE" text,  
+	"ESM_CLASS" int , 
+	"PROTOCOL_ID" int , 
+	"PRIORITY" int, 
+	"REGISTERED_DELIVERY" int, 
+	"REPLACE" int, 
+	"DATA_CODING" int, 
+	"DEFAULT_MSG_ID" int, 
 
-	MESSAGE blob,
-	OPTIONAL_PARAMETERS MAP<int, blob>, 
-	SCHEDULE_DELIVERY timestamp,
-	VALIDITY_PERIOD timestamp,
-	EXPIRY_DATE timestamp,
+	"MESSAGE" blob,
+	"OPTIONAL_PARAMETERS" MAP<int, blob>, 
+	"SCHEDULE_DELIVERY" timestamp,
+	"VALIDITY_PERIOD" timestamp,
 
-	SM_TYPE int, 
-	DELIVERY_COUNT int, 
-	LAST_DELIVERY timestamp,  
-	ALERTING_SUPPORTED boolean, 
-
-	PRIMARY KEY (ADDR_DST_DIGITS, ADDR_DST_TON, ADDR_DST_NPI, ID) 
+	PRIMARY KEY ("ID") 
 );
 
-CREATE TABLE ARCHIVE ( 
-	ID uuid, 
+CREATE INDEX ON "LIVE_SMS" ("ADDR_DST_DIGITS");
+CREATE INDEX ON "LIVE_SMS" ("ADDR_DST_TON");
+CREATE INDEX ON "LIVE_SMS" ("ADDR_DST_NPI");
+CREATE INDEX ON "LIVE_SMS" ("MESSAGE_ID");
 
-	ADDR_DST_DIGITS ascii,
-	ADDR_DST_TON int, 
-	ADDR_DST_NPI int, 
-	ADDR_SRC_DIGITS ascii, 
-	ADDR_SRC_TON int, 
-	ADDR_SRC_NPI int, 
+CREATE TABLE "ARCHIVE" ( 
+	"ID" uuid, 
 
-	MESSAGE_ID bigint,
-	ORIG_ESME_ID text,
-	ORIG_SYSTEM_ID text, 
-	DEST_CLASTER_NAME text, 
-	DEST_ESME_ID text,
-	SUBMIT_DATE timestamp, 
-	DELIVER_DATE timestamp, 
-	SM_STATUS int,
+	"ADDR_DST_DIGITS" ascii,
+	"ADDR_DST_TON" int, 
+	"ADDR_DST_NPI" int, 
+	"ADDR_SRC_DIGITS" ascii, 
+	"ADDR_SRC_TON" int, 
+	"ADDR_SRC_NPI" int, 
 
-	SERVICE_TYPE text,  
-	ESM_CLASS int , 
-	PROTOCOL_ID int , 
-	PRIORITY int, 
-	REGISTERED_DELIVERY int, 
-	REPLACE int, 
-	DATA_CODING int, 
-	DEFAULT_MSG_ID int, 
+	"MESSAGE_ID" bigint,
+	"ORIG_ESME_ID" text,
+	"ORIG_SYSTEM_ID" text, 
+	"DEST_CLUSTER_NAME" text, 
+	"DEST_ESME_ID" text,
+	"DEST_SYSTEM_ID" text,
+	"SUBMIT_DATE" timestamp, 
+	"DELIVER_DATE" timestamp, 
 
-	MESSAGE blob,
-	OPTIONAL_PARAMETERS MAP<int, blob>, 
-	SCHEDULE_DELIVERY timestamp,
-	VALIDITY_PERIOD timestamp,
+	"SERVICE_TYPE" text,  
+	"ESM_CLASS" int , 
+	"PROTOCOL_ID" int , 
+	"PRIORITY" int, 
+	"REGISTERED_DELIVERY" int, 
+	"REPLACE" int, 
+	"DATA_CODING" int, 
+	"DEFAULT_MSG_ID" int, 
 
-	IMSI ascii,
-	NNN_DIGITS ascii,
-	NNN_AN int,
-	NNN_NP int,
-	SM_TYPE int, 
-	DELIVERY_COUNT int, 
+	"MESSAGE" text,
+	"OPTIONAL_PARAMETERS" MAP<int, blob>, 
+	"SCHEDULE_DELIVERY" timestamp,
+	"VALIDITY_PERIOD" timestamp,
 
-	PRIMARY KEY (ID) 
+	"IMSI" ascii,
+	"NNN_DIGITS" ascii,
+	"NNN_AN" int,
+	"NNN_NP" int,
+	"SM_STATUS" int,
+	"SM_TYPE" int, 
+	"DELIVERY_COUNT" int, 
+
+	PRIMARY KEY ("ID") 
 );
 
-CREATE INDEX ON LIVE (ADDR_DST_DIGITS);
-CREATE INDEX ON LIVE (ADDR_SRC_DIGITS);
-
-
-
-
-
-
-
-
-CREATE TABLE ARCHIVE ( ID uuid PRIMARY KEY , MESSAGE_ID text ,SYSTEM_ID text, ADDR_SRC_TON varint, ADDR_SRC_NPI varint , ADDR_SRC_DIGITS ascii, ADDR_DST_TON varint , ADDR_DST_NPI varint , ADDR_DST_DIGITS ascii, ESM_CLASS varint , PROTOCOL_ID varint , PRIORITY varint, REGISTERED_DELIVERY varint , REPLACE varint, DATA_CODING varint, DEFAULT_MSG_ID varint, MESSAGE blob , OPTIONAL_PARAMETERS blob,SM_TYPE varint, DELIVERY_COUNT varint, SUBMIT_DATE timestamp, SCHEDULE_DELIVERY timestamp,VALIDITY_PERIOD timestamp,  EXPIRY_DATE timestamp,LAST_DELIVERY timestamp,  MX_AI_RI varint , MX_AI_GT_I varint  , MX_GT_NOA varint , MX_GT_TT varint, MX_GT_NP varint , MX_GT_DIGITS ascii , MX_PC varint, MX_SSN varint, SC_AI_RI varint , SC_AI_GT_I varint  , SC_GT_NOA varint , SC_GT_TT varint, SC_GT_NP varint , SC_GT_DIGITS ascii , SC_PC varint, SC_SSN varint, SM_STATUS varint, ERROR_CODE varint);
-
-CREATE INDEX  inSystem ON LIVE ( IN_SYSTEM );
-CREATE INDEX  dueDate ON LIVE ( DUE_DATE );
-CREATE INDEX  addrDst ON LIVE ( ADDR_DST_DIGITS );
-CREATE INDEX  alerting ON LIVE ( ALERTING_SUPPORTED );
+CREATE INDEX ON "ARCHIVE" ("ADDR_DST_DIGITS");
+CREATE INDEX ON "ARCHIVE" ("ADDR_SRC_DIGITS");
 

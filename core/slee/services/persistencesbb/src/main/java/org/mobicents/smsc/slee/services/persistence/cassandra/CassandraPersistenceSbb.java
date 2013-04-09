@@ -19,13 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.slee.services.persistence.cassandra;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.slee.ActivityContextInterface;
 import javax.slee.CreateException;
@@ -39,18 +40,23 @@ import me.prettyprint.cassandra.model.IndexedSlicesQuery;
 import me.prettyprint.cassandra.serializers.BooleanSerializer;
 import me.prettyprint.cassandra.serializers.ByteBufferSerializer;
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
+import me.prettyprint.cassandra.serializers.CompositeSerializer;
 import me.prettyprint.cassandra.serializers.DateSerializer;
 import me.prettyprint.cassandra.serializers.IntegerSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.cassandra.serializers.TimeUUIDSerializer;
+import me.prettyprint.cassandra.serializers.UUIDSerializer;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.ColumnSlice;
+import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.OrderedRows;
 import me.prettyprint.hector.api.beans.Row;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.mutation.Mutator;
+import me.prettyprint.hector.api.query.ColumnQuery;
 import me.prettyprint.hector.api.query.QueryResult;
+import me.prettyprint.hector.api.query.SliceQuery;
 
 import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
@@ -69,11 +75,12 @@ import org.mobicents.smsc.slee.services.persistence.Persistence;
 import org.mobicents.smsc.slee.services.persistence.PersistenceException;
 import org.mobicents.smsc.slee.services.persistence.SmType;
 import org.mobicents.smsc.slee.services.persistence.Sms;
-
-import com.eaio.uuid.UUID;
+import org.mobicents.smsc.slee.services.persistence.SmsSet;
+import org.mobicents.smsc.slee.services.persistence.TargetAddress;
 
 /**
  * @author baranowb
+ * @author sergey vetyutnev
  * 
  */
 public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
@@ -90,12 +97,147 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
     
     private SbbContextExt sbbContextExt;
     private HectorClientRAInterface raSbbInterface;
-    private Keyspace keyspace;
+    protected Keyspace keyspace;
 
     private Tracer logger;
     // ----------------------------------------
     // SBB LO
     // ----------------------------------------
+ 
+	@Override
+	public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException {
+
+		SmsSet smsSet = null;
+		try {
+//			ColumnQuery<String, Composite, ByteBuffer> query = HFactory.createColumnQuery(keyspace, StringSerializer.get(), CompositeSerializer.get(), ByteBufferSerializer.get());
+			SliceQuery<String, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, StringSerializer.get(), CompositeSerializer.get(), ByteBufferSerializer.get());
+			query.setColumnFamily(Schema.FAMILY_LIVE);
+			Composite coKey3 = new Composite();
+			coKey3.addComponent(ta.getAddrTon(), IntegerSerializer.get());
+			coKey3.addComponent(ta.getAddrNpi(), IntegerSerializer.get());
+			coKey3.addComponent(Schema.COLUMN_ADDR_DST_TON, StringSerializer.get());
+//			query.setNames(coKey3);
+//			query.setColumnNames(arg0);
+//			query.setKey(ta.getAddr());
+
+//			QueryResult<HColumn<Composite,ByteBuffer>> result = query.execute();
+			QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
+//			HColumn<Composite, ByteBuffer> rows = result.get();
+
+
+			int i1 = 0;
+			i1++;
+
+//			final IndexedSlicesQuery<String, String, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace, StringSerializer.get(), SERIALIZER_STRING,
+//					ByteBufferSerializer.get());
+//			query.setColumnFamily(Schema.FAMILY_LIVE);
+//			query.setColumnNames(Schema.COLUMNS_LIVE);
+//			query.addEqualsExpression(Schema.COLUMN_ADDR_DST_DIGITS, StringSerializer.get().toByteBuffer(ta.getAddr()));
+//			query.addEqualsExpression(Schema.COLUMN_ADDR_DST_TON, IntegerSerializer.get().toByteBuffer(ta.getAddrTon()));
+//			query.addEqualsExpression(Schema.COLUMN_ADDR_DST_NPI, IntegerSerializer.get().toByteBuffer(ta.getAddrNpi()));
+//
+//			final QueryResult<OrderedRows<String, String, ByteBuffer>> result = query.execute();
+//			final OrderedRows<String, String, ByteBuffer> rows = result.get();
+//			final List<Row<String, String, ByteBuffer>> rowsList = rows.getList();
+
+			// for (Row<UUID, String, ByteBuffer> row : rowsList) {
+			// final ColumnSlice<String, ByteBuffer> cSlice =
+			// row.getColumnSlice();
+			// final UUID key = row.getKey();
+			// try {
+			// PersistableSms psms = createSms(key, true, cSlice);
+			// lst.add(psms);
+			// } catch (IOException e) {
+			// if (logger.isSevereEnabled()) {
+			// logger.severe("Failed to deserialize SMS at key '" + key + "'!",
+			// e);
+			// }
+			// }
+			// }
+		} catch (Exception e) {
+			int i1 = 0;
+		}
+
+		return smsSet;
+	}
+
+	public void createLiveSms(Sms sms) throws PersistenceException {
+
+		try {
+			Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
+
+			this.FillUpdateFields(sms, mutator, Schema.FAMILY_LIVE_SMS);
+
+	        mutator.execute();
+		} catch (Exception e) {
+			int i1 = 0;
+			i1++;
+			return;
+		}
+	}
+
+	private void FillUpdateFields(Sms sms, Mutator<UUID> mutator, String columnFamilyName) {
+		Composite cc = new Composite();
+		cc.addComponent(Schema.COLUMN_ID, StringSerializer.get());
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getDbId(), CompositeSerializer.get(), UUIDSerializer.get()));
+		cc = new Composite();
+		cc.addComponent(Schema.COLUMN_ADDR_DST_DIGITS, StringSerializer.get());
+		mutator.addInsertion(sms.getDbId(), columnFamilyName,
+				HFactory.createColumn(cc, sms.getSmsSet().getDestAddr(), CompositeSerializer.get(), StringSerializer.get()));
+		cc = new Composite();
+		cc.addComponent(Schema.COLUMN_ADDR_DST_TON, StringSerializer.get());
+		mutator.addInsertion(sms.getDbId(), columnFamilyName,
+				HFactory.createColumn(cc, sms.getSmsSet().getDestAddrTon(), CompositeSerializer.get(), IntegerSerializer.get()));
+		cc = new Composite();
+		cc.addComponent(Schema.COLUMN_ADDR_DST_NPI, StringSerializer.get());
+		mutator.addInsertion(sms.getDbId(), columnFamilyName,
+				HFactory.createColumn(cc, sms.getSmsSet().getDestAddrNpi(), CompositeSerializer.get(), IntegerSerializer.get()));
+
+		// ............................
+	}
+
+	public void archiveDeliveredSms(Sms sms) throws PersistenceException {
+		// ............................
+		this.doArchiveDeliveredSms(sms);
+	}
+
+	public void archiveFailuredSms(Sms sms) throws PersistenceException {
+		// ............................
+		this.doArchiveDeliveredSms(sms);
+	}
+
+	private void doArchiveDeliveredSms(Sms sms) {
+		try {
+			Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
+
+			this.FillUpdateFields(sms, mutator, Schema.FAMILY_ARCHIVE);
+
+			Composite cc = new Composite();
+			cc.addComponent(Schema.COLUMN_ADDR_SRC_DIGITS, StringSerializer.get());
+			mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
+					HFactory.createColumn(cc, sms.getSourceAddr(), CompositeSerializer.get(), StringSerializer.get()));
+			cc = new Composite();
+			cc.addComponent(Schema.COLUMN_ADDR_SRC_TON, StringSerializer.get());
+			mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
+					HFactory.createColumn(cc, sms.getSourceAddrTon(), CompositeSerializer.get(), IntegerSerializer.get()));
+			cc = new Composite();
+			cc.addComponent(Schema.COLUMN_ADDR_SRC_NPI, StringSerializer.get());
+			mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
+					HFactory.createColumn(cc, sms.getSourceAddrNpi(), CompositeSerializer.get(), IntegerSerializer.get()));
+
+			// ............................
+
+			mutator.execute();
+		} catch (Exception e) {
+			int i1 = 0;
+			i1++;
+			return;
+		}
+	}
+
+	public Sms obtainLiveSms(UUID dbId) throws PersistenceException {
+		return null;
+	}
 
     /*
      * (non-Javadoc)
@@ -470,33 +612,33 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 //        // TODO Auto-generated method stub
 //
 //    }
-//
-//    /*
-//     * (non-Javadoc)
-//     * 
-//     * @see javax.slee.Sbb#setSbbContext(javax.slee.SbbContext)
-//     */
-//    @Override
-//    public void setSbbContext(SbbContext arg0) {
-//        this.sbbContextExt = (SbbContextExt) arg0;
-//        this.logger = this.sbbContextExt.getTracer(getClass().getSimpleName());
-//        this.raSbbInterface = (HectorClientRAInterface) this.sbbContextExt.getResourceAdaptorInterface(HECTOR_ID, LINK);
-//        this.keyspace = this.raSbbInterface.getKeyspace();
-//    }
-//
-//    /*
-//     * (non-Javadoc)
-//     * 
-//     * @see javax.slee.Sbb#unsetSbbContext()
-//     */
-//    @Override
-//    public void unsetSbbContext() {
-//        this.sbbContextExt = null;
-//        this.raSbbInterface = null;
-//        this.keyspace = null;
-//        this.logger = null;
-//    }
-//
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see javax.slee.Sbb#setSbbContext(javax.slee.SbbContext)
+     */
+    @Override
+    public void setSbbContext(SbbContext arg0) {
+        this.sbbContextExt = (SbbContextExt) arg0;
+        this.logger = this.sbbContextExt.getTracer(getClass().getSimpleName());
+        this.raSbbInterface = (HectorClientRAInterface) this.sbbContextExt.getResourceAdaptorInterface(HECTOR_ID, LINK);
+        this.keyspace = this.raSbbInterface.getKeyspace();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see javax.slee.Sbb#unsetSbbContext()
+     */
+    @Override
+    public void unsetSbbContext() {
+        this.sbbContextExt = null;
+        this.raSbbInterface = null;
+        this.keyspace = null;
+        this.logger = null;
+    }
+
 //    // ----------------------------------------
 //    // Helper methods
 //    // ----------------------------------------
