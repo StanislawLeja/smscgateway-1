@@ -303,8 +303,7 @@ public abstract class MoSbb extends MoCommonSbb {
 			rxSMS.setRegisteredDelivery(SmppConstants.REGISTERED_DELIVERY_SMSC_RECEIPT_REQUESTED);
 		}
 
-		// How do we set Esm Class?
-		// rxSMS.setEsmClass(ESME_DELIVERY_ACK);
+		rxSMS.setEsmClass((byte) (userData.getEncodedUserDataHeaderIndicator() ? 0x40 : 0));
 
 		rxSMS.setDataCoding((byte) dataCodingScheme.getCode());
 
