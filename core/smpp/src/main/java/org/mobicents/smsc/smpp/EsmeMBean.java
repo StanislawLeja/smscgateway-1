@@ -29,5 +29,5 @@ import com.cloudhopper.smpp.jmx.DefaultSmppSessionMXBean;
  *
  */
 public interface EsmeMBean extends DefaultSmppSessionMXBean {
-
+	public boolean isStarted();
 }

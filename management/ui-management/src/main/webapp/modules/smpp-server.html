@@ -1,0 +1,97 @@
+
+<h3 style="margin: 0px;">
+	<i class="icon-cogs"></i> SMPP Servers
+</h3>
+<hr style="margin: 10 0px;" />
+<span style="float: right;">
+	<button id="refresh" style="float: right; margin-right: 20px; margin-left: 20px; height: 30px;" class="btn btn-medium btn-success" data-toggle="tooltip" data-placement="left" title="Refresh SMPPP Servers List" onclick="updateServices();">
+		<i class="icon-refresh"></i>
+	</button>
+</span>
+<span id="services-table-wrapper">
+	<table id="no-services-table" class="table" style="display: none;">
+		<tr>
+			<td>
+				<div class="alert alert-info fade in">
+					<strong>No Services!</strong> There are no services matching the
+					filtering criteria.
+				</div>
+			</td>
+		</tr>
+	</table>
+
+	<table id="services-table" class="table table-hover">
+		<thead>
+			<tr>
+				<th style="width: 30px;">&nbsp;</th>
+				<th>Name</th>
+				<th style="text-align: center; width: 64px;">Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+</span>
+
+<script type="text/javascript">
+				function updateServices() {
+					mbeanSearch="com.telscale.smsc:layer=SmppServerManagement,name=*";
+					var mbean;
+					$.ajax({
+						dataType: "json",
+						url: window.jolokiaProtocol + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/search/" + mbeanSearch
+					})
+					.done(function(html) {
+						if (html.error) {
+							logToConsole("ERROR", html.error);
+						}
+						else {		
+							
+							$('.service-row').remove();
+							jQuery.each(html.value, function() {
+								mbean = this;
+								var j4p = new Jolokia({url: window.jolokiaProtocol + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/" });
+								
+								var isSmppServerStarted = j4p.getAttribute(mbean, "Started",{method: "post"});
+								var name = j4p.getAttribute(mbean, "Name",{method: "post"});
+								
+								serviceClass = isSmppServerStarted ? 'active-service' : 'inactive-service';
+								
+								$('#services-table').children('tbody').append('<tr class="service-row"><td style="vertical-align: middle; text-align: center;"><i style="color: ' + (isSmppServerStarted ? '#51A351' : '#BD362F') + ';" class="' + (isSmppServerStarted ? 'icon-play-circle' : 'icon-remove-circle') + '"></i></td>'+
+										'<td><a href="#" onclick="getSmppServerDetails(\''+name+'\')">' + name + '</a></td>' +
+										'<td style="font-size: 16px; vertical-align: middle; text-align: center; width: 100px;">' + 
+											'<button class="btn btn-small btn-success"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Start SMPP Server" data-placement="bottom" onclick="serviceOperation(\'start\', \'' + name + '\')"><i class="icon-play"> </i></button> ' +
+											'<button class="btn btn-small btn-danger"' + (!isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Stop SMPP Server" data-placement="bottom" onclick="serviceOperation(\'stop\', \'' + name +  '\')"><i class="icon-stop"> </i></button> ' +
+										'</td>' );			
+							});
+						}
+					})
+					.fail(function() {
+						logToConsole("ERROR", "Failure trying to communicate with the SMSC Gateway. Please try again later.");
+					})					
+				
+				}
+				function getSmppServerDetails(name) {
+					alert(name);
+					$('#content').load('modules/smpp-server-properties.html', function() {
+						
+					});
+				}
+				function serviceOperation(operation, name) {
+					mbeanSearch="com.telscale.smsc:layer=SmppServerManagement,name="+name;
+					
+					alert(operation+' : '+mbeanSearch);
+					
+					jolokia.execute(mbeanSearch,operation,
+							{
+								success: function(value) {
+									updateServices();
+									logToConsole('INFO', 'Successfully '+operation+'ed SmppServerManagement ' + name );
+								}
+							});	
+					
+				}				
+				$(document).ready(function () {
+					updateServices();
+				});
+			</script>

@@ -148,7 +148,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		this.address = address;
 		this.smppBindType = smppBindType;
 
-		if (this.address != null) {
+		if (this.address != null && this.address.getAddress() != null) {
 			this.pattern = Pattern.compile(this.address.getAddress());
 		}
 
@@ -644,7 +644,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		if (this.defaultSmppSession != null) {
 			return this.defaultSmppSession.getLocalTypeName();
 		}
-		return null;
+		return this.smppSessionType.toString();
 	}
 
 	@Override

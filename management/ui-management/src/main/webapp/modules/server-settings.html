@@ -1,0 +1,148 @@
+					<h3 style="margin: 0px;"><i class="icon-dashboard"></i> SMSC Gateway Server Settings</h3>
+					<hr style="margin: 10 0px;"/>
+
+					<button id="apply-server-settings" class="btn btn-small" onclick="applyServerSettings()"><i class="icon-save" style="color: #000000;"></i>  Apply Changes</button>
+					
+					<p>
+						<br/>
+					</p> 
+					
+					<div class="alert alert-error" id="login-settings-error" style="display:none;">
+					  <button type="button" class="close">&times;</button>
+					  Some Fields are not correctly filled out, please double check the settings below !
+					</div>
+					
+ 					<p>
+					<span id="mss-settings">
+					<ul class="nav nav-tabs" id="myTab">
+  						<li class="active"><a href="#ss7settings" data-toggle="tab">SS7 settings</a></li>
+					</ul>	
+						
+  				 	<div class="tab-content">
+                        <div class="tab-pane active" id="ss7settings">
+							<label>>SMSC Gateway Global Title : </label><input id="ussdgt" type="text" style="float: left; height: 28px;"class="input-large" placeholder="SMSC Gateway Global Title"></input></br></br>
+							<label>>SMSC Gateway subsystem number : </label><input id="ussdssn" type="text" style="float: left; height: 28px;"class="input-large" placeholder="SMSC Gateway subsystem number"></input></br></br>
+							<label>>HLR subsystem number : </label><input id="hlrssn" type="text" style="float: left; height: 28px;"class="input-large" placeholder="HLR subsystem number"></input></br></br>
+							<label>>MSC subsystem number : </label><input id="mscssn" type="text" style="float: left; height: 28px;"class="input-large" placeholder="MSC subsystem number"></input></br></br>
+							<label>>MAP version supported : </label><input id="maxmapv" type="text" style="float: left; height: 28px;"class="input-large" placeholder="MAP version supported"></input></br></br>
+                        </div>
+					</div>	
+					</span>					 
+				</p>	
+				<script type="text/javascript">
+					$('#login-settings-error .close').on("click", function(e) {
+					    $(this).parent().hide();
+					});
+				
+					$(document).ready(function () {												
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						var mbean;
+						$.ajax({
+							dataType: "json",
+							url: window.jolokiaProtocol + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/search/" + mbeanSearch
+						})
+						.done(function(html) {
+							if (html.error) {
+								logToConsole("ERROR", html.error);
+							}
+							else {			
+								mbean = html.value[0];
+								var j4p = new Jolokia({url: window.jolokiaProtocol + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/" });
+								
+								
+								var ussdgt = j4p.getAttribute(mbean, "ServiceCenterGt",{method: "post"});
+								var ussdssn = j4p.getAttribute(mbean, "ServiceCenterSsn",{method: "post"});
+								var hlrssn = j4p.getAttribute(mbean, "HlrSsn",{method: "post"});
+								var mscssn = j4p.getAttribute(mbean, "MscSsn",{method: "post"});
+								var maxmapv = j4p.getAttribute(mbean, "MaxMapVersion",{method: "post"});
+								
+								$("#ussdgt").val(ussdgt);
+								$("#ussdssn").val(ussdssn);
+								$("#hlrssn").val(hlrssn);
+								$("#mscssn").val(mscssn);
+								$("#maxmapv").val(maxmapv);
+								
+							}
+						})
+						.fail(function() {
+							logToConsole("ERROR", "Failure trying to communicate with the SMSC Gateway. Please try again later.");
+						})
+	    			});
+					
+					function applyServerSettings() {
+						var formInvalid = false;
+						
+						var ussdgt = $("#ussdgt").val();
+						if(ussdgt.trim() == "") {
+			    			$("#ussdgt").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#ussdgt").hasClass("required")) {
+			    			$("#ussdgt").removeClass("required");		
+			    		}
+						
+						var ussdssn = $("#ussdssn").val();
+						if(ussdssn.trim() == "") {
+			    			$("#ussdssn").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#ussdssn").hasClass("required")) {
+			    			$("#ussdssn").removeClass("required");		
+			    		}		
+						
+						var hlrssn = $("#hlrssn").val();
+						if(hlrssn.trim() == "") {
+			    			$("#hlrssn").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#hlrssn").hasClass("required")) {
+			    			$("#hlrssn").removeClass("required");		
+			    		}	
+						
+						var mscssn = $("#mscssn").val();
+						if(mscssn.trim() == "") {
+			    			$("#mscssn").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#mscssn").hasClass("required")) {
+			    			$("#mscssn").removeClass("required");		
+			    		}
+						
+						var maxmapv = $("#maxmapv").val();
+						if(maxmapv.trim() == "") {
+			    			$("#maxmapv").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#maxmapv").hasClass("required")) {
+			    			$("#maxmapv").removeClass("required");		
+			    		}
+						
+						if(formInvalid) {
+							$("#login-settings-error").show();
+							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+							return false;
+						} else {
+							$("#login-settings-error").hide();
+						}
+						
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						var mbean;
+						$.ajax({
+							dataType: "json",
+							url: window.jolokiaProtocol + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/search/" + mbeanSearch
+						})
+						.done(function(html) {
+							if (html.error) {
+								logToConsole("ERROR", html.error);
+							}
+							else {			
+								mbean = html.value[0];
+								var j4p = new Jolokia({url: window.jolokiaProtocol + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/" });
+								j4p.setAttribute(mbean, "ServiceCenterGt",ussdgt,{method: "post"});	
+								j4p.setAttribute(mbean, "ServiceCenterSsn",ussdssn,{method: "post"});	
+								j4p.setAttribute(mbean, "HlrSsn",hlrssn,{method: "post"});	
+								j4p.setAttribute(mbean, "MscSsn",mscssn,{method: "post"});	
+								j4p.setAttribute(mbean, "MaxMapVersion",maxmapv,{method: "post"});	
+								logToConsole("INFO", "SMSC Gateway Proerties successfully updated.");
+							}
+						})
+						.fail(function() {
+							logToConsole("ERROR", "Failure trying to communicate with the Telscale SMSC Gateway. Please try again later.");
+						})						
+					}
+					</script>

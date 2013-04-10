@@ -1,0 +1,176 @@
+
+<h3 style="margin: 0px;">
+	<i class="icon-cogs"></i> External Short Messaging Entities
+</h3>
+<hr style="margin: 10 0px;" />
+<span style="float: right;">
+	<button id="refresh" style="float: right; margin-right: 20px; margin-left: 20px; height: 30px;" class="btn btn-medium btn-success" data-toggle="tooltip" data-placement="left" title="Refresh ESME List" onclick="updateEsmes();">
+		<i class="icon-refresh"></i>
+	</button>
+</span>
+<span id="esmes-table-wrapper">
+	<table id="no-esmes-table" class="table" style="display: none;">
+		<tr>
+			<td>
+				<div class="alert alert-info fade in">
+					<strong>No ESME!</strong> 
+				</div>
+			</td>
+		</tr>
+	</table>
+
+	<table id="esmes-table" class="table table-hover">
+		<thead>
+			<tr>
+				<th style="width: 30px;">&nbsp;</th>
+				<th>Name</th>
+				<th>SystemId</th>
+				<th>Type</th>
+				<th>State</th>
+				<th style="text-align: center; width: 64px;">Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+</span>
+
+<script type="text/javascript">
+	function updateEsmes() {
+		mbeanSearch="com.telscale.smsc:layer=Esme,name=*";
+		var mbean;
+		$.ajax({
+			dataType: "json",
+			url: window.jolokiaProtocol + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/search/" + mbeanSearch
+		})
+		.done(function(html) {
+			if (html.error) {
+				logToConsole("ERROR", html.error);
+			}
+			else {		
+				
+				$('.service-row').remove();
+				$('.text-info').remove();
+				jQuery.each(html.value, function() {
+					mbean = this;
+					var j4p = new Jolokia({url: window.jolokiaProtocol + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/" });
+					
+					var isSmppServerStarted = j4p.getAttribute(mbean, "Started",{method: "post"});
+					
+					var name = j4p.getAttribute(mbean, "Name",{method: "post"});
+					var systemId = j4p.getAttribute(mbean, "SystemId",{method: "post"});
+					var localType = j4p.getAttribute(mbean, "LocalTypeName",{method: "post"});
+					var state = j4p.getAttribute(mbean, "StateName",{method: "post"});
+					
+					var systemType = j4p.getAttribute(mbean, "SystemType",{method: "post"});
+					var bindType = j4p.getAttribute(mbean, "BindTypeName",{method: "post"});
+					var interfaceVersion = j4p.getAttribute(mbean, "InterfaceVersionName",{method: "post"});
+					var password = j4p.getAttribute(mbean, "Password",{method: "post"});
+					
+					var windowSize = j4p.getAttribute(mbean, "WindowSize",{method: "post"});
+					var requestExpiryTimeout = j4p.getAttribute(mbean, "RequestExpiryTimeout",{method: "post"});
+					var windowMonitorInterval = j4p.getAttribute(mbean, "WindowMonitorInterval",{method: "post"});
+					var windowWaitTimeout = j4p.getAttribute(mbean, "WindowWaitTimeout",{method: "post"});
+					var maxWindowSize = j4p.getAttribute(mbean, "MaxWindowSize",{method: "post"});
+					var windowMonitorEnabled = j4p.getAttribute(mbean, "WindowMonitorEnabled",{method: "post"});
+					
+					var boundDuration = j4p.getAttribute(mbean, "BoundDuration",{method: "post"});
+					var rxDataSMCounter = j4p.getAttribute(mbean, "RxDataSMCounter",{method: "post"});
+					var rxDeliverSMCounter = j4p.getAttribute(mbean, "RxDeliverSMCounter",{method: "post"});
+					var rxEnquireLinkCounter = j4p.getAttribute(mbean, "RxEnquireLinkCounter",{method: "post"});
+					var rxSubmitSMCounter = j4p.getAttribute(mbean, "RxSubmitSMCounter",{method: "post"});
+					var txDataSMCounter = j4p.getAttribute(mbean, "TxDataSMCounter",{method: "post"});
+					var txDeliverSMCounter = j4p.getAttribute(mbean, "TxDeliverSMCounter",{method: "post"});
+					var txEnquireLinkCounter = j4p.getAttribute(mbean, "TxEnquireLinkCounter",{method: "post"});
+					var txSubmitSMCounter = j4p.getAttribute(mbean, "TxSubmitSMCounter",{method: "post"});
+					
+					var localAddressAndPort = j4p.getAttribute(mbean, "LocalAddressAndPort",{method: "post"});
+					var remoteAddressAndPort = j4p.getAttribute(mbean, "RemoteAddressAndPort",{method: "post"});
+					var remoteTypeName = j4p.getAttribute(mbean, "RemoteTypeName",{method: "post"});
+					
+					var bound = j4p.getAttribute(mbean, "Bound",{method: "post"});
+					var closed = j4p.getAttribute(mbean, "Closed",{method: "post"});
+					var binding = j4p.getAttribute(mbean, "Binding",{method: "post"});
+					var unbinding = j4p.getAttribute(mbean, "Unbinding",{method: "post"});
+					
+					
+					if(systemType == null || systemType==""){
+						systemType = "null";
+					}
+					alert(systemType);
+					
+					serviceClass = isSmppServerStarted ? 'active-service' : 'inactive-service';
+					
+					$('#esmes-table').children('tbody').append('<tr class="service-row" style="cursor: pointer;" onclick="$(this).next().toggle();"><td style="vertical-align: middle; text-align: center;"><i style="color: ' + (isSmppServerStarted ? '#51A351' : '#BD362F') + ';" class="' + (isSmppServerStarted ? 'icon-play-circle' : 'icon-remove-circle') + '"></i></td>'+
+							'<td>' + name + '</a></td>' +
+							'<td>' + systemId + '</td>' +
+							'<td>' + localType + '</td>' +
+							'<td>' + state + '</td>' +
+							'<td style="font-size: 16px; vertical-align: middle; text-align: center; width: 100px;">' + 
+								'<button class="btn btn-small btn-success"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Start ESME" data-placement="bottom" onclick="esmeOperation(\'startEsme\', \'' + name + '\')"><i class="icon-play"> </i></button> ' +
+								'<button class="btn btn-small btn-danger"' + (!isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Stop ESME" data-placement="bottom" onclick="esmeOperation(\'stopEsme\', \'' + name +  '\')"><i class="icon-stop"> </i></button> ' +
+							'</td></tr>'+
+
+
+							'<tr class="text-info" style="display: none;"><td colspan=6>' +
+							'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+							'<dt>SystemType</dt> <dd>' + systemType + ' </dd>' + 
+							'<dt>BindType</dt> <dd>' + bindType + ' </dd>' + 
+							'<dt>InterfaceVersion</dt> <dd>' + interfaceVersion + ' </dd>' + 
+							'<dt>Password</dt> <dd>' + password + ' </dd>' + 
+							
+							'<dt>WindowSize</dt> <dd>' + windowSize + ' </dd>' +
+							'<dt>RequestExpiryTimeout</dt> <dd>' + requestExpiryTimeout + ' </dd>' +
+							'<dt>WindowMonitorInterval</dt> <dd>' + windowMonitorInterval + ' </dd>' +
+							'<dt>WindowWaitTimeout</dt> <dd>' + windowWaitTimeout + ' </dd>' +
+							'<dt>MaxWindowSize</dt> <dd>' + maxWindowSize + ' </dd>' +
+							'<dt>WindowMonitorEnabled</dt> <dd>' + windowMonitorEnabled + ' </dd>' +
+							
+							'<dt>BoundDuration</dt> <dd>' + boundDuration + ' </dd>' +
+							'<dt>RxDataSMCounter</dt> <dd>' + rxDataSMCounter + ' </dd>' +
+							'<dt>RxDeliverSMCounter</dt> <dd>' + rxDeliverSMCounter + ' </dd>' +
+							'<dt>RxEnquireLinkCounter</dt> <dd>' + rxEnquireLinkCounter + ' </dd>' +
+							'<dt>RxSubmitSMCounter</dt> <dd>' + rxSubmitSMCounter + ' </dd>' +
+							'<dt>TxDataSMCounter</dt> <dd>' + txDataSMCounter + ' </dd>' +
+							'<dt>TxDeliverSMCounter</dt> <dd>' + txDeliverSMCounter + ' </dd>' +
+							'<dt>TxEnquireLinkCounter</dt> <dd>' + txEnquireLinkCounter + ' </dd>' +
+							'<dt>TxSubmitSMCounter</dt> <dd>' + txSubmitSMCounter + ' </dd>' +
+							
+							'<dt>LocalAddressAndPort</dt> <dd>' + localAddressAndPort + ' </dd>' +
+							'<dt>RemoteAddressAndPort</dt> <dd>' + remoteAddressAndPort + ' </dd>' +
+							'<dt>RemoteTypeName</dt> <dd>' + remoteTypeName + ' </dd>' +
+							
+							'<dt>Bound</dt> <dd>' + bound + ' </dd>' +
+							'<dt>Closed</dt> <dd>' + closed + ' </dd>' +
+							'<dt>Binding</dt> <dd>' + binding + ' </dd>' +
+							'<dt>Unbinding</dt> <dd>' + unbinding + ' </dd>' +
+							
+							'</dl>'+							
+							'</td></tr>'
+							
+					
+					
+					
+					);			
+				});
+			}
+		})
+		.fail(function() {
+			logToConsole("ERROR", "Failure trying to communicate with the SMSC Gateway. Please try again later.");
+		})
+	}
+	function esmeOperation(operation, name) {
+		mbeanSearch="com.telscale.smsc:layer=EsmeManagement,name=SmscManagement";
+		jolokia.execute(mbeanSearch,operation,name,
+				{
+					success: function(value) {
+						updateEsmes();
+						logToConsole('INFO', 'Successfully '+operation+'ed Esme ' + name );
+					}
+				});	
+		
+	}				
+	$(document).ready(function () {
+		updateEsmes();
+	});
+</script>

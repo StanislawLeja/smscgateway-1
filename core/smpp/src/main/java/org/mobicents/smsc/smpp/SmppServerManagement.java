@@ -243,7 +243,7 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 
 	public void stop() throws Exception {
 		logger.info("Stopping SMPP server...");
-		this.defaultSmppServer.destroy();
+		this.defaultSmppServer.stop();
 		logger.info("SMPP server stopped");
 		logger.info(String.format("Server counters: %s", this.defaultSmppServer.getCounters()));
 
