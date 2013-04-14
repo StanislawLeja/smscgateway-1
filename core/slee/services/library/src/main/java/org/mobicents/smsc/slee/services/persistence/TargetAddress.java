@@ -39,6 +39,22 @@ public class TargetAddress {
 		this.addr = addr;
 	}
 
+	public TargetAddress(SmsSet smsSet) {
+		this.addrTon = smsSet.getDestAddrTon();
+		this.addrNpi = smsSet.getDestAddrNpi();
+		this.addr = smsSet.getDestAddr();
+	}
+
+	public String getTargetId() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.addr);
+		sb.append("_");
+		sb.append(this.addrTon);
+		sb.append("_");
+		sb.append(this.addrNpi);
+		return sb.toString();
+	}
+
 	public int getAddrTon() {
 		return addrTon;
 	}

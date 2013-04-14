@@ -24,11 +24,10 @@ package org.mobicents.smsc.slee.services.persistence;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
-
-import com.eaio.uuid.UUID;
 
 /**
  * Business interface for persistence service. This interface defines all methods required for persisting/managing sms data in
@@ -40,9 +39,9 @@ import com.eaio.uuid.UUID;
 public interface Persistence {
 
 	/**
-	 * Searching SmsSet for TargetAddress in LIVE table If found - creates
-	 * SmsSet for this object If not found - creates new record in LIVE and
-	 * SmsSet for this object
+	 * Searching SmsSet for TargetAddress in LIVE table 
+	 * If found - creates SmsSet for this object 
+	 * If not found - creates new record in LIVE and SmsSet for this object
 	 * 
 	 * @param ta
 	 *            TargetAddress
@@ -52,14 +51,16 @@ public interface Persistence {
 	public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException;
 
 	/**
-	 * Set this TargetAddress as scheduled.
-	 * If (IN_SYSTEM==2 or IN_SYSTEM==1 and newDueDate > currentDueDate)
-	 * IN_SYSTEM=1, DUE_DATE=newDueDate
+	 * Set this TargetAddress as scheduled. 
+	 * If (IN_SYSTEM==2 or IN_SYSTEM==1 and newDueDate > currentDueDate) IN_SYSTEM=1, DUE_DATE=newDueDate
 	 * 
 	 * @param smsSet
 	 * @param newDueDate
+	 * @param fromMessageInsertion
+	 *            true: if invoked from new incomed message insertion
+	 *            false: if invoked from delivering process
 	 */
-	public void setScheduled(SmsSet smsSet, Date newDueDate) throws PersistenceException;
+	public void setScheduled(SmsSet smsSet, Date newDueDate, boolean fromMessageInsertion) throws PersistenceException;
 
 	/**
 	 * Set destination for SmsSet. Database is not updated for these fields
@@ -91,12 +92,13 @@ public interface Persistence {
 
 	/**
 	 * Update database for setting smsSet to be out delivering processing with success
-	 * IN_SYSTEM=0, DUE_DATE=null, SM_STATUS=0
+	 * IN_SYSTEM=0, SM_STATUS=0
 	 * 
 	 * @param smsSet
+	 * @param lastDelivery
 	 * @throws PersistenceException
 	 */
-	public void setDeliverySuccess(SmsSet smsSet) throws PersistenceException;
+	public void setDeliverySuccess(SmsSet smsSet, Date lastDelivery) throws PersistenceException;
 
 	/**
 	 * Update database for setting smsSet to be out delivering processing with delivery failure
@@ -163,18 +165,20 @@ public interface Persistence {
 	 * SM_STATUS=0
 	 * 
 	 * @param sms
+	 * @param deliveryDate
 	 * @throws PersistenceException
 	 */
-	public void archiveDeliveredSms(Sms sms) throws PersistenceException;
+	public void archiveDeliveredSms(Sms sms, Date deliveryDate) throws PersistenceException;
 
 	/**
 	 * Move sms from LIVE_SMS to ARCHIVE
 	 * SM_STATUS=value from LIVE_SMS record
 	 * 
 	 * @param sms
+	 * @param deliveryDate
 	 * @throws PersistenceException
 	 */
-	public void archiveFailuredSms(Sms sms) throws PersistenceException;
+	public void archiveFailuredSms(Sms sms, Date deliveryDate) throws PersistenceException;
 
 
 	/**
@@ -193,5 +197,18 @@ public interface Persistence {
 	 * @throws PersistenceException
 	 */
 	public void fetchSchedulableSms(SmsSet smsSet) throws PersistenceException;
+
+	/**
+	 * Obtaining synchronizing object for a TargetAddress
+	 * @param ta
+	 * @return
+	 */
+	public TargetAddress obtainSynchroObject(TargetAddress ta);
+
+	/**
+	 * Releasing synchronizing object for a TargetAddress
+	 * @param ta
+	 */
+	public void releaseSynchroObject(TargetAddress ta);
 
 }
