@@ -57,6 +57,7 @@ public class SmsSet implements Serializable {
 	private LocationInfoWithLMSI locationInfoWithLMSI;
 
 	private Date dueDate;
+	private int inSystem;
 
 	private ErrorCode status;
     private SmType type;
@@ -72,6 +73,15 @@ public class SmsSet implements Serializable {
     public SmsSet() {
 	}
 
+	public String getTargetId() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.destAddr);
+		sb.append("_");
+		sb.append(this.destAddrTon);
+		sb.append("_");
+		sb.append(this.destAddrNpi);
+		return sb.toString();
+	}
 
     /**
      * smpp style type of number
@@ -173,6 +183,17 @@ public class SmsSet implements Serializable {
 	}
 
 	/**
+	 * 0-subscriber target not schedulered by deuDate, 1-schedulered by deuDate, 2-delivering in processed
+	 */
+	public int getInSystem() {
+		return inSystem;
+	}
+
+	public void setInSystem(int inSystem) {
+		this.inSystem = inSystem;
+	}
+
+	/**
 	 * ErrorCode value will be put here for last attempt (0==success / no attempts yet, !=0 – ErrorCode of the last attempt)
 	 */
 	public ErrorCode getStatus() {
@@ -208,11 +229,11 @@ public class SmsSet implements Serializable {
 	/**
 	 * time of last delivery attempt (null if it were not attempts)
 	 */
-	private Date getLastDelivery() {
+	public Date getLastDelivery() {
 		return lastDelivery;
 	}
 
-	private void setLastDelivery(Date lastDelivery) {
+	public void setLastDelivery(Date lastDelivery) {
 		this.lastDelivery = lastDelivery;
 	}
 

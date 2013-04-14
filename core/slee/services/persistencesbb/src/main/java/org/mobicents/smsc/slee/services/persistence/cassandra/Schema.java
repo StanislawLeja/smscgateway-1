@@ -37,6 +37,7 @@ public class Schema {
 
     //SmS tables columns and names
     public static final String COLUMN_ID = "ID";
+    public static final String COLUMN_TARGET_ID = "TARGET_ID";
     public static final String COLUMN_MESSAGE_ID = "MESSAGE_ID";
     public static final String COLUMN_ADDR_SRC_TON = "ADDR_SRC_TON";
     public static final String COLUMN_ADDR_SRC_NPI = "ADDR_SRC_NPI";
@@ -71,14 +72,14 @@ public class Schema {
     public static final String COLUMN_LAST_DELIVERY = "LAST_DELIVERY";
     public static final String COLUMN_DUE_DATE = "DUE_DATE";
 
-    public static final String COLUMN_CLUSTER_NAME="CLUSTER_NAME";
-    public static final String COLUMN_DEST_ESME_ID="DEST_ESME_ID";
-    public static final String COLUMN_DEST_SYSTEM_ID="DEST_SYSTEM_ID";
-    public static final String COLUMN_DELIVER_DATE="DELIVER_DATE";
-    public static final String COLUMN_IMSI="IMSI";
-    public static final String COLUMN_NNN_DIGITS="NNN_DIGITS";
-    public static final String COLUMN_NNN_AN="NNN_AN";
-    public static final String COLUMN_NNN_NP="NNN_NP";
+	public static final String COLUMN_DEST_CLUSTER_NAME = "DEST_CLUSTER_NAME";
+	public static final String COLUMN_DEST_ESME_ID = "DEST_ESME_ID";
+	public static final String COLUMN_DEST_SYSTEM_ID = "DEST_SYSTEM_ID";
+	public static final String COLUMN_DELIVERY_DATE = "DELIVERY_DATE";
+	public static final String COLUMN_IMSI = "IMSI";
+	public static final String COLUMN_NNN_DIGITS = "NNN_DIGITS";
+	public static final String COLUMN_NNN_AN = "NNN_AN";
+	public static final String COLUMN_NNN_NP = "NNN_NP";
     
     public static final String FAMILY_LIVE = "LIVE";
     public static final String FAMILY_LIVE_SMS = "LIVE_SMS";
@@ -90,6 +91,8 @@ public class Schema {
     
     static{
         List<String> tmp = new ArrayList<String>();
+        tmp.add(COLUMN_TARGET_ID);
+
         tmp.add(COLUMN_ADDR_DST_DIGITS);
         tmp.add(COLUMN_ADDR_DST_TON);
         tmp.add(COLUMN_ADDR_DST_NPI);
@@ -105,6 +108,7 @@ public class Schema {
         
 		tmp = new ArrayList<String>();
 		tmp.add(COLUMN_ID);
+        tmp.add(COLUMN_TARGET_ID);
         tmp.add(COLUMN_ADDR_DST_DIGITS);
         tmp.add(COLUMN_ADDR_DST_TON);
         tmp.add(COLUMN_ADDR_DST_NPI);
@@ -143,11 +147,11 @@ public class Schema {
 		tmp.add(COLUMN_MESSAGE_ID);
         tmp.add(COLUMN_ORIG_ESME_ID);
         tmp.add(COLUMN_ORIG_SYSTEM_ID);
-        tmp.add(COLUMN_CLUSTER_NAME);
+        tmp.add(COLUMN_DEST_CLUSTER_NAME);
         tmp.add(COLUMN_DEST_ESME_ID);
         tmp.add(COLUMN_DEST_SYSTEM_ID);
         tmp.add(COLUMN_SUBMIT_DATE);
-        tmp.add(COLUMN_DELIVER_DATE);
+        tmp.add(COLUMN_DELIVERY_DATE);
 
 		tmp.add(COLUMN_SERVICE_TYPE);
         tmp.add(COLUMN_ESM_CLASS);

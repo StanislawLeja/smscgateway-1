@@ -490,9 +490,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			int mesageSegmentNumber = this.getMessageSegmentNumber();
 			int messageReferenceNumber = this.getMessageReferenceNumber();
 			
-			Tlv sarMsgRefNum = smsEvent.getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
-			Tlv sarTotalSegments = smsEvent.getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
-			Tlv sarSegmentSeqnum = smsEvent.getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
+			Tlv sarMsgRefNum = smsEvent.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
+			Tlv sarTotalSegments = smsEvent.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
+			Tlv sarSegmentSeqnum = smsEvent.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
 
 			
 			if (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null) {
