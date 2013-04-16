@@ -68,6 +68,7 @@ public class SmsSet implements Serializable {
     private boolean alertingSupported;
 
 	private List<Sms> smsList = new ArrayList<Sms>();
+
 	private int messageIndex = 0;
 
     public SmsSet() {
@@ -275,7 +276,7 @@ public class SmsSet implements Serializable {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("DeliveringActivity [destAddrTon=");
+		sb.append("SmsSet [destAddrTon=");
 		sb.append(destAddrTon);
 		sb.append(", destAddrNpi=");
 		sb.append(destAddrNpi);
@@ -291,6 +292,8 @@ public class SmsSet implements Serializable {
 		sb.append(imsi);
 		sb.append(", locationInfoWithLMSI=");
 		sb.append(locationInfoWithLMSI);
+		sb.append(", inSystem=");
+		sb.append(inSystem);
 		sb.append(", dueDate=");
 		sb.append(dueDate);
 		sb.append(", status=");
@@ -308,7 +311,7 @@ public class SmsSet implements Serializable {
 
 		return sb.toString();
 	}
-	
+
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */

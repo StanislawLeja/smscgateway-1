@@ -63,14 +63,15 @@ public interface Persistence {
 	public void setScheduled(SmsSet smsSet, Date newDueDate, boolean fromMessageInsertion) throws PersistenceException;
 
 	/**
-	 * Set destination for SmsSet. Database is not updated for these fields
+	 * Set destination for SmsSet + SmType. Database is not updated for these fields
 	 * 
 	 * @param smsSet
 	 * @param destClusterName
 	 * @param destSystemId
 	 * @param destEsmeId
+	 * @param type
 	 */
-	public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId);
+	public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId, SmType type);
 
 	/**
 	 * Set routing info for SmsSet. Database is not updated for these fields
@@ -163,6 +164,7 @@ public interface Persistence {
 	/**
 	 * Move sms from LIVE_SMS to ARCHIVE
 	 * SM_STATUS=0
+	 * Use setDeliverySuccess() before invoking this
 	 * 
 	 * @param sms
 	 * @param deliveryDate
@@ -173,12 +175,12 @@ public interface Persistence {
 	/**
 	 * Move sms from LIVE_SMS to ARCHIVE
 	 * SM_STATUS=value from LIVE_SMS record
+	 * Use setDeliveryFailure() before invoking this
 	 * 
 	 * @param sms
-	 * @param deliveryDate
 	 * @throws PersistenceException
 	 */
-	public void archiveFailuredSms(Sms sms, Date deliveryDate) throws PersistenceException;
+	public void archiveFailuredSms(Sms sms) throws PersistenceException;
 
 
 	/**

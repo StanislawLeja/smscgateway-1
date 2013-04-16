@@ -71,6 +71,7 @@ import org.mobicents.smsc.slee.resources.hector.client.HectorClientRAInterface;
 import org.mobicents.smsc.slee.services.persistence.ErrorCode;
 import org.mobicents.smsc.slee.services.persistence.Persistence;
 import org.mobicents.smsc.slee.services.persistence.PersistenceException;
+import org.mobicents.smsc.slee.services.persistence.SmType;
 import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.slee.services.persistence.SmsSet;
 import org.mobicents.smsc.slee.services.persistence.SmsSetCashe;
@@ -89,12 +90,12 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
     private static final String LINK = "HectorClientResourceAdaptorType";
 	private static final String TLV_SET = "tlvSet";
     
-    private final static CompositeSerializer SERIALIZER_COMPOSITE = CompositeSerializer.get();
-    private final static BooleanSerializer SERIALIZER_BOOLEAN = BooleanSerializer.get();
-    private final static DateSerializer SERIALIZER_DATE = DateSerializer.get();
-    private final static StringSerializer SERIALIZER_STRING = StringSerializer.get();
-    private final static IntegerSerializer SERIALIZER_INTEGER = IntegerSerializer.get();
-    private final static BytesArraySerializer SERIALIZER_BYTE_ARRAY = BytesArraySerializer.get();
+	protected final static CompositeSerializer SERIALIZER_COMPOSITE = CompositeSerializer.get();
+    protected final static BooleanSerializer SERIALIZER_BOOLEAN = BooleanSerializer.get();
+    protected final static DateSerializer SERIALIZER_DATE = DateSerializer.get();
+    protected final static StringSerializer SERIALIZER_STRING = StringSerializer.get();
+    protected final static IntegerSerializer SERIALIZER_INTEGER = IntegerSerializer.get();
+    protected final static BytesArraySerializer SERIALIZER_BYTE_ARRAY = BytesArraySerializer.get();
     
     private SbbContextExt sbbContextExt;
     private HectorClientRAInterface raSbbInterface;
@@ -195,11 +196,12 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 	}
 
 	@Override
-	public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId) {
+	public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId, SmType type) {
 
 		smsSet.setDestClusterName(destClusterName);
 		smsSet.setDestSystemId(destSystemId);
 		smsSet.setDestEsmeId(destEsmeId);
+		smsSet.setType(type);
 	}
 
 	@Override
@@ -249,6 +251,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 
 			smsSet.setInSystem(0);
 			smsSet.setStatus(ErrorCode.SUCCESS);
+			smsSet.setLastDelivery(lastDelivery);
 		} catch (Exception e) {
 			String msg = "Failed to setDeliverySuccess for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi() + "'!";
 			logger.severe(msg, e);
@@ -354,7 +357,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
 			ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
 			try {
-				return this.createSms(cSlice, dbId);
+				return this.createSms(cSlice, dbId, null);
 			} catch (Exception e) {
 				if (logger.isSevereEnabled()) {
 					logger.severe("Failed to deserialize SMS at key '" + dbId + "'!", e);
@@ -385,7 +388,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			final List<Row<UUID, Composite, ByteBuffer>> rowsList = rows.getList();
 			for (Row<UUID, Composite, ByteBuffer> row : rowsList) {
 				try {
-					return this.createSms(row.getColumnSlice(), row.getKey());
+					return this.createSms(row.getColumnSlice(), row.getKey(), null);
 				} catch (Exception e) {
 					if (logger.isSevereEnabled()) {
 						logger.severe("Failed to deserialize SMS at key '" + row.getKey() + "'!", e);
@@ -411,13 +414,14 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 	public void archiveDeliveredSms(Sms sms, Date deliveryDate) throws PersistenceException {
 		this.deleteLiveSms(sms);
 		sms.setDeliveryDate(deliveryDate);
+		sms.getSmsSet().setStatus(ErrorCode.SUCCESS);
 		this.doArchiveDeliveredSms(sms);
 	}
 
 	@Override
-	public void archiveFailuredSms(Sms sms, Date deliveryDate) throws PersistenceException {
+	public void archiveFailuredSms(Sms sms) throws PersistenceException {
 		this.deleteLiveSms(sms);
-		sms.setDeliveryDate(deliveryDate);
+		sms.setDeliveryDate(sms.getSmsSet().getLastDelivery());
 		this.doArchiveDeliveredSms(sms);
 	}
 
@@ -477,7 +481,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			smsSet.clearSmsList();
 			for (Row<UUID, Composite, ByteBuffer> row : rowsList) {
 				try {
-					Sms sms = this.createSms(row.getColumnSlice(), row.getKey());
+					Sms sms = this.createSms(row.getColumnSlice(), row.getKey(), smsSet);
 					smsSet.addSms(sms);
 				} catch (Exception e) {
 					if (logger.isSevereEnabled()) {
@@ -645,13 +649,16 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 	
 	}
 
-	private Sms createSms(ColumnSlice<Composite, ByteBuffer> cSlice, UUID dbId) throws IOException, PersistenceException {
+	protected Sms createSms(ColumnSlice<Composite, ByteBuffer> cSlice, UUID dbId, SmsSet smsSet) throws IOException, PersistenceException {
 
 		Sms sms = new Sms();
 		sms.setDbId(dbId);
 		String destAddr = null;
 		int destAddrTon = -1;
 		int destAddrNpi = -1;
+
+		if (cSlice.getColumns().size() == 0)
+			return null;
 
 		for (HColumn<Composite, ByteBuffer> col : cSlice.getColumns()) {
 			Composite nm = col.getName();
@@ -729,8 +736,30 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		if (destAddr == null || destAddrTon == -1 || destAddrNpi == -1) {
 			throw new PersistenceException("destAddr or destAddrTon or destAddrNpi is absent in LIVE_SMS for ID='" + dbId + "'");
 		}
-		TargetAddress ta = new TargetAddress(destAddrTon, destAddrNpi, destAddr);
-		SmsSet smsSet = this.obtainSmsSet(ta);
+
+		if (smsSet == null) {
+			TargetAddress ta = new TargetAddress(destAddrTon, destAddrNpi, destAddr);
+			smsSet = this.obtainSmsSet(ta);
+		} else {
+			if (smsSet.getDestAddr() == null) {
+				smsSet.setDestAddr(destAddr);
+				smsSet.setDestAddrTon(destAddrTon);
+				smsSet.setDestAddrNpi(destAddrNpi);
+				
+				// TODO: here we can add fields that are present only in ARCHIVE table (into extra fields of Sms class)
+				// "DEST_CLUSTER_NAME" text,
+				// "DEST_ESME_ID" text,
+				// "DEST_SYSTEM_ID" text,
+				// "DELIVERY_DATE" timestamp,
+				// "IMSI" ascii,
+				// "NNN_DIGITS" ascii,
+				// "NNN_AN" int,
+				// "NNN_NP" int,
+				// "SM_STATUS" int,
+				// "SM_TYPE" int,
+				// "DELIVERY_COUNT" int,
+			}
+		}
 		sms.setSmsSet(smsSet);
 
 		return sms;
@@ -765,7 +794,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		return smsSet;
 	}
 
-	private void deleteLiveSms(Sms sms) throws PersistenceException {
+	protected void deleteLiveSms(Sms sms) throws PersistenceException {
 
 		try {
 			Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
