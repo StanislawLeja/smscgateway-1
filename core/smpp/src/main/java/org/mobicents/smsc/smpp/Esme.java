@@ -612,7 +612,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		if (this.defaultSmppSession != null) {
 			return this.defaultSmppSession.getBindTypeName();
 		}
-		return null;
+		return this.smppBindType.toString();
 	}
 
 	@Override

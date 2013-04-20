@@ -97,12 +97,11 @@
 					if(systemType == null || systemType==""){
 						systemType = "null";
 					}
-					alert(systemType);
 					
 					serviceClass = isSmppServerStarted ? 'active-service' : 'inactive-service';
 					
 					$('#esmes-table').children('tbody').append('<tr class="service-row" style="cursor: pointer;" onclick="$(this).next().toggle();"><td style="vertical-align: middle; text-align: center;"><i style="color: ' + (isSmppServerStarted ? '#51A351' : '#BD362F') + ';" class="' + (isSmppServerStarted ? 'icon-play-circle' : 'icon-remove-circle') + '"></i></td>'+
-							'<td>' + name + '</a></td>' +
+							'<td>' + name + '</td>' +
 							'<td>' + systemId + '</td>' +
 							'<td>' + localType + '</td>' +
 							'<td>' + state + '</td>' +
@@ -113,45 +112,75 @@
 
 
 							'<tr class="text-info" style="display: none;"><td colspan=6>' +
-							'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
-							'<dt>SystemType</dt> <dd>' + systemType + ' </dd>' + 
-							'<dt>BindType</dt> <dd>' + bindType + ' </dd>' + 
-							'<dt>InterfaceVersion</dt> <dd>' + interfaceVersion + ' </dd>' + 
-							'<dt>Password</dt> <dd>' + password + ' </dd>' + 
-							
-							'<dt>WindowSize</dt> <dd>' + windowSize + ' </dd>' +
-							'<dt>RequestExpiryTimeout</dt> <dd>' + requestExpiryTimeout + ' </dd>' +
-							'<dt>WindowMonitorInterval</dt> <dd>' + windowMonitorInterval + ' </dd>' +
-							'<dt>WindowWaitTimeout</dt> <dd>' + windowWaitTimeout + ' </dd>' +
-							'<dt>MaxWindowSize</dt> <dd>' + maxWindowSize + ' </dd>' +
-							'<dt>WindowMonitorEnabled</dt> <dd>' + windowMonitorEnabled + ' </dd>' +
-							
-							'<dt>BoundDuration</dt> <dd>' + boundDuration + ' </dd>' +
-							'<dt>RxDataSMCounter</dt> <dd>' + rxDataSMCounter + ' </dd>' +
-							'<dt>RxDeliverSMCounter</dt> <dd>' + rxDeliverSMCounter + ' </dd>' +
-							'<dt>RxEnquireLinkCounter</dt> <dd>' + rxEnquireLinkCounter + ' </dd>' +
-							'<dt>RxSubmitSMCounter</dt> <dd>' + rxSubmitSMCounter + ' </dd>' +
-							'<dt>TxDataSMCounter</dt> <dd>' + txDataSMCounter + ' </dd>' +
-							'<dt>TxDeliverSMCounter</dt> <dd>' + txDeliverSMCounter + ' </dd>' +
-							'<dt>TxEnquireLinkCounter</dt> <dd>' + txEnquireLinkCounter + ' </dd>' +
-							'<dt>TxSubmitSMCounter</dt> <dd>' + txSubmitSMCounter + ' </dd>' +
-							
-							'<dt>LocalAddressAndPort</dt> <dd>' + localAddressAndPort + ' </dd>' +
-							'<dt>RemoteAddressAndPort</dt> <dd>' + remoteAddressAndPort + ' </dd>' +
-							'<dt>RemoteTypeName</dt> <dd>' + remoteTypeName + ' </dd>' +
-							
-							'<dt>Bound</dt> <dd>' + bound + ' </dd>' +
-							'<dt>Closed</dt> <dd>' + closed + ' </dd>' +
-							'<dt>Binding</dt> <dd>' + binding + ' </dd>' +
-							'<dt>Unbinding</dt> <dd>' + unbinding + ' </dd>' +
-							
-							'</dl>'+							
+							'<div class="bs-docs-example bs-docs-example-submenus"> '+
+					        '    <div>'+
+					        '      <p class="muted">SMPP Properties</p>'+
+									'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+										'<dt>SystemType</dt> <dd>' + systemType + ' </dd>' + 
+										'<dt>BindType</dt> <dd>' + bindType + ' </dd>' + 
+										'<dt>InterfaceVersion</dt> <dd>' + interfaceVersion + ' </dd>' + 
+										'<dt>Password</dt> <dd>' + password + ' </dd>' + 
+									'</dl>'+
+					        '    </div>'+
+					        	'<hr style="margin: 5px 0;"/>' +
+					        '    <div>'+
+					        '      <p class="muted">Configuration</p>'+
+									'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+										'<dt>WindowSize</dt> <dd>' + windowSize + ' </dd>' +
+										'<dt>RequestExpiryTimeout</dt> <dd>' + requestExpiryTimeout + ' </dd>' +
+										'<dt>WindowMonitorInterval</dt> <dd>' + windowMonitorInterval + ' </dd>' +
+										'<dt>WindowWaitTimeout</dt> <dd>' + windowWaitTimeout + ' </dd>' +
+										'<dt>MaxWindowSize</dt> <dd>' + maxWindowSize + ' </dd>' +
+										'<dt>WindowMonitorEnabled</dt> <dd>' + windowMonitorEnabled + ' </dd>' +
+									'</dl>'+
+					        '    </div>'+	
+					        '<hr style="margin: 5px 0;"/>' +
+					        '    <div>'+
+					        '      <p class="muted">Statistics</p>'+
+									'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+									'<dt>BoundDuration</dt> <dd>' + boundDuration + ' </dd>' +
+									'<dt>RxDataSMCounter</dt> <dd>' + rxDataSMCounter + ' </dd>' +
+									'<dt>RxDeliverSMCounter</dt> <dd>' + rxDeliverSMCounter + ' </dd>' +
+									'<dt>RxEnquireLinkCounter</dt> <dd>' + rxEnquireLinkCounter + ' </dd>' +
+									'<dt>RxSubmitSMCounter</dt> <dd>' + rxSubmitSMCounter + ' </dd>' +
+									'<dt>TxDataSMCounter</dt> <dd>' + txDataSMCounter + ' </dd>' +
+									'<dt>TxDeliverSMCounter</dt> <dd>' + txDeliverSMCounter + ' </dd>' +
+									'<dt>TxEnquireLinkCounter</dt> <dd>' + txEnquireLinkCounter + ' </dd>' +
+									'<dt>TxSubmitSMCounter</dt> <dd>' + txSubmitSMCounter + ' </dd>' +
+									'</dl>'+
+					        '    </div>'+
+					        '<hr style="margin: 5px 0;"/>' +
+					        '    <div>'+
+					        '      <p class="muted">Various</p>'+
+									'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+									'<dt>LocalAddressAndPort</dt> <dd>' + localAddressAndPort + ' </dd>' +
+									'<dt>RemoteAddressAndPort</dt> <dd>' + remoteAddressAndPort + ' </dd>' +
+									'<dt>RemoteTypeName</dt> <dd>' + remoteTypeName + ' </dd>' +
+									'</dl>'+
+					        '    </div>'+	
+					        '<hr style="margin: 5px 0;"/>' +
+					        '    <div>'+
+					        '      <p class="muted">State</p>'+
+									'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+									'<dt>Bound</dt> <dd>' + bound + ' </dd>' +
+									'<dt>Closed</dt> <dd>' + closed + ' </dd>' +
+									'<dt>Binding</dt> <dd>' + binding + ' </dd>' +
+									'<dt>Unbinding</dt> <dd>' + unbinding + ' </dd>' +
+									'</dl>'+
+					        '    </div>'+	
+					        '<hr style="margin: 5px 0;"/>' +
+					        '<div class="btn-group">'+
+					        '              <button type="button" class="btn" onclick="disableLogBytes(\'' + name +  '\')"><i class="icon-ban-circle"></i> DisableLogBytes</button>'+
+					        '              <button type="button" class="btn" onclick="disableLogPdu(\'' + name +  '\')"><i class="icon-ban-circle"></i> DisableLogPdu</button>'+
+					        '              <button type="button" class="btn" onclick="dumpWindow(\'' + name +  '\')"><i class="icon-comment-alt"></i> DumpWindow</button>'+
+					        '              <button type="button" class="btn" onclick="enableLogBytes(\'' + name +  '\')"><i class="icon-check"></i> EnableLogBytes</button>'+
+					        '              <button type="button" class="btn" onclick="enableLogPdu(\'' + name +  '\')"><i class="icon-check"></i> EnableLogPdu</button>'+
+					        '              <button type="button" class="btn" onclick="resetCounters(\'' + name +  '\')"><i class="icon-spinner"></i> ResetCounters</button>'+
+					        '            </div>'+
+					 		'</div>'+
+					 		
 							'</td></tr>'
-							
-					
-					
-					
-					);			
+					);
 				});
 			}
 		})
@@ -159,6 +188,60 @@
 			logToConsole("ERROR", "Failure trying to communicate with the SMSC Gateway. Please try again later.");
 		})
 	}
+	function disableLogBytes(esmeName){
+		mbeanSearch="com.telscale.smsc:layer=Esme,name="+esmeName;
+		jolokia.execute(mbeanSearch,"disableLogBytes",
+				{
+					success: function(value) {
+						logToConsole('INFO', 'Successfully disabled log bytes for Esme ' + esmeName );
+					}
+				});	
+	}
+	function disableLogPdu(esmeName){
+		mbeanSearch="com.telscale.smsc:layer=Esme,name="+esmeName;
+		jolokia.execute(mbeanSearch,"disableLogPdu",
+				{
+					success: function(value) {
+						logToConsole('INFO', 'Successfully disabled log pdu for Esme ' + esmeName );
+					}
+				});	
+	}	
+	function dumpWindow(esmeName){
+		mbeanSearch="com.telscale.smsc:layer=Esme,name="+esmeName;
+		jolokia.execute(mbeanSearch,"dumpWindow",
+				{
+					success: function(value) {
+						logToConsole('INFO', 'Successfully dumped window for Esme ' + esmeName );
+					}
+				});	
+	}
+	function enableLogBytes(esmeName){
+		mbeanSearch="com.telscale.smsc:layer=Esme,name="+esmeName;
+		jolokia.execute(mbeanSearch,"enableLogBytes",
+				{
+					success: function(value) {
+						logToConsole('INFO', 'Successfully enabled log bytes for Esme ' + esmeName );
+					}
+				});	
+	}	
+	function enableLogPdu(esmeName){
+		mbeanSearch="com.telscale.smsc:layer=Esme,name="+esmeName;
+		jolokia.execute(mbeanSearch,"enableLogPdu",
+				{
+					success: function(value) {
+						logToConsole('INFO', 'Successfully enabled log pdu for Esme ' + esmeName );
+					}
+				});	
+	}	
+	function resetCounters(esmeName){
+		mbeanSearch="com.telscale.smsc:layer=Esme,name="+esmeName;
+		jolokia.execute(mbeanSearch,"resetCounters",
+				{
+					success: function(value) {
+						logToConsole('INFO', 'Successfully resetted counters for Esme ' + esmeName );
+					}
+				});	
+	}	
 	function esmeOperation(operation, name) {
 		mbeanSearch="com.telscale.smsc:layer=EsmeManagement,name=SmscManagement";
 		jolokia.execute(mbeanSearch,operation,name,
