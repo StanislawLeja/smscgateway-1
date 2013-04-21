@@ -168,6 +168,23 @@ public class EsmeManagement implements EsmeManagementMBean {
 		return null;
 	}
 
+	public Esme createEsme(String name, String systemId, String password, String host, int port, String smppBindType,
+			String systemType, String smppIntVersion, byte ton, byte npi, String address, String smppSessionType,
+			int windowSize, long connectTimeout, long requestExpiryTimeout, long windowMonitorInterval,
+			long windowWaitTimeout, String clusterName, boolean countersEnabled, int enquireLinkDelay) throws Exception {
+		SmppBindType smppBindTypeOb = SmppBindType.valueOf(smppBindType);
+		SmppInterfaceVersionType smppInterfaceVersionTypeObj = SmppInterfaceVersionType
+				.getInterfaceVersionType(smppIntVersion);
+		Address addressObj = new Address(ton, npi, address);
+		SmppSession.Type smppSessionTypeObj = SmppSession.Type.valueOf(smppSessionType);
+
+		return this.createEsme(name, systemId, password, host, port, smppBindTypeOb, systemType,
+				smppInterfaceVersionTypeObj, addressObj, smppSessionTypeObj, windowSize, connectTimeout,
+				requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled,
+				enquireLinkDelay);
+
+	}
+
 	/**
 	 * <p>
 	 * Create new {@link Esme}

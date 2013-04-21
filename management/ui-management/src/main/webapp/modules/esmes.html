@@ -27,15 +27,148 @@
 				<th>SystemId</th>
 				<th>Type</th>
 				<th>State</th>
-				<th style="text-align: center; width: 64px;">Actions</th>
+				<th style="text-align: center; width: 150px;">Actions</th>
 			</tr>
 		</thead>
 		<tbody>
 		</tbody>
 	</table>
+	<p>
+		<a href="#entities-modal" role="button" class="btn btn-info btn-small" data-toggle="modal" ><i class="icon-external-link"></i> Create ESME</a>
+	</p>	
 </span>
 
+<div id="entities-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3>Create ESME</h3>
+	</div>
+	<div id="entities-modal-body" class="modal-body">
+		<div class="alert alert-error" id="login-settings-error" style="display:none;">
+		  <button type="button" class="close">&times;</button>
+		  Some Fields are not correctly filled out, please double check the settings below !
+		</div>
+		<p>
+			<span>
+				<label>ESME Name : </label>
+				<input id="esmeName" style="" type="text" placeholder="ESME Name" />
+				<br/>
+				<label>System Id : </label>
+				<input id="systemId" style="" type="text" placeholder="System Id" />
+				<br/>	
+				<label>Password : </label>
+				<input id="password" style="" type="text" placeholder="Password" />
+				<br/>								
+				<label>IP Address: </label>
+				<input id="ipAddress" style="" type="text" placeholder="IP Address" />
+				<br/>
+				<label>IP Port: </label>
+				<input id="ipPort" style="" type="text" placeholder="IP Port" />
+				<br/>
+				<label id="smppBindTypeLabel">Smpp Bind Type: </label>
+				<div id="smppBindTypeBtnGrp" class="btn-group" data-toggle="buttons-radio" >
+				    <button type="button" class="btn btn-mini" data-name="SmppBindType,TRANSCEIVER">
+				        TRANSCEIVER
+				    </button>
+				    <button type="button" class="btn btn-mini" data-name="SmppBindType,TRANSMITTER">
+				        TRANSMITTER
+				    </button>
+				    <button type="button" class="btn btn-mini" data-name="SmppBindType,RECEIVER">
+				        RECEIVER
+				    </button>
+				</div>
+				<br/>	
+				<label id="smppSessionTypeLabel">Smpp Session Type: </label>
+				<div id="smppSessionTypeBtnGrp" class="btn-group" data-toggle="buttons-radio" >
+				    <button type="button" class="btn btn-mini" data-name="SmppSessionType,CLIENT">
+				        CLIENT
+				    </button>
+				    <button type="button" class="btn btn-mini" data-name="SmppSessionType,SERVER">
+				        SERVER
+				    </button>
+				</div>
+				<br/>
+				<label id="systemTypeLabel">System Type: </label>
+				<input id="systemType" style="" type="text" placeholder="System Type" />
+				<br/>				
+				<label id="versionLabel">Version: </label>
+				<div id="versionBtnGrp" class="btn-group" data-toggle="buttons-radio" >
+				    <button type="button" class="btn btn-mini" data-name="SmppVersion,3.3">
+				        3.3
+				    </button>
+				    <button type="button" class="btn btn-mini" data-name="SmppVersion,3.4">
+				        3.4
+				    </button>
+				    <button type="button" class="btn btn-mini" data-name="SmppVersion,5.0">
+				        5.0
+				    </button>				    
+				</div>
+				<br/>
+				<label>ESME Type of number (TON): </label>
+				<input id="esmeTon" style="" type="text" placeholder="ESME Type of number" value="0"/>
+				<br/>
+				<label>ESME Number plan indicator (NPI): </label>
+				<input id="esmeNpi" style="" type="text" placeholder="ESME Number plan indicator" value="0"/>
+				<br/>
+				<label>ESME Range: </label>
+				<input id="esmeRange" style="" type="text" placeholder="ESME Range" value="^[0-9a-zA-Z]*"/>
+				<br/>
+				<label>Cluster Name: </label>
+				<input id="clusterName" style="" type="text" placeholder="Cluster Name" />
+				<br/>						
+				<label>Windows Size: </label>
+				<input id="windowSize" style="" type="text" placeholder="Window Size" value="1"/>
+				<br/>						
+				<label>Connect Timeout: </label>
+				<input id="connectTimeout" style="" type="text" placeholder="Connect Timeout" value="10000"/>
+				<br/>
+				<label>Request Expiry Timeout: </label>
+				<input id="reqExpTimeout" style="" type="text" placeholder="Request Expiry Timeout" value="-1"/>
+				<br/>				
+				<label>Windows Monitor Interval: </label>
+				<input id="windowMonitorInterval" style="" type="text" placeholder="Window Monitor Interval" value="-1"/>
+				<br/>
+				<label>Windows Wait Timeout: </label>
+				<input id="windowWaitTimeout" style="" type="text" placeholder="Window Wait Timeout" value="60000"/>
+				<br/>
+				<label>Counters Enabled: </label>
+				<div id="countersEnabledBtnGrp" class="btn-group" data-toggle="buttons-radio" >
+				    <button type="button" class="btn btn-mini" data-name="CountersEnabled,True">
+				        Yes
+				    </button>
+				    <button type="button" class="btn btn-mini" data-name="CountersEnabled,False">
+				        No
+				    </button>
+				</div>
+				<div id="realform"></div>
+				<br/>
+				<label>Enquire Link Delay: </label>
+				<input id="enqLinkDelay" style="" type="text" placeholder="Enquire Link Delay" value="30000"/>
+				<br/>
+																																																																				
+				<button id="add-entity-button" class="btn btn btn-primary" onclick="createEsme()">Create</button>
+			</span>
+		</p>
+		<p>&nbsp;</p>
+		<div class="accordion" id="entities-accordion">
+		</div>
+	</div>
+	<div class="modal-footer">
+		<a href="#" onclick="$('#entities-modal').modal('hide'); return false;" class="btn">Close</a>
+	</div>
+</div>
+
 <script type="text/javascript">
+$(function () {
+    $('div.btn-group button[data-name]').on('click', function() {
+        var select = $(this).data('name').split(',');
+        var elem = $('#realform > input[name="'+select[0]+'"]');
+        if(elem.length != 0)
+            elem.remove();
+        if(elem.attr('value') != select[1])
+            $('<input type="hidden" id="'+select[0]+'" name="'+select[0]+'" value="'+select[1]+'" />').appendTo('#realform');
+    });
+});
 	function updateEsmes() {
 		mbeanSearch="com.telscale.smsc:layer=Esme,name=*";
 		var mbean;
@@ -100,14 +233,15 @@
 					
 					serviceClass = isSmppServerStarted ? 'active-service' : 'inactive-service';
 					
-					$('#esmes-table').children('tbody').append('<tr class="service-row" style="cursor: pointer;" onclick="$(this).next().toggle();"><td style="vertical-align: middle; text-align: center;"><i style="color: ' + (isSmppServerStarted ? '#51A351' : '#BD362F') + ';" class="' + (isSmppServerStarted ? 'icon-play-circle' : 'icon-remove-circle') + '"></i></td>'+
-							'<td>' + name + '</td>' +
-							'<td>' + systemId + '</td>' +
-							'<td>' + localType + '</td>' +
-							'<td>' + state + '</td>' +
-							'<td style="font-size: 16px; vertical-align: middle; text-align: center; width: 100px;">' + 
+					$('#esmes-table').children('tbody').append('<tr class="service-row"><td style="vertical-align: middle; text-align: center;"><i style="color: ' + (isSmppServerStarted ? '#51A351' : '#BD362F') + ';" class="' + (isSmppServerStarted ? 'icon-play-circle' : 'icon-remove-circle') + '"></i></td>'+
+							'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + name + '</td>' +
+							'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + systemId + '</td>' +
+							'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + localType + '</td>' +
+							'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + state + '</td>' +
+							'<td style="font-size: 16px; vertical-align: middle; text-align: center; width: 150px;">' + 
 								'<button class="btn btn-small btn-success"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Start ESME" data-placement="bottom" onclick="esmeOperation(\'startEsme\', \'' + name + '\')"><i class="icon-play"> </i></button> ' +
 								'<button class="btn btn-small btn-danger"' + (!isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Stop ESME" data-placement="bottom" onclick="esmeOperation(\'stopEsme\', \'' + name +  '\')"><i class="icon-stop"> </i></button> ' +
+								'<button class="btn btn-small btn-danger"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Remove ESME" data-placement="bottom" onclick="esmeOperation(\'destroyEsme\', \'' + name +  '\')"><i class="icon-remove"> </i></button> ' +
 							'</td></tr>'+
 
 
@@ -252,7 +386,174 @@
 					}
 				});	
 		
-	}				
+	}
+	function createEsme(){
+		var formInvalid = false;
+		var focusNotSet = true;
+		
+		var esmeName = $("#esmeName").val();
+		if(esmeName.trim() == "") {
+			$("#esmeName").addClass("required");
+			if(focusNotSet){
+				$("#esmeName").focus();
+				focusNotSet = false;
+			}
+			formInvalid = true;
+		} else if($("#esmeName").hasClass("required")) {
+			$("#esmeName").removeClass("required");		
+		}
+		
+		var systemId = $("#systemId").val();
+		if(systemId.trim() == "") {
+			$("#systemId").addClass("required");
+			if(focusNotSet){
+				$("#systemId").focus();
+				focusNotSet = false;
+			}
+			formInvalid = true;
+		} else if($("#systemId").hasClass("required")) {
+			$("#systemId").removeClass("required");		
+		}
+		
+		var password = $("#password").val();
+		if(password.trim() == "") {
+			$("#password").addClass("required");		
+			if(focusNotSet){
+				$("#password").focus();
+				focusNotSet = false;
+			}
+			formInvalid = true;
+		} else if($("#password").hasClass("required")) {
+			$("#password").removeClass("required");		
+		}
+		
+		var ipAddress = $("#ipAddress").val();
+		if(ipAddress.trim() == "") {
+			$("#ipAddress").addClass("required");		
+			if(focusNotSet){
+				$("#ipAddress").focus();
+				focusNotSet = false;
+			}
+			formInvalid = true;
+		} else if($("#ipAddress").hasClass("required")) {
+			$("#ipAddress").removeClass("required");		
+		}
+		
+		var ipPort = $("#ipPort").val();
+		if(ipPort.trim() == "") {
+			$("#ipPort").addClass("required");		
+			if(focusNotSet){
+				$("#ipPort").focus();
+				focusNotSet = false;
+			}
+			formInvalid = true;
+		} else if($("#ipPort").hasClass("required")) {
+			$("#ipPort").removeClass("required");		
+		}
+		
+		var smppBindType = $("#SmppBindType").val();
+		if(smppBindType == null) {
+			$("#smppBindTypeBtnGrp").addClass("required");		
+			if(focusNotSet){
+				$("#smppBindTypeLabel").focus();
+				focusNotSet = false;
+			}
+			formInvalid = true;
+		} else if($("#smppBindTypeBtnGrp").hasClass("required")) {
+			$("#smppBindTypeBtnGrp").removeClass("required");		
+		}	
+		
+		var smppSessionType = $("#SmppSessionType").val();
+		if(smppSessionType == null) {
+			$("#smppSessionTypeBtnGrp").addClass("required");		
+			if(focusNotSet){
+				$("#smppSessionTypeLabel").focus();
+				focusNotSet = false;
+			}
+			formInvalid = true;
+		} else if($("#smppSessionTypeBtnGrp").hasClass("required")) {
+			$("#smppSessionTypeBtnGrp").removeClass("required");		
+		}
+		
+		var systemType = $("#systemType").val();
+		
+		var smppVersion = $("#SmppVersion").val();
+		if(smppVersion == null) {
+			$("#versionBtnGrp").addClass("required");		
+			if(focusNotSet){
+				$("#versionLabel").focus();
+				focusNotSet = false;
+			}
+			formInvalid = true;
+		} else if($("#versionBtnGrp").hasClass("required")) {
+			$("#versionBtnGrp").removeClass("required");		
+		}		
+		
+		
+		var esmeTon = $("#esmeTon").val();
+		var esmeNpi = $("#esmeNpi").val();
+		var esmeRange = $("#esmeRange").val();
+		var clusterName = $("#clusterName").val();
+		var windowSize = $("#windowSize").val();
+		if(windowSize == null){
+			windowSize = "1";//SmppConstants.DEFAULT_WINDOW_SIZE
+		}
+
+		var connectTimeout = $("#connectTimeout").val();
+		if(connectTimeout == null){
+			connectTimeout = "10000";
+		}
+		
+		var reqExpTimeout = $("#reqExpTimeout").val();
+		if(reqExpTimeout == null){
+			reqExpTimeout = "-1";
+		}
+		
+		var windowMonitorInterval = $("#windowMonitorInterval").val();
+		if(windowMonitorInterval == null){
+			windowMonitorInterval = "-1";
+		}
+		
+		var windowWaitTimeout = $("#windowWaitTimeout").val();
+		if(windowWaitTimeout == null){
+			windowWaitTimeout = "60000";
+		}
+		
+		var countersEnabled = $("#CountersEnabled").val();
+		if(countersEnabled == null) {
+			$("#countersEnabledBtnGrp").addClass("required");		
+			if(focusNotSet){
+				$("#countersEnabledBtnGrp").focus();
+				focusNotSet = false;
+			}
+			formInvalid = true;
+		} else if($("#countersEnabledBtnGrp").hasClass("required")) {
+			$("#countersEnabledBtnGrp").removeClass("required");		
+		}
+		
+		var enqLinkDelay = $("#enqLinkDelay").val();
+		if(enqLinkDelay == null){
+			enqLinkDelay = "30000";
+		}
+		
+		if(formInvalid) {
+			$("#login-settings-error").show();
+			logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+			return false;
+		} else {
+			$("#login-settings-error").hide();
+		}
+		
+		jolokia.execute("com.telscale.smsc:layer=EsmeManagement,name=SmscManagement","createEsme(java.lang.String,java.lang.String,java.lang.String,java.lang.String,int,java.lang.String,java.lang.String,java.lang.String,byte,byte,java.lang.String,java.lang.String,int,long,long,long,long,java.lang.String,boolean,int)", esmeName,systemId,password,ipAddress,ipPort,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay, 
+				{
+					success: function(value) {
+						updateEsmes();
+						logToConsole('INFO', 'ESME ' + esmeName + ' created successfuly.');
+						$('#entities-modal').modal('hide');
+					}
+				});		
+		
+	}
 	$(document).ready(function () {
 		updateEsmes();
 	});
