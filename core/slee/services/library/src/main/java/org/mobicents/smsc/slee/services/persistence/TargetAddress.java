@@ -66,6 +66,7 @@ public class TargetAddress {
 	public String getAddr() {
 		return addr;
 	}
+
     @Override
     public int hashCode() {
     	final int prime = 31;
@@ -102,5 +103,23 @@ public class TargetAddress {
 			return false;
 
 		return true;
+    }
+
+    @Override
+    public String toString() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("TargetAddress=[");
+
+		sb.append("addr=");
+		sb.append(addr);
+		sb.append(", addrTon=");
+		sb.append(addrTon);
+		sb.append(", addrNpi=");
+		sb.append(addrNpi);
+
+		sb.append("]");
+
+		return sb.toString();
     }
 }

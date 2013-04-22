@@ -57,7 +57,7 @@ public class Schema {
     public static final String COLUMN_SUBMIT_DATE = "SUBMIT_DATE";
     public static final String COLUMN_SCHEDULE_DELIVERY = "SCHEDULE_DELIVERY";
     public static final String COLUMN_VALIDITY_PERIOD = "VALIDITY_PERIOD";
-    public static final String COLUMN_ORIG_ESME_ID = "ORIG_ESME_ID";
+    public static final String COLUMN_ORIG_ESME_NAME = "ORIG_ESME_NAME";
     public static final String COLUMN_ORIG_SYSTEM_ID = "ORIG_SYSTEM_ID";
     public static final String COLUMN_SERVICE_TYPE = "SERVICE_TYPE";
     
@@ -71,9 +71,10 @@ public class Schema {
     public static final String COLUMN_ALERTING_SUPPORTED = "ALERTING_SUPPORTED";
     public static final String COLUMN_LAST_DELIVERY = "LAST_DELIVERY";
     public static final String COLUMN_DUE_DATE = "DUE_DATE";
+    public static final String COLUMN_DUE_DELAY = "DUE_DELAY";
 
 	public static final String COLUMN_DEST_CLUSTER_NAME = "DEST_CLUSTER_NAME";
-	public static final String COLUMN_DEST_ESME_ID = "DEST_ESME_ID";
+	public static final String COLUMN_DEST_ESME_NAME = "DEST_ESME_NAME";
 	public static final String COLUMN_DEST_SYSTEM_ID = "DEST_SYSTEM_ID";
 	public static final String COLUMN_DELIVERY_DATE = "DELIVERY_DATE";
 	public static final String COLUMN_IMSI = "IMSI";
@@ -99,8 +100,8 @@ public class Schema {
 
         tmp.add(COLUMN_IN_SYSTEM);
         tmp.add(COLUMN_SM_STATUS);
+        tmp.add(COLUMN_DUE_DELAY);
         tmp.add(COLUMN_DUE_DATE);
-        tmp.add(COLUMN_DELIVERY_COUNT);
         tmp.add(COLUMN_ALERTING_SUPPORTED);
 		tmp.add(COLUMN_LAST_DELIVERY);
         
@@ -114,7 +115,7 @@ public class Schema {
         tmp.add(COLUMN_ADDR_DST_NPI);
 
         tmp.add(COLUMN_MESSAGE_ID);
-        tmp.add(COLUMN_ORIG_ESME_ID);
+        tmp.add(COLUMN_ORIG_ESME_NAME);
         tmp.add(COLUMN_ORIG_SYSTEM_ID);
 		tmp.add(COLUMN_SUBMIT_DATE);
 		tmp.add(COLUMN_ADDR_SRC_DIGITS);
@@ -133,7 +134,9 @@ public class Schema {
 		tmp.add(COLUMN_OPTIONAL_PARAMETERS);
 		tmp.add(COLUMN_SCHEDULE_DELIVERY);
 		tmp.add(COLUMN_VALIDITY_PERIOD);
-		COLUMNS_LIVE_SMS = Collections.unmodifiableList(tmp);
+        tmp.add(COLUMN_DELIVERY_COUNT);
+
+        COLUMNS_LIVE_SMS = Collections.unmodifiableList(tmp);
 
         tmp = new ArrayList<String>();
 		tmp.add(COLUMN_ID);
@@ -145,10 +148,10 @@ public class Schema {
 		tmp.add(COLUMN_ADDR_SRC_NPI);
 
 		tmp.add(COLUMN_MESSAGE_ID);
-        tmp.add(COLUMN_ORIG_ESME_ID);
+        tmp.add(COLUMN_ORIG_ESME_NAME);
         tmp.add(COLUMN_ORIG_SYSTEM_ID);
         tmp.add(COLUMN_DEST_CLUSTER_NAME);
-        tmp.add(COLUMN_DEST_ESME_ID);
+        tmp.add(COLUMN_DEST_ESME_NAME);
         tmp.add(COLUMN_DEST_SYSTEM_ID);
         tmp.add(COLUMN_SUBMIT_DATE);
         tmp.add(COLUMN_DELIVERY_DATE);

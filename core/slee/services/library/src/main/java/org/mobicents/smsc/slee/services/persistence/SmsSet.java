@@ -50,19 +50,19 @@ public class SmsSet implements Serializable {
 	// destination info - not saved in LIVE table
 	private String destClusterName;
 	private String destSystemId;
-	private String destEsmeId;
+	private String destEsmeName;
 
 	// routing info - not saved in LIVE table
 	private IMSI imsi;
 	private LocationInfoWithLMSI locationInfoWithLMSI;
 
 	private Date dueDate;
+	// last interval between delivering (sec)
+	private int dueDelay;
 	private int inSystem;
 
 	private ErrorCode status;
     private SmType type;
-	
-    private int deliveryCount;
 
     private Date lastDelivery;
     private boolean alertingSupported;
@@ -142,12 +142,12 @@ public class SmsSet implements Serializable {
 	/**
 	 * SMSC internal name of destination esme (“” for MT messages)
 	 */
-	public String getDestEsmeId() {
-		return destEsmeId;
+	public String getDestEsmeName() {
+		return destEsmeName;
 	}
 
-	public void setDestEsmeId(String destEsmeId) {
-		this.destEsmeId = destEsmeId;
+	public void setDestEsmeName(String destEsmeName) {
+		this.destEsmeName = destEsmeName;
 	}
 
 	/**
@@ -170,6 +170,17 @@ public class SmsSet implements Serializable {
 
 	public void setLocationInfoWithLMSI(LocationInfoWithLMSI locationInfoWithLMSI) {
 		this.locationInfoWithLMSI = locationInfoWithLMSI;
+	}
+
+	/**
+	 * last interval between delivering (sec)
+	 */
+	public int getDueDelay() {
+		return dueDelay;
+	}
+
+	public void setDueDelay(int dueDelay) {
+		this.dueDelay = dueDelay;
 	}
 
 	/**
@@ -214,17 +225,6 @@ public class SmsSet implements Serializable {
 
 	public void setType(SmType type) {
 		this.type = type;
-	}
-
-	/**
-	 * delivery tries count
-	 */
-	public int getDeliveryCount() {
-		return deliveryCount;
-	}
-
-	public void setDeliveryCount(int deliveryCount) {
-		this.deliveryCount = deliveryCount;
 	}
 
 	/**
@@ -287,7 +287,7 @@ public class SmsSet implements Serializable {
 		sb.append(", destSystemId=");
 		sb.append(destSystemId);
 		sb.append(", destEsmeId=");
-		sb.append(destEsmeId);
+		sb.append(destEsmeName);
 		sb.append(", imsi=");
 		sb.append(imsi);
 		sb.append(", locationInfoWithLMSI=");
@@ -296,12 +296,12 @@ public class SmsSet implements Serializable {
 		sb.append(inSystem);
 		sb.append(", dueDate=");
 		sb.append(dueDate);
+		sb.append(", dueDelay=");
+		sb.append(dueDelay);
 		sb.append(", status=");
 		sb.append(status);
 		sb.append(", type=");
 		sb.append(type);
-		sb.append(", deliveryCount=");
-		sb.append(deliveryCount);
 		sb.append(", lastDelivery=");
 		sb.append(lastDelivery);
 		sb.append(", alertingSupported=");

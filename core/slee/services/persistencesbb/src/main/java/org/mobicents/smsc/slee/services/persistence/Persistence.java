@@ -51,16 +51,23 @@ public interface Persistence {
 	public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException;
 
 	/**
-	 * Set this TargetAddress as scheduled. 
-	 * If (IN_SYSTEM==2 or IN_SYSTEM==1 and newDueDate > currentDueDate) IN_SYSTEM=1, DUE_DATE=newDueDate
+	 * Set this TargetAddress as scheduled when a new message is income
+	 * If (IN_SYSTEM==0 or IN_SYSTEM==1 and newDueDate < currentDueDate) { IN_SYSTEM=1; DUE_DATE=newDueDate; DUE_DELAY=0; }
 	 * 
 	 * @param smsSet
 	 * @param newDueDate
-	 * @param fromMessageInsertion
-	 *            true: if invoked from new incomed message insertion
-	 *            false: if invoked from delivering process
 	 */
-	public void setScheduled(SmsSet smsSet, Date newDueDate, boolean fromMessageInsertion) throws PersistenceException;
+	public void setNewMessageScheduled(SmsSet smsSet, Date newDueDate) throws PersistenceException;
+
+	/**
+	 * Set this TargetAddress as scheduled after last delivery failure 
+	 * IN_SYSTEM=1; DUE_DATE=newDueDate; DUE_DELAY = newDueDelay
+	 * 
+	 * @param smsSet
+	 * @param newDueDate
+	 * @param newDueDelay
+	 */
+	public void setDeliveringProcessScheduled(SmsSet smsSet, Date newDueDate, int newDueDelay) throws PersistenceException;
 
 	/**
 	 * Set destination for SmsSet + SmType. Database is not updated for these fields
@@ -90,6 +97,15 @@ public interface Persistence {
 	 * @throws PersistenceException
 	 */
 	public void setDeliveryStart(SmsSet smsSet) throws PersistenceException;
+
+	/**
+	 * Update database for setting smsSet to be under delivering processing:
+	 * DELIVERY_COUNT++ 
+	 * 
+	 * @param smsSet
+	 * @throws PersistenceException
+	 */
+	public void setDeliveryStart(Sms sms) throws PersistenceException;
 
 	/**
 	 * Update database for setting smsSet to be out delivering processing with success

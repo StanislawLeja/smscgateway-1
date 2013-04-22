@@ -12,9 +12,8 @@ CREATE TABLE "LIVE" (
 
 	"IN_SYSTEM" int, 
 	"DUE_DATE" timestamp,
+	"DUE_DELAY" int,
 	"SM_STATUS" int,
-	"DELIVERY_COUNT" int,
-	"LAST_DELIVERY" timestamp,
 	"ALERTING_SUPPORTED" boolean,
 );
 
@@ -51,6 +50,8 @@ CREATE TABLE "LIVE_SMS" (
 	"OPTIONAL_PARAMETERS" text, 
 	"SCHEDULE_DELIVERY" timestamp,
 	"VALIDITY_PERIOD" timestamp,
+	"LAST_DELIVERY" timestamp,
+	"DELIVERY_COUNT" int,
 
 	PRIMARY KEY ("ID") 
 );

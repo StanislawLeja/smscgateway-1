@@ -34,6 +34,19 @@ public class SmsSetCashe {
 	private FastMap<TargetAddress, TargetAddressContainer> lstSmsSetUnderAtomicOper = new FastMap<TargetAddress, TargetAddressContainer>();
 	private int activityCount = 0;
 
+	private static SmsSetCashe singeltone;
+
+	static {
+		singeltone = new SmsSetCashe();
+	}
+
+	private SmsSetCashe() {
+	}
+
+	public static SmsSetCashe getInstance() {
+		return singeltone;
+	}
+
 	public TargetAddress addSmsSet(TargetAddress ta) {
 		synchronized (this) {
 			TargetAddressContainer cont = lstSmsSetUnderAtomicOper.get(ta);

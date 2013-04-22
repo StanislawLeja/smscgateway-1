@@ -84,29 +84,29 @@ import org.mobicents.smsc.slee.services.persistence.TlvSet;
  * 
  */
 public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
-    
-    private static final ResourceAdaptorTypeID HECTOR_ID = new ResourceAdaptorTypeID("HectorClientResourceAdaptorType",
-            "org.mobicents", "1.0");
-    private static final String LINK = "HectorClientResourceAdaptorType";
-	private static final String TLV_SET = "tlvSet";
-    
-	protected final static CompositeSerializer SERIALIZER_COMPOSITE = CompositeSerializer.get();
-    protected final static BooleanSerializer SERIALIZER_BOOLEAN = BooleanSerializer.get();
-    protected final static DateSerializer SERIALIZER_DATE = DateSerializer.get();
-    protected final static StringSerializer SERIALIZER_STRING = StringSerializer.get();
-    protected final static IntegerSerializer SERIALIZER_INTEGER = IntegerSerializer.get();
-    protected final static BytesArraySerializer SERIALIZER_BYTE_ARRAY = BytesArraySerializer.get();
-    
-    private SbbContextExt sbbContextExt;
-    private HectorClientRAInterface raSbbInterface;
-    protected Keyspace keyspace;
-    protected SmsSetCashe smsSetCashe = new SmsSetCashe();
 
-    private Tracer logger;
-    // ----------------------------------------
-    // SBB LO
-    // ----------------------------------------
- 
+	private static final ResourceAdaptorTypeID HECTOR_ID = new ResourceAdaptorTypeID("HectorClientResourceAdaptorType", "org.mobicents", "1.0");
+	private static final String LINK = "HectorClientResourceAdaptorType";
+	private static final String TLV_SET = "tlvSet";
+
+	protected final static CompositeSerializer SERIALIZER_COMPOSITE = CompositeSerializer.get();
+	protected final static BooleanSerializer SERIALIZER_BOOLEAN = BooleanSerializer.get();
+	protected final static DateSerializer SERIALIZER_DATE = DateSerializer.get();
+	protected final static StringSerializer SERIALIZER_STRING = StringSerializer.get();
+	protected final static IntegerSerializer SERIALIZER_INTEGER = IntegerSerializer.get();
+	protected final static BytesArraySerializer SERIALIZER_BYTE_ARRAY = BytesArraySerializer.get();
+
+	private SbbContextExt sbbContextExt;
+	private HectorClientRAInterface raSbbInterface;
+	protected Keyspace keyspace;
+	protected SmsSetCashe smsSetCashe = SmsSetCashe.getInstance();
+
+	private Tracer logger;
+
+	// ----------------------------------------
+	// SBB LO
+	// ----------------------------------------
+
 	@Override
 	public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException {
 
@@ -123,7 +123,8 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 
 					QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
 					ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
-//					List<HColumn<Composite, ByteBuffer>> lst = cSlice.getColumns();
+					// List<HColumn<Composite, ByteBuffer>> lst =
+					// cSlice.getColumns();
 
 					SmsSet smsSet = this.createSmsSet(cSlice);
 
@@ -138,7 +139,8 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 						smsSet.setInSystem(0);
 
 						Composite cc = createLiveColumnComposite(ta, Schema.COLUMN_ADDR_DST_DIGITS);
-						mutator.addInsertion(ta.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, ta.getAddr(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
+						mutator.addInsertion(ta.getTargetId(), Schema.FAMILY_LIVE,
+								HFactory.createColumn(cc, ta.getAddr(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
 						cc = createLiveColumnComposite(ta, Schema.COLUMN_ADDR_DST_TON);
 						mutator.addInsertion(ta.getTargetId(), Schema.FAMILY_LIVE,
 								HFactory.createColumn(cc, ta.getAddrTon(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
@@ -166,14 +168,16 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 	}
 
 	@Override
-	public void setScheduled(SmsSet smsSet, Date newDueDate, boolean fromMessageInsertion) throws PersistenceException {
+	public void setNewMessageScheduled(SmsSet smsSet, Date newDueDate) throws PersistenceException {
 
-		if (fromMessageInsertion && smsSet.getInSystem() == 2)
-			// we do not update Scheduled if it is a new message insertion and target is under delivering process
+		if (smsSet.getInSystem() == 2)
+			// we do not update Scheduled if it is a new message insertion and
+			// target is under delivering process
 			return;
 
-		if (smsSet.getInSystem() == 1 && smsSet.getDueDate() != null && newDueDate.compareTo(smsSet.getDueDate()) >= 0)
-			// we do not update Scheduled if it is already schedulered for a earlier time
+		if (smsSet.getInSystem() == 1 && smsSet.getDueDate() != null && newDueDate.after(smsSet.getDueDate()))
+			// we do not update Scheduled if it is already schedulered for a
+			// earlier time
 			return;
 
 		try {
@@ -183,11 +187,39 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, newDueDate, SERIALIZER_COMPOSITE, SERIALIZER_DATE));
 			cc = createLiveColumnComposite(smsSet, Schema.COLUMN_IN_SYSTEM);
 			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, 1, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+			cc = createLiveColumnComposite(smsSet, Schema.COLUMN_DUE_DELAY);
+			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, 0, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 
 			mutator.execute();
-			
+
 			smsSet.setInSystem(1);
 			smsSet.setDueDate(newDueDate);
+			smsSet.setDueDelay(0);
+		} catch (Exception e) {
+			String msg = "Failed to setScheduled for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi() + "'!";
+			logger.severe(msg, e);
+			throw new PersistenceException(msg, e);
+		}
+	}
+
+	@Override
+	public void setDeliveringProcessScheduled(SmsSet smsSet, Date newDueDate, int newDueDelay) throws PersistenceException {
+
+		try {
+			Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
+
+			Composite cc = createLiveColumnComposite(smsSet, Schema.COLUMN_DUE_DATE);
+			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, newDueDate, SERIALIZER_COMPOSITE, SERIALIZER_DATE));
+			cc = createLiveColumnComposite(smsSet, Schema.COLUMN_IN_SYSTEM);
+			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, 1, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+			cc = createLiveColumnComposite(smsSet, Schema.COLUMN_DUE_DELAY);
+			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, newDueDelay, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+
+			mutator.execute();
+
+			smsSet.setInSystem(1);
+			smsSet.setDueDate(newDueDate);
+			smsSet.setDueDelay(newDueDelay);
 		} catch (Exception e) {
 			String msg = "Failed to setScheduled for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi() + "'!";
 			logger.severe(msg, e);
@@ -200,7 +232,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 
 		smsSet.setDestClusterName(destClusterName);
 		smsSet.setDestSystemId(destSystemId);
-		smsSet.setDestEsmeId(destEsmeId);
+		smsSet.setDestEsmeName(destEsmeId);
 		smsSet.setType(type);
 	}
 
@@ -219,16 +251,40 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 
 			Composite cc = createLiveColumnComposite(smsSet, Schema.COLUMN_IN_SYSTEM);
 			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, 2, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-			cc = createLiveColumnComposite(smsSet, Schema.COLUMN_DELIVERY_COUNT);
-			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-					HFactory.createColumn(cc, smsSet.getDeliveryCount() + 1, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+			// cc = createLiveColumnComposite(smsSet,
+			// Schema.COLUMN_DELIVERY_COUNT);
+			// mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
+			// HFactory.createColumn(cc, smsSet.getDeliveryCount() + 1,
+			// SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 
 			mutator.execute();
 
 			smsSet.setInSystem(2);
-			smsSet.setDeliveryCount(smsSet.getDeliveryCount() + 1);
+			// smsSet.setDeliveryCount(smsSet.getDeliveryCount() + 1);
 		} catch (Exception e) {
-			String msg = "Failed to setDeliveryStart for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi() + "'!";
+			String msg = "Failed to setDeliveryStart smsSet for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi()
+					+ "'!";
+			logger.severe(msg, e);
+			throw new PersistenceException(msg, e);
+		}
+	}
+
+	@Override
+	public void setDeliveryStart(Sms sms) throws PersistenceException {
+
+		try {
+			Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
+
+			Composite cc = new Composite();
+			cc.addComponent(Schema.COLUMN_DELIVERY_COUNT, SERIALIZER_STRING);
+			mutator.addInsertion(sms.getDbId(), Schema.FAMILY_LIVE_SMS,
+					HFactory.createColumn(cc, sms.getDeliveryCount() + 1, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+
+			mutator.execute();
+
+			sms.setDeliveryCount(sms.getDeliveryCount() + 1);
+		} catch (Exception e) {
+			String msg = "Failed to setDeliveryStart sms for '" + sms.getDbId() + "'!";
 			logger.severe(msg, e);
 			throw new PersistenceException(msg, e);
 		}
@@ -253,7 +309,8 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			smsSet.setStatus(ErrorCode.SUCCESS);
 			smsSet.setLastDelivery(lastDelivery);
 		} catch (Exception e) {
-			String msg = "Failed to setDeliverySuccess for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi() + "'!";
+			String msg = "Failed to setDeliverySuccess for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi()
+					+ "'!";
 			logger.severe(msg, e);
 			throw new PersistenceException(msg, e);
 		}
@@ -283,7 +340,8 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			smsSet.setLastDelivery(lastDelivery);
 			smsSet.setAlertingSupported(alertingSupported);
 		} catch (Exception e) {
-			String msg = "Failed to setDeliverySuccess for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi() + "'!";
+			String msg = "Failed to setDeliverySuccess for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi()
+					+ "'!";
 			logger.severe(msg, e);
 			throw new PersistenceException(msg, e);
 		}
@@ -296,10 +354,12 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		try {
 			synchronized (lock) {
 
-				// firstly we are looking for corresponded records in LIVE_SMS table
+				// firstly we are looking for corresponded records in LIVE_SMS
+				// table
 				this.fetchSchedulableSms(smsSet);
 				if (smsSet.getFirstSms() != null) {
-					// there are corresponded records in LIVE_SMS table - we will not delete LIVE record
+					// there are corresponded records in LIVE_SMS table - we
+					// will not delete LIVE record
 					return false;
 				}
 
@@ -335,7 +395,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 
 			this.FillUpdateFields(sms, mutator, Schema.FAMILY_LIVE_SMS);
 
-	        mutator.execute();
+			mutator.execute();
 		} catch (Exception e) {
 			String msg = "Failed to createLiveSms SMS for '" + sms.getDbId() + "'!";
 			logger.severe(msg, e);
@@ -368,15 +428,15 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			logger.severe(msg, e);
 			throw new PersistenceException(msg, e);
 		}
-		
+
 		return null;
 	}
 
 	@Override
 	public Sms obtainLiveSms(long messageId) throws PersistenceException {
 		try {
-			IndexedSlicesQuery<UUID, Composite, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace, UUIDSerializer.get(),
-					SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
+			IndexedSlicesQuery<UUID, Composite, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace, UUIDSerializer.get(), SERIALIZER_COMPOSITE,
+					ByteBufferSerializer.get());
 			query.setColumnFamily(Schema.FAMILY_LIVE_SMS);
 			query.setRange(null, null, false, 100);
 			Composite cc = new Composite();
@@ -430,8 +490,8 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		try {
 			List<SmsSet> lst = new ArrayList<SmsSet>();
 
-			IndexedSlicesQuery<String, Composite, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace, StringSerializer.get(),
-					SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
+			IndexedSlicesQuery<String, Composite, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace, StringSerializer.get(), SERIALIZER_COMPOSITE,
+					ByteBufferSerializer.get());
 			query.setColumnFamily(Schema.FAMILY_LIVE);
 			query.setRange(null, null, false, 100);
 			Composite cc = new Composite();
@@ -498,12 +558,11 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		}
 	}
 
-
 	private Composite createLiveColumnComposite(TargetAddress ta, String colName) {
 		Composite cc;
 		cc = new Composite();
-//		cc.addComponent(ta.getAddrTon(), SERIALIZER_INTEGER);
-//		cc.addComponent(ta.getAddrNpi(), SERIALIZER_INTEGER);
+		// cc.addComponent(ta.getAddrTon(), SERIALIZER_INTEGER);
+		// cc.addComponent(ta.getAddrNpi(), SERIALIZER_INTEGER);
 		cc.addComponent(colName, SERIALIZER_STRING);
 		return cc;
 	}
@@ -511,8 +570,8 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 	private Composite createLiveColumnComposite(SmsSet smsSet, String colName) {
 		Composite cc;
 		cc = new Composite();
-//		cc.addComponent(smsSet.getDestAddrTon(), SERIALIZER_INTEGER);
-//		cc.addComponent(smsSet.getDestAddrNpi(), SERIALIZER_INTEGER);
+		// cc.addComponent(smsSet.getDestAddrTon(), SERIALIZER_INTEGER);
+		// cc.addComponent(smsSet.getDestAddrNpi(), SERIALIZER_INTEGER);
 		cc.addComponent(colName, SERIALIZER_STRING);
 		return cc;
 	}
@@ -523,8 +582,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getDbId(), SERIALIZER_COMPOSITE, UUIDSerializer.get()));
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_ADDR_DST_DIGITS, SERIALIZER_STRING);
-		mutator.addInsertion(sms.getDbId(), columnFamilyName,
-				HFactory.createColumn(cc, sms.getSmsSet().getDestAddr(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getSmsSet().getDestAddr(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_ADDR_DST_TON, SERIALIZER_STRING);
 		mutator.addInsertion(sms.getDbId(), columnFamilyName,
@@ -537,81 +595,65 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		if (sms.getSourceAddr() != null) {
 			cc = new Composite();
 			cc.addComponent(Schema.COLUMN_ADDR_SRC_DIGITS, SERIALIZER_STRING);
-			mutator.addInsertion(sms.getDbId(), columnFamilyName,
-					HFactory.createColumn(cc, sms.getSourceAddr(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
+			mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getSourceAddr(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
 		}
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_ADDR_SRC_TON, SERIALIZER_STRING);
-		mutator.addInsertion(sms.getDbId(), columnFamilyName,
-				HFactory.createColumn(cc, sms.getSourceAddrTon(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getSourceAddrTon(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_ADDR_SRC_NPI, SERIALIZER_STRING);
-		mutator.addInsertion(sms.getDbId(), columnFamilyName,
-				HFactory.createColumn(cc, sms.getSourceAddrNpi(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getSourceAddrNpi(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_MESSAGE_ID, SERIALIZER_STRING);
-		mutator.addInsertion(sms.getDbId(), columnFamilyName,
-				HFactory.createColumn(cc, sms.getMessageId(), SERIALIZER_COMPOSITE, LongSerializer.get()));
-		if (sms.getOrigEsmeId() != null) {
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getMessageId(), SERIALIZER_COMPOSITE, LongSerializer.get()));
+		if (sms.getOrigEsmeName() != null) {
 			cc = new Composite();
-			cc.addComponent(Schema.COLUMN_ORIG_ESME_ID, SERIALIZER_STRING);
-			mutator.addInsertion(sms.getDbId(), columnFamilyName,
-					HFactory.createColumn(cc, sms.getOrigEsmeId(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
+			cc.addComponent(Schema.COLUMN_ORIG_ESME_NAME, SERIALIZER_STRING);
+			mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getOrigEsmeName(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
 		}
 		if (sms.getOrigSystemId() != null) {
 			cc = new Composite();
 			cc.addComponent(Schema.COLUMN_ORIG_SYSTEM_ID, SERIALIZER_STRING);
-			mutator.addInsertion(sms.getDbId(), columnFamilyName,
-					HFactory.createColumn(cc, sms.getOrigSystemId(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
+			mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getOrigSystemId(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
 		}
 		if (sms.getSubmitDate() != null) {
 			cc = new Composite();
 			cc.addComponent(Schema.COLUMN_SUBMIT_DATE, SERIALIZER_STRING);
-			mutator.addInsertion(sms.getDbId(), columnFamilyName,
-					HFactory.createColumn(cc, sms.getSubmitDate(), SERIALIZER_COMPOSITE, SERIALIZER_DATE));
+			mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getSubmitDate(), SERIALIZER_COMPOSITE, SERIALIZER_DATE));
 		}
 
 		if (sms.getServiceType() != null) {
 			cc = new Composite();
 			cc.addComponent(Schema.COLUMN_SERVICE_TYPE, SERIALIZER_STRING);
-			mutator.addInsertion(sms.getDbId(), columnFamilyName,
-					HFactory.createColumn(cc, sms.getServiceType(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
+			mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getServiceType(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
 		}
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_ESM_CLASS, SERIALIZER_STRING);
-		mutator.addInsertion(sms.getDbId(), columnFamilyName,
-				HFactory.createColumn(cc, sms.getEsmClass(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getEsmClass(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_PROTOCOL_ID, SERIALIZER_STRING);
-		mutator.addInsertion(sms.getDbId(), columnFamilyName,
-				HFactory.createColumn(cc, sms.getProtocolId(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getProtocolId(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_PRIORITY, SERIALIZER_STRING);
-		mutator.addInsertion(sms.getDbId(), columnFamilyName,
-				HFactory.createColumn(cc, sms.getPriority(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getPriority(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_REGISTERED_DELIVERY, SERIALIZER_STRING);
-		mutator.addInsertion(sms.getDbId(), columnFamilyName,
-				HFactory.createColumn(cc, sms.getRegisteredDelivery(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getRegisteredDelivery(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_REPLACE, SERIALIZER_STRING);
-		mutator.addInsertion(sms.getDbId(), columnFamilyName,
-				HFactory.createColumn(cc, sms.getReplaceIfPresent(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getReplaceIfPresent(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_DATA_CODING, SERIALIZER_STRING);
-		mutator.addInsertion(sms.getDbId(), columnFamilyName,
-				HFactory.createColumn(cc, sms.getDataCoding(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getDataCoding(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_DEFAULT_MSG_ID, SERIALIZER_STRING);
-		mutator.addInsertion(sms.getDbId(), columnFamilyName,
-				HFactory.createColumn(cc, sms.getDefaultMsgId(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getDefaultMsgId(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 
 		if (sms.getShortMessage() != null) {
 			cc = new Composite();
 			cc.addComponent(Schema.COLUMN_MESSAGE, SERIALIZER_STRING);
-			mutator.addInsertion(sms.getDbId(), columnFamilyName,
-					HFactory.createColumn(cc, sms.getShortMessage(), SERIALIZER_COMPOSITE, SERIALIZER_BYTE_ARRAY));
+			mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getShortMessage(), SERIALIZER_COMPOSITE, SERIALIZER_BYTE_ARRAY));
 		}
 		if (sms.getScheduleDeliveryTime() != null) {
 			cc = new Composite();
@@ -622,9 +664,11 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		if (sms.getValidityPeriod() != null) {
 			cc = new Composite();
 			cc.addComponent(Schema.COLUMN_VALIDITY_PERIOD, SERIALIZER_STRING);
-			mutator.addInsertion(sms.getDbId(), columnFamilyName,
-					HFactory.createColumn(cc, sms.getValidityPeriod(), SERIALIZER_COMPOSITE, SERIALIZER_DATE));
+			mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getValidityPeriod(), SERIALIZER_COMPOSITE, SERIALIZER_DATE));
 		}
+		cc = new Composite();
+		cc.addComponent(Schema.COLUMN_DELIVERY_COUNT, SERIALIZER_STRING);
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getDeliveryCount(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 
 		if (sms.getTlvSet().getOptionalParameterCount() > 0) {
 			cc = new Composite();
@@ -646,7 +690,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 				throw new PersistenceException(msg, e);
 			}
 		}
-	
+
 	}
 
 	protected Sms createSms(ColumnSlice<Composite, ByteBuffer> cSlice, UUID dbId, SmsSet smsSet) throws IOException, PersistenceException {
@@ -673,9 +717,9 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			} else if (name.equals(Schema.COLUMN_MESSAGE_ID)) {
 				long val = LongSerializer.get().fromByteBuffer(col.getValue());
 				sms.setMessageId(val);
-			} else if (name.equals(Schema.COLUMN_ORIG_ESME_ID)) {
+			} else if (name.equals(Schema.COLUMN_ORIG_ESME_NAME)) {
 				String val = SERIALIZER_STRING.fromByteBuffer(col.getValue());
-				sms.setOrigEsmeId(val);
+				sms.setOrigEsmeName(val);
 			} else if (name.equals(Schema.COLUMN_ORIG_SYSTEM_ID)) {
 				String val = SERIALIZER_STRING.fromByteBuffer(col.getValue());
 				sms.setOrigSystemId(val);
@@ -716,6 +760,8 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			} else if (name.equals(Schema.COLUMN_VALIDITY_PERIOD)) {
 				Date val = SERIALIZER_DATE.fromByteBuffer(col.getValue());
 				sms.setValidityPeriod(val);
+			} else if (name.equals(Schema.COLUMN_DELIVERY_COUNT)) {
+				sms.setDeliveryCount(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
 
 			} else if (name.equals(Schema.COLUMN_OPTIONAL_PARAMETERS)) {
 				String s = SERIALIZER_STRING.fromByteBuffer(col.getValue());
@@ -745,8 +791,9 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 				smsSet.setDestAddr(destAddr);
 				smsSet.setDestAddrTon(destAddrTon);
 				smsSet.setDestAddrNpi(destAddrNpi);
-				
-				// TODO: here we can add fields that are present only in ARCHIVE table (into extra fields of Sms class)
+
+				// TODO: here we can add fields that are present only in ARCHIVE
+				// table (into extra fields of Sms class)
 				// "DEST_CLUSTER_NAME" text,
 				// "DEST_ESME_ID" text,
 				// "DEST_SYSTEM_ID" text,
@@ -783,8 +830,8 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 				smsSet.setDueDate(SERIALIZER_DATE.fromByteBuffer(col.getValue()));
 			} else if (name.equals(Schema.COLUMN_SM_STATUS)) {
 				smsSet.setStatus(ErrorCode.fromInt((SERIALIZER_INTEGER.fromByteBuffer(col.getValue()))));
-			} else if (name.equals(Schema.COLUMN_DELIVERY_COUNT)) {
-				smsSet.setDeliveryCount(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
+			} else if (name.equals(Schema.COLUMN_DUE_DELAY)) {
+				smsSet.setDueDelay(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
 			} else if (name.equals(Schema.COLUMN_LAST_DELIVERY)) {
 				smsSet.setLastDelivery(SERIALIZER_DATE.fromByteBuffer(col.getValue()));
 			} else if (name.equals(Schema.COLUMN_ALERTING_SUPPORTED)) {
@@ -821,11 +868,11 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 				mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
 						HFactory.createColumn(cc, sms.getSmsSet().getDestClusterName(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
 			}
-			if (sms.getSmsSet().getDestEsmeId() != null) {
+			if (sms.getSmsSet().getDestEsmeName() != null) {
 				cc = new Composite();
-				cc.addComponent(Schema.COLUMN_DEST_ESME_ID, SERIALIZER_STRING);
+				cc.addComponent(Schema.COLUMN_DEST_ESME_NAME, SERIALIZER_STRING);
 				mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
-						HFactory.createColumn(cc, sms.getSmsSet().getDestEsmeId(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
+						HFactory.createColumn(cc, sms.getSmsSet().getDestEsmeName(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
 			}
 			if (sms.getSmsSet().getDestSystemId() != null) {
 				cc = new Composite();
@@ -872,10 +919,6 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 				mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
 						HFactory.createColumn(cc, sms.getSmsSet().getType().getCode(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 			}
-			cc = new Composite();
-			cc.addComponent(Schema.COLUMN_DELIVERY_COUNT, SERIALIZER_STRING);
-			mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
-					HFactory.createColumn(cc, sms.getSmsSet().getDeliveryCount(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 
 			mutator.execute();
 		} catch (Exception e) {
@@ -884,7 +927,6 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			throw new PersistenceException(msg, e);
 		}
 	}
-
 
 	@Override
 	public TargetAddress obtainSynchroObject(TargetAddress ta) {
@@ -896,134 +938,133 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		this.smsSetCashe.removeSmsSet(ta);
 	}
 
+	// ----------------------------------------
+	// SLEE Stuff
+	// ----------------------------------------
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.slee.Sbb#sbbActivate()
+	 */
+	@Override
+	public void sbbActivate() {
+		// TODO Auto-generated method stub
 
-    // ----------------------------------------
-    // SLEE Stuff
-    // ----------------------------------------
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.slee.Sbb#sbbActivate()
-     */
-    @Override
-    public void sbbActivate() {
-        // TODO Auto-generated method stub
+	}
 
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.slee.Sbb#sbbCreate()
+	 */
+	@Override
+	public void sbbCreate() throws CreateException {
+		// TODO Auto-generated method stub
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.slee.Sbb#sbbCreate()
-     */
-    @Override
-    public void sbbCreate() throws CreateException {
-        // TODO Auto-generated method stub
+	}
 
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.slee.Sbb#sbbExceptionThrown(java.lang.Exception,
+	 * java.lang.Object, javax.slee.ActivityContextInterface)
+	 */
+	@Override
+	public void sbbExceptionThrown(Exception arg0, Object arg1, ActivityContextInterface arg2) {
+		// TODO Auto-generated method stub
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.slee.Sbb#sbbExceptionThrown(java.lang.Exception, java.lang.Object, javax.slee.ActivityContextInterface)
-     */
-    @Override
-    public void sbbExceptionThrown(Exception arg0, Object arg1, ActivityContextInterface arg2) {
-        // TODO Auto-generated method stub
+	}
 
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.slee.Sbb#sbbLoad()
+	 */
+	@Override
+	public void sbbLoad() {
+		// TODO Auto-generated method stub
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.slee.Sbb#sbbLoad()
-     */
-    @Override
-    public void sbbLoad() {
-        // TODO Auto-generated method stub
+	}
 
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.slee.Sbb#sbbPassivate()
+	 */
+	@Override
+	public void sbbPassivate() {
+		// TODO Auto-generated method stub
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.slee.Sbb#sbbPassivate()
-     */
-    @Override
-    public void sbbPassivate() {
-        // TODO Auto-generated method stub
+	}
 
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.slee.Sbb#sbbPostCreate()
+	 */
+	@Override
+	public void sbbPostCreate() throws CreateException {
+		// TODO Auto-generated method stub
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.slee.Sbb#sbbPostCreate()
-     */
-    @Override
-    public void sbbPostCreate() throws CreateException {
-        // TODO Auto-generated method stub
+	}
 
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.slee.Sbb#sbbRemove()
+	 */
+	@Override
+	public void sbbRemove() {
+		// TODO Auto-generated method stub
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.slee.Sbb#sbbRemove()
-     */
-    @Override
-    public void sbbRemove() {
-        // TODO Auto-generated method stub
+	}
 
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.slee.Sbb#sbbRolledBack(javax.slee.RolledBackContext)
+	 */
+	@Override
+	public void sbbRolledBack(RolledBackContext arg0) {
+		// TODO Auto-generated method stub
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.slee.Sbb#sbbRolledBack(javax.slee.RolledBackContext)
-     */
-    @Override
-    public void sbbRolledBack(RolledBackContext arg0) {
-        // TODO Auto-generated method stub
+	}
 
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.slee.Sbb#sbbStore()
+	 */
+	@Override
+	public void sbbStore() {
+		// TODO Auto-generated method stub
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.slee.Sbb#sbbStore()
-     */
-    @Override
-    public void sbbStore() {
-        // TODO Auto-generated method stub
+	}
 
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.slee.Sbb#setSbbContext(javax.slee.SbbContext)
+	 */
+	@Override
+	public void setSbbContext(SbbContext arg0) {
+		this.sbbContextExt = (SbbContextExt) arg0;
+		this.logger = this.sbbContextExt.getTracer(getClass().getSimpleName());
+		this.raSbbInterface = (HectorClientRAInterface) this.sbbContextExt.getResourceAdaptorInterface(HECTOR_ID, LINK);
+		this.keyspace = this.raSbbInterface.getKeyspace();
+	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.slee.Sbb#setSbbContext(javax.slee.SbbContext)
-     */
-    @Override
-    public void setSbbContext(SbbContext arg0) {
-        this.sbbContextExt = (SbbContextExt) arg0;
-        this.logger = this.sbbContextExt.getTracer(getClass().getSimpleName());
-        this.raSbbInterface = (HectorClientRAInterface) this.sbbContextExt.getResourceAdaptorInterface(HECTOR_ID, LINK);
-        this.keyspace = this.raSbbInterface.getKeyspace();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see javax.slee.Sbb#unsetSbbContext()
-     */
-    @Override
-    public void unsetSbbContext() {
-        this.sbbContextExt = null;
-        this.raSbbInterface = null;
-        this.keyspace = null;
-        this.logger = null;
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.slee.Sbb#unsetSbbContext()
+	 */
+	@Override
+	public void unsetSbbContext() {
+		this.sbbContextExt = null;
+		this.raSbbInterface = null;
+		this.keyspace = null;
+		this.logger = null;
+	}
 
 }
-

@@ -48,7 +48,40 @@ public interface SmscPropertiesManagementMBean {
 
 	public void setMaxMapVersion(int maxMapVersion);
 
-    public String getDateFormat();
-    
-    public void setDateFormat(String v);
+	public int getDefaultValidityPeriodHours();
+
+	public void setDefaultValidityPeriodHours(int defaultValidityPeriodHours);
+
+	public int getMaxValidityPeriodHours();
+
+	public void setMaxValidityPeriodHours(int maxValidityPeriodHours);
+
+	public int getDefaultTon();
+
+	public void setDefaultTon(int defaultTon);
+
+	public int getDefaultNpi();
+
+	public void setDefaultNpi(int defaultNpi);
+
+	public int getSubscriberBusyDueDelay();
+
+	public void setSubscriberBusyDueDelay(int subscriberBusyDueDelay);
+
+	public int getFirstDueDelay();
+
+	public void setFirstDueDelay(int firstDueDelay);
+
+	public int getSecondDueDelay();
+
+	public void setSecondDueDelay(int secondDueDelay);
+
+	public int getMaxDueDelay();
+
+	public void setMaxDueDelay(int maxDueDelay);
+
+	public int getDueDelayMultiplicator();
+
+	public void setDueDelayMultiplicator(int dueDelayMultiplicator);
+
 }
