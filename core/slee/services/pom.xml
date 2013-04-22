@@ -16,8 +16,8 @@
 	<modules>
 		<module>library</module>
 		<module>events</module>
-		<module>alertsbb</module>
 		<module>persistencesbb</module>
+		<module>alertsbb</module>
 		<module>txsmppserversbb</module>
 		<module>rxsmppserversbb</module>
 		<module>mtsbb</module>

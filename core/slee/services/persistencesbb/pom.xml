@@ -10,7 +10,7 @@
         <artifactId>services-parent</artifactId>
         <version>6.1.2-TelScale-SNAPSHOT</version>
 	</parent>
-	<artifactId>peristence-sbb</artifactId>
+	<artifactId>persistence-sbb</artifactId>
 
 	<name>Core : SLEE : Services : Persistence : SBB</name>
 
@@ -56,12 +56,12 @@
             <version>${pom.version}</version>
         </dependency>        
 
-		<dependency>
-			<groupId>org.testng</groupId>
+	  <dependency>
+		<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<version>${testng.version}</version>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+	  </dependencies>
 	
 </project>
