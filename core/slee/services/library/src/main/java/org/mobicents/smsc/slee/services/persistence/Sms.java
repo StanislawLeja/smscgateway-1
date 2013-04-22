@@ -47,7 +47,7 @@ public class Sms implements Serializable {
 	private long messageId;
 
 	private String origSystemId;
-	private String origEsmeId;
+	private String origEsmeName;
 
 	private Date submitDate;
 	private Date deliveryDate;
@@ -68,6 +68,8 @@ public class Sms implements Serializable {
 
 	private Date scheduleDeliveryTime; // not present in data_sm
 	private Date validityPeriod; // not present in data_sm
+
+    private int deliveryCount;
 
 	private TlvSet tlvSet = new TlvSet();
 
@@ -155,12 +157,12 @@ public class Sms implements Serializable {
 	/**
 	 * SMSC internal name of origination esme (“” for MO messages)
 	 */
-	public String getOrigEsmeId() {
-		return origEsmeId;
+	public String getOrigEsmeName() {
+		return origEsmeName;
 	}
 
-	public void setOrigEsmeId(String origEsmeId) {
-		this.origEsmeId = origEsmeId;
+	public void setOrigEsmeName(String origEsmeName) {
+		this.origEsmeName = origEsmeName;
 	}
 
 	/**
@@ -285,7 +287,7 @@ public class Sms implements Serializable {
 	}
 
 	/**
-	 * schedule_delivery_time smpp parameter time when SMSC should strat a delivery (may be null – immediate message delivery)
+	 * schedule_delivery_time smpp parameter time when SMSC should start a delivery (may be null – immediate message delivery)
 	 */
 	public Date getScheduleDeliveryTime() {
 		return scheduleDeliveryTime;
@@ -304,6 +306,17 @@ public class Sms implements Serializable {
 
 	public void setValidityPeriod(Date validityPeriod) {
 		this.validityPeriod = validityPeriod;
+	}
+
+	/**
+	 * delivery tries count
+	 */
+	public int getDeliveryCount() {
+		return deliveryCount;
+	}
+
+	public void setDeliveryCount(int deliveryCount) {
+		this.deliveryCount = deliveryCount;
 	}
 
 	// Optional parameters
@@ -338,7 +351,7 @@ public class Sms implements Serializable {
 		sb.append(", origSystemId=");
 		sb.append(origSystemId);
 		sb.append(", origEsmeId=");
-		sb.append(origEsmeId);
+		sb.append(origEsmeName);
 		sb.append(", submitDate=");
 		sb.append(submitDate);
 		sb.append(", deliverDate=");
@@ -363,6 +376,8 @@ public class Sms implements Serializable {
 		sb.append(scheduleDeliveryTime);
 		sb.append(", validityPeriod=");
 		sb.append(validityPeriod);
+		sb.append(", deliveryCount=");
+		sb.append(deliveryCount);
 
 		if (this.tlvSet != null) {
 			sb.append(", tlvSet=");

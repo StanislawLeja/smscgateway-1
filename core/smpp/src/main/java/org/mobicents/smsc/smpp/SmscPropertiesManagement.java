@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 /**
  * 
  * @author Amit Bhayani
+ * @author sergey vetyutnev
  *
  */
 public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
@@ -47,16 +48,22 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String HLR_SSN = "hlrssn";
 	private static final String MSC_SSN = "mscssn";
 	private static final String MAX_MAP_VERSION = "maxmapv";
+	private static final String DEFAULT_VALIDITY_PERIOD_HOURS = "defaultValidityPeriodHours";
+	private static final String MAX_VALIDITY_PERIOD_HOURS = "maxValidityPeriodHours";
+	private static final String DEFAULT_TON = "defaultTon";
+	private static final String DEFAULT_NPI = "defaultNpi";
+	private static final String SUBSCRIBER_BUSY_DUE_DELAY = "subscriberBusyDueDelay";
+	private static final String FIRST_DUE_DELAY = "firstDueDelay";
+	private static final String SECOND_DUE_DELAY = "secondDueDelay";
+	private static final String MAX_DUE_DELAY = "maxDueDelay";
+	private static final String DUE_DELAY_MULTIPLICATOR = "dueDelayMultiplicator";
 
 	private static final String TAB_INDENT = "\t";
 	private static final String CLASS_ATTRIBUTE = "type";
 	private static final XMLBinding binding = new XMLBinding();
 	private static final String PERSIST_FILE_NAME = "smscproperties.xml";
-	private static final String DATE_FORMAT = "format";
 	
 	private static SmscPropertiesManagement instance;
-
-	private static final String DEFAULT_DATE_FORMAT = "yyyy-mm-dd HH:mm:ssZ"; //"d MMM yyyy HH:mm:ss-Z" - this will allow a TZ
 	
 	private final String name;
 
@@ -69,14 +76,28 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private int hlrSsn = -1;
 	private int mscSsn = -1;
 	private int maxMapVersion = 3;
-	private String dateFormat = DEFAULT_DATE_FORMAT;
+
+	private int defaultValidityPeriodHours = 3 * 24;
+	private int maxValidityPeriodHours = 10 * 24;
+	private int defaultTon = 1;
+	private int defaultNpi = 1;
+	// delay after delivering failure with cause "subscriber busy" (sec)
+	private int subscriberBusyDueDelay = 60 * 2;
+	// delay before first a delivering try after incoming message receiving (sec) 
+	private int firstDueDelay = 60;
+	// delay after first delivering failure (sec)
+	private int secondDueDelay = 60 * 5;
+	// max possible delay between  delivering failure (sec)
+	private int maxDueDelay = 3600 * 24;
+	// next delay (after failure will be calculated as "prevDueDelay * dueDelayMultiplicator / 100")
+	private int dueDelayMultiplicator = 200;
 
 	private SmscPropertiesManagement(String name) {
 		this.name = name;
 		binding.setClassAttribute(CLASS_ATTRIBUTE);
 	}
 	
-	protected static SmscPropertiesManagement getInstance(String name){
+	public static SmscPropertiesManagement getInstance(String name){
 		if(instance == null){
 			instance = new SmscPropertiesManagement(name);
 		}
@@ -144,16 +165,79 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.store();
 	}
 
-	public String getDateFormat() {
-        return this.dateFormat;
-    }
+	public int getDefaultValidityPeriodHours() {
+		return defaultValidityPeriodHours;
+	}
 
-    public void setDateFormat(String v) {
-        if(v == null)
-            throw new IllegalArgumentException("Format can not be null.");
-        this.dateFormat = v;
-    }
+	public void setDefaultValidityPeriodHours(int defaultValidityPeriodHours) {
+		this.defaultValidityPeriodHours = defaultValidityPeriodHours;
+	}
 
+	public int getMaxValidityPeriodHours() {
+		return maxValidityPeriodHours;
+	}
+
+	public void setMaxValidityPeriodHours(int maxValidityPeriodHours) {
+		this.maxValidityPeriodHours = maxValidityPeriodHours;
+	}
+
+	public int getDefaultTon() {
+		return defaultTon;
+	}
+
+	public void setDefaultTon(int defaultTon) {
+		this.defaultTon = defaultTon;
+	}
+
+	public int getDefaultNpi() {
+		return defaultNpi;
+	}
+
+	public void setDefaultNpi(int defaultNpi) {
+		this.defaultNpi = defaultNpi;
+	}
+
+	public int getSubscriberBusyDueDelay() {
+		return subscriberBusyDueDelay;
+	}
+
+	public void setSubscriberBusyDueDelay(int subscriberBusyDueDelay) {
+		this.subscriberBusyDueDelay = subscriberBusyDueDelay;
+	}
+
+	public int getFirstDueDelay() {
+		return firstDueDelay;
+	}
+
+	public void setFirstDueDelay(int firstDueDelay) {
+		this.firstDueDelay = firstDueDelay;
+	}
+
+	public int getSecondDueDelay() {
+		return secondDueDelay;
+	}
+
+	public void setSecondDueDelay(int secondDueDelay) {
+		this.secondDueDelay = secondDueDelay;
+	}
+
+	public int getMaxDueDelay() {
+		return maxDueDelay;
+	}
+
+	public void setMaxDueDelay(int maxDueDelay) {
+		this.maxDueDelay = maxDueDelay;
+	}
+
+	public int getDueDelayMultiplicator() {
+		return dueDelayMultiplicator;
+	}
+
+	public void setDueDelayMultiplicator(int dueDelayMultiplicator) {
+		this.dueDelayMultiplicator = dueDelayMultiplicator;
+	}
+
+	
 	public void start() throws Exception {
 
 		this.persistFile.clear();
@@ -201,8 +285,17 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.hlrSsn, HLR_SSN, Integer.class);
 			writer.write(this.mscSsn, MSC_SSN, Integer.class);
 			writer.write(this.maxMapVersion, MAX_MAP_VERSION, Integer.class);
-			writer.write(this.dateFormat,DATE_FORMAT,String.class);
+			writer.write(this.defaultValidityPeriodHours, DEFAULT_VALIDITY_PERIOD_HOURS, Integer.class);
+			writer.write(this.maxValidityPeriodHours, MAX_VALIDITY_PERIOD_HOURS, Integer.class);
+			writer.write(this.defaultTon, DEFAULT_TON, Integer.class);
+			writer.write(this.defaultNpi, DEFAULT_NPI, Integer.class);
 
+			writer.write(this.subscriberBusyDueDelay, SUBSCRIBER_BUSY_DUE_DELAY, Integer.class);
+			writer.write(this.firstDueDelay, FIRST_DUE_DELAY, Integer.class);
+			writer.write(this.secondDueDelay, SECOND_DUE_DELAY, Integer.class);
+			writer.write(this.maxDueDelay, MAX_DUE_DELAY, Integer.class);
+			writer.write(this.dueDelayMultiplicator, DUE_DELAY_MULTIPLICATOR, Integer.class);
+			
 			writer.close();
 		} catch (Exception e) {
 			logger.error("Error while persisting the Rule state in file", e);
@@ -226,8 +319,34 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			this.hlrSsn = reader.read(HLR_SSN, Integer.class);
 			this.mscSsn = reader.read(MSC_SSN, Integer.class);
 			this.maxMapVersion = reader.read(MAX_MAP_VERSION, Integer.class);
-			this.dateFormat = reader.read(DATE_FORMAT,String.class);
-
+			Integer dvp = reader.read(DEFAULT_VALIDITY_PERIOD_HOURS, Integer.class);
+			if (dvp != null)
+				this.defaultValidityPeriodHours = dvp;
+			Integer mvp = reader.read(MAX_VALIDITY_PERIOD_HOURS, Integer.class);
+			if (mvp != null)
+				this.maxValidityPeriodHours = mvp;
+			Integer dTon = reader.read(DEFAULT_TON, Integer.class);
+			if (dTon != null)
+				this.defaultTon = dTon;
+			Integer dNpi = reader.read(DEFAULT_NPI, Integer.class);
+			if (dNpi != null)
+				this.defaultNpi = dNpi;
+			Integer val = reader.read(SUBSCRIBER_BUSY_DUE_DELAY, Integer.class);
+			if (val != null)
+				this.subscriberBusyDueDelay = val;
+			val = reader.read(FIRST_DUE_DELAY, Integer.class);
+			if (val != null)
+				this.firstDueDelay = val;
+			val = reader.read(SECOND_DUE_DELAY, Integer.class);
+			if (val != null)
+				this.secondDueDelay = val;
+			val = reader.read(MAX_DUE_DELAY, Integer.class);
+			if (val != null)
+				this.maxDueDelay = val;
+			val = reader.read(DUE_DELAY_MULTIPLICATOR, Integer.class);
+			if (val != null)
+				this.dueDelayMultiplicator = val;
+			
 			reader.close();
 		} catch (XMLStreamException ex) {
 			// this.logger.info(

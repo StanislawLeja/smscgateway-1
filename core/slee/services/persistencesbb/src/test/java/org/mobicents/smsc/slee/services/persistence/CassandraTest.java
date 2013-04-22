@@ -120,6 +120,9 @@ public class CassandraTest {
 
 	@Test(groups = { "cassandra" })
 	public void testingLifeCycle() throws Exception {
+
+//		Date d = new Date();
+		
 		if (!this.cassandraDbInited)
 			return;
 
@@ -190,19 +193,19 @@ public class CassandraTest {
 				Date d3 = new GregorianCalendar(year, 1, 20, 9, 00).getTime();
 
 				// first date setting - any date is accepted
-				this.sbb.setScheduled(smsSet_a, d1, true);
+				this.sbb.setNewMessageScheduled(smsSet_a, d1);
 				smsSet = this.sbb.obtainSmsSet(ta1);
 				assertEquals(smsSet.getInSystem(), 1);
 				assertTrue(smsSet.getDueDate().equals(d1));
 
 				// later date setting - not accepted
-				this.sbb.setScheduled(smsSet_a, d2, true);
+				this.sbb.setNewMessageScheduled(smsSet_a, d2);
 				smsSet = this.sbb.obtainSmsSet(ta1);
 				assertEquals(smsSet.getInSystem(), 1);
 				assertTrue(smsSet.getDueDate().equals(d1));
 
 				// previous date setting - not accepted
-				this.sbb.setScheduled(smsSet_a, d3, true);
+				this.sbb.setNewMessageScheduled(smsSet_a, d3);
 				smsSet = this.sbb.obtainSmsSet(ta1);
 				assertEquals(smsSet.getInSystem(), 1);
 				assertTrue(smsSet.getDueDate().equals(d3));
@@ -282,7 +285,7 @@ public class CassandraTest {
 				// schedulering
 				int year = new GregorianCalendar().get(GregorianCalendar.YEAR) + 1;
 				Date d1 = new GregorianCalendar(year, 11, 20, 10, 00).getTime();
-				this.sbb.setScheduled(smsSet_b, d1, true);
+				this.sbb.setNewMessageScheduled(smsSet_b, d1);
 			}
 		} finally {
 			this.sbb.obtainSynchroObject(lock);
@@ -292,7 +295,7 @@ public class CassandraTest {
 		Sms sms_x12 = this.sbb.obtainLiveSms(8888888 + 2);
 		this.checkTestSms(2, sms_x12, id2, false);
 	}
-	
+
 	public void scheduling() throws Exception {
 
 		// 1 - scheduling by dueTime
@@ -303,7 +306,7 @@ public class CassandraTest {
 		SmsSet smsSet_a = lst.get(0);
 		this.checkTestSmsSet(smsSet_a, 1, this.ta1);
 		assertEquals(smsSet_a.getInSystem(), 1);
-		assertEquals(smsSet_a.getDeliveryCount(), 0);
+		assertEquals(smsSet_a.getDueDelay(), 0);
 
 		for (SmsSet smsSet : lst) {
 			TargetAddress lock = this.sbb.obtainSynchroObject(new TargetAddress(smsSet));
@@ -318,6 +321,14 @@ public class CassandraTest {
 					while (sms != null) {
 						smsCnt++;
 						assertEquals(sms.getMessageId(), 8888888 + smsCnt);
+
+						assertEquals(sms.getDeliveryCount(), 0);
+						this.sbb.setDeliveryStart(sms);
+						assertEquals(sms.getDeliveryCount(), 1);
+
+						Sms sms_xx = this.sbb.obtainLiveSms(sms.getDbId());
+						assertEquals(sms_xx.getDeliveryCount(), 1);
+						
 						sms = smsSet.getNextSms();
 					}
 					assertEquals(smsCnt, 3);
@@ -328,9 +339,9 @@ public class CassandraTest {
 
 						SmsSet smsSet1 = this.sbb.obtainSmsSet(new TargetAddress(smsSet));
 						assertEquals(smsSet_a.getInSystem(), 2);
-						assertEquals(smsSet_a.getDeliveryCount(), 1);
+						assertEquals(smsSet_a.getDueDelay(), 0);
 						assertEquals(smsSet1.getInSystem(), 2);
-						assertEquals(smsSet1.getDeliveryCount(), 1);
+						assertEquals(smsSet1.getDueDelay(), 0);
 					}
 				}
 			} finally {
@@ -341,7 +352,7 @@ public class CassandraTest {
 		// 2 - scheduling by TargetAddress (after an Alert)
 		this.smsSetSched2 = this.sbb.obtainSmsSet(ta2);
 		assertEquals(this.smsSetSched2.getInSystem(), 1);
-		assertEquals(this.smsSetSched2.getDeliveryCount(), 0);
+		assertEquals(this.smsSetSched2.getDueDelay(), 0);
 
 		if (this.smsSetSched2.getInSystem() == 1) {
 			TargetAddress lock = this.sbb.obtainSynchroObject(new TargetAddress(this.smsSetSched2));
@@ -355,6 +366,11 @@ public class CassandraTest {
 					Sms sms = this.smsSetSched2.getFirstSms();
 					while (sms != null) {
 						smsCnt++;
+
+						assertEquals(sms.getDeliveryCount(), 0);
+						this.sbb.setDeliveryStart(sms);
+						assertEquals(sms.getDeliveryCount(), 1);
+						
 						sms = this.smsSetSched2.getNextSms();
 					}
 					assertEquals(smsCnt, 1);
@@ -363,9 +379,9 @@ public class CassandraTest {
 						this.sbb.setDeliveryStart(this.smsSetSched2);
 						SmsSet smsSet1 = this.sbb.obtainSmsSet(new TargetAddress(this.smsSetSched2));
 						assertEquals(smsSet_a.getInSystem(), 2);
-						assertEquals(smsSet_a.getDeliveryCount(), 1);
+						assertEquals(smsSet_a.getDueDelay(), 0);
 						assertEquals(smsSet1.getInSystem(), 2);
-						assertEquals(smsSet1.getDeliveryCount(), 1);
+						assertEquals(smsSet1.getDueDelay(), 0);
 					}
 				}
 			} finally {
@@ -404,6 +420,10 @@ public class CassandraTest {
 		this.checkTestSms(2, sms_x2, id2, false);
 		this.checkTestSms(3, sms_x3, id3, false);
 		this.checkTestSms(4, sms_x4, id4, false);
+		assertEquals(sms_x1.getDeliveryCount(), 1);
+		assertEquals(sms_x2.getDeliveryCount(), 1);
+		assertEquals(sms_x3.getDeliveryCount(), 1);
+		assertEquals(sms_x4.getDeliveryCount(), 1);
 		assertNull(sms_y1);
 		assertNull(sms_y2);
 		assertNull(sms_y3);
@@ -447,6 +467,10 @@ public class CassandraTest {
 						this.checkTestSms(3, sms_x3, id3, false);
 						this.checkTestSms(4, sms_x4, id4, false);
 						this.checkTestSms(1, sms_y1, id1, true);
+						assertEquals(sms_x2.getDeliveryCount(), 1);
+						assertEquals(sms_x3.getDeliveryCount(), 1);
+						assertEquals(sms_x4.getDeliveryCount(), 1);
+						assertEquals(sms_y1.sms.getDeliveryCount(), 1);
 						assertNull(sms_y2);
 						assertNull(sms_y3);
 						assertNull(sms_y4);
@@ -460,6 +484,10 @@ public class CassandraTest {
 						this.checkTestSms(4, sms_x4, id4, false);
 						this.checkTestSms(1, sms_y1, id1, true);
 						this.checkTestSms(2, sms_y2, id2, true);
+						assertEquals(sms_x3.getDeliveryCount(), 1);
+						assertEquals(sms_x4.getDeliveryCount(), 1);
+						assertEquals(sms_y1.sms.getDeliveryCount(), 1);
+						assertEquals(sms_y2.sms.getDeliveryCount(), 1);
 						assertNull(sms_y3);
 						assertNull(sms_y4);
 						break;
@@ -473,6 +501,10 @@ public class CassandraTest {
 						this.checkTestSms(1, sms_y1, id1, true);
 						this.checkTestSms(2, sms_y2, id2, true);
 						this.checkTestSms(3, sms_y3, id3, true);
+						assertEquals(sms_x4.getDeliveryCount(), 1);
+						assertEquals(sms_y1.sms.getDeliveryCount(), 1);
+						assertEquals(sms_y2.sms.getDeliveryCount(), 1);
+						assertEquals(sms_y3.sms.getDeliveryCount(), 1);
 						assertNull(sms_y4);
 						break;
 					}
@@ -490,7 +522,7 @@ public class CassandraTest {
 					assertNull(smsSet_b1.getLastDelivery());
 					assertEquals(smsSet_b1.getInSystem(), 2);
 					assertNull(smsSet_b1.getStatus());
-					assertEquals(smsSet_b1.getDeliveryCount(), 1);
+					assertEquals(smsSet_b1.getDueDelay(), 0);
 					
 					this.sbb.setDeliverySuccess(smsSetSched1, new GregorianCalendar(2013, 1, 15, 12, 15 + 3).getTime());
 
@@ -500,7 +532,7 @@ public class CassandraTest {
 					assertTrue(smsSet_b2.getLastDelivery().equals(new GregorianCalendar(2013, 1, 15, 12, 15 + 3).getTime()));
 					assertEquals(smsSet_b2.getInSystem(), 0);
 					assertEquals(smsSet_b2.getStatus().getCode(), 0);
-					assertEquals(smsSet_b2.getDeliveryCount(), 1);
+					assertEquals(smsSet_b2.getDueDelay(), 0);
 
 					assertTrue(this.sbb.deleteSmsSet(smsSetSched1));
 
@@ -578,7 +610,7 @@ public class CassandraTest {
 				assertNull(smsSet_b1.getLastDelivery());
 				assertEquals(smsSet_b1.getInSystem(), 2);
 				assertNull(smsSet_b1.getStatus());
-				assertEquals(smsSet_b1.getDeliveryCount(), 1);
+				assertEquals(smsSet_b1.getDueDelay(), 0);
 				
 				// we must firstly mark smsSet as failured
 				this.sbb.setDeliveryFailure(smsSetSched2, ErrorCode.MEMORY_FULL, new GregorianCalendar(2013, 1, 15, 12, 15 + 4).getTime(), true);
@@ -589,8 +621,17 @@ public class CassandraTest {
 				assertTrue(smsSet_b2.getLastDelivery().equals(new GregorianCalendar(2013, 1, 15, 12, 15 + 4).getTime()));
 				assertEquals(smsSet_b2.getInSystem(), 0);
 				assertEquals(smsSet_b2.getStatus().getCode(), 17);
-				assertEquals(smsSet_b2.getDeliveryCount(), 1);
-				
+				assertEquals(smsSet_b2.getDueDelay(), 0);
+
+				int year = new GregorianCalendar().get(GregorianCalendar.YEAR) - 1;
+				Date d4 = new GregorianCalendar(year, 1, 20, 10, 00).getTime();
+				this.sbb.setDeliveringProcessScheduled(smsSetSched2, d4, 900);
+				assertEquals(smsSetSched2.getDueDelay(), 900);
+				assertTrue(smsSetSched2.getDueDate().equals(d4));
+				SmsSet smsSet_yyy = this.sbb.obtainSmsSet(ta2);
+				assertEquals(smsSet_yyy.getDueDelay(), 900);
+				assertTrue(smsSet_yyy.getDueDate().equals(d4));
+
 				Sms sms = smsSetSched2.getFirstSms();
 				while (sms != null) {
 					this.sbb.archiveFailuredSms(sms);
@@ -712,7 +753,7 @@ public class CassandraTest {
 		sms.setSourceAddrNpi(11 + num);
 		sms.setMessageId(8888888 + num);
 
-		sms.setOrigEsmeId("esme_" + num);
+		sms.setOrigEsmeName("esme_" + num);
 		sms.setOrigSystemId("sys_" + num);
 
 		sms.setSubmitDate(new GregorianCalendar(2013, 1, 15, 12, 00 + num).getTime());
@@ -762,7 +803,7 @@ public class CassandraTest {
 			assertTrue(sms.deliveryDate.equals(new GregorianCalendar(2013, 1, 15, 12, 15 + numm).getTime()));
 
 			assertEquals(sms.dest—lusterName, "ClusterName_" + num);
-			assertEquals(sms.destEsmeId, "destEsmeId_" + num);
+			assertEquals(sms.destEsmeName, "destEsmeId_" + num);
 			assertEquals(sms.destSystemId, "destSystemId_" + num);
 
 			assertEquals(sms.imsi, "12345678901234");
@@ -782,7 +823,7 @@ public class CassandraTest {
 		assertEquals(sms.getSourceAddrNpi(), 11 + num);
 
 		assertEquals(sms.getMessageId(), 8888888 + num);
-		assertEquals(sms.getOrigEsmeId(), "esme_" + num);
+		assertEquals(sms.getOrigEsmeName(), "esme_" + num);
 		assertEquals(sms.getOrigSystemId(), "sys_" + num);
 
 		assertTrue(sms.getSubmitDate().equals(new GregorianCalendar(2013, 1, 15, 12, 00 + num).getTime()));
@@ -818,7 +859,7 @@ public class CassandraTest {
 		public int addrDstNpi;
 
 		public String dest—lusterName; 
-		public String destEsmeId;
+		public String destEsmeName;
 		public String destSystemId;
 
 		public String imsi;
@@ -898,8 +939,8 @@ public class CassandraTest {
 
 				} else if (name.equals(Schema.COLUMN_DEST_CLUSTER_NAME)) {
 					res.dest—lusterName = SERIALIZER_STRING.fromByteBuffer(col.getValue());
-				} else if (name.equals(Schema.COLUMN_DEST_ESME_ID)) {
-					res.destEsmeId = SERIALIZER_STRING.fromByteBuffer(col.getValue());
+				} else if (name.equals(Schema.COLUMN_DEST_ESME_NAME)) {
+					res.destEsmeName = SERIALIZER_STRING.fromByteBuffer(col.getValue());
 				} else if (name.equals(Schema.COLUMN_DEST_SYSTEM_ID)) {
 					res.destSystemId = SERIALIZER_STRING.fromByteBuffer(col.getValue());
 
@@ -921,4 +962,15 @@ public class CassandraTest {
 			return res;
 		}
 	}
+
+//	private class SmscPropertiesManagementProxy extends SmscPropertiesManagement {
+//
+//		protected SmscPropertiesManagementProxy() {
+//			super("TestSmscPropertiesManagement");
+//			
+//			instance = this;
+//		}
+//
+//	}
+
 }
