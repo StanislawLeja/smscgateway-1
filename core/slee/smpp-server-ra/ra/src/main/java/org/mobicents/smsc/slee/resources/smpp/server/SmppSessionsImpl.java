@@ -47,7 +47,7 @@ public class SmppSessionsImpl implements SmppSessions {
 
 	protected SmppSessionHandlerInterfaceImpl smppSessionHandlerInterfaceImpl = null;
 
-	private final AtomicLong messageIdGenerator = new AtomicLong(0);
+	private final AtomicLong messageIdGenerator = new AtomicLong(1);
 
 	public SmppSessionsImpl(SmppServerResourceAdaptor smppServerResourceAdaptor) {
 		this.smppServerResourceAdaptor = smppServerResourceAdaptor;

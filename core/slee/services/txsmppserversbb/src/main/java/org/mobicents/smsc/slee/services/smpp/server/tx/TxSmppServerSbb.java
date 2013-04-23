@@ -75,11 +75,11 @@ import com.cloudhopper.smpp.util.TlvUtil;
 public abstract class TxSmppServerSbb implements Sbb {
     private static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
-	private Tracer logger;
+	protected Tracer logger;
 	private SbbContextExt sbbContext;
 
 	private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
-	private SmppSessions smppServerSessions = null;
+	protected SmppSessions smppServerSessions = null;
 
 	public TxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -138,7 +138,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 					s = s.substring(0, 255);
 				Tlv tlv;
 				try {
-					tlv = TlvUtil.createFixedLengthStringTlv(SmppConstants.TAG_ADD_STATUS_INFO, s, s.length() + 1);
+					tlv = TlvUtil.createNullTerminatedStringTlv(SmppConstants.TAG_ADD_STATUS_INFO, s);
 					response.addOptionalParameter(tlv);
 				} catch (TlvConvertException e) {
 					this.logger.severe("TlvConvertException while storing TAG_ADD_STATUS_INFO Tlv parameter", e);
@@ -217,7 +217,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 					s = s.substring(0, 255);
 				Tlv tlv;
 				try {
-					tlv = TlvUtil.createFixedLengthStringTlv(SmppConstants.TAG_ADD_STATUS_INFO, s, s.length() + 1);
+					tlv = TlvUtil.createNullTerminatedStringTlv(SmppConstants.TAG_ADD_STATUS_INFO, s);
 					response.addOptionalParameter(tlv);
 				} catch (TlvConvertException e) {
 					this.logger.severe("TlvConvertException while storing TAG_ADD_STATUS_INFO Tlv parameter", e);
@@ -396,6 +396,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		if (event.getSourceAddress() == null || event.getSourceAddress().getAddress() == null || event.getDestAddress().getAddress().isEmpty()) {
 			throw new SmscPocessingException("SourceAddress digits are absent", SmppConstants.STATUS_INVSRCADR);
 		}
+		sms.setSourceAddr(event.getSourceAddress().getAddress());
 		switch(event.getSourceAddress().getTon()){
 		case SmppConstants.TON_UNKNOWN:
 			sms.setSourceAddrTon(smscPropertiesManagement.getDefaultTon());
@@ -422,18 +423,6 @@ public abstract class TxSmppServerSbb implements Sbb {
 			throw new SmscPocessingException("DataCoding scheme does not supported (only 0 an 8 is supported): " + dcs, SmppExtraConstants.ESME_RINVDCS);
 		}
 		sms.setDataCoding(dcs);
-
-		SmsSet smsSet;
-		try {
-			smsSet = store.obtainSmsSet(ta);
-		} catch (PersistenceException e1) {
-			throw new SmscPocessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
-					SmppConstants.STATUS_SUBMITFAIL, e1);
-		}
-		sms.setSmsSet(smsSet);
-
-		long messageId = this.smppServerSessions.getNextMessageId();
-		sms.setMessageId(messageId);
 
 		sms.setOrigSystemId(origEsme.getSystemId());
 		sms.setOrigEsmeName(origEsme.getName());
@@ -493,8 +482,24 @@ public abstract class TxSmppServerSbb implements Sbb {
 		// storing additional parameters
 		ArrayList<Tlv> optionalParameters = event.getOptionalParameters();
 		if (optionalParameters != null && optionalParameters.size() > 0) {
-			sms.getTlvSet().addAllOptionalParameter(optionalParameters);
+			for (Tlv tlv : optionalParameters) {
+				if (tlv.getTag() != SmppConstants.TAG_MESSAGE_PAYLOAD) {
+					sms.getTlvSet().addOptionalParameter(tlv);
+				}
+			}
 		}
+
+		SmsSet smsSet;
+		try {
+			smsSet = store.obtainSmsSet(ta);
+		} catch (PersistenceException e1) {
+			throw new SmscPocessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
+					SmppConstants.STATUS_SUBMITFAIL, e1);
+		}
+		sms.setSmsSet(smsSet);
+
+		long messageId = this.smppServerSessions.getNextMessageId();
+		sms.setMessageId(messageId);
 
 		return sms;
 	}
