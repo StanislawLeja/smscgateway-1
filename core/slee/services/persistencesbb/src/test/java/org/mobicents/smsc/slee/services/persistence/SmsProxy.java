@@ -37,7 +37,7 @@ public class SmsProxy {
 	public int addrDstTon;
 	public int addrDstNpi;
 
-	public String dest—lusterName; 
+	public String destClusterName; 
 	public String destEsmeName;
 	public String destSystemId;
 

@@ -142,7 +142,7 @@ public class CassandraPersistenceSbbProxy extends CassandraPersistenceSbb {
 				res.addrDstNpi = SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
 
 			} else if (name.equals(Schema.COLUMN_DEST_CLUSTER_NAME)) {
-				res.dest—lusterName = SERIALIZER_STRING.fromByteBuffer(col.getValue());
+				res.destClusterName = SERIALIZER_STRING.fromByteBuffer(col.getValue());
 			} else if (name.equals(Schema.COLUMN_DEST_ESME_NAME)) {
 				res.destEsmeName = SERIALIZER_STRING.fromByteBuffer(col.getValue());
 			} else if (name.equals(Schema.COLUMN_DEST_SYSTEM_ID)) {

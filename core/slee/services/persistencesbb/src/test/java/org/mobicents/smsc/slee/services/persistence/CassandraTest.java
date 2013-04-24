@@ -764,7 +764,7 @@ public class CassandraTest {
 		if (isArchive) {
 			assertTrue(sms.deliveryDate.equals(new GregorianCalendar(2013, 1, 15, 12, 15 + numm).getTime()));
 
-			assertEquals(sms.dest—lusterName, "ClusterName_" + num);
+			assertEquals(sms.destClusterName, "ClusterName_" + num);
 			assertEquals(sms.destEsmeName, "destEsmeId_" + num);
 			assertEquals(sms.destSystemId, "destSystemId_" + num);
 
