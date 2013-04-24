@@ -63,5 +63,45 @@
 			<scope>test</scope>
 		</dependency>
 	  </dependencies>
+
+	<build>
+		<finalName>${pom.artifactId}-${pom.version}</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+<!--
+				<configuration>
+					<suiteXmlFiles>
+						<suiteXmlFile>testng-methods.xml</suiteXmlFile>
+						<suiteXmlFile>testng-classes.xml</suiteXmlFile>
+					</suiteXmlFiles>
+				</configuration>
+-->
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<addMavenDescriptor>false</addMavenDescriptor>
+					</archive>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- plugin> <artifactId>maven-assembly-plugin</artifactId> <configuration> 
+				<descriptors> <descriptor> src/main/assembly/pojo.xml </descriptor> </descriptors> 
+				<finalName>a${pom.artifactId}</finalName> </configuration> <executions> <execution> 
+				<phase>package</phase> <goals> <goal>directory-inline</goal> </goals> </execution> 
+				</executions> </plugin -->
+		</plugins>
+	</build>
 	
 </project>
