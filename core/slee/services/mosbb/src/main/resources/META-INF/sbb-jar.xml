@@ -9,10 +9,28 @@
 		<sbb-version>1.0</sbb-version>
 		<sbb-alias>MoSbb</sbb-alias>
 
+        <sbb-ref>
+            <sbb-name>StoreSbb</sbb-name>
+            <sbb-vendor>org.mobicents</sbb-vendor>
+            <sbb-version>1.0</sbb-version>
+            <sbb-alias>StoreSbb</sbb-alias>
+        </sbb-ref>
 
 		<sbb-classes>
 			<sbb-abstract-class>
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.mo.MoSbb</sbb-abstract-class-name>
+
+				<get-child-relation-method>
+                    <sbb-alias-ref>
+                        StoreSbb
+                    </sbb-alias-ref>
+                    <get-child-relation-method-name>
+                        getStoreSbb
+                    </get-child-relation-method-name>
+                    <default-priority>0</default-priority>
+                </get-child-relation-method>
+
+				<cmp-field><cmp-field-name>processingState</cmp-field-name></cmp-field>
 			</sbb-abstract-class>
 			<sbb-activity-context-interface>
 				<sbb-activity-context-interface-name>

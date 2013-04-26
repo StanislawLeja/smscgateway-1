@@ -32,24 +32,30 @@ import com.cloudhopper.smpp.SmppConstants;
 public class SmscPocessingException extends Exception {
 
 	private int smppErrorCode = SmppConstants.STATUS_SYSERR;
+	private int mapErrorCode = 0;
+	private Object extraErrorData;
 
 	public SmscPocessingException() {
     }
 
-    public SmscPocessingException(String message, int smppErrorCode) {
+    public SmscPocessingException(String message, int smppErrorCode, int mapErrorCode, Object extraErrorData) {
         super(message);
 
-        this.smppErrorCode = smppErrorCode;
+		this.smppErrorCode = smppErrorCode;
+		this.mapErrorCode = mapErrorCode;
+		this.extraErrorData = extraErrorData;
     }
 
     public SmscPocessingException(Throwable cause) {
         super(cause);
     }
 
-    public SmscPocessingException(String message, int smppErrorCode, Throwable cause) {
+    public SmscPocessingException(String message, int smppErrorCode, int mapErrorCode, Object extraErrorData, Throwable cause) {
         super(message, cause);
 
         this.smppErrorCode = smppErrorCode;
+		this.mapErrorCode = mapErrorCode;
+		this.extraErrorData = extraErrorData;
     }
 
 
@@ -57,4 +63,13 @@ public class SmscPocessingException extends Exception {
 		return smppErrorCode;
 	}
 
+	public int getMapErrorCode() {
+		return mapErrorCode;
+	}
+
+	public Object getExtraErrorData() {
+		return extraErrorData;
+	}
+
 }
+

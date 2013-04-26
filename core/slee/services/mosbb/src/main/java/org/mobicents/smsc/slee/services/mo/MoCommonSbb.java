@@ -1,3 +1,25 @@
+/*
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.mobicents.smsc.slee.services.mo;
 
 import javax.naming.Context;
@@ -5,12 +27,16 @@ import javax.naming.InitialContext;
 import javax.slee.ActivityContextInterface;
 import javax.slee.CreateException;
 import javax.slee.RolledBackContext;
+import javax.slee.SLEEException;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
+import javax.slee.TransactionRequiredLocalException;
 import javax.slee.facilities.Tracer;
 
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
+import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.slee.resource.map.MAPContextInterfaceFactory;
 import org.mobicents.slee.resource.map.events.DialogAccept;
@@ -27,8 +53,21 @@ import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
+import org.mobicents.smsc.slee.services.persistence.Persistence;
+import org.mobicents.smsc.slee.services.persistence.SmscPocessingException;
+import org.mobicents.smsc.slee.services.persistence.TargetAddress;
+import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
+import com.cloudhopper.smpp.SmppConstants;
+
+/**
+ * 
+ * @author amit bhayani
+ * @author servey vetyutnev
+ * 
+ */
 public abstract class MoCommonSbb implements Sbb {
+    protected static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
 	private final String className;
 
@@ -43,6 +82,38 @@ public abstract class MoCommonSbb implements Sbb {
 
 	public MoCommonSbb(String className) {
 		this.className = className;
+	}
+
+	// -------------------------------------------------------------
+    // Child relations
+    // -------------------------------------------------------------
+	public abstract ChildRelationExt getStoreSbb();
+
+
+	public Persistence getStore() throws TransactionRequiredLocalException, SLEEException, CreateException {
+		ChildRelationExt childRelation = getStoreSbb();
+		Persistence persistence = (Persistence) childRelation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
+		if (persistence == null) {
+			persistence = (Persistence) childRelation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
+		}
+		return persistence;
+	}
+
+	protected Persistence obtainStore(TargetAddress ta) throws SmscPocessingException {
+		Persistence store;
+		try {
+			store = this.getStore();
+		} catch (TransactionRequiredLocalException e1) {
+			throw new SmscPocessingException("TransactionRequiredLocalException when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
+					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
+		} catch (SLEEException e1) {
+			throw new SmscPocessingException("SLEEException when reading SmsSet when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
+					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
+		} catch (CreateException e1) {
+			throw new SmscPocessingException("CreateException when reading SmsSet when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
+					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
+		}
+		return store;
 	}
 
 	/**

@@ -319,7 +319,10 @@ public class TxSmppServerSbbTest {
 
 		assertEquals(sms.getDeliveryCount(), 0);
 
-		assertDateEq(smsSet.getDueDate(), new Date(curDate.getTime() + 1 * 60 * 1000));
+		if (!isSubmitMsg)
+			assertDateEq(smsSet.getDueDate(), new Date(curDate.getTime() + 1 * 60 * 1000));
+		else
+			assertDateEq(smsSet.getDueDate(), sms.getScheduleDeliveryTime());
 		assertDateEq(sms.getSubmitDate(), curDate);
 	}
 
