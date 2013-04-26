@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -168,7 +169,7 @@ public class MessageUtil {
 		return sb.toString();
 	}
 
-	public static void applyValidityPeriod(Sms sms, Date validityPeriod) throws SmscPocessingException {
+	public static void applyValidityPeriod(Sms sms, Date validityPeriod, boolean fromEsme) throws SmscPocessingException {
 		SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 		int maxValidityPeriodHours = smscPropertiesManagement.getMaxValidityPeriodHours();
 		int defaultValidityPeriodHours = smscPropertiesManagement.getDefaultValidityPeriodHours();
@@ -179,10 +180,17 @@ public class MessageUtil {
 		} else {
 			Date maxValidityPeriod = addHours(now, maxValidityPeriodHours);
 			if (validityPeriod.after(maxValidityPeriod)) {
-				throw new SmscPocessingException("Validity period is after than maxValidityPeriod", SmppConstants.STATUS_INVEXPIRY);
+				if (fromEsme)
+					throw new SmscPocessingException("Validity period is after than maxValidityPeriod", SmppConstants.STATUS_INVEXPIRY,
+							MAPErrorCode.systemFailure, null);
+				else
+					validityPeriod = maxValidityPeriod;
 			}
 			if (validityPeriod.before(now)) {
-				throw new SmscPocessingException("Validity period is before than now", SmppConstants.STATUS_INVEXPIRY);
+				if (fromEsme)
+					throw new SmscPocessingException("Validity period is before than now", SmppConstants.STATUS_INVEXPIRY, MAPErrorCode.systemFailure, null);
+				else
+					validityPeriod = maxValidityPeriod;
 			}
 		}
 		sms.setValidityPeriod(validityPeriod);
@@ -194,7 +202,8 @@ public class MessageUtil {
 
 		Date maxSchDelTime = addHours(sms.getValidityPeriod(), -3);
 		if (scheduleDeliveryTime.after(maxSchDelTime)) {
-			throw new SmscPocessingException("Schedule delivery time is before 3 hours before than validity period expiration", SmppConstants.STATUS_INVSCHED);
+			throw new SmscPocessingException("Schedule delivery time is before 3 hours before than validity period expiration", SmppConstants.STATUS_INVSCHED,
+					MAPErrorCode.systemFailure, null);
 		}
 
 		sms.setScheduleDeliveryTime(scheduleDeliveryTime);

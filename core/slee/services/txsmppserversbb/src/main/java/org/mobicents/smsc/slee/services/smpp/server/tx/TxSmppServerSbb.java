@@ -40,6 +40,7 @@ import javax.slee.SbbContext;
 import javax.slee.TransactionRequiredLocalException;
 import javax.slee.facilities.Tracer;
 
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
@@ -172,13 +173,13 @@ public abstract class TxSmppServerSbb implements Sbb {
 			store = this.getStore();
 		} catch (TransactionRequiredLocalException e1) {
 			throw new SmscPocessingException("TransactionRequiredLocalException when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
-					SmppConstants.STATUS_SUBMITFAIL, e1);
+					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
 		} catch (SLEEException e1) {
 			throw new SmscPocessingException("SLEEException when reading SmsSet when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
-					SmppConstants.STATUS_SUBMITFAIL, e1);
+					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
 		} catch (CreateException e1) {
 			throw new SmscPocessingException("CreateException when reading SmsSet when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
-					SmppConstants.STATUS_SUBMITFAIL, e1);
+					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
 		}
 		return store;
 	}
@@ -247,10 +248,10 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 	private TargetAddress createDestTargetAddress(BaseSm event) throws SmscPocessingException {
 		if (event.getDestAddress() == null || event.getDestAddress().getAddress() == null || event.getDestAddress().getAddress().isEmpty()) {
-			throw new SmscPocessingException("DestAddress digits are absent", SmppConstants.STATUS_INVDSTADR);
+			throw new SmscPocessingException("DestAddress digits are absent", SmppConstants.STATUS_INVDSTADR, MAPErrorCode.systemFailure, null);
 		}
 		int destTon, destNpi;
-		switch(event.getDestAddress().getTon()){
+		switch (event.getDestAddress().getTon()) {
 		case SmppConstants.TON_UNKNOWN:
 			destTon = smscPropertiesManagement.getDefaultTon();
 			break;
@@ -258,9 +259,10 @@ public abstract class TxSmppServerSbb implements Sbb {
 			destTon = event.getDestAddress().getTon();
 			break;
 		default:
-			throw new SmscPocessingException("DestAddress TON not supported: " + event.getDestAddress().getTon(), SmppConstants.STATUS_INVDSTTON);
+			throw new SmscPocessingException("DestAddress TON not supported: " + event.getDestAddress().getTon(), SmppConstants.STATUS_INVDSTTON,
+					MAPErrorCode.systemFailure, null);
 		}
-		switch(event.getDestAddress().getNpi()){
+		switch (event.getDestAddress().getNpi()) {
 		case SmppConstants.NPI_UNKNOWN:
 			destNpi = smscPropertiesManagement.getDefaultNpi();
 			break;
@@ -268,7 +270,8 @@ public abstract class TxSmppServerSbb implements Sbb {
 			destNpi = event.getDestAddress().getNpi();
 			break;
 		default:
-			throw new SmscPocessingException("DestAddress NPI not supported: " + event.getDestAddress().getNpi(), SmppConstants.STATUS_INVDSTNPI);
+			throw new SmscPocessingException("DestAddress NPI not supported: " + event.getDestAddress().getNpi(), SmppConstants.STATUS_INVDSTNPI,
+					MAPErrorCode.systemFailure, null);
 		}
 
 		TargetAddress ta = new TargetAddress(destTon, destNpi, event.getDestAddress().getAddress());
@@ -394,7 +397,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		// checking parameters first
 		if (event.getSourceAddress() == null || event.getSourceAddress().getAddress() == null || event.getDestAddress().getAddress().isEmpty()) {
-			throw new SmscPocessingException("SourceAddress digits are absent", SmppConstants.STATUS_INVSRCADR);
+			throw new SmscPocessingException("SourceAddress digits are absent", SmppConstants.STATUS_INVSRCADR, MAPErrorCode.systemFailure, null);
 		}
 		sms.setSourceAddr(event.getSourceAddress().getAddress());
 		switch(event.getSourceAddress().getTon()){
@@ -405,9 +408,10 @@ public abstract class TxSmppServerSbb implements Sbb {
 			sms.setSourceAddrTon(event.getSourceAddress().getTon());
 			break;
 		default:
-			throw new SmscPocessingException("SourceAddress TON not supported: " + event.getSourceAddress().getTon(), SmppConstants.STATUS_INVSRCTON);
+			throw new SmscPocessingException("SourceAddress TON not supported: " + event.getSourceAddress().getTon(), SmppConstants.STATUS_INVSRCTON,
+					MAPErrorCode.systemFailure, null);
 		}
-		switch(event.getSourceAddress().getNpi()){
+		switch (event.getSourceAddress().getNpi()) {
 		case SmppConstants.NPI_UNKNOWN:
 			sms.setSourceAddrNpi(smscPropertiesManagement.getDefaultNpi());
 			break;
@@ -415,12 +419,14 @@ public abstract class TxSmppServerSbb implements Sbb {
 			sms.setSourceAddrNpi(event.getSourceAddress().getNpi());
 			break;
 		default:
-			throw new SmscPocessingException("SourceAddress NPI not supported: " + event.getSourceAddress().getNpi(), SmppConstants.STATUS_INVSRCNPI);
+			throw new SmscPocessingException("SourceAddress NPI not supported: " + event.getSourceAddress().getNpi(), SmppConstants.STATUS_INVSRCNPI,
+					MAPErrorCode.systemFailure, null);
 		}
 
 		int dcs = event.getDataCoding();
 		if (dcs != 0 && dcs != 8) {
-			throw new SmscPocessingException("DataCoding scheme does not supported (only 0 an 8 is supported): " + dcs, SmppExtraConstants.ESME_RINVDCS);
+			throw new SmscPocessingException("DataCoding scheme does not supported (only 0 an 8 is supported): " + dcs, SmppExtraConstants.ESME_RINVDCS,
+					MAPErrorCode.systemFailure, null);
 		}
 		sms.setDataCoding(dcs);
 
@@ -456,7 +462,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 				valTime = (new Date()).getTime() + tlvQosTimeToLive.getValueAsInt();
 			} catch (TlvConvertException e) {
 				throw new SmscPocessingException("TlvConvertException when getting TAG_QOS_TIME_TO_LIVE tlv field: " + e.getMessage(),
-						SmppConstants.STATUS_INVOPTPARAMVAL, e);
+						SmppConstants.STATUS_INVOPTPARAMVAL,MAPErrorCode.systemFailure, null, e);
 			}
 			validityPeriod = new Date(valTime);
 		} else {
@@ -464,10 +470,10 @@ public abstract class TxSmppServerSbb implements Sbb {
 				validityPeriod = MessageUtil.parseSmppDate(event.getValidityPeriod());
 			} catch (ParseException e) {
 				throw new SmscPocessingException("ParseException when parsing ValidityPeriod field: " + e.getMessage(),
-						SmppConstants.STATUS_INVEXPIRY, e);
+						SmppConstants.STATUS_INVEXPIRY,MAPErrorCode.systemFailure, null, e);
 			}
 		}
-		MessageUtil.applyValidityPeriod(sms, validityPeriod);
+		MessageUtil.applyValidityPeriod(sms, validityPeriod, true);
 
 		// ScheduleDeliveryTime processing
 		Date scheduleDeliveryTime;
@@ -475,7 +481,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			scheduleDeliveryTime = MessageUtil.parseSmppDate(event.getScheduleDeliveryTime());
 		} catch (ParseException e) {
 			throw new SmscPocessingException("ParseException when parsing ScheduleDeliveryTime field: " + e.getMessage(),
-					SmppConstants.STATUS_INVSCHED, e);
+					SmppConstants.STATUS_INVSCHED,MAPErrorCode.systemFailure, null, e);
 		}
 		MessageUtil.applyScheduleDeliveryTime(sms, scheduleDeliveryTime);
 
@@ -494,22 +500,28 @@ public abstract class TxSmppServerSbb implements Sbb {
 			smsSet = store.obtainSmsSet(ta);
 		} catch (PersistenceException e1) {
 			throw new SmscPocessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
-					SmppConstants.STATUS_SUBMITFAIL, e1);
+					SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e1);
 		}
 		sms.setSmsSet(smsSet);
 
 		long messageId = this.smppServerSessions.getNextMessageId();
 		sms.setMessageId(messageId);
 
+		// TODO: process case when event.getReplaceIfPresent()==true: we need remove old message with same MessageId ?
+
 		return sms;
 	}
 
-	public void processSms(Sms sms, Persistence store) throws SmscPocessingException {
+	private void processSms(Sms sms, Persistence store) throws SmscPocessingException {
 		try {
 			store.createLiveSms(sms);
-			store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+			if (sms.getScheduleDeliveryTime() == null)
+				store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+			else
+				store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
 		} catch (PersistenceException e) {
-			throw new SmscPocessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL, e);
+			throw new SmscPocessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
+					MAPErrorCode.systemFailure, null, e);
 		}
 	}
 }
