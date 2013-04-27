@@ -26,7 +26,9 @@
 			<artifactId>persistence-sbb</artifactId>
 			<groupId>${pom.groupId}</groupId>
 			<version>${pom.version}</version>
-		</dependency>			
+			<scope>runtime</scope>
+			<type>jar</type>
+		</dependency>
 		<dependency>
 			<artifactId>tx-smppserver-sbb</artifactId>
 			<groupId>${pom.groupId}</groupId>
@@ -63,7 +65,6 @@
 					<execution>
 						<goals>
 							<goal>copy-dependencies</goal>
-							<goal>generate-descriptor</goal>
 							<goal>generate-ant-management-script</goal>
 						</goals>
 					</execution>
