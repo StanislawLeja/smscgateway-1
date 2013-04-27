@@ -152,6 +152,30 @@ public abstract class TxSmppServerSbb implements Sbb {
 			} catch (Exception e) {
 				this.logger.severe("Error while trying to send SubmitSmResponse=" + response, e);
 			}
+
+			return;
+		} catch (Throwable e1) {
+			String s = "Exception when processing SubmitSm message: " + e1.getMessage();
+			this.logger.severe(s, e1);
+
+			SubmitSmResp response = event.createResponse();
+			response.setCommandStatus(SmppConstants.STATUS_SYSERR);
+			if (s.length() > 255)
+				s = s.substring(0, 255);
+			Tlv tlv;
+			try {
+				tlv = TlvUtil.createNullTerminatedStringTlv(SmppConstants.TAG_ADD_STATUS_INFO, s);
+				response.addOptionalParameter(tlv);
+			} catch (TlvConvertException e) {
+				this.logger.severe("TlvConvertException while storing TAG_ADD_STATUS_INFO Tlv parameter", e);
+			}
+
+			// Lets send the Response with error here
+			try {
+				this.smppServerSessions.sendResponsePdu(esme, event, response);
+			} catch (Exception e) {
+				this.logger.severe("Error while trying to send SubmitSmResponse=" + response, e);
+			}
 			
 			return;
 		}
@@ -162,7 +186,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		// Lets send the Response with success here
 		try {
 			this.smppServerSessions.sendResponsePdu(esme, event, response);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			this.logger.severe("Error while trying to send SubmitSmResponse=" + response, e);
 		}
 	}
@@ -230,6 +254,30 @@ public abstract class TxSmppServerSbb implements Sbb {
 				this.smppServerSessions.sendResponsePdu(esme, event, response);
 			} catch (Exception e) {
 				this.logger.severe("Error while trying to send DataSmResponse=" + response, e);
+			}
+			
+			return;
+		} catch (Throwable e1) {
+			String s = "Exception when processing dataSm message: " + e1.getMessage();
+			this.logger.severe(s, e1);
+
+			DataSmResp response = event.createResponse();
+			response.setCommandStatus(SmppConstants.STATUS_SYSERR);
+			if (s.length() > 255)
+				s = s.substring(0, 255);
+			Tlv tlv;
+			try {
+				tlv = TlvUtil.createNullTerminatedStringTlv(SmppConstants.TAG_ADD_STATUS_INFO, s);
+				response.addOptionalParameter(tlv);
+			} catch (TlvConvertException e) {
+				this.logger.severe("TlvConvertException while storing TAG_ADD_STATUS_INFO Tlv parameter", e);
+			}
+
+			// Lets send the Response with error here
+			try {
+				this.smppServerSessions.sendResponsePdu(esme, event, response);
+			} catch (Exception e) {
+				this.logger.severe("Error while trying to send SubmitSmResponse=" + response, e);
 			}
 			
 			return;

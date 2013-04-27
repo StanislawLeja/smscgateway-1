@@ -33,6 +33,7 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
 import org.mobicents.protocols.ss7.map.api.MAPDialog;
 import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.service.sms.ForwardShortMessageRequest;
@@ -40,6 +41,7 @@ import org.mobicents.protocols.ss7.map.api.service.sms.ForwardShortMessageRespon
 import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.protocols.ss7.map.api.service.sms.MoForwardShortMessageRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.MoForwardShortMessageResponse;
+import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AbsoluteTimeStamp;
@@ -170,19 +172,53 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
 
-		try {
-			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_UI());
-		} catch (SmscPocessingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
 		MAPDialogSms dialog = evt.getMAPDialog();
+
+		try {
+			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
+		} catch (SmscPocessingException e1) {
+			this.logger.severe(e1.getMessage(), e1);
+			try {
+				MAPErrorMessage errorMessage;
+				switch (e1.getMapErrorCode()) {
+				case MAPErrorCode.unexpectedDataValue:
+					errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+							.createMAPErrorMessageExtensionContainer((long) MAPErrorCode.unexpectedDataValue, null);
+					break;
+				case MAPErrorCode.systemFailure:
+					errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+							.createMAPErrorMessageSystemFailure(dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null, null);
+					break;
+				default:
+					errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+							.createMAPErrorMessageSystemFailure(dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null, null);
+					break;
+				}
+				dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+				dialog.close(false);
+			} catch (Throwable e) {
+				logger.severe("Error while sending Error message", e);
+				return;
+			}
+			return;
+		} catch (Throwable e1) {
+			this.logger.severe("Exception while processing MO message: " + e1.getMessage(), e1);
+			try {
+				MAPErrorMessage errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+						.createMAPErrorMessageSystemFailure(dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null, null);
+				dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+				dialog.close(false);
+			} catch (Throwable e) {
+				logger.severe("Error while sending Error message", e);
+				return;
+			}
+			return;
+		}
 
 		try {
 			dialog.addMoForwardShortMessageResponse(evt.getInvokeId(), null, null);
 			dialog.close(false);
-		} catch (MAPException e) {
+		} catch (Throwable e) {
 			logger.severe("Error while sending MoForwardShortMessageResponse ", e);
 		}
 	}
@@ -204,25 +240,61 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
 
-		try {
-			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_UI());
-		} catch (SmscPocessingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
 		MAPDialogSms dialog = evt.getMAPDialog();
+
+		try {
+			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
+		} catch (SmscPocessingException e1) {
+			this.logger.severe(e1.getMessage(), e1);
+			try {
+				MAPErrorMessage errorMessage;
+				switch (e1.getMapErrorCode()) {
+				case MAPErrorCode.unexpectedDataValue:
+					errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+							.createMAPErrorMessageExtensionContainer((long) MAPErrorCode.unexpectedDataValue, null);
+					break;
+				case MAPErrorCode.systemFailure:
+					errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+							.createMAPErrorMessageSystemFailure(dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null, null);
+					break;
+				default:
+					errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+							.createMAPErrorMessageSystemFailure(dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null, null);
+					break;
+				}
+				dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+				dialog.close(false);
+			} catch (Throwable e) {
+				logger.severe("Error while sending Error message", e);
+				return;
+			}
+			return;
+		} catch (Throwable e1) {
+			this.logger.severe("Exception while processing MO message: " + e1.getMessage(), e1);
+			try {
+				MAPErrorMessage errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+						.createMAPErrorMessageSystemFailure(dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null, null);
+				dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+				dialog.close(false);
+			} catch (Throwable e) {
+				logger.severe("Error while sending Error message", e);
+				return;
+			}
+			return;
+		}
 
 		try {
 			dialog.addForwardShortMessageResponse(evt.getInvokeId());
 			dialog.close(false);
-		} catch (MAPException e) {
+		} catch (Throwable e) {
 			logger.severe("Error while sending ForwardShortMessageResponse ", e);
 		}
 	}
 
-	private void processMoMessage(SM_RP_OA smRPOA, SmsSignalInfo smsSignalInfo) throws SmscPocessingException {
+	private void processMoMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo) throws SmscPocessingException {
 
+		// TODO: check if smRPDA contains local SMSC address and reject messages if not equal ???
+		
 		ISDNAddressString callingPartyAddress = smRPOA.getMsisdn();
 		if (callingPartyAddress == null) {
 			throw new SmscPocessingException("MO callingPartyAddress is absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
@@ -239,7 +311,7 @@ public abstract class MoSbb extends MoCommonSbb {
 				if (this.logger.isInfoEnabled()) {
 					this.logger.info("Received SMS_SUBMIT = " + smsSubmitTpdu);
 				}
-				AddressField af = smsSubmitTpdu.getDestinationAddress();
+//				AddressField af = smsSubmitTpdu.getDestinationAddress();
 				this.handleSmsSubmitTpdu(smsSubmitTpdu, callingPartyAddress);
 				break;
 			case SMS_DELIVER_REPORT:
@@ -467,21 +539,21 @@ public abstract class MoSbb extends MoCommonSbb {
 			switch(vpf){
 			case fieldPresentAbsoluteFormat:
 				AbsoluteTimeStamp ats = vp.getAbsoluteFormatValue();
-				Date dt = new Date(ats.getYear() + 100, ats.getMonth(), ats.getDay(), ats.getHour(), ats.getMinute(), ats.getSecond());
-				int i1 = ats.getTimeZone() * 4 * 60;
-				int i2 = new Date().getTimezoneOffset();
+				Date dt = new Date(ats.getYear(), ats.getMonth(), ats.getDay(), ats.getHour(), ats.getMinute(), ats.getSecond());
+				int i1 = ats.getTimeZone() * 15 * 60;
+				int i2 = -new Date().getTimezoneOffset() * 60;
 				long i3 = (i2 - i1) * 1000;
 				validityPeriod = new Date(dt.getTime() + i3);
 				break;
 			case fieldPresentRelativeFormat:
-				validityPeriod = new Date(new Date().getTime() + vp.getRelativeFormatValue() * 3600 * 1000);
+				validityPeriod = new Date(new Date().getTime() + (long)(vp.getRelativeFormatHours() * 3600 * 1000));
 				break;
 			case fieldPresentEnhancedFormat:
 				this.logger.info("Recieved unsupported ValidityPeriodFormat: PresentEnhancedFormat - we skip it");
 				break;
 			}
-			MessageUtil.applyValidityPeriod(sms, validityPeriod, false);
 		}
+		MessageUtil.applyValidityPeriod(sms, validityPeriod, false);
 
 		SmsSet smsSet;
 		try {

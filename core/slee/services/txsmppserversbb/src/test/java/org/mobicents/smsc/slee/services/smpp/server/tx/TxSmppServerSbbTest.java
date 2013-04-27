@@ -69,7 +69,7 @@ import com.cloudhopper.smpp.type.Address;
  * 
  */
 public class TxSmppServerSbbTest {
-	
+
 	private TxSmppServerSbbProxy sbb;
 	private CassandraPersistenceSbbProxy pers;
 	private SmppSessionsProxy smppSess;
