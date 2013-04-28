@@ -29,7 +29,7 @@ CREATE TABLE "LIVE_SMS" (
 	"ADDR_DST_NPI" int, 
 
 	"MESSAGE_ID" bigint,
-	"ORIG_ESME_ID" text,
+	"ORIG_ESME_NAME" text,
 	"ORIG_SYSTEM_ID" text, 
 	"SUBMIT_DATE" timestamp, 
 
@@ -70,10 +70,10 @@ CREATE TABLE "ARCHIVE" (
 	"ADDR_SRC_NPI" int, 
 
 	"MESSAGE_ID" bigint,
-	"ORIG_ESME_ID" text,
+	"ORIG_ESME_NAME" text,
 	"ORIG_SYSTEM_ID" text, 
 	"DEST_CLUSTER_NAME" text, 
-	"DEST_ESME_ID" text,
+	"DEST_ESME_NAME" text,
 	"DEST_SYSTEM_ID" text,
 	"SUBMIT_DATE" timestamp, 
 	"DELIVERY_DATE" timestamp, 

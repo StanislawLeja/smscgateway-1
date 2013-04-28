@@ -44,7 +44,11 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JButton;
 
+import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.EncodingType;
+import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.SplittingType;
+
 import com.cloudhopper.commons.util.windowing.WindowFuture;
+import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppSession;
 import com.cloudhopper.smpp.SmppSessionConfiguration;
 import com.cloudhopper.smpp.impl.DefaultSmppClient;
@@ -52,6 +56,7 @@ import com.cloudhopper.smpp.impl.DefaultSmppSessionHandler;
 import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
 import com.cloudhopper.smpp.pdu.SubmitSm;
+import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.type.Address;
 
 import java.awt.event.ActionListener;
@@ -59,6 +64,10 @@ import java.awt.event.ActionEvent;
 import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Vector;
 import java.util.concurrent.Executors;
@@ -231,24 +240,155 @@ public class SmppTestingForm extends JDialog {
 		
 	}
 
+	private int msgRef = 0;
+
+	private int getNextMsgRef() {
+		msgRef++;
+		if (msgRef > 255)
+			msgRef = 1;
+		return msgRef;
+	}
+
 	private void submitMessage() {
         try {
-            SubmitSm pdu = new SubmitSm();
+        	int dcs = 0;
+			ArrayList<byte[]> msgLst = new ArrayList<byte[]>();
+        	int msgRef = 0;
 
-            pdu.setSourceAddress(new Address((byte)this.param.getTON().getCode(), (byte)this.param.getNPI().getCode(), this.param.getSourceAddress()));
-            pdu.setDestAddress(new Address((byte)this.param.getTON().getCode(), (byte)this.param.getNPI().getCode(), this.param.getDestAddress()));
+            EncodingType et = param.getEncodingType();
+            byte[] buf = null;
+            int maxLen = 0;
+            int maxSplLen = 0;
+            boolean addSegmTlv = false;
+    		switch (et) {
+    		case GSM7:
+    			dcs = 0;
+    			buf = this.param.getMessageText().getBytes();
+                maxLen = 160;
+                maxSplLen = 153;
+    			break;
+    		case UCS2:
+    			dcs = 8;
+    			Charset ucs2Charset = Charset.forName("UTF-16BE");
+				ByteBuffer bb = ucs2Charset.encode(this.param.getMessageText());
+				buf = new byte[bb.limit()];
+				bb.get(buf);
+    			maxLen = 140;
+                maxSplLen = 134;
+                break;
+    		}
 
-            pdu.setShortMessage(this.param.getMessageText().getBytes());
+			if (buf.length > maxLen) { // may be message splitting
+				SplittingType st = param.getSplittingType();
+				switch (st) {
+				case DoNotSplit:
+					// we do not split
+					msgLst.add(buf);
+					break;
+				case SplitWithParameters:
+					msgRef = getNextMsgRef();
+					ArrayList<byte[]> r1 = this.splitByteArr(buf, maxSplLen);
+					for (byte[] bf : r1) {
+						msgLst.add(bf);
+					}
+					addSegmTlv = true;
+					break;
+				case SplitWithUdh:
+					msgRef = getNextMsgRef();
+					r1 = this.splitByteArr(buf, maxSplLen);
+					byte[] bf1 = new byte[6];
+					bf1[0] = 5; // total UDH length
+					bf1[1] = 0; // UDH id
+					bf1[2] = 3; // UDH length
+					bf1[3] = (byte) msgRef; // refNum
+					bf1[4] = (byte) r1.size(); // segmCnt
+					int i1 = 0;
+					for (byte[] bf : r1) {
+						i1++;
+						bf1[5] = (byte) i1; // segmNum
+						byte[] bf2 = new byte[bf1.length + bf.length];
+						System.arraycopy(bf1, 0, bf2, 0, bf1.length);
+						System.arraycopy(bf, 0, bf2, bf1.length, bf.length);
+						msgLst.add(bf2);
+					}
+					break;
+				}
+			} else {
+				msgLst.add(buf);
+			}
 
-            WindowFuture<Integer,PduRequest,PduResponse> future0 = session0.sendRequestPdu(pdu, 10000, false);
-
-            this.addMessage("Request=" + pdu.getName(), pdu.toString());
+        	this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv);
 		} catch (Exception e) {
 			this.addMessage("Failure to submit message", e.toString());
 			return;
 		}
 	}
 
+	private ArrayList<byte[]> splitByteArr(byte[] buf, int maxLen) {
+		ArrayList<byte[]> res = new ArrayList<byte[]>();
+
+		byte[] prevBuf = buf;
+
+		while (true) {
+			if (prevBuf.length <= maxLen) {
+				res.add(prevBuf);
+				break;
+			}
+
+			byte[] segm = new byte[maxLen];
+			byte[] newBuf = new byte[prevBuf.length - maxLen];
+
+			System.arraycopy(prevBuf, 0, segm, 0, maxLen);
+			System.arraycopy(prevBuf, maxLen, newBuf, 0, prevBuf.length - maxLen);
+			
+			res.add(segm);
+			prevBuf = newBuf;
+		}
+
+		return res;
+	}
+
+	private void doSubmitMessage(int dcs, ArrayList<byte[]> msgLst, int msgRef, boolean addSegmTlv) throws Exception {
+		int i1 = 0;
+		for (byte[] buf : msgLst) {
+			i1++;
+
+			SubmitSm pdu = new SubmitSm();
+
+	        pdu.setSourceAddress(new Address((byte)this.param.getTON().getCode(), (byte)this.param.getNPI().getCode(), this.param.getSourceAddress()));
+	        pdu.setDestAddress(new Address((byte)this.param.getTON().getCode(), (byte)this.param.getNPI().getCode(), this.param.getDestAddress()));
+
+			pdu.setDataCoding((byte) dcs);
+
+			if (buf.length < 250)
+				pdu.setShortMessage(buf);
+			else {
+				Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, buf);
+				pdu.addOptionalParameter(tlv);
+			}
+
+			if (addSegmTlv) {
+				byte[] buf1 = new byte[2];
+				buf1[0] = 0;
+				buf1[1] = (byte)msgRef;
+				Tlv tlv = new Tlv(SmppConstants.TAG_SAR_MSG_REF_NUM, buf1);
+				pdu.addOptionalParameter(tlv);
+				buf1 = new byte[1];
+				buf1[0] = (byte) msgLst.size();
+				tlv = new Tlv(SmppConstants.TAG_SAR_TOTAL_SEGMENTS, buf1);
+				pdu.addOptionalParameter(tlv);
+				buf1 = new byte[1];
+				buf1[0] = (byte)i1;
+				tlv = new Tlv(SmppConstants.TAG_SAR_SEGMENT_SEQNUM, buf1);
+				pdu.addOptionalParameter(tlv);
+			}
+
+	        WindowFuture<Integer,PduRequest,PduResponse> future0 = session0.sendRequestPdu(pdu, 10000, false);
+
+	        this.addMessage("Request=" + pdu.getName(), pdu.toString());
+		}
+	}
+	
 	private void setEventMsg() {
 		ListSelectionModel l = tNotif.getSelectionModel();
 		if (!l.isSelectionEmpty()) {

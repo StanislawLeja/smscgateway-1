@@ -46,7 +46,7 @@ public class MessageUtil {
 	 * @return Date value (or null if can val==null) 
 	 */
 	public static Date parseSmppDate(String val) throws ParseException {
-		if (val == null)
+		if (val == null || val.length() == 0)
 			return null;
 		if (val.length() != 16) {
 			// TODO: may be we need here try to parse time in
