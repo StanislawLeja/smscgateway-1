@@ -86,7 +86,7 @@ import org.mobicents.smsc.slee.services.persistence.TlvSet;
 public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 
 	private static final ResourceAdaptorTypeID HECTOR_ID = new ResourceAdaptorTypeID("HectorClientResourceAdaptorType", "org.mobicents", "1.0");
-	private static final String LINK = "HectorClientResourceAdaptorType";
+	private static final String LINK = "HectorClientResourceAdaptor";
 	private static final String TLV_SET = "tlvSet";
 
 	protected final static CompositeSerializer SERIALIZER_COMPOSITE = CompositeSerializer.get();
