@@ -118,7 +118,7 @@ public class SmsSet implements Serializable {
 	}
 
 	/**
-	 * name of cluster for destination ESME terminated massages (“” for MT messages)
+	 * name of cluster for destination ESME terminated massages (ï¿½ï¿½ for MT messages)
 	 */
 	public String getDestClusterName() {
 		return destClusterName;
@@ -129,7 +129,7 @@ public class SmsSet implements Serializable {
 	}
 
 	/**
-	 * SMPP name of destination esme (“” for MT messages)
+	 * SMPP name of destination esme (ï¿½ï¿½ for MT messages)
 	 */
 	public String getDestSystemId() {
 		return destSystemId;
@@ -140,7 +140,7 @@ public class SmsSet implements Serializable {
 	}
 
 	/**
-	 * SMSC internal name of destination esme (“” for MT messages)
+	 * SMSC internal name of destination esme (ï¿½ï¿½ for MT messages)
 	 */
 	public String getDestEsmeName() {
 		return destEsmeName;
@@ -206,7 +206,7 @@ public class SmsSet implements Serializable {
 	}
 
 	/**
-	 * ErrorCode value will be put here for last attempt (0==success / no attempts yet, !=0 – ErrorCode of the last attempt)
+	 * ErrorCode value will be put here for last attempt (0==success / no attempts yet, !=0 ï¿½ ErrorCode of the last attempt)
 	 */
 	public ErrorCode getStatus() {
 		return status;
@@ -260,6 +260,7 @@ public class SmsSet implements Serializable {
 	}
 
 	public Sms getFirstSms() {
+	    //"Set" is unordered, this is clearly a different
 		Collections.sort(this.smsList, new SmsComparator());
 		this.messageIndex = 0;
 		return getNextSms();
@@ -270,6 +271,10 @@ public class SmsSet implements Serializable {
 			return null;
 		else
 			return this.smsList.get(this.messageIndex++);
+	}
+
+	public List<Sms> getRawList(){
+	    return new ArrayList<Sms>(this.smsList);
 	}
 
 	@Override

@@ -18,9 +18,4 @@
 		<module>hector-client-ra</module>
 		<module>services</module>
 	</modules>
-
-	<dependencies>
-
-
-	</dependencies>
 </project>

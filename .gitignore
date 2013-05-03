@@ -11,4 +11,5 @@ target
 *.*~
 /SmppSimulatorParameters.xml
 /test-output
-/.gitignore
+${env.JBOSS_HOME}
+

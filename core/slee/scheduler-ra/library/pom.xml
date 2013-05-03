@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.telscale.smsc</groupId>
+		<artifactId>scheduler-ra-parent</artifactId>
+		<version>6.1.2-TelScale-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>scheduler-ra-library</artifactId>
+	<name>Core : SLEE : Scheduler RA Library</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+	</dependencies>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.mobicents.tools</groupId>
+				<artifactId>maven-library-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>copy-dependencies</goal>
+							<goal>generate-descriptor</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<library-name>com.telscale.smsc</library-name>
+					<library-vendor>scheduler</library-vendor>
+					<library-version>1.0.0</library-version>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
