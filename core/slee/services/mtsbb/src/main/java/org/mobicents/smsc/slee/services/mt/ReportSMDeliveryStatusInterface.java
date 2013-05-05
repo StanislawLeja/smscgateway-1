@@ -22,12 +22,20 @@
 
 package org.mobicents.smsc.slee.services.mt;
 
-import javax.slee.SbbLocalObject;
+import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
+import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
+import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
+import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
+import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 
 /**
  * 
- * @author amit bhayani
- *
+ * @author sergey vetyutnev
+ * 
  */
-public interface MtSbbLocalObject extends SbbLocalObject, MtForwardSmsInterface {
+public interface ReportSMDeliveryStatusInterface {
+
+	public void setupReportSMDeliveryStatusRequest(ISDNAddressString msisdn, AddressString serviceCentreAddress, SMDeliveryOutcome sMDeliveryOutcome,
+			SccpAddress destAddress, MAPApplicationContext mapApplicationContext);
+
 }

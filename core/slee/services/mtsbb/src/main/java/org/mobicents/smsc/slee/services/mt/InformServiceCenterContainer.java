@@ -22,12 +22,24 @@
 
 package org.mobicents.smsc.slee.services.mt;
 
-import javax.slee.SbbLocalObject;
+import java.io.Serializable;
+import org.mobicents.protocols.ss7.map.api.service.sms.MWStatus;
 
 /**
  * 
- * @author amit bhayani
- *
+ * @author sergey vetyutnev
+ * 
  */
-public interface MtSbbLocalObject extends SbbLocalObject, MtForwardSmsInterface {
+public class InformServiceCenterContainer implements Serializable {
+
+	private MWStatus mwStatus;
+
+	public MWStatus getMwStatus() {
+		return mwStatus;
+	}
+
+	public void setMwStatus(MWStatus mwStatus) {
+		this.mwStatus = mwStatus;
+	}
 }
+

@@ -118,6 +118,7 @@ import org.mobicents.smsc.slee.services.persistence.CassandraPersistenceSbbProxy
 import org.mobicents.smsc.slee.services.persistence.MessageUtil;
 import org.mobicents.smsc.slee.services.persistence.Persistence;
 import org.mobicents.smsc.slee.services.persistence.PersistenceException;
+import org.mobicents.smsc.slee.services.persistence.SmppSessionsProxy;
 import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.slee.services.persistence.SmsSet;
 import org.mobicents.smsc.slee.services.persistence.TargetAddress;
@@ -171,6 +172,8 @@ public class MoSbbTest {
 			return;
 
 		this.clearDatabase();
+		SmppSessionsProxy smppServerSessions = new SmppSessionsProxy();
+		this.sbb.setSmppServerSessions(smppServerSessions);
 
 
 		AddressString serviceCentreAddressDA = new AddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "1111");
@@ -228,12 +231,13 @@ public class MoSbbTest {
 		assertNull(smsSet.getStatus());
 		assertFalse(smsSet.isAlertingSupported());
 
-		Sms sms = smsSet.getFirstSms();
+		Sms sms = smsSet.getSms(0);
 		assertNotNull(sms);
 		assertEquals(sms.getSourceAddr(), "4444");
 		assertEquals(sms.getSourceAddrTon(), SmppConstants.TON_INTERNATIONAL);
 		assertEquals(sms.getSourceAddrNpi(), SmppConstants.NPI_E164);
-		assertEquals(sms.getMessageId(), 150);
+		assertEquals(sms.getMessageId(), 1);
+		assertEquals(sms.getMoMessageRef(), 150);
 
 		assertEquals(sms.getDataCoding(), 0);
 		assertNull(sms.getOrigEsmeName());
@@ -269,6 +273,8 @@ public class MoSbbTest {
 			return;
 
 		this.clearDatabase();
+		SmppSessionsProxy smppServerSessions = new SmppSessionsProxy();
+		this.sbb.setSmppServerSessions(smppServerSessions);
 
 
 		AddressString serviceCentreAddressDA = new AddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "1111");
@@ -327,12 +333,13 @@ public class MoSbbTest {
 		assertNull(smsSet.getStatus());
 		assertFalse(smsSet.isAlertingSupported());
 
-		Sms sms = smsSet.getFirstSms();
+		Sms sms = smsSet.getSms(0);
 		assertNotNull(sms);
 		assertEquals(sms.getSourceAddr(), "4444");
 		assertEquals(sms.getSourceAddrTon(), SmppConstants.TON_INTERNATIONAL);
 		assertEquals(sms.getSourceAddrNpi(), SmppConstants.NPI_E164);
-		assertEquals(sms.getMessageId(), 150);
+		assertEquals(sms.getMessageId(), 1);
+		assertEquals(sms.getMoMessageRef(), 150);
 
 		assertEquals(sms.getDataCoding(), 0);
 		assertNull(sms.getOrigEsmeName());
@@ -366,6 +373,8 @@ public class MoSbbTest {
 			return;
 
 		this.clearDatabase();
+		SmppSessionsProxy smppServerSessions = new SmppSessionsProxy();
+		this.sbb.setSmppServerSessions(smppServerSessions);
 
 
 		AddressString serviceCentreAddressDA = new AddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "1111");
@@ -417,12 +426,13 @@ public class MoSbbTest {
 		assertNull(smsSet.getStatus());
 		assertFalse(smsSet.isAlertingSupported());
 
-		Sms sms = smsSet.getFirstSms();
+		Sms sms = smsSet.getSms(0);
 		assertNotNull(sms);
 		assertEquals(sms.getSourceAddr(), "4444");
 		assertEquals(sms.getSourceAddrTon(), SmppConstants.TON_INTERNATIONAL);
 		assertEquals(sms.getSourceAddrNpi(), SmppConstants.NPI_E164);
-		assertEquals(sms.getMessageId(), 150);
+		assertEquals(sms.getMessageId(), 1);
+		assertEquals(sms.getMoMessageRef(), 150);
 
 		assertEquals(sms.getDataCoding(), 8);
 		assertNull(sms.getOrigEsmeName());
@@ -460,6 +470,8 @@ public class MoSbbTest {
 			return;
 
 		this.clearDatabase();
+		SmppSessionsProxy smppServerSessions = new SmppSessionsProxy();
+		this.sbb.setSmppServerSessions(smppServerSessions);
 
 
 		AddressString serviceCentreAddressDA = new AddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "1111");
@@ -513,11 +525,12 @@ public class MoSbbTest {
 		this.pers.fetchSchedulableSms(smsSet_x1);
 
 		this.pers.deleteSmsSet(smsSet_x1);
-		Sms sms = smsSet_x1.getFirstSms();
-		while (sms != null) {
+		int cnt = smsSet_x1.getSmsCount();
+		for (int i1 = 0; i1 < cnt; i1++) {
+			Sms sms = smsSet_x1.getSms(i1);
 			this.pers.deleteLiveSms(sms.getDbId());
-			sms = smsSet_x1.getNextSms();
 		}
+
 		this.pers.deleteSmsSet(smsSet_x1);
 	}
 

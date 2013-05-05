@@ -16,11 +16,31 @@
 			<sbb-alias>MtSbb</sbb-alias>
 		</sbb-ref>
 
+        <sbb-ref>
+            <sbb-name>StoreSbb</sbb-name>
+            <sbb-vendor>org.mobicents</sbb-vendor>
+            <sbb-version>1.0</sbb-version>
+            <sbb-alias>StoreSbb</sbb-alias>
+        </sbb-ref>
+
 		<sbb-classes>
 			<sbb-abstract-class>
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.mt.SriSbb</sbb-abstract-class-name>
+
+				<get-child-relation-method>
+                    <sbb-alias-ref>
+                        StoreSbb
+                    </sbb-alias-ref>
+                    <get-child-relation-method-name>
+                        getStoreSbb
+                    </get-child-relation-method-name>
+                    <default-priority>0</default-priority>
+                </get-child-relation-method>
+
 				<cmp-field>
-					<cmp-field-name>nullActivityEventContext</cmp-field-name>
+					<cmp-field-name>sendRoutingInfoForSMResponse</cmp-field-name>
+					<cmp-field-name>errorContainer</cmp-field-name>
+					<cmp-field-name>sriMapVersion</cmp-field-name>
 				</cmp-field>
 				<get-child-relation-method>
 					<sbb-alias-ref>
@@ -32,6 +52,13 @@
 					<default-priority>0</default-priority>
 				</get-child-relation-method>
 			</sbb-abstract-class>
+
+			<sbb-local-interface>
+				<sbb-local-interface-name>
+					org.mobicents.smsc.slee.services.mt.SriSbbLocalObject
+				</sbb-local-interface-name>
+			</sbb-local-interface>
+
 			<sbb-activity-context-interface>
 				<sbb-activity-context-interface-name>
 					org.mobicents.smsc.slee.services.mt.MtActivityContextInterface
@@ -168,6 +195,15 @@
 			</event-type-ref>
 		</event>
 
+		<event event-direction="Receive" initial-event="False">
+			<event-name>InformServiceCentreRequest</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.service.sms.INFORM_SERVICE_CENTER_REQUEST</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
+
 
 		<!-- Component events -->
 		<event event-direction="Receive" initial-event="False">
@@ -227,16 +263,37 @@
 		<sbb-version>1.0</sbb-version>
 		<sbb-alias>MtSbb</sbb-alias>
 
+        <sbb-ref>
+            <sbb-name>StoreSbb</sbb-name>
+            <sbb-vendor>org.mobicents</sbb-vendor>
+            <sbb-version>1.0</sbb-version>
+            <sbb-alias>StoreSbb</sbb-alias>
+        </sbb-ref>
+
 
 		<sbb-classes>
 			<sbb-abstract-class>
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.mt.MtSbb</sbb-abstract-class-name>
-				<cmp-field><cmp-field-name>nullActivityEventContext</cmp-field-name></cmp-field>
+
+				<get-child-relation-method>
+                    <sbb-alias-ref>
+                        StoreSbb
+                    </sbb-alias-ref>
+                    <get-child-relation-method-name>
+                        getStoreSbb
+                    </get-child-relation-method-name>
+                    <default-priority>0</default-priority>
+                </get-child-relation-method>
+
+				<cmp-field><cmp-field-name>smsDeliveryData</cmp-field-name></cmp-field>
+				<cmp-field><cmp-field-name>currentMsgNum</cmp-field-name></cmp-field>
+				<cmp-field-name>informServiceCenterContainer</cmp-field-name>
+				<cmp-field-name>segments</cmp-field-name>
+				<cmp-field-name>tcEmptySent</cmp-field-name>
+
 				<cmp-field><cmp-field-name>networkNode</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>serviceCentreTimeStamp</cmp-field-name></cmp-field>
-				<cmp-field><cmp-field-name>messageSegmentCount</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>messageSegmentNumber</cmp-field-name></cmp-field>	
-				<cmp-field><cmp-field-name>messageReferenceNumber</cmp-field-name></cmp-field>	
 				<cmp-field><cmp-field-name>smRpDa</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>smRpOa</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>dataCodingScheme</cmp-field-name></cmp-field>
@@ -425,6 +482,177 @@
 				pendingEventsOnNullActivity
 			</sbb-activity-context-attribute-name>
 		</activity-context-attribute-alias>
+
+		<resource-adaptor-type-binding>
+			<resource-adaptor-type-ref>
+				<resource-adaptor-type-name>MAPResourceAdaptorType</resource-adaptor-type-name>
+				<resource-adaptor-type-vendor>org.mobicents</resource-adaptor-type-vendor>
+				<resource-adaptor-type-version>2.0</resource-adaptor-type-version>
+			</resource-adaptor-type-ref>
+			<activity-context-interface-factory-name>slee/resources/map/2.0/acifactory</activity-context-interface-factory-name>
+			<resource-adaptor-entity-binding>
+				<resource-adaptor-object-name>slee/resources/map/2.0/provider</resource-adaptor-object-name>
+				<resource-adaptor-entity-link>MAPRA</resource-adaptor-entity-link>
+			</resource-adaptor-entity-binding>
+		</resource-adaptor-type-binding>
+	</sbb>
+
+
+	<sbb id="rsdsSbb">
+		<description>SBB for reportSMDeliveryStatus request to HLR</description>
+		<sbb-name>RsdsSbb</sbb-name>
+		<sbb-vendor>org.mobicents</sbb-vendor>
+		<sbb-version>1.0</sbb-version>
+		<sbb-alias>RsdsSbb</sbb-alias>
+
+        <sbb-ref>
+            <sbb-name>StoreSbb</sbb-name>
+            <sbb-vendor>org.mobicents</sbb-vendor>
+            <sbb-version>1.0</sbb-version>
+            <sbb-alias>StoreSbb</sbb-alias>
+        </sbb-ref>
+
+
+		<sbb-classes>
+			<sbb-abstract-class>
+				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.mt.RsdsSbb</sbb-abstract-class-name>
+
+				<get-child-relation-method>
+                    <sbb-alias-ref>
+                        StoreSbb
+                    </sbb-alias-ref>
+                    <get-child-relation-method-name>
+                        getStoreSbb
+                    </get-child-relation-method-name>
+                    <default-priority>0</default-priority>
+                </get-child-relation-method>
+			</sbb-abstract-class>
+			<sbb-local-interface>
+				<sbb-local-interface-name>
+					org.mobicents.smsc.slee.services.mt.ReportSMDeliveryStatusInterface
+				</sbb-local-interface-name>
+			</sbb-local-interface>
+		</sbb-classes>
+
+		<!-- MAP Dialog Events -->
+		<event event-direction="Receive" initial-event="False">
+			<event-name>DialogDelimiter</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.DIALOG_DELIMITER</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
+
+		<event event-direction="Receive" initial-event="False">
+			<event-name>DialogAccept</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.DIALOG_ACCEPT</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
+
+		<event event-direction="Receive" initial-event="False">
+			<event-name>DialogReject</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.DIALOG_REJECT</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
+
+		<event event-direction="Receive" initial-event="False">
+			<event-name>DialogUserAbort</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.DIALOG_USERABORT</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
+
+		<event event-direction="Receive" initial-event="False">
+			<event-name>DialogProviderAbort</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.DIALOG_PROVIDERABORT</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
+
+		<event event-direction="Receive" initial-event="False">
+			<event-name>DialogClose</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.DIALOG_CLOSE</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
+
+		<event event-direction="Receive" initial-event="False">
+			<event-name>DialogNotice</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.DIALOG_NOTICE</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
+
+		<event event-direction="Receive" initial-event="False">
+			<event-name>DialogTimeout</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.DIALOG_TIMEOUT</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
+		
+		<event event-direction="Receive" initial-event="False">
+			<event-name>DialogRelease</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.DIALOG_RELEASE</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>		
+
+		<!-- MAP ReportSMDeliveryStatus Events -->
+		<event event-direction="Receive" initial-event="False">
+			<event-name>SendRoutingInfoForSMResponse</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.service.sms.SEND_ROUTING_INFO_FOR_SM_RESPONSE</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
+
+		<!-- Component events -->
+		<event event-direction="Receive" initial-event="False">
+			<event-name>InvokeTimeout</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.INVOKE_TIMEOUT</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
+
+		<event event-direction="Receive" initial-event="False">
+			<event-name>ErrorComponent</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.ERROR_COMPONENT</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
+
+		<event event-direction="Receive" initial-event="False">
+			<event-name>RejectComponent</event-name>
+			<event-type-ref>
+				<event-type-name>ss7.map.REJECT_COMPONENT</event-type-name>
+				<event-type-vendor>org.mobicents</event-type-vendor>
+				<event-type-version>1.0</event-type-version>
+			</event-type-ref>
+		</event>
 
 		<resource-adaptor-type-binding>
 			<resource-adaptor-type-ref>

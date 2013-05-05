@@ -244,23 +244,20 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 	}
 
 	@Override
-	public void setDeliveryStart(SmsSet smsSet) throws PersistenceException {
+	public void setDeliveryStart(SmsSet smsSet, Date newInSystemDate) throws PersistenceException {
 
 		try {
 			Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
 
 			Composite cc = createLiveColumnComposite(smsSet, Schema.COLUMN_IN_SYSTEM);
 			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, 2, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-			// cc = createLiveColumnComposite(smsSet,
-			// Schema.COLUMN_DELIVERY_COUNT);
-			// mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-			// HFactory.createColumn(cc, smsSet.getDeliveryCount() + 1,
-			// SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+			cc = createLiveColumnComposite(smsSet, Schema.COLUMN_IN_SYSTEM_DATE);
+			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, newInSystemDate, SERIALIZER_COMPOSITE, SERIALIZER_DATE));
 
 			mutator.execute();
 
 			smsSet.setInSystem(2);
-			// smsSet.setDeliveryCount(smsSet.getDeliveryCount() + 1);
+			smsSet.setInSystemDate(newInSystemDate);
 		} catch (Exception e) {
 			String msg = "Failed to setDeliveryStart smsSet for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi()
 					+ "'!";
@@ -356,8 +353,9 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 
 				// firstly we are looking for corresponded records in LIVE_SMS
 				// table
+				smsSet.clearSmsList();
 				this.fetchSchedulableSms(smsSet);
-				if (smsSet.getFirstSms() != null) {
+				if (smsSet.getSmsCount() > 0) {
 					// there are corresponded records in LIVE_SMS table - we
 					// will not delete LIVE record
 					return false;
@@ -551,6 +549,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 					}
 				}
 			}
+			smsSet.resortSms();
 		} catch (Exception e) {
 			String msg = "Failed to fetchSchedulableSms SMS for '" + smsSet.getTargetId() + "'!";
 			logger.severe(msg, e);
@@ -607,6 +606,9 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		cc = new Composite();
 		cc.addComponent(Schema.COLUMN_MESSAGE_ID, SERIALIZER_STRING);
 		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getMessageId(), SERIALIZER_COMPOSITE, LongSerializer.get()));
+		cc = new Composite();
+		cc.addComponent(Schema.COLUMN_MO_MESSAGE_REF, SERIALIZER_STRING);
+		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getMoMessageRef(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 		if (sms.getOrigEsmeName() != null) {
 			cc = new Composite();
 			cc.addComponent(Schema.COLUMN_ORIG_ESME_NAME, SERIALIZER_STRING);
@@ -717,6 +719,9 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			} else if (name.equals(Schema.COLUMN_MESSAGE_ID)) {
 				long val = LongSerializer.get().fromByteBuffer(col.getValue());
 				sms.setMessageId(val);
+			} else if (name.equals(Schema.COLUMN_MO_MESSAGE_REF)) {
+				int val = SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
+				sms.setMoMessageRef(val);
 			} else if (name.equals(Schema.COLUMN_ORIG_ESME_NAME)) {
 				String val = SERIALIZER_STRING.fromByteBuffer(col.getValue());
 				sms.setOrigEsmeName(val);
@@ -826,6 +831,8 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 				smsSet.setDestAddrNpi(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
 			} else if (name.equals(Schema.COLUMN_IN_SYSTEM)) {
 				smsSet.setInSystem(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
+			} else if (name.equals(Schema.COLUMN_IN_SYSTEM_DATE)) {
+				smsSet.setInSystemDate(SERIALIZER_DATE.fromByteBuffer(col.getValue()));
 			} else if (name.equals(Schema.COLUMN_DUE_DATE)) {
 				smsSet.setDueDate(SERIALIZER_DATE.fromByteBuffer(col.getValue()));
 			} else if (name.equals(Schema.COLUMN_SM_STATUS)) {

@@ -34,6 +34,7 @@ import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
  * backend storage
  * 
  * @author baranowb
+ * @author sergey vetyutnev
  * 
  */
 public interface Persistence {
@@ -91,12 +92,14 @@ public interface Persistence {
 
 	/**
 	 * Update database for setting smsSet to be under delivering processing:
-	 * IN_SYSTEM=2, DELIVERY_COUNT++ 
+	 * IN_SYSTEM=2, DELIVERY_COUNT++
 	 * 
 	 * @param smsSet
+	 * @param inSystemDate
+	 *            Date when SmsSet goes to "IN_SYSTEM" state 
 	 * @throws PersistenceException
 	 */
-	public void setDeliveryStart(SmsSet smsSet) throws PersistenceException;
+	public void setDeliveryStart(SmsSet smsSet, Date inSystemDate) throws PersistenceException;
 
 	/**
 	 * Update database for setting smsSet to be under delivering processing:

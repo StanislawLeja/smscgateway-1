@@ -19,17 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.slee.services.mt;
 
-import javax.slee.ActivityContextInterface;
+import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 
 /**
  * 
- * @author amit bhayani
- *
+ * @author sergey vetyutnev
+ * 
  */
-public interface MtActivityContextInterface extends ActivityContextInterface {
-	public int getPendingEventsOnNullActivity();
+public interface ReportSMDeliveryStatusInterface2 {
 
-	public void setPendingEventsOnNullActivity(int events);
+	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi, SMDeliveryOutcome sMDeliveryOutcome);
+
 }

@@ -564,9 +564,9 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 		sms.setSmsSet(smsSet);
 
-//		long messageId = this.smppServerSessions.getNextMessageId();
-//		sms.setMessageId(messageId);
-		sms.setMessageId(smsSubmitTpdu.getMessageReference());
+		long messageId = this.smppServerSessions.getNextMessageId();
+		sms.setMessageId(messageId);
+		sms.setMoMessageRef(smsSubmitTpdu.getMessageReference());
 
 		// TODO: process case when smsSubmitTpdu.getRejectDuplicates()==true: we need reject message with same MessageId+same source and dest addresses ?
 

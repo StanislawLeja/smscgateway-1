@@ -30,11 +30,10 @@ import java.util.EnumSet;
  * 
  */
 public enum ErrorCode {
-    
+
     SUCCESS(0),
 
     UNKNOWN_SUBSCRIBER(1),
-
     UNDEFINED_SUBSCRIBER(2),
     ILLEGAL_SUBSCRIBER(3),
     TELESERVICE_NOT_PROVISIONED(4),
@@ -48,6 +47,7 @@ public enum ErrorCode {
     SYSTEM_FAILURE(12),
     DATA_MISSING(13),
     UNEXPECTED_DATA(14),
+
     ERROR_IN_MS(15),
     MS_NOT_EQUIPPED(16),
     MEMORY_FULL(17),
