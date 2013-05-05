@@ -129,7 +129,7 @@ public class TxSmppServerSbbTest {
 		assertTrue(b1);
 		SmsSet smsSet = this.pers.obtainSmsSet(ta1);
 		this.checkSmsSet(smsSet, curDate, true);
-		Sms sms = smsSet.getFirstSms();
+		Sms sms = smsSet.getSms(0);
 		assertEquals(sms.getShortMessage(), msg);
 
 		assertEquals(this.smppSess.getReqList().size(), 0);
@@ -178,7 +178,7 @@ public class TxSmppServerSbbTest {
 		assertTrue(b1);
 		SmsSet smsSet = this.pers.obtainSmsSet(ta1);
 		this.checkSmsSet(smsSet, curDate, false);
-		Sms sms = smsSet.getFirstSms();
+		Sms sms = smsSet.getSms(0);
 		assertEquals(sms.getShortMessage(), msg);
 
 		assertEquals(this.smppSess.getReqList().size(), 0);
@@ -273,7 +273,7 @@ public class TxSmppServerSbbTest {
 		assertNull(smsSet.getStatus());
 		assertFalse(smsSet.isAlertingSupported());
 
-		Sms sms = smsSet.getFirstSms();
+		Sms sms = smsSet.getSms(0);
 		assertNotNull(sms);
 		assertEquals(sms.getSourceAddr(), "4444");
 		assertEquals(sms.getSourceAddrTon(), SmppConstants.TON_INTERNATIONAL);
@@ -337,10 +337,10 @@ public class TxSmppServerSbbTest {
 		this.pers.fetchSchedulableSms(smsSet_x1);
 
 		this.pers.deleteSmsSet(smsSet_x1);
-		Sms sms = smsSet_x1.getFirstSms();
-		while (sms != null) {
+		int cnt = smsSet_x1.getSmsCount();
+		for (int i1 = 0; i1 < cnt; i1++) {
+			Sms sms = smsSet_x1.getSms(i1);
 			this.pers.deleteLiveSms(sms.getDbId());
-			sms = smsSet_x1.getNextSms();
 		}
 		this.pers.deleteSmsSet(smsSet_x1);
 	}

@@ -260,6 +260,8 @@ public class CassandraTest {
 
 	public void scheduling() throws Exception {
 
+		Date inSystemDate = new Date(113, 3, 20, 10, 20, 30);
+		
 		// 1 - scheduling by dueTime
 		int maxRecordCount = 100;
 		List<SmsSet> lst = this.sbb.fetchSchedulableSmsSets(maxRecordCount);
@@ -278,11 +280,11 @@ public class CassandraTest {
 					this.sbb.fetchSchedulableSms(smsSet);
 
 					// checking for sms count
-					int smsCnt = 0;
-					Sms sms = smsSet.getFirstSms();
-					while (sms != null) {
-						smsCnt++;
-						assertEquals(sms.getMessageId(), 8888888 + smsCnt);
+					int smsCnt = smsSet.getSmsCount();
+					for (int i1 = 0; i1 < smsCnt; i1++) {
+						Sms sms = smsSet.getSms(i1);
+
+						assertEquals(sms.getMessageId(), 8888888 + i1 + 1);
 
 						assertEquals(sms.getDeliveryCount(), 0);
 						this.sbb.setDeliveryStart(sms);
@@ -290,19 +292,18 @@ public class CassandraTest {
 
 						Sms sms_xx = this.sbb.obtainLiveSms(sms.getDbId());
 						assertEquals(sms_xx.getDeliveryCount(), 1);
-						
-						sms = smsSet.getNextSms();
 					}
 					assertEquals(smsCnt, 3);
-
-					if (smsSet.getFirstSms() != null) {
+ 
+					if (smsSet.getSmsCount() > 0) {
 						this.smsSetSched1 = smsSet;
-						this.sbb.setDeliveryStart(smsSet);
+						this.sbb.setDeliveryStart(smsSet, inSystemDate);
 
 						SmsSet smsSet1 = this.sbb.obtainSmsSet(new TargetAddress(smsSet));
 						assertEquals(smsSet_a.getInSystem(), 2);
 						assertEquals(smsSet_a.getDueDelay(), 0);
 						assertEquals(smsSet1.getInSystem(), 2);
+						assertTrue(smsSet1.getInSystemDate().equals(inSystemDate));
 						assertEquals(smsSet1.getDueDelay(), 0);
 					}
 				}
@@ -324,25 +325,22 @@ public class CassandraTest {
 					this.sbb.fetchSchedulableSms(this.smsSetSched2);
 
 					// checking for sms count
-					int smsCnt = 0;
-					Sms sms = this.smsSetSched2.getFirstSms();
-					while (sms != null) {
-						smsCnt++;
-
+					int smsCnt = this.smsSetSched2.getSmsCount();
+					for (int i1 = 0; i1 < smsCnt; i1++) {
+						Sms sms = this.smsSetSched2.getSms(i1);
 						assertEquals(sms.getDeliveryCount(), 0);
 						this.sbb.setDeliveryStart(sms);
 						assertEquals(sms.getDeliveryCount(), 1);
-						
-						sms = this.smsSetSched2.getNextSms();
 					}
 					assertEquals(smsCnt, 1);
 
-					if (this.smsSetSched2.getFirstSms() != null) {
-						this.sbb.setDeliveryStart(this.smsSetSched2);
+					if (this.smsSetSched2.getSmsCount() > 0) {
+						this.sbb.setDeliveryStart(this.smsSetSched2, inSystemDate);
 						SmsSet smsSet1 = this.sbb.obtainSmsSet(new TargetAddress(this.smsSetSched2));
 						assertEquals(smsSet_a.getInSystem(), 2);
 						assertEquals(smsSet_a.getDueDelay(), 0);
 						assertEquals(smsSet1.getInSystem(), 2);
+						assertTrue(smsSet1.getInSystemDate().equals(inSystemDate));
 						assertEquals(smsSet1.getDueDelay(), 0);
 					}
 				}
@@ -399,10 +397,12 @@ public class CassandraTest {
 				ISDNAddressString nnn = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "3355778");
 				LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(nnn, null, null, null, null);
 				this.sbb.setRoutingInfo(smsSetSched1, imsi, locationInfoWithLMSI);
-				
-				Sms sms = smsSetSched1.getFirstSms();
+
+				int smsCnt = smsSetSched1.getSmsCount();
 				int step = 0;
-				while (sms != null) {
+				for (int i1 = 0; i1 < smsCnt; i1++) {
+					Sms sms = smsSetSched1.getSms(i1);
+
 					// process message delivering ...
 
 					step++;
@@ -470,12 +470,10 @@ public class CassandraTest {
 						assertNull(sms_y4);
 						break;
 					}
-
-					sms = smsSetSched1.getNextSms();
 				}
 
 				this.sbb.fetchSchedulableSms(smsSetSched1);
-				if (smsSetSched1.getFirstSms() != null) {
+				if (smsSetSched1.getSmsCount() > 0) {
 					// new message found - continue delivering ......
 				} else {
 					b1 = this.sbb.checkSmsSetExists(ta1);
@@ -594,10 +592,10 @@ public class CassandraTest {
 				assertEquals(smsSet_yyy.getDueDelay(), 900);
 				assertTrue(smsSet_yyy.getDueDate().equals(d4));
 
-				Sms sms = smsSetSched2.getFirstSms();
-				while (sms != null) {
+				int cnt = smsSetSched2.getSmsCount();
+				for (int i1 = 0; i1 < cnt; i1++) {
+					Sms sms = smsSetSched2.getSms(i1);
 					this.sbb.archiveFailuredSms(sms);
-					sms = smsSetSched1.getNextSms();
 				}
 
 				b1 = this.sbb.checkSmsSetExists(ta1);
@@ -714,6 +712,7 @@ public class CassandraTest {
 		sms.setSourceAddrTon(14 + num);
 		sms.setSourceAddrNpi(11 + num);
 		sms.setMessageId(8888888 + num);
+		sms.setMoMessageRef(102 + num);
 
 		sms.setOrigEsmeName("esme_" + num);
 		sms.setOrigSystemId("sys_" + num);
@@ -785,6 +784,7 @@ public class CassandraTest {
 		assertEquals(sms.getSourceAddrNpi(), 11 + num);
 
 		assertEquals(sms.getMessageId(), 8888888 + num);
+		assertEquals(sms.getMoMessageRef(), 102 + num);
 		assertEquals(sms.getOrigEsmeName(), "esme_" + num);
 		assertEquals(sms.getOrigSystemId(), "sys_" + num);
 

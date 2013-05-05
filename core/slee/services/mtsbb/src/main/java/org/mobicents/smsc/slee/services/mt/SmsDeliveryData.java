@@ -22,12 +22,25 @@
 
 package org.mobicents.smsc.slee.services.mt;
 
-import javax.slee.SbbLocalObject;
+import java.io.Serializable;
+import org.mobicents.smsc.slee.services.persistence.SmsSet;
 
 /**
  * 
- * @author amit bhayani
- *
+ * @author sergey vetyutnev
+ * 
  */
-public interface MtSbbLocalObject extends SbbLocalObject, MtForwardSmsInterface {
+public class SmsDeliveryData implements Serializable {
+
+	private SmsSet smsSet;
+
+	public SmsSet getSmsSet() {
+		return smsSet;
+	}
+
+	public void setSmsSet(SmsSet smsSet) {
+		this.smsSet = smsSet;
+	}
+
 }
+

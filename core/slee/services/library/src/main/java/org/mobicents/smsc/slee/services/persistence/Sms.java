@@ -45,6 +45,7 @@ public class Sms implements Serializable {
 	private String sourceAddr;
 
 	private long messageId;
+	private int moMessageRef;
 
 	private String origSystemId;
 	private String origEsmeName;
@@ -141,6 +142,17 @@ public class Sms implements Serializable {
 
 	public void setMessageId(long messageId) {
 		this.messageId = messageId;
+	}
+
+	/**
+	 * MO SMS-SUBMIT TP-Message-Reference field value 
+	 */
+	public int getMoMessageRef() {
+		return moMessageRef;
+	}
+
+	public void setMoMessageRef(int moMessageRef) {
+		this.moMessageRef = moMessageRef;
 	}
 
 	/**
@@ -348,6 +360,8 @@ public class Sms implements Serializable {
 		sb.append(sourceAddr);
 		sb.append(", messageId=");
 		sb.append(messageId);
+		sb.append(", moMessageRef=");
+		sb.append(moMessageRef);
 		sb.append(", origSystemId=");
 		sb.append(origSystemId);
 		sb.append(", origEsmeId=");

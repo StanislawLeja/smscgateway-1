@@ -11,6 +11,7 @@ CREATE TABLE "LIVE" (
 	"ADDR_DST_NPI" int, 
 
 	"IN_SYSTEM" int, 
+	"IN_SYSTEM_DATE" timestamp, 
 	"DUE_DATE" timestamp,
 	"DUE_DELAY" int,
 	"SM_STATUS" int,
@@ -19,6 +20,7 @@ CREATE TABLE "LIVE" (
 
 CREATE INDEX ON "LIVE" ("IN_SYSTEM");
 CREATE INDEX ON "LIVE" ("DUE_DATE");
+CREATE INDEX ON "LIVE" ("IN_SYSTEM_DATE");
 
 CREATE TABLE "LIVE_SMS" ( 
 	"ID" uuid, 
@@ -29,6 +31,7 @@ CREATE TABLE "LIVE_SMS" (
 	"ADDR_DST_NPI" int, 
 
 	"MESSAGE_ID" bigint,
+	"MO_MESSAGE_REF" int,
 	"ORIG_ESME_NAME" text,
 	"ORIG_SYSTEM_ID" text, 
 	"SUBMIT_DATE" timestamp, 
@@ -70,6 +73,7 @@ CREATE TABLE "ARCHIVE" (
 	"ADDR_SRC_NPI" int, 
 
 	"MESSAGE_ID" bigint,
+	"MO_MESSAGE_REF" int,
 	"ORIG_ESME_NAME" text,
 	"ORIG_SYSTEM_ID" text, 
 	"DEST_CLUSTER_NAME" text, 

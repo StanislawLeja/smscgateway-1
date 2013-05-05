@@ -39,6 +39,7 @@ public class Schema {
     public static final String COLUMN_ID = "ID";
     public static final String COLUMN_TARGET_ID = "TARGET_ID";
     public static final String COLUMN_MESSAGE_ID = "MESSAGE_ID";
+    public static final String COLUMN_MO_MESSAGE_REF = "MO_MESSAGE_REF";
     public static final String COLUMN_ADDR_SRC_TON = "ADDR_SRC_TON";
     public static final String COLUMN_ADDR_SRC_NPI = "ADDR_SRC_NPI";
     public static final String COLUMN_ADDR_SRC_DIGITS = "ADDR_SRC_DIGITS";
@@ -67,6 +68,7 @@ public class Schema {
     public static final String COLUMN_SM_STATUS = "SM_STATUS";
     //indicates if sms is in system, so it wont be pulled more than once
     public static final String COLUMN_IN_SYSTEM = "IN_SYSTEM";
+    public static final String COLUMN_IN_SYSTEM_DATE = "IN_SYSTEM_DATE";
     //indicate if AlertSC is supported and can be used
     public static final String COLUMN_ALERTING_SUPPORTED = "ALERTING_SUPPORTED";
     public static final String COLUMN_LAST_DELIVERY = "LAST_DELIVERY";
@@ -99,12 +101,13 @@ public class Schema {
         tmp.add(COLUMN_ADDR_DST_NPI);
 
         tmp.add(COLUMN_IN_SYSTEM);
+        tmp.add(COLUMN_IN_SYSTEM_DATE);
         tmp.add(COLUMN_SM_STATUS);
         tmp.add(COLUMN_DUE_DELAY);
         tmp.add(COLUMN_DUE_DATE);
         tmp.add(COLUMN_ALERTING_SUPPORTED);
 		tmp.add(COLUMN_LAST_DELIVERY);
-        
+
         COLUMNS_LIVE = Collections.unmodifiableList(tmp);
         
 		tmp = new ArrayList<String>();
@@ -115,6 +118,7 @@ public class Schema {
         tmp.add(COLUMN_ADDR_DST_NPI);
 
         tmp.add(COLUMN_MESSAGE_ID);
+        tmp.add(COLUMN_MO_MESSAGE_REF);
         tmp.add(COLUMN_ORIG_ESME_NAME);
         tmp.add(COLUMN_ORIG_SYSTEM_ID);
 		tmp.add(COLUMN_SUBMIT_DATE);
@@ -148,6 +152,7 @@ public class Schema {
 		tmp.add(COLUMN_ADDR_SRC_NPI);
 
 		tmp.add(COLUMN_MESSAGE_ID);
+        tmp.add(COLUMN_MO_MESSAGE_REF);
         tmp.add(COLUMN_ORIG_ESME_NAME);
         tmp.add(COLUMN_ORIG_SYSTEM_ID);
         tmp.add(COLUMN_DEST_CLUSTER_NAME);

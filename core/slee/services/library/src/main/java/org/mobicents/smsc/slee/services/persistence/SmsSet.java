@@ -60,6 +60,7 @@ public class SmsSet implements Serializable {
 	// last interval between delivering (sec)
 	private int dueDelay;
 	private int inSystem;
+	private Date inSystemDate;
 
 	private ErrorCode status;
     private SmType type;
@@ -69,7 +70,7 @@ public class SmsSet implements Serializable {
 
 	private List<Sms> smsList = new ArrayList<Sms>();
 
-	private int messageIndex = 0;
+//	private int messageIndex = 0;
 
     public SmsSet() {
 	}
@@ -206,7 +207,22 @@ public class SmsSet implements Serializable {
 	}
 
 	/**
+<<<<<<< HEAD
 	 * ErrorCode value will be put here for last attempt (0==success / no attempts yet, !=0 ï¿½ ErrorCode of the last attempt)
+=======
+	 * Time when SmsSet went to IN_SYSTEM state (when delivering process has been started)
+	 */
+	public Date getInSystemDate() {
+		return inSystemDate;
+	}
+
+	public void setInSystemDate(Date inSystemDate) {
+		this.inSystemDate = inSystemDate;
+	}
+
+	/**
+	 * ErrorCode value will be put here for last attempt (0==success / no attempts yet, !=0 – ErrorCode of the last attempt)
+>>>>>>> refs/remotes/origin/persistence_10
 	 */
 	public ErrorCode getStatus() {
 		return status;
@@ -259,18 +275,19 @@ public class SmsSet implements Serializable {
 		this.smsList.add(sms);
 	}
 
-	public Sms getFirstSms() {
-	    //"Set" is unordered, this is clearly a different
+	public void resortSms() {
 		Collections.sort(this.smsList, new SmsComparator());
-		this.messageIndex = 0;
-		return getNextSms();
 	}
 
-	public Sms getNextSms() {
-		if (this.messageIndex >= this.smsList.size())
-			return null;
+	public Sms getSms(int index) {
+		if (index >= 0 && index < this.smsList.size())
+			return this.smsList.get(index);
 		else
-			return this.smsList.get(this.messageIndex++);
+			return null;
+	}
+
+	public int getSmsCount() {
+		return this.smsList.size();
 	}
 
 	public List<Sms> getRawList(){
@@ -299,6 +316,8 @@ public class SmsSet implements Serializable {
 		sb.append(locationInfoWithLMSI);
 		sb.append(", inSystem=");
 		sb.append(inSystem);
+		sb.append(", inSystemDate=");
+		sb.append(inSystemDate);
 		sb.append(", dueDate=");
 		sb.append(dueDate);
 		sb.append(", dueDelay=");
