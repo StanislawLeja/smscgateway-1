@@ -453,8 +453,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	public void doSetInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer) {
 		this.setInformServiceCenterContainer(informServiceCenterContainer);
 	}
-
-	public InformServiceCenterContainer doGgetInformServiceCenterContainer() {
+										
+	public InformServiceCenterContainer doGetInformServiceCenterContainer() {
 		return this.getInformServiceCenterContainer();
 	}
 

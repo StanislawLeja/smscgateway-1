@@ -341,7 +341,7 @@ public abstract class SriSbb extends MtCommonSbb {
 		this.setSendRoutingInfoForSMResponse((SendRoutingInfoForSMResponseImpl)evt);
 	}
 
-	public void InformServiceCentreRequest(InformServiceCentreRequest evt, ActivityContextInterface aci) {
+	public void onInformServiceCentreRequest(InformServiceCentreRequest evt, ActivityContextInterface aci) {
 		if (this.logger.isInfoEnabled()) {
 			this.logger.info("Received INFORM_SERVICE_CENTER_REQUEST = " + evt + " Dialog=" + evt.getMAPDialog());
 		}
