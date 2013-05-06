@@ -3,23 +3,23 @@
 <resource-adaptor-jar>
 	<resource-adaptor id="Scheduler">
 		<description>Scheduler Resource Adaptor</description>
-		<resource-adaptor-name>
-			SchedulerResourceAdaptor
-		</resource-adaptor-name>
+		<resource-adaptor-name>SchedulerResourceAdaptor</resource-adaptor-name>
 		<resource-adaptor-vendor>org.mobicents</resource-adaptor-vendor>
 		<resource-adaptor-version>1.0</resource-adaptor-version>
-
+		
+		<resource-adaptor-type-ref>
+			<resource-adaptor-type-name>SchedulerResourceAdaptorType</resource-adaptor-type-name>
+			<resource-adaptor-type-vendor>org.mobicents</resource-adaptor-type-vendor>
+			<resource-adaptor-type-version>1.0</resource-adaptor-type-version>
+		</resource-adaptor-type-ref>
+		
 		<library-ref>
 			<library-name>com.telscale.smsc</library-name>
 			<library-vendor>scheduler</library-vendor>
 			<library-version>1.0.0</library-version>
 		</library-ref>
 
-		<resource-adaptor-type-ref>
-			<resource-adaptor-type-name>SchedulerResourceAdaptorType</resource-adaptor-type-name>
-			<resource-adaptor-type-vendor>org.mobicents</resource-adaptor-type-vendor>
-			<resource-adaptor-type-version>1.0</resource-adaptor-type-version>
-		</resource-adaptor-type-ref>
+
 
 		<resource-adaptor-classes>
 			<resource-adaptor-class>
@@ -64,7 +64,7 @@
 			<description>
 			</description>
 			<config-property-name>fetch.period</config-property-name>
-			<config-property-type>java.lang.Integer</config-property-type>
+			<config-property-type>java.lang.Long</config-property-type>
 			<config-property-value>5000</config-property-value>
 		</config-property>
 

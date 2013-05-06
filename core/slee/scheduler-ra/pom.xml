@@ -16,6 +16,7 @@
 	<name>Core : SLEE : Scheduler RA Parent</name>
 
 	<modules>
+		<module>library</module>
 		<module>ratype</module>
 		<module>ra</module>
 		<module>du</module>
