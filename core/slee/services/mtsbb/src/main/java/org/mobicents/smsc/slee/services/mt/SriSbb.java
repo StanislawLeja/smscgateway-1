@@ -71,6 +71,7 @@ import org.mobicents.slee.resource.map.events.DialogReject;
 import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
+import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.slee.services.persistence.ErrorCode;
 import org.mobicents.smsc.slee.services.persistence.Sms;
@@ -88,9 +89,6 @@ import com.cloudhopper.smpp.SmppConstants;
 public abstract class SriSbb extends MtCommonSbb {
 
 	private static final String className = "SriSbb";
-
-	// Keep timeout for event suspend to be maximum
-//	private static final int EVENT_SUSPEND_TIMEOUT = 1000 * 60 * 3;
 
 	public SriSbb() {
 		super(className);
@@ -144,9 +142,7 @@ public abstract class SriSbb extends MtCommonSbb {
 	 * Components Events override from MtCommonSbb that we care
 	 */
 
-	@Override
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
-//		super.onErrorComponent(event, aci);
 
 		if (this.logger.isInfoEnabled()) {
 			this.logger.info("Rx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
@@ -244,7 +240,6 @@ public abstract class SriSbb extends MtCommonSbb {
 				+ abortProviderReason != null ? abortProviderReason.toString() : "");
 	}
 
-	@Override
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
 		this.logger.severe("Rx :  onRejectComponent" + event);
 
@@ -306,6 +301,12 @@ public abstract class SriSbb extends MtCommonSbb {
 		this.logger.severe("Rx :  onDialogTimeout=" + evt);
 
 		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogTimeout after SRI Request");
+	}
+
+	public void onInvokeTimeout(InvokeTimeout evt, ActivityContextInterface aci) {
+		if (logger.isInfoEnabled()) {
+			this.logger.info("Rx :  onInvokeTimeout in MtSbb" + evt);
+		}
 	}
 
 	/**

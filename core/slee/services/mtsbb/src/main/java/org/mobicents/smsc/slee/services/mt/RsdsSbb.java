@@ -54,7 +54,6 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
 	 * Components Events override from MtCommonSbb that we care
 	 */
 
-	@Override
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
 		if (this.logger.isInfoEnabled()) {
 			this.logger.info("Rx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
@@ -113,6 +112,9 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
 		try {
 			mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext, this.getServiceCenterSccpAddress(), null, destAddress,
 					null);
+
+			ActivityContextInterface mtFOSmsDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);
+			mtFOSmsDialogACI.attach(this.sbbContext.getSbbLocalObject());
 
 			mapDialogSms.addReportSMDeliveryStatusRequest(msisdn, serviceCentreAddress, sMDeliveryOutcome, null, null, false, false, null, null);
 			mapDialogSms.send();

@@ -122,15 +122,23 @@ public interface Persistence {
 
 	/**
 	 * Update database for setting smsSet to be out delivering processing with delivery failure
-	 * IN_SYSTEM=0, SM_STATUS=smStatus, LAST_DELIVERY=lastDelivery, ALERTING_SUPPORTED=alertingSupported
+	 * IN_SYSTEM=0, SM_STATUS=smStatus, LAST_DELIVERY=lastDelivery
 	 * 
 	 * @param smsSet
 	 * @param smStatus
 	 * @param lastDelivery
+	 * @throws PersistenceException
+	 */
+	public void setDeliveryFailure(SmsSet smsSet, ErrorCode smStatus, Date lastDelivery) throws PersistenceException;
+
+	/**
+	 * Update database for setting ALERTING_SUPPORTED field 
+	 * 
+	 * @param smsSet
 	 * @param alertingSupported
 	 * @throws PersistenceException
 	 */
-	public void setDeliveryFailure(SmsSet smsSet, ErrorCode smStatus, Date lastDelivery, boolean alertingSupported) throws PersistenceException;
+	public void setAlertingSupported(SmsSet smsSet, boolean alertingSupported) throws PersistenceException;
 
 	/**
 	 * Deleting SmsSet record from LIVE table. 

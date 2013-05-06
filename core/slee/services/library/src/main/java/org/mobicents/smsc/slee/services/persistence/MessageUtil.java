@@ -28,6 +28,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
+import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -255,6 +257,21 @@ public class MessageUtil {
 		return d;
 	}
 
+	public static int getMaxSolidMessageBytesLength(DataCodingScheme dataCodingScheme) {
+		if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+			return 160;
+		} else {
+			return 140;
+		}
+	}
+
+	public static int getMaxSegmentedMessageBytesLength(DataCodingScheme dataCodingScheme) {
+		if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+			return 152;
+		} else {
+			return 134;
+		}
+	}
 
 	private static void addDateToStringBuilder(StringBuilder sb, int year, int month, int day, int hour, int min, int sec) {
 		if (year < 10)

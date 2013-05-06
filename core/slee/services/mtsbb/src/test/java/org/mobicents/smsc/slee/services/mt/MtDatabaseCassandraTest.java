@@ -81,266 +81,266 @@ public class MtDatabaseCassandraTest {
 		System.out.println("tearDownClass");
 	}
 
-	@Test(groups = { "Mt" })
-	public void SuccessDeliveryTest() throws Exception {
-
-		if (!this.cassandraDbInited)
-			return;
-
-		this.clearDatabase();
-		SmsSet smsSet = prepareDatabase();
-
-		assertEquals(smsSet.getSmsCount(), 2);
-		Sms sms1 = smsSet.getSms(0);
-		assertEquals(sms1.getMessageId(), 1);
-		Sms sms2 = smsSet.getSms(1);
-		assertEquals(sms2.getMessageId(), 2);
-		Sms sms3 = smsSet.getSms(2);
-		assertNull(sms3);
-
-		// fetchSchedulableSms()
-		boolean b1 = pers.checkSmsSetExists(ta1);
-		assertTrue(b1);
-		SmsSet smsSetX = pers.obtainSmsSet(ta1);
-		assertEquals(smsSetX.getInSystem(), 2);
-		assertEquals(smsSetX.getSmsCount(), 0);
-		pers.fetchSchedulableSms(smsSetX);
-		assertEquals(smsSetX.getSmsCount(), 2);
-
-		// startMessageDelivery()
-		Sms smsa1 = smsSet.getSms(0);
-		Sms smsx1 = pers.obtainLiveSms(sms1.getDbId());
-		assertEquals(smsa1.getDeliveryCount(), 0);
-		assertEquals(smsx1.getDeliveryCount(), 0);
-		this.sbb.startMessageDelivery(smsa1);
-		smsx1 = pers.obtainLiveSms(smsa1.getDbId());
-		assertEquals(smsa1.getDeliveryCount(), 1);
-		assertEquals(smsx1.getDeliveryCount(), 1);
-		// archiveMessageAsDelivered(Sms sms);
+//	@Test(groups = { "Mt" })
+//	public void SuccessDeliveryTest() throws Exception {
+//
+//		if (!this.cassandraDbInited)
+//			return;
+//
+//		this.clearDatabase();
+//		SmsSet smsSet = prepareDatabase();
+//
 //		assertEquals(smsSet.getSmsCount(), 2);
-		this.sbb.archiveMessageAsDelivered(smsa1);
-//		smsSet.removeFirstSms();
-//		assertEquals(smsSet.getSmsCount(), 1);
-		smsx1 = pers.obtainLiveSms(sms1.getDbId());
-		Sms smsx2 = pers.obtainLiveSms(sms2.getDbId());
-		assertNull(smsx1);
-		assertEquals(smsx2.getDeliveryCount(), 0);
-		SmsProxy smsp1 = pers.obtainArchiveSms(sms1.getDbId());
-		SmsProxy smsp2 = pers.obtainArchiveSms(sms2.getDbId());
-		assertEquals(smsp1.sms.getDeliveryCount(), 1);
-		assertEquals(smsp1.smStatus, 0);
-		assertNull(smsp2);
-
-		Sms smsa2 = smsSet.getSms(1);
-		assertEquals(smsa2.getMessageId(), 2);
-		assertNotNull(smsa2);
-		this.sbb.startMessageDelivery(smsa2);
-		this.sbb.archiveMessageAsDelivered(smsa2);
-//		smsSet.removeFirstSms();
-		smsx1 = pers.obtainLiveSms(sms1.getDbId());
-		smsx2 = pers.obtainLiveSms(sms2.getDbId());
-		assertNull(smsx1);
-		assertNull(smsx2);
-		smsp1 = pers.obtainArchiveSms(sms1.getDbId());
-		smsp2 = pers.obtainArchiveSms(sms2.getDbId());
-		assertEquals(smsp1.sms.getDeliveryCount(), 1);
-		assertEquals(smsp1.smStatus, 0);
-		assertEquals(smsp2.sms.getDeliveryCount(), 1);
-		assertEquals(smsp2.smStatus, 0);
-
-		b1 = pers.checkSmsSetExists(ta1);
-		assertTrue(b1);
-		this.sbb.freeSmsSetSucceded(smsSet);
-		b1 = pers.checkSmsSetExists(ta1);
-		assertFalse(b1);
-		assertEquals(smsSet.getInSystem(), 0);
-	}
-
-	@Test(groups = { "Mt" })
-	public void FreeSmsSetWhenSmsExistsTest() throws Exception {
-
-		if (!this.cassandraDbInited)
-			return;
-
-		this.clearDatabase();
-		SmsSet smsSet = prepareDatabase();
-
-		boolean b1 = pers.checkSmsSetExists(ta1);
-		assertTrue(b1);
-		SmsSet smsSetX = pers.obtainSmsSet(ta1);
-		assertEquals(smsSetX.getInSystem(), 2);
-
-		this.sbb.freeSmsSetSucceded(smsSet);
-
-		b1 = pers.checkSmsSetExists(ta1);
-		assertTrue(b1);
-		smsSetX = pers.obtainSmsSet(ta1);
-		assertEquals(smsSetX.getInSystem(), 0);
-		assertEquals(smsSet.getInSystem(), 0);
-	}
-
-	@Test(groups = { "Mt" })
-	public void FreeSmsSetFailuredTest() throws Exception {
-
-		if (!this.cassandraDbInited)
-			return;
-
-		this.clearDatabase();
-		SmsSet smsSet = prepareDatabase();
-		Sms sms1 = smsSet.getSms(0);
-		Sms sms2 = smsSet.getSms(1);
-
-		Sms sms = smsSet.getSms(0);
-		this.sbb.startMessageDelivery(sms);
-
-//		this.sbb.freeSmsSetFailured(smsSet, ErrorCode.ABSENT_SUBSCRIBER);
+//		Sms sms1 = smsSet.getSms(0);
+//		assertEquals(sms1.getMessageId(), 1);
+//		Sms sms2 = smsSet.getSms(1);
+//		assertEquals(sms2.getMessageId(), 2);
+//		Sms sms3 = smsSet.getSms(2);
+//		assertNull(sms3);
 //
-//		boolean b1 = pers.checkSmsSetExists(ta1);
-//		assertFalse(b1);
-//
-//		Sms smsx1 = pers.obtainLiveSms(sms1.getDbId());
-//		Sms smsx2 = pers.obtainLiveSms(sms2.getDbId());
-//		assertNull(smsx1);
-//		assertNull(smsx2);
-//
-//		SmsProxy smsp1 = pers.obtainArchiveSms(sms1.getDbId());
-//		SmsProxy smsp2 = pers.obtainArchiveSms(sms2.getDbId());
-//
-//		assertEquals(smsp1.sms.getMessageId(), 1);
-//		assertEquals(smsp2.sms.getMessageId(), 2);
-//		assertEquals(smsp1.sms.getDeliveryCount(), 1);
-//		assertEquals(smsp2.sms.getDeliveryCount(), 0);
-//		assertEquals(smsp1.smStatus, 8);
-//		assertEquals(smsp2.smStatus, 8);
-	}
-
-	@Test(groups = { "Mt" })
-	public void RescheduleSmsSetTest() throws Exception {
-
-		if (!this.cassandraDbInited)
-			return;
-		SmscPropertiesManagement.getInstance("Test");
-
-		this.clearDatabase();
-		SmsSet smsSet = prepareDatabase();
-		Sms sms1 = smsSet.getSms(0);
-		Sms sms2 = smsSet.getSms(1);
-
-		Sms sms = smsSet.getSms(0);
-		this.sbb.startMessageDelivery(sms);
-
-//		this.sbb.rescheduleSmsSet(smsSet, ErrorCode.ABSENT_SUBSCRIBER, true);
-//
+//		// fetchSchedulableSms()
 //		boolean b1 = pers.checkSmsSetExists(ta1);
 //		assertTrue(b1);
+//		SmsSet smsSetX = pers.obtainSmsSet(ta1);
+//		assertEquals(smsSetX.getInSystem(), 2);
+//		assertEquals(smsSetX.getSmsCount(), 0);
+//		pers.fetchSchedulableSms(smsSetX);
+//		assertEquals(smsSetX.getSmsCount(), 2);
 //
-//		SmsSet smsSetx = pers.obtainSmsSet(ta1);
-//		assertEquals(smsSetx.getInSystem(), 1);
-//		assertEquals(smsSetx.getDueDelay(), 300);
-//		assertEquals(smsSetx.getStatus().getCode(), 8);
-//		assertTrue(smsSetx.isAlertingSupported());
+//		// startMessageDelivery()
+//		Sms smsa1 = smsSet.getSms(0);
+//		Sms smsx1 = pers.obtainLiveSms(sms1.getDbId());
+//		assertEquals(smsa1.getDeliveryCount(), 0);
+//		assertEquals(smsx1.getDeliveryCount(), 0);
+//		this.sbb.startMessageDelivery(smsa1);
+//		smsx1 = pers.obtainLiveSms(smsa1.getDbId());
+//		assertEquals(smsa1.getDeliveryCount(), 1);
+//		assertEquals(smsx1.getDeliveryCount(), 1);
+//		// archiveMessageAsDelivered(Sms sms);
+////		assertEquals(smsSet.getSmsCount(), 2);
+//		this.sbb.archiveMessageAsDelivered(smsa1);
+////		smsSet.removeFirstSms();
+////		assertEquals(smsSet.getSmsCount(), 1);
+//		smsx1 = pers.obtainLiveSms(sms1.getDbId());
+//		Sms smsx2 = pers.obtainLiveSms(sms2.getDbId());
+//		assertNull(smsx1);
+//		assertEquals(smsx2.getDeliveryCount(), 0);
+//		SmsProxy smsp1 = pers.obtainArchiveSms(sms1.getDbId());
+//		SmsProxy smsp2 = pers.obtainArchiveSms(sms2.getDbId());
+//		assertEquals(smsp1.sms.getDeliveryCount(), 1);
+//		assertEquals(smsp1.smStatus, 0);
+//		assertNull(smsp2);
 //
-//		this.sbb.rescheduleSmsSet(smsSet, ErrorCode.ABSENT_SUBSCRIBER, false);
+//		Sms smsa2 = smsSet.getSms(1);
+//		assertEquals(smsa2.getMessageId(), 2);
+//		assertNotNull(smsa2);
+//		this.sbb.startMessageDelivery(smsa2);
+//		this.sbb.archiveMessageAsDelivered(smsa2);
+////		smsSet.removeFirstSms();
+//		smsx1 = pers.obtainLiveSms(sms1.getDbId());
+//		smsx2 = pers.obtainLiveSms(sms2.getDbId());
+//		assertNull(smsx1);
+//		assertNull(smsx2);
+//		smsp1 = pers.obtainArchiveSms(sms1.getDbId());
+//		smsp2 = pers.obtainArchiveSms(sms2.getDbId());
+//		assertEquals(smsp1.sms.getDeliveryCount(), 1);
+//		assertEquals(smsp1.smStatus, 0);
+//		assertEquals(smsp2.sms.getDeliveryCount(), 1);
+//		assertEquals(smsp2.smStatus, 0);
 //
 //		b1 = pers.checkSmsSetExists(ta1);
 //		assertTrue(b1);
+//		this.sbb.freeSmsSetSucceded(smsSet);
+//		b1 = pers.checkSmsSetExists(ta1);
+//		assertFalse(b1);
+//		assertEquals(smsSet.getInSystem(), 0);
+//	}
 //
-//		smsSetx = pers.obtainSmsSet(ta1);
-//		assertEquals(smsSetx.getInSystem(), 1);
-//		assertEquals(smsSetx.getDueDelay(), 600);
-//		assertEquals(smsSetx.getStatus().getCode(), 8);
-//		assertFalse(smsSetx.isAlertingSupported());
-	}
-
-	private void clearDatabase() throws PersistenceException, IOException {
-
-		SmsSet smsSet_x1 = this.pers.obtainSmsSet(ta1);
-		this.pers.fetchSchedulableSms(smsSet_x1);
-
-		this.pers.deleteSmsSet(smsSet_x1);
-		int cnt = smsSet_x1.getSmsCount();
-		for (int i1 = 0; i1 < cnt; i1++) {
-			Sms sms = smsSet_x1.getSms(i1);
-			this.pers.deleteLiveSms(sms.getDbId());
-		}
-		this.pers.deleteSmsSet(smsSet_x1);
-	}
-
-	private SmsSet prepareDatabase() throws PersistenceException {
-		SmsSet smsSet = this.pers.obtainSmsSet(ta1);
-
-		Sms sms = this.prepareSms(smsSet, 1);
-		this.pers.createLiveSms(sms);
-		sms = this.prepareSms(smsSet, 2);
-		this.pers.createLiveSms(sms);
-
-		SmsSet res = this.pers.obtainSmsSet(ta1);
-		this.pers.fetchSchedulableSms(res);
-		curDate = new Date();
-		this.pers.setDeliveryStart(smsSet, curDate);
-		return res;
-	}
-
-	private Sms prepareSms(SmsSet smsSet, int num) {
-
-		Sms sms = new Sms();
-		sms.setSmsSet(smsSet);
-
-		sms.setDbId(UUID.randomUUID());
-		// sms.setDbId(id);
-		sms.setSourceAddr("4444");
-		sms.setSourceAddrTon(1);
-		sms.setSourceAddrNpi(1);
-		sms.setMessageId(8888888 + num);
-		sms.setMoMessageRef(102 + num);
-		
-		sms.setMessageId(num);
-
-		sms.setOrigEsmeName("esme_1");
-		sms.setOrigSystemId("sys_1");
-
-		sms.setSubmitDate(new Date());
-		// sms.setDeliveryDate(new GregorianCalendar(2013, 1, 15, 12, 15 +
-		// num).getTime());
-
-		// sms.setServiceType("serv_type__" + num);
-		sms.setEsmClass(3);
-		sms.setProtocolId(0);
-		sms.setPriority(0);
-		sms.setRegisteredDelivery(0);
-		sms.setReplaceIfPresent(0);
-		sms.setDataCoding(0);
-		sms.setDefaultMsgId(0);
-
-		sms.setShortMessage(this.msg.getBytes());
-
-		// sms.setScheduleDeliveryTime(new GregorianCalendar(2013, 1, 20, 10, 00
-		// + num).getTime());
-		// sms.setValidityPeriod(new GregorianCalendar(2013, 1, 23, 13, 33 +
-		// num).getTime());
-
-		// short tag, byte[] value, String tagName
-		// Tlv tlv = new Tlv((short) 5, new byte[] { (byte) (1 + num), 2, 3, 4,
-		// 5 });
-		// sms.getTlvSet().addOptionalParameter(tlv);
-		// tlv = new Tlv((short) 6, new byte[] { (byte) (6 + num), 7, 8 });
-		// sms.getTlvSet().addOptionalParameter(tlv);
-
-		return sms;
-	}
-
-	private void assertDateEq(Date d1, Date d2) {
-		// creating d3 = d1 + 2 min
-
-		long tm = d2.getTime();
-		tm -= 15 * 1000;
-		Date d3 = new Date(tm);
-
-		tm = d2.getTime();
-		tm += 15 * 1000;
-		Date d4 = new Date(tm);
-
-		assertTrue(d1.after(d3));
-		assertTrue(d1.before(d4));
-	}
+//	@Test(groups = { "Mt" })
+//	public void FreeSmsSetWhenSmsExistsTest() throws Exception {
+//
+//		if (!this.cassandraDbInited)
+//			return;
+//
+//		this.clearDatabase();
+//		SmsSet smsSet = prepareDatabase();
+//
+//		boolean b1 = pers.checkSmsSetExists(ta1);
+//		assertTrue(b1);
+//		SmsSet smsSetX = pers.obtainSmsSet(ta1);
+//		assertEquals(smsSetX.getInSystem(), 2);
+//
+//		this.sbb.freeSmsSetSucceded(smsSet);
+//
+//		b1 = pers.checkSmsSetExists(ta1);
+//		assertTrue(b1);
+//		smsSetX = pers.obtainSmsSet(ta1);
+//		assertEquals(smsSetX.getInSystem(), 0);
+//		assertEquals(smsSet.getInSystem(), 0);
+//	}
+//
+//	@Test(groups = { "Mt" })
+//	public void FreeSmsSetFailuredTest() throws Exception {
+//
+//		if (!this.cassandraDbInited)
+//			return;
+//
+//		this.clearDatabase();
+//		SmsSet smsSet = prepareDatabase();
+//		Sms sms1 = smsSet.getSms(0);
+//		Sms sms2 = smsSet.getSms(1);
+//
+//		Sms sms = smsSet.getSms(0);
+//		this.sbb.startMessageDelivery(sms);
+//
+////		this.sbb.freeSmsSetFailured(smsSet, ErrorCode.ABSENT_SUBSCRIBER);
+////
+////		boolean b1 = pers.checkSmsSetExists(ta1);
+////		assertFalse(b1);
+////
+////		Sms smsx1 = pers.obtainLiveSms(sms1.getDbId());
+////		Sms smsx2 = pers.obtainLiveSms(sms2.getDbId());
+////		assertNull(smsx1);
+////		assertNull(smsx2);
+////
+////		SmsProxy smsp1 = pers.obtainArchiveSms(sms1.getDbId());
+////		SmsProxy smsp2 = pers.obtainArchiveSms(sms2.getDbId());
+////
+////		assertEquals(smsp1.sms.getMessageId(), 1);
+////		assertEquals(smsp2.sms.getMessageId(), 2);
+////		assertEquals(smsp1.sms.getDeliveryCount(), 1);
+////		assertEquals(smsp2.sms.getDeliveryCount(), 0);
+////		assertEquals(smsp1.smStatus, 8);
+////		assertEquals(smsp2.smStatus, 8);
+//	}
+//
+//	@Test(groups = { "Mt" })
+//	public void RescheduleSmsSetTest() throws Exception {
+//
+//		if (!this.cassandraDbInited)
+//			return;
+//		SmscPropertiesManagement.getInstance("Test");
+//
+//		this.clearDatabase();
+//		SmsSet smsSet = prepareDatabase();
+//		Sms sms1 = smsSet.getSms(0);
+//		Sms sms2 = smsSet.getSms(1);
+//
+//		Sms sms = smsSet.getSms(0);
+//		this.sbb.startMessageDelivery(sms);
+//
+////		this.sbb.rescheduleSmsSet(smsSet, ErrorCode.ABSENT_SUBSCRIBER, true);
+////
+////		boolean b1 = pers.checkSmsSetExists(ta1);
+////		assertTrue(b1);
+////
+////		SmsSet smsSetx = pers.obtainSmsSet(ta1);
+////		assertEquals(smsSetx.getInSystem(), 1);
+////		assertEquals(smsSetx.getDueDelay(), 300);
+////		assertEquals(smsSetx.getStatus().getCode(), 8);
+////		assertTrue(smsSetx.isAlertingSupported());
+////
+////		this.sbb.rescheduleSmsSet(smsSet, ErrorCode.ABSENT_SUBSCRIBER, false);
+////
+////		b1 = pers.checkSmsSetExists(ta1);
+////		assertTrue(b1);
+////
+////		smsSetx = pers.obtainSmsSet(ta1);
+////		assertEquals(smsSetx.getInSystem(), 1);
+////		assertEquals(smsSetx.getDueDelay(), 600);
+////		assertEquals(smsSetx.getStatus().getCode(), 8);
+////		assertFalse(smsSetx.isAlertingSupported());
+//	}
+//
+//	private void clearDatabase() throws PersistenceException, IOException {
+//
+//		SmsSet smsSet_x1 = this.pers.obtainSmsSet(ta1);
+//		this.pers.fetchSchedulableSms(smsSet_x1);
+//
+//		this.pers.deleteSmsSet(smsSet_x1);
+//		int cnt = smsSet_x1.getSmsCount();
+//		for (int i1 = 0; i1 < cnt; i1++) {
+//			Sms sms = smsSet_x1.getSms(i1);
+//			this.pers.deleteLiveSms(sms.getDbId());
+//		}
+//		this.pers.deleteSmsSet(smsSet_x1);
+//	}
+//
+//	private SmsSet prepareDatabase() throws PersistenceException {
+//		SmsSet smsSet = this.pers.obtainSmsSet(ta1);
+//
+//		Sms sms = this.prepareSms(smsSet, 1);
+//		this.pers.createLiveSms(sms);
+//		sms = this.prepareSms(smsSet, 2);
+//		this.pers.createLiveSms(sms);
+//
+//		SmsSet res = this.pers.obtainSmsSet(ta1);
+//		this.pers.fetchSchedulableSms(res);
+//		curDate = new Date();
+//		this.pers.setDeliveryStart(smsSet, curDate);
+//		return res;
+//	}
+//
+//	private Sms prepareSms(SmsSet smsSet, int num) {
+//
+//		Sms sms = new Sms();
+//		sms.setSmsSet(smsSet);
+//
+//		sms.setDbId(UUID.randomUUID());
+//		// sms.setDbId(id);
+//		sms.setSourceAddr("4444");
+//		sms.setSourceAddrTon(1);
+//		sms.setSourceAddrNpi(1);
+//		sms.setMessageId(8888888 + num);
+//		sms.setMoMessageRef(102 + num);
+//		
+//		sms.setMessageId(num);
+//
+//		sms.setOrigEsmeName("esme_1");
+//		sms.setOrigSystemId("sys_1");
+//
+//		sms.setSubmitDate(new Date());
+//		// sms.setDeliveryDate(new GregorianCalendar(2013, 1, 15, 12, 15 +
+//		// num).getTime());
+//
+//		// sms.setServiceType("serv_type__" + num);
+//		sms.setEsmClass(3);
+//		sms.setProtocolId(0);
+//		sms.setPriority(0);
+//		sms.setRegisteredDelivery(0);
+//		sms.setReplaceIfPresent(0);
+//		sms.setDataCoding(0);
+//		sms.setDefaultMsgId(0);
+//
+//		sms.setShortMessage(this.msg.getBytes());
+//
+//		// sms.setScheduleDeliveryTime(new GregorianCalendar(2013, 1, 20, 10, 00
+//		// + num).getTime());
+//		// sms.setValidityPeriod(new GregorianCalendar(2013, 1, 23, 13, 33 +
+//		// num).getTime());
+//
+//		// short tag, byte[] value, String tagName
+//		// Tlv tlv = new Tlv((short) 5, new byte[] { (byte) (1 + num), 2, 3, 4,
+//		// 5 });
+//		// sms.getTlvSet().addOptionalParameter(tlv);
+//		// tlv = new Tlv((short) 6, new byte[] { (byte) (6 + num), 7, 8 });
+//		// sms.getTlvSet().addOptionalParameter(tlv);
+//
+//		return sms;
+//	}
+//
+//	private void assertDateEq(Date d1, Date d2) {
+//		// creating d3 = d1 + 2 min
+//
+//		long tm = d2.getTime();
+//		tm -= 15 * 1000;
+//		Date d3 = new Date(tm);
+//
+//		tm = d2.getTime();
+//		tm += 15 * 1000;
+//		Date d4 = new Date(tm);
+//
+//		assertTrue(d1.after(d3));
+//		assertTrue(d1.before(d4));
+//	}
 }

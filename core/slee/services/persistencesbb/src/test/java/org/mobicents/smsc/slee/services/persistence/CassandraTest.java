@@ -571,9 +571,9 @@ public class CassandraTest {
 				assertEquals(smsSet_b1.getInSystem(), 2);
 				assertNull(smsSet_b1.getStatus());
 				assertEquals(smsSet_b1.getDueDelay(), 0);
-				
+
 				// we must firstly mark smsSet as failured
-				this.sbb.setDeliveryFailure(smsSetSched2, ErrorCode.MEMORY_FULL, new GregorianCalendar(2013, 1, 15, 12, 15 + 4).getTime(), true);
+				this.sbb.setDeliveryFailure(smsSetSched2, ErrorCode.MEMORY_FULL, new GregorianCalendar(2013, 1, 15, 12, 15 + 4).getTime());
 
 				b1 = this.sbb.checkSmsSetExists(ta2);
 				assertTrue(b1);
@@ -582,7 +582,14 @@ public class CassandraTest {
 				assertEquals(smsSet_b2.getInSystem(), 0);
 				assertEquals(smsSet_b2.getStatus().getCode(), 17);
 				assertEquals(smsSet_b2.getDueDelay(), 0);
+				assertFalse(smsSetSched2.isAlertingSupported());
+				assertFalse(smsSet_b2.isAlertingSupported());
 
+				this.sbb.setAlertingSupported(smsSetSched2, true);
+				smsSet_b2 = this.sbb.obtainSmsSet(ta2);
+				assertTrue(smsSetSched2.isAlertingSupported());
+				assertTrue(smsSet_b2.isAlertingSupported());
+				
 				int year = new GregorianCalendar().get(GregorianCalendar.YEAR) - 1;
 				Date d4 = new GregorianCalendar(year, 1, 20, 10, 00).getTime();
 				this.sbb.setDeliveringProcessScheduled(smsSetSched2, d4, 900);
