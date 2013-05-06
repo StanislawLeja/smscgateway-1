@@ -41,6 +41,8 @@ import javax.slee.TransactionRequiredLocalException;
 import javax.slee.facilities.Tracer;
 
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
@@ -476,6 +478,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			throw new SmscPocessingException("DataCoding scheme does not supported (only 0 an 8 is supported): " + dcs, SmppExtraConstants.ESME_RINVDCS,
 					MAPErrorCode.systemFailure, null);
 		}
+		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
 		sms.setDataCoding(dcs);
 
 		sms.setOrigSystemId(origEsme.getSystemId());
@@ -498,6 +501,28 @@ public abstract class TxSmppServerSbb implements Sbb {
 			Tlv messagePaylod = event.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
 			if (messagePaylod != null) {
 				sms.setShortMessage(messagePaylod.getValue());
+			}
+		}
+
+		// checking max message length 
+		int lenSolid = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
+		int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
+		boolean udhPresent = (event.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
+		Tlv sarMsgRefNum = event.getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
+		Tlv sarTotalSegments = event.getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
+		Tlv sarSegmentSeqnum = event.getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
+		boolean segmentTlvFlag = (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null);
+		if (udhPresent || segmentTlvFlag) {
+			// here splitting by SMSC is not supported
+			if (sms.getShortMessage().length > lenSolid) {
+				throw new SmscPocessingException("Message length in bytes is too big for solid message: " + sms.getShortMessage().length + ">" + lenSolid,
+						SmppConstants.STATUS_INVPARLEN, MAPErrorCode.systemFailure, null);
+			}
+		} else {
+			// here splitting by SMSC is supported
+			if (sms.getShortMessage().length > lenSegmented * 255) {
+				throw new SmscPocessingException("Message length in bytes is too big for segmented message: " + sms.getShortMessage().length + ">" + lenSolid,
+						SmppConstants.STATUS_INVPARLEN, MAPErrorCode.systemFailure, null);
 			}
 		}
 

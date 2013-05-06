@@ -314,7 +314,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 	}
 
 	@Override
-	public void setDeliveryFailure(SmsSet smsSet, ErrorCode smStatus, Date lastDelivery, boolean alertingSupported) throws PersistenceException {
+	public void setDeliveryFailure(SmsSet smsSet, ErrorCode smStatus, Date lastDelivery) throws PersistenceException {
 
 		try {
 			Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
@@ -326,18 +326,34 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 					HFactory.createColumn(cc, smStatus.getCode(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 			cc = createLiveColumnComposite(smsSet, Schema.COLUMN_LAST_DELIVERY);
 			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, lastDelivery, SERIALIZER_COMPOSITE, SERIALIZER_DATE));
-			cc = createLiveColumnComposite(smsSet, Schema.COLUMN_ALERTING_SUPPORTED);
-			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-					HFactory.createColumn(cc, alertingSupported, SERIALIZER_COMPOSITE, SERIALIZER_BOOLEAN));
 
 			mutator.execute();
 
 			smsSet.setInSystem(0);
 			smsSet.setStatus(smStatus);
 			smsSet.setLastDelivery(lastDelivery);
-			smsSet.setAlertingSupported(alertingSupported);
 		} catch (Exception e) {
 			String msg = "Failed to setDeliverySuccess for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi()
+					+ "'!";
+			logger.severe(msg, e);
+			throw new PersistenceException(msg, e);
+		}
+	}
+
+	public void setAlertingSupported(SmsSet smsSet, boolean alertingSupported) throws PersistenceException{
+
+		try {
+			Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
+
+			Composite cc = createLiveColumnComposite(smsSet, Schema.COLUMN_ALERTING_SUPPORTED);
+			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
+					HFactory.createColumn(cc, alertingSupported, SERIALIZER_COMPOSITE, SERIALIZER_BOOLEAN));
+
+			mutator.execute();
+
+			smsSet.setAlertingSupported(alertingSupported);
+		} catch (Exception e) {
+			String msg = "Failed to setAlertingSupported for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi()
 					+ "'!";
 			logger.severe(msg, e);
 			throw new PersistenceException(msg, e);
