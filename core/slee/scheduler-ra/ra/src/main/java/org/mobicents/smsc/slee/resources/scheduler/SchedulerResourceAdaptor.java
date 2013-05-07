@@ -1,5 +1,6 @@
 package org.mobicents.smsc.slee.resources.scheduler;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -416,7 +417,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	}
 
 	protected List<SmsSet> fetchSchedulable() {
-		return null;
+		return new ArrayList<SmsSet>();
 	}
 
 	protected void markAsInSystem(SmsSet smsSet) {
