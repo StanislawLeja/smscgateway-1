@@ -43,12 +43,16 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
 import org.mobicents.protocols.ss7.map.api.MAPSmsTpduParameterFactory;
+import org.mobicents.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
+import org.mobicents.protocols.ss7.map.api.dialog.ProcedureCancellationReason;
+import org.mobicents.protocols.ss7.map.api.dialog.ResourceUnavailableReason;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
+import org.mobicents.protocols.ss7.tcap.asn.comp.Problem;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.slee.resource.map.MAPContextInterfaceFactory;
@@ -56,8 +60,15 @@ import org.mobicents.slee.resource.map.events.DialogAccept;
 import org.mobicents.slee.resource.map.events.DialogClose;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogNotice;
+import org.mobicents.slee.resource.map.events.DialogProviderAbort;
+import org.mobicents.slee.resource.map.events.DialogReject;
 import org.mobicents.slee.resource.map.events.DialogRelease;
 import org.mobicents.slee.resource.map.events.DialogRequest;
+import org.mobicents.slee.resource.map.events.DialogTimeout;
+import org.mobicents.slee.resource.map.events.DialogUserAbort;
+import org.mobicents.slee.resource.map.events.ErrorComponent;
+import org.mobicents.slee.resource.map.events.InvokeTimeout;
+import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.slee.services.persistence.ErrorCode;
 import org.mobicents.smsc.slee.services.persistence.MessageUtil;
 import org.mobicents.smsc.slee.services.persistence.Persistence;
@@ -79,7 +90,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	protected static final String MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION = "userResourceLimitation";
 	protected static final String MAP_USER_ABORT_CHOICE_UNKNOWN = "DialogUserAbort_Unknown";
 
-	private static final String CDR_SUCCESS_NO_REASON = "";
+	protected static final String CDR_SUCCESS_NO_REASON = "";
 
 	protected static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
@@ -125,9 +136,91 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	 * MAP Components Events
 	 */
 
+	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
+		if (this.logger.isInfoEnabled()) {
+			this.logger.info("Rx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
+		}
+	}
+
+	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
+		this.logger.severe("Rx :  onRejectComponent" + event);
+	}
+
+	protected String getRejectComponentReason(RejectComponent event) {
+		Problem problem = event.getProblem();
+		String reason = null;
+		switch (problem.getType()) {
+		case General:
+			reason = problem.getGeneralProblemType().toString();
+			break;
+		case Invoke:
+			reason = problem.getInvokeProblemType().toString();
+			break;
+		case ReturnResult:
+			reason = problem.getReturnResultProblemType().toString();
+			break;
+		case ReturnError:
+			reason = problem.getReturnErrorProblemType().toString();
+			break;
+		default:
+			reason = "RejectComponent_unknown_" + problem.getType();
+			break;
+		}
+
+		try {
+			event.getMAPDialog().close(false);
+		} catch (Exception e) {
+		}
+
+		return reason;
+	}
+
+	public void onInvokeTimeout(InvokeTimeout evt, ActivityContextInterface aci) {
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("Rx : onInvokeTimeout=" + evt);
+		}
+	}
+
 	/**
 	 * Dialog Events
 	 */
+
+	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("Rx : onDialogReject=" + evt);
+		}
+	}
+
+	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
+		this.logger.severe("Rx :  onDialogProviderAbort=" + evt);
+	}
+
+	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
+		this.logger.severe("Rx :  onDialogUserAbort=" + evt);
+	}
+
+	protected String getUserAbortReason(DialogUserAbort evt) {
+		MAPUserAbortChoice userReason = evt.getUserReason();
+		String reason = null;
+		if (userReason.isUserSpecificReason()) {
+			reason = MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON;
+		} else if (userReason.isUserResourceLimitation()) {
+			reason = MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION;
+		} else if (userReason.isResourceUnavailableReason()) {
+			ResourceUnavailableReason resourceUnavailableReason = userReason.getResourceUnavailableReason();
+			reason = resourceUnavailableReason.toString();
+		} else if (userReason.isProcedureCancellationReason()) {
+			ProcedureCancellationReason procedureCancellationReason = userReason.getProcedureCancellationReason();
+			reason = procedureCancellationReason.toString();
+		} else {
+			reason = MAP_USER_ABORT_CHOICE_UNKNOWN;
+		}
+		return reason;
+	}
+
+	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
+		this.logger.severe("Rx :  onDialogTimeout=" + evt);
+	}
 
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
@@ -243,7 +336,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 			logger.severe("Could not set SBB context:", ne);
 		}
 		// TODO : Handle proper error
-
 	}
 
 	@Override
@@ -290,7 +382,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	}
 
 	protected ISDNAddressString getCalledPartyISDNAddressString(String destinationAddress, int ton, int npi) {
-		// TODO save the ISDNAddressString in CMP to avoid creation everytime?
 		return this.mapParameterFactory.createISDNAddressString(AddressNature.getInstance(ton),
 				org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.getInstance(npi), destinationAddress);
 	}
@@ -398,7 +489,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 		if (smDeliveryOutcome != null) {
 			MAPApplicationContext mapApplicationContext;
-			this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(), smDeliveryOutcome);
+			this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(), smDeliveryOutcome, smsSet.getTargetId());
 		}
 	}
 
@@ -429,77 +520,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		CdrGenerator.generateCdr(sb.toString());
 	}
 
-//	private String getErrorComponentReason(MAPErrorMessage mapErrorMessage) {
-//		String reason = null;
-//		int errCode = mapErrorMessage.getErrorCode().intValue();
-//		switch (errCode) {
-//		case MAPErrorCode.systemFailure:
-//			reason = MAP_ERR_CODE_SYSTEM_FAILURE;
-//			break;
-//		case MAPErrorCode.dataMissing:
-//			reason = MAP_ERR_CODE_DATA_MISSING;
-//			break;
-//		case MAPErrorCode.unexpectedDataValue:
-//			reason = MAP_ERR_CODE_UNEXPECTED_DATA_VALUE;
-//			break;
-//		case MAPErrorCode.facilityNotSupported:
-//			reason = MAP_ERR_CODE_FACILITY_NOT_SUPPORTED;
-//			break;
-//		case MAPErrorCode.incompatibleTerminal:
-//			reason = MAP_ERR_CODE_INCOMPATIBLE_TERMINAL;
-//			break;
-//		case MAPErrorCode.resourceLimitation:
-//			reason = MAP_ERR_CODE_RESOURCE_LIMITATION;
-//			break;
-//		// case MAPErrorCode.noRoamingNumberAvailable:
-//		// reason = "noRoamingNumberAvailable";
-//		// break;
-//		// case MAPErrorCode.absentSubscriber:
-//		// reason = "absentSubscriber";
-//		// break;
-//		// case MAPErrorCode.busySubscriber:
-//		// reason = "busySubscriber";
-//		// break;
-//		// case MAPErrorCode.noSubscriberReply:
-//		// reason = "noSubscriberReply";
-//		// break;
-//		// case MAPErrorCode.callBarred:
-//		// reason = "callBarred";
-//		// break;
-//		// case MAPErrorCode.forwardingFailed:
-//		// reason = "forwardingFailed";
-//		// break;
-//		// case MAPErrorCode.orNotAllowed:
-//		// reason = "orNotAllowed";
-//		// break;
-//		// case MAPErrorCode.forwardingViolation:
-//		// reason = "forwardingViolation";
-//		// break;
-//		// case MAPErrorCode.cugReject:
-//		// reason = "cugReject";
-//		// break;
-//		case MAPErrorCode.subscriberBusyForMTSMS:
-//			reason = MAP_ERR_CODE_SUBSCRIBER_BUSY_FOR_MTSMS;
-//			break;
-//		case MAPErrorCode.smDeliveryFailure:
-//			MAPErrorMessageSMDeliveryFailure mapErrorMessageSMDeliveryFailure = mapErrorMessage
-//					.getEmSMDeliveryFailure();
-//			SMEnumeratedDeliveryFailureCause smEnumeratedDeliveryFailureCause = mapErrorMessageSMDeliveryFailure
-//					.getSMEnumeratedDeliveryFailureCause();
-//			reason = MAP_ERR_CODE_SM_DELIVERY_FAILURE + smEnumeratedDeliveryFailureCause.toString();
-//			break;
-//		case MAPErrorCode.messageWaitingListFull:
-//			reason = MAP_ERR_CODE_MESSAGE_WAITING_LIST_FULL;
-//			break;
-//		case MAPErrorCode.absentSubscriberSM:
-//			reason = MAP_ERR_CODE_ABSENT_SUBSCRIBER_SM;
-//			break;
-//		default:
-//			reason = MAP_ERR_CODE_UNKNOWN + errCode;
-//		}
-//		return reason;
-//	}
-
 	public abstract void doSetSmsDeliveryData(SmsDeliveryData smsDeliveryData);
 
 	public abstract SmsDeliveryData doGetSmsDeliveryData();
@@ -512,26 +532,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 	public abstract InformServiceCenterContainer doGetInformServiceCenterContainer();
 
-
-	/**
-	 * Looking into database if new messages have been added into a database
-	 * and load them into smsSet
-	 * @param smsSet
-	 */
-//	protected void fetchNewerMessages(SmsSet smsSet) {
-//
-//		try {
-//			this.getStore().fetchSchedulableSms(smsSet);
-//		} catch (TransactionRequiredLocalException e) {
-//			this.logger.severe("TransactionRequiredLocalException when fetchSchedulableSms(smsSet)" + e.getMessage(), e);
-//		} catch (SLEEException e) {
-//			this.logger.severe("SLEEException when fetchSchedulableSms(smsSet)" + e.getMessage(), e);
-//		} catch (CreateException e) {
-//			this.logger.severe("CreateException when fetchSchedulableSms(smsSet)" + e.getMessage(), e);
-//		} catch (PersistenceException e) {
-//			this.logger.severe("PersistenceException when fetchSchedulableSms(smsSet)" + e.getMessage(), e);
-//		}
-//	}
 
 	/**
 	 * Mark a message that its delivery has been started
@@ -552,26 +552,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 			this.logger.severe("PersistenceException when setDeliveryStart(sms)" + e.getMessage(), e);
 		}
 	}
-
-	/**
-	 * Move sms from LIVE_SMS datatbase into ARCHIVE database as delivered
-	 * 
-	 * @param sms
-	 */
-//	protected void archiveMessageAsDelivered(Sms sms) {
-//		try {
-//			Date deliveryDate = new Date();
-//			this.getStore().archiveDeliveredSms(sms, deliveryDate);
-//		} catch (TransactionRequiredLocalException e) {
-//			this.logger.severe("TransactionRequiredLocalException when archiveDeliveredSms(sms)" + e.getMessage(), e);
-//		} catch (SLEEException e) {
-//			this.logger.severe("SLEEException when archiveDeliveredSms(sms)" + e.getMessage(), e);
-//		} catch (CreateException e) {
-//			this.logger.severe("CreateException when archiveDeliveredSms(sms)" + e.getMessage(), e);
-//		} catch (PersistenceException e) {
-//			this.logger.severe("PersistenceException when archiveDeliveredSms(sms)" + e.getMessage(), e);
-//		}
-//	}
 
 	/**
 	 * remove smsSet from LIVE database after all messages has been delivered
@@ -629,34 +609,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	}
 
 	/**
-	 * archive sms if it's validityPeriod is over
-	 * 
-	 * @param sms
-	 */
-//	protected void archiveFailuredSms(Sms sms) {
-//
-//		Persistence pers;
-//		try {
-//			pers = this.getStore();
-//		} catch (TransactionRequiredLocalException e1) {
-//			this.logger.severe("TransactionRequiredLocalException when archiveFailuredSms(Sms sms)" + e1.getMessage(), e1);
-//			return;
-//		} catch (SLEEException e1) {
-//			this.logger.severe("SLEEException when archiveFailuredSms(Sms sms)" + e1.getMessage(), e1);
-//			return;
-//		} catch (CreateException e1) {
-//			this.logger.severe("CreateException when archiveFailuredSms(Sms sms)" + e1.getMessage(), e1);
-//			return;
-//		}
-//
-//		try {
-//			pers.archiveFailuredSms(sms);
-//		} catch (PersistenceException e) {
-//			this.logger.severe("PersistenceException when archiveFailuredSms(Set sms)" + e.getMessage(), e);
-//		}
-//	}
-
-	/**
 	 * make new schedule time for smsSet after temporary failure
 	 * 
 	 * @param smsSet
@@ -668,23 +620,12 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 			synchronized (lock) {
 
 				try {
-//					Date lastDelivery = new Date();
-//					pers.setDeliveryFailure(smsSet, smStatus, lastDelivery, false);
-
-//					SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 					int prevDueDelay = smsSet.getDueDelay();
 					int newDueDelay;
 					if (busySuscriber) {
 						newDueDelay = MessageUtil.computeDueDelaySubscriberBusy();
 					} else {
 						newDueDelay = MessageUtil.computeNextDueDelay(prevDueDelay);
-//						if (prevDueDelay == 0) {
-//							newDueDelay = smscPropertiesManagement.getSecondDueDelay();
-//						} else {
-//							newDueDelay = prevDueDelay * smscPropertiesManagement.getDueDelayMultiplicator() / 100;
-//							if (newDueDelay > smscPropertiesManagement.getMaxDueDelay())
-//								newDueDelay = smscPropertiesManagement.getMaxDueDelay();
-//						}
 					}
 
 					Date newDueDate = new Date(new Date().getTime() + newDueDelay * 1000);

@@ -585,9 +585,8 @@ public class CassandraTest {
 				assertFalse(smsSetSched2.isAlertingSupported());
 				assertFalse(smsSet_b2.isAlertingSupported());
 
-				this.sbb.setAlertingSupported(smsSetSched2, true);
+				this.sbb.setAlertingSupported(smsSetSched2.getTargetId(), true);
 				smsSet_b2 = this.sbb.obtainSmsSet(ta2);
-				assertTrue(smsSetSched2.isAlertingSupported());
 				assertTrue(smsSet_b2.isAlertingSupported());
 				
 				int year = new GregorianCalendar().get(GregorianCalendar.YEAR) - 1;

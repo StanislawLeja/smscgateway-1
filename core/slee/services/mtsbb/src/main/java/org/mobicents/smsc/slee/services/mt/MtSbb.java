@@ -42,9 +42,6 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPAbortProviderReason;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
-import org.mobicents.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
-import org.mobicents.protocols.ss7.map.api.dialog.ProcedureCancellationReason;
-import org.mobicents.protocols.ss7.map.api.dialog.ResourceUnavailableReason;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessageAbsentSubscriber;
@@ -75,6 +72,7 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.TypeOfNumber;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeaderElement;
 import org.mobicents.protocols.ss7.map.service.sms.SmsSignalInfoImpl;
+import org.mobicents.protocols.ss7.map.smstpdu.AbsoluteTimeStampImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.AddressFieldImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.SmsDeliverTpduImpl;
@@ -83,7 +81,6 @@ import org.mobicents.protocols.ss7.map.smstpdu.UserDataImpl;
 import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextName;
-import org.mobicents.protocols.ss7.tcap.asn.comp.Problem;
 import org.mobicents.slee.SbbLocalObjectExt;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogProviderAbort;
@@ -91,7 +88,6 @@ import org.mobicents.slee.resource.map.events.DialogReject;
 import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
-import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.slee.services.persistence.ErrorCode;
 import org.mobicents.smsc.slee.services.persistence.MessageUtil;
@@ -123,11 +119,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	 * Components Events override from MtCommonSbb that we care
 	 */
 
+	@Override
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
-
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
-		}
+		super.onErrorComponent(event, aci);
 
 		MAPErrorMessage mapErrorMessage = event.getMAPErrorMessage();
 		if (mapErrorMessage.isEmSubscriberBusyForMtSms()) {
@@ -190,49 +184,21 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		}
 	}
 
+	@Override
+	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
+		super.onRejectComponent(event, aci);
+
+		String reason = this.getRejectComponentReason(event);
+
+		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
+				"onRejectComponent after MtForwardSM Request: " + reason != null ? reason.toString() : "");
+	}
+
 	/**
 	 * Dialog Events override from MtCommonSbb that we care
 	 */
-	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogProviderAbort=" + evt);
 
-		MAPAbortProviderReason abortProviderReason = evt.getAbortProviderReason();
-
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM,
-				"onDialogProviderAbort after MtForwardSM Request: " + abortProviderReason != null ? abortProviderReason.toString() : "");
-	}
-
-	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogUserAbort=" + evt);
-
-		MAPUserAbortChoice userReason = evt.getUserReason();
-		String reason = null;
-		if (userReason.isUserSpecificReason()) {
-			reason = MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON;
-		} else if (userReason.isUserResourceLimitation()) {
-			reason = MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION;
-		} else if (userReason.isResourceUnavailableReason()) {
-			ResourceUnavailableReason resourceUnavailableReason = userReason.getResourceUnavailableReason();
-			reason = resourceUnavailableReason.toString();
-		} else if (userReason.isProcedureCancellationReason()) {
-			ProcedureCancellationReason procedureCancellationReason = userReason.getProcedureCancellationReason();
-			reason = procedureCancellationReason.toString();
-		} else {
-			reason = MAP_USER_ABORT_CHOICE_UNKNOWN;
-		}
-
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM,
-				"onDialogUserAbort after MtForwardSM Request: " + reason != null ? reason.toString() : "");
-	}
-
-	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
-		// TODO: may be it is not a permanent failure case ???
-		
-		this.logger.severe("Rx :  onDialogTimeout=" + evt);
-
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM, "onDialogTimeout after MtForwardSM Request");
-	}
-
+	@Override
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
 
 		MAPRefuseReason mapRefuseReason = evt.getRefuseReason();
@@ -300,53 +266,43 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			}
 		}
 
-		if (logger.isWarningEnabled()) {
-			this.logger.warning("Rx : Mt onDialogReject=" + evt);
-		}
+		super.onDialogReject(evt, aci);
 
 		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM,
 				"onDialogReject after MT Request: " + mapRefuseReason != null ? mapRefuseReason.toString() : "");
 
 	}
 
-	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onRejectComponent" + event);
+	@Override
+	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
+		super.onDialogProviderAbort(evt, aci);
 
-		Problem problem = event.getProblem();
-		String reason = null;
-		switch (problem.getType()) {
-		case General:
-			reason = problem.getGeneralProblemType().toString();
-			break;
-		case Invoke:
-			reason = problem.getInvokeProblemType().toString();
-			break;
-		case ReturnResult:
-			reason = problem.getReturnResultProblemType().toString();
-			break;
-		case ReturnError:
-			reason = problem.getReturnErrorProblemType().toString();
-			break;
-		default:
-			reason = "RejectComponent_unknown_" + problem.getType();
-			break;
-		}
+		MAPAbortProviderReason abortProviderReason = evt.getAbortProviderReason();
 
-		try {
-			event.getMAPDialog().close(false);
-		} catch (Exception e) {
-		}
-
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
-				"onRejectComponent after MtForwardSM Request: " + reason != null ? reason.toString() : "");
+		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM,
+				"onDialogProviderAbort after MtForwardSM Request: " + abortProviderReason != null ? abortProviderReason.toString() : "");
 	}
 
-	public void onInvokeTimeout(InvokeTimeout evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onInvokeTimeout in MtSbb" + evt);
-		}
+	@Override
+	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
+		super.onDialogUserAbort(evt, aci);
+
+		String reason = getUserAbortReason(evt);
+
+		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM,
+				"onDialogUserAbort after MtForwardSM Request: " + reason != null ? reason.toString() : "");
 	}
 
+	@Override
+	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
+		// TODO: may be it is not a permanent failure case ???
+
+		super.onDialogTimeout(evt, aci);
+
+		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM, "onDialogTimeout after MtForwardSM Request");
+	}
+
+	@Override
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
 		super.onDialogDelimiter(evt, aci);
 
@@ -439,8 +395,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	/**
 	 * SBB Local Object Methods
 	 * 
-	 * @throws MAPException
 	 */
+
 	@Override
 	public void setupMtForwardShortMessageRequest(ISDNAddressString networkNode, IMSI imsi, LMSI lmsi) {
 		if (this.logger.isInfoEnabled()) {
@@ -475,11 +431,11 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		}
 	}
 
-	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi, SMDeliveryOutcome sMDeliveryOutcome) {
+	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi, SMDeliveryOutcome sMDeliveryOutcome, String targetId) {
 
 		SbbLocalObjectExt sbbLocalObject = this.sbbContext.getSbbLocalObject().getParent();
 		SriSbbLocalObject sriSbb = (SriSbbLocalObject) sbbLocalObject;
-		sriSbb.setupReportSMDeliveryStatusRequest(destinationAddress, ton, npi, sMDeliveryOutcome);
+		sriSbb.setupReportSMDeliveryStatusRequest(destinationAddress, ton, npi, sMDeliveryOutcome, targetId);
 	}
 
 	/**
@@ -535,14 +491,6 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	public abstract void setNetworkNode(SccpAddress sccpAddress);
 
 	public abstract SccpAddress getNetworkNode(); 
-	/**
-	 * Set the IMSI of destination MSISDN
-	 * 
-	 * @param imsi
-	 */
-	public abstract void setServiceCentreTimeStamp(AbsoluteTimeStamp serviceCentreTimeStamp);
-
-	public abstract AbsoluteTimeStamp getServiceCentreTimeStamp();
 
 	/**
 	 * Set the counter as which SMS is sent. Max sending can be equal to
@@ -577,18 +525,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	public abstract SM_RP_OA getSmRpOa();
 
 	/**
-	 * DataCodingScheme of current SMS, only GSM 7bit, 8bit and UCS2 is
-	 * supported
-	 * 
-	 * @param dataCodingScheme
-	 */
-	public abstract void setDataCodingScheme(DataCodingScheme dataCodingScheme);
-
-	public abstract DataCodingScheme getDataCodingScheme();
-
-	/**
 	 * Private Methods
 	 */
+
 	private void handleSmsResponse(MAPDialogSms mapDialogSms, ActivityContextInterface aci) {
 
 		// checking if there are yet message segments
@@ -637,7 +576,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		Sms sms = smsSet.getSms(currentMsgNum);
 		Date deliveryDate = new Date();
 		try {
-			generateCdr(sms, CdrGenerator.CDR_SUCCESS, "");
+			generateCdr(sms, CdrGenerator.CDR_SUCCESS, MtCommonSbb.CDR_SUCCESS_NO_REASON);
 			pers.archiveDeliveredSms(sms, deliveryDate);
 		} catch (PersistenceException e1) {
 			this.logger.severe("PersistenceException when archiveDeliveredSms() in handleSmsResponse(): " + e1.getMessage(), e1);
@@ -690,7 +629,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				&& informServiceCenterContainer.getMwStatus().getScAddressNotIncluded() == false) {
 			// sending a report to HLR of a success delivery
 			this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
-					SMDeliveryOutcome.successfulTransfer);
+					SMDeliveryOutcome.successfulTransfer, smsSet.getTargetId());
 		}
 	}
 
@@ -720,44 +659,6 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		}
 
 		return res;
-
-//		byte[] slicedMessage = null;
-//		int srcPos = 0;
-//		int destPos = 0;
-//		int length = 0;
-//		switch (dataCodingScheme.getCharacterSet()) {
-//		case GSM7:
-//			srcPos = (mesageSegmentNumber - 1) * 152;
-//			if((shortMessage.length - srcPos) > -1){
-//				length = Math.min(152, (shortMessage.length - srcPos));
-//			} else {
-//				length = shortMessage.length;
-//				srcPos = 0; //This is case for split sms in SMPP
-//			}
-//				
-//			break;
-//		case GSM8:
-//			srcPos = (mesageSegmentNumber - 1) * 134;
-//			if((shortMessage.length - srcPos) > -1){
-//				length = Math.min(134, (shortMessage.length - srcPos));
-//			} else {
-//				length = shortMessage.length;
-//				srcPos = 0; //This is case for split sms in SMPP
-//			}
-//			break;
-//		case UCS2:
-//			srcPos = (mesageSegmentNumber - 1) * 134;
-//			if((shortMessage.length - srcPos) > -1){
-//				length = Math.min(134, (shortMessage.length - srcPos));
-//			} else {
-//				length = shortMessage.length;
-//				srcPos = 0; //This is case for split sms in SMPP
-//			}			
-//			break;
-//		}
-//		slicedMessage = new byte[length];
-//		System.arraycopy(shortMessage, srcPos, slicedMessage, destPos, length);
-//		return slicedMessage;
 	}
 
 	private SmsSignalInfo createSignalInfo(Sms sms, byte[] shortMessage, boolean moreMessagesToSend, int messageReferenceNumber, int messageSegmentCount,
@@ -803,9 +704,15 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 		ud = new UserDataImpl(msg, dataCodingScheme, userDataHeader, null);
 
+		Date submitDate = sms.getSubmitDate();
+
+		// TODO : TimeZone should be configurable
+		AbsoluteTimeStamp serviceCentreTimeStamp = new AbsoluteTimeStampImpl((submitDate.getYear() % 100), (submitDate.getMonth() + 1), submitDate.getDate(),
+				submitDate.getHours(), submitDate.getMinutes(), submitDate.getSeconds(), (submitDate.getTimezoneOffset() / 15));
+
 		SmsDeliverTpduImpl smsDeliverTpduImpl = new SmsDeliverTpduImpl(moreMessagesToSend, false, ((sms.getEsmClass() & 0x80) != 0), false,
 				this.getSmsTpduOriginatingAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr()),
-				this.mapSmsTpduParameterFactory.createProtocolIdentifier(sms.getProtocolId()), this.getServiceCentreTimeStamp(), ud);
+				this.mapSmsTpduParameterFactory.createProtocolIdentifier(sms.getProtocolId()), serviceCentreTimeStamp, ud);
 
 		SmsSignalInfoImpl smsSignalInfo = new SmsSignalInfoImpl(smsDeliverTpduImpl, null);
 
@@ -832,8 +739,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			moreMessagesToSend = true;
 		}
 
+		MAPDialogSms mapDialogSms = null;
 		try {
-			MAPDialogSms mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext, this.getServiceCenterSccpAddress(), null,
+			mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext, this.getServiceCenterSccpAddress(), null,
 					this.getNetworkNode(), null);
 
 			ActivityContextInterface mtFOSmsDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);
@@ -910,217 +818,16 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			mapDialogSms.send();
 
 		} catch (MAPException e) {
+			if (mapDialogSms != null)
+				mapDialogSms.release();
 			throw new SmscPocessingException("MAPException when sending MtForwardSM", -1, -1, null, e);
 		} catch (TlvConvertException e) {
+			if (mapDialogSms != null)
+				mapDialogSms.release();
 			throw new SmscPocessingException("TlvConvertException when sending MtForwardSM", -1, -1, null, e);
 		}
 	}
 
-	
-	
-	
-	
-	
-	
-	
-//	private void sendPartMtSms(MAPDialogSms mapDialogSms, Sms sms, SM_RP_DA sm_RP_DA, SM_RP_OA sm_RP_OA,
-//			DataCodingScheme dataCodingScheme, AbsoluteTimeStamp serviceCentreTimeStamp, int mesageSegmentCount,
-//			int mesageSegmentNumber, int messageReferenceNumber) throws MAPException {
-//
-//		MAPApplicationContext mapApplicationContext = mapDialogSms.getApplicationContext();
-//		byte[] shortMessage = sms.getShortMessage();
-//
-//		// TODO : Can this be constant?
-//		ProtocolIdentifierImpl pi = new ProtocolIdentifierImpl(0);
-//		UserDataHeader userDataHeader = null;
-//		boolean moreMessagesToSend = false;
-//
-//		if (mesageSegmentCount != 0) {
-//			if (mesageSegmentCount > mesageSegmentNumber) {
-//				// Check if we have more messages to be sent
-//				moreMessagesToSend = true;
-//			}
-//
-//			userDataHeader = this.mapSmsTpduParameterFactory.createUserDataHeader();
-//			UserDataHeaderElement concatenatedShortMessagesIdentifier = this.mapSmsTpduParameterFactory
-//					.createConcatenatedShortMessagesIdentifier(false, messageReferenceNumber, mesageSegmentCount,
-//							mesageSegmentNumber);
-//			userDataHeader.addInformationElement(concatenatedShortMessagesIdentifier);
-//
-//			// Now slice message
-//			shortMessage = this.sliceMessage(shortMessage, dataCodingScheme, mesageSegmentNumber);
-//		}
-//
-//		UserDataImpl ud = new UserDataImpl(new String(shortMessage), dataCodingScheme, userDataHeader, null);
-//
-//		SmsDeliverTpduImpl smsDeliverTpduImpl = new SmsDeliverTpduImpl(moreMessagesToSend, false, false, true,
-//				this.getSmsTpduOriginatingAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(),
-//						sms.getSourceAddr()), pi, serviceCentreTimeStamp, ud);
-//
-//		SmsSignalInfoImpl SmsSignalInfoImpl = new SmsSignalInfoImpl(smsDeliverTpduImpl, null);
-//
-//		switch (mapApplicationContext.getApplicationContextVersion()) {
-//		case version3:
-//			mapDialogSms.addMtForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, SmsSignalInfoImpl, false, null);
-//			break;
-//		case version2:
-//			mapDialogSms.addForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, SmsSignalInfoImpl, false);
-//			break;
-//		default:
-//			// TODO take care of this, but should this ever happen?
-//			logger.severe(String.format("Trying to send Mt SMS with version=%d. This is serious!!",
-//					mapApplicationContext.getApplicationContextVersion().getVersion()));
-//			break;
-//		}
-//
-//		// Lets increase the mesageSegmentNumber for next cycle
-//		this.setMessageSegmentNumber(mesageSegmentNumber + 1);
-//
-//		ActivityContextInterface mtFOSmsDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);
-//		mtFOSmsDialogACI.attach(this.sbbContext.getSbbLocalObject());
-//
-//		mapDialogSms.send();
-//	}
-//
-//	private void sendMtSms2(MAPApplicationContext mapApplicationContext, MessageProcessingState messageProcessingStatem) {
-//		SmsDeliveryData smsDeliveryData = this.doGetSmsDeliveryData();
-//		if (smsDeliveryData == null) {
-//			this.logger.severe("SmsDeliveryData CMP missed");
-//			return;
-//		}
-//		SmsSet smsSet = smsDeliveryData.getSmsSet();
-//		if (smsSet == null) {
-//			this.logger.severe("SmsDeliveryData-SmsSet CMP missed");
-//			return;
-//		}
-//		int msgNum = this.doGetCurrentMsgNum();
-//		Sms sms = smsSet.getSms(msgNum);
-//
-//		if (sms == null) {
-//			this.logger.severe("SmsDeliveryData-sms is missed in CMP");
-//			return;
-//		}
-//
-//		MAPDialogSms mapDialogSms = null;
-//		try {
-//			mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,
-//					this.getServiceCenterSccpAddress(), null, this.getNetworkNode(), null);
-//
-//			SM_RP_DA sm_RP_DA = this.getSmRpDa();
-//
-//			SM_RP_OA sm_RP_OA = this.getSmRpOa();
-//
-//			DataCodingScheme dataCodingScheme = this.getDataCodingScheme();
-//			if (dataCodingScheme == null) {
-//				dataCodingScheme = this.mapSmsTpduParameterFactory.createDataCodingScheme(sms.getDataCoding());
-//				this.setDataCodingScheme(dataCodingScheme);
-//			}
-//
-//			// TODO : Should this be SubmitDate or currentDate?
-//			AbsoluteTimeStamp serviceCentreTimeStamp = this.getServiceCentreTimeStamp();
-//
-//			if (serviceCentreTimeStamp == null) {
-//				Date submitDate = sms.getSubmitDate();
-//
-//				// TODO : TimeZone should be configurable
-//				serviceCentreTimeStamp = new AbsoluteTimeStampImpl((submitDate.getYear() % 100),
-//						(submitDate.getMonth() + 1), submitDate.getDate(), submitDate.getHours(),
-//						submitDate.getMinutes(), submitDate.getSeconds(), (submitDate.getTimezoneOffset() / 15));
-//
-//				this.setServiceCentreTimeStamp(serviceCentreTimeStamp);
-//			}
-//
-//			byte[] shortMessage = sms.getShortMessage();
-//
-//			int mesageSegmentCount = this.getMessageSegmentCount();
-//			int mesageSegmentNumber = this.getMessageSegmentNumber();
-//			int messageReferenceNumber = this.getMessageReferenceNumber();
-//			
-//			Tlv sarMsgRefNum = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
-//			Tlv sarTotalSegments = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
-//			Tlv sarSegmentSeqnum = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
-//
-//			
-//			if (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null) {
-//				mesageSegmentCount = sarTotalSegments.getValueAsUnsignedByte();
-//				mesageSegmentNumber = sarSegmentSeqnum.getValueAsUnsignedByte();
-//				messageReferenceNumber = sarMsgRefNum.getValueAsUnsignedShort();
-//			} else {
-//				// How many sliced SMS to be sent
-//
-//				if (mesageSegmentCount == 0) {
-//
-//					// Counter of which SMS is to be delivered now. Starts from
-//					// 1
-//					mesageSegmentNumber = 1;
-//
-//					// TODO messageReferenceNumber should be generated
-//					messageReferenceNumber = 1;
-//
-//
-//					switch (dataCodingScheme.getCharacterSet()) {
-//					case GSM7:
-//						if (shortMessage.length > 160) {
-//							// we need concatination. Max 152
-//							mesageSegmentCount = shortMessage.length / 152;
-//							if (shortMessage.length % 152 != 0) {
-//								mesageSegmentCount++;
-//							}
-//						}
-//						break;
-//					case GSM8:
-//						if (shortMessage.length > 140) {
-//							// we need concatination. Max 134
-//							if (shortMessage.length % 134 != 0) {
-//								mesageSegmentCount++;
-//							}
-//						}
-//						break;
-//					case UCS2:
-//						if (shortMessage.length > 140) {
-//							// we need concatination. Max 134
-//							if (shortMessage.length % 134 != 0) {
-//								mesageSegmentCount++;
-//							}
-//						}
-//						break;
-//					}
-//
-//					this.setMessageSegmentCount(mesageSegmentCount);
-//					this.setMessageSegmentNumber(mesageSegmentNumber);
-//					this.setMessageReferenceNumber(messageReferenceNumber);
-//				}
-//			}
-//
-//			// TODO : Take care of esm_class to include UDHI. See SMPP specs
-//
-//			this.sendPartMtSms(mapDialogSms, sms, sm_RP_DA, sm_RP_OA, dataCodingScheme, serviceCentreTimeStamp,
-//					mesageSegmentCount, mesageSegmentNumber, messageReferenceNumber);
-//
-//		} catch (MAPException e) {
-//			// TODO : Take care of error
-//			logger.severe("Error while trying to send MtForwardShortMessageRequestIndication", e);
-//			// something horrible, release MAPDialog and free resources
-//			if (mapDialogSms != null) {
-//				mapDialogSms.release();
-//			}
-//
-////			MtActivityContextInterface mtSbbActivityContextInterface = this.asSbbActivityContextInterface(this
-////					.getNullActivityEventContext().getActivityContextInterface());
-////			this.resumeNullActivityEventDelivery(mtSbbActivityContextInterface, this.getNullActivityEventContext());
-//		} catch (TlvConvertException e) {
-//			// TODO : Take care of error
-//			logger.severe("TlvConvertException while trying to send MtForwardShortMessageRequestIndication", e);
-//			// something horrible, release MAPDialog and free resources
-//			if (mapDialogSms != null) {
-//				mapDialogSms.release();
-//			}
-//
-////			MtActivityContextInterface mtSbbActivityContextInterface = this.asSbbActivityContextInterface(this
-////					.getNullActivityEventContext().getActivityContextInterface());
-////			this.resumeNullActivityEventDelivery(mtSbbActivityContextInterface, this.getNullActivityEventContext());
-//		}
-//	}
 
 	private MAPApplicationContext getMtFoSMSMAPApplicationContext(MAPApplicationContextVersion mapApplicationContextVersion) {
 
@@ -1129,12 +836,6 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		} else {
 			return MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgMTRelayContext, mapApplicationContextVersion);
 		}
-
-//		if (this.mtFoSMSMAPApplicationContext == null) {
-//			this.mtFoSMSMAPApplicationContext = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgMTRelayContext,
-//					this.maxMAPApplicationContextVersion);
-//		}
-//		return this.mtFoSMSMAPApplicationContext;
 	}
 
 	private SccpAddress getMSCSccpAddress(ISDNAddressString networkNodeNumber) {

@@ -22,26 +22,58 @@
 
 package org.mobicents.smsc.slee.services.mt;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 import javax.slee.ChildRelation;
+import javax.slee.CreateException;
+import javax.slee.SLEEException;
+import javax.slee.SbbLocalObject;
+import javax.slee.TransactionRequiredLocalException;
+
+import org.mobicents.protocols.ss7.map.MAPParameterFactoryImpl;
+import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
+import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
+import org.mobicents.protocols.ss7.map.api.MAPProvider;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.service.sms.SendRoutingInfoForSMResponseImpl;
 import org.mobicents.slee.ChildRelationExt;
+import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.slee.services.persistence.CassandraPersistenceSbbProxy;
+import org.mobicents.smsc.slee.services.persistence.MAPProviderProxy;
+import org.mobicents.smsc.slee.services.persistence.Persistence;
+import org.mobicents.smsc.slee.services.persistence.TraceProxy;
 
 /**
  * 
  * @author sergey vetyutnev
  * 
  */
-public class SriSbbProxy extends SriSbb {
+public class SriSbbProxy extends SriSbb implements ChildRelation {
 
-	public SriSbbProxy(CassandraPersistenceSbbProxy pers) {
-		this.persistence = pers;
+	private CassandraPersistenceSbbProxy cassandraSbb;
+	private MtSbbProxy mtSbb;
+
+	public SriSbbProxy(CassandraPersistenceSbbProxy pers, MtSbbProxy mtSbb) {
+		this.cassandraSbb = pers;
+		this.mtSbb = mtSbb;
+		this.logger = new TraceProxy();
+
+		this.mapProvider = new MAPProviderProxy();
+		this.mapParameterFactory = new MAPParameterFactoryImpl();
+		this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement.getMaxMapVersion());
+		this.mapAcif = new MAPContextInterfaceFactoryProxy();
+		this.sbbContext = new SbbContextExtProxy();
+	}
+
+	@Override
+	public Persistence getStore() {
+		return cassandraSbb;
 	}
 
 	@Override
 	public ChildRelation getMtSbb() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.mtSbb;
 	}
 
 	@Override
@@ -50,50 +82,128 @@ public class SriSbbProxy extends SriSbb {
 		return null;
 	}
 
+	
+	private SendRoutingInfoForSMResponseImpl sendRoutingInfoForSMResponse;
+	private int sriMapVersion;
+	private MAPErrorMessage errorContainer;
+	
 	@Override
 	public void setSendRoutingInfoForSMResponse(SendRoutingInfoForSMResponseImpl sendRoutingInfoForSMResponse) {
-		// TODO Auto-generated method stub
-		
+		this.sendRoutingInfoForSMResponse = sendRoutingInfoForSMResponse;
 	}
 
 	@Override
 	public SendRoutingInfoForSMResponseImpl getSendRoutingInfoForSMResponse() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setErrorContainer(ErrorContainer errorContainer) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public ErrorContainer getErrorContainer() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public InformServiceCenterContainer doGetInformServiceCenterContainer() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.sendRoutingInfoForSMResponse;
 	}
 
 	@Override
 	public void setSriMapVersion(int sriMapVersion) {
+		this.sriMapVersion = sriMapVersion;
+	}
+
+	@Override
+	public int getSriMapVersion() {
+		return this.sriMapVersion;
+	}
+
+	@Override
+	public void setErrorContainer(MAPErrorMessage errorContainer) {
+		this.errorContainer = errorContainer;
+	}
+
+	@Override
+	public MAPErrorMessage getErrorContainer() {
+		return this.errorContainer;
+	}
+
+
+	@Override
+	public ChildRelation getRsdsSbb() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean add(Object arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean addAll(Collection arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void clear() {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public int getSriMapVersion() {
+	public boolean contains(Object arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean containsAll(Collection arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Iterator iterator() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean remove(Object arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean removeAll(Collection arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean retainAll(Collection arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int size() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public ChildRelation getRsdsSbb() {
+	public Object[] toArray() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object[] toArray(Object[] arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public SbbLocalObject create() throws CreateException, TransactionRequiredLocalException, SLEEException {
 		// TODO Auto-generated method stub
 		return null;
 	}

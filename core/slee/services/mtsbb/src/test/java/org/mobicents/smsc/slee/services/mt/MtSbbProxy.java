@@ -22,110 +22,159 @@
 
 package org.mobicents.smsc.slee.services.mt;
 
+import java.util.Collection;
+import java.util.Iterator;
+
+import javax.slee.ChildRelation;
+import javax.slee.CreateException;
+import javax.slee.NoSuchObjectLocalException;
+import javax.slee.SLEEException;
+import javax.slee.SbbLocalObject;
+import javax.slee.TransactionRequiredLocalException;
+import javax.slee.TransactionRolledbackLocalException;
+
+import org.mobicents.protocols.ss7.map.MAPParameterFactoryImpl;
+import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
-import org.mobicents.protocols.ss7.map.api.smstpdu.AbsoluteTimeStamp;
-import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.slee.services.persistence.CassandraPersistenceSbbProxy;
+import org.mobicents.smsc.slee.services.persistence.MAPProviderProxy;
+import org.mobicents.smsc.slee.services.persistence.Persistence;
+import org.mobicents.smsc.slee.services.persistence.TraceProxy;
 
 /**
  * 
  * @author sergey vetyutnev
  * 
  */
-public class MtSbbProxy extends MtSbb {
+public class MtSbbProxy extends MtSbb implements ChildRelation, MtSbbLocalObject {
+
+	private CassandraPersistenceSbbProxy cassandraSbb;
 
 	public MtSbbProxy(CassandraPersistenceSbbProxy pers) {
-		this.persistence = pers;
+		this.cassandraSbb = pers;
+		this.logger = new TraceProxy();
+
+		this.mapProvider = new MAPProviderProxy();
+		this.mapParameterFactory = new MAPParameterFactoryImpl();
+		this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement.getMaxMapVersion());
+		this.mapAcif = new MAPContextInterfaceFactoryProxy();
+		this.sbbContext = new SbbContextExtProxy();
 	}
 
 	@Override
+	public Persistence getStore() {
+		return cassandraSbb;
+	}
+
+
+	private SmsDeliveryData smsDeliveryData;
+	private SccpAddress sccpAddress;
+	private int mesageSegmentNumber;
+	private SM_RP_DA sm_rp_da;
+	private SM_RP_OA sm_rp_oa;
+	private int currentMsgNum;
+	private InformServiceCenterContainer informServiceCenterContainer;
+	private int tcEmptySent;
+	private SmsSignalInfo[] segments;
+
+	
+	@Override
 	public void setSmsDeliveryData(SmsDeliveryData smsDeliveryData) {
-		// TODO Auto-generated method stub
-		
+		this.smsDeliveryData = smsDeliveryData;
 	}
 
 	@Override
 	public SmsDeliveryData getSmsDeliveryData() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.smsDeliveryData;
 	}
 
 	@Override
 	public void setNetworkNode(SccpAddress sccpAddress) {
-		// TODO Auto-generated method stub
-		
+		this.sccpAddress = sccpAddress;
 	}
 
 	@Override
 	public SccpAddress getNetworkNode() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setServiceCentreTimeStamp(AbsoluteTimeStamp serviceCentreTimeStamp) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public AbsoluteTimeStamp getServiceCentreTimeStamp() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.sccpAddress;
 	}
 
 	@Override
 	public void setMessageSegmentNumber(int mesageSegmentNumber) {
-		// TODO Auto-generated method stub
-		
+		this.mesageSegmentNumber = mesageSegmentNumber;
 	}
 
 	@Override
 	public int getMessageSegmentNumber() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.mesageSegmentNumber;
 	}
 
 	@Override
 	public void setSmRpDa(SM_RP_DA sm_rp_da) {
-		// TODO Auto-generated method stub
-		
+		this.sm_rp_da = sm_rp_da;
 	}
 
 	@Override
 	public SM_RP_DA getSmRpDa() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.sm_rp_da;
 	}
-
+	
 	@Override
 	public void setSmRpOa(SM_RP_OA sm_rp_oa) {
-		// TODO Auto-generated method stub
-		
+		this.sm_rp_oa = sm_rp_oa;
 	}
 
 	@Override
 	public SM_RP_OA getSmRpOa() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.sm_rp_oa;
+	}
+	
+	@Override
+	public int getCurrentMsgNum() {
+		return currentMsgNum;
 	}
 
 	@Override
-	public void setDataCodingScheme(DataCodingScheme dataCodingScheme) {
-		// TODO Auto-generated method stub
-		
+	public void setCurrentMsgNum(int currentMsgNum) {
+		this.currentMsgNum = currentMsgNum;
 	}
 
 	@Override
-	public DataCodingScheme getDataCodingScheme() {
-		// TODO Auto-generated method stub
-		return null;
+	public void setInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer) {
+		this.informServiceCenterContainer = informServiceCenterContainer;
 	}
 
+	@Override
+	public InformServiceCenterContainer getInformServiceCenterContainer() {
+		return this.informServiceCenterContainer;
+	}
+
+	@Override
+	public void setTcEmptySent(int tcEmptySent) {
+		this.tcEmptySent = tcEmptySent;
+	}
+
+	@Override
+	public int getTcEmptySent() {
+		return this.tcEmptySent;
+	}
+
+	@Override
+	public void setSegments(SmsSignalInfo[] segments) {
+		this.segments = segments;
+	}
+
+	@Override
+	public SmsSignalInfo[] getSegments() {
+		return this.segments;
+	}
+
+
+	
+	
 	@Override
 	public ChildRelationExt getStoreSbb() {
 		// TODO Auto-generated method stub
@@ -133,57 +182,110 @@ public class MtSbbProxy extends MtSbb {
 	}
 
 	@Override
-	public void setCurrentMsgNum(int currentMsgNum) {
+	public boolean add(Object arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean addAll(Collection arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void clear() {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void setInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer) {
+	public boolean contains(Object arg0) {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 
 	@Override
-	public InformServiceCenterContainer getInformServiceCenterContainer() {
+	public boolean containsAll(Collection arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Iterator iterator() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void setTcEmptySent(int tcEmptySent) {
+	public boolean remove(Object arg0) {
 		// TODO Auto-generated method stub
-		
+		return false;
 	}
 
 	@Override
-	public int getTcEmptySent() {
+	public boolean removeAll(Collection arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean retainAll(Collection arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int size() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public void setSegments(SmsSignalInfo[] segments) {
+	public Object[] toArray() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object[] toArray(Object[] arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public SbbLocalObject create() throws CreateException, TransactionRequiredLocalException, SLEEException {
+		return this;
+	}
+
+	@Override
+	public byte getSbbPriority() throws TransactionRequiredLocalException, NoSuchObjectLocalException, SLEEException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean isIdentical(SbbLocalObject arg0) throws TransactionRequiredLocalException, SLEEException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void remove() throws TransactionRequiredLocalException, TransactionRolledbackLocalException, SLEEException {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public SmsSignalInfo[] getSegments() {
+	public void setSbbPriority(byte arg0) throws TransactionRequiredLocalException, NoSuchObjectLocalException, SLEEException {
 		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public InformServiceCenterContainer doGetInformServiceCenterContainer() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int getCurrentMsgNum() {
-		// TODO Auto-generated method stub
-		return 0;
+		
 	}
 
 }

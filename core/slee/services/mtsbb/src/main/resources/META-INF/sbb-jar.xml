@@ -33,11 +33,9 @@
 		<sbb-classes>
 			<sbb-abstract-class>
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.mt.SriSbb</sbb-abstract-class-name>
-					<cmp-field><cmp-field-name>sendRoutingInfoForSMResponse</cmp-field-name></cmp-field>
-					<cmp-field><cmp-field-name>errorContainer</cmp-field-name></cmp-field>
-					<cmp-field><cmp-field-name>sriMapVersion</cmp-field-name></cmp-field>
-				
-				
+				<cmp-field><cmp-field-name>sendRoutingInfoForSMResponse</cmp-field-name></cmp-field>
+				<cmp-field><cmp-field-name>errorContainer</cmp-field-name></cmp-field>
+				<cmp-field><cmp-field-name>sriMapVersion</cmp-field-name></cmp-field>
 				<get-child-relation-method>
                     <sbb-alias-ref>
                         StoreSbb
@@ -300,11 +298,9 @@
 				<cmp-field><cmp-field-name>segments</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>tcEmptySent</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>networkNode</cmp-field-name></cmp-field>
-				<cmp-field><cmp-field-name>serviceCentreTimeStamp</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>messageSegmentNumber</cmp-field-name></cmp-field>	
 				<cmp-field><cmp-field-name>smRpDa</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>smRpOa</cmp-field-name></cmp-field>
-				<cmp-field><cmp-field-name>dataCodingScheme</cmp-field-name></cmp-field>
 				
 				<get-child-relation-method>
                     <sbb-alias-ref>
@@ -539,6 +535,8 @@
 		<sbb-classes>
 			<sbb-abstract-class>
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.mt.RsdsSbb</sbb-abstract-class-name>
+
+				<cmp-field><cmp-field-name>targetId</cmp-field-name></cmp-field>
 
 				<get-child-relation-method>
                     <sbb-alias-ref>

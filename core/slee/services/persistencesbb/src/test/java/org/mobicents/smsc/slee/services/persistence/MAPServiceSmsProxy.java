@@ -20,22 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.services.mt;
+package org.mobicents.smsc.slee.services.persistence;
 
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
+import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
-import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
-import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
+import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
+import org.mobicents.protocols.ss7.map.api.service.sms.MAPServiceSms;
+import org.mobicents.protocols.ss7.map.api.service.sms.MAPServiceSmsListener;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 
 /**
  * 
  * @author sergey vetyutnev
- * 
+ *
  */
-public interface ReportSMDeliveryStatusInterface {
+public class MAPServiceSmsProxy extends MAPServiceBaseProxy implements MAPServiceSms {
 
-	public void setupReportSMDeliveryStatusRequest(ISDNAddressString msisdn, AddressString serviceCentreAddress, SMDeliveryOutcome sMDeliveryOutcome,
-			SccpAddress destAddress, MAPApplicationContext mapApplicationContext, String targetId);
+	public MAPServiceSmsProxy(MAPProviderProxy mapProvider) {
+		super(mapProvider);
+	}
+
+	@Override
+	public MAPDialogSms createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
+			AddressString destReference) throws MAPException {
+		return new MAPDialogSmsProxy(this, appCntx, origAddress, destAddress);
+	}
+
+	@Override
+	public void addMAPServiceListener(MAPServiceSmsListener arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeMAPServiceListener(MAPServiceSmsListener arg0) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
