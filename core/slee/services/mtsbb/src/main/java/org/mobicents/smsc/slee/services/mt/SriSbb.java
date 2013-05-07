@@ -38,9 +38,6 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPAbortProviderReason;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
-import org.mobicents.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
-import org.mobicents.protocols.ss7.map.api.dialog.ProcedureCancellationReason;
-import org.mobicents.protocols.ss7.map.api.dialog.ResourceUnavailableReason;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessageAbsentSubscriber;
@@ -52,18 +49,10 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.InformServiceCentreRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMResponse;
-import org.mobicents.protocols.ss7.map.errors.MAPErrorMessageAbsentSubscriberImpl;
-import org.mobicents.protocols.ss7.map.errors.MAPErrorMessageAbsentSubscriberSMImpl;
-import org.mobicents.protocols.ss7.map.errors.MAPErrorMessageCallBarredImpl;
-import org.mobicents.protocols.ss7.map.errors.MAPErrorMessageExtensionContainerImpl;
-import org.mobicents.protocols.ss7.map.errors.MAPErrorMessageFacilityNotSupImpl;
-import org.mobicents.protocols.ss7.map.errors.MAPErrorMessageSystemFailureImpl;
-import org.mobicents.protocols.ss7.map.errors.MAPErrorMessageUnknownSubscriberImpl;
 import org.mobicents.protocols.ss7.map.service.sms.SendRoutingInfoForSMResponseImpl;
 import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextName;
-import org.mobicents.protocols.ss7.tcap.asn.comp.Problem;
 import org.mobicents.slee.resource.map.events.DialogClose;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogProviderAbort;
@@ -71,7 +60,6 @@ import org.mobicents.slee.resource.map.events.DialogReject;
 import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
-import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.slee.services.persistence.ErrorCode;
 import org.mobicents.smsc.slee.services.persistence.Sms;
@@ -100,24 +88,9 @@ public abstract class SriSbb extends MtCommonSbb {
 
 	public void onSms(SmsSetEvent event, ActivityContextInterface aci, EventContext eventContext) {
 
-		// Reduce the events pending to be fired on this ACI
-//		MtActivityContextInterface mtSbbActivityContextInterface = this.asSbbActivityContextInterface(aci);
-//		int pendingEventsOnNullActivity = mtSbbActivityContextInterface.getPendingEventsOnNullActivity();
-
 		if (this.logger.isInfoEnabled()) {
 			this.logger.info("Received SMS. event= " + event + "this=" + this);
 		}
-
-//		pendingEventsOnNullActivity = pendingEventsOnNullActivity - 1;
-//		mtSbbActivityContextInterface.setPendingEventsOnNullActivity(pendingEventsOnNullActivity);
-
-		// Suspend the delivery of event till unsuspended by other
-		// event-handlers
-//		eventContext.suspendDelivery(EVENT_SUSPEND_TIMEOUT);
-//		this.setNullActivityEventContext(eventContext);
-
-		// TODO: Some mechanism to check if this MSISDN is not available in
-		// which case persist this even in database
 
 		SmsSet smsSet = event.getSmsSet();
 		int curMsg = 0;
@@ -131,8 +104,8 @@ public abstract class SriSbb extends MtCommonSbb {
 		smsDeliveryData.setSmsSet(smsSet);
 		this.doSetSmsDeliveryData(smsDeliveryData);
 
-		this.setSendRoutingInfoForSMResponse(null);
-		this.setErrorContainer(null);
+//		this.setSendRoutingInfoForSMResponse(null);
+//		this.setErrorContainer(null);
 
 		this.sendSRI(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
 				this.getSRIMAPApplicationContext(this.maxMAPApplicationContextVersion));
@@ -142,23 +115,13 @@ public abstract class SriSbb extends MtCommonSbb {
 	 * Components Events override from MtCommonSbb that we care
 	 */
 
+	@Override
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
-
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
-		}
+		super.onErrorComponent(event, aci);
 
 		// we store error into CMP
-		ErrorContainer cont = new ErrorContainer();
 		MAPErrorMessage mapErrorMessage = event.getMAPErrorMessage();
-		cont.setAbsentSubscriber((MAPErrorMessageAbsentSubscriberImpl) mapErrorMessage.getEmAbsentSubscriber());
-		cont.setAbsentSubscriberSM((MAPErrorMessageAbsentSubscriberSMImpl) mapErrorMessage.getEmAbsentSubscriberSM());
-		cont.setCallBarred((MAPErrorMessageCallBarredImpl) mapErrorMessage.getEmCallBarred());
-		cont.setErrorsExtCont((MAPErrorMessageExtensionContainerImpl) mapErrorMessage.getEmExtensionContainer());
-		cont.setFacilityNotSupported((MAPErrorMessageFacilityNotSupImpl) mapErrorMessage.getEmFacilityNotSup());
-		cont.setSystemFailure((MAPErrorMessageSystemFailureImpl) mapErrorMessage.getEmSystemFailure());
-		cont.setUnknownSubscriber((MAPErrorMessageUnknownSubscriberImpl) mapErrorMessage.getEmUnknownSubscriber());
-		this.setErrorContainer(cont);
+		this.setErrorContainer(mapErrorMessage);
 
 		if (mapErrorMessage.isEmAbsentSubscriber()) {
 			MAPErrorMessageAbsentSubscriber errAs = mapErrorMessage.getEmAbsentSubscriber();
@@ -172,9 +135,20 @@ public abstract class SriSbb extends MtCommonSbb {
 		}
 	}
 
+	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
+		super.onRejectComponent(event, aci);
+
+		String reason = this.getRejectComponentReason(event);
+
+		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
+				"onRejectComponent after SRI Request: " + reason != null ? reason.toString() : "");
+	}
+
 	/**
 	 * Dialog Events override from MtCommonSbb that we care
 	 */
+
+	@Override
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
 
 		MAPRefuseReason mapRefuseReason = evt.getRefuseReason();
@@ -205,10 +179,6 @@ public abstract class SriSbb extends MtCommonSbb {
 				this.logger.warning("Rx : Sri onDialogReject / ApplicationContextNotSupported=" + evt);
 			}
 
-			// lets detach so we don't get onDialogRelease() which will start
-			// delivering SMS waiting in queue for same MSISDN
-//			aci.detach(this.sbbContext.getSbbLocalObject());
-
 			// Now send new SRI with supported ACN
 			ApplicationContextName tcapApplicationContextName = evt.getAlternativeApplicationContext();
 			MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext.getInstance(tcapApplicationContextName.getOid());
@@ -221,18 +191,14 @@ public abstract class SriSbb extends MtCommonSbb {
 			}
 		}
 
-		if (logger.isWarningEnabled()) {
-			this.logger.warning("Rx : Sri onDialogReject=" + evt);
-		}
-
+		super.onDialogReject(evt, aci);
 		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
 				"onDialogReject after SRI Request: " + mapRefuseReason != null ? mapRefuseReason.toString() : "");
-
-//		super.onDialogReject(evt, aci);
 	}
 
+	@Override
 	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogProviderAbort=" + evt);
+		super.onDialogProviderAbort(evt, aci);
 
 		MAPAbortProviderReason abortProviderReason = evt.getAbortProviderReason();
 
@@ -240,73 +206,23 @@ public abstract class SriSbb extends MtCommonSbb {
 				+ abortProviderReason != null ? abortProviderReason.toString() : "");
 	}
 
-	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onRejectComponent" + event);
-
-		Problem problem = event.getProblem();
-		String reason = null;
-		switch (problem.getType()) {
-		case General:
-			reason = problem.getGeneralProblemType().toString();
-			break;
-		case Invoke:
-			reason = problem.getInvokeProblemType().toString();
-			break;
-		case ReturnResult:
-			reason = problem.getReturnResultProblemType().toString();
-			break;
-		case ReturnError:
-			reason = problem.getReturnErrorProblemType().toString();
-			break;
-		default:
-			reason = "RejectComponent_unknown_" + problem.getType();
-			break;
-		}
-
-		try {
-			event.getMAPDialog().close(false);
-		} catch (Exception e) {
-		}
-
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
-				"onRejectComponent after SRI Request: " + reason != null ? reason.toString() : "");
-	}
-
+	@Override
 	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogUserAbort=" + evt);
+		super.onDialogUserAbort(evt, aci);
 
-		MAPUserAbortChoice userReason = evt.getUserReason();
-		String reason = null;
-		if (userReason.isUserSpecificReason()) {
-			reason = MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON;
-		} else if (userReason.isUserResourceLimitation()) {
-			reason = MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION;
-		} else if (userReason.isResourceUnavailableReason()) {
-			ResourceUnavailableReason resourceUnavailableReason = userReason.getResourceUnavailableReason();
-			reason = resourceUnavailableReason.toString();
-		} else if (userReason.isProcedureCancellationReason()) {
-			ProcedureCancellationReason procedureCancellationReason = userReason.getProcedureCancellationReason();
-			reason = procedureCancellationReason.toString();
-		} else {
-			reason = MAP_USER_ABORT_CHOICE_UNKNOWN;
-		}
+		String reason = getUserAbortReason(evt);
 
 		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
 				"onDialogUserAbort after SRI Request: " + reason != null ? reason.toString() : "");
 	}
 
+	@Override
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
 		// TODO: may be it is not a permanent failure case ???
 
-		this.logger.severe("Rx :  onDialogTimeout=" + evt);
+		super.onDialogTimeout(evt, aci);
 
 		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogTimeout after SRI Request");
-	}
-
-	public void onInvokeTimeout(InvokeTimeout evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onInvokeTimeout in MtSbb" + evt);
-		}
 	}
 
 	/**
@@ -335,10 +251,6 @@ public abstract class SriSbb extends MtCommonSbb {
 			this.logger.info("Received SEND_ROUTING_INFO_FOR_SM_RESPONSE = " + evt + " Dialog=" + evt.getMAPDialog());
 		}
 
-		// lets detach so we don't get onDialogRelease() which will start
-		// delivering SMS waiting in queue for same MSISDN
-//		aci.detach(this.sbbContext.getSbbLocalObject());
-
 		this.setSendRoutingInfoForSMResponse((SendRoutingInfoForSMResponseImpl)evt);
 	}
 
@@ -350,63 +262,6 @@ public abstract class SriSbb extends MtCommonSbb {
 		InformServiceCenterContainer informServiceCenterContainer = new InformServiceCenterContainer();
 		informServiceCenterContainer.setMwStatus(evt.getMwStatus());
 		this.doSetInformServiceCenterContainer(informServiceCenterContainer);
-	}
-
-	private void onSriFullResponse() {
-
-		SendRoutingInfoForSMResponse sendRoutingInfoForSMResponse = this.getSendRoutingInfoForSMResponse();
-		ErrorContainer errorContainer = this.getErrorContainer();
-		if (sendRoutingInfoForSMResponse != null) {
-			// we have positive response to SRI request - we will try to send messages
-			try {
-				MtSbbLocalObject mtSbbLocalObject = null;
-				ChildRelation relation = getMtSbb();
-				mtSbbLocalObject = (MtSbbLocalObject) relation.create();
-
-				mtSbbLocalObject.setupMtForwardShortMessageRequest(sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getNetworkNodeNumber(),
-						sendRoutingInfoForSMResponse.getIMSI(), sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getLMSI());
-
-			} catch (CreateException e) {
-				this.logger.severe("Could not create Child SBB", e);
-			} catch (Exception e) {
-				this.logger.severe("Exception while trying to creat MtSbb child", e);
-			}
-		} else if (errorContainer != null) {
-			// we have a negative response
-			if (errorContainer.getAbsentSubscriber() != null) {
-				this.onDeliveryError(ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
-						"AbsentSubscriber response from HLR: " + errorContainer.getAbsentSubscriber());
-			} else if (errorContainer.getAbsentSubscriberSM() != null) {
-				this.onDeliveryError(ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
-						"AbsentSubscriber response from HLR: " + errorContainer.getAbsentSubscriberSM());
-			} else if (errorContainer.getCallBarred() != null) {
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.CALL_BARRED, "CallBarred response from HLR: " + errorContainer.getCallBarred());
-			} else if (errorContainer.getFacilityNotSupported() != null) {
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
-						"CallBarred response from HLR: " + errorContainer.getFacilityNotSupported());
-			} else if (errorContainer.getSystemFailure() != null) {
-				// TODO: may be systemFailure is not a permanent error case ?
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
-						"SystemFailure response from HLR: " + errorContainer.getSystemFailure());
-			} else if (errorContainer.getUnknownSubscriber() != null) {
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNKNOWN_SUBSCRIBER,
-						"UnknownSubscriber response from HLR: " + errorContainer.getUnknownSubscriber());
-			} else if (errorContainer.getErrorsExtCont() != null) {
-				if (errorContainer.getErrorsExtCont().getErrorCode() == MAPErrorCode.dataMissing) {
-					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.DATA_MISSING, "DataMissing response from HLR");
-				} else if (errorContainer.getErrorsExtCont().getErrorCode() == MAPErrorCode.unexpectedDataValue) {
-					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA, "UnexpectedDataValue response from HLR");
-				} else if (errorContainer.getErrorsExtCont().getErrorCode() == MAPErrorCode.teleserviceNotProvisioned) {
-					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.TELESERVICE_NOT_PROVISIONED, "TeleserviceNotProvisioned response from HLR");
-				} else {
-					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA_FROM_HLR,
-							"Error response from HLR: " + errorContainer.getErrorsExtCont());
-				}
-			}
-		} else {
-			// we have no responses - this is an error behaviour
-			this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "Empty response after SRI Request");
-		}
 	}
 
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
@@ -422,15 +277,39 @@ public abstract class SriSbb extends MtCommonSbb {
 	}
 
 	/**
+	 * SBB Local Object Methods
+	 * 
+	 */
+
+	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi, SMDeliveryOutcome sMDeliveryOutcome, String targetId) {
+		try {
+			ChildRelation relation = getRsdsSbb();
+			RsdsSbbLocalObject rsdsSbbLocalObject = (RsdsSbbLocalObject) relation.create();
+
+			ISDNAddressString isdn = this.getCalledPartyISDNAddressString(destinationAddress, ton, npi);
+			AddressString serviceCentreAddress = getServiceCenterAddressString();
+			SccpAddress destAddress = this.convertAddressFieldToSCCPAddress(destinationAddress, ton, npi);
+			rsdsSbbLocalObject.setupReportSMDeliveryStatusRequest(isdn, serviceCentreAddress, sMDeliveryOutcome, destAddress,
+					this.getSRIMAPApplicationContext(MAPApplicationContextVersion.getInstance(this.getSriMapVersion())), targetId);
+		} catch (TransactionRequiredLocalException e) {
+			this.logger.severe("TransactionRequiredLocalException when obtaining RsdsSbbLocalObject", e);
+		} catch (SLEEException e) {
+			this.logger.severe("SLEEException when obtaining RsdsSbbLocalObject", e);
+		} catch (CreateException e) {
+			this.logger.severe("CreateException when obtaining RsdsSbbLocalObject", e);
+		}
+	}
+
+	/**
 	 * CMPs
 	 */
 	public abstract void setSendRoutingInfoForSMResponse(SendRoutingInfoForSMResponseImpl sendRoutingInfoForSMResponse);
 
 	public abstract SendRoutingInfoForSMResponseImpl getSendRoutingInfoForSMResponse();
 
-	public abstract void setErrorContainer(ErrorContainer errorContainer);
+	public abstract void setErrorContainer(MAPErrorMessage errorContainer);
 
-	public abstract ErrorContainer getErrorContainer();
+	public abstract MAPErrorMessage getErrorContainer();
 
 	public abstract void setSriMapVersion(int sriMapVersion);
 
@@ -452,20 +331,8 @@ public abstract class SriSbb extends MtCommonSbb {
 			mtSbbLocalObject.doSetSmsDeliveryData(smsDeliveryData);
 		} catch (CreateException e) {
 			this.logger.severe("Could not create Child SBB", e);
-
-			// MtActivityContextInterface mtSbbActivityContextInterface =
-			// this.asSbbActivityContextInterface(this.getNullActivityEventContext()
-			// .getActivityContextInterface());
-			// this.resumeNullActivityEventDelivery(mtSbbActivityContextInterface,
-			// this.getNullActivityEventContext());
 		} catch (Exception e) {
 			this.logger.severe("Exception while trying to creat MtSbb child", e);
-
-			// MtActivityContextInterface mtSbbActivityContextInterface =
-			// this.asSbbActivityContextInterface(this.getNullActivityEventContext()
-			// .getActivityContextInterface());
-			// this.resumeNullActivityEventDelivery(mtSbbActivityContextInterface,
-			// this.getNullActivityEventContext());
 		}
 	}
 
@@ -476,20 +343,8 @@ public abstract class SriSbb extends MtCommonSbb {
 			return mtSbbLocalObject.doGetSmsDeliveryData();
 		} catch (CreateException e) {
 			this.logger.severe("Could not create Child SBB", e);
-
-			// MtActivityContextInterface mtSbbActivityContextInterface =
-			// this.asSbbActivityContextInterface(this.getNullActivityEventContext()
-			// .getActivityContextInterface());
-			// this.resumeNullActivityEventDelivery(mtSbbActivityContextInterface,
-			// this.getNullActivityEventContext());
 		} catch (Exception e) {
 			this.logger.severe("Exception while trying to creat MtSbb child", e);
-
-			// MtActivityContextInterface mtSbbActivityContextInterface =
-			// this.asSbbActivityContextInterface(this.getNullActivityEventContext()
-			// .getActivityContextInterface());
-			// this.resumeNullActivityEventDelivery(mtSbbActivityContextInterface,
-			// this.getNullActivityEventContext());
 		}
 
 		return null;
@@ -533,7 +388,7 @@ public abstract class SriSbb extends MtCommonSbb {
 		}
 	}
 
-	public InformServiceCenterContainer doGgetInformServiceCenterContainer() {
+	public InformServiceCenterContainer doGetInformServiceCenterContainer() {
 		try {
 			ChildRelation relation = getMtSbb();
 			MtSbbLocalObject mtSbbLocalObject = (MtSbbLocalObject) relation.create();
@@ -553,7 +408,7 @@ public abstract class SriSbb extends MtCommonSbb {
 	 */
 
 	private void sendSRI(String destinationAddress, int ton, int npi, MAPApplicationContext mapApplicationContext) {
-		// Send out SMS
+		// Send out SRI
 		MAPDialogSms mapDialogSms = null;
 		try {
 			// 1. Create Dialog first and add the SRI request to it
@@ -566,18 +421,14 @@ public abstract class SriSbb extends MtCommonSbb {
 			// 3. Finally send the request
 			mapDialogSms.send();
 		} catch (MAPException e) {
-			logger.severe("Error while trying to send SendRoutingInfoForSMRequest", e);
-			// something horrible, release MAPDialog and free resources
-
 			if (mapDialogSms != null) {
 				mapDialogSms.release();
 			}
 
-//			MtActivityContextInterface mtSbbActivityContextInterface = this.asSbbActivityContextInterface(this
-//					.getNullActivityEventContext().getActivityContextInterface());
-//			this.resumeNullActivityEventDelivery(mtSbbActivityContextInterface, this.getNullActivityEventContext());
-
-			// TODO : Take care of error condition
+			String reason = "MAPException when sending SRI from sendSRI(): " + e.toString();
+			this.logger.severe(reason, e);
+			ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
+			this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
 		}
 	}
 
@@ -596,25 +447,62 @@ public abstract class SriSbb extends MtCommonSbb {
 		return mapDialogSms;
 	}
 
-	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi, SMDeliveryOutcome sMDeliveryOutcome) {
-		try {
-			ChildRelation relation = getRsdsSbb();
-			RsdsSbbLocalObject rsdsSbbLocalObject = (RsdsSbbLocalObject) relation.create();
+	private void onSriFullResponse() {
 
-			ISDNAddressString isdn = this.getCalledPartyISDNAddressString(destinationAddress, ton, npi);
-			AddressString serviceCentreAddress = getServiceCenterAddressString();
-			SccpAddress destAddress = this.convertAddressFieldToSCCPAddress(destinationAddress, ton, npi);
-			rsdsSbbLocalObject.setupReportSMDeliveryStatusRequest(isdn, serviceCentreAddress, sMDeliveryOutcome, destAddress,
-					this.getSRIMAPApplicationContext(MAPApplicationContextVersion.getInstance(this.getSriMapVersion())));
-		} catch (TransactionRequiredLocalException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SLEEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CreateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		SendRoutingInfoForSMResponse sendRoutingInfoForSMResponse = this.getSendRoutingInfoForSMResponse();
+		MAPErrorMessage errorMessage = this.getErrorContainer();
+		if (sendRoutingInfoForSMResponse != null) {
+
+			// we have positive response to SRI request - we will try to send messages
+			try {
+				MtSbbLocalObject mtSbbLocalObject = null;
+				ChildRelation relation = getMtSbb();
+				mtSbbLocalObject = (MtSbbLocalObject) relation.create();
+
+				mtSbbLocalObject.setupMtForwardShortMessageRequest(sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getNetworkNodeNumber(),
+						sendRoutingInfoForSMResponse.getIMSI(), sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getLMSI());
+
+			} catch (CreateException e) {
+				this.logger.severe("Could not create Child SBB", e);
+			} catch (Exception e) {
+				this.logger.severe("Exception while trying to creat MtSbb child", e);
+			}
+		} else if (errorMessage != null) {
+
+			// we have a negative response
+			if (errorMessage.isEmAbsentSubscriber()) {
+				this.onDeliveryError(ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
+						"AbsentSubscriber response from HLR: " + errorMessage.toString());
+			} else if (errorMessage.isEmAbsentSubscriberSM()) {
+				this.onDeliveryError(ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
+						"AbsentSubscriber response from HLR: " + errorMessage.toString());
+			} else if (errorMessage.isEmCallBarred()) {
+				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.CALL_BARRED, "CallBarred response from HLR: " + errorMessage.toString());
+			} else if (errorMessage.isEmFacilityNotSup()) {
+				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
+						"CallBarred response from HLR: " + errorMessage.toString());
+			} else if (errorMessage.isEmSystemFailure()) {
+				// TODO: may be systemFailure is not a permanent error case ?
+				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
+						"SystemFailure response from HLR: " + errorMessage.toString());
+			} else if (errorMessage.isEmUnknownSubscriber()) {
+				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNKNOWN_SUBSCRIBER,
+						"UnknownSubscriber response from HLR: " + errorMessage.toString());
+			} else if (errorMessage.isEmExtensionContainer()) {
+				if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.dataMissing) {
+					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.DATA_MISSING, "DataMissing response from HLR");
+				} else if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.unexpectedDataValue) {
+					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA, "UnexpectedDataValue response from HLR");
+				} else if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.teleserviceNotProvisioned) {
+					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.TELESERVICE_NOT_PROVISIONED, "TeleserviceNotProvisioned response from HLR");
+				} else {
+					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA_FROM_HLR,
+							"Error response from HLR: " + errorMessage.toString());
+				}
+			}
+		} else {
+			// we have no responses - this is an error behaviour
+			this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "Empty response after SRI Request");
 		}
 	}
 
@@ -627,7 +515,7 @@ public abstract class SriSbb extends MtCommonSbb {
 			break;
 		}
 		switch (npi) {
-		case SmppConstants.NPI_ISDN:
+		case SmppConstants.NPI_E164:
 			np = NumberingPlan.ISDN_TELEPHONY;
 			break;
 		}

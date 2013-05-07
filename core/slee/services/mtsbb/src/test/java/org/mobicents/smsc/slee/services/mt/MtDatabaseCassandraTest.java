@@ -81,8 +81,8 @@ public class MtDatabaseCassandraTest {
 		System.out.println("tearDownClass");
 	}
 
-//	@Test(groups = { "Mt" })
-//	public void SuccessDeliveryTest() throws Exception {
+//		@Test(groups = { "Mt" })
+//		public void SuccessDeliveryTest() throws Exception {
 //
 //		if (!this.cassandraDbInited)
 //			return;

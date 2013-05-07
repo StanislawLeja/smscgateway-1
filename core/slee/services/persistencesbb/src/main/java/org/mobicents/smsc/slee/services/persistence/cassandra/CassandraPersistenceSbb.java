@@ -326,6 +326,9 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 					HFactory.createColumn(cc, smStatus.getCode(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 			cc = createLiveColumnComposite(smsSet, Schema.COLUMN_LAST_DELIVERY);
 			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, lastDelivery, SERIALIZER_COMPOSITE, SERIALIZER_DATE));
+			cc = createLiveColumnComposite(smsSet, Schema.COLUMN_ALERTING_SUPPORTED);
+			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
+					HFactory.createColumn(cc, false, SERIALIZER_COMPOSITE, SERIALIZER_BOOLEAN));
 
 			mutator.execute();
 
@@ -340,21 +343,21 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		}
 	}
 
-	public void setAlertingSupported(SmsSet smsSet, boolean alertingSupported) throws PersistenceException{
+	@Override
+	public void setAlertingSupported(String targetId, boolean alertingSupported) throws PersistenceException{
 
 		try {
 			Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
 
-			Composite cc = createLiveColumnComposite(smsSet, Schema.COLUMN_ALERTING_SUPPORTED);
-			mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-					HFactory.createColumn(cc, alertingSupported, SERIALIZER_COMPOSITE, SERIALIZER_BOOLEAN));
+			Composite cc = new Composite();
+			// cc.addComponent(ta.getAddrTon(), SERIALIZER_INTEGER);
+			// cc.addComponent(ta.getAddrNpi(), SERIALIZER_INTEGER);
+			cc.addComponent(Schema.COLUMN_ALERTING_SUPPORTED, SERIALIZER_STRING);
+			mutator.addInsertion(targetId, Schema.FAMILY_LIVE, HFactory.createColumn(cc, alertingSupported, SERIALIZER_COMPOSITE, SERIALIZER_BOOLEAN));
 
 			mutator.execute();
-
-			smsSet.setAlertingSupported(alertingSupported);
 		} catch (Exception e) {
-			String msg = "Failed to setAlertingSupported for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon() + ",Npi=" + smsSet.getDestAddrNpi()
-					+ "'!";
+			String msg = "Failed to setAlertingSupported for '" + targetId + "'!";
 			logger.severe(msg, e);
 			throw new PersistenceException(msg, e);
 		}

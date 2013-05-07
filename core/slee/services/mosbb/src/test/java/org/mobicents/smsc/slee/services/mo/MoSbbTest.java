@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Date;
 
 import javax.slee.ActivityContextInterface;
@@ -37,46 +36,15 @@ import javax.slee.SbbLocalObject;
 import javax.slee.TransactionRequiredLocalException;
 import javax.slee.TransactionRolledbackLocalException;
 
-import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
-import org.mobicents.protocols.ss7.map.api.MAPDialog;
-import org.mobicents.protocols.ss7.map.api.MAPDialogListener;
-import org.mobicents.protocols.ss7.map.api.MAPException;
-import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
-import org.mobicents.protocols.ss7.map.api.MAPProvider;
-import org.mobicents.protocols.ss7.map.api.MAPServiceBase;
-import org.mobicents.protocols.ss7.map.api.MAPSmsTpduParameterFactory;
-import org.mobicents.protocols.ss7.map.api.dialog.MAPDialogState;
-import org.mobicents.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
-import org.mobicents.protocols.ss7.map.api.dialog.Reason;
-import org.mobicents.protocols.ss7.map.api.dialog.ServingCheckData;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
-import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
-import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessageFactory;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
-import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
-import org.mobicents.protocols.ss7.map.api.primitives.MAPExtensionContainer;
 import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
-import org.mobicents.protocols.ss7.map.api.service.callhandling.MAPServiceCallHandling;
-import org.mobicents.protocols.ss7.map.api.service.lsm.MAPServiceLsm;
-import org.mobicents.protocols.ss7.map.api.service.mobility.MAPServiceMobility;
-import org.mobicents.protocols.ss7.map.api.service.mobility.subscriberManagement.TeleserviceCode;
-import org.mobicents.protocols.ss7.map.api.service.oam.MAPServiceOam;
-import org.mobicents.protocols.ss7.map.api.service.pdpContextActivation.MAPServicePdpContextActivation;
 import org.mobicents.protocols.ss7.map.api.service.sms.ForwardShortMessageRequest;
-import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
-import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
-import org.mobicents.protocols.ss7.map.api.service.sms.MAPServiceSms;
-import org.mobicents.protocols.ss7.map.api.service.sms.MWStatus;
 import org.mobicents.protocols.ss7.map.api.service.sms.MoForwardShortMessageRequest;
-import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
-import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_MTI;
-import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
-import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_SMEA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
-import org.mobicents.protocols.ss7.map.api.service.supplementary.MAPServiceSupplementary;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AbsoluteTimeStamp;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AddressField;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
@@ -88,7 +56,6 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeaderElement;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriod;
-import org.mobicents.protocols.ss7.map.errors.MAPErrorMessageFactoryImpl;
 import org.mobicents.protocols.ss7.map.primitives.AddressStringImpl;
 import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.mobicents.protocols.ss7.map.service.sms.ForwardShortMessageRequestImpl;
@@ -105,16 +72,13 @@ import org.mobicents.protocols.ss7.map.smstpdu.SmsSubmitTpduImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.ValidityPeriodImpl;
-import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
-import org.mobicents.protocols.ss7.tcap.api.MessageType;
-import org.mobicents.protocols.ss7.tcap.asn.comp.Invoke;
-import org.mobicents.protocols.ss7.tcap.asn.comp.Problem;
-import org.mobicents.protocols.ss7.tcap.asn.comp.ReturnResult;
-import org.mobicents.protocols.ss7.tcap.asn.comp.ReturnResultLast;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.services.persistence.CassandraPersistenceSbbProxy;
+import org.mobicents.smsc.slee.services.persistence.MAPDialogSmsProxy;
+import org.mobicents.smsc.slee.services.persistence.MAPProviderProxy;
+import org.mobicents.smsc.slee.services.persistence.MAPServiceSmsProxy;
 import org.mobicents.smsc.slee.services.persistence.MessageUtil;
 import org.mobicents.smsc.slee.services.persistence.Persistence;
 import org.mobicents.smsc.slee.services.persistence.PersistenceException;
@@ -208,7 +172,8 @@ public class MoSbbTest {
 		boolean b1 = this.pers.checkSmsSetExists(ta1);
 		assertFalse(b1);
 
-		MAPDialogSmsProxy dialog = new MAPDialogSmsProxy();
+		MAPProviderProxy proxy = new MAPProviderProxy();
+		MAPDialogSmsProxy dialog = new MAPDialogSmsProxy(new MAPServiceSmsProxy(proxy), null, null, null);
 		event.setMAPDialog(dialog);
 		Date curDate = new Date();
 		this.sbb.onMoForwardShortMessageRequest(event, null);
@@ -310,7 +275,8 @@ public class MoSbbTest {
 		boolean b1 = this.pers.checkSmsSetExists(ta1);
 		assertFalse(b1);
 
-		MAPDialogSmsProxy dialog = new MAPDialogSmsProxy();
+		MAPProviderProxy proxy = new MAPProviderProxy();
+		MAPDialogSmsProxy dialog = new MAPDialogSmsProxy(new MAPServiceSmsProxy(proxy), null, null, null);
 		event.setMAPDialog(dialog);
 		Date curDate = new Date();
 		this.sbb.onForwardShortMessageRequest(event, null);
@@ -403,7 +369,8 @@ public class MoSbbTest {
 		boolean b1 = this.pers.checkSmsSetExists(ta1);
 		assertFalse(b1);
 
-		MAPDialogSmsProxy dialog = new MAPDialogSmsProxy();
+		MAPProviderProxy proxy = new MAPProviderProxy();
+		MAPDialogSmsProxy dialog = new MAPDialogSmsProxy(new MAPServiceSmsProxy(proxy), null, null, null);
 		event.setMAPDialog(dialog);
 		Date curDate = new Date();
 		this.sbb.onForwardShortMessageRequest(event, null);
@@ -500,7 +467,8 @@ public class MoSbbTest {
 		boolean b1 = this.pers.checkSmsSetExists(ta1);
 		assertFalse(b1);
 
-		MAPDialogSmsProxy dialog = new MAPDialogSmsProxy();
+		MAPProviderProxy proxy = new MAPProviderProxy();
+		MAPDialogSmsProxy dialog = new MAPDialogSmsProxy(new MAPServiceSmsProxy(proxy), null, null, null);
 		event.setMAPDialog(dialog);
 		Date curDate = new Date();
 		this.sbb.onForwardShortMessageRequest(event, null);
@@ -636,506 +604,6 @@ public class MoSbbTest {
 		public boolean isEnding() throws TransactionRequiredLocalException, SLEEException {
 			// TODO Auto-generated method stub
 			return false;
-		}
-
-	}
-
-	private class MAPDialogSmsProxy implements MAPDialogSms {
-
-		private int responseCount = 0;
-		private ArrayList<Long> errorList = new ArrayList<Long>();
-		private MAPServiceBaseProxy mapServiceBase = new MAPServiceBaseProxy();
-
-		public int getResponseCount() {
-			return responseCount;
-		}
-
-		public ArrayList<Long> getErrorList() {
-			return errorList;
-		}
-
-		@Override
-		public MAPDialogState getState() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public SccpAddress getLocalAddress() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void setLocalAddress(SccpAddress localAddress) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public SccpAddress getRemoteAddress() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void setRemoteAddress(SccpAddress remoteAddress) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void setReturnMessageOnError(boolean val) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public boolean getReturnMessageOnError() {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public MessageType getTCAPMessageType() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public AddressString getReceivedOrigReference() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public AddressString getReceivedDestReference() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public MAPExtensionContainer getReceivedExtensionContainer() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void release() {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void keepAlive() {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public Long getLocalDialogId() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Long getRemoteDialogId() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public MAPServiceBase getService() {
-			return mapServiceBase;
-		}
-
-		@Override
-		public void setExtentionContainer(MAPExtensionContainer extContainer) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void send() throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void close(boolean prearrangedEnd) throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void sendDelayed() throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void closeDelayed(boolean prearrangedEnd) throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void abort(MAPUserAbortChoice mapUserAbortChoice) throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void refuse(Reason reason) throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void processInvokeWithoutAnswer(Long invokeId) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void sendInvokeComponent(Invoke invoke) throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void sendReturnResultComponent(ReturnResult returnResult) throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void sendReturnResultLastComponent(ReturnResultLast returnResultLast) throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void sendErrorComponent(Long invokeId, MAPErrorMessage mapErrorMessage) throws MAPException {
-			this.errorList.add(mapErrorMessage.getErrorCode());
-		}
-
-		@Override
-		public void sendRejectComponent(Long invokeId, Problem problem) throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void resetInvokeTimer(Long invokeId) throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public boolean cancelInvocation(Long invokeId) throws MAPException {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public Object getUserObject() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void setUserObject(Object userObject) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public MAPApplicationContext getApplicationContext() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public int getMaxUserDataLength() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public int getMessageUserDataLengthOnSend() throws MAPException {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public int getMessageUserDataLengthOnClose(boolean prearrangedEnd) throws MAPException {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public void addEricssonData(IMSI imsi, AddressString vlrNo) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public Long addForwardShortMessageRequest(SM_RP_DA sm_RP_DA, SM_RP_OA sm_RP_OA, SmsSignalInfo sm_RP_UI, boolean moreMessagesToSend) throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Long addForwardShortMessageRequest(int customInvokeTimeout, SM_RP_DA sm_RP_DA, SM_RP_OA sm_RP_OA, SmsSignalInfo sm_RP_UI,
-				boolean moreMessagesToSend) throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void addForwardShortMessageResponse(long invokeId) throws MAPException {
-			responseCount++;
-		}
-
-		@Override
-		public Long addMoForwardShortMessageRequest(SM_RP_DA sm_RP_DA, SM_RP_OA sm_RP_OA, SmsSignalInfo sm_RP_UI, MAPExtensionContainer extensionContainer,
-				IMSI imsi) throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Long addMoForwardShortMessageRequest(int customInvokeTimeout, SM_RP_DA sm_RP_DA, SM_RP_OA sm_RP_OA, SmsSignalInfo sm_RP_UI,
-				MAPExtensionContainer extensionContainer, IMSI imsi) throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void addMoForwardShortMessageResponse(long invokeId, SmsSignalInfo sm_RP_UI, MAPExtensionContainer extensionContainer) throws MAPException {
-			responseCount++;
-		}
-
-		@Override
-		public Long addMtForwardShortMessageRequest(SM_RP_DA sm_RP_DA, SM_RP_OA sm_RP_OA, SmsSignalInfo sm_RP_UI, boolean moreMessagesToSend,
-				MAPExtensionContainer extensionContainer) throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Long addMtForwardShortMessageRequest(int customInvokeTimeout, SM_RP_DA sm_RP_DA, SM_RP_OA sm_RP_OA, SmsSignalInfo sm_RP_UI,
-				boolean moreMessagesToSend, MAPExtensionContainer extensionContainer) throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void addMtForwardShortMessageResponse(long invokeId, SmsSignalInfo sm_RP_UI, MAPExtensionContainer extensionContainer) throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public Long addSendRoutingInfoForSMRequest(ISDNAddressString msisdn, boolean sm_RP_PRI, AddressString serviceCentreAddress,
-				MAPExtensionContainer extensionContainer, boolean gprsSupportIndicator, SM_RP_MTI sM_RP_MTI, SM_RP_SMEA sM_RP_SMEA, TeleserviceCode teleservice)
-				throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Long addSendRoutingInfoForSMRequest(int customInvokeTimeout, ISDNAddressString msisdn, boolean sm_RP_PRI, AddressString serviceCentreAddress,
-				MAPExtensionContainer extensionContainer, boolean gprsSupportIndicator, SM_RP_MTI sM_RP_MTI, SM_RP_SMEA sM_RP_SMEA, TeleserviceCode teleservice)
-				throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void addSendRoutingInfoForSMResponse(long invokeId, IMSI imsi, LocationInfoWithLMSI locationInfoWithLMSI,
-				MAPExtensionContainer extensionContainer, Boolean mwdSet) throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public Long addReportSMDeliveryStatusRequest(ISDNAddressString msisdn, AddressString serviceCentreAddress, SMDeliveryOutcome sMDeliveryOutcome,
-				Integer absentSubscriberDiagnosticSM, MAPExtensionContainer extensionContainer, boolean gprsSupportIndicator, boolean deliveryOutcomeIndicator,
-				SMDeliveryOutcome additionalSMDeliveryOutcome, Integer additionalAbsentSubscriberDiagnosticSM) throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Long addReportSMDeliveryStatusRequest(int customInvokeTimeout, ISDNAddressString msisdn, AddressString serviceCentreAddress,
-				SMDeliveryOutcome sMDeliveryOutcome, Integer absentSubscriberDiagnosticSM, MAPExtensionContainer extensionContainer,
-				boolean gprsSupportIndicator, boolean deliveryOutcomeIndicator, SMDeliveryOutcome additionalSMDeliveryOutcome,
-				Integer additionalAbsentSubscriberDiagnosticSM) throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void addReportSMDeliveryStatusResponse(long invokeId, ISDNAddressString storedMSISDN, MAPExtensionContainer extensionContainer)
-				throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public Long addInformServiceCentreRequest(ISDNAddressString storedMSISDN, MWStatus mwStatus, MAPExtensionContainer extensionContainer,
-				Integer absentSubscriberDiagnosticSM, Integer additionalAbsentSubscriberDiagnosticSM) throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Long addInformServiceCentreRequest(int customInvokeTimeout, ISDNAddressString storedMSISDN, MWStatus mwStatus,
-				MAPExtensionContainer extensionContainer, Integer absentSubscriberDiagnosticSM, Integer additionalAbsentSubscriberDiagnosticSM)
-				throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Long addAlertServiceCentreRequest(ISDNAddressString msisdn, AddressString serviceCentreAddress) throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Long addAlertServiceCentreRequest(int customInvokeTimeout, ISDNAddressString msisdn, AddressString serviceCentreAddress) throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void addAlertServiceCentreResponse(long invokeId) throws MAPException {
-			// TODO Auto-generated method stub
-			
-		}
-	}
-
-	private class MAPServiceBaseProxy implements MAPServiceBase {
-
-		private MAPProviderProxy mapProvider = new MAPProviderProxy();
-
-		@Override
-		public MAPProvider getMAPProvider() {
-			return mapProvider;
-		}
-
-		@Override
-		public MAPDialog createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
-				AddressString destReference) throws MAPException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public ServingCheckData isServingService(MAPApplicationContext dialogApplicationContext) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public boolean isActivated() {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public void acivate() {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void deactivate() {
-			// TODO Auto-generated method stub
-			
-		}
-	}
-
-	private class MAPProviderProxy implements MAPProvider {
-
-		@Override
-		public void addMAPDialogListener(MAPDialogListener mapDialogListener) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void removeMAPDialogListener(MAPDialogListener mapDialogListener) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public MAPParameterFactory getMAPParameterFactory() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public MAPErrorMessageFactory getMAPErrorMessageFactory() {
-			return new MAPErrorMessageFactoryImpl();
-		}
-
-		@Override
-		public MAPDialog getMAPDialog(Long dialogId) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public MAPSmsTpduParameterFactory getMAPSmsTpduParameterFactory() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public MAPServiceMobility getMAPServiceMobility() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public MAPServiceCallHandling getMAPServiceCallHandling() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public MAPServiceOam getMAPServiceOam() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public MAPServicePdpContextActivation getMAPServicePdpContextActivation() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public MAPServiceSupplementary getMAPServiceSupplementary() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public MAPServiceSms getMAPServiceSms() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public MAPServiceLsm getMAPServiceLsm() {
-			// TODO Auto-generated method stub
-			return null;
 		}
 
 	}
