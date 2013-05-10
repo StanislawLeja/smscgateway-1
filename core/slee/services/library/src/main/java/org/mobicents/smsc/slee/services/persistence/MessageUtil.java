@@ -27,6 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
+import org.mobicents.protocols.ss7.indicator.NumberingPlan;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
@@ -271,6 +273,26 @@ public class MessageUtil {
 		} else {
 			return 134;
 		}
+	}
+
+	public static NumberingPlan getSccpNumberingPlan(int npi) {
+		NumberingPlan np = NumberingPlan.ISDN_TELEPHONY;
+		switch (npi) {
+		case SmppConstants.NPI_E164:
+			np = NumberingPlan.ISDN_TELEPHONY;
+			break;
+		}
+		return np;
+	}
+
+	public static NatureOfAddress getSccpNatureOfAddress(int ton) {
+		NatureOfAddress na = NatureOfAddress.INTERNATIONAL;
+		switch (ton) {
+		case SmppConstants.TON_INTERNATIONAL:
+			na = NatureOfAddress.INTERNATIONAL;
+			break;
+		}
+		return na;
 	}
 
 	private static void addDateToStringBuilder(StringBuilder sb, int year, int month, int day, int hour, int min, int sec) {

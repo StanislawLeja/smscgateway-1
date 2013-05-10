@@ -399,11 +399,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 			this.logger.severe("In SmsDeliveryData CMP smsSet is missed");
 			return;
 		}
-		Integer n = this.doGetCurrentMsgNum();
-		int currentMsgNum = 0;
-		if (n != null) {
-			currentMsgNum = n;
-		}
+		int currentMsgNum = this.doGetCurrentMsgNum();
 		Sms smsa = smsSet.getSms(currentMsgNum);
 		if (smsa != null)
 			this.generateCdr(smsa, CdrGenerator.CDR_FAILED, reason);

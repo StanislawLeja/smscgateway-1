@@ -321,12 +321,20 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 						SM_RP_DA sm_RP_DA = this.getSmRpDa();
 						SM_RP_OA sm_RP_OA = this.getSmRpOa();
 
+						boolean moreMessagesToSend = false;
+						if (messageSegmentNumber < segments.length - 1) {
+							moreMessagesToSend = true;
+						}
+						if (this.doGetCurrentMsgNum() < this.doGetSmsDeliveryData().getSmsSet().getSmsCount() - 1) {
+							moreMessagesToSend = true;
+						}
+
 						switch (mapDialogSms.getApplicationContext().getApplicationContextVersion()) {
 						case version3:
-							mapDialogSms.addMtForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, si, false, null);
+							mapDialogSms.addMtForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, si, moreMessagesToSend, null);
 							break;
 						case version2:
-							mapDialogSms.addForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, si, false);
+							mapDialogSms.addForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, si, moreMessagesToSend);
 							break;
 						default:
 							break;
@@ -665,7 +673,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			int messageSegmentNumber, DataCodingScheme dataCodingScheme, boolean udhExists) throws MAPException {
 
 		UserDataImpl ud;
-		byte[] textPart = shortMessage;;
+		byte[] textPart = shortMessage;
 		UserDataHeader userDataHeader = null;
 		if (udhExists && shortMessage.length > 2) {
 			// UDH exists
@@ -710,9 +718,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		AbsoluteTimeStamp serviceCentreTimeStamp = new AbsoluteTimeStampImpl((submitDate.getYear() % 100), (submitDate.getMonth() + 1), submitDate.getDate(),
 				submitDate.getHours(), submitDate.getMinutes(), submitDate.getSeconds(), (submitDate.getTimezoneOffset() / 15));
 
-		SmsDeliverTpduImpl smsDeliverTpduImpl = new SmsDeliverTpduImpl(moreMessagesToSend, false, ((sms.getEsmClass() & 0x80) != 0), false,
-				this.getSmsTpduOriginatingAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr()),
-				this.mapSmsTpduParameterFactory.createProtocolIdentifier(sms.getProtocolId()), serviceCentreTimeStamp, ud);
+		SmsDeliverTpduImpl smsDeliverTpduImpl = new SmsDeliverTpduImpl(moreMessagesToSend, false,
+				((sms.getEsmClass() & SmppConstants.ESM_CLASS_REPLY_PATH_MASK) != 0), false, this.getSmsTpduOriginatingAddress(sms.getSourceAddrTon(),
+						sms.getSourceAddrNpi(), sms.getSourceAddr()), this.mapSmsTpduParameterFactory.createProtocolIdentifier(sms.getProtocolId()),
+				serviceCentreTimeStamp, ud);
 
 		SmsSignalInfoImpl smsSignalInfo = new SmsSignalInfoImpl(smsDeliverTpduImpl, null);
 
@@ -722,17 +731,17 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	private void sendMtSms(MAPApplicationContext mapApplicationContext, MessageProcessingState messageProcessingState) throws SmscPocessingException {
 		SmsDeliveryData smsDeliveryData = this.doGetSmsDeliveryData();
 		if (smsDeliveryData == null) {
-			throw new SmscPocessingException("SmsDeliveryData CMP missed",-1,-1,null);
+			throw new SmscPocessingException("SmsDeliveryData CMP missed", -1, -1, null);
 		}
 		SmsSet smsSet = smsDeliveryData.getSmsSet();
 		if (smsSet == null) {
-			throw new SmscPocessingException("SmsDeliveryData-SmsSet CMP missed",-1,-1,null);
+			throw new SmscPocessingException("SmsDeliveryData-SmsSet CMP missed", -1, -1, null);
 		}
 		int msgNum = this.doGetCurrentMsgNum();
 		Sms sms = smsSet.getSms(msgNum);
 
 		if (sms == null) {
-			throw new SmscPocessingException("SmsDeliveryData-sms is missed in CMP",-1,-1,null);
+			throw new SmscPocessingException("SmsDeliveryData-sms is missed in CMP", -1, -1, null);
 		}
 		boolean moreMessagesToSend = false;
 		if (msgNum < smsSet.getSmsCount() - 1) {
@@ -786,9 +795,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				}
 
 				this.setSegments(segments);
-
 				smsSignalInfo = segments[0];
 				this.setMessageSegmentNumber(0);
+				if (segments.length > 1)
+					moreMessagesToSend = true;
 			} else {
 				int messageSegmentNumber = this.getMessageSegmentNumber();
 				SmsSignalInfo[] segments = this.getSegments();
@@ -839,13 +849,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	}
 
 	private SccpAddress getMSCSccpAddress(ISDNAddressString networkNodeNumber) {
-
-		// TODO : use the networkNodeNumber also to derive if its
-		// International / ISDN?
-		GT0100 gt = new GT0100(0, NumberingPlan.ISDN_TELEPHONY, NatureOfAddress.INTERNATIONAL,
-				networkNodeNumber.getAddress());
-		return new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
-				smscPropertiesManagement.getMscSsn());
+		NumberingPlan np = MessageUtil.getSccpNumberingPlan(networkNodeNumber.getNumberingPlan().getIndicator());
+		NatureOfAddress na = MessageUtil.getSccpNatureOfAddress(networkNodeNumber.getAddressNature().getIndicator());
+		GT0100 gt = new GT0100(0, np, na, networkNodeNumber.getAddress());
+		return new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt, smscPropertiesManagement.getMscSsn());
 	}
 
 	private AddressField getSmsTpduOriginatingAddress(int ton, int npi, String address) {

@@ -34,12 +34,14 @@ import javax.slee.TransactionRequiredLocalException;
 import javax.slee.TransactionRolledbackLocalException;
 
 import org.mobicents.protocols.ss7.map.MAPParameterFactoryImpl;
+import org.mobicents.protocols.ss7.map.MAPSmsTpduParameterFactoryImpl;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.slee.ChildRelationExt;
+import org.mobicents.slee.SbbLocalObjectExt;
 import org.mobicents.smsc.slee.services.persistence.CassandraPersistenceSbbProxy;
 import org.mobicents.smsc.slee.services.persistence.MAPProviderProxy;
 import org.mobicents.smsc.slee.services.persistence.Persistence;
@@ -50,9 +52,10 @@ import org.mobicents.smsc.slee.services.persistence.TraceProxy;
  * @author sergey vetyutnev
  * 
  */
-public class MtSbbProxy extends MtSbb implements ChildRelation, MtSbbLocalObject {
+public class MtSbbProxy extends MtSbb implements ChildRelation, MtSbbLocalObject, SbbLocalObjectExt {
 
 	private CassandraPersistenceSbbProxy cassandraSbb;
+	private SriSbbProxy sriSbb;
 
 	public MtSbbProxy(CassandraPersistenceSbbProxy pers) {
 		this.cassandraSbb = pers;
@@ -61,8 +64,13 @@ public class MtSbbProxy extends MtSbb implements ChildRelation, MtSbbLocalObject
 		this.mapProvider = new MAPProviderProxy();
 		this.mapParameterFactory = new MAPParameterFactoryImpl();
 		this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement.getMaxMapVersion());
+		this.mapSmsTpduParameterFactory = new MAPSmsTpduParameterFactoryImpl();
 		this.mapAcif = new MAPContextInterfaceFactoryProxy();
-		this.sbbContext = new SbbContextExtProxy();
+		this.sbbContext = new SbbContextExtProxy(this);
+	}
+
+	public void setSriSbbProxy(SriSbbProxy sriSbb) {
+		this.sriSbb = sriSbb;
 	}
 
 	@Override
@@ -286,6 +294,23 @@ public class MtSbbProxy extends MtSbb implements ChildRelation, MtSbbLocalObject
 	public void setSbbPriority(byte arg0) throws TransactionRequiredLocalException, NoSuchObjectLocalException, SLEEException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public String getChildRelation() throws TransactionRequiredLocalException, SLEEException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getName() throws NoSuchObjectLocalException, TransactionRequiredLocalException, SLEEException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public SbbLocalObjectExt getParent() throws NoSuchObjectLocalException, TransactionRequiredLocalException, SLEEException {
+		return sriSbb;
 	}
 
 }

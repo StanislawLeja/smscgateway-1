@@ -37,14 +37,21 @@ import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
  */
 public class MAPServiceSmsProxy extends MAPServiceBaseProxy implements MAPServiceSms {
 
+	private MAPDialogSmsProxy lastMAPDialogSms;
+	
 	public MAPServiceSmsProxy(MAPProviderProxy mapProvider) {
 		super(mapProvider);
+	}
+	
+	public MAPDialogSmsProxy getLastMAPDialogSms(){
+		return lastMAPDialogSms;
 	}
 
 	@Override
 	public MAPDialogSms createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
 			AddressString destReference) throws MAPException {
-		return new MAPDialogSmsProxy(this, appCntx, origAddress, destAddress);
+		lastMAPDialogSms = new MAPDialogSmsProxy(this, appCntx, origAddress, destAddress);;
+		return lastMAPDialogSms;
 	}
 
 	@Override

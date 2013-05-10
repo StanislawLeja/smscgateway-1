@@ -64,9 +64,8 @@ import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.slee.services.persistence.ErrorCode;
 import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.slee.services.persistence.SmsSet;
+import org.mobicents.smsc.slee.services.persistence.MessageUtil;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
-
-import com.cloudhopper.smpp.SmppConstants;
 
 /**
  * 
@@ -121,7 +120,7 @@ public abstract class SriSbb extends MtCommonSbb {
 
 		// we store error into CMP
 		MAPErrorMessage mapErrorMessage = event.getMAPErrorMessage();
-		this.setErrorContainer(mapErrorMessage);
+		this.setErrorResponse(mapErrorMessage);
 
 		if (mapErrorMessage.isEmAbsentSubscriber()) {
 			MAPErrorMessageAbsentSubscriber errAs = mapErrorMessage.getEmAbsentSubscriber();
@@ -251,6 +250,14 @@ public abstract class SriSbb extends MtCommonSbb {
 			this.logger.info("Received SEND_ROUTING_INFO_FOR_SM_RESPONSE = " + evt + " Dialog=" + evt.getMAPDialog());
 		}
 
+		if (evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() == MAPApplicationContextVersion.version1 && evt.getMwdSet() != null
+				&& evt.getMwdSet()) {
+			InformServiceCenterContainer informServiceCenterContainer = new InformServiceCenterContainer();
+			MWStatus mwStatus = evt.getMAPDialog().getService().getMAPProvider().getMAPParameterFactory().createMWStatus(false, true, false, false);
+			informServiceCenterContainer.setMwStatus(mwStatus);
+			this.doSetInformServiceCenterContainer(informServiceCenterContainer);
+		}
+
 		this.setSendRoutingInfoForSMResponse((SendRoutingInfoForSMResponseImpl)evt);
 	}
 
@@ -307,9 +314,9 @@ public abstract class SriSbb extends MtCommonSbb {
 
 	public abstract SendRoutingInfoForSMResponseImpl getSendRoutingInfoForSMResponse();
 
-	public abstract void setErrorContainer(MAPErrorMessage errorContainer);
+	public abstract void setErrorResponse(MAPErrorMessage errorResponse);
 
-	public abstract MAPErrorMessage getErrorContainer();
+	public abstract MAPErrorMessage getErrorResponse();
 
 	public abstract void setSriMapVersion(int sriMapVersion);
 
@@ -450,7 +457,7 @@ public abstract class SriSbb extends MtCommonSbb {
 	private void onSriFullResponse() {
 
 		SendRoutingInfoForSMResponse sendRoutingInfoForSMResponse = this.getSendRoutingInfoForSMResponse();
-		MAPErrorMessage errorMessage = this.getErrorContainer();
+		MAPErrorMessage errorMessage = this.getErrorResponse();
 		if (sendRoutingInfoForSMResponse != null) {
 
 			// we have positive response to SRI request - we will try to send messages
@@ -507,18 +514,8 @@ public abstract class SriSbb extends MtCommonSbb {
 	}
 
 	private SccpAddress convertAddressFieldToSCCPAddress(String address, int ton, int npi) {
-		NumberingPlan np = NumberingPlan.ISDN_TELEPHONY;
-		NatureOfAddress na = NatureOfAddress.INTERNATIONAL;
-		switch (ton) {
-		case SmppConstants.TON_INTERNATIONAL:
-			na = NatureOfAddress.INTERNATIONAL;
-			break;
-		}
-		switch (npi) {
-		case SmppConstants.NPI_E164:
-			np = NumberingPlan.ISDN_TELEPHONY;
-			break;
-		}
+		NumberingPlan np = MessageUtil.getSccpNumberingPlan(npi);
+		NatureOfAddress na = MessageUtil.getSccpNatureOfAddress(ton);
 		GT0100 gt = new GT0100(0, np, na, address);
 		return new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt, smscPropertiesManagement.getHlrSsn());
 	}

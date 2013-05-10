@@ -33,10 +33,7 @@ import javax.slee.SbbLocalObject;
 import javax.slee.TransactionRequiredLocalException;
 import javax.slee.TransactionRolledbackLocalException;
 
-import org.mobicents.protocols.ss7.map.MAPParameterFactoryImpl;
-import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
-import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
-import org.mobicents.protocols.ss7.map.service.sms.SendRoutingInfoForSMResponseImpl;
+import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbLocalObjectExt;
 import org.mobicents.smsc.slee.services.persistence.CassandraPersistenceSbbProxy;
@@ -49,33 +46,40 @@ import org.mobicents.smsc.slee.services.persistence.TraceProxy;
  * @author sergey vetyutnev
  * 
  */
-public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObjectExt, SriSbbLocalObject {
+public class RsdsSbbProxy extends RsdsSbb implements ChildRelation, SbbLocalObject, RsdsSbbLocalObject, SbbLocalObjectExt {
 
-	private CassandraPersistenceSbbProxy cassandraSbb;
-	private MtSbbProxy mtSbb;
-	private RsdsSbbProxy rsdsSbb;
+	private CassandraPersistenceSbbProxy pers;
+	private String targetId;
+	private SMDeliveryOutcome smDeliveryOutcome;
 
-	public SriSbbProxy(CassandraPersistenceSbbProxy pers, MtSbbProxy mtSbb, RsdsSbbProxy rsdsSbb) {
-		this.cassandraSbb = pers;
-		this.mtSbb = mtSbb;
-		this.rsdsSbb = rsdsSbb;
+	public RsdsSbbProxy(CassandraPersistenceSbbProxy pers) {
+		this.pers = pers;
 		this.logger = new TraceProxy();
 
 		this.mapProvider = new MAPProviderProxy();
-		this.mapParameterFactory = new MAPParameterFactoryImpl();
-		this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement.getMaxMapVersion());
 		this.mapAcif = new MAPContextInterfaceFactoryProxy();
 		this.sbbContext = new SbbContextExtProxy(this);
 	}
 
 	@Override
 	public Persistence getStore() {
-		return cassandraSbb;
+		return pers;
 	}
 
 	@Override
-	public ChildRelation getMtSbb() {
-		return this.mtSbb;
+	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi, SMDeliveryOutcome sMDeliveryOutcome, String targetId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setTargetId(String targetId) {
+		this.targetId = targetId;
+	}
+
+	@Override
+	public String getTargetId() {
+		return this.targetId;
 	}
 
 	@Override
@@ -84,55 +88,50 @@ public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObject
 		return null;
 	}
 
-	
-	private SendRoutingInfoForSMResponseImpl sendRoutingInfoForSMResponse;
-	private int sriMapVersion;
-	private MAPErrorMessage errorContainer;
-	
 	@Override
-	public void setSendRoutingInfoForSMResponse(SendRoutingInfoForSMResponseImpl sendRoutingInfoForSMResponse) {
-		this.sendRoutingInfoForSMResponse = sendRoutingInfoForSMResponse;
+	public void doSetSmsDeliveryData(SmsDeliveryData smsDeliveryData) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
-	public SendRoutingInfoForSMResponseImpl getSendRoutingInfoForSMResponse() {
-		return this.sendRoutingInfoForSMResponse;
+	public SmsDeliveryData doGetSmsDeliveryData() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public void setSriMapVersion(int sriMapVersion) {
-		this.sriMapVersion = sriMapVersion;
+	public void doSetCurrentMsgNum(int currentMsgNum) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
-	public int getSriMapVersion() {
-		return this.sriMapVersion;
+	public int doGetCurrentMsgNum() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	@Override
-	public void setErrorResponse(MAPErrorMessage errorContainer) {
-		this.errorContainer = errorContainer;
+	public void doSetInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
-	public MAPErrorMessage getErrorResponse() {
-		return this.errorContainer;
-	}
-
-
-	@Override
-	public ChildRelation getRsdsSbb() {
-		return rsdsSbb;
+	public InformServiceCenterContainer doGetInformServiceCenterContainer() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public boolean add(Object arg0) {
+	public boolean add(Object e) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean addAll(Collection arg0) {
+	public boolean addAll(Collection c) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -144,13 +143,13 @@ public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObject
 	}
 
 	@Override
-	public boolean contains(Object arg0) {
+	public boolean contains(Object o) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean containsAll(Collection arg0) {
+	public boolean containsAll(Collection c) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -168,19 +167,19 @@ public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObject
 	}
 
 	@Override
-	public boolean remove(Object arg0) {
+	public boolean remove(Object o) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean removeAll(Collection arg0) {
+	public boolean removeAll(Collection c) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean retainAll(Collection arg0) {
+	public boolean retainAll(Collection c) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -198,15 +197,14 @@ public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObject
 	}
 
 	@Override
-	public Object[] toArray(Object[] arg0) {
+	public Object[] toArray(Object[] a) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public SbbLocalObject create() throws CreateException, TransactionRequiredLocalException, SLEEException {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	@Override
@@ -249,6 +247,16 @@ public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObject
 	public SbbLocalObjectExt getParent() throws NoSuchObjectLocalException, TransactionRequiredLocalException, SLEEException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void setSmDeliveryOutcome(SMDeliveryOutcome smDeliveryOutcome) {
+		this.smDeliveryOutcome = smDeliveryOutcome;
+	}
+
+	@Override
+	public SMDeliveryOutcome getSmDeliveryOutcome() {
+		return this.smDeliveryOutcome;
 	}
 
 }

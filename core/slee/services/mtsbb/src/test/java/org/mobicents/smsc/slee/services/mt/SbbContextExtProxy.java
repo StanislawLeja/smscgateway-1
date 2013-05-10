@@ -51,6 +51,12 @@ import org.mobicents.slee.SbbLocalObjectExt;
  */
 public class SbbContextExtProxy implements SbbContextExt {
 
+	private SbbLocalObjectExt sbbLocalObjectExt;
+
+	public SbbContextExtProxy(SbbLocalObjectExt sbbLocalObjectExt) {
+		this.sbbLocalObjectExt = sbbLocalObjectExt;
+	}
+
 	@Override
 	public ActivityContextInterface[] getActivities() throws TransactionRequiredLocalException, IllegalStateException, SLEEException {
 		// TODO Auto-generated method stub
@@ -152,7 +158,7 @@ public class SbbContextExtProxy implements SbbContextExt {
 	@Override
 	public SbbLocalObjectExt getSbbLocalObject() throws TransactionRequiredLocalException, IllegalStateException, SLEEException {
 		// TODO Auto-generated method stub
-		return null;
+		return sbbLocalObjectExt;
 	}
 
 	@Override
