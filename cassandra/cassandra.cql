@@ -91,7 +91,7 @@ CREATE TABLE "ARCHIVE" (
 	"DATA_CODING" int, 
 	"DEFAULT_MSG_ID" int, 
 
-	"MESSAGE" text,
+	"MESSAGE" blob,
 	"OPTIONAL_PARAMETERS" text, 
 	"SCHEDULE_DELIVERY" timestamp,
 	"VALIDITY_PERIOD" timestamp,

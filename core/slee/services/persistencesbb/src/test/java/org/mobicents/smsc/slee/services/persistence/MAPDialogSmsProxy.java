@@ -49,6 +49,9 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_SMEA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
+import org.mobicents.protocols.ss7.map.service.sms.ForwardShortMessageRequestImpl;
+import org.mobicents.protocols.ss7.map.service.sms.MtForwardShortMessageRequestImpl;
+import org.mobicents.protocols.ss7.map.service.sms.ReportSMDeliveryStatusRequestImpl;
 import org.mobicents.protocols.ss7.map.service.sms.SendRoutingInfoForSMRequestImpl;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.api.MessageType;
@@ -74,7 +77,7 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 	private SccpAddress origAddress;
 	private SccpAddress destAddress;
 
-	private ArrayList<MAPMessage> msgList = new ArrayList<MAPMessage>();
+	private ArrayList<MAPTestEvent> eventList = new ArrayList<MAPTestEvent>();
 
 	public MAPDialogSmsProxy(MAPServiceBaseProxy mapService, MAPApplicationContext appCntx, SccpAddress origAddress, SccpAddress destAddress) {
 		this.mapService = mapService;
@@ -85,8 +88,8 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 		this.destAddress = destAddress;
 	}
 
-	public ArrayList<MAPMessage> getMsgList() {
-		return msgList;
+	public ArrayList<MAPTestEvent> getEventList() {
+		return eventList;
 	}
 
 	public int getResponseCount() {
@@ -197,7 +200,7 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 	@Override
 	public void send() throws MAPException {
 		// TODO Auto-generated method stub
-		
+		this.eventList.add(new MAPTestEvent(MAPTestEventType.send, null));
 	}
 
 	@Override
@@ -273,7 +276,7 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 
 	@Override
 	public boolean cancelInvocation(Long invokeId) throws MAPException {
-		// TODO Auto-generated method stub
+		this.eventList.add(new MAPTestEvent(MAPTestEventType.cancelInvoke, null));
 		return false;
 	}
 
@@ -297,13 +300,13 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 	@Override
 	public int getMaxUserDataLength() {
 		// TODO Auto-generated method stub
-		return 0;
+		return 250;
 	}
 
 	@Override
 	public int getMessageUserDataLengthOnSend() throws MAPException {
 		// TODO Auto-generated method stub
-		return 0;
+		return forwardSMLen;
 	}
 
 	@Override
@@ -318,10 +321,22 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 		
 	}
 
+	private int forwardSMLen;
+
+	private void setForwardSMLen(int len) {
+		forwardSMLen = len + 100;
+	}
+
 	@Override
 	public Long addForwardShortMessageRequest(SM_RP_DA sm_RP_DA, SM_RP_OA sm_RP_OA, SmsSignalInfo sm_RP_UI, boolean moreMessagesToSend) throws MAPException {
 		// TODO Auto-generated method stub
-		return null;
+
+		byte[] data = sm_RP_UI.getData();
+		setForwardSMLen(data.length);
+
+		ForwardShortMessageRequestImpl msg = new ForwardShortMessageRequestImpl(sm_RP_DA, sm_RP_OA, sm_RP_UI, moreMessagesToSend);
+		this.eventList.add(new MAPTestEvent(MAPTestEventType.componentAdded, msg));
+		return 0L;
 	}
 
 	@Override
@@ -359,7 +374,13 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 	public Long addMtForwardShortMessageRequest(SM_RP_DA sm_RP_DA, SM_RP_OA sm_RP_OA, SmsSignalInfo sm_RP_UI, boolean moreMessagesToSend,
 			MAPExtensionContainer extensionContainer) throws MAPException {
 		// TODO Auto-generated method stub
-		return null;
+
+		byte[] data = sm_RP_UI.getData();
+		setForwardSMLen(data.length);
+
+		MtForwardShortMessageRequestImpl msg = new MtForwardShortMessageRequestImpl(sm_RP_DA, sm_RP_OA, sm_RP_UI, moreMessagesToSend, extensionContainer);
+		this.eventList.add(new MAPTestEvent(MAPTestEventType.componentAdded, msg));
+		return 0L;
 	}
 
 	@Override
@@ -381,7 +402,7 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 			throws MAPException {
 		SendRoutingInfoForSMRequestImpl msg = new SendRoutingInfoForSMRequestImpl(msisdn, sm_RP_PRI, serviceCentreAddress, extensionContainer,
 				gprsSupportIndicator, sM_RP_MTI, sM_RP_SMEA, teleservice);
-		msgList.add(msg);
+		this.eventList.add(new MAPTestEvent(MAPTestEventType.componentAdded, msg));
 		return 0L;
 	}
 
@@ -404,8 +425,12 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 	public Long addReportSMDeliveryStatusRequest(ISDNAddressString msisdn, AddressString serviceCentreAddress, SMDeliveryOutcome sMDeliveryOutcome,
 			Integer absentSubscriberDiagnosticSM, MAPExtensionContainer extensionContainer, boolean gprsSupportIndicator, boolean deliveryOutcomeIndicator,
 			SMDeliveryOutcome additionalSMDeliveryOutcome, Integer additionalAbsentSubscriberDiagnosticSM) throws MAPException {
-		// TODO Auto-generated method stub
-		return null;
+		ReportSMDeliveryStatusRequestImpl msg = new ReportSMDeliveryStatusRequestImpl(this.getApplicationContext().getApplicationContextVersion().getVersion(),
+				msisdn, serviceCentreAddress, sMDeliveryOutcome, absentSubscriberDiagnosticSM, extensionContainer, gprsSupportIndicator,
+				deliveryOutcomeIndicator, additionalSMDeliveryOutcome, additionalAbsentSubscriberDiagnosticSM);
+		this.eventList.add(new MAPTestEvent(MAPTestEventType.componentAdded, msg));
+
+		return 0L;
 	}
 
 	@Override
@@ -456,4 +481,21 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 		// TODO Auto-generated method stub
 		
 	}
+
+	public enum MAPTestEventType {
+		componentAdded,
+		send,
+		cancelInvoke,
+	}
+
+	public class MAPTestEvent {
+		public MAPTestEventType testEventType;
+		public MAPMessage event;
+
+		public MAPTestEvent(MAPTestEventType testEventType, MAPMessage event) {
+			this.testEventType = testEventType;
+			this.event = event;
+		}
+	}
 }
+

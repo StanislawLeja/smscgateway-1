@@ -609,7 +609,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		cc.addComponent(Schema.COLUMN_ADDR_DST_NPI, SERIALIZER_STRING);
 		mutator.addInsertion(sms.getDbId(), columnFamilyName,
 				HFactory.createColumn(cc, sms.getSmsSet().getDestAddrNpi(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-
+		
 		if (sms.getSourceAddr() != null) {
 			cc = new Composite();
 			cc.addComponent(Schema.COLUMN_ADDR_SRC_DIGITS, SERIALIZER_STRING);
@@ -638,6 +638,7 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 			cc.addComponent(Schema.COLUMN_ORIG_SYSTEM_ID, SERIALIZER_STRING);
 			mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getOrigSystemId(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
 		}
+
 		if (sms.getSubmitDate() != null) {
 			cc = new Composite();
 			cc.addComponent(Schema.COLUMN_SUBMIT_DATE, SERIALIZER_STRING);
@@ -671,17 +672,20 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 		cc.addComponent(Schema.COLUMN_DEFAULT_MSG_ID, SERIALIZER_STRING);
 		mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getDefaultMsgId(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 
-		if (sms.getShortMessage() != null) {
+		byte[] arr = sms.getShortMessage();
+		if (arr != null) {
 			cc = new Composite();
 			cc.addComponent(Schema.COLUMN_MESSAGE, SERIALIZER_STRING);
-			mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getShortMessage(), SERIALIZER_COMPOSITE, SERIALIZER_BYTE_ARRAY));
+			mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, arr, SERIALIZER_COMPOSITE, SERIALIZER_BYTE_ARRAY));
 		}
+
 		if (sms.getScheduleDeliveryTime() != null) {
 			cc = new Composite();
 			cc.addComponent(Schema.COLUMN_SCHEDULE_DELIVERY, SERIALIZER_STRING);
 			mutator.addInsertion(sms.getDbId(), columnFamilyName,
 					HFactory.createColumn(cc, sms.getScheduleDeliveryTime(), SERIALIZER_COMPOSITE, SERIALIZER_DATE));
 		}
+		
 		if (sms.getValidityPeriod() != null) {
 			cc = new Composite();
 			cc.addComponent(Schema.COLUMN_VALIDITY_PERIOD, SERIALIZER_STRING);
