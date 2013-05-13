@@ -41,11 +41,18 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.slee.ChildRelationExt;
+<<<<<<< HEAD
 import org.mobicents.slee.SbbLocalObjectExt;
 import org.mobicents.smsc.slee.services.persistence.CassandraPersistenceSbbProxy;
 import org.mobicents.smsc.slee.services.persistence.MAPProviderProxy;
 import org.mobicents.smsc.slee.services.persistence.Persistence;
 import org.mobicents.smsc.slee.services.persistence.TraceProxy;
+=======
+import org.mobicents.smsc.slee.resources.peristence.CassandraPersistenceSbbProxy;
+import org.mobicents.smsc.slee.resources.peristence.MAPProviderProxy;
+import org.mobicents.smsc.slee.resources.peristence.Persistence;
+import org.mobicents.smsc.slee.resources.peristence.TraceProxy;
+>>>>>>> persistence-ra second commit
 
 /**
  * 

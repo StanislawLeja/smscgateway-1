@@ -39,24 +39,25 @@ import javax.slee.Sbb;
 import javax.slee.SbbContext;
 import javax.slee.TransactionRequiredLocalException;
 import javax.slee.facilities.Tracer;
+import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
-import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
-import org.mobicents.smsc.slee.services.persistence.MessageUtil;
-import org.mobicents.smsc.slee.services.persistence.Persistence;
-import org.mobicents.smsc.slee.services.persistence.PersistenceException;
-import org.mobicents.smsc.slee.services.persistence.SmppExtraConstants;
-import org.mobicents.smsc.slee.services.persistence.Sms;
-import org.mobicents.smsc.slee.services.persistence.SmsSet;
-import org.mobicents.smsc.slee.services.persistence.SmscPocessingException;
-import org.mobicents.smsc.slee.services.persistence.TargetAddress;
+import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
+
+import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.peristence.SmppExtraConstants;
+import org.mobicents.smsc.slee.resources.peristence.Sms;
+import org.mobicents.smsc.slee.resources.peristence.SmsSet;
+import org.mobicents.smsc.slee.resources.peristence.SmscProcessingException;
+import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
@@ -78,29 +79,24 @@ import com.cloudhopper.smpp.util.TlvUtil;
 public abstract class TxSmppServerSbb implements Sbb {
     private static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
+    private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String LINK = "PersistenceResourceAdaptor";
+    
 	protected Tracer logger;
 	private SbbContextExt sbbContext;
 
 	private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
 	protected SmppSessions smppServerSessions = null;
+	protected PersistenceRAInterface store = null;
 
 	public TxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
 	}
 
-	// -------------------------------------------------------------
-    // Child relations
-    // -------------------------------------------------------------
-	public abstract ChildRelationExt getStoreSbb();
 
 
-	public Persistence getStore() throws TransactionRequiredLocalException, SLEEException, CreateException {
-		ChildRelationExt childRelation = getStoreSbb();
-		Persistence persistence = (Persistence) childRelation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
-		if (persistence == null) {
-			persistence = (Persistence) childRelation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
-		}
-		return persistence;
+	public PersistenceRAInterface getStore() throws TransactionRequiredLocalException, SLEEException, CreateException {
+		return this.store;
 	}
 
 	/**
@@ -119,7 +115,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		Sms sms;
 		try {
 			TargetAddress ta = createDestTargetAddress(event);
-			Persistence store = obtainStore(ta);
+			PersistenceRAInterface store = obtainStore(ta);
 			TargetAddress lock = store.obtainSynchroObject(ta);
 
 			try {
@@ -130,7 +126,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			} finally {
 				store.releaseSynchroObject(lock);
 			}
-		} catch (SmscPocessingException e1) {
+		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
 
 			SubmitSmResp response = event.createResponse();
@@ -193,20 +189,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		}
 	}
 
-	private Persistence obtainStore(TargetAddress ta) throws SmscPocessingException {
-		Persistence store;
-		try {
-			store = this.getStore();
-		} catch (TransactionRequiredLocalException e1) {
-			throw new SmscPocessingException("TransactionRequiredLocalException when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
-					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
-		} catch (SLEEException e1) {
-			throw new SmscPocessingException("SLEEException when reading SmsSet when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
-					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
-		} catch (CreateException e1) {
-			throw new SmscPocessingException("CreateException when reading SmsSet when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
-					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
-		}
+	private PersistenceRAInterface obtainStore(TargetAddress ta) throws SmscProcessingException {
 		return store;
 	}
 
@@ -222,7 +205,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		Sms sms;
 		try {
 			TargetAddress ta = createDestTargetAddress(event);
-			Persistence store = obtainStore(ta);
+			PersistenceRAInterface store = obtainStore(ta);
 			TargetAddress lock = store.obtainSynchroObject(ta);
 
 			try {
@@ -233,7 +216,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			} finally {
 				store.releaseSynchroObject(lock);
 			}
-		} catch (SmscPocessingException e1) {
+		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
 
 			DataSmResp response = event.createResponse();
@@ -296,9 +279,9 @@ public abstract class TxSmppServerSbb implements Sbb {
 		}
 	}
 
-	private TargetAddress createDestTargetAddress(BaseSm event) throws SmscPocessingException {
+	private TargetAddress createDestTargetAddress(BaseSm event) throws SmscProcessingException {
 		if (event.getDestAddress() == null || event.getDestAddress().getAddress() == null || event.getDestAddress().getAddress().isEmpty()) {
-			throw new SmscPocessingException("DestAddress digits are absent", SmppConstants.STATUS_INVDSTADR, MAPErrorCode.systemFailure, null);
+			throw new SmscProcessingException("DestAddress digits are absent", SmppConstants.STATUS_INVDSTADR, MAPErrorCode.systemFailure, null);
 		}
 		int destTon, destNpi;
 		switch (event.getDestAddress().getTon()) {
@@ -309,7 +292,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			destTon = event.getDestAddress().getTon();
 			break;
 		default:
-			throw new SmscPocessingException("DestAddress TON not supported: " + event.getDestAddress().getTon(), SmppConstants.STATUS_INVDSTTON,
+			throw new SmscProcessingException("DestAddress TON not supported: " + event.getDestAddress().getTon(), SmppConstants.STATUS_INVDSTTON,
 					MAPErrorCode.systemFailure, null);
 		}
 		switch (event.getDestAddress().getNpi()) {
@@ -320,7 +303,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			destNpi = event.getDestAddress().getNpi();
 			break;
 		default:
-			throw new SmscPocessingException("DestAddress NPI not supported: " + event.getDestAddress().getNpi(), SmppConstants.STATUS_INVDSTNPI,
+			throw new SmscProcessingException("DestAddress NPI not supported: " + event.getDestAddress().getNpi(), SmppConstants.STATUS_INVDSTNPI,
 					MAPErrorCode.systemFailure, null);
 		}
 
@@ -429,6 +412,8 @@ public abstract class TxSmppServerSbb implements Sbb {
 			this.smppServerSessions = (SmppSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
 
 			this.logger = this.sbbContext.getTracer(getClass().getSimpleName());
+			
+			this.store = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
@@ -440,14 +425,14 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 	}
 
-	private Sms createSmsEvent(BaseSm event, Esme origEsme, TargetAddress ta, Persistence store) throws SmscPocessingException {
+	private Sms createSmsEvent(BaseSm event, Esme origEsme, TargetAddress ta, PersistenceRAInterface store) throws SmscProcessingException {
 
 		Sms sms = new Sms();
 		sms.setDbId(UUID.randomUUID());
 
 		// checking parameters first
 		if (event.getSourceAddress() == null || event.getSourceAddress().getAddress() == null || event.getDestAddress().getAddress().isEmpty()) {
-			throw new SmscPocessingException("SourceAddress digits are absent", SmppConstants.STATUS_INVSRCADR, MAPErrorCode.systemFailure, null);
+			throw new SmscProcessingException("SourceAddress digits are absent", SmppConstants.STATUS_INVSRCADR, MAPErrorCode.systemFailure, null);
 		}
 		sms.setSourceAddr(event.getSourceAddress().getAddress());
 		switch(event.getSourceAddress().getTon()){
@@ -458,7 +443,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			sms.setSourceAddrTon(event.getSourceAddress().getTon());
 			break;
 		default:
-			throw new SmscPocessingException("SourceAddress TON not supported: " + event.getSourceAddress().getTon(), SmppConstants.STATUS_INVSRCTON,
+			throw new SmscProcessingException("SourceAddress TON not supported: " + event.getSourceAddress().getTon(), SmppConstants.STATUS_INVSRCTON,
 					MAPErrorCode.systemFailure, null);
 		}
 		switch (event.getSourceAddress().getNpi()) {
@@ -469,13 +454,13 @@ public abstract class TxSmppServerSbb implements Sbb {
 			sms.setSourceAddrNpi(event.getSourceAddress().getNpi());
 			break;
 		default:
-			throw new SmscPocessingException("SourceAddress NPI not supported: " + event.getSourceAddress().getNpi(), SmppConstants.STATUS_INVSRCNPI,
+			throw new SmscProcessingException("SourceAddress NPI not supported: " + event.getSourceAddress().getNpi(), SmppConstants.STATUS_INVSRCNPI,
 					MAPErrorCode.systemFailure, null);
 		}
 
 		int dcs = event.getDataCoding();
 		if (dcs != 0 && dcs != 8) {
-			throw new SmscPocessingException("DataCoding scheme does not supported (only 0 an 8 is supported): " + dcs, SmppExtraConstants.ESME_RINVDCS,
+			throw new SmscProcessingException("DataCoding scheme does not supported (only 0 an 8 is supported): " + dcs, SmppExtraConstants.ESME_RINVDCS,
 					MAPErrorCode.systemFailure, null);
 		}
 		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
@@ -515,13 +500,13 @@ public abstract class TxSmppServerSbb implements Sbb {
 		if (udhPresent || segmentTlvFlag) {
 			// here splitting by SMSC is not supported
 			if (sms.getShortMessage().length > lenSolid) {
-				throw new SmscPocessingException("Message length in bytes is too big for solid message: " + sms.getShortMessage().length + ">" + lenSolid,
+				throw new SmscProcessingException("Message length in bytes is too big for solid message: " + sms.getShortMessage().length + ">" + lenSolid,
 						SmppConstants.STATUS_INVPARLEN, MAPErrorCode.systemFailure, null);
 			}
 		} else {
 			// here splitting by SMSC is supported
 			if (sms.getShortMessage().length > lenSegmented * 255) {
-				throw new SmscPocessingException("Message length in bytes is too big for segmented message: " + sms.getShortMessage().length + ">" + lenSolid,
+				throw new SmscProcessingException("Message length in bytes is too big for segmented message: " + sms.getShortMessage().length + ">" + lenSolid,
 						SmppConstants.STATUS_INVPARLEN, MAPErrorCode.systemFailure, null);
 			}
 		}
@@ -534,7 +519,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			try {
 				valTime = (new Date()).getTime() + tlvQosTimeToLive.getValueAsInt();
 			} catch (TlvConvertException e) {
-				throw new SmscPocessingException("TlvConvertException when getting TAG_QOS_TIME_TO_LIVE tlv field: " + e.getMessage(),
+				throw new SmscProcessingException("TlvConvertException when getting TAG_QOS_TIME_TO_LIVE tlv field: " + e.getMessage(),
 						SmppConstants.STATUS_INVOPTPARAMVAL,MAPErrorCode.systemFailure, null, e);
 			}
 			validityPeriod = new Date(valTime);
@@ -542,7 +527,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			try {
 				validityPeriod = MessageUtil.parseSmppDate(event.getValidityPeriod());
 			} catch (ParseException e) {
-				throw new SmscPocessingException("ParseException when parsing ValidityPeriod field: " + e.getMessage(),
+				throw new SmscProcessingException("ParseException when parsing ValidityPeriod field: " + e.getMessage(),
 						SmppConstants.STATUS_INVEXPIRY,MAPErrorCode.systemFailure, null, e);
 			}
 		}
@@ -553,7 +538,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		try {
 			scheduleDeliveryTime = MessageUtil.parseSmppDate(event.getScheduleDeliveryTime());
 		} catch (ParseException e) {
-			throw new SmscPocessingException("ParseException when parsing ScheduleDeliveryTime field: " + e.getMessage(),
+			throw new SmscProcessingException("ParseException when parsing ScheduleDeliveryTime field: " + e.getMessage(),
 					SmppConstants.STATUS_INVSCHED,MAPErrorCode.systemFailure, null, e);
 		}
 		MessageUtil.applyScheduleDeliveryTime(sms, scheduleDeliveryTime);
@@ -572,7 +557,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		try {
 			smsSet = store.obtainSmsSet(ta);
 		} catch (PersistenceException e1) {
-			throw new SmscPocessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
+			throw new SmscProcessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
 					SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e1);
 		}
 		sms.setSmsSet(smsSet);
@@ -585,7 +570,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		return sms;
 	}
 
-	private void processSms(Sms sms, Persistence store) throws SmscPocessingException {
+	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
 		try {
 			store.createLiveSms(sms);
 			if (sms.getScheduleDeliveryTime() == null)
@@ -593,7 +578,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			else
 				store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
 		} catch (PersistenceException e) {
-			throw new SmscPocessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
+			throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
 					MAPErrorCode.systemFailure, null, e);
 		}
 	}

@@ -34,6 +34,7 @@ import javax.slee.Sbb;
 import javax.slee.SbbContext;
 import javax.slee.TransactionRequiredLocalException;
 import javax.slee.facilities.Tracer;
+import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
@@ -69,13 +70,13 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.services.persistence.ErrorCode;
-import org.mobicents.smsc.slee.services.persistence.MessageUtil;
-import org.mobicents.smsc.slee.services.persistence.Persistence;
-import org.mobicents.smsc.slee.services.persistence.PersistenceException;
-import org.mobicents.smsc.slee.services.persistence.Sms;
-import org.mobicents.smsc.slee.services.persistence.SmsSet;
-import org.mobicents.smsc.slee.services.persistence.TargetAddress;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.peristence.ErrorCode;
+import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
+import org.mobicents.smsc.slee.resources.peristence.Sms;
+import org.mobicents.smsc.slee.resources.peristence.SmsSet;
+import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 /**
@@ -86,6 +87,9 @@ import org.mobicents.smsc.smpp.SmscPropertiesManagement;
  */
 public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterface2 {
 
+    private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String LINK = "PersistenceResourceAdaptor";
+    
 	protected static final String MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON = "userSpecificReason";
 	protected static final String MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION = "userResourceLimitation";
 	protected static final String MAP_USER_ABORT_CHOICE_UNKNOWN = "DialogUserAbort_Unknown";
@@ -109,27 +113,14 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 	protected MAPApplicationContextVersion maxMAPApplicationContextVersion = null;
 
-	protected Persistence persistence;
+	protected PersistenceRAInterface persistence;
 
 	public MtCommonSbb(String className) {
 		this.className = className;
 	}
 
-	// -------------------------------------------------------------
-    // Child relations
-    // -------------------------------------------------------------
-	public abstract ChildRelationExt getStoreSbb();
-
-
-	public Persistence getStore() throws TransactionRequiredLocalException, SLEEException, CreateException {
-		if (persistence == null) {
-			ChildRelationExt childRelation = getStoreSbb();
-			persistence = (Persistence) childRelation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
-			if (persistence == null) {
-				persistence = (Persistence) childRelation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
-			}
-		}
-		return persistence;
+	public PersistenceRAInterface getStore() {
+		return this.persistence;
 	}
 
 	/**
@@ -332,6 +323,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 			this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement
 					.getMaxMapVersion());
+			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
@@ -404,7 +396,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		if (smsa != null)
 			this.generateCdr(smsa, CdrGenerator.CDR_FAILED, reason);
 
-		Persistence pers;
+		PersistenceRAInterface pers;
 		try {
 			pers = this.getStore();
 		} catch (TransactionRequiredLocalException e1) {
@@ -412,9 +404,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 			return;
 		} catch (SLEEException e1) {
 			this.logger.severe("SLEEException when onDeliveryError()" + e1.getMessage(), e1);
-			return;
-		} catch (CreateException e1) {
-			this.logger.severe("CreateException when onDeliveryError()" + e1.getMessage(), e1);
 			return;
 		}
 
@@ -542,8 +531,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 			this.logger.severe("TransactionRequiredLocalException when setDeliveryStart(sms)" + e.getMessage(), e);
 		} catch (SLEEException e) {
 			this.logger.severe("SLEEException when setDeliveryStart(sms)" + e.getMessage(), e);
-		} catch (CreateException e) {
-			this.logger.severe("CreateException when setDeliveryStart(sms)" + e.getMessage(), e);
 		} catch (PersistenceException e) {
 			this.logger.severe("PersistenceException when setDeliveryStart(sms)" + e.getMessage(), e);
 		}
@@ -554,7 +541,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	 * 
 	 * @param smsSet
 	 */
-	protected void freeSmsSetSucceded(SmsSet smsSet, Persistence pers) {
+	protected void freeSmsSetSucceded(SmsSet smsSet, PersistenceRAInterface pers) {
 
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
 		try {
@@ -581,7 +568,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	 * @param smsSet
 	 * @param pers
 	 */
-	protected void freeSmsSetFailured(SmsSet smsSet, Persistence pers) {
+	protected void freeSmsSetFailured(SmsSet smsSet, PersistenceRAInterface pers) {
 
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
 		try {
@@ -609,7 +596,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	 * 
 	 * @param smsSet
 	 */
-	protected void rescheduleSmsSet(SmsSet smsSet, boolean busySuscriber, Persistence pers) {
+	protected void rescheduleSmsSet(SmsSet smsSet, boolean busySuscriber, PersistenceRAInterface pers) {
 
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
 		try {

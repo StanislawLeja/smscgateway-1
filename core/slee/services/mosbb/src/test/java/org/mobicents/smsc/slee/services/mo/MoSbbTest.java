@@ -75,18 +75,18 @@ import org.mobicents.protocols.ss7.map.smstpdu.ValidityPeriodImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
-import org.mobicents.smsc.slee.services.persistence.CassandraPersistenceSbbProxy;
-import org.mobicents.smsc.slee.services.persistence.MAPDialogSmsProxy;
-import org.mobicents.smsc.slee.services.persistence.MAPProviderProxy;
-import org.mobicents.smsc.slee.services.persistence.MAPServiceSmsProxy;
-import org.mobicents.smsc.slee.services.persistence.MessageUtil;
-import org.mobicents.smsc.slee.services.persistence.Persistence;
-import org.mobicents.smsc.slee.services.persistence.PersistenceException;
-import org.mobicents.smsc.slee.services.persistence.SmppSessionsProxy;
-import org.mobicents.smsc.slee.services.persistence.Sms;
-import org.mobicents.smsc.slee.services.persistence.SmsSet;
-import org.mobicents.smsc.slee.services.persistence.TargetAddress;
-import org.mobicents.smsc.slee.services.persistence.TraceProxy;
+import org.mobicents.smsc.slee.resources.peristence.CassandraPersistenceSbbProxy;
+import org.mobicents.smsc.slee.resources.peristence.MAPDialogSmsProxy;
+import org.mobicents.smsc.slee.resources.peristence.MAPProviderProxy;
+import org.mobicents.smsc.slee.resources.peristence.MAPServiceSmsProxy;
+import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
+import org.mobicents.smsc.slee.resources.peristence.Persistence;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
+import org.mobicents.smsc.slee.resources.peristence.SmppSessionsProxy;
+import org.mobicents.smsc.slee.resources.peristence.Sms;
+import org.mobicents.smsc.slee.resources.peristence.SmsSet;
+import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
+import org.mobicents.smsc.slee.resources.peristence.TraceProxy;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.AfterClass;
@@ -351,7 +351,7 @@ public class MoSbbTest {
 		AddressField destinationAddress = new AddressFieldImpl(TypeOfNumber.InternationalNumber, NumberingPlanIdentification.ISDNTelephoneNumberingPlan, "5555");
 		ProtocolIdentifier protocolIdentifier = new ProtocolIdentifierImpl(12);
 		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(8);
-		UserData userData = new UserDataImpl(new String("Привет"), dataCodingScheme, null, null);
+		UserData userData = new UserDataImpl(new String("пїЅпїЅпїЅпїЅпїЅпїЅ"), dataCodingScheme, null, null);
 //		String decodedMessage, DataCodingScheme dataCodingScheme, UserDataHeader decodedUserDataHeader, Charset gsm8Charset
 		SmsTpdu tpdu = new SmsSubmitTpduImpl(false, false, false, 150, destinationAddress, protocolIdentifier, null, userData);
 		//		boolean rejectDuplicates, boolean replyPathExists, boolean statusReportRequest, int messageReference,
@@ -427,7 +427,7 @@ public class MoSbbTest {
 		ByteBuffer bb = ByteBuffer.wrap(sms.getShortMessage());
 		CharBuffer bf = ucs2Charset.decode(bb);
 		String s = bf.toString();
-		assertEquals(s, "Привет");
+		assertEquals(s, "пїЅпїЅпїЅпїЅпїЅпїЅ");
 	}
 
 	@Test(groups = { "Mo" })
@@ -449,7 +449,7 @@ public class MoSbbTest {
 		AddressField destinationAddress = new AddressFieldImpl(TypeOfNumber.InternationalNumber, NumberingPlanIdentification.ISDNTelephoneNumberingPlan, "5555");
 		ProtocolIdentifier protocolIdentifier = new ProtocolIdentifierImpl(12);
 		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(200);
-		UserData userData = new UserDataImpl(new String("Привет"), dataCodingScheme, null, null);
+		UserData userData = new UserDataImpl(new String("пїЅпїЅпїЅпїЅпїЅпїЅ"), dataCodingScheme, null, null);
 //		String decodedMessage, DataCodingScheme dataCodingScheme, UserDataHeader decodedUserDataHeader, Charset gsm8Charset
 		SmsTpdu tpdu = new SmsSubmitTpduImpl(false, false, false, 150, destinationAddress, protocolIdentifier, null, userData);
 		//		boolean rejectDuplicates, boolean replyPathExists, boolean statusReportRequest, int messageReference,

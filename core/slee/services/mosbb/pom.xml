@@ -19,28 +19,62 @@
 			<version>${pom.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.mobicents.resources</groupId>
-			<artifactId>mobicents-slee-ra-map-ratype</artifactId>
-		</dependency>
-		<dependency>
-			<artifactId>persistence-sbb</artifactId>
+			<artifactId>persistence-ratype</artifactId>
 			<groupId>${pom.groupId}</groupId>
 			<version>${pom.version}</version>
-		</dependency>			
+		</dependency>
 		<dependency>
-			<groupId>org.mobicents.servers.jainslee.api</groupId>
-			<artifactId>jain-slee-11-ext</artifactId>
-			<version>${jslee.ext.version}</version>
+			<artifactId>smpp-server-ra-events</artifactId>
+			<groupId>${pom.groupId}</groupId>
+		</dependency>
+		<dependency>
+			<artifactId>smsc-library</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
 		</dependency>
 		<dependency>
 			<artifactId>smpp-server-ra-ratype</artifactId>
 			<groupId>${pom.groupId}</groupId>
 		</dependency>
 		<dependency>
-			<artifactId>persistence-sbb</artifactId>
+			<groupId>org.mobicents.servers.jainslee.api</groupId>
+			<artifactId>jain-slee-11-ext</artifactId>
+			<version>${jslee.ext.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<artifactId>persistence-ra-library</artifactId>
 			<groupId>${pom.groupId}</groupId>
 			<version>${pom.version}</version>
-		</dependency>			
+		</dependency>
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>smpp-server-ra-library</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.resources</groupId>
+			<artifactId>mobicents-slee-ra-map-ratype</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>smpp-server-ra-library</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>smpp-server-ra-events</artifactId>
+			<groupId>${pom.groupId}</groupId>
+		</dependency>
+		<dependency>
+			<artifactId>persistence-ra-library</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>persistence-ratype</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+		</dependency>
 	</dependencies>
 
 	<profiles>
@@ -56,12 +90,14 @@
 					<version>${testng.version}</version>
 					<scope>test</scope>
 				</dependency>
+				<!-- 
 				<dependency>
 					<artifactId>persistence-sbb</artifactId>
 					<groupId>${pom.groupId}</groupId>
 					<version>${pom.version}</version>
 					<type>test-jar</type>
-				</dependency>			
+				</dependency>
+				 -->			
 			</dependencies>
 		</profile>
 		<profile>

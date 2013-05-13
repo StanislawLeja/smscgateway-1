@@ -14,13 +14,42 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.cloudhopper</groupId>
-			<artifactId>ch-smpp</artifactId>
-			<version>${ch.smpp.version}</version>
-		</dependency>	
-		<dependency>
 			<artifactId>smsc-events</artifactId>
 			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>persistence-ratype</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>smpp-server-ra-events</artifactId>
+			<groupId>${pom.groupId}</groupId>
+		</dependency>
+		<dependency>
+			<artifactId>smsc-library</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>smpp-server-ra-ratype</artifactId>
+			<groupId>${pom.groupId}</groupId>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.jainslee.api</groupId>
+			<artifactId>jain-slee-11-ext</artifactId>
+			<version>${jslee.ext.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<artifactId>persistence-ra-library</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>smpp-server-ra-library</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
 		<dependency>
@@ -28,31 +57,30 @@
 			<artifactId>mobicents-slee-ra-map-ratype</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.mobicents.servers.jainslee.api</groupId>
-			<artifactId>jain-slee-11-ext</artifactId>
-			<version>${jslee.ext.version}</version>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>smpp-server-ra-library</artifactId>
+			<version>${pom.version}</version>
 		</dependency>
 		<dependency>
-			<artifactId>smpp-server-ra-ratype</artifactId>
+			<artifactId>smpp-server-ra-events</artifactId>
 			<groupId>${pom.groupId}</groupId>
 		</dependency>
 		<dependency>
-			<artifactId>persistence-sbb</artifactId>
+			<artifactId>persistence-ra-library</artifactId>
 			<groupId>${pom.groupId}</groupId>
 			<version>${pom.version}</version>
-		</dependency>	
+		</dependency>
 		<dependency>
+			<artifactId>persistence-ratype</artifactId>
 			<groupId>${pom.groupId}</groupId>
-			<artifactId>smpp</artifactId>
 			<version>${pom.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<!-- javolution -->
 		<dependency>
 			<groupId>javolution</groupId>
 			<artifactId>javolution</artifactId>
 			<version>${javolution.version}</version>
-		</dependency>		
+		</dependency>
 	</dependencies>
 
 	<profiles>
@@ -68,12 +96,8 @@
 					<version>${testng.version}</version>
 					<scope>test</scope>
 				</dependency>
-				<dependency>
-					<artifactId>persistence-sbb</artifactId>
-					<groupId>${pom.groupId}</groupId>
-					<version>${pom.version}</version>
-					<type>test-jar</type>
-				</dependency>			
+				<!-- <dependency> <artifactId>persistence-sbb</artifactId> <groupId>${pom.groupId}</groupId> 
+					<version>${pom.version}</version> <type>test-jar</type> </dependency> -->
 			</dependencies>
 		</profile>
 		<profile>

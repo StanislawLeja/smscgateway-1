@@ -35,8 +35,8 @@ import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.protocols.ss7.map.api.service.sms.ReportSMDeliveryStatusResponse;
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
-import org.mobicents.smsc.slee.services.persistence.Persistence;
-import org.mobicents.smsc.slee.services.persistence.PersistenceException;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
 
 /**
  * 
@@ -63,28 +63,29 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
 	 * SMS Event Handlers
 	 */
 
-	public void onReportSMDeliveryStatusResponse(ReportSMDeliveryStatusResponse evt, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received REPORT_SM_DELIVERY_STATUS_RESPONSE = " + evt);
-		}
+    public void onReportSMDeliveryStatusResponse(ReportSMDeliveryStatusResponse evt, ActivityContextInterface aci) {
+        if (this.logger.isInfoEnabled()) {
+            this.logger.info("Received REPORT_SM_DELIVERY_STATUS_RESPONSE = " + evt);
+        }
 
-		if (this.getSmDeliveryOutcome() != SMDeliveryOutcome.successfulTransfer) {
-			Persistence pers;
-			try {
-				pers = this.getStore();
-				pers.setAlertingSupported(this.getTargetId(), true);
-			} catch (TransactionRequiredLocalException e1) {
-				this.logger.severe("TransactionRequiredLocalException when getting Persistence object in onSendRoutingInfoForSMResponse(): " + e1.getMessage(),
-						e1);
-			} catch (SLEEException e1) {
-				this.logger.severe("SLEEException when getting Persistence object in onSendRoutingInfoForSMResponse(): " + e1.getMessage(), e1);
-			} catch (CreateException e1) {
-				this.logger.severe("CreateException when getting Persistence object in onSendRoutingInfoForSMResponse(): " + e1.getMessage(), e1);
-			} catch (PersistenceException e1) {
-				this.logger.severe("PersistenceException when setAlertingSupported() in onSendRoutingInfoForSMResponse(): " + e1.getMessage(), e1);
-			}
-		}
-	}
+        if (this.getSmDeliveryOutcome() != SMDeliveryOutcome.successfulTransfer) {
+            try {
+                PersistenceRAInterface pers = this.getStore();
+                pers.setAlertingSupported(this.getTargetId(), true);
+            } catch (TransactionRequiredLocalException e1) {
+                this.logger.severe(
+                        "TransactionRequiredLocalException when getting Persistence object in onSendRoutingInfoForSMResponse(): "
+                                + e1.getMessage(), e1);
+            } catch (SLEEException e1) {
+                this.logger
+                        .severe("SLEEException when getting Persistence object in onSendRoutingInfoForSMResponse(): "
+                                + e1.getMessage(), e1);
+            } catch (PersistenceException e1) {
+                this.logger.severe("PersistenceException when setAlertingSupported() in onSendRoutingInfoForSMResponse(): "
+                        + e1.getMessage(), e1);
+            }
+        }
+    }
 
 
 	/**

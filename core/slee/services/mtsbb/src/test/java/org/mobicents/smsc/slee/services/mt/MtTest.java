@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
+<<<<<<< HEAD
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
@@ -87,6 +88,13 @@ import org.mobicents.smsc.slee.services.persistence.Sms;
 import org.mobicents.smsc.slee.services.persistence.SmsProxy;
 import org.mobicents.smsc.slee.services.persistence.SmsSet;
 import org.mobicents.smsc.slee.services.persistence.TargetAddress;
+=======
+import org.mobicents.smsc.slee.resources.peristence.CassandraPersistenceSbbProxy;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
+import org.mobicents.smsc.slee.resources.peristence.Sms;
+import org.mobicents.smsc.slee.resources.peristence.SmsSet;
+import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
+>>>>>>> persistence-ra second commit
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.AfterMethod;

@@ -65,13 +65,13 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.services.persistence.MessageUtil;
-import org.mobicents.smsc.slee.services.persistence.Persistence;
-import org.mobicents.smsc.slee.services.persistence.PersistenceException;
-import org.mobicents.smsc.slee.services.persistence.Sms;
-import org.mobicents.smsc.slee.services.persistence.SmsSet;
-import org.mobicents.smsc.slee.services.persistence.SmscPocessingException;
-import org.mobicents.smsc.slee.services.persistence.TargetAddress;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
+import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.peristence.Sms;
+import org.mobicents.smsc.slee.resources.peristence.SmsSet;
+import org.mobicents.smsc.slee.resources.peristence.SmscProcessingException;
+import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
 
 import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.SmppConstants;
@@ -176,7 +176,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		try {
 			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
-		} catch (SmscPocessingException e1) {
+		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
 			try {
 				MAPErrorMessage errorMessage;
@@ -244,7 +244,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		try {
 			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
-		} catch (SmscPocessingException e1) {
+		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
 			try {
 				MAPErrorMessage errorMessage;
@@ -291,13 +291,13 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 	}
 
-	private void processMoMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo) throws SmscPocessingException {
+	private void processMoMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo) throws SmscProcessingException {
 
 		// TODO: check if smRPDA contains local SMSC address and reject messages if not equal ???
 		
 		ISDNAddressString callingPartyAddress = smRPOA.getMsisdn();
 		if (callingPartyAddress == null) {
-			throw new SmscPocessingException("MO callingPartyAddress is absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+			throw new SmscProcessingException("MO callingPartyAddress is absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
 		}
 
 		SmsTpdu smsTpdu = null;
@@ -339,10 +339,10 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 	}
 
-	private TargetAddress createDestTargetAddress(AddressField af) throws SmscPocessingException {
+	private TargetAddress createDestTargetAddress(AddressField af) throws SmscProcessingException {
 
 		if (af == null || af.getAddressValue() == null || af.getAddressValue().isEmpty()) {
-			throw new SmscPocessingException("MO DestAddress digits are absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+			throw new SmscProcessingException("MO DestAddress digits are absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
 		}
 
 		int destTon, destNpi;
@@ -354,7 +354,7 @@ public abstract class MoSbb extends MoCommonSbb {
 			destTon = af.getTypeOfNumber().getCode();
 			break;
 		default:
-			throw new SmscPocessingException("MO DestAddress TON not supported: " + af.getTypeOfNumber().getCode(), SmppConstants.STATUS_SYSERR,
+			throw new SmscProcessingException("MO DestAddress TON not supported: " + af.getTypeOfNumber().getCode(), SmppConstants.STATUS_SYSERR,
 					MAPErrorCode.unexpectedDataValue, null);
 		}
 		NumberingPlanIdentification npi;
@@ -366,7 +366,7 @@ public abstract class MoSbb extends MoCommonSbb {
 			destNpi = af.getNumberingPlanIdentification().getCode();
 			break;
 		default:
-			throw new SmscPocessingException("MO DestAddress NPI not supported: " + af.getNumberingPlanIdentification().getCode(), SmppConstants.STATUS_SYSERR,
+			throw new SmscProcessingException("MO DestAddress NPI not supported: " + af.getNumberingPlanIdentification().getCode(), SmppConstants.STATUS_SYSERR,
 					MAPErrorCode.unexpectedDataValue, null);
 		}
 
@@ -412,10 +412,10 @@ public abstract class MoSbb extends MoCommonSbb {
 	 * @throws MAPException
 	 */
 
-	private void handleSmsSubmitTpdu(SmsSubmitTpdu smsSubmitTpdu, AddressString callingPartyAddress) throws SmscPocessingException {
+	private void handleSmsSubmitTpdu(SmsSubmitTpdu smsSubmitTpdu, AddressString callingPartyAddress) throws SmscProcessingException {
 
 		TargetAddress ta = createDestTargetAddress(smsSubmitTpdu.getDestinationAddress());
-		Persistence store = obtainStore(ta);
+		PersistenceRAInterface store = obtainStore(ta);
 		TargetAddress lock = store.obtainSynchroObject(ta);
 
 		try {
@@ -428,14 +428,14 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 	}
 
-	private Sms createSmsEvent(SmsSubmitTpdu smsSubmitTpdu, TargetAddress ta, Persistence store, AddressString callingPartyAddress)
-			throws SmscPocessingException {
+	private Sms createSmsEvent(SmsSubmitTpdu smsSubmitTpdu, TargetAddress ta, PersistenceRAInterface store, AddressString callingPartyAddress)
+			throws SmscProcessingException {
 
 		UserData userData = smsSubmitTpdu.getUserData();
 		try {
 			userData.decode();
 		} catch (MAPException e) {
-			throw new SmscPocessingException("MO MAPException when decoding user data", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+			throw new SmscProcessingException("MO MAPException when decoding user data", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
 		}
 
 		Sms sms = new Sms();
@@ -443,13 +443,13 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		// checking parameters first
 		if (callingPartyAddress == null || callingPartyAddress.getAddress() == null || callingPartyAddress.getAddress().isEmpty()) {
-			throw new SmscPocessingException("MO SourceAddress digits are absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+			throw new SmscProcessingException("MO SourceAddress digits are absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
 		}
 		if (callingPartyAddress.getAddressNature() == null) {
-			throw new SmscPocessingException("MO SourceAddress AddressNature is absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+			throw new SmscProcessingException("MO SourceAddress AddressNature is absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
 		}
 		if (callingPartyAddress.getNumberingPlan() == null) {
-			throw new SmscPocessingException("MO SourceAddress NumberingPlan is absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+			throw new SmscProcessingException("MO SourceAddress NumberingPlan is absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
 		}
 		sms.setSourceAddr(callingPartyAddress.getAddress());
 		switch(callingPartyAddress.getAddressNature()){
@@ -460,7 +460,7 @@ public abstract class MoSbb extends MoCommonSbb {
 			sms.setSourceAddrTon(callingPartyAddress.getAddressNature().getIndicator());
 			break;
 		default:
-			throw new SmscPocessingException("MO SourceAddress TON not supported: " + callingPartyAddress.getAddressNature(), SmppConstants.STATUS_SYSERR,
+			throw new SmscProcessingException("MO SourceAddress TON not supported: " + callingPartyAddress.getAddressNature(), SmppConstants.STATUS_SYSERR,
 					MAPErrorCode.unexpectedDataValue, null);
 		}
 
@@ -472,7 +472,7 @@ public abstract class MoSbb extends MoCommonSbb {
 			sms.setSourceAddrNpi(callingPartyAddress.getNumberingPlan().getIndicator());
 			break;
 		default:
-			throw new SmscPocessingException("MO SourceAddress NPI not supported: " + callingPartyAddress.getNumberingPlan(), SmppConstants.STATUS_SYSERR,
+			throw new SmscProcessingException("MO SourceAddress NPI not supported: " + callingPartyAddress.getNumberingPlan(), SmppConstants.STATUS_SYSERR,
 					MAPErrorCode.unexpectedDataValue, null);
 		}
 
@@ -502,7 +502,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		byte[] smsPayload = null;
 		int dcs = dataCodingScheme.getCode();
 		if (dcs != 0 && dcs != 8) {
-			throw new SmscPocessingException("MO DataCoding scheme does not supported (only 0 an 8 is supported): " + dcs, SmppConstants.STATUS_SYSERR,
+			throw new SmscProcessingException("MO DataCoding scheme does not supported (only 0 an 8 is supported): " + dcs, SmppConstants.STATUS_SYSERR,
 					MAPErrorCode.unexpectedDataValue, null);
 		}
 		sms.setDataCoding(dcs);
@@ -559,7 +559,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		try {
 			smsSet = store.obtainSmsSet(ta);
 		} catch (PersistenceException e1) {
-			throw new SmscPocessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
+			throw new SmscProcessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
 					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
 		}
 		sms.setSmsSet(smsSet);
@@ -573,12 +573,12 @@ public abstract class MoSbb extends MoCommonSbb {
 		return sms;
 	}
 
-	private void processSms(Sms sms, Persistence store) throws SmscPocessingException {
+	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
 		try {
 			store.createLiveSms(sms);
 			store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
 		} catch (PersistenceException e) {
-			throw new SmscPocessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
+			throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
 					MAPErrorCode.systemFailure, null, e);
 		}
 	}

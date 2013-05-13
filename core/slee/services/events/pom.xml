@@ -16,7 +16,6 @@
 			<groupId>${pom.groupId}</groupId>
 			<artifactId>smpp</artifactId>
 			<version>${pom.version}</version>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

@@ -14,9 +14,7 @@
 	<name>Core : SLEE</name>
 
 	<modules>
-		<module>smpp-server-ra</module>
-		<module>hector-client-ra</module>
+		<module>resource-adaptors</module>
 		<module>services</module>
-		<module>scheduler-ra</module>
 	</modules>
 </project>

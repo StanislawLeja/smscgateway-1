@@ -32,6 +32,7 @@ import javax.slee.Sbb;
 import javax.slee.SbbContext;
 import javax.slee.TransactionRequiredLocalException;
 import javax.slee.facilities.Tracer;
+import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
@@ -52,10 +53,10 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.peristence.SmscProcessingException;
+import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
-import org.mobicents.smsc.slee.services.persistence.Persistence;
-import org.mobicents.smsc.slee.services.persistence.SmscPocessingException;
-import org.mobicents.smsc.slee.services.persistence.TargetAddress;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -67,6 +68,9 @@ import com.cloudhopper.smpp.SmppConstants;
  * 
  */
 public abstract class MoCommonSbb implements Sbb {
+    
+    private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String LINK = "PersistenceResourceAdaptor";
     protected static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
 	private final String className;
@@ -80,37 +84,28 @@ public abstract class MoCommonSbb implements Sbb {
 	
 	protected SmppSessions smppServerSessions = null;
 
+	protected PersistenceRAInterface store;
 	public MoCommonSbb(String className) {
 		this.className = className;
 	}
 
-	// -------------------------------------------------------------
-    // Child relations
-    // -------------------------------------------------------------
-	public abstract ChildRelationExt getStoreSbb();
-
-
-	public Persistence getStore() throws TransactionRequiredLocalException, SLEEException, CreateException {
-		ChildRelationExt childRelation = getStoreSbb();
-		Persistence persistence = (Persistence) childRelation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
-		if (persistence == null) {
-			persistence = (Persistence) childRelation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
-		}
-		return persistence;
+	public PersistenceRAInterface getStore() throws TransactionRequiredLocalException, SLEEException, CreateException {
+		
+		return this.store;
 	}
 
-	protected Persistence obtainStore(TargetAddress ta) throws SmscPocessingException {
-		Persistence store;
+	protected PersistenceRAInterface obtainStore(TargetAddress ta) throws SmscProcessingException {
+	    PersistenceRAInterface store;
 		try {
 			store = this.getStore();
 		} catch (TransactionRequiredLocalException e1) {
-			throw new SmscPocessingException("TransactionRequiredLocalException when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
+			throw new SmscProcessingException("TransactionRequiredLocalException when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
 					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
 		} catch (SLEEException e1) {
-			throw new SmscPocessingException("SLEEException when reading SmsSet when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
+			throw new SmscProcessingException("SLEEException when reading SmsSet when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
 					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
 		} catch (CreateException e1) {
-			throw new SmscPocessingException("CreateException when reading SmsSet when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
+			throw new SmscProcessingException("CreateException when reading SmsSet when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
 					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
 		}
 		return store;
@@ -274,7 +269,7 @@ public abstract class MoCommonSbb implements Sbb {
 			this.smppServerSessions = (SmppSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
 
 			this.logger = this.sbbContext.getTracer(this.className);
-
+			this.store = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
