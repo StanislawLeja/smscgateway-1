@@ -334,6 +334,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 							mapDialogSms.addMtForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, si, moreMessagesToSend, null);
 							break;
 						case version2:
+						case version1:
 							mapDialogSms.addForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, si, moreMessagesToSend);
 							break;
 						default:
@@ -634,7 +635,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 		InformServiceCenterContainer informServiceCenterContainer = this.getInformServiceCenterContainer();
 		if (informServiceCenterContainer != null && informServiceCenterContainer.getMwStatus() != null
-				&& informServiceCenterContainer.getMwStatus().getScAddressNotIncluded() == false) {
+				&& informServiceCenterContainer.getMwStatus().getScAddressNotIncluded() == false
+				&& mapDialogSms.getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1) {
 			// sending a report to HLR of a success delivery
 			this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
 					SMDeliveryOutcome.successfulTransfer, smsSet.getTargetId());
@@ -705,8 +707,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 		if (messageSegmentCount > 1) {
 			userDataHeader = this.mapSmsTpduParameterFactory.createUserDataHeader();
-			UserDataHeaderElement concatenatedShortMessagesIdentifier = this.mapSmsTpduParameterFactory.createConcatenatedShortMessagesIdentifier(false,
-					messageReferenceNumber, messageSegmentCount, messageSegmentNumber);
+			UserDataHeaderElement concatenatedShortMessagesIdentifier = this.mapSmsTpduParameterFactory.createConcatenatedShortMessagesIdentifier(
+					messageReferenceNumber > 255, messageReferenceNumber, messageSegmentCount, messageSegmentNumber);
 			userDataHeader.addInformationElement(concatenatedShortMessagesIdentifier);
 		}
 
@@ -813,6 +815,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				invokeId = mapDialogSms.addMtForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, smsSignalInfo, moreMessagesToSend, null);
 				break;
 			case version2:
+			case version1:
 				invokeId = mapDialogSms.addForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, smsSignalInfo, moreMessagesToSend);
 				break;
 			default:
@@ -823,6 +826,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 					&& mapDialogSms.getMessageUserDataLengthOnSend() >= mapDialogSms.getMaxUserDataLength()) {
 				mapDialogSms.cancelInvocation(invokeId);
 				this.setTcEmptySent(1);
+			} else {
+				this.setTcEmptySent(0);
 			}
 
 			mapDialogSms.send();

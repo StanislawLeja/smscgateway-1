@@ -42,9 +42,13 @@ public class MAPServiceSmsProxy extends MAPServiceBaseProxy implements MAPServic
 	public MAPServiceSmsProxy(MAPProviderProxy mapProvider) {
 		super(mapProvider);
 	}
-	
+
 	public MAPDialogSmsProxy getLastMAPDialogSms(){
 		return lastMAPDialogSms;
+	}
+
+	public void setLastMAPDialogSms(MAPDialogSmsProxy dlg) {
+		lastMAPDialogSms = dlg;
 	}
 
 	@Override

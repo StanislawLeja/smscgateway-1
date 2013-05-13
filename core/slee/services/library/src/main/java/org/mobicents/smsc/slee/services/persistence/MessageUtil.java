@@ -271,7 +271,7 @@ public class MessageUtil {
 		if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
 			return 152;
 		} else {
-			return 134;
+			return 132;
 		}
 	}
 

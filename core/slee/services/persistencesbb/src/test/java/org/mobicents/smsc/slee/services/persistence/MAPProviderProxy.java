@@ -22,6 +22,7 @@
 
 package org.mobicents.smsc.slee.services.persistence;
 
+import org.mobicents.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.mobicents.protocols.ss7.map.api.MAPDialog;
 import org.mobicents.protocols.ss7.map.api.MAPDialogListener;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
@@ -60,8 +61,7 @@ public class MAPProviderProxy implements MAPProvider {
 
 	@Override
 	public MAPParameterFactory getMAPParameterFactory() {
-		// TODO Auto-generated method stub
-		return null;
+		return new MAPParameterFactoryImpl();
 	}
 
 	@Override

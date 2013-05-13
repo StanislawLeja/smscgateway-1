@@ -433,7 +433,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 					for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
 						Sms sms = smsSet.getSms(currentMsgNum);
 						if (sms != null) {
-							if (sms.getValidityPeriod().after(curDate)) {
+							if (sms.getValidityPeriod().before(curDate)) {
 								pers.archiveFailuredSms(sms);
 							} else {
 								goodMsgCnt++;
