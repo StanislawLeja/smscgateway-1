@@ -40,6 +40,14 @@ import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 public interface Persistence {
 
 	/**
+	 * Checks if SmsSet exists in LIVE table
+	 * 
+	 * @param ta
+	 * @return true: exists, false: does not exist
+	 */
+	public boolean checkSmsSetExists(TargetAddress ta) throws PersistenceException;
+
+	/**
 	 * Searching SmsSet for TargetAddress in LIVE table 
 	 * If found - creates SmsSet for this object 
 	 * If not found - creates new record in LIVE and SmsSet for this object

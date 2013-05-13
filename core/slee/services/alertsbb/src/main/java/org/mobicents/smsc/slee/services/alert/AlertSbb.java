@@ -19,7 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.slee.services.alert;
+
+import java.util.Date;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -27,8 +30,10 @@ import javax.slee.ActivityContextInterface;
 import javax.slee.CreateException;
 import javax.slee.InitialEventSelector;
 import javax.slee.RolledBackContext;
+import javax.slee.SLEEException;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
+import javax.slee.TransactionRequiredLocalException;
 import javax.slee.facilities.Tracer;
 
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
@@ -37,8 +42,11 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
+import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
+import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.service.sms.AlertServiceCentreRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
+import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.slee.resource.map.MAPContextInterfaceFactory;
 import org.mobicents.slee.resource.map.events.DialogAccept;
@@ -54,7 +62,17 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.smsc.slee.services.persistence.Persistence;
+import org.mobicents.smsc.slee.services.persistence.PersistenceException;
+import org.mobicents.smsc.slee.services.persistence.SmsSet;
+import org.mobicents.smsc.slee.services.persistence.TargetAddress;
 
+/**
+ * 
+ * @author amit bhayani
+ * @author sergey vetyutnev
+ * 
+ */
 public abstract class AlertSbb implements Sbb {
 
 	protected Tracer logger;
@@ -64,8 +82,26 @@ public abstract class AlertSbb implements Sbb {
 	protected MAPProvider mapProvider;
 	protected MAPParameterFactory mapParameterFactory;
 
+	protected Persistence persistence;
+
 
 	public AlertSbb() {
+	}
+
+	// -------------------------------------------------------------
+    // Child relations
+    // -------------------------------------------------------------
+	public abstract ChildRelationExt getStoreSbb();
+	
+	public Persistence getStore() throws TransactionRequiredLocalException, SLEEException, CreateException {
+		if (persistence == null) {
+			ChildRelationExt childRelation = getStoreSbb();
+			persistence = (Persistence) childRelation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
+			if (persistence == null) {
+				persistence = (Persistence) childRelation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
+			}
+		}
+		return persistence;
 	}
 
 	/**
@@ -79,15 +115,8 @@ public abstract class AlertSbb implements Sbb {
 	}
 
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
-
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
-		}
+		this.logger.severe("Rx :  onErrorComponent" + event);
 	}
-
-//	public void onProviderErrorComponent(ProviderErrorComponent event, ActivityContextInterface aci) {
-//		this.logger.severe("Rx :  onProviderErrorComponent" + event);
-//	}
 
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
 		this.logger.severe("Rx :  onRejectComponent" + event);
@@ -110,9 +139,7 @@ public abstract class AlertSbb implements Sbb {
 	}
 
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
-		if (logger.isWarningEnabled()) {
-			this.logger.warning("Rx :  onDialogReject=" + evt);
-		}
+		this.logger.severe("Rx :  onDialogReject=" + evt);
 	}
 
 	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
@@ -130,9 +157,7 @@ public abstract class AlertSbb implements Sbb {
 	}
 
 	public void onDialogNotice(DialogNotice evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onDialogNotice" + evt);
-		}
+		this.logger.severe("Rx :  onDialogNotice=" + evt);
 	}
 
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
@@ -146,15 +171,17 @@ public abstract class AlertSbb implements Sbb {
 	}
 
 	public void onDialogRelease(DialogRelease evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			// TODO : Should be fine
-			this.logger.info("Rx :  DialogRelease" + evt);
+		if (logger.isFineEnabled()) {
+			this.logger.fine("Rx :  onDialogRelease" + evt);
 		}
 	}
 
 	public void onAlertServiceCentreRequest(AlertServiceCentreRequest evt, ActivityContextInterface aci) {
+		if (this.logger.isInfoEnabled()) {
+			this.logger.info("Received onAlertServiceCentreRequest= " + evt);
+		}
+
 		try {
-			
 			MAPDialogSms mapDialogSms = evt.getMAPDialog();
 			MAPApplicationContext mapApplicationContext = mapDialogSms.getApplicationContext();
 			if (mapApplicationContext.getApplicationContextVersion() == MAPApplicationContextVersion.version2) {
@@ -164,8 +191,67 @@ public abstract class AlertSbb implements Sbb {
 			} else {
 				mapDialogSms.release();
 			}
+
+			this.setupAlert(evt.getMsisdn(), evt.getServiceCentreAddress());
 		} catch (MAPException e) {
 			logger.severe("Exception while trying to send back AlertServiceCentreResponse", e);
+		}
+	}
+
+	private void setupAlert(ISDNAddressString msisdn, AddressString serviceCentreAddress) {
+		Persistence pers;
+		try {
+			pers = this.getStore();
+		} catch (TransactionRequiredLocalException e1) {
+			this.logger.severe("TransactionRequiredLocalException when getting Persistence object in setupAlert(): " + e1.getMessage(), e1);
+			return;
+		} catch (SLEEException e1) {
+			this.logger.severe("SLEEException when getting Persistence object in setupAlert(): " + e1.getMessage(), e1);
+			return;
+		} catch (CreateException e1) {
+			this.logger.severe("CreateException when getting Persistence object in setupAlert(): " + e1.getMessage(), e1);
+			return;
+		}
+
+		int addrTon = msisdn.getAddressNature().getIndicator();
+		int addrNpi = msisdn.getNumberingPlan().getIndicator();
+		String addr = msisdn.getAddress();
+		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(addrTon, addrNpi, addr));
+		try {
+			synchronized (lock) {
+
+				try {
+					boolean b1 = pers.checkSmsSetExists(lock);
+					if (!b1) {
+						if (this.logger.isInfoEnabled()) {
+							this.logger.info("AlertServiceCentre received but no SmsSet is present: addr=" + addr + ", ton=" + addrTon + ", npi=" + addrNpi);
+						}
+						return;
+					}
+
+					SmsSet smsSet = pers.obtainSmsSet(lock);
+					if (smsSet.getInSystem() == 2) {
+						if (this.logger.isInfoEnabled()) {
+							this.logger.info("AlertServiceCentre received but no SmsSet is already in active state (InSystem==2): addr=" + addr + ", ton="
+									+ addrTon + ", npi=" + addrNpi);
+						}
+						return;
+					}
+					if (smsSet.getInSystem() == 0) {
+						if (this.logger.isInfoEnabled()) {
+							this.logger.info("AlertServiceCentre received but no SmsSet is already in passive state (InSystem==0): addr=" + addr + ", ton="
+									+ addrTon + ", npi=" + addrNpi);
+						}
+						return;
+					}
+
+					pers.setDeliveringProcessScheduled(smsSet, new Date(), 0);
+				} catch (PersistenceException e) {
+					this.logger.severe("PersistenceException when setupAlert()" + e.getMessage(), e);
+				}
+			}
+		} finally {
+			pers.releaseSynchroObject(lock);
 		}
 	}
 

@@ -9,9 +9,25 @@
 		<sbb-version>1.0</sbb-version>
 		<sbb-alias>AlertSbb</sbb-alias>
 
+        <sbb-ref>
+            <sbb-name>StoreSbb</sbb-name>
+            <sbb-vendor>org.mobicents</sbb-vendor>
+            <sbb-version>1.0</sbb-version>
+            <sbb-alias>StoreSbb</sbb-alias>
+        </sbb-ref>
+
 		<sbb-classes>
 			<sbb-abstract-class>
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.alert.AlertSbb</sbb-abstract-class-name>
+				<get-child-relation-method>
+                    <sbb-alias-ref>
+                        StoreSbb
+                    </sbb-alias-ref>
+                    <get-child-relation-method-name>
+                        getStoreSbb
+                    </get-child-relation-method-name>
+                    <default-priority>0</default-priority>
+                </get-child-relation-method>
 			</sbb-abstract-class>
 		</sbb-classes>
 
@@ -26,6 +42,7 @@
 		</event>
 
 		<!-- SRI Sbb should not care for new dialogs -->
+
 		<event event-direction="Receive" initial-event="True">
 			<event-name>DialogRequest</event-name>
 			<event-type-ref>

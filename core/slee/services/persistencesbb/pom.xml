@@ -26,21 +26,23 @@
 			<groupId>${pom.groupId}</groupId>
 			<version>${pom.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>com.telscale.smsc</groupId>
-            <artifactId>smpp-server-ra-library</artifactId>
-            <version>${pom.version}</version>
-        </dependency>
+        	<dependency>
+            	<groupId>com.telscale.smsc</groupId>
+            	<artifactId>smpp-server-ra-library</artifactId>
+            	<version>${pom.version}</version>
+        	</dependency>
 		<dependency>
 			<groupId>org.mobicents.resources</groupId>
 			<artifactId>mobicents-slee-ra-map-ratype</artifactId>
 		</dependency>
+<!--
 		<dependency>
-            <groupId>${pom.groupId}</groupId>
-            <artifactId>alert-sbb</artifactId>
-            <version>${pom.version}</version>
-            <scope>provided</scope>
-        </dependency>
+            	<groupId>${pom.groupId}</groupId>
+            	<artifactId>alert-sbb</artifactId>
+            	<version>${pom.version}</version>
+            	<scope>provided</scope>
+        	</dependency>
+-->
 		<dependency>
 			<artifactId>smpp-server-ra-ratype</artifactId>
 			<groupId>${pom.groupId}</groupId>

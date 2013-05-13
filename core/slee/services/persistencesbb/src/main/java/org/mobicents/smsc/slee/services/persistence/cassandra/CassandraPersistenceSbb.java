@@ -108,6 +108,31 @@ public abstract class CassandraPersistenceSbb implements Sbb, Persistence {
 	// ----------------------------------------
 
 	@Override
+	public boolean checkSmsSetExists(TargetAddress ta) throws PersistenceException {
+
+		try {
+			SliceQuery<String, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, SERIALIZER_STRING, SERIALIZER_COMPOSITE,
+					ByteBufferSerializer.get());
+			query.setColumnFamily(Schema.FAMILY_LIVE);
+			query.setKey(ta.getTargetId());
+
+			query.setRange(null, null, false, 100);
+
+			QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
+			ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
+
+			if (cSlice.getColumns().size() > 0)
+				return true;
+			else
+				return false;
+		} catch (Exception e) {
+			String msg = "Failed to checkSmsSetExists SMS for '" + ta.getAddr() + ",Ton=" + ta.getAddrTon() + ",Npi=" + ta.getAddrNpi() + "'!";
+			logger.severe(msg, e);
+			throw new PersistenceException(msg, e);
+		}
+	}
+
+	@Override
 	public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException {
 
 		TargetAddress lock = this.smsSetCashe.addSmsSet(ta);

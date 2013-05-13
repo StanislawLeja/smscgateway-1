@@ -80,23 +80,6 @@ public class CassandraPersistenceSbbProxy extends CassandraPersistenceSbb {
 		}
 	}
 
-	public boolean checkSmsSetExists(TargetAddress ta) {
-		SliceQuery<String, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, SERIALIZER_STRING, SERIALIZER_COMPOSITE,
-				ByteBufferSerializer.get());
-		query.setColumnFamily(Schema.FAMILY_LIVE);
-		query.setKey(ta.getTargetId());
-
-		query.setRange(null, null, false, 100);
-
-		QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
-		ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
-
-		if (cSlice.getColumns().size() > 0)
-			return true;
-		else
-			return false;
-	}
-
 	public void deleteLiveSms(UUID id) throws PersistenceException {
 		Sms sms = new Sms();
 		sms.setDbId(id);
