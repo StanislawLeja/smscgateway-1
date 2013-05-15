@@ -35,6 +35,7 @@ import javax.slee.Sbb;
 import javax.slee.SbbContext;
 import javax.slee.TransactionRequiredLocalException;
 import javax.slee.facilities.Tracer;
+import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
@@ -75,6 +76,9 @@ import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
  */
 public abstract class AlertSbb implements Sbb {
 
+    private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String LINK = "PersistenceResourceAdaptor";
+
 	protected Tracer logger;
 	protected SbbContextExt sbbContext;
 
@@ -88,20 +92,8 @@ public abstract class AlertSbb implements Sbb {
 	public AlertSbb() {
 	}
 
-	// -------------------------------------------------------------
-    // Child relations
-    // -------------------------------------------------------------
-	public abstract ChildRelationExt getStoreSbb();
-	
-	public PersistenceRAInterface getStore() throws TransactionRequiredLocalException, SLEEException, CreateException {
-		if (persistence == null) {
-			ChildRelationExt childRelation = getStoreSbb();
-			persistence = (PersistenceRAInterface) childRelation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
-			if (persistence == null) {
-				persistence = (PersistenceRAInterface) childRelation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
-			}
-		}
-		return persistence;
+	public PersistenceRAInterface getStore() {
+		return this.persistence;
 	}
 
 	/**
@@ -199,19 +191,7 @@ public abstract class AlertSbb implements Sbb {
 	}
 
 	private void setupAlert(ISDNAddressString msisdn, AddressString serviceCentreAddress) {
-		PersistenceRAInterface pers;
-		try {
-			pers = this.getStore();
-		} catch (TransactionRequiredLocalException e1) {
-			this.logger.severe("TransactionRequiredLocalException when getting Persistence object in setupAlert(): " + e1.getMessage(), e1);
-			return;
-		} catch (SLEEException e1) {
-			this.logger.severe("SLEEException when getting Persistence object in setupAlert(): " + e1.getMessage(), e1);
-			return;
-		} catch (CreateException e1) {
-			this.logger.severe("CreateException when getting Persistence object in setupAlert(): " + e1.getMessage(), e1);
-			return;
-		}
+		PersistenceRAInterface pers = this.getStore();
 
 		int addrTon = msisdn.getAddressNature().getIndicator();
 		int addrNpi = msisdn.getNumberingPlan().getIndicator();
@@ -323,6 +303,7 @@ public abstract class AlertSbb implements Sbb {
 			this.mapParameterFactory = this.mapProvider.getMAPParameterFactory();
 
 			this.logger = this.sbbContext.getTracer(AlertSbb.class.getSimpleName());
+			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
 
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);

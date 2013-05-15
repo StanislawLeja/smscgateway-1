@@ -87,16 +87,14 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 	private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
 	protected SmppSessions smppServerSessions = null;
-	protected PersistenceRAInterface store = null;
+	protected PersistenceRAInterface persistence = null;
 
 	public TxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
 	}
 
-
-
-	public PersistenceRAInterface getStore() throws TransactionRequiredLocalException, SLEEException, CreateException {
-		return this.store;
+	public PersistenceRAInterface getStore() {
+		return this.persistence;
 	}
 
 	/**
@@ -115,7 +113,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		Sms sms;
 		try {
 			TargetAddress ta = createDestTargetAddress(event);
-			PersistenceRAInterface store = obtainStore(ta);
+			PersistenceRAInterface store = getStore();
 			TargetAddress lock = store.obtainSynchroObject(ta);
 
 			try {
@@ -189,10 +187,6 @@ public abstract class TxSmppServerSbb implements Sbb {
 		}
 	}
 
-	private PersistenceRAInterface obtainStore(TargetAddress ta) throws SmscProcessingException {
-		return store;
-	}
-
 	public void onDataSm(com.cloudhopper.smpp.pdu.DataSm event, ActivityContextInterface aci) {
 		SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
 		Esme esme = smppServerTransaction.getEsme();
@@ -205,7 +199,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		Sms sms;
 		try {
 			TargetAddress ta = createDestTargetAddress(event);
-			PersistenceRAInterface store = obtainStore(ta);
+			PersistenceRAInterface store = getStore();
 			TargetAddress lock = store.obtainSynchroObject(ta);
 
 			try {
@@ -413,7 +407,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 			this.logger = this.sbbContext.getTracer(getClass().getSimpleName());
 			
-			this.store = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
+			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}

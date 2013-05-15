@@ -99,8 +99,7 @@ public class DBOperations {
 
     public static SmsSet obtainSmsSet(final Keyspace keyspace, final TargetAddress ta) throws PersistenceException {
 
-        // TODO
-        final TargetAddress lock = null;
+		TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(ta);
         try {
             synchronized (lock) {
                 try {
@@ -154,9 +153,7 @@ public class DBOperations {
                 }
             }
         } finally {
-            // TODO:
-            // this.smsSetCashe.removeSmsSet(lock);
-
+        	SmsSetCashe.getInstance().removeSmsSet(lock);
         }
     }
 
@@ -364,8 +361,7 @@ public class DBOperations {
 
     public static boolean deleteSmsSet(final Keyspace keyspace, final SmsSet smsSet) throws PersistenceException {
 
-        // TOOD
-        final TargetAddress lock = null;
+    	TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
         try {
             synchronized (lock) {
 
@@ -393,8 +389,7 @@ public class DBOperations {
                 return true;
             }
         } finally {
-            // TOOD
-            // this.smsSetCashe.removeSmsSet(lock);
+        	SmsSetCashe.getInstance().removeSmsSet(lock);
         }
     }
 

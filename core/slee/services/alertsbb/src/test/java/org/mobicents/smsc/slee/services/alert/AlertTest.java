@@ -215,11 +215,5 @@ public class AlertTest {
 		public PersistenceRAInterface getStore() {
 			return cassandraSbb;
 		}
-
-		@Override
-		public ChildRelationExt getStoreSbb() {
-			// TODO Auto-generated method stub
-			return null;
-		}
 	}
 }

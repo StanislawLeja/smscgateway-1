@@ -84,30 +84,17 @@ public abstract class MoCommonSbb implements Sbb {
 	
 	protected SmppSessions smppServerSessions = null;
 
-	protected PersistenceRAInterface store;
+	protected PersistenceRAInterface persistence;
 	public MoCommonSbb(String className) {
 		this.className = className;
 	}
 
-	public PersistenceRAInterface getStore() throws TransactionRequiredLocalException, SLEEException, CreateException {
-		
-		return this.store;
+	public PersistenceRAInterface getStore() {
+		return this.persistence;
 	}
 
 	protected PersistenceRAInterface obtainStore(TargetAddress ta) throws SmscProcessingException {
-	    PersistenceRAInterface store;
-		try {
-			store = this.getStore();
-		} catch (TransactionRequiredLocalException e1) {
-			throw new SmscProcessingException("TransactionRequiredLocalException when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
-					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
-		} catch (SLEEException e1) {
-			throw new SmscProcessingException("SLEEException when reading SmsSet when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
-					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
-		} catch (CreateException e1) {
-			throw new SmscProcessingException("CreateException when reading SmsSet when getting PersistenceSbb: " + ta.toString() + "\n" + e1.getMessage(),
-					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
-		}
+	    PersistenceRAInterface store = this.getStore();
 		return store;
 	}
 
@@ -269,7 +256,7 @@ public abstract class MoCommonSbb implements Sbb {
 			this.smppServerSessions = (SmppSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
 
 			this.logger = this.sbbContext.getTracer(this.className);
-			this.store = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
+			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}

@@ -28,8 +28,8 @@
 			<version>${jslee.ext.version}</version>
 		</dependency>
 		<dependency>
-			<artifactId>persistence-sbb</artifactId>
 			<groupId>${pom.groupId}</groupId>
+			<artifactId>persistence-sbb</artifactId>
 			<version>${pom.version}</version>
 		</dependency>			
 		<dependency>
@@ -53,8 +53,8 @@
 					<scope>test</scope>
 				</dependency>
 				<dependency>
-					<artifactId>persistence-sbb</artifactId>
 					<groupId>${pom.groupId}</groupId>
+					<artifactId>persistence-ra</artifactId>
 					<version>${pom.version}</version>
 					<type>test-jar</type>
 				</dependency>			
