@@ -24,6 +24,7 @@ package org.mobicents.smsc.slee.resources.peristence;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
@@ -34,13 +35,19 @@ import org.mobicents.smsc.slee.resources.peristence.Sms;
 import org.mobicents.smsc.slee.resources.peristence.SmsSet;
 import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
 
-import com.eaio.uuid.UUID;
-
 /**
  * @author baranowb
  * 
  */
 public interface PersistenceRAInterface {
+
+	/**
+	 * Checks if SmsSet exists in LIVE table
+	 * 
+	 * @param ta
+	 * @return true: exists, false: does not exist
+	 */
+	public boolean checkSmsSetExists(TargetAddress ta) throws PersistenceException;
 
     /**
      * Searching SmsSet for TargetAddress in LIVE table 
@@ -221,6 +228,14 @@ public interface PersistenceRAInterface {
      * @throws PersistenceException
      */
     public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount) throws PersistenceException;
+
+	/**
+	 * Fill SmsSet with sms from LIVE_SMS
+	 * 
+	 * @param smsSet
+	 * @throws PersistenceException
+	 */
+	public void fetchSchedulableSms(SmsSet smsSet) throws PersistenceException;
     
     /**
      * Obtaining synchronizing object for a TargetAddress
@@ -235,5 +250,4 @@ public interface PersistenceRAInterface {
      */
     public void releaseSynchroObject(TargetAddress ta);
 
-    public void fetchSchedulableSms(SmsSet smsSet);
 }

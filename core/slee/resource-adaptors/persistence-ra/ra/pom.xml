@@ -17,6 +17,47 @@
 			<artifactId>persistence-ratype</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
+
+		<dependency>
+			<artifactId>smpp-server-ra-ratype</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<artifactId>smpp-server-ra-library</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>${testng.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<addMavenDescriptor>false</addMavenDescriptor>
+					</archive>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>

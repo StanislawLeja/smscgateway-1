@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
-<<<<<<< HEAD
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
@@ -76,25 +75,18 @@ import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextNameImpl;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogReject;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
-import org.mobicents.smsc.slee.services.persistence.CassandraPersistenceSbbProxy;
-import org.mobicents.smsc.slee.services.persistence.ErrorCode;
-import org.mobicents.smsc.slee.services.persistence.MAPDialogSmsProxy;
-import org.mobicents.smsc.slee.services.persistence.MAPDialogSmsProxy.MAPTestEvent;
-import org.mobicents.smsc.slee.services.persistence.MAPDialogSmsProxy.MAPTestEventType;
-import org.mobicents.smsc.slee.services.persistence.MAPServiceSmsProxy;
-import org.mobicents.smsc.slee.services.persistence.MessageUtil;
-import org.mobicents.smsc.slee.services.persistence.PersistenceException;
-import org.mobicents.smsc.slee.services.persistence.Sms;
-import org.mobicents.smsc.slee.services.persistence.SmsProxy;
-import org.mobicents.smsc.slee.services.persistence.SmsSet;
-import org.mobicents.smsc.slee.services.persistence.TargetAddress;
-=======
-import org.mobicents.smsc.slee.resources.peristence.CassandraPersistenceSbbProxy;
+import org.mobicents.smsc.slee.resources.peristence.ErrorCode;
+import org.mobicents.smsc.slee.resources.peristence.MAPDialogSmsProxy;
+import org.mobicents.smsc.slee.resources.peristence.MAPServiceSmsProxy;
+import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
 import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.peristence.Sms;
+import org.mobicents.smsc.slee.resources.peristence.SmsProxy;
 import org.mobicents.smsc.slee.resources.peristence.SmsSet;
 import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
->>>>>>> persistence-ra second commit
+import org.mobicents.smsc.slee.resources.peristence.MAPDialogSmsProxy.MAPTestEvent;
+import org.mobicents.smsc.slee.resources.peristence.MAPDialogSmsProxy.MAPTestEventType;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.AfterMethod;
@@ -114,7 +106,7 @@ public class MtTest {
 	private RsdsSbbProxy rsdsSbb;
 	private MtSbbProxy mtSbb;
 	private SriSbbProxy sriSbb;
-	private CassandraPersistenceSbbProxy pers;
+	private PersistenceRAInterfaceProxy pers;
 	private boolean cassandraDbInited;
 	private Date curDate;
 
@@ -137,7 +129,7 @@ public class MtTest {
 		smscPropertiesManagement.setHlrSsn(6);
 		smscPropertiesManagement.setMscSsn(8);
 
-		this.pers = new CassandraPersistenceSbbProxy();
+		this.pers = new PersistenceRAInterfaceProxy();
 		this.cassandraDbInited = this.pers.testCassandraAccess();
 		if (!this.cassandraDbInited)
 			return;

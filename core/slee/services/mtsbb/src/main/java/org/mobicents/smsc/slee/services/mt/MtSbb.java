@@ -29,9 +29,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import javax.slee.ActivityContextInterface;
-import javax.slee.CreateException;
-import javax.slee.SLEEException;
-import javax.slee.TransactionRequiredLocalException;
 
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
@@ -89,7 +86,13 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.resources.peristence.*;
+import org.mobicents.smsc.slee.resources.peristence.ErrorCode;
+import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.peristence.Sms;
+import org.mobicents.smsc.slee.resources.peristence.SmsSet;
+import org.mobicents.smsc.slee.resources.peristence.SmscProcessingException;
 
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -596,11 +599,11 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		}
 
 		// no more messages are in cache now - lets check if there are more messages in a database
-		//try {
+		try {
 			pers.fetchSchedulableSms(smsSet);
-		//} catch (PersistenceException e1) {
-		//	this.logger.severe("PersistenceException when invoking fetchSchedulableSms(smsSet) from handleSmsResponse(): " + e1.toString(), e1);
-		//}
+		} catch (PersistenceException e1) {
+			this.logger.severe("PersistenceException when invoking fetchSchedulableSms(smsSet) from handleSmsResponse(): " + e1.toString(), e1);
+		}
 		if (smsSet.getSmsCount() > 0) {
 			// there are more messages in a database - start delivering of those messages
 			currentMsgNum = 0;

@@ -2,6 +2,7 @@ package org.mobicents.smsc.slee.resources.peristence;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.slee.Address;
 import javax.slee.facilities.Tracer;
@@ -25,8 +26,6 @@ import org.mobicents.smsc.slee.resources.peristence.SmType;
 import org.mobicents.smsc.slee.resources.peristence.Sms;
 import org.mobicents.smsc.slee.resources.peristence.SmsSet;
 import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
-
-import com.eaio.uuid.UUID;
 
 import me.prettyprint.cassandra.model.ConfigurableConsistencyLevel;
 import me.prettyprint.hector.api.Cluster;
@@ -56,136 +55,115 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
     public PersistenceResourceAdaptor() {
         this.raSbbInterface = new PersistenceRAInterface() {
 
-            @Override
-            public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException {
-                // TODO Auto-generated method stub
-                return null;
-            }
+        	@Override
+        	public boolean checkSmsSetExists(TargetAddress ta) throws PersistenceException {
+        		return DBOperations.checkSmsSetExists(keyspace, ta);
+        	}
 
-            @Override
-            public void setNewMessageScheduled(SmsSet smsSet, Date newDueDate) throws PersistenceException {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException {
+        		return DBOperations.obtainSmsSet(keyspace, ta);
+        	}
 
-            @Override
-            public void setDeliveringProcessScheduled(SmsSet smsSet, Date newDueDate, int newDueDelay)
-                    throws PersistenceException {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public void setNewMessageScheduled(SmsSet smsSet, Date newDueDate) throws PersistenceException {
+        		DBOperations.setNewMessageScheduled(keyspace, smsSet, newDueDate);
+        	}
 
-            @Override
-            public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId,
-                    SmType type) {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public void setDeliveringProcessScheduled(SmsSet smsSet, Date newDueDate, int newDueDelay) throws PersistenceException {
+        		DBOperations.setDeliveringProcessScheduled(keyspace, smsSet, newDueDate, newDueDelay);
+        	}
 
-            @Override
-            public void setRoutingInfo(SmsSet smsSet, IMSI imsi, LocationInfoWithLMSI locationInfoWithLMSI) {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId, SmType type) {
+        		DBOperations.setDestination(smsSet, destClusterName, destSystemId, destEsmeId, type);
+        	}
 
-            @Override
-            public void setDeliveryStart(SmsSet smsSet, Date inSystemDate) throws PersistenceException {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public void setRoutingInfo(SmsSet smsSet, IMSI imsi, LocationInfoWithLMSI locationInfoWithLMSI) {
+        		DBOperations.setRoutingInfo(smsSet, imsi, locationInfoWithLMSI);
+        	}
 
-            @Override
-            public void setDeliveryStart(Sms sms) throws PersistenceException {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public void setDeliveryStart(SmsSet smsSet, Date inSystemDate) throws PersistenceException {
+        		DBOperations.setDeliveryStart(keyspace, smsSet, inSystemDate);
+        	}
 
-            @Override
-            public void setDeliverySuccess(SmsSet smsSet, Date lastDelivery) throws PersistenceException {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public void setDeliveryStart(Sms sms) throws PersistenceException {
+        		DBOperations.setDeliveryStart(keyspace, sms);
+        	}
 
-            @Override
-            public void setDeliveryFailure(SmsSet smsSet, ErrorCode smStatus, Date lastDelivery) throws PersistenceException {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public void setDeliverySuccess(SmsSet smsSet, Date lastDelivery) throws PersistenceException {
+        		DBOperations.setDeliverySuccess(keyspace, smsSet, lastDelivery);
+        	}
 
-            @Override
-            public void setAlertingSupported(String targetId, boolean alertingSupported) throws PersistenceException {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public void setDeliveryFailure(SmsSet smsSet, ErrorCode smStatus, Date lastDelivery) throws PersistenceException {
+        		DBOperations.setDeliveryFailure(keyspace, smsSet, smStatus, lastDelivery);
+        	}
 
-            @Override
-            public boolean deleteSmsSet(SmsSet smsSet) throws PersistenceException {
-                // TODO Auto-generated method stub
-                return false;
-            }
+        	@Override
+        	public void setAlertingSupported(String targetId, boolean alertingSupported) throws PersistenceException {
+        		DBOperations.setAlertingSupported(keyspace, targetId, alertingSupported);
+        	}
 
-            @Override
-            public void createLiveSms(Sms sms) throws PersistenceException {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public boolean deleteSmsSet(SmsSet smsSet) throws PersistenceException {
+        		return DBOperations.deleteSmsSet(keyspace, smsSet);
+        	}
 
-            @Override
-            public Sms obtainLiveSms(UUID dbId) throws PersistenceException {
-                // TODO Auto-generated method stub
-                return null;
-            }
+        	@Override
+        	public void createLiveSms(Sms sms) throws PersistenceException {
+        		DBOperations.createLiveSms(keyspace, sms);
+        	}
 
-            @Override
-            public Sms obtainLiveSms(long messageId) throws PersistenceException {
-                // TODO Auto-generated method stub
-                return null;
-            }
+        	@Override
+        	public Sms obtainLiveSms(UUID dbId) throws PersistenceException {
+        		return DBOperations.obtainLiveSms(keyspace, dbId);
+        	}
 
-            @Override
-            public void updateLiveSms(Sms sms) throws PersistenceException {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public Sms obtainLiveSms(long messageId) throws PersistenceException {
+        		return DBOperations.obtainLiveSms(keyspace, messageId);
+        	}
 
-            @Override
-            public void archiveDeliveredSms(Sms sms, Date deliveryDate) throws PersistenceException {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public void updateLiveSms(Sms sms) throws PersistenceException {
+        		DBOperations.updateLiveSms(keyspace, sms);
+        	}
 
-            @Override
-            public void archiveFailuredSms(Sms sms) throws PersistenceException {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public void archiveDeliveredSms(Sms sms, Date deliveryDate) throws PersistenceException {
+        		DBOperations.archiveDeliveredSms(keyspace, sms, deliveryDate);
+        	}
 
-            @Override
-            public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount) throws PersistenceException {
-                // TODO Auto-generated method stub
-                return null;
-            }
+        	@Override
+        	public void archiveFailuredSms(Sms sms) throws PersistenceException {
+        		DBOperations.archiveFailuredSms(keyspace, sms);
+        	}
 
-            @Override
-            public TargetAddress obtainSynchroObject(TargetAddress ta) {
-                // TODO Auto-generated method stub
-                return null;
-            }
+        	@Override
+        	public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount) throws PersistenceException {
+        		return DBOperations.fetchSchedulableSmsSets(keyspace, maxRecordCount);
+        	}
 
-            @Override
-            public void releaseSynchroObject(TargetAddress ta) {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public TargetAddress obtainSynchroObject(TargetAddress ta) {
+        		return SmsSetCashe.getInstance().addSmsSet(ta);
+        	}
 
-            @Override
-            public void fetchSchedulableSms(SmsSet smsSet) {
-                // TODO Auto-generated method stub
-                
-            }
+        	@Override
+        	public void releaseSynchroObject(TargetAddress ta) {
+            	SmsSetCashe.getInstance().removeSmsSet(ta);
+        	}
 
-
-           
+        	@Override
+        	public void fetchSchedulableSms(SmsSet smsSet) throws PersistenceException {
+        		DBOperations.fetchSchedulableSms(keyspace, smsSet);
+        	}
         };
     }
 

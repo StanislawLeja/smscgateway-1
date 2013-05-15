@@ -41,18 +41,10 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.slee.ChildRelationExt;
-<<<<<<< HEAD
 import org.mobicents.slee.SbbLocalObjectExt;
-import org.mobicents.smsc.slee.services.persistence.CassandraPersistenceSbbProxy;
-import org.mobicents.smsc.slee.services.persistence.MAPProviderProxy;
-import org.mobicents.smsc.slee.services.persistence.Persistence;
-import org.mobicents.smsc.slee.services.persistence.TraceProxy;
-=======
-import org.mobicents.smsc.slee.resources.peristence.CassandraPersistenceSbbProxy;
 import org.mobicents.smsc.slee.resources.peristence.MAPProviderProxy;
-import org.mobicents.smsc.slee.resources.peristence.Persistence;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.peristence.TraceProxy;
->>>>>>> persistence-ra second commit
 
 /**
  * 
@@ -61,10 +53,10 @@ import org.mobicents.smsc.slee.resources.peristence.TraceProxy;
  */
 public class MtSbbProxy extends MtSbb implements ChildRelation, MtSbbLocalObject, SbbLocalObjectExt {
 
-	private CassandraPersistenceSbbProxy cassandraSbb;
+	private PersistenceRAInterfaceProxy cassandraSbb;
 	private SriSbbProxy sriSbb;
 
-	public MtSbbProxy(CassandraPersistenceSbbProxy pers) {
+	public MtSbbProxy(PersistenceRAInterfaceProxy pers) {
 		this.cassandraSbb = pers;
 		this.logger = new TraceProxy();
 
@@ -81,7 +73,7 @@ public class MtSbbProxy extends MtSbb implements ChildRelation, MtSbbLocalObject
 	}
 
 	@Override
-	public Persistence getStore() {
+	public PersistenceRAInterfaceProxy getStore() {
 		return cassandraSbb;
 	}
 
@@ -185,15 +177,6 @@ public class MtSbbProxy extends MtSbb implements ChildRelation, MtSbbLocalObject
 	@Override
 	public SmsSignalInfo[] getSegments() {
 		return this.segments;
-	}
-
-
-	
-	
-	@Override
-	public ChildRelationExt getStoreSbb() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

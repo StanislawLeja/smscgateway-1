@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
-import org.mobicents.smsc.slee.resources.peristence.CassandraPersistenceSbbProxy;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.peristence.ErrorCode;
 import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
 import org.mobicents.smsc.slee.resources.peristence.Sms;
@@ -51,7 +51,7 @@ import com.cloudhopper.smpp.tlv.Tlv;
 public class MtDatabaseCassandraTest {
 
 	private MtSbbProxy sbb;
-	private CassandraPersistenceSbbProxy pers;
+	private PersistenceRAInterfaceProxy pers;
 	private boolean cassandraDbInited;
 	private Date curDate;
 
@@ -66,7 +66,7 @@ public class MtDatabaseCassandraTest {
 	public void setUpClass() throws Exception {
 		System.out.println("setUpClass");
 
-		this.pers = new CassandraPersistenceSbbProxy();
+		this.pers = new PersistenceRAInterfaceProxy();
 		this.cassandraDbInited = this.pers.testCassandraAccess();
 		if (!this.cassandraDbInited)
 			return;

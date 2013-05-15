@@ -75,12 +75,12 @@ import org.mobicents.protocols.ss7.map.smstpdu.ValidityPeriodImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
-import org.mobicents.smsc.slee.resources.peristence.CassandraPersistenceSbbProxy;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.peristence.MAPDialogSmsProxy;
 import org.mobicents.smsc.slee.resources.peristence.MAPProviderProxy;
 import org.mobicents.smsc.slee.resources.peristence.MAPServiceSmsProxy;
 import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
-import org.mobicents.smsc.slee.resources.peristence.Persistence;
 import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
 import org.mobicents.smsc.slee.resources.peristence.SmppSessionsProxy;
 import org.mobicents.smsc.slee.resources.peristence.Sms;
@@ -103,7 +103,7 @@ import com.cloudhopper.smpp.SmppConstants;
 public class MoSbbTest {
 
 	private MoSbbProxy sbb;
-	private CassandraPersistenceSbbProxy pers;
+	private PersistenceRAInterfaceProxy pers;
 	private boolean cassandraDbInited;
 
 	private TargetAddress ta1 = new TargetAddress(1, 1, "5555");
@@ -114,7 +114,7 @@ public class MoSbbTest {
 	public void setUpClass() throws Exception {
 		System.out.println("setUpClass");
 
-		this.pers = new CassandraPersistenceSbbProxy();
+		this.pers = new PersistenceRAInterfaceProxy();
 		this.cassandraDbInited = this.pers.testCassandraAccess();
 		if (!this.cassandraDbInited)
 			return;
@@ -519,21 +519,15 @@ public class MoSbbTest {
 
 	private class MoSbbProxy extends MoSbb {
 
-		private CassandraPersistenceSbbProxy cassandraSbb;
+		private PersistenceRAInterfaceProxy cassandraSbb;
 
-		public MoSbbProxy(CassandraPersistenceSbbProxy cassandraSbb) {
+		public MoSbbProxy(PersistenceRAInterfaceProxy cassandraSbb) {
 			this.cassandraSbb = cassandraSbb;
 			this.logger = new TraceProxy();
 		}
 
 		@Override
-		public ChildRelationExt getStoreSbb() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Persistence getStore() {
+		public PersistenceRAInterface getStore() {
 			return cassandraSbb;
 		}
 

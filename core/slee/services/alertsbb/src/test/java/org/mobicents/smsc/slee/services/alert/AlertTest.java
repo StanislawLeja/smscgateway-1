@@ -40,17 +40,17 @@ import org.mobicents.protocols.ss7.map.primitives.AddressStringImpl;
 import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.mobicents.protocols.ss7.map.service.sms.AlertServiceCentreRequestImpl;
 import org.mobicents.slee.ChildRelationExt;
-import org.mobicents.smsc.slee.services.persistence.CassandraPersistenceSbbProxy;
-import org.mobicents.smsc.slee.services.persistence.MAPDialogSmsProxy;
-import org.mobicents.smsc.slee.services.persistence.MAPProviderProxy;
-import org.mobicents.smsc.slee.services.persistence.MAPServiceSmsProxy;
-import org.mobicents.smsc.slee.services.persistence.MessageUtil;
-import org.mobicents.smsc.slee.services.persistence.Persistence;
-import org.mobicents.smsc.slee.services.persistence.PersistenceException;
-import org.mobicents.smsc.slee.services.persistence.Sms;
-import org.mobicents.smsc.slee.services.persistence.SmsSet;
-import org.mobicents.smsc.slee.services.persistence.TargetAddress;
-import org.mobicents.smsc.slee.services.persistence.TraceProxy;
+import org.mobicents.smsc.slee.resources.peristence.MAPDialogSmsProxy;
+import org.mobicents.smsc.slee.resources.peristence.MAPProviderProxy;
+import org.mobicents.smsc.slee.resources.peristence.MAPServiceSmsProxy;
+import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterfaceProxy;
+import org.mobicents.smsc.slee.resources.peristence.Sms;
+import org.mobicents.smsc.slee.resources.peristence.SmsSet;
+import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
+import org.mobicents.smsc.slee.resources.peristence.TraceProxy;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -64,7 +64,7 @@ import org.testng.annotations.Test;
 public class AlertTest {
 
 	private AlertSbbProxy sbb;
-	private CassandraPersistenceSbbProxy pers;
+	private PersistenceRAInterfaceProxy pers;
 	private boolean cassandraDbInited;
 
 	private TargetAddress ta1 = new TargetAddress(1, 1, "5555");
@@ -75,7 +75,7 @@ public class AlertTest {
 	public void setUpClass() throws Exception {
 		System.out.println("setUpClass");
 
-		this.pers = new CassandraPersistenceSbbProxy();
+		this.pers = new PersistenceRAInterfaceProxy();
 		this.cassandraDbInited = this.pers.testCassandraAccess();
 		if (!this.cassandraDbInited)
 			return;
@@ -204,15 +204,15 @@ public class AlertTest {
 
 	private class AlertSbbProxy extends AlertSbb {
 
-		private CassandraPersistenceSbbProxy cassandraSbb;
+		private PersistenceRAInterfaceProxy cassandraSbb;
 
-		public AlertSbbProxy(CassandraPersistenceSbbProxy cassandraSbb) {
+		public AlertSbbProxy(PersistenceRAInterfaceProxy cassandraSbb) {
 			this.cassandraSbb = cassandraSbb;
 			this.logger = new TraceProxy();
 		}
 
 		@Override
-		public Persistence getStore() {
+		public PersistenceRAInterface getStore() {
 			return cassandraSbb;
 		}
 

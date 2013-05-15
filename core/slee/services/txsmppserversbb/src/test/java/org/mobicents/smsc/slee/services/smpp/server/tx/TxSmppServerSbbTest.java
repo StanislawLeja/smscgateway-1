@@ -36,9 +36,8 @@ import javax.slee.TransactionRolledbackLocalException;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
-import org.mobicents.smsc.slee.resources.peristence.CassandraPersistenceSbbProxy;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
-import org.mobicents.smsc.slee.resources.peristence.Persistence;
 import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
 import org.mobicents.smsc.slee.resources.peristence.SmppSessionsProxy;
 import org.mobicents.smsc.slee.resources.peristence.Sms;
@@ -71,7 +70,7 @@ import com.cloudhopper.smpp.type.Address;
 public class TxSmppServerSbbTest {
 
 	private TxSmppServerSbbProxy sbb;
-	private CassandraPersistenceSbbProxy pers;
+	private PersistenceRAInterfaceProxy pers;
 	private SmppSessionsProxy smppSess;
 	private boolean cassandraDbInited;
 
@@ -84,7 +83,7 @@ public class TxSmppServerSbbTest {
 	public void setUpClass() throws Exception {
 		System.out.println("setUpClass");
 
-		this.pers = new CassandraPersistenceSbbProxy();
+		this.pers = new PersistenceRAInterfaceProxy();
 		this.cassandraDbInited = this.pers.testCassandraAccess();
 		if (!this.cassandraDbInited)
 			return;
@@ -362,21 +361,15 @@ public class TxSmppServerSbbTest {
 
 	private class TxSmppServerSbbProxy extends TxSmppServerSbb {
 
-		private CassandraPersistenceSbbProxy cassandraSbb;
+		private PersistenceRAInterfaceProxy cassandraSbb;
 
-		public TxSmppServerSbbProxy(CassandraPersistenceSbbProxy cassandraSbb) {
+		public TxSmppServerSbbProxy(PersistenceRAInterfaceProxy cassandraSbb) {
 			this.cassandraSbb = cassandraSbb;
 			this.logger = new TraceProxy();
 		}
 
 		@Override
-		public ChildRelationExt getStoreSbb() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Persistence getStore() {
+		public PersistenceRAInterfaceProxy getStore() {
 			return cassandraSbb;
 		}
 

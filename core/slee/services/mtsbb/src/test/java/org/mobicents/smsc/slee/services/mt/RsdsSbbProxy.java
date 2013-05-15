@@ -36,10 +36,9 @@ import javax.slee.TransactionRolledbackLocalException;
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbLocalObjectExt;
-import org.mobicents.smsc.slee.services.persistence.CassandraPersistenceSbbProxy;
-import org.mobicents.smsc.slee.services.persistence.MAPProviderProxy;
-import org.mobicents.smsc.slee.services.persistence.Persistence;
-import org.mobicents.smsc.slee.services.persistence.TraceProxy;
+import org.mobicents.smsc.slee.resources.peristence.MAPProviderProxy;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterfaceProxy;
+import org.mobicents.smsc.slee.resources.peristence.TraceProxy;
 
 /**
  * 
@@ -48,11 +47,11 @@ import org.mobicents.smsc.slee.services.persistence.TraceProxy;
  */
 public class RsdsSbbProxy extends RsdsSbb implements ChildRelation, SbbLocalObject, RsdsSbbLocalObject, SbbLocalObjectExt {
 
-	private CassandraPersistenceSbbProxy pers;
+	private PersistenceRAInterfaceProxy pers;
 	private String targetId;
 	private SMDeliveryOutcome smDeliveryOutcome;
 
-	public RsdsSbbProxy(CassandraPersistenceSbbProxy pers) {
+	public RsdsSbbProxy(PersistenceRAInterfaceProxy pers) {
 		this.pers = pers;
 		this.logger = new TraceProxy();
 
@@ -62,7 +61,7 @@ public class RsdsSbbProxy extends RsdsSbb implements ChildRelation, SbbLocalObje
 	}
 
 	@Override
-	public Persistence getStore() {
+	public PersistenceRAInterfaceProxy getStore() {
 		return pers;
 	}
 
@@ -80,12 +79,6 @@ public class RsdsSbbProxy extends RsdsSbb implements ChildRelation, SbbLocalObje
 	@Override
 	public String getTargetId() {
 		return this.targetId;
-	}
-
-	@Override
-	public ChildRelationExt getStoreSbb() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

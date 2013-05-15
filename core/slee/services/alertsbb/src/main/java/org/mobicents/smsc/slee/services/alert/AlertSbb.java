@@ -62,10 +62,10 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.services.persistence.Persistence;
-import org.mobicents.smsc.slee.services.persistence.PersistenceException;
-import org.mobicents.smsc.slee.services.persistence.SmsSet;
-import org.mobicents.smsc.slee.services.persistence.TargetAddress;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.peristence.SmsSet;
+import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
 
 /**
  * 
@@ -82,7 +82,7 @@ public abstract class AlertSbb implements Sbb {
 	protected MAPProvider mapProvider;
 	protected MAPParameterFactory mapParameterFactory;
 
-	protected Persistence persistence;
+	protected PersistenceRAInterface persistence;
 
 
 	public AlertSbb() {
@@ -93,12 +93,12 @@ public abstract class AlertSbb implements Sbb {
     // -------------------------------------------------------------
 	public abstract ChildRelationExt getStoreSbb();
 	
-	public Persistence getStore() throws TransactionRequiredLocalException, SLEEException, CreateException {
+	public PersistenceRAInterface getStore() throws TransactionRequiredLocalException, SLEEException, CreateException {
 		if (persistence == null) {
 			ChildRelationExt childRelation = getStoreSbb();
-			persistence = (Persistence) childRelation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
+			persistence = (PersistenceRAInterface) childRelation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
 			if (persistence == null) {
-				persistence = (Persistence) childRelation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
+				persistence = (PersistenceRAInterface) childRelation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
 			}
 		}
 		return persistence;
@@ -199,7 +199,7 @@ public abstract class AlertSbb implements Sbb {
 	}
 
 	private void setupAlert(ISDNAddressString msisdn, AddressString serviceCentreAddress) {
-		Persistence pers;
+		PersistenceRAInterface pers;
 		try {
 			pers = this.getStore();
 		} catch (TransactionRequiredLocalException e1) {

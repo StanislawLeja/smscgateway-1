@@ -1,3 +1,25 @@
+/*
+ * TeleStax, Open Source Cloud Communications  Copyright 2012. 
+ * and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.mobicents.smsc.slee.resources.peristence;
 
 import java.io.ByteArrayInputStream;
@@ -36,18 +58,46 @@ import me.prettyprint.hector.api.query.SliceQuery;
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 
-
+/**
+ * 
+ * @author baranowb
+ * @author sergey vetyutnev
+ * 
+ */
 public class DBOperations {
-    private static final String TLV_SET = "tlvSet";
+    public static final String TLV_SET = "tlvSet";
 
-    private final static CompositeSerializer SERIALIZER_COMPOSITE = CompositeSerializer.get();
-    private final static BooleanSerializer SERIALIZER_BOOLEAN = BooleanSerializer.get();
-    private final static DateSerializer SERIALIZER_DATE = DateSerializer.get();
-    private final static StringSerializer SERIALIZER_STRING = StringSerializer.get();
-    private final static IntegerSerializer SERIALIZER_INTEGER = IntegerSerializer.get();
-    private final static BytesArraySerializer SERIALIZER_BYTE_ARRAY = BytesArraySerializer.get();
+    public final static CompositeSerializer SERIALIZER_COMPOSITE = CompositeSerializer.get();
+    public final static BooleanSerializer SERIALIZER_BOOLEAN = BooleanSerializer.get();
+    public final static DateSerializer SERIALIZER_DATE = DateSerializer.get();
+    public final static StringSerializer SERIALIZER_STRING = StringSerializer.get();
+    public final static IntegerSerializer SERIALIZER_INTEGER = IntegerSerializer.get();
+    public final static BytesArraySerializer SERIALIZER_BYTE_ARRAY = BytesArraySerializer.get();
 
-    public SmsSet obtainSmsSet(final Keyspace keyspace, final TargetAddress ta) throws PersistenceException {
+	public static boolean checkSmsSetExists(final Keyspace keyspace, final TargetAddress ta) throws PersistenceException {
+
+		try {
+			SliceQuery<String, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, SERIALIZER_STRING, SERIALIZER_COMPOSITE,
+					ByteBufferSerializer.get());
+			query.setColumnFamily(Schema.FAMILY_LIVE);
+			query.setKey(ta.getTargetId());
+
+			query.setRange(null, null, false, 100);
+
+			QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
+			ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
+
+			if (cSlice.getColumns().size() > 0)
+				return true;
+			else
+				return false;
+		} catch (Exception e) {
+			String msg = "Failed to checkSmsSetExists SMS for '" + ta.getAddr() + ",Ton=" + ta.getAddrTon() + ",Npi=" + ta.getAddrNpi() + "'!";
+			throw new PersistenceException(msg, e);
+		}
+	}
+
+    public static SmsSet obtainSmsSet(final Keyspace keyspace, final TargetAddress ta) throws PersistenceException {
 
         // TODO
         final TargetAddress lock = null;
@@ -66,7 +116,7 @@ public class DBOperations {
                     // List<HColumn<Composite, ByteBuffer>> lst =
                     // cSlice.getColumns();
 
-                    SmsSet smsSet = this.createSmsSet(cSlice);
+                    SmsSet smsSet = createSmsSet(cSlice);
 
                     if (smsSet.getDestAddr() == null) {
                         smsSet = new SmsSet();
@@ -110,7 +160,7 @@ public class DBOperations {
         }
     }
 
-    public void setNewMessageScheduled(final Keyspace keyspace, final SmsSet smsSet, final Date newDueDate)
+    public static void setNewMessageScheduled(final Keyspace keyspace, final SmsSet smsSet, final Date newDueDate)
             throws PersistenceException {
 
         if (smsSet.getInSystem() == 2)
@@ -148,7 +198,7 @@ public class DBOperations {
         }
     }
 
-    public void setDeliveringProcessScheduled(final Keyspace keyspace, final SmsSet smsSet, final Date newDueDate,
+    public static void setDeliveringProcessScheduled(final Keyspace keyspace, final SmsSet smsSet, final Date newDueDate,
             final int newDueDelay) throws PersistenceException {
 
         try {
@@ -176,7 +226,7 @@ public class DBOperations {
         }
     }
 
-    public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId, SmType type) {
+    public static void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId, SmType type) {
 
         smsSet.setDestClusterName(destClusterName);
         smsSet.setDestSystemId(destSystemId);
@@ -184,13 +234,13 @@ public class DBOperations {
         smsSet.setType(type);
     }
 
-    public void setRoutingInfo(SmsSet smsSet, IMSI imsi, LocationInfoWithLMSI locationInfoWithLMSI) {
+    public static void setRoutingInfo(SmsSet smsSet, IMSI imsi, LocationInfoWithLMSI locationInfoWithLMSI) {
 
         smsSet.setImsi(imsi);
         smsSet.setLocationInfoWithLMSI(locationInfoWithLMSI);
     }
 
-    public void setDeliveryStart(final Keyspace keyspace, final SmsSet smsSet, final Date newInSystemDate)
+    public static void setDeliveryStart(final Keyspace keyspace, final SmsSet smsSet, final Date newInSystemDate)
             throws PersistenceException {
 
         try {
@@ -214,7 +264,7 @@ public class DBOperations {
         }
     }
 
-    public void setDeliveryStart(final Keyspace keyspace, final Sms sms) throws PersistenceException {
+    public static void setDeliveryStart(final Keyspace keyspace, final Sms sms) throws PersistenceException {
 
         try {
             Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
@@ -233,7 +283,7 @@ public class DBOperations {
         }
     }
 
-    public void setDeliverySuccess(final Keyspace keyspace, final SmsSet smsSet, final Date lastDelivery)
+    public static void setDeliverySuccess(final Keyspace keyspace, final SmsSet smsSet, final Date lastDelivery)
             throws PersistenceException {
 
         try {
@@ -261,7 +311,7 @@ public class DBOperations {
         }
     }
 
-    public void setDeliveryFailure(final Keyspace keyspace, final SmsSet smsSet, final ErrorCode smStatus,
+    public static void setDeliveryFailure(final Keyspace keyspace, final SmsSet smsSet, final ErrorCode smStatus,
             final Date lastDelivery) throws PersistenceException {
 
         try {
@@ -292,7 +342,7 @@ public class DBOperations {
         }
     }
 
-    public void setAlertingSupported(final Keyspace keyspace, final String targetId, final boolean alertingSupported)
+    public static void setAlertingSupported(final Keyspace keyspace, final String targetId, final boolean alertingSupported)
             throws PersistenceException {
 
         try {
@@ -312,7 +362,7 @@ public class DBOperations {
         }
     }
 
-    public boolean deleteSmsSet(final Keyspace keyspace, final SmsSet smsSet) throws PersistenceException {
+    public static boolean deleteSmsSet(final Keyspace keyspace, final SmsSet smsSet) throws PersistenceException {
 
         // TOOD
         final TargetAddress lock = null;
@@ -322,7 +372,7 @@ public class DBOperations {
                 // firstly we are looking for corresponded records in LIVE_SMS
                 // table
                 smsSet.clearSmsList();
-                this.fetchSchedulableSms(keyspace,smsSet);
+                fetchSchedulableSms(keyspace,smsSet);
                 if (smsSet.getSmsCount() > 0) {
                     // there are corresponded records in LIVE_SMS table - we
                     // will not delete LIVE record
@@ -348,7 +398,7 @@ public class DBOperations {
         }
     }
 
-    public void createLiveSms(final Keyspace keyspace, final Sms sms) throws PersistenceException {
+    public static void createLiveSms(final Keyspace keyspace, final Sms sms) throws PersistenceException {
 
         try {
             Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
@@ -358,7 +408,7 @@ public class DBOperations {
             mutator.addInsertion(sms.getDbId(), Schema.FAMILY_LIVE_SMS,
                     HFactory.createColumn(cc, sms.getSmsSet().getTargetId(), SERIALIZER_COMPOSITE, StringSerializer.get()));
 
-            this.FillUpdateFields(sms, mutator, Schema.FAMILY_LIVE_SMS);
+            FillUpdateFields(sms, mutator, Schema.FAMILY_LIVE_SMS);
 
             mutator.execute();
         } catch (Exception e) {
@@ -368,7 +418,7 @@ public class DBOperations {
         }
     }
 
-    public Sms obtainLiveSms(final Keyspace keyspace, final UUID dbId) throws PersistenceException {
+    public static Sms obtainLiveSms(final Keyspace keyspace, final UUID dbId) throws PersistenceException {
         try {
             SliceQuery<UUID, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, UUIDSerializer.get(),
                     SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
@@ -381,7 +431,7 @@ public class DBOperations {
             QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
             ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
             try {
-                return this.createSms(keyspace,cSlice, dbId, null);
+                return createSms(keyspace,cSlice, dbId, null);
             } catch (Exception e) {
                 // TODO
                 // if (logger.isSevereEnabled()) {
@@ -397,7 +447,7 @@ public class DBOperations {
         return null;
     }
 
-    public Sms obtainLiveSms(final Keyspace keyspace, final long messageId) throws PersistenceException {
+    public static Sms obtainLiveSms(final Keyspace keyspace, final long messageId) throws PersistenceException {
         try {
             IndexedSlicesQuery<UUID, Composite, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace,
                     UUIDSerializer.get(), SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
@@ -412,7 +462,7 @@ public class DBOperations {
             final List<Row<UUID, Composite, ByteBuffer>> rowsList = rows.getList();
             for (Row<UUID, Composite, ByteBuffer> row : rowsList) {
                 try {
-                    return this.createSms(keyspace,row.getColumnSlice(), row.getKey(), null);
+                    return createSms(keyspace,row.getColumnSlice(), row.getKey(), null);
                 } catch (Exception e) {
                     // TODO
                     // if (logger.isSevereEnabled()) {
@@ -429,25 +479,25 @@ public class DBOperations {
         return null;
     }
 
-    public void updateLiveSms(Sms sms) throws PersistenceException {
+    public static void updateLiveSms(final Keyspace keyspace, Sms sms) throws PersistenceException {
         // TODO: implement it
         // .....................................
     }
 
-    public void archiveDeliveredSms(final Keyspace keyspace, final Sms sms, Date deliveryDate) throws PersistenceException {
-        this.deleteLiveSms(keyspace,sms);
+    public static void archiveDeliveredSms(final Keyspace keyspace, final Sms sms, Date deliveryDate) throws PersistenceException {
+        deleteLiveSms(keyspace,sms);
         sms.setDeliveryDate(deliveryDate);
         sms.getSmsSet().setStatus(ErrorCode.SUCCESS);
-        this.doArchiveDeliveredSms(keyspace,sms);
+        doArchiveDeliveredSms(keyspace,sms);
     }
 
-    public void archiveFailuredSms(final Keyspace keyspace, final Sms sms) throws PersistenceException {
-        this.deleteLiveSms(keyspace,sms);
+    public static void archiveFailuredSms(final Keyspace keyspace, final Sms sms) throws PersistenceException {
+        deleteLiveSms(keyspace,sms);
         sms.setDeliveryDate(sms.getSmsSet().getLastDelivery());
-        this.doArchiveDeliveredSms(keyspace,sms);
+        doArchiveDeliveredSms(keyspace,sms);
     }
 
-    public List<SmsSet> fetchSchedulableSmsSets(final Keyspace keyspace, final int maxRecordCount) throws PersistenceException {
+    public static List<SmsSet> fetchSchedulableSmsSets(final Keyspace keyspace, final int maxRecordCount) throws PersistenceException {
         try {
             List<SmsSet> lst = new ArrayList<SmsSet>();
 
@@ -468,7 +518,7 @@ public class DBOperations {
             final List<Row<String, Composite, ByteBuffer>> rowsList = rows.getList();
             for (Row<String, Composite, ByteBuffer> row : rowsList) {
                 try {
-                    SmsSet smsSet = this.createSmsSet(row.getColumnSlice());
+                    SmsSet smsSet = createSmsSet(row.getColumnSlice());
                     lst.add(smsSet);
                 } catch (Exception e) {
                     // TODO
@@ -486,7 +536,7 @@ public class DBOperations {
         }
     }
 
-    public void fetchSchedulableSms(final Keyspace keyspace,final SmsSet smsSet) throws PersistenceException {
+    public static void fetchSchedulableSms(final Keyspace keyspace,final SmsSet smsSet) throws PersistenceException {
         try {
             IndexedSlicesQuery<UUID, Composite, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace,
                     UUIDSerializer.get(), SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
@@ -502,7 +552,7 @@ public class DBOperations {
             smsSet.clearSmsList();
             for (Row<UUID, Composite, ByteBuffer> row : rowsList) {
                 try {
-                    Sms sms = this.createSms(keyspace,row.getColumnSlice(), row.getKey(), smsSet);
+                    Sms sms = createSms(keyspace,row.getColumnSlice(), row.getKey(), smsSet);
                     smsSet.addSms(sms);
                 } catch (Exception e) {
                     String msg = "Failed to deserialize SMS at key '" + row.getKey() + "'!";
@@ -518,7 +568,7 @@ public class DBOperations {
         }
     }
 
-    private Composite createLiveColumnComposite(TargetAddress ta, String colName) {
+    private static Composite createLiveColumnComposite(TargetAddress ta, String colName) {
         Composite cc;
         cc = new Composite();
         // cc.addComponent(ta.getAddrTon(), SERIALIZER_INTEGER);
@@ -527,7 +577,7 @@ public class DBOperations {
         return cc;
     }
 
-    private Composite createLiveColumnComposite(SmsSet smsSet, String colName) {
+    private static Composite createLiveColumnComposite(SmsSet smsSet, String colName) {
         Composite cc;
         cc = new Composite();
         // cc.addComponent(smsSet.getDestAddrTon(), SERIALIZER_INTEGER);
@@ -536,7 +586,7 @@ public class DBOperations {
         return cc;
     }
 
-    private void FillUpdateFields(Sms sms, Mutator<UUID> mutator, String columnFamilyName) throws PersistenceException {
+    private static void FillUpdateFields(Sms sms, Mutator<UUID> mutator, String columnFamilyName) throws PersistenceException {
         Composite cc = new Composite();
         cc.addComponent(Schema.COLUMN_ID, SERIALIZER_STRING);
         mutator.addInsertion(sms.getDbId(), columnFamilyName,
@@ -678,7 +728,7 @@ public class DBOperations {
 
     }
 
-    protected Sms createSms(final Keyspace keyspace,final ColumnSlice<Composite, ByteBuffer> cSlice, final UUID dbId, SmsSet smsSet) throws IOException,
+    protected static Sms createSms(final Keyspace keyspace,final ColumnSlice<Composite, ByteBuffer> cSlice, final UUID dbId, SmsSet smsSet) throws IOException,
             PersistenceException {
 
         Sms sms = new Sms();
@@ -774,7 +824,7 @@ public class DBOperations {
 
         if (smsSet == null) {
             TargetAddress ta = new TargetAddress(destAddrTon, destAddrNpi, destAddr);
-            smsSet = this.obtainSmsSet(keyspace,ta);
+            smsSet = obtainSmsSet(keyspace,ta);
         } else {
             if (smsSet.getDestAddr() == null) {
                 smsSet.setDestAddr(destAddr);
@@ -801,7 +851,7 @@ public class DBOperations {
         return sms;
     }
 
-    private SmsSet createSmsSet(ColumnSlice<Composite, ByteBuffer> cSlice) {
+    private static SmsSet createSmsSet(ColumnSlice<Composite, ByteBuffer> cSlice) {
         SmsSet smsSet = new SmsSet();
         for (HColumn<Composite, ByteBuffer> col : cSlice.getColumns()) {
             Composite nm = col.getName();
@@ -832,7 +882,7 @@ public class DBOperations {
         return smsSet;
     }
 
-    protected void deleteLiveSms(final Keyspace keyspace,final Sms sms) throws PersistenceException {
+	protected static void deleteLiveSms(final Keyspace keyspace, final Sms sms) throws PersistenceException {
 
         try {
             Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
@@ -846,11 +896,11 @@ public class DBOperations {
         }
     }
 
-    private void doArchiveDeliveredSms(final Keyspace keyspace,final Sms sms) throws PersistenceException {
+    private static void doArchiveDeliveredSms(final Keyspace keyspace,final Sms sms) throws PersistenceException {
         try {
             Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
 
-            this.FillUpdateFields(sms, mutator, Schema.FAMILY_ARCHIVE);
+            FillUpdateFields(sms, mutator, Schema.FAMILY_ARCHIVE);
 
             Composite cc;
             if (sms.getSmsSet().getDestClusterName() != null) {
