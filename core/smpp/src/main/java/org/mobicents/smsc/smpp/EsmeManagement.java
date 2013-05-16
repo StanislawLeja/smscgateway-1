@@ -140,7 +140,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 	public Esme getEsmeByClusterName(String esmeClusterName) {
 		EsmeCluster esmeCluster = this.esmeClusters.get(esmeClusterName);
 		if (esmeCluster != null) {
-			esmeCluster.getNextEsme();
+			return esmeCluster.getNextEsme();
 		}
 		return null;
 	}

@@ -1,6 +1,6 @@
 package org.mobicents.smsc.slee.resources.scheduler;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,10 +31,14 @@ import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.factory.HFactory;
 
 import org.mobicents.smsc.slee.common.ra.EventIDCache;
+import org.mobicents.smsc.slee.resources.peristence.DBOperations;
+import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
 import org.mobicents.smsc.slee.resources.peristence.SmType;
-import org.mobicents.smsc.slee.resources.peristence.Sms;
 import org.mobicents.smsc.slee.resources.peristence.SmsSet;
+import org.mobicents.smsc.slee.resources.peristence.SmsSetCashe;
+import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
+import org.mobicents.smsc.smpp.SmsRouteManagement;
 
 public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
@@ -359,7 +363,14 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	// Helper methods //
 	// /////////////////
 	protected void onTimerTick() {
-		List<SmsSet> schedulableSms = this.fetchSchedulable();
+		List<SmsSet> schedulableSms;
+		try {
+			schedulableSms = this.fetchSchedulable(this.highWaterMark - this.activeCount);
+		} catch (PersistenceException e1) {
+			this.tracer.severe("PersistenceException when fetching SmsSet list from a database: " + e1.getMessage(), e1);
+			return;
+		}
+
 		int count = 0;
 		try {
 			for (SmsSet sms : schedulableSms) {
@@ -369,7 +380,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 					}
 					count++;
 				} catch (Exception e) {
-					// TODO: handle rejection!
+					this.tracer.severe("Exception when injectSms: " + e.getMessage(), e);
 				}
 			}
 		} finally {
@@ -387,6 +398,13 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		SleeTransaction sleeTx = this.sleeTransactionManager.beginSleeTransaction();
 
 		try {
+			SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
+			String destClusterName = smsRouteManagement.getEsmeClusterName(smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(), smsSet.getDestAddr());
+//			EsmeManagement esmeManagement = EsmeManagement.getInstance();
+//			Esme esme = esmeManagement.getEsmeByClusterName(destClusterName);
+//			DBOperations.setDestination(smsSet, destClusterName, destSystemId, destEsmeId, type);
+			DBOperations.setDestination(smsSet, destClusterName, null, null, destClusterName != null ? SmType.SUBMIT_SM : SmType.DELIVER_SM);
+
 			final String eventName = smsSet.getType() == SmType.DELIVER_SM ? EVENT_DELIVER_SM : EVENT_SUBMIT_SM;
 			final FireableEventType eventTypeId = this.eventIdCache.getEventId(eventName);
 			SmsSetEvent event = new SmsSetEvent();
@@ -404,7 +422,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				} catch (Exception ee) {
 				}
 			}
-
+ 
 			markAsInSystem(smsSet);
 			this.acitivties.put(activity.getActivityHandle(), activity);
 		} catch (Exception e) {
@@ -416,14 +434,24 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		return true;
 	}
 
-	protected List<SmsSet> fetchSchedulable() {
-		return new ArrayList<SmsSet>();
+	protected List<SmsSet> fetchSchedulable(int maxRecordCount) throws PersistenceException {
+		List<SmsSet> res = DBOperations.fetchSchedulableSmsSets(this.keyspace, maxRecordCount);
+		return res;
 	}
 
-	protected void markAsInSystem(SmsSet smsSet) {
-		// TODO:
-		for (Sms sms : smsSet.getRawList()) {
-			// TODO
+	protected void markAsInSystem(SmsSet smsSet) throws PersistenceException {
+		TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
+		synchronized (lock) {
+			try {
+				boolean b1 = DBOperations.checkSmsSetExists(keyspace, new TargetAddress(smsSet));
+				if (!b1)
+					throw new PersistenceException("SmsSet record is not found when markAsInSystem()");
+
+				DBOperations.fetchSchedulableSms(keyspace, smsSet);
+				DBOperations.setDeliveryStart(keyspace, smsSet, new Date());
+			} finally {
+				SmsSetCashe.getInstance().addSmsSet(lock);
+			}
 		}
 	}
 
