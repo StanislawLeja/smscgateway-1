@@ -377,7 +377,7 @@ public class SmsSet implements Serializable {
 		return true;
     }
 
-	private class SmsComparator implements Comparator<Sms> {
+	public class SmsComparator implements Comparator<Sms> {
 
 		@Override
 		public int compare(Sms a1, Sms a2) {
