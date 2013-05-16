@@ -24,6 +24,8 @@ package org.mobicents.smsc.slee.resources.peristence;
 
 import java.util.Date;
 
+import org.mobicents.smsc.slee.resources.persistence.Sms;
+
 /**
  * 
  * @author sergey vetyutnev

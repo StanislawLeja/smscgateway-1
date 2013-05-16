@@ -28,12 +28,12 @@ import java.util.UUID;
 
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
-import org.mobicents.smsc.slee.resources.peristence.ErrorCode;
-import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
-import org.mobicents.smsc.slee.resources.peristence.SmType;
-import org.mobicents.smsc.slee.resources.peristence.Sms;
-import org.mobicents.smsc.slee.resources.peristence.SmsSet;
-import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
+import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
+import org.mobicents.smsc.slee.resources.persistence.SmType;
+import org.mobicents.smsc.slee.resources.persistence.Sms;
+import org.mobicents.smsc.slee.resources.persistence.SmsSet;
+import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
 
 /**
  * @author baranowb

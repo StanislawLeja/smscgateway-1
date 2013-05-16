@@ -23,7 +23,8 @@
 package org.mobicents.smsc.slee.services.mt;
 
 import java.io.Serializable;
-import org.mobicents.smsc.slee.resources.peristence.SmsSet;
+
+import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 
 /**
  * 

@@ -26,6 +26,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
+import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
+import org.mobicents.smsc.slee.resources.persistence.Sms;
+import org.mobicents.smsc.slee.resources.persistence.SmsSet;
+
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.ColumnSlice;
 import me.prettyprint.hector.api.beans.Composite;

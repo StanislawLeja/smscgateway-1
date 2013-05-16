@@ -57,6 +57,15 @@ import me.prettyprint.hector.api.query.SliceQuery;
 
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
+import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
+import org.mobicents.smsc.slee.resources.persistence.Schema;
+import org.mobicents.smsc.slee.resources.persistence.SmType;
+import org.mobicents.smsc.slee.resources.persistence.Sms;
+import org.mobicents.smsc.slee.resources.persistence.SmsSet;
+import org.mobicents.smsc.slee.resources.persistence.SmsSetCashe;
+import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
+import org.mobicents.smsc.slee.resources.persistence.TlvSet;
 
 /**
  * 

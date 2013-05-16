@@ -32,11 +32,11 @@ import me.prettyprint.hector.api.factory.HFactory;
 
 import org.mobicents.smsc.slee.common.ra.EventIDCache;
 import org.mobicents.smsc.slee.resources.peristence.DBOperations;
-import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
-import org.mobicents.smsc.slee.resources.peristence.SmType;
-import org.mobicents.smsc.slee.resources.peristence.SmsSet;
-import org.mobicents.smsc.slee.resources.peristence.SmsSetCashe;
-import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
+import org.mobicents.smsc.slee.resources.persistence.SmType;
+import org.mobicents.smsc.slee.resources.persistence.SmsSet;
+import org.mobicents.smsc.slee.resources.persistence.SmsSetCashe;
+import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.SmsRouteManagement;
 
@@ -403,7 +403,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 //			EsmeManagement esmeManagement = EsmeManagement.getInstance();
 //			Esme esme = esmeManagement.getEsmeByClusterName(destClusterName);
 //			DBOperations.setDestination(smsSet, destClusterName, destSystemId, destEsmeId, type);
-			DBOperations.setDestination(smsSet, destClusterName, null, null, destClusterName != null ? SmType.SUBMIT_SM : SmType.DELIVER_SM);
+			DBOperations.setDestination(smsSet, destClusterName, null, null, destClusterName != null ? SmType.DELIVER_SM : SmType.SUBMIT_SM);
 
 			final String eventName = smsSet.getType() == SmType.DELIVER_SM ? EVENT_DELIVER_SM : EVENT_SUBMIT_SM;
 			final FireableEventType eventTypeId = this.eventIdCache.getEventId(eventName);

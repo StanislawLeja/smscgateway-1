@@ -86,13 +86,13 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.resources.peristence.ErrorCode;
 import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
-import org.mobicents.smsc.slee.resources.peristence.PersistenceException;
 import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
-import org.mobicents.smsc.slee.resources.peristence.Sms;
-import org.mobicents.smsc.slee.resources.peristence.SmsSet;
 import org.mobicents.smsc.slee.resources.peristence.SmscProcessingException;
+import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
+import org.mobicents.smsc.slee.resources.persistence.Sms;
+import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 
 
 import com.cloudhopper.smpp.SmppConstants;

@@ -55,7 +55,7 @@ import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.peristence.SmscProcessingException;
-import org.mobicents.smsc.slee.resources.peristence.TargetAddress;
+import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 

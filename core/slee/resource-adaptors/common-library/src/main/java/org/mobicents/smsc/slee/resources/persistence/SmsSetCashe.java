@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.resources.peristence;
+package org.mobicents.smsc.slee.resources.persistence;
 
 
 import javolution.util.FastMap;
@@ -87,9 +87,9 @@ public class SmsSetCashe {
 	public int getActivityCount() {
 		return activityCount;
 	}
-	
-	private class TargetAddressContainer {
-		protected TargetAddress targetAddress;
-		protected int count;
+
+	public class TargetAddressContainer {
+		public TargetAddress targetAddress;
+		public int count;
 	}
 }
