@@ -29,11 +29,6 @@
 		</dependency>
 		<dependency>
 			<groupId>${pom.groupId}</groupId>
-			<artifactId>persistence-sbb</artifactId>
-			<version>${pom.version}</version>
-		</dependency>			
-		<dependency>
-			<groupId>${pom.groupId}</groupId>
 			<artifactId>persistence-ratype</artifactId>
 			<version>${pom.version}</version>
 		</dependency>

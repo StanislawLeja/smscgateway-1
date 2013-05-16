@@ -30,10 +30,8 @@ import javax.slee.ActivityContextInterface;
 import javax.slee.CreateException;
 import javax.slee.InitialEventSelector;
 import javax.slee.RolledBackContext;
-import javax.slee.SLEEException;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
-import javax.slee.TransactionRequiredLocalException;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
@@ -47,7 +45,6 @@ import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.service.sms.AlertServiceCentreRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
-import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.slee.resource.map.MAPContextInterfaceFactory;
 import org.mobicents.slee.resource.map.events.DialogAccept;
