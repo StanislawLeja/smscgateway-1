@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.services.mt;
+package org.mobicents.smsc.slee.services.smpp.server.rx;
 
 import java.io.Serializable;
 
@@ -44,4 +44,3 @@ public class SmsDeliveryData implements Serializable {
 	}
 
 }
-

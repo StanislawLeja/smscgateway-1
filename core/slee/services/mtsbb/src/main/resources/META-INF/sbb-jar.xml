@@ -278,7 +278,7 @@
 			<sbb-abstract-class>
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.mt.MtSbb</sbb-abstract-class-name>
 				
-				<cmp-field><cmp-field-name>smsDeliveryData</cmp-field-name></cmp-field>
+				<cmp-field><cmp-field-name>smsSubmitData</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>currentMsgNum</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>informServiceCenterContainer</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>segments</cmp-field-name></cmp-field>

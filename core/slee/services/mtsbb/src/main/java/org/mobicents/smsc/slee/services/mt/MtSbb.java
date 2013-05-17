@@ -323,7 +323,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 						if (messageSegmentNumber < segments.length - 1) {
 							moreMessagesToSend = true;
 						}
-						if (this.doGetCurrentMsgNum() < this.doGetSmsDeliveryData().getSmsSet().getSmsCount() - 1) {
+						if (this.doGetCurrentMsgNum() < this.doGetSmsSubmitData().getSmsSet().getSmsCount() - 1) {
 							moreMessagesToSend = true;
 						}
 
@@ -448,9 +448,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	/**
 	 * CMPs
 	 */
-	public abstract void setSmsDeliveryData(SmsDeliveryData smsDeliveryData);
+	public abstract void setSmsSubmitData(SmsSubmitData smsDeliveryData);
 
-	public abstract SmsDeliveryData getSmsDeliveryData();
+	public abstract SmsSubmitData getSmsSubmitData();
 
 	public abstract void setCurrentMsgNum(int currentMsgNum);
 
@@ -466,12 +466,12 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 
 
-	public void doSetSmsDeliveryData(SmsDeliveryData smsDeliveryData) {
-		this.setSmsDeliveryData(smsDeliveryData);
+	public void doSetSmsSubmitData(SmsSubmitData smsDeliveryData) {
+		this.setSmsSubmitData(smsDeliveryData);
 	}
 
-	public SmsDeliveryData doGetSmsDeliveryData() {
-		return this.getSmsDeliveryData();
+	public SmsSubmitData doGetSmsSubmitData() {
+		return this.getSmsSubmitData();
 	}
 
 	public void doSetCurrentMsgNum(int currentMsgNum) {
@@ -554,7 +554,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 		// current message is sent
 		// pushing current message into an archive
-		SmsDeliveryData smsDeliveryData = this.doGetSmsDeliveryData();
+		SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
 		if (smsDeliveryData == null) {
 			if (this.logger.isInfoEnabled())
 				this.logger.info("SmsDeliveryData CMP missed");
@@ -718,7 +718,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	}
 
 	private void sendMtSms(MAPApplicationContext mapApplicationContext, MessageProcessingState messageProcessingState) throws SmscProcessingException {
-		SmsDeliveryData smsDeliveryData = this.doGetSmsDeliveryData();
+		SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
 		if (smsDeliveryData == null) {
 			throw new SmscProcessingException("SmsDeliveryData CMP missed",-1,-1,null);
 		}

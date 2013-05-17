@@ -82,13 +82,13 @@ public class RsdsSbbProxy extends RsdsSbb implements ChildRelation, SbbLocalObje
 	}
 
 	@Override
-	public void doSetSmsDeliveryData(SmsDeliveryData smsDeliveryData) {
+	public void doSetSmsSubmitData(SmsSubmitData smsDeliveryData) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public SmsDeliveryData doGetSmsDeliveryData() {
+	public SmsSubmitData doGetSmsSubmitData() {
 		// TODO Auto-generated method stub
 		return null;
 	}

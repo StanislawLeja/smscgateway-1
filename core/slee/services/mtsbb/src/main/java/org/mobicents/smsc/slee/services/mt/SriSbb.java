@@ -99,9 +99,9 @@ public abstract class SriSbb extends MtCommonSbb {
 		}
 
 		this.doSetCurrentMsgNum(curMsg);
-		SmsDeliveryData smsDeliveryData = new SmsDeliveryData();
+		SmsSubmitData smsDeliveryData = new SmsSubmitData();
 		smsDeliveryData.setSmsSet(smsSet);
-		this.doSetSmsDeliveryData(smsDeliveryData);
+		this.doSetSmsSubmitData(smsDeliveryData);
 
 //		this.setSendRoutingInfoForSMResponse(null);
 //		this.setErrorContainer(null);
@@ -151,7 +151,7 @@ public abstract class SriSbb extends MtCommonSbb {
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
 
 		MAPRefuseReason mapRefuseReason = evt.getRefuseReason();
-		SmsDeliveryData smsDeliveryData = this.doGetSmsDeliveryData();
+		SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
 		if (smsDeliveryData == null) {
 			this.logger.severe("SmsDeliveryData CMP missed");
 			return;
@@ -331,11 +331,11 @@ public abstract class SriSbb extends MtCommonSbb {
 
 	public abstract ChildRelation getRsdsSbb();
 
-	public void doSetSmsDeliveryData(SmsDeliveryData smsDeliveryData) {
+	public void doSetSmsSubmitData(SmsSubmitData smsDeliveryData) {
 		try {
 			ChildRelation relation = getMtSbb();
 			MtForwardSmsInterface mtSbbLocalObject = (MtSbbLocalObject) relation.create();
-			mtSbbLocalObject.doSetSmsDeliveryData(smsDeliveryData);
+			mtSbbLocalObject.doSetSmsSubmitData(smsDeliveryData);
 		} catch (CreateException e) {
 			this.logger.severe("Could not create Child SBB", e);
 		} catch (Exception e) {
@@ -343,11 +343,11 @@ public abstract class SriSbb extends MtCommonSbb {
 		}
 	}
 
-	public SmsDeliveryData doGetSmsDeliveryData() {
+	public SmsSubmitData doGetSmsSubmitData() {
 		try {
 			ChildRelation relation = getMtSbb();
 			MtSbbLocalObject mtSbbLocalObject = (MtSbbLocalObject) relation.create();
-			return mtSbbLocalObject.doGetSmsDeliveryData();
+			return mtSbbLocalObject.doGetSmsSubmitData();
 		} catch (CreateException e) {
 			this.logger.severe("Could not create Child SBB", e);
 		} catch (Exception e) {
