@@ -1,5 +1,63 @@
 $(document).ready(function() {
-	var factory = new JmxChartsFactory();	
+	var factory = new JmxChartsFactory();
+	factory.create([
+		{
+			type: 'read',
+			name: 'org.mobicents.slee:name=EventRouterStatistics',
+			attribute: 'AverageEventRoutingTime'
+		}
+	]);
+	factory.create([
+		{
+			type: 'read',
+			name: 'org.mobicents.slee:name=EventRouterStatistics',
+			attribute: 'ActivitiesMapped'
+		}
+	]);
+	factory.create([
+		{
+			type: 'exec',
+			name: 'org.mobicents.slee:name=EventRouterStatistics',
+			operation: 'getAverageEventRoutingTime(int)',
+			args: ['1']
+		},
+		{
+			type: 'exec',
+			name: 'org.mobicents.slee:name=EventRouterStatistics',
+			operation: 'getAverageEventRoutingTime(int)',
+			args: ['2']
+		},
+		{
+			type: 'exec',
+			name: 'org.mobicents.slee:name=EventRouterStatistics',
+			operation: 'getAverageEventRoutingTime(int)',
+			args: ['3']
+		},
+		{
+			type: 'exec',
+			name: 'org.mobicents.slee:name=EventRouterStatistics',
+			operation: 'getAverageEventRoutingTime(int)',
+			args: ['4']
+		},
+		{
+			type: 'exec',
+			name: 'org.mobicents.slee:name=EventRouterStatistics',
+			operation: 'getAverageEventRoutingTime(int)',
+			args: ['5']
+		},
+		{
+			type: 'exec',
+			name: 'org.mobicents.slee:name=EventRouterStatistics',
+			operation: 'getAverageEventRoutingTime(int)',
+			args: ['6']
+		},
+		{
+			type: 'exec',
+			name: 'org.mobicents.slee:name=EventRouterStatistics',
+			operation: 'getAverageEventRoutingTime(int)',
+			args: ['7']
+		}
+	]);
 	factory.create([
 		{
 			type: 'read',
@@ -38,7 +96,11 @@ function JmxChartsFactory(keepHistorySec, pollInterval, columnsCount) {
 
 	setupPortletsContainer(columnsCount);
 
-	setInterval(function() {
+	metricsInterval = setInterval(function() {
+		// auto-clear the interval if we are not there anymore
+		if($("#content").children("h3").text().indexOf("Metrics") < 0) {
+			clearInterval(metricsInterval);
+		}
 		pollAndUpdateCharts();
 	}, pollInterval);
 
@@ -121,9 +183,9 @@ function JmxChartsFactory(keepHistorySec, pollInterval, columnsCount) {
 			chart: {
 				renderTo: createNewPortlet(mbeans[0].name),
 				height: 250,
-				animation: true,
+				animation: false,
 				defaultSeriesType: 'spline',
-				shadow: true
+				shadow: false
 			},
 			title: { text: null },
 			xAxis: { type: 'datetime' },
@@ -135,9 +197,9 @@ function JmxChartsFactory(keepHistorySec, pollInterval, columnsCount) {
 				borderWidth: 0
 			},
 			credits: {enabled: false},
-			exporting: { enabled: true },
+			exporting: { enabled: false },
 			plotOptions: {
-				area: {
+				line: {
 					marker: {
 						enabled: false
 					}
@@ -147,8 +209,8 @@ function JmxChartsFactory(keepHistorySec, pollInterval, columnsCount) {
 				return {
 					data: [],
 					name: mbean.path || mbean.attribute || mbean.args
-				}
+				};
 			})
-		})
+		});
 	}
 }

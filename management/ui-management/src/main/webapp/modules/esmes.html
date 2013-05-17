@@ -174,7 +174,7 @@ $(function () {
 		var mbean;
 		$.ajax({
 			dataType: "json",
-			url: window.jolokiaProtocol + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/search/" + mbeanSearch
+			url: window.jolokiaProtocol + "//" + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/search/" + mbeanSearch
 		})
 		.done(function(html) {
 			if (html.error) {
@@ -186,7 +186,7 @@ $(function () {
 				$('.text-info').remove();
 				jQuery.each(html.value, function() {
 					mbean = this;
-					var j4p = new Jolokia({url: window.jolokiaProtocol + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/" });
+					var j4p = new Jolokia({url: window.jolokiaProtocol + "//" + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/" });
 					
 					var isSmppServerStarted = j4p.getAttribute(mbean, "Started",{method: "post"});
 					
