@@ -191,6 +191,11 @@ $(function () {
 					var isSmppServerStarted = j4p.getAttribute(mbean, "Started",{method: "post"});
 					
 					var name = j4p.getAttribute(mbean, "Name",{method: "post"});
+					var clusterName = j4p.getAttribute(mbean, "ClusterName",{method: "post"});
+					
+					var esmeAddress = j4p.getAttribute(mbean, "Address",{method: "post"});
+					
+					
 					var systemId = j4p.getAttribute(mbean, "SystemId",{method: "post"});
 					var localType = j4p.getAttribute(mbean, "LocalTypeName",{method: "post"});
 					var state = j4p.getAttribute(mbean, "StateName",{method: "post"});
@@ -250,12 +255,22 @@ $(function () {
 					        '    <div>'+
 					        '      <p class="muted">SMPP Properties</p>'+
 									'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+										'<dt>ClusterName</dt> <dd>' + clusterName + ' </dd>' + 
 										'<dt>SystemType</dt> <dd>' + systemType + ' </dd>' + 
 										'<dt>BindType</dt> <dd>' + bindType + ' </dd>' + 
 										'<dt>InterfaceVersion</dt> <dd>' + interfaceVersion + ' </dd>' + 
 										'<dt>Password</dt> <dd>' + password + ' </dd>' + 
 									'</dl>'+
 					        '    </div>'+
+				        		'<hr style="margin: 5px 0;"/>' +
+						        '    <div>'+
+						        '      <p class="muted">ESME Address</p>'+
+										'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+											'<dt>TypeOfNumber</dt> <dd>' + esmeAddress.ton + ' </dd>' +
+											'<dt>NumberPlanIndicator</dt> <dd>' + esmeAddress.npi + ' </dd>' +
+											'<dt>AddressRange</dt> <dd>' + esmeAddress.address + ' </dd>' +
+										'</dl>'+
+						        '    </div>'+				        		
 					        	'<hr style="margin: 5px 0;"/>' +
 					        '    <div>'+
 					        '      <p class="muted">Configuration</p>'+

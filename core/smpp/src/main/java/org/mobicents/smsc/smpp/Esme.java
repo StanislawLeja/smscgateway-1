@@ -628,7 +628,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		if (this.defaultSmppSession != null) {
 			return this.defaultSmppSession.getInterfaceVersionName();
 		}
-		return null;
+		return this.smppVersion.getType();
 	}
 
 	@Override

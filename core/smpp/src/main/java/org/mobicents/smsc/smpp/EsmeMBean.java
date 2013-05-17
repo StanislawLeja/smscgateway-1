@@ -22,6 +22,7 @@
 package org.mobicents.smsc.smpp;
 
 import com.cloudhopper.smpp.jmx.DefaultSmppSessionMXBean;
+import com.cloudhopper.smpp.type.Address;
 
 /**
  * 
@@ -30,4 +31,6 @@ import com.cloudhopper.smpp.jmx.DefaultSmppSessionMXBean;
  */
 public interface EsmeMBean extends DefaultSmppSessionMXBean {
 	public boolean isStarted();
+	public String getClusterName();
+	public Address getAddress();
 }
