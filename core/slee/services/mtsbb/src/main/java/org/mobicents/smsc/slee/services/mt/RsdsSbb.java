@@ -35,8 +35,8 @@ import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.protocols.ss7.map.api.service.sms.ReportSMDeliveryStatusResponse;
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
-import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 
 /**
  * 
@@ -72,14 +72,6 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
             try {
                 PersistenceRAInterface pers = this.getStore();
                 pers.setAlertingSupported(this.getTargetId(), true);
-            } catch (TransactionRequiredLocalException e1) {
-                this.logger.severe(
-                        "TransactionRequiredLocalException when getting Persistence object in onSendRoutingInfoForSMResponse(): "
-                                + e1.getMessage(), e1);
-            } catch (SLEEException e1) {
-                this.logger
-                        .severe("SLEEException when getting Persistence object in onSendRoutingInfoForSMResponse(): "
-                                + e1.getMessage(), e1);
             } catch (PersistenceException e1) {
                 this.logger.severe("PersistenceException when setAlertingSupported() in onSendRoutingInfoForSMResponse(): "
                         + e1.getMessage(), e1);

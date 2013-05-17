@@ -31,7 +31,7 @@ import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.factory.HFactory;
 
 import org.mobicents.smsc.slee.common.ra.EventIDCache;
-import org.mobicents.smsc.slee.resources.peristence.DBOperations;
+import org.mobicents.smsc.slee.resources.persistence.DBOperations;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.SmType;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;

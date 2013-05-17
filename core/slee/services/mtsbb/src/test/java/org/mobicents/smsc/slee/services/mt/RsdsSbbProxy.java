@@ -36,9 +36,9 @@ import javax.slee.TransactionRolledbackLocalException;
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbLocalObjectExt;
-import org.mobicents.smsc.slee.resources.peristence.MAPProviderProxy;
-import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterfaceProxy;
-import org.mobicents.smsc.slee.resources.peristence.TraceProxy;
+import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
+import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 
 /**
  * 

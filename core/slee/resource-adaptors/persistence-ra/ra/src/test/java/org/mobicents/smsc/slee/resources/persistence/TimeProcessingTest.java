@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.resources.peristence;
+package org.mobicents.smsc.slee.resources.persistence;
 
 import static org.testng.Assert.*;
 
@@ -28,6 +28,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.Test;
 

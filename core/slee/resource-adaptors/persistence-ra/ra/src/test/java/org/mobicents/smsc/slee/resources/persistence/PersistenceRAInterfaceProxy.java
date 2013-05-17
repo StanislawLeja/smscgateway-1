@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.resources.peristence;
+package org.mobicents.smsc.slee.resources.persistence;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,8 +30,10 @@ import java.util.UUID;
 
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
+import org.mobicents.smsc.slee.resources.persistence.DBOperations;
 import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.Schema;
 import org.mobicents.smsc.slee.resources.persistence.SmType;
 import org.mobicents.smsc.slee.resources.persistence.Sms;

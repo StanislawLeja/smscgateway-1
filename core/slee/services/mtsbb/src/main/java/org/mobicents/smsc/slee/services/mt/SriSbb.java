@@ -88,7 +88,7 @@ public abstract class SriSbb extends MtCommonSbb {
 	public void onSms(SmsSetEvent event, ActivityContextInterface aci, EventContext eventContext) {
 
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received SMS. event= " + event + "this=" + this);
+			this.logger.info("Received Submit SMS. event= " + event + "this=" + this);
 		}
 
 		SmsSet smsSet = event.getSmsSet();

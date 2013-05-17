@@ -20,64 +20,54 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.resources.peristence;
+package org.mobicents.smsc.slee.resources.persistence;
 
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
-import org.mobicents.protocols.ss7.map.api.MAPDialog;
 import org.mobicents.protocols.ss7.map.api.MAPException;
-import org.mobicents.protocols.ss7.map.api.MAPProvider;
-import org.mobicents.protocols.ss7.map.api.MAPServiceBase;
-import org.mobicents.protocols.ss7.map.api.dialog.ServingCheckData;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
+import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
+import org.mobicents.protocols.ss7.map.api.service.sms.MAPServiceSms;
+import org.mobicents.protocols.ss7.map.api.service.sms.MAPServiceSmsListener;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
-
 
 /**
  * 
  * @author sergey vetyutnev
  *
  */
-public class MAPServiceBaseProxy implements MAPServiceBase {
+public class MAPServiceSmsProxy extends MAPServiceBaseProxy implements MAPServiceSms {
 
-	private MAPProviderProxy mapProvider;
-
-	public MAPServiceBaseProxy(MAPProviderProxy mapProvider) {
-		this.mapProvider = mapProvider;
-	}
+	private MAPDialogSmsProxy lastMAPDialogSms;
 	
-	@Override
-	public MAPProvider getMAPProvider() {
-		return mapProvider;
+	public MAPServiceSmsProxy(MAPProviderProxy mapProvider) {
+		super(mapProvider);
+	}
+
+	public MAPDialogSmsProxy getLastMAPDialogSms(){
+		return lastMAPDialogSms;
+	}
+
+	public void setLastMAPDialogSms(MAPDialogSmsProxy dlg) {
+		lastMAPDialogSms = dlg;
 	}
 
 	@Override
-	public MAPDialog createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
+	public MAPDialogSms createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
 			AddressString destReference) throws MAPException {
-		// TODO Auto-generated method stub
-		return null;
+		lastMAPDialogSms = new MAPDialogSmsProxy(this, appCntx, origAddress, destAddress);;
+		return lastMAPDialogSms;
 	}
 
 	@Override
-	public ServingCheckData isServingService(MAPApplicationContext dialogApplicationContext) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isActivated() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void acivate() {
+	public void addMAPServiceListener(MAPServiceSmsListener arg0) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void deactivate() {
+	public void removeMAPServiceListener(MAPServiceSmsListener arg0) {
 		// TODO Auto-generated method stub
 		
 	}
+
 }

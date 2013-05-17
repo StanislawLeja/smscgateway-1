@@ -1,4 +1,28 @@
+/*
+ * TeleStax, Open Source Cloud Communications  Copyright 2012. 
+ * and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.mobicents.smsc.slee.services.smpp.server.rx;
+
+import java.util.Date;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -9,17 +33,43 @@ import javax.slee.RolledBackContext;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
 import javax.slee.facilities.Tracer;
+import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.slee.SbbContextExt;
+import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
+import org.mobicents.smsc.slee.resources.peristence.SmscProcessingException;
+import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.persistence.Sms;
+import org.mobicents.smsc.slee.resources.persistence.SmsSet;
+import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
+import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
+import org.mobicents.smsc.slee.services.mt.CdrGenerator;
+import org.mobicents.smsc.slee.services.mt.MtCommonSbb;
+import org.mobicents.smsc.slee.services.mt.SmsDeliveryData;
+import org.mobicents.smsc.slee.services.mt.MtSbb.MessageProcessingState;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
+import org.mobicents.smsc.smpp.Esme;
 
+import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.pdu.DeliverSmResp;
+import com.cloudhopper.smpp.type.Address;
 import com.cloudhopper.smpp.type.RecoverablePduException;
 
+/**
+ * 
+ * @author amit bhayani
+ * @author sergey vetyutnev
+ * 
+ */
 public abstract class RxSmppServerSbb implements Sbb {
+
+    private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String LINK = "PersistenceResourceAdaptor";
 
 	private Tracer logger;
 	private SbbContextExt sbbContext;
@@ -27,64 +77,371 @@ public abstract class RxSmppServerSbb implements Sbb {
 	private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
 	private SmppSessions smppServerSessions = null;
 
+	private PersistenceRAInterface persistence;
+
 	public RxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
 	}
 
+	public PersistenceRAInterface getStore() {
+		return this.persistence;
+	}
+
+
 	public void onDeliverSm(SmsSetEvent event, ActivityContextInterface aci, EventContext eventContext) {
 
-//		try {
-//			// TODO Change the API of SmsEvent to getEsmeName
-//			String esmeName = event.getOrigSystemId();
-//			Esme esme = this.smppServerSessions.getEsmeByClusterName(esmeName);
-//
-//			if (esme == null) {
-//				this.logger.severe(String.format("Received DELIVER_SM SmsEvent=%s but no Esme found", event));
-//				return;
-//			}
-//
-//			DeliverSm deliverSm = new DeliverSm();
-//			deliverSm.setSourceAddress(new Address((byte) event.getSourceAddrTon(), (byte) event.getSourceAddrNpi(), event.getSourceAddr()));
-//			deliverSm.setDestAddress(new Address((byte) event.getSmsSet().getDestAddrTon(), (byte) event.getSmsSet().getDestAddrNpi(), event.getSmsSet()
-//					.getDestAddr()));
-//			deliverSm.setEsmClass((byte)event.getEsmClass());
-//			deliverSm.setShortMessage(event.getShortMessage());
-//
-//			// TODO : waiting for 2 secs for window to accept our request, is it
-//			// good? Should time be more here?
-//			SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, deliverSm, 2000);
-//			ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory
-//					.getActivityContextInterface(smppServerTransaction);
-//			smppTxaci.attach(this.sbbContext.getSbbLocalObject());
-//
-//		} catch (Exception e) {
-//			logger.severe(
-//					String.format("Exception while trying to send DELIVERY Report for received SmsEvent=%s", event), e);
-//		} finally {
-//			NullActivity nullActivity = (NullActivity) aci.getActivity();
-//			nullActivity.endActivity();
-//		}
+		if (this.logger.isInfoEnabled()) {
+			this.logger.info("Received Deliver SMS. event= " + event + "this=" + this);
+		}
 
+		SmsSet smsSet = event.getSmsSet();
+		int curMsg = 0;
+		Sms sms = smsSet.getSms(curMsg);
+		if (sms != null) {
+			this.startMessageDelivery(sms);
+		}
+
+		this.setCurrentMsgNum(curMsg);
+		SmsDeliveryData smsDeliveryData = new SmsDeliveryData();
+		smsDeliveryData.setSmsSet(smsSet);
+		this.setSmsDeliveryData(smsDeliveryData);
+
+		try {
+			this.sendDeliverSm();
+		} catch (SmscProcessingException e) {
+			String s = "SmscProcessingException when sending initial sendDeliverSm()=" + e.getMessage() + ", Message=" + sms;
+			logger.severe(s, e);
+			this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, s);
+		}
 	}
 
 	public void onDeliverSmResp(DeliverSmResp event, ActivityContextInterface aci, EventContext eventContext) {
 		if (logger.isInfoEnabled()) {
 			logger.info(String.format("onDeliverSmResp : DeliverSmResp=%s", event));
 		}
-		// TODO : Handle this
+
+//		event.getCommandId();
+//		event.getSequenceNumber();
+		int status = event.getCommandStatus();
+		if (status == 0) {
+
+			// current message is sent
+			// pushing current message into an archive
+			SmsDeliveryData smsDeliveryData = this.getSmsDeliveryData();
+			if (smsDeliveryData == null) {
+				if (this.logger.isInfoEnabled())
+					this.logger.info("SmsDeliveryData CMP missed");
+				return;
+			}
+			SmsSet smsSet = smsDeliveryData.getSmsSet();
+			if (smsSet == null) {
+				this.logger.severe("In SmsDeliveryData CMP smsSet is missed");
+				return;
+			}
+			int currentMsgNum = this.getCurrentMsgNum();
+			Sms sms = smsSet.getSms(currentMsgNum);
+
+			PersistenceRAInterface pers = this.getStore();
+
+			Date deliveryDate = new Date();
+			try {
+//				generateCdr(sms, CdrGenerator.CDR_SUCCESS, MtCommonSbb.CDR_SUCCESS_NO_REASON);
+				pers.archiveDeliveredSms(sms, deliveryDate);
+			} catch (PersistenceException e1) {
+				this.logger.severe("PersistenceException when archiveDeliveredSms() in RxSmppServerSbb.onDeliverSmResp(): " + e1.getMessage(), e1);
+				// we do not "return" here because even if storing into archive database is failed 
+				// we will continue delivering process
+			}
+
+			// now we are trying to sent other messages
+			if (currentMsgNum < smsSet.getSmsCount() - 1) {
+				// there are more messages to send in cache
+				currentMsgNum++;
+				this.setCurrentMsgNum(currentMsgNum);
+				sms = smsSet.getSms(currentMsgNum);
+				if (sms != null) {
+					this.startMessageDelivery(sms);
+				}
+
+				try {
+					this.sendDeliverSm();
+					return;
+				} catch (SmscProcessingException e) {
+					String s = "SmscProcessingException when sending initial sendDeliverSm()=" + e.getMessage() + ", Message=" + sms;
+					logger.severe(s, e);
+				}
+			}
+
+			// no more messages are in cache now - lets check if there are more messages in a database
+			try {
+				pers.fetchSchedulableSms(smsSet);
+			} catch (PersistenceException e1) {
+				this.logger.severe("PersistenceException when invoking fetchSchedulableSms(smsSet) from RxSmppServerSbb.onDeliverSmResp(): " + e1.toString(), e1);
+			}
+			if (smsSet.getSmsCount() > 0) {
+				// there are more messages in a database - start delivering of those messages
+				currentMsgNum = 0;
+				this.setCurrentMsgNum(currentMsgNum);
+
+				try {
+					this.sendDeliverSm();
+					return;
+				} catch (SmscProcessingException e) {
+					String s = "SmscProcessingException when sending initial sendDeliverSm()=" + e.getMessage() + ", Message=" + sms;
+					logger.severe(s, e);
+				}
+			}
+
+			// no more messages to send - remove smsSet
+			this.freeSmsSetSucceded(smsSet, pers);
+		} else {
+			this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "DeliverSm response has a bad status: " + status);
+		}
 	}
 
 	public void onPduRequestTimeout(PduRequestTimeout event, ActivityContextInterface aci, EventContext eventContext) {
 		logger.severe(String.format("onPduRequestTimeout : PduRequestTimeout=%s", event));
-		// TODO : Handle this
+
+		this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "PduRequestTimeout: ");
 	}
 
 	public void onRecoverablePduException(RecoverablePduException event, ActivityContextInterface aci,
 			EventContext eventContext) {
 		logger.severe(String.format("onRecoverablePduException : RecoverablePduException=%s", event));
-		// TODO : Handle this
+
+		this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "RecoverablePduException: ");
 	}
 
+
+	/**
+	 * CMPs
+	 */
+	public abstract void setSmsDeliveryData(SmsDeliveryData smsDeliveryData);
+
+	public abstract SmsDeliveryData getSmsDeliveryData();
+
+	public abstract void setCurrentMsgNum(int currentMsgNum);
+
+	public abstract int getCurrentMsgNum();
+
+
+	/**
+	 * Private methods
+	 */
+
+	private void sendDeliverSm() throws SmscProcessingException {
+
+		// TODO: let make here a special check if ESME in a good state
+		// if not - skip sending and set temporary error
+
+		SmsDeliveryData smsDeliveryData = this.getSmsDeliveryData();
+		if (smsDeliveryData == null) {
+			throw new SmscProcessingException("RxSmppServerSbb.sendDeliverSm(): SmsDeliveryData CMP missed", 0, 0, null);
+		}
+		SmsSet smsSet = smsDeliveryData.getSmsSet();
+		if (smsSet == null) {
+			throw new SmscProcessingException("RxSmppServerSbb.sendDeliverSm(): In SmsDeliveryData CMP smsSet is missed", 0, 0, null);
+		}
+		int currentMsgNum = this.getCurrentMsgNum();
+		Sms sms = smsSet.getSms(currentMsgNum);
+
+		try {
+			// TODO Change the API of SmsEvent to getEsmeName
+			String esmeName = sms.getOrigSystemId();
+			Esme esme = this.smppServerSessions.getEsmeByClusterName(esmeName);
+
+			if (esme == null) {
+				throw new SmscProcessingException("RxSmppServerSbb.sendDeliverSm(): Received DELIVER_SM SmsEvent=%s but no Esme found: " + sms, 0, 0, null);
+			}
+
+			DeliverSm deliverSm = new DeliverSm();
+			deliverSm.setSourceAddress(new Address((byte) sms.getSourceAddrTon(), (byte) sms.getSourceAddrNpi(), sms.getSourceAddr()));
+			deliverSm.setDestAddress(new Address((byte) sms.getSmsSet().getDestAddrTon(), (byte) sms.getSmsSet().getDestAddrNpi(), sms.getSmsSet()
+					.getDestAddr()));
+			deliverSm.setEsmClass((byte) sms.getEsmClass());
+			deliverSm.setShortMessage(sms.getShortMessage());
+
+			// TODO : waiting for 2 secs for window to accept our request, is it
+			// good? Should time be more here?
+			SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, deliverSm, 2000);
+			ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory.getActivityContextInterface(smppServerTransaction);
+			smppTxaci.attach(this.sbbContext.getSbbLocalObject());
+
+		} catch (Exception e) {
+			throw new SmscProcessingException("RxSmppServerSbb.sendDeliverSm(): Exception while trying to send DELIVERY Report for received SmsEvent="
+					+ e.getMessage() + "\nMessage: " + sms, 0, 0, null, e);
+		} finally {
+//			NullActivity nullActivity = (NullActivity) aci.getActivity();
+//			nullActivity.endActivity();
+		}
+	}
+
+	/**
+	 * remove smsSet from LIVE database after all messages has been delivered
+	 * 
+	 * @param smsSet
+	 */
+	protected void freeSmsSetSucceded(SmsSet smsSet, PersistenceRAInterface pers) {
+
+		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
+		try {
+			synchronized (lock) {
+				try {
+					Date lastDelivery = new Date();
+					pers.setDeliverySuccess(smsSet, lastDelivery);
+
+					if (!pers.deleteSmsSet(smsSet)) {
+						pers.setNewMessageScheduled(smsSet, MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+					}
+				} catch (PersistenceException e) {
+					this.logger.severe("PersistenceException when freeSmsSetSucceded(SmsSet smsSet)" + e.getMessage(), e);
+				}
+			}
+		} finally {
+			pers.releaseSynchroObject(lock);
+		}
+	}
+
+	private void onDeliveryError(ErrorAction errorAction, ErrorCode smStatus, String reason) {
+
+		SmsDeliveryData smsDeliveryData = this.getSmsDeliveryData();
+		if (smsDeliveryData == null) {
+			if (this.logger.isInfoEnabled())
+				this.logger.info("SmsDeliveryData CMP missed");
+			return;
+		}
+		SmsSet smsSet = smsDeliveryData.getSmsSet();
+		if (smsSet == null) {
+			this.logger.severe("In SmsDeliveryData CMP smsSet is missed");
+			return;
+		}
+		int currentMsgNum = this.getCurrentMsgNum();
+		Sms smsa = smsSet.getSms(currentMsgNum);
+//		if (smsa != null)
+//			this.generateCdr(smsa, CdrGenerator.CDR_FAILED, reason);
+
+		PersistenceRAInterface pers = this.getStore();
+
+		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
+		synchronized (lock) {
+			try {
+				Date curDate = new Date();
+				try {
+					pers.setDeliveryFailure(smsSet, smStatus, curDate);
+
+					// first of all we are removing messages that delivery
+					// period is over
+					int smsCnt = smsSet.getSmsCount();
+					int goodMsgCnt = 0;
+					for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
+						Sms sms = smsSet.getSms(currentMsgNum);
+						if (sms != null) {
+							if (sms.getValidityPeriod().before(curDate)) {
+								pers.archiveFailuredSms(sms);
+							} else {
+								goodMsgCnt++;
+							}
+						}
+					}
+
+					if (goodMsgCnt == 0) {
+						// no more messages to send
+						// firstly we search for new uploaded message
+						pers.fetchSchedulableSms(smsSet);
+						if (smsSet.getSmsCount() == 0)
+							errorAction = ErrorAction.permanentFailure;
+					}
+
+					switch (errorAction) {
+					case temporaryFailure:
+						this.rescheduleSmsSet(smsSet, pers);
+						break;
+
+					case permanentFailure:
+						this.freeSmsSetFailured(smsSet, pers);
+						break;
+					}
+
+				} catch (PersistenceException e) {
+					this.logger.severe("PersistenceException when RxSmppServerSbb.onDeliveryError()" + e.getMessage(), e);
+				}
+
+			} finally {
+				pers.releaseSynchroObject(lock);
+			}
+		}
+	}
+
+	/**
+	 * Mark a message that its delivery has been started
+	 * 
+	 * @param sms
+	 */
+	protected void startMessageDelivery(Sms sms) {
+
+		try {
+			this.getStore().setDeliveryStart(sms);
+		} catch (PersistenceException e) {
+			this.logger.severe("PersistenceException when RxSmppServerSbb.setDeliveryStart(sms)" + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * remove smsSet from LIVE database after permanent delivery failure
+	 * 
+	 * @param smsSet
+	 * @param pers
+	 */
+	protected void freeSmsSetFailured(SmsSet smsSet, PersistenceRAInterface pers) {
+
+		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
+		try {
+			synchronized (lock) {
+				try {
+					pers.fetchSchedulableSms(smsSet);
+					int cnt = smsSet.getSmsCount();
+					for (int i1 = 0; i1 < cnt; i1++) {
+						Sms sms = smsSet.getSms(i1);
+						pers.archiveFailuredSms(sms);
+					}
+
+					pers.deleteSmsSet(smsSet);
+				} catch (PersistenceException e) {
+					this.logger.severe("PersistenceException when RxSmppServerSbb.freeSmsSetFailured(SmsSet smsSet)" + e.getMessage(), e);
+				}
+			}
+		} finally {
+			pers.releaseSynchroObject(lock);
+		}
+	}
+
+	/**
+	 * make new schedule time for smsSet after temporary failure
+	 * 
+	 * @param smsSet
+	 */
+	protected void rescheduleSmsSet(SmsSet smsSet, PersistenceRAInterface pers) {
+
+		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
+		try {
+			synchronized (lock) {
+
+				try {
+					int prevDueDelay = smsSet.getDueDelay();
+					int newDueDelay = MessageUtil.computeNextDueDelay(prevDueDelay);
+
+					Date newDueDate = new Date(new Date().getTime() + newDueDelay * 1000);
+					pers.setDeliveringProcessScheduled(smsSet, newDueDate, newDueDelay);
+				} catch (PersistenceException e) {
+					this.logger.severe("PersistenceException when RxSmppServerSbb.rescheduleSmsSet(SmsSet smsSet)" + e.getMessage(), e);
+				}
+			}
+		} finally {
+			pers.releaseSynchroObject(lock);
+		}
+	}
+
+	
 	@Override
 	public void sbbActivate() {
 		// TODO Auto-generated method stub
@@ -151,6 +508,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 			this.smppServerSessions = (SmppSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
 
 			this.logger = this.sbbContext.getTracer(getClass().getSimpleName());
+
+			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
@@ -160,5 +519,10 @@ public abstract class RxSmppServerSbb implements Sbb {
 	public void unsetSbbContext() {
 		// TODO Auto-generated method stub
 
+	}
+
+	public enum ErrorAction {
+		temporaryFailure,
+		permanentFailure,
 	}
 }

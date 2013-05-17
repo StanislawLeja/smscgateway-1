@@ -60,8 +60,8 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
 

@@ -54,7 +54,6 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.asn.comp.Problem;
-import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.slee.resource.map.MAPContextInterfaceFactory;
 import org.mobicents.slee.resource.map.events.DialogAccept;
@@ -70,10 +69,10 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
@@ -396,16 +395,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		if (smsa != null)
 			this.generateCdr(smsa, CdrGenerator.CDR_FAILED, reason);
 
-		PersistenceRAInterface pers;
-		try {
-			pers = this.getStore();
-		} catch (TransactionRequiredLocalException e1) {
-			this.logger.severe("TransactionRequiredLocalException when onDeliveryError()" + e1.getMessage(), e1);
-			return;
-		} catch (SLEEException e1) {
-			this.logger.severe("SLEEException when onDeliveryError()" + e1.getMessage(), e1);
-			return;
-		}
+		PersistenceRAInterface pers = this.getStore();
 
 		SMDeliveryOutcome smDeliveryOutcome = null;
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
@@ -527,10 +517,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 		try {
 			this.getStore().setDeliveryStart(sms);
-		} catch (TransactionRequiredLocalException e) {
-			this.logger.severe("TransactionRequiredLocalException when setDeliveryStart(sms)" + e.getMessage(), e);
-		} catch (SLEEException e) {
-			this.logger.severe("SLEEException when setDeliveryStart(sms)" + e.getMessage(), e);
 		} catch (PersistenceException e) {
 			this.logger.severe("PersistenceException when setDeliveryStart(sms)" + e.getMessage(), e);
 		}
