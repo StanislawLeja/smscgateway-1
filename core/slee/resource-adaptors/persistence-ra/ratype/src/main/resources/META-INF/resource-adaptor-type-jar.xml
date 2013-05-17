@@ -21,7 +21,7 @@
 		<resource-adaptor-type-classes>
 			<resource-adaptor-interface>
 				<resource-adaptor-interface-name>
-					org.mobicents.smsc.slee.resources.peristence.PersistenceRAInterface
+					org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface
 				</resource-adaptor-interface-name>
 			</resource-adaptor-interface>
 		</resource-adaptor-type-classes>
