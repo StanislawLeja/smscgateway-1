@@ -379,7 +379,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 	protected void onDeliveryError(ErrorAction errorAction, ErrorCode smStatus, String reason) {
 
-		SmsDeliveryData smsDeliveryData = this.doGetSmsDeliveryData();
+		SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
 		if (smsDeliveryData == null) {
 			if (this.logger.isInfoEnabled())
 				this.logger.info("SmsDeliveryData CMP missed");
@@ -495,9 +495,9 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		CdrGenerator.generateCdr(sb.toString());
 	}
 
-	public abstract void doSetSmsDeliveryData(SmsDeliveryData smsDeliveryData);
+	public abstract void doSetSmsSubmitData(SmsSubmitData smsDeliveryData);
 
-	public abstract SmsDeliveryData doGetSmsDeliveryData();
+	public abstract SmsSubmitData doGetSmsSubmitData();
 
 	public abstract void doSetCurrentMsgNum(int currentMsgNum);
 

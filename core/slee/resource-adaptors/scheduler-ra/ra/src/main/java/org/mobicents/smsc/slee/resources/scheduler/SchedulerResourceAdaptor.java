@@ -403,7 +403,9 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 //			EsmeManagement esmeManagement = EsmeManagement.getInstance();
 //			Esme esme = esmeManagement.getEsmeByClusterName(destClusterName);
 //			DBOperations.setDestination(smsSet, destClusterName, destSystemId, destEsmeId, type);
-			DBOperations.setDestination(smsSet, destClusterName, null, null, destClusterName != null ? SmType.DELIVER_SM : SmType.SUBMIT_SM);
+//			DBOperations.setDestination(smsSet, destClusterName, null, null, destClusterName != null ? SmType.DELIVER_SM : SmType.SUBMIT_SM);
+			smsSet.setDestClusterName(destClusterName);
+			smsSet.setType(destClusterName != null ? SmType.DELIVER_SM : SmType.SUBMIT_SM);
 
 			final String eventName = smsSet.getType() == SmType.DELIVER_SM ? EVENT_DELIVER_SM : EVENT_SUBMIT_SM;
 			final FireableEventType eventTypeId = this.eventIdCache.getEventId(eventName);

@@ -89,7 +89,7 @@ public class SmsSetCashe {
 	}
 
 	public class TargetAddressContainer {
-		public TargetAddress targetAddress;
-		public int count;
+		private TargetAddress targetAddress;
+		private int count;
 	}
 }

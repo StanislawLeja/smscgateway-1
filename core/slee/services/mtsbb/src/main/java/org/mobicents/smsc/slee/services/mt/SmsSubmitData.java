@@ -22,30 +22,26 @@
 
 package org.mobicents.smsc.slee.services.mt;
 
-import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
-import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
-import org.mobicents.protocols.ss7.map.api.primitives.LMSI;
+import java.io.Serializable;
+
+import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 
 /**
  * 
- * @author amit bhayani
  * @author sergey vetyutnev
  * 
  */
-public interface MtForwardSmsInterface {
+public class SmsSubmitData implements Serializable {
 
-	public void setupMtForwardShortMessageRequest(ISDNAddressString networkNode, IMSI imsi, LMSI lmci);
+	private SmsSet smsSet;
 
-	public void doSetSmsSubmitData(SmsSubmitData smsDeliveryData);
+	public SmsSet getSmsSet() {
+		return smsSet;
+	}
 
-	public SmsSubmitData doGetSmsSubmitData();
-
-	public void doSetCurrentMsgNum(int currentMsgNum);
-
-	public int doGetCurrentMsgNum();
-
-	public void doSetInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer);
-
-	public InformServiceCenterContainer doGetInformServiceCenterContainer();
+	public void setSmsSet(SmsSet smsSet) {
+		this.smsSet = smsSet;
+	}
 
 }
+

@@ -48,15 +48,14 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
-import org.mobicents.smsc.slee.services.mt.CdrGenerator;
-import org.mobicents.smsc.slee.services.mt.MtCommonSbb;
-import org.mobicents.smsc.slee.services.mt.SmsDeliveryData;
-import org.mobicents.smsc.slee.services.mt.MtSbb.MessageProcessingState;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.Esme;
+import org.mobicents.smsc.smpp.EsmeManagement;
 
+import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.pdu.DeliverSmResp;
+import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.type.Address;
 import com.cloudhopper.smpp.type.RecoverablePduException;
 
@@ -246,20 +245,41 @@ public abstract class RxSmppServerSbb implements Sbb {
 		Sms sms = smsSet.getSms(currentMsgNum);
 
 		try {
-			// TODO Change the API of SmsEvent to getEsmeName
-			String esmeName = sms.getOrigSystemId();
-			Esme esme = this.smppServerSessions.getEsmeByClusterName(esmeName);
-
+			EsmeManagement esmeManagement = EsmeManagement.getInstance();
+			Esme esme = esmeManagement.getEsmeByClusterName(smsSet.getDestClusterName());
 			if (esme == null) {
-				throw new SmscProcessingException("RxSmppServerSbb.sendDeliverSm(): Received DELIVER_SM SmsEvent=%s but no Esme found: " + sms, 0, 0, null);
+				throw new SmscProcessingException("RxSmppServerSbb.sendDeliverSm(): Received DELIVER_SM SmsEvent but no Esme found for destClusterName: "
+						+ smsSet.getDestClusterName() + ", Message=" + sms, 0, 0, null);
 			}
+
+			smsSet.setDestSystemId(esme.getSystemId());
+			smsSet.setDestEsmeName(esme.getName());
 
 			DeliverSm deliverSm = new DeliverSm();
 			deliverSm.setSourceAddress(new Address((byte) sms.getSourceAddrTon(), (byte) sms.getSourceAddrNpi(), sms.getSourceAddr()));
 			deliverSm.setDestAddress(new Address((byte) sms.getSmsSet().getDestAddrTon(), (byte) sms.getSmsSet().getDestAddrNpi(), sms.getSmsSet()
 					.getDestAddr()));
 			deliverSm.setEsmClass((byte) sms.getEsmClass());
-			deliverSm.setShortMessage(sms.getShortMessage());
+			deliverSm.setProtocolId((byte) sms.getProtocolId());
+			deliverSm.setPriority((byte) sms.getPriority());
+			if (sms.getScheduleDeliveryTime() != null) {
+				deliverSm.setScheduleDeliveryTime(MessageUtil.printSmppAbsoluteDate(sms.getScheduleDeliveryTime(), -(new Date()).getTimezoneOffset()));
+			}
+			if (sms.getValidityPeriod() != null) {
+				deliverSm.setValidityPeriod(MessageUtil.printSmppAbsoluteDate(sms.getValidityPeriod(), -(new Date()).getTimezoneOffset()));
+			}
+			deliverSm.setRegisteredDelivery((byte) sms.getRegisteredDelivery());
+			deliverSm.setReplaceIfPresent((byte) sms.getReplaceIfPresent());
+			deliverSm.setDataCoding((byte) sms.getDataCoding());
+
+			if (sms.getShortMessage() != null) {
+				if (sms.getShortMessage().length <= 255) {
+					deliverSm.setShortMessage(sms.getShortMessage());
+				} else {
+					Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, sms.getShortMessage(), null);
+					deliverSm.addOptionalParameter(tlv);
+				}
+			}			
 
 			// TODO : waiting for 2 secs for window to accept our request, is it
 			// good? Should time be more here?

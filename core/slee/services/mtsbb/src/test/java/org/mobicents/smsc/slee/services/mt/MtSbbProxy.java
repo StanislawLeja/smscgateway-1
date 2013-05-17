@@ -78,7 +78,7 @@ public class MtSbbProxy extends MtSbb implements ChildRelation, MtSbbLocalObject
 	}
 
 
-	private SmsDeliveryData smsDeliveryData;
+	private SmsSubmitData smsDeliveryData;
 	private SccpAddress sccpAddress;
 	private int mesageSegmentNumber;
 	private SM_RP_DA sm_rp_da;
@@ -90,12 +90,12 @@ public class MtSbbProxy extends MtSbb implements ChildRelation, MtSbbLocalObject
 
 	
 	@Override
-	public void setSmsDeliveryData(SmsDeliveryData smsDeliveryData) {
+	public void setSmsSubmitData(SmsSubmitData smsDeliveryData) {
 		this.smsDeliveryData = smsDeliveryData;
 	}
 
 	@Override
-	public SmsDeliveryData getSmsDeliveryData() {
+	public SmsSubmitData getSmsSubmitData() {
 		return this.smsDeliveryData;
 	}
 
