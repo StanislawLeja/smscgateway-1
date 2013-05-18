@@ -66,6 +66,7 @@ import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
 import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
+import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 
 /**
  * 

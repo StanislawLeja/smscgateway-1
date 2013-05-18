@@ -25,6 +25,7 @@ package org.mobicents.smsc.slee.services.mt;
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.LMSI;
+import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 
 /**
  * 

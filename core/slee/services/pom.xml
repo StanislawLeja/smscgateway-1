@@ -15,8 +15,8 @@
 
 	<modules>
 		<module>library</module>
-		<module>events</module>
 		<!-- 
+		<module>events</module>
 		<module>persistencesbb</module>
 		 -->
 		<module>alertsbb</module>

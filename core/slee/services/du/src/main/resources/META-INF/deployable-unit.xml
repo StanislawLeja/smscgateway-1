@@ -6,7 +6,6 @@
 	<jar>jars/alert-sbb-6.1.2-TelScale-SNAPSHOT.jar</jar>
 	<jar>jars/smsc-library-6.1.2-TelScale-SNAPSHOT.jar</jar>
 	<jar>jars/rx-smppserver-sbb-6.1.2-TelScale-SNAPSHOT.jar</jar>
-	<jar>jars/smsc-events-6.1.2-TelScale-SNAPSHOT.jar</jar>
 	<jar>jars/persistence-sbb-6.1.2-TelScale-SNAPSHOT.jar</jar>
 	<jar>jars/mo-sbb-6.1.2-TelScale-SNAPSHOT.jar</jar>
 	<service-xml>services/service.xml</service-xml>
