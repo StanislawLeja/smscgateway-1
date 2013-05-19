@@ -400,6 +400,15 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		try {
 			SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
 			String destClusterName = smsRouteManagement.getEsmeClusterName(smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(), smsSet.getDestAddr());
+
+
+			// !!!!- .................................
+			this.tracer.severe("*******************: getEsmeClusterName: " + destClusterName + ", ton=" + smsSet.getDestAddrTon() + ", npi="
+					+ smsSet.getDestAddrNpi() + ", DestAddr=" + smsSet.getDestAddr());
+			// !!!!- .................................
+
+
+
 //			EsmeManagement esmeManagement = EsmeManagement.getInstance();
 //			Esme esme = esmeManagement.getEsmeByClusterName(destClusterName);
 //			DBOperations.setDestination(smsSet, destClusterName, destSystemId, destEsmeId, type);
@@ -410,6 +419,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			final String eventName = smsSet.getType() == SmType.DELIVER_SM ? EVENT_DELIVER_SM : EVENT_SUBMIT_SM;
 			final FireableEventType eventTypeId = this.eventIdCache.getEventId(eventName);
 			SmsSetEvent event = new SmsSetEvent();
+			event.setSmsSet(smsSet);
 			SchedulerActivityImpl activity = new SchedulerActivityImpl();
 			this.sleeEndpoint.startActivityTransacted(activity.getActivityHandle(), activity);
 

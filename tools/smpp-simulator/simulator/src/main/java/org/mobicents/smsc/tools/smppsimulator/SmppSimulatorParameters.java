@@ -43,8 +43,8 @@ public class SmppSimulatorParameters {
 
 	private TON ton = TON.International;
 	private NPI npi = NPI.ISDN;
-	private String sourceAddress = "0000001";
-	private String destAddress = "0000002";
+	private String sourceAddress = "6666";
+	private String destAddress = "5555";
 
 	private String messageText = "Hello!";
 	private EncodingType encodingType = EncodingType.GSM7;

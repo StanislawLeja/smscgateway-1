@@ -25,6 +25,7 @@ package org.mobicents.smsc.tools.smppsimulator;
 import java.nio.channels.ClosedChannelException;
 
 import com.cloudhopper.smpp.PduAsyncResponse;
+import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.impl.DefaultSmppSessionHandler;
 import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
@@ -58,6 +59,11 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
 		testingForm.addMessage("PduRequestReceived: " + pduRequest.getName(), pduRequest.toString());
 
         // here we can insert responses
+		if (pduRequest.getCommandId() == SmppConstants.CMD_ID_DELIVER_SM) {
+			PduResponse resp = pduRequest.createResponse();
+			testingForm.addMessage("PduResponseSent: " + resp.getName(), resp.toString());
+			return resp;
+		}
         return null;
     }
 

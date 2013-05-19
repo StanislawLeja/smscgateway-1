@@ -25,7 +25,6 @@ package org.mobicents.smsc.slee.services.mt;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.slee.ChildRelation;
 import javax.slee.CreateException;
 import javax.slee.NoSuchObjectLocalException;
 import javax.slee.SLEEException;
@@ -46,7 +45,7 @@ import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
  * @author sergey vetyutnev
  * 
  */
-public class RsdsSbbProxy extends RsdsSbb implements ChildRelation, SbbLocalObject, RsdsSbbLocalObject, SbbLocalObjectExt {
+public class RsdsSbbProxy extends RsdsSbb implements ChildRelationExt, SbbLocalObject, RsdsSbbLocalObject, SbbLocalObjectExt {
 
 	private PersistenceRAInterfaceProxy pers;
 	private String targetId;
@@ -251,6 +250,19 @@ public class RsdsSbbProxy extends RsdsSbb implements ChildRelation, SbbLocalObje
 	@Override
 	public SMDeliveryOutcome getSmDeliveryOutcome() {
 		return this.smDeliveryOutcome;
+	}
+
+	@Override
+	public SbbLocalObjectExt create(String arg0) throws CreateException, IllegalArgumentException, NullPointerException, TransactionRequiredLocalException,
+			SLEEException {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	@Override
+	public SbbLocalObjectExt get(String arg0) throws IllegalArgumentException, NullPointerException, TransactionRequiredLocalException, SLEEException {
+		// TODO Auto-generated method stub
+		return this;
 	}
 
 }

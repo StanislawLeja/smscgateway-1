@@ -23,11 +23,7 @@
 package org.mobicents.smsc.slee.services.mt;
 
 import javax.slee.ActivityContextInterface;
-import javax.slee.ChildRelation;
-import javax.slee.CreateException;
 import javax.slee.EventContext;
-import javax.slee.SLEEException;
-import javax.slee.TransactionRequiredLocalException;
 
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
@@ -49,10 +45,10 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.InformServiceCentreRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMResponse;
-import org.mobicents.protocols.ss7.map.service.sms.SendRoutingInfoForSMResponseImpl;
 import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextName;
+import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.resource.map.events.DialogClose;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogProviderAbort;
@@ -259,7 +255,7 @@ public abstract class SriSbb extends MtCommonSbb {
 			this.doSetInformServiceCenterContainer(informServiceCenterContainer);
 		}
 
-		this.setSendRoutingInfoForSMResponse((SendRoutingInfoForSMResponseImpl)evt);
+		this.setSendRoutingInfoForSMResponse(evt);
 	}
 
 	public void onInformServiceCentreRequest(InformServiceCentreRequest evt, ActivityContextInterface aci) {
@@ -290,30 +286,22 @@ public abstract class SriSbb extends MtCommonSbb {
 	 */
 
 	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi, SMDeliveryOutcome sMDeliveryOutcome, String targetId) {
-		try {
-			ChildRelation relation = getRsdsSbb();
-			RsdsSbbLocalObject rsdsSbbLocalObject = (RsdsSbbLocalObject) relation.create();
-
+		RsdsSbbLocalObject rsdsSbbLocalObject = this.getRsdsSbbObject();
+		if (rsdsSbbLocalObject != null) {
 			ISDNAddressString isdn = this.getCalledPartyISDNAddressString(destinationAddress, ton, npi);
 			AddressString serviceCentreAddress = getServiceCenterAddressString();
 			SccpAddress destAddress = this.convertAddressFieldToSCCPAddress(destinationAddress, ton, npi);
 			rsdsSbbLocalObject.setupReportSMDeliveryStatusRequest(isdn, serviceCentreAddress, sMDeliveryOutcome, destAddress,
 					this.getSRIMAPApplicationContext(MAPApplicationContextVersion.getInstance(this.getSriMapVersion())), targetId);
-		} catch (TransactionRequiredLocalException e) {
-			this.logger.severe("TransactionRequiredLocalException when obtaining RsdsSbbLocalObject", e);
-		} catch (SLEEException e) {
-			this.logger.severe("SLEEException when obtaining RsdsSbbLocalObject", e);
-		} catch (CreateException e) {
-			this.logger.severe("CreateException when obtaining RsdsSbbLocalObject", e);
 		}
 	}
 
 	/**
 	 * CMPs
 	 */
-	public abstract void setSendRoutingInfoForSMResponse(SendRoutingInfoForSMResponseImpl sendRoutingInfoForSMResponse);
+	public abstract void setSendRoutingInfoForSMResponse(SendRoutingInfoForSMResponse sendRoutingInfoForSMResponse);
 
-	public abstract SendRoutingInfoForSMResponseImpl getSendRoutingInfoForSMResponse();
+	public abstract SendRoutingInfoForSMResponse getSendRoutingInfoForSMResponse();
 
 	public abstract void setErrorResponse(MAPErrorMessage errorResponse);
 
@@ -328,86 +316,88 @@ public abstract class SriSbb extends MtCommonSbb {
 	 * 
 	 * @return
 	 */
-	public abstract ChildRelation getMtSbb();
+	public abstract ChildRelationExt getMtSbb();
 
-	public abstract ChildRelation getRsdsSbb();
+	public abstract ChildRelationExt getRsdsSbb();
+
+	private MtForwardSmsInterface getMtSbbObject() { 
+		ChildRelationExt relation = getMtSbb();
+
+		MtForwardSmsInterface ret = (MtSbbLocalObject) relation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
+		if (ret == null) {
+			try {
+				ret = (MtForwardSmsInterface) relation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
+			} catch (Exception e) {
+				if (this.logger.isSevereEnabled()) {
+					this.logger.severe("Exception while trying to creat MtSbb child", e);
+				}
+			}
+		}
+		return ret;
+	}
+
+	private RsdsSbbLocalObject getRsdsSbbObject() {
+		ChildRelationExt relation = getRsdsSbb();
+
+		RsdsSbbLocalObject ret = (RsdsSbbLocalObject) relation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
+		if (ret == null) {
+			try {
+				ret = (RsdsSbbLocalObject) relation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
+			} catch (Exception e) {
+				if (this.logger.isSevereEnabled()) {
+					this.logger.severe("Exception while trying to creat RsdsSbb child", e);
+				}
+			}
+		}
+		return ret;
+	}
 
 	public void doSetSmsSubmitData(SmsSubmitData smsDeliveryData) {
-		try {
-			ChildRelation relation = getMtSbb();
-			MtForwardSmsInterface mtSbbLocalObject = (MtSbbLocalObject) relation.create();
+		MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+		if (mtSbbLocalObject != null) {
 			mtSbbLocalObject.doSetSmsSubmitData(smsDeliveryData);
-		} catch (CreateException e) {
-			this.logger.severe("Could not create Child SBB", e);
-		} catch (Exception e) {
-			this.logger.severe("Exception while trying to creat MtSbb child", e);
 		}
 	}
 
 	public SmsSubmitData doGetSmsSubmitData() {
-		try {
-			ChildRelation relation = getMtSbb();
-			MtSbbLocalObject mtSbbLocalObject = (MtSbbLocalObject) relation.create();
+		MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+		if (mtSbbLocalObject != null) {
 			return mtSbbLocalObject.doGetSmsSubmitData();
-		} catch (CreateException e) {
-			this.logger.severe("Could not create Child SBB", e);
-		} catch (Exception e) {
-			this.logger.severe("Exception while trying to creat MtSbb child", e);
+		} else {
+			return null;
 		}
-
-		return null;
 	}
 
 	public void doSetCurrentMsgNum(int currentMsgNum) {
-		try {
-			ChildRelation relation = getMtSbb();
-			MtForwardSmsInterface mtSbbLocalObject = (MtSbbLocalObject) relation.create();
+		MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+		if (mtSbbLocalObject != null) {
 			mtSbbLocalObject.doSetCurrentMsgNum(currentMsgNum);
-		} catch (CreateException e) {
-			this.logger.severe("Could not create Child SBB", e);
-		} catch (Exception e) {
-			this.logger.severe("Exception while trying to creat MtSbb child", e);
 		}
 	}
 
 	public int doGetCurrentMsgNum() {
-		try {
-			ChildRelation relation = getMtSbb();
-			MtSbbLocalObject mtSbbLocalObject = (MtSbbLocalObject) relation.create();
+		MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+		if (mtSbbLocalObject != null) {
 			return mtSbbLocalObject.doGetCurrentMsgNum();
-		} catch (CreateException e) {
-			this.logger.severe("Could not create Child SBB", e);
-		} catch (Exception e) {
-			this.logger.severe("Exception while trying to creat MtSbb child", e);
+		} else {
+			return 0;
 		}
-
-		return 0;
 	}
 
 	public void doSetInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer) {
-		try {
-			ChildRelation relation = getMtSbb();
-			MtForwardSmsInterface mtSbbLocalObject = (MtSbbLocalObject) relation.create();
+		MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+		if (mtSbbLocalObject != null) {
 			mtSbbLocalObject.doSetInformServiceCenterContainer(informServiceCenterContainer);
-		} catch (CreateException e) {
-			this.logger.severe("Could not create Child SBB", e);
-		} catch (Exception e) {
-			this.logger.severe("Exception while trying to creat MtSbb child", e);
 		}
 	}
 
 	public InformServiceCenterContainer doGetInformServiceCenterContainer() {
-		try {
-			ChildRelation relation = getMtSbb();
-			MtSbbLocalObject mtSbbLocalObject = (MtSbbLocalObject) relation.create();
+		MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+		if (mtSbbLocalObject != null) {
 			return mtSbbLocalObject.doGetInformServiceCenterContainer();
-		} catch (CreateException e) {
-			this.logger.severe("Could not create Child SBB", e);
-		} catch (Exception e) {
-			this.logger.severe("Exception while trying to creat MtSbb child", e);
+		} else {
+			return null;
 		}
-
-		return null;
 	}
 
 
@@ -457,23 +447,22 @@ public abstract class SriSbb extends MtCommonSbb {
 
 	private void onSriFullResponse() {
 
+
+		// !!!!- .................................
+		// TODO: remove this
+		this.logger.severe("*******************: doGetInformServiceCenterContainer: " + this.doGetSmsSubmitData());
+		// !!!!- .................................
+
+
 		SendRoutingInfoForSMResponse sendRoutingInfoForSMResponse = this.getSendRoutingInfoForSMResponse();
 		MAPErrorMessage errorMessage = this.getErrorResponse();
 		if (sendRoutingInfoForSMResponse != null) {
 
 			// we have positive response to SRI request - we will try to send messages
-			try {
-				MtSbbLocalObject mtSbbLocalObject = null;
-				ChildRelation relation = getMtSbb();
-				mtSbbLocalObject = (MtSbbLocalObject) relation.create();
-
+			MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+			if (mtSbbLocalObject != null) {
 				mtSbbLocalObject.setupMtForwardShortMessageRequest(sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getNetworkNodeNumber(),
 						sendRoutingInfoForSMResponse.getIMSI(), sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getLMSI());
-
-			} catch (CreateException e) {
-				this.logger.severe("Could not create Child SBB", e);
-			} catch (Exception e) {
-				this.logger.severe("Exception while trying to creat MtSbb child", e);
 			}
 		} else if (errorMessage != null) {
 

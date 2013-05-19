@@ -46,4 +46,17 @@ public class SmsSetEvent implements Serializable {
 		this.smsSet = smsSet;
 	}
 
+    @Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SmsSetEvent [");
+
+		if (this.smsSet != null) {
+			sb.append(this.smsSet.toString());
+		}
+
+		sb.append("]");
+		return sb.toString();
+	}
+
 }

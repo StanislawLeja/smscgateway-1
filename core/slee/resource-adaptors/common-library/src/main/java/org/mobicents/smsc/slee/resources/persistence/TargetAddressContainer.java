@@ -22,38 +22,12 @@
 
 package org.mobicents.smsc.slee.resources.persistence;
 
-import java.io.Serializable;
-
-
 /**
  * 
  * @author sergey vetyutnev
  * 
  */
-public class SmsSubmitData implements Serializable {
-
-	private SmsSet smsSet;
-
-	public SmsSet getSmsSet() {
-		return smsSet;
-	}
-
-	public void setSmsSet(SmsSet smsSet) {
-		this.smsSet = smsSet;
-	}
-
-    @Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("SmsSubmitData [");
-
-		if (this.smsSet != null) {
-			sb.append(this.smsSet.toString());
-		}
-
-		sb.append("]");
-		return sb.toString();
-	}
-
+public class TargetAddressContainer {
+	public TargetAddress targetAddress;
+	public int count;
 }
-

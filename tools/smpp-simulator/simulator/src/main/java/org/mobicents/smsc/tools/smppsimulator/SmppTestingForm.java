@@ -426,6 +426,7 @@ public class SmppTestingForm extends JDialog {
         config0.setConnectTimeout(this.param.getConnectTimeout());
         config0.setSystemId(this.param.getSystemId());
         config0.setPassword(this.param.getPassword());
+		config0.setAddressRange(new Address((byte) 1, (byte) 1, "6666"));
         config0.getLoggingOptions().setLogBytes(true);
         // to enable monitoring (request expiration)
         config0.setRequestExpiryTimeout(this.param.getRequestExpiryTimeout());

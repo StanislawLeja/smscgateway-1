@@ -87,9 +87,4 @@ public class SmsSetCashe {
 	public int getActivityCount() {
 		return activityCount;
 	}
-
-	public class TargetAddressContainer {
-		public TargetAddress targetAddress;
-		public int count;
-	}
 }

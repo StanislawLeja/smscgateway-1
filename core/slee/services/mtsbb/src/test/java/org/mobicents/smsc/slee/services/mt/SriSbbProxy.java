@@ -36,6 +36,7 @@ import javax.slee.TransactionRolledbackLocalException;
 import org.mobicents.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
+import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMResponse;
 import org.mobicents.protocols.ss7.map.service.sms.SendRoutingInfoForSMResponseImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbLocalObjectExt;
@@ -73,22 +74,27 @@ public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObject
 	}
 
 	@Override
-	public ChildRelation getMtSbb() {
+	public ChildRelationExt getMtSbb() {
 		return this.mtSbb;
 	}
 
+	@Override
+	public ChildRelationExt getRsdsSbb() {
+		return rsdsSbb;
+	}
+
 	
-	private SendRoutingInfoForSMResponseImpl sendRoutingInfoForSMResponse;
+	private SendRoutingInfoForSMResponse sendRoutingInfoForSMResponse;
 	private int sriMapVersion;
 	private MAPErrorMessage errorContainer;
 	
 	@Override
-	public void setSendRoutingInfoForSMResponse(SendRoutingInfoForSMResponseImpl sendRoutingInfoForSMResponse) {
+	public void setSendRoutingInfoForSMResponse(SendRoutingInfoForSMResponse sendRoutingInfoForSMResponse) {
 		this.sendRoutingInfoForSMResponse = sendRoutingInfoForSMResponse;
 	}
 
 	@Override
-	public SendRoutingInfoForSMResponseImpl getSendRoutingInfoForSMResponse() {
+	public SendRoutingInfoForSMResponse getSendRoutingInfoForSMResponse() {
 		return this.sendRoutingInfoForSMResponse;
 	}
 
@@ -112,11 +118,6 @@ public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObject
 		return this.errorContainer;
 	}
 
-
-	@Override
-	public ChildRelation getRsdsSbb() {
-		return rsdsSbb;
-	}
 
 	@Override
 	public boolean add(Object arg0) {
