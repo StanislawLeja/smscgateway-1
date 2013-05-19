@@ -121,6 +121,7 @@
 					</execution>
 				</executions>
 				<configuration>
+					<excludeArtifactIds>common-library,smpp-server-ra-library,mobicents-slee-ra-map-library</excludeArtifactIds>
 					<library-name>me.prettyprint</library-name>
 					<library-vendor>hector-core</library-vendor>
 					<library-version>${hector-core.version}</library-version>

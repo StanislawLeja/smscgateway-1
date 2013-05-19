@@ -417,7 +417,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				this.sleeEndpoint.fireEventTransacted(activity.getActivityHandle(), eventTypeId, event, null, null);
 			} catch (Exception e) {
 				if (this.tracer.isSevereEnabled()) {
-					this.tracer.severe("Failed to fire SmsSet event: " + eventTypeId, e);
+					this.tracer.severe("Failed to fire SmsSet event Class=: " + eventTypeId.getEventClassName(), e);
 				}
 				try {
 					this.sleeEndpoint.endActivityTransacted(activity.getActivityHandle());

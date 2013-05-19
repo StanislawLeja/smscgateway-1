@@ -49,7 +49,9 @@
 				<executions>
 					<execution>
 						<goals>
+							<!-- 
 							<goal>copy-dependencies</goal>
+							 -->
 							<goal>generate-descriptor</goal>
 						</goals>
 					</execution>
