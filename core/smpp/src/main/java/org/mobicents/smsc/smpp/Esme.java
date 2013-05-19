@@ -492,6 +492,10 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			String addressRange = xml.getAttribute(ESME_ADDRESS_RANGE, null);
 
 			esme.address = new Address(ton, npi, addressRange);
+			
+			if(addressRange!=null){
+				esme.pattern = Pattern.compile(addressRange);
+			}
 
 			esme.windowSize = xml.getAttribute(WINDOW_SIZE, 0);
 			esme.connectTimeout = xml.getAttribute(CONNECT_TIMEOUT, 0);

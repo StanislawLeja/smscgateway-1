@@ -419,7 +419,19 @@ public class EsmeManagement implements EsmeManagementMBean {
 			reader = XMLObjectReader.newInstance(new FileInputStream(persistFile.toString()));
 
 			reader.setBinding(binding);
-			esmes = reader.read(ESME_LIST, FastList.class);
+			this.esmes = reader.read(ESME_LIST, FastList.class);
+
+			// Populate cluster
+			for (FastList.Node<Esme> n = this.esmes.head(), end = this.esmes.tail(); (n = n.getNext()) != end;) {
+				Esme esme = n.getValue();
+				String esmeClusterName = esme.getClusterName();
+				EsmeCluster esmeCluster = this.esmeClusters.get(esmeClusterName);
+				if (esmeCluster == null) {
+					esmeCluster = new EsmeCluster(esmeClusterName);
+					this.esmeClusters.put(esmeClusterName, esmeCluster);
+				}
+				esmeCluster.addEsme(esme);
+			}
 
 			reader.close();
 		} catch (XMLStreamException ex) {
