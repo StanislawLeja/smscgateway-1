@@ -51,7 +51,7 @@ CREATE TABLE "LIVE_SMS" (
 
 	"MESSAGE" blob,
 	"OPTIONAL_PARAMETERS" text, 
-	"SCHEDULE_DELIVERY" timestamp,
+	"SCHEDULE_DELIVERY_TIME" timestamp,
 	"VALIDITY_PERIOD" timestamp,
 	"LAST_DELIVERY" timestamp,
 	"DELIVERY_COUNT" int,
@@ -93,7 +93,7 @@ CREATE TABLE "ARCHIVE" (
 
 	"MESSAGE" blob,
 	"OPTIONAL_PARAMETERS" text, 
-	"SCHEDULE_DELIVERY" timestamp,
+	"SCHEDULE_DELIVERY_TIME" timestamp,
 	"VALIDITY_PERIOD" timestamp,
 
 	"IMSI" ascii,

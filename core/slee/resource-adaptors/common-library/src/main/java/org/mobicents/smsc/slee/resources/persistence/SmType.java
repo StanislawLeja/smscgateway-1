@@ -32,11 +32,11 @@ public enum SmType {
     /**
      * ESME terminated message
      */
-    SUBMIT_SM(0),
+    SMS_FOR_ESME(0),
     /**
      * MT message
      */
-    DELIVER_SM(1);
+    SMS_FOR_SS7(1);
 
     private int code;
 
@@ -50,9 +50,9 @@ public enum SmType {
     public static SmType fromInt(int v) {
         switch (v) {
             case 0:
-                return SUBMIT_SM;
+                return SMS_FOR_ESME;
             case 1:
-                return DELIVER_SM;
+                return SMS_FOR_SS7;
             default:
                 throw new IllegalArgumentException("The '" + v + "' is not a valid value!");
         }

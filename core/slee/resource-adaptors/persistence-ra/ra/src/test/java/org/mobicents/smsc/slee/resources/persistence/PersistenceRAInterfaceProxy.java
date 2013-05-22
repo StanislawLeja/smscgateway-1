@@ -28,6 +28,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.slee.facilities.Tracer;
+
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.smsc.slee.resources.persistence.DBOperations;
@@ -161,8 +163,8 @@ public class PersistenceRAInterfaceProxy implements PersistenceRAInterface {
 	}
 
 	@Override
-	public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount) throws PersistenceException {
-		return DBOperations.fetchSchedulableSmsSets(this.keyspace, maxRecordCount);
+	public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount, Tracer tracer) throws PersistenceException {
+		return DBOperations.fetchSchedulableSmsSets(this.keyspace, maxRecordCount, tracer);
 	}
 
 	@Override
@@ -176,8 +178,8 @@ public class PersistenceRAInterfaceProxy implements PersistenceRAInterface {
 	}
 
 	@Override
-	public void fetchSchedulableSms(SmsSet smsSet) throws PersistenceException {
-		DBOperations.fetchSchedulableSms(this.keyspace, smsSet);
+	public void fetchSchedulableSms(SmsSet smsSet, boolean excludeNonScheduleDeliveryTime) throws PersistenceException {
+		DBOperations.fetchSchedulableSms(this.keyspace, smsSet, excludeNonScheduleDeliveryTime);
 	}
 
 	public boolean testCassandraAccess() {

@@ -58,8 +58,8 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
-import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
@@ -85,23 +85,25 @@ public abstract class SriSbb extends MtCommonSbb {
 	public void onSms(SmsSetEvent event, ActivityContextInterface aci, EventContext eventContext) {
 
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received Submit SMS. event= " + event + "this=" + this);
+			this.logger.info("\nReceived Submit SMS. event= " + event + "this=" + this);
 		}
 
 		SmsSet smsSet = event.getSmsSet();
 		int curMsg = 0;
 		Sms sms = smsSet.getSms(curMsg);
-		if (sms != null) {
-			this.startMessageDelivery(sms);
+		if (sms == null) {
+			// this means that no messages with good ScheduleDeliveryTime or no messages at all
+			// we have to reschedule
+			this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SUCCESS, "No messages for sending now");
+			return;
 		}
+
+		this.startMessageDelivery(sms);
 
 		this.doSetCurrentMsgNum(curMsg);
 		SmsSubmitData smsDeliveryData = new SmsSubmitData();
 		smsDeliveryData.setSmsSet(smsSet);
 		this.doSetSmsSubmitData(smsDeliveryData);
-
-//		this.setSendRoutingInfoForSMResponse(null);
-//		this.setErrorContainer(null);
 
 		this.sendSRI(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
 				this.getSRIMAPApplicationContext(this.maxMAPApplicationContextVersion));
@@ -218,7 +220,7 @@ public abstract class SriSbb extends MtCommonSbb {
 
 		super.onDialogTimeout(evt, aci);
 
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogTimeout after SRI Request");
+		this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogTimeout after SRI Request");
 	}
 
 	/**
@@ -244,7 +246,7 @@ public abstract class SriSbb extends MtCommonSbb {
 	 */
 	public void onSendRoutingInfoForSMResponse(SendRoutingInfoForSMResponse evt, ActivityContextInterface aci) {
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received SEND_ROUTING_INFO_FOR_SM_RESPONSE = " + evt + " Dialog=" + evt.getMAPDialog());
+			this.logger.info("\nReceived SEND_ROUTING_INFO_FOR_SM_RESPONSE = " + evt + " Dialog=" + evt.getMAPDialog());
 		}
 
 		if (evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() == MAPApplicationContextVersion.version1 && evt.getMwdSet() != null
@@ -260,7 +262,7 @@ public abstract class SriSbb extends MtCommonSbb {
 
 	public void onInformServiceCentreRequest(InformServiceCentreRequest evt, ActivityContextInterface aci) {
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received INFORM_SERVICE_CENTER_REQUEST = " + evt + " Dialog=" + evt.getMAPDialog());
+			this.logger.info("\nReceived INFORM_SERVICE_CENTER_REQUEST = " + evt + " Dialog=" + evt.getMAPDialog());
 		}
 
 		InformServiceCenterContainer informServiceCenterContainer = new InformServiceCenterContainer();
@@ -439,26 +441,33 @@ public abstract class SriSbb extends MtCommonSbb {
 		MAPDialogSms mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext, this.getServiceCenterSccpAddress(), null,
 				destinationAddr, null);
 
-		mapDialogSms.addSendRoutingInfoForSMRequest(this.getCalledPartyISDNAddressString(destinationAddress, ton, npi), true,
-				this.getServiceCenterAddressString(), null, false, null, null, null);
+		ISDNAddressString isdn = this.getCalledPartyISDNAddressString(destinationAddress, ton, npi);
+		AddressString serviceCenterAddress = this.getServiceCenterAddressString();
+		boolean sm_RP_PRI = true;
+		mapDialogSms.addSendRoutingInfoForSMRequest(isdn, sm_RP_PRI, serviceCenterAddress, null, false, null, null, null);
+		if (this.logger.isInfoEnabled())
+			this.logger.info("\nSending: SendRoutingInfoForSMRequest: isdn=" + isdn + ", serviceCenterAddress=" + serviceCenterAddress + ", sm_RP_PRI="
+					+ sm_RP_PRI);
 
 		return mapDialogSms;
 	}
 
 	private void onSriFullResponse() {
 
-
-		// !!!!- .................................
-		// TODO: remove this
-		this.logger.severe("*******************: doGetInformServiceCenterContainer: " + this.doGetSmsSubmitData());
-		// !!!!- .................................
-
-
 		SendRoutingInfoForSMResponse sendRoutingInfoForSMResponse = this.getSendRoutingInfoForSMResponse();
 		MAPErrorMessage errorMessage = this.getErrorResponse();
 		if (sendRoutingInfoForSMResponse != null) {
 
 			// we have positive response to SRI request - we will try to send messages
+			SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+			if (smsDeliveryData != null) {
+				SmsSet smsSet = smsDeliveryData.getSmsSet();
+				if (smsSet != null) {
+					smsSet.setImsi(sendRoutingInfoForSMResponse.getIMSI());
+					smsSet.setLocationInfoWithLMSI(sendRoutingInfoForSMResponse.getLocationInfoWithLMSI());
+				}
+			}
+
 			MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
 			if (mtSbbLocalObject != null) {
 				mtSbbLocalObject.setupMtForwardShortMessageRequest(sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getNetworkNodeNumber(),

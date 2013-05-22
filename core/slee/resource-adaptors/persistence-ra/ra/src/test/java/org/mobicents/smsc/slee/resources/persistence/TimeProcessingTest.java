@@ -28,7 +28,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.Test;
 
@@ -45,6 +45,10 @@ public class TimeProcessingTest {
 
 	private String getTimeA2() {
 		return "020615103429512-";
+	}
+
+	private String getTimeA3() {
+		return "020615123429512+";
 	}
 
 	private String getTimeRel() {
@@ -64,7 +68,12 @@ public class TimeProcessingTest {
 		Date d2 = MessageUtil.parseSmppDate(getTimeA2());
 		Date d22 = (new GregorianCalendar(2002, 05, 15, 10, 34, 29)).getTime();
 		Date d222 = new Date(d22.getTime() + 3 * 3600 * 1000 - i1 * 60 * 1000 + 5 * 100);
-		assertTrue(d2.equals(d2));
+		assertTrue(d2.equals(d222));
+
+		d2 = MessageUtil.parseSmppDate(getTimeA3());
+		d22 = (new GregorianCalendar(2002, 05, 15, 12, 34, 29)).getTime();
+		d222 = new Date(d22.getTime() - 3 * 3600 * 1000 - i1 * 60 * 1000 + 5 * 100);
+		assertTrue(d2.equals(d222));
 
 		Date d3 = MessageUtil.parseSmppDate(getTimeRel());
 		Date d333 = new Date(curDate.getTime() + 90 * 60 * 1000);
@@ -81,6 +90,12 @@ public class TimeProcessingTest {
 
 		String s2 = MessageUtil.printSmppAbsoluteDate(d1, -180);
 		assertEquals(s2, getTimeA2());
+
+		c1 = new GregorianCalendar(2002, 05, 15, 12, 34, 29);
+		c1.add(Calendar.MILLISECOND, 500);
+		d1 = c1.getTime();
+		s1 = MessageUtil.printSmppAbsoluteDate(d1, 180);
+		assertEquals(s1, getTimeA3());
 
 		String s3 = MessageUtil.printSmppRelativeDate(0, 0, 0, 1, 30, 0);
 		assertEquals(s3, getTimeRel());

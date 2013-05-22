@@ -86,14 +86,14 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
-import org.mobicents.smsc.slee.resources.peristence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
+import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -298,7 +298,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 		super.onDialogTimeout(evt, aci);
 
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM, "onDialogTimeout after MtForwardSM Request");
+		this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.MSC_REFUSES_SM, "onDialogTimeout after MtForwardSM Request");
 	}
 
 	@Override
@@ -331,10 +331,18 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 						switch (mapDialogSms.getApplicationContext().getApplicationContextVersion()) {
 						case version3:
 							mapDialogSms.addMtForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, si, moreMessagesToSend, null);
+							if (this.logger.isInfoEnabled()) {
+								this.logger.info("\nSending: MtForwardShortMessageRequest: sm_RP_DA=" + sm_RP_DA + ", sm_RP_OA=" + sm_RP_OA + ", si=" + si
+										+ ", moreMessagesToSend=" + moreMessagesToSend);
+							}
 							break;
 						case version2:
 						case version1:
 							mapDialogSms.addForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, si, moreMessagesToSend);
+							if (this.logger.isInfoEnabled()) {
+								this.logger.info("\nSending: ForwardShortMessageRequest: sm_RP_DA=" + sm_RP_DA + ", sm_RP_OA=" + sm_RP_OA + ", si=" + si
+										+ ", moreMessagesToSend=" + moreMessagesToSend);
+							}
 							break;
 						default:
 							break;
@@ -360,7 +368,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	 * @param aci
 	 */
 	public void onForwardShortMessageRequest(ForwardShortMessageRequest evt, ActivityContextInterface aci) {
-		this.logger.severe("Received FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
+		this.logger.severe("\nReceived FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
 	}
 
 	/**
@@ -371,7 +379,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	 */
 	public void onForwardShortMessageResponse(ForwardShortMessageResponse evt, ActivityContextInterface aci) {
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received FORWARD_SHORT_MESSAGE_RESPONSE = " + evt);
+			this.logger.info("\nReceived FORWARD_SHORT_MESSAGE_RESPONSE = " + evt);
 		}
 		this.handleSmsResponse(evt.getMAPDialog(), aci);
 	}
@@ -383,7 +391,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	 * @param aci
 	 */
 	public void onMtForwardShortMessageRequest(MtForwardShortMessageRequest evt, ActivityContextInterface aci) {
-		this.logger.severe("Received MT_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
+		this.logger.severe("\nReceived MT_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
 	}
 
 	/**
@@ -394,7 +402,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	 */
 	public void onMtForwardShortMessageResponse(MtForwardShortMessageResponse evt, ActivityContextInterface aci) {
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received MT_FORWARD_SHORT_MESSAGE_RESPONSE = " + evt);
+			this.logger.info("\nReceived MT_FORWARD_SHORT_MESSAGE_RESPONSE = " + evt);
 		}
 
 		this.handleSmsResponse(evt.getMAPDialog(), aci);
@@ -408,7 +416,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	@Override
 	public void setupMtForwardShortMessageRequest(ISDNAddressString networkNode, IMSI imsi, LMSI lmsi) {
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received setupMtForwardShortMessageRequestIndication ISDNAddressString= " + networkNode);
+			this.logger.info("\nmperforming setupMtForwardShortMessageRequest ISDNAddressString= " + networkNode);
 		}
 
 		SccpAddress networkNodeSccpAddress = this.getMSCSccpAddress(networkNode);
@@ -601,7 +609,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 		// no more messages are in cache now - lets check if there are more messages in a database
 		try {
-			pers.fetchSchedulableSms(smsSet);
+			pers.fetchSchedulableSms(smsSet, true);
 		} catch (PersistenceException e1) {
 			this.logger.severe("PersistenceException when invoking fetchSchedulableSms(smsSet) from handleSmsResponse(): " + e1.toString(), e1);
 		}
@@ -801,10 +809,18 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			switch (mapDialogSms.getApplicationContext().getApplicationContextVersion()) {
 			case version3:
 				invokeId = mapDialogSms.addMtForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, smsSignalInfo, moreMessagesToSend, null);
+				if (this.logger.isInfoEnabled()) {
+					this.logger.info("\nSending: MtForwardShortMessageRequest: sm_RP_DA=" + sm_RP_DA + ", sm_RP_OA=" + sm_RP_OA + ", si=" + smsSignalInfo
+							+ ", moreMessagesToSend=" + moreMessagesToSend);
+				}
 				break;
 			case version2:
 			case version1:
 				invokeId = mapDialogSms.addForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, smsSignalInfo, moreMessagesToSend);
+				if (this.logger.isInfoEnabled()) {
+					this.logger.info("\nSending: ForwardShortMessageRequest: sm_RP_DA=" + sm_RP_DA + ", sm_RP_OA=" + sm_RP_OA + ", si=" + smsSignalInfo
+							+ ", moreMessagesToSend=" + moreMessagesToSend);
+				}
 				break;
 			default:
 				break;

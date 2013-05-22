@@ -37,6 +37,12 @@
 			<artifactId>ch-smpp</artifactId>
 			<version>${ch.smpp.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>smpp-server-ra-library</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

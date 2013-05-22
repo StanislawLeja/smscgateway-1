@@ -44,6 +44,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JButton;
 
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.EncodingType;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.SplittingType;
 
@@ -65,7 +66,6 @@ import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
@@ -242,6 +242,10 @@ public class SmppTestingForm extends JDialog {
 
 	private int msgRef = 0;
 
+	public SmppSimulatorParameters getSmppSimulatorParameters() {
+		return this.param;
+	}
+
 	private int getNextMsgRef() {
 		msgRef++;
 		if (msgRef > 255)
@@ -260,6 +264,7 @@ public class SmppTestingForm extends JDialog {
             int maxLen = 0;
             int maxSplLen = 0;
             boolean addSegmTlv = false;
+            int esmClass = 0;
     		switch (et) {
     		case GSM7:
     			dcs = 0;
@@ -311,13 +316,14 @@ public class SmppTestingForm extends JDialog {
 						System.arraycopy(bf, 0, bf2, bf1.length, bf.length);
 						msgLst.add(bf2);
 					}
+					esmClass = 0x40;
 					break;
 				}
 			} else {
 				msgLst.add(buf);
 			}
 
-        	this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv);
+        	this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv, esmClass, param.getValidityType());
 		} catch (Exception e) {
 			this.addMessage("Failure to submit message", e.toString());
 			return;
@@ -348,15 +354,26 @@ public class SmppTestingForm extends JDialog {
 		return res;
 	}
 
-	private void doSubmitMessage(int dcs, ArrayList<byte[]> msgLst, int msgRef, boolean addSegmTlv) throws Exception {
+	private void doSubmitMessage(int dcs, ArrayList<byte[]> msgLst, int msgRef, boolean addSegmTlv, int esmClass,
+			SmppSimulatorParameters.ValidityType validityType) throws Exception {
 		int i1 = 0;
 		for (byte[] buf : msgLst) {
 			i1++;
 
 			SubmitSm pdu = new SubmitSm();
 
-	        pdu.setSourceAddress(new Address((byte)this.param.getTON().getCode(), (byte)this.param.getNPI().getCode(), this.param.getSourceAddress()));
-	        pdu.setDestAddress(new Address((byte)this.param.getTON().getCode(), (byte)this.param.getNPI().getCode(), this.param.getDestAddress()));
+	        pdu.setSourceAddress(new Address((byte)this.param.getSourceTON().getCode(), (byte)this.param.getSourceNPI().getCode(), this.param.getSourceAddress()));
+	        pdu.setDestAddress(new Address((byte)this.param.getDestTON().getCode(), (byte)this.param.getDestNPI().getCode(), this.param.getDestAddress()));
+	        pdu.setEsmClass((byte) esmClass);
+
+			switch (validityType) {
+			case ValidityPeriod_5min:
+				pdu.setValidityPeriod(MessageUtil.printSmppRelativeDate(0, 0, 0, 0, 5, 0));
+				break;
+			case ScheduleDeliveryTime_5min:
+				pdu.setScheduleDeliveryTime(MessageUtil.printSmppRelativeDate(0, 0, 0, 0, 5, 0));
+				break;
+			}
 
 			pdu.setDataCoding((byte) dcs);
 

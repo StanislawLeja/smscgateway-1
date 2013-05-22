@@ -40,10 +40,10 @@ import org.mobicents.protocols.ss7.map.primitives.AddressStringImpl;
 import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.mobicents.protocols.ss7.map.service.sms.AlertServiceCentreRequestImpl;
 import org.mobicents.slee.ChildRelationExt;
-import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.MAPDialogSmsProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPServiceSmsProxy;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
@@ -131,7 +131,7 @@ public class AlertTest {
 		// smsSet_x1.setDestAddrNpi(ta1.getAddrNpi());
 
 		SmsSet smsSet_x1 = this.pers.obtainSmsSet(ta1);
-		this.pers.fetchSchedulableSms(smsSet_x1);
+		this.pers.fetchSchedulableSms(smsSet_x1,false);
 
 		int cnt = smsSet_x1.getSmsCount();
 		for (int i1 = 0; i1 < cnt; i1++) {

@@ -75,10 +75,10 @@ import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextNameImpl;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogReject;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
-import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
 import org.mobicents.smsc.slee.resources.persistence.MAPDialogSmsProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPServiceSmsProxy;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.Sms;
@@ -1716,7 +1716,7 @@ public class MtTest {
 
 		// second delivery attempt **********************
 		smsSet = pers.obtainSmsSet(ta1);
-		pers.fetchSchedulableSms(smsSet);
+		pers.fetchSchedulableSms(smsSet, false);
 
 		this.pers.setDeliveryStart(smsSet, curDate);
 
@@ -1901,7 +1901,7 @@ public class MtTest {
 	private void clearDatabase() throws PersistenceException, IOException {
 
 		SmsSet smsSet_x1 = this.pers.obtainSmsSet(ta1);
-		this.pers.fetchSchedulableSms(smsSet_x1);
+		this.pers.fetchSchedulableSms(smsSet_x1, false);
 
 		this.pers.deleteSmsSet(smsSet_x1);
 		int cnt = smsSet_x1.getSmsCount();
@@ -1923,7 +1923,7 @@ public class MtTest {
 		}
 
 		SmsSet res = this.pers.obtainSmsSet(ta1);
-		this.pers.fetchSchedulableSms(res);
+		this.pers.fetchSchedulableSms(res, false);
 		curDate = new Date();
 		this.pers.setDeliveryStart(smsSet, curDate);
 		return res;

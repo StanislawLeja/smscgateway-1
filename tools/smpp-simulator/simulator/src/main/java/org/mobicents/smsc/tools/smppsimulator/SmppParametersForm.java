@@ -35,6 +35,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 
 import com.cloudhopper.smpp.SmppBindType;
+import javax.swing.JCheckBox;
 
 /**
  * 
@@ -55,6 +56,7 @@ public class SmppParametersForm extends JDialog {
 	private JTextField tbPassword;
 	private JTextField tbRequestExpiryTimeout;
 	private JTextField tbWindowMonitorInterval;
+	private JCheckBox cbRejectIncomingDeliveryMessage;
 
 	public SmppParametersForm(JFrame owner) {
 		super(owner, true);
@@ -62,7 +64,7 @@ public class SmppParametersForm extends JDialog {
 		setTitle("SMPP general parameters");
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 620, 382);
+		setBounds(100, 100, 620, 413);
 		
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.CENTER);
@@ -83,7 +85,7 @@ public class SmppParametersForm extends JDialog {
 				doCancel();
 			}
 		});
-		btCancel.setBounds(468, 320, 136, 23);
+		btCancel.setBounds(466, 344, 136, 23);
 		panel.add(btCancel);
 		
 		JButton btOK = new JButton("OK");
@@ -92,7 +94,7 @@ public class SmppParametersForm extends JDialog {
 				doOK();
 			}
 		});
-		btOK.setBounds(327, 320, 136, 23);
+		btOK.setBounds(325, 344, 136, 23);
 		panel.add(btOK);
 		
 		JLabel lblSmppBindType = new JLabel("SMPP bind type");
@@ -165,6 +167,10 @@ public class SmppParametersForm extends JDialog {
 		tbWindowMonitorInterval.setColumns(10);
 		tbWindowMonitorInterval.setBounds(424, 267, 86, 20);
 		panel.add(tbWindowMonitorInterval);
+		
+		cbRejectIncomingDeliveryMessage = new JCheckBox("Rejecting of incoming SMPP delivery messages");
+		cbRejectIncomingDeliveryMessage.setBounds(10, 293, 524, 25);
+		panel.add(cbRejectIncomingDeliveryMessage);
 
 	}
 
@@ -190,6 +196,8 @@ public class SmppParametersForm extends JDialog {
 		}
 		if (dv != null)
 			this.cbBindType.setSelectedItem(dv);
+		
+		this.cbRejectIncomingDeliveryMessage.setSelected(this.data.isRejectIncomingDeliveryMessage());
 	}
 
 	public SmppSimulatorParameters getData() {
@@ -243,6 +251,8 @@ public class SmppParametersForm extends JDialog {
 		}
 
 		this.data.setBindType((SmppBindType) cbBindType.getSelectedItem());
+
+		this.data.setRejectIncomingDeliveryMessage(this.cbRejectIncomingDeliveryMessage.isSelected());
 
 		this.dispose();
 	}

@@ -65,12 +65,12 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
-import org.mobicents.smsc.slee.resources.peristence.SmscProcessingException;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
+import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
 
 import com.cloudhopper.commons.charset.CharsetUtil;
@@ -167,7 +167,7 @@ public abstract class MoSbb extends MoCommonSbb {
 	 */
 	public void onMoForwardShortMessageRequest(MoForwardShortMessageRequest evt, ActivityContextInterface aci) {
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received MO_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
+			this.logger.info("\nReceived MO_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
 		}
 
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
@@ -195,6 +195,10 @@ public abstract class MoSbb extends MoCommonSbb {
 					break;
 				}
 				dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+				if (this.logger.isInfoEnabled()) {
+					this.logger.info("\nSent ErrorComponent = " + errorMessage);
+				}
+
 				dialog.close(false);
 			} catch (Throwable e) {
 				logger.severe("Error while sending Error message", e);
@@ -217,6 +221,10 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		try {
 			dialog.addMoForwardShortMessageResponse(evt.getInvokeId(), null, null);
+			if (this.logger.isInfoEnabled()) {
+				this.logger.info("\nSent MoForwardShortMessageResponse = " + evt);
+			}
+
 			dialog.close(false);
 		} catch (Throwable e) {
 			logger.severe("Error while sending MoForwardShortMessageResponse ", e);
@@ -263,6 +271,10 @@ public abstract class MoSbb extends MoCommonSbb {
 					break;
 				}
 				dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+				if (this.logger.isInfoEnabled()) {
+					this.logger.info("\nSent ErrorComponent = " + errorMessage);
+				}
+
 				dialog.close(false);
 			} catch (Throwable e) {
 				logger.severe("Error while sending Error message", e);
@@ -285,6 +297,10 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		try {
 			dialog.addForwardShortMessageResponse(evt.getInvokeId());
+			if (this.logger.isInfoEnabled()) {
+				this.logger.info("\nSent ForwardShortMessageResponse = " + evt);
+			}
+
 			dialog.close(false);
 		} catch (Throwable e) {
 			logger.severe("Error while sending ForwardShortMessageResponse ", e);
@@ -575,6 +591,8 @@ public abstract class MoSbb extends MoCommonSbb {
 
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
 		try {
+			// TODO: we can make this some check will we send this message or not
+
 			store.createLiveSms(sms);
 			store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
 		} catch (PersistenceException e) {

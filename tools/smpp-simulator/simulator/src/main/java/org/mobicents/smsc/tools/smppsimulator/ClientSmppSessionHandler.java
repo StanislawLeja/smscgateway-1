@@ -61,6 +61,9 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
         // here we can insert responses
 		if (pduRequest.getCommandId() == SmppConstants.CMD_ID_DELIVER_SM) {
 			PduResponse resp = pduRequest.createResponse();
+			if (this.testingForm.getSmppSimulatorParameters().isRejectIncomingDeliveryMessage()) {
+				resp.setCommandStatus(1);
+			}
 			testingForm.addMessage("PduResponseSent: " + resp.getName(), resp.toString());
 			return resp;
 		}

@@ -29,17 +29,14 @@ import javax.naming.InitialContext;
 import javax.slee.ActivityContextInterface;
 import javax.slee.CreateException;
 import javax.slee.RolledBackContext;
-import javax.slee.SLEEException;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
-import javax.slee.TransactionRequiredLocalException;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
 import org.mobicents.protocols.ss7.indicator.RoutingIndicator;
-import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
@@ -69,8 +66,8 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.Sms;
@@ -129,12 +126,12 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
+			this.logger.info("\nRx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
 		}
 	}
 
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onRejectComponent" + event);
+		this.logger.severe("\nRx :  onRejectComponent" + event);
 	}
 
 	protected String getRejectComponentReason(RejectComponent event) {
@@ -168,7 +165,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 	public void onInvokeTimeout(InvokeTimeout evt, ActivityContextInterface aci) {
 		if (logger.isWarningEnabled()) {
-			this.logger.warning("Rx : onInvokeTimeout=" + evt);
+			this.logger.warning("\nRx : onInvokeTimeout=" + evt);
 		}
 	}
 
@@ -178,16 +175,20 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
 		if (logger.isWarningEnabled()) {
-			this.logger.warning("Rx : onDialogReject=" + evt);
+			this.logger.warning("\nRx : onDialogReject=" + evt);
 		}
 	}
 
 	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogProviderAbort=" + evt);
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogProviderAbort=" + evt);
+		}
 	}
 
 	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogUserAbort=" + evt);
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogUserAbort=" + evt);
+		}
 	}
 
 	protected String getUserAbortReason(DialogUserAbort evt) {
@@ -210,43 +211,44 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	}
 
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogTimeout=" + evt);
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogTimeout=" + evt);
+		}
 	}
 
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogDelimiter=" + evt);
+			this.logger.fine("\nRx :  onDialogDelimiter=" + evt);
 		}
 	}
 
 	public void onDialogAccept(DialogAccept evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogAccept=" + evt);
+			this.logger.fine("\nRx :  onDialogAccept=" + evt);
 		}
 	}
 
 	public void onDialogClose(DialogClose evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogClose" + evt);
+			this.logger.fine("\nRx :  onDialogClose=" + evt);
 		}
 	}
 
 	public void onDialogNotice(DialogNotice evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onDialogNotice" + evt);
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogNotice" + evt);
 		}
 	}
 
 	public void onDialogRequest(DialogRequest evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogRequest" + evt);
+			this.logger.fine("\nRx :  onDialogRequest=" + evt);
 		}
 	}
 
 	public void onDialogRelease(DialogRelease evt, ActivityContextInterface aci) {
 		if (logger.isInfoEnabled()) {
-			// TODO : Should be fine
-			this.logger.info("Rx :  DialogRelease" + evt);
+			this.logger.info("\nRx :  DialogRelease=" + evt);
 		}
 	}
 
@@ -396,6 +398,18 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		if (smsa != null)
 			this.generateCdr(smsa, CdrGenerator.CDR_FAILED, reason);
 
+		StringBuilder sb = new StringBuilder();
+		sb.append("onDeliveryError: errorAction=");
+		sb.append(errorAction);
+		sb.append(", smStatus=");
+		sb.append(smStatus);
+		sb.append(", smsSet=");
+		sb.append(smsSet);
+		sb.append(", reason=");
+		sb.append(", reason=");
+		if (this.logger.isInfoEnabled())
+			this.logger.info(sb.toString());
+
 		PersistenceRAInterface pers = this.getStore();
 
 		SMDeliveryOutcome smDeliveryOutcome = null;
@@ -410,21 +424,23 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 					// period is over
 					int smsCnt = smsSet.getSmsCount();
 					int goodMsgCnt = 0;
+					int removedMsgCnt = 0;
 					for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
 						Sms sms = smsSet.getSms(currentMsgNum);
 						if (sms != null) {
 							if (sms.getValidityPeriod().before(curDate)) {
 								pers.archiveFailuredSms(sms);
+								removedMsgCnt++;
 							} else {
 								goodMsgCnt++;
 							}
 						}
 					}
 
-					if (goodMsgCnt == 0) {
+					if (goodMsgCnt == 0 || removedMsgCnt > 0) {
 						// no more messages to send
 						// firstly we search for new uploaded message
-						pers.fetchSchedulableSms(smsSet);
+						pers.fetchSchedulableSms(smsSet, false);
 						if (smsSet.getSmsCount() == 0)
 							errorAction = ErrorAction.permanentFailure;
 					}
@@ -449,6 +465,10 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 						this.rescheduleSmsSet(smsSet, false, pers);
 						break;
 
+					case temporaryFailure:
+						this.rescheduleSmsSet(smsSet, false, pers);
+						break;
+
 					case permanentFailure:
 						this.freeSmsSetFailured(smsSet, pers);
 						break;
@@ -464,7 +484,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		}
 
 		if (smDeliveryOutcome != null) {
-			MAPApplicationContext mapApplicationContext;
 			this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(), smDeliveryOutcome, smsSet.getTargetId());
 		}
 	}
@@ -538,7 +557,10 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 					pers.setDeliverySuccess(smsSet, lastDelivery);
 
 					if (!pers.deleteSmsSet(smsSet)) {
-						pers.setNewMessageScheduled(smsSet, MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+						Date newDueDate = MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay());
+						pers.fetchSchedulableSms(smsSet, false);
+						newDueDate = MessageUtil.checkScheduleDeliveryTime(smsSet, newDueDate);
+						pers.setNewMessageScheduled(smsSet, newDueDate);
 					}
 				} catch (PersistenceException e) {
 					this.logger.severe("PersistenceException when freeSmsSetSucceded(SmsSet smsSet)" + e.getMessage(), e);
@@ -561,7 +583,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		try {
 			synchronized (lock) {
 				try {
-					pers.fetchSchedulableSms(smsSet);
+					pers.fetchSchedulableSms(smsSet, false);
 					int cnt = smsSet.getSmsCount();
 					for (int i1 = 0; i1 < cnt; i1++) {
 						Sms sms = smsSet.getSms(i1);
@@ -599,6 +621,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 					}
 
 					Date newDueDate = new Date(new Date().getTime() + newDueDelay * 1000);
+
+					newDueDate = MessageUtil.checkScheduleDeliveryTime(smsSet, newDueDate);
 					pers.setDeliveringProcessScheduled(smsSet, newDueDate, newDueDelay);
 				} catch (PersistenceException e) {
 					this.logger.severe("PersistenceException when rescheduleSmsSet(SmsSet smsSet)" + e.getMessage(), e);
@@ -615,6 +639,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		mobileNotReachableFlag, // MNRF
 		notReachableForGprs, // MNRG
 		permanentFailure,
+		temporaryFailure,
 	}
 
 }

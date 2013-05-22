@@ -31,6 +31,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.slee.facilities.Tracer;
+
 import javolution.xml.XMLObjectReader;
 import javolution.xml.XMLObjectWriter;
 import javolution.xml.stream.XMLStreamException;
@@ -204,8 +206,8 @@ public class DBOperations {
         }
     }
 
-    public static void setDeliveringProcessScheduled(final Keyspace keyspace, final SmsSet smsSet, final Date newDueDate,
-            final int newDueDelay) throws PersistenceException {
+	public static void setDeliveringProcessScheduled(final Keyspace keyspace, final SmsSet smsSet, Date newDueDate, final int newDueDelay)
+			throws PersistenceException {
 
         try {
             Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
@@ -377,7 +379,7 @@ public class DBOperations {
                 // firstly we are looking for corresponded records in LIVE_SMS
                 // table
                 smsSet.clearSmsList();
-                fetchSchedulableSms(keyspace,smsSet);
+				fetchSchedulableSms(keyspace, smsSet, false);
                 if (smsSet.getSmsCount() > 0) {
                     // there are corresponded records in LIVE_SMS table - we
                     // will not delete LIVE record
@@ -437,18 +439,13 @@ public class DBOperations {
             try {
                 return createSms(keyspace,cSlice, dbId, null);
             } catch (Exception e) {
-                // TODO
-                // if (logger.isSevereEnabled()) {
-                // logger.severe("Failed to deserialize SMS at key '" + dbId + "'!", e);
-                // }
+				throw new PersistenceException("Failed to deserialize SMS at key '" + dbId + "'!", e);
             }
         } catch (Exception e) {
             String msg = "Failed to obtainLiveSms SMS for '" + dbId + "'!";
 
             throw new PersistenceException(msg, e);
         }
-
-        return null;
     }
 
     public static Sms obtainLiveSms(final Keyspace keyspace, final long messageId) throws PersistenceException {
@@ -468,10 +465,7 @@ public class DBOperations {
                 try {
                     return createSms(keyspace,row.getColumnSlice(), row.getKey(), null);
                 } catch (Exception e) {
-                    // TODO
-                    // if (logger.isSevereEnabled()) {
-                    // logger.severe("Failed to deserialize SMS at key '" + row.getKey() + "'!", e);
-                    // }
+					throw new PersistenceException("Failed to deserialize SMS at key '" + row.getKey() + "'!", e);
                 }
             }
         } catch (Exception e) {
@@ -501,36 +495,18 @@ public class DBOperations {
         doArchiveDeliveredSms(keyspace,sms);
     }
 
-    public static List<SmsSet> fetchSchedulableSmsSets(final Keyspace keyspace, final int maxRecordCount) throws PersistenceException {
+    public static List<SmsSet> fetchSchedulableSmsSets(final Keyspace keyspace, final int maxRecordCount, Tracer tracer) throws PersistenceException {
         try {
             List<SmsSet> lst = new ArrayList<SmsSet>();
 
-            IndexedSlicesQuery<String, Composite, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace,
-                    StringSerializer.get(), SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
-            query.setColumnFamily(Schema.FAMILY_LIVE);
-            query.setRange(null, null, false, 100);
-            Composite cc = new Composite();
-            cc.addComponent(Schema.COLUMN_IN_SYSTEM, SERIALIZER_STRING);
-            query.addEqualsExpression(cc, IntegerSerializer.get().toByteBuffer(1));
-            cc = new Composite();
-            cc.addComponent(Schema.COLUMN_DUE_DATE, SERIALIZER_STRING);
-            query.addLteExpression(cc, DateSerializer.get().toByteBuffer(new Date()));
-            query.setRowCount(maxRecordCount);
+			doFetchSchedulableSmsSets(keyspace, maxRecordCount, lst, 1);
+			if (tracer != null) {
+				for (SmsSet smsSet : lst) {
+					tracer.severe("SmsSet was scheduled with inSystem==2 and InSystemDate+30min > Now: " + smsSet);
+				}
+			}
 
-            final QueryResult<OrderedRows<String, Composite, ByteBuffer>> result = query.execute();
-            final OrderedRows<String, Composite, ByteBuffer> rows = result.get();
-            final List<Row<String, Composite, ByteBuffer>> rowsList = rows.getList();
-            for (Row<String, Composite, ByteBuffer> row : rowsList) {
-                try {
-                    SmsSet smsSet = createSmsSet(row.getColumnSlice());
-                    lst.add(smsSet);
-                } catch (Exception e) {
-                    // TODO
-                    // if (logger.isSevereEnabled()) {
-                    // logger.severe("Failed to deserialize SMS at key '" + row.getKey() + "'!", e);
-                    // }
-                }
-            }
+			doFetchSchedulableSmsSets(keyspace, maxRecordCount - lst.size(), lst, 2);
 
             return lst;
         } catch (Exception e) {
@@ -540,8 +516,49 @@ public class DBOperations {
         }
     }
 
-    public static void fetchSchedulableSms(final Keyspace keyspace,final SmsSet smsSet) throws PersistenceException {
-        try {
+	private static void doFetchSchedulableSmsSets(final Keyspace keyspace, final int maxRecordCount, List<SmsSet> lst, int opt) throws PersistenceException {
+
+		if (maxRecordCount <= 0)
+			return;
+
+		IndexedSlicesQuery<String, Composite, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace,
+		        StringSerializer.get(), SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
+		query.setColumnFamily(Schema.FAMILY_LIVE);
+		query.setRange(null, null, false, 100);
+		Composite cc = new Composite();
+		if (opt == 1) {
+			cc.addComponent(Schema.COLUMN_IN_SYSTEM, SERIALIZER_STRING);
+			query.addEqualsExpression(cc, IntegerSerializer.get().toByteBuffer(2));
+			cc = new Composite();
+			// we are using 30 min interval for badly processed messages with in_system==2 after failure delivering 
+			Date date = new Date((new Date()).getTime() - 30 * 60 * 1000);  
+			cc.addComponent(Schema.COLUMN_IN_SYSTEM_DATE, SERIALIZER_STRING);
+			query.addLteExpression(cc, DateSerializer.get().toByteBuffer(date));
+		} else {
+			cc.addComponent(Schema.COLUMN_IN_SYSTEM, SERIALIZER_STRING);
+			query.addEqualsExpression(cc, IntegerSerializer.get().toByteBuffer(1));
+			cc = new Composite();
+			Date date = new Date();
+			cc.addComponent(Schema.COLUMN_DUE_DATE, SERIALIZER_STRING);
+			query.addLteExpression(cc, DateSerializer.get().toByteBuffer(date));
+		}
+		query.setRowCount(maxRecordCount);
+
+		final QueryResult<OrderedRows<String, Composite, ByteBuffer>> result = query.execute();
+		final OrderedRows<String, Composite, ByteBuffer> rows = result.get();
+		final List<Row<String, Composite, ByteBuffer>> rowsList = rows.getList();
+		for (Row<String, Composite, ByteBuffer> row : rowsList) {
+		    try {
+		        SmsSet smsSet = createSmsSet(row.getColumnSlice());
+		        lst.add(smsSet);
+		    } catch (Exception e) {
+				throw new PersistenceException("Failed to deserialize SMS at key '" + row.getKey() + "!", e);
+		    }
+		}
+	}
+
+	public static void fetchSchedulableSms(final Keyspace keyspace, final SmsSet smsSet, boolean excludeNonScheduleDeliveryTime) throws PersistenceException {
+		try {
             IndexedSlicesQuery<UUID, Composite, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace,
                     UUIDSerializer.get(), SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
             query.setColumnFamily(Schema.FAMILY_LIVE_SMS);
@@ -554,10 +571,13 @@ public class DBOperations {
             final OrderedRows<UUID, Composite, ByteBuffer> rows = result.get();
             final List<Row<UUID, Composite, ByteBuffer>> rowsList = rows.getList();
             smsSet.clearSmsList();
+			Date curDate = new Date();
             for (Row<UUID, Composite, ByteBuffer> row : rowsList) {
                 try {
-                    Sms sms = createSms(keyspace,row.getColumnSlice(), row.getKey(), smsSet);
-                    smsSet.addSms(sms);
+					Sms sms = createSms(keyspace, row.getColumnSlice(), row.getKey(), smsSet);
+					if (excludeNonScheduleDeliveryTime == false || sms.getScheduleDeliveryTime() == null || sms.getScheduleDeliveryTime().before(curDate)) {
+						smsSet.addSms(sms);
+					}
                 } catch (Exception e) {
                     String msg = "Failed to deserialize SMS at key '" + row.getKey() + "'!";
 
@@ -693,7 +713,7 @@ public class DBOperations {
         }
         if (sms.getScheduleDeliveryTime() != null) {
             cc = new Composite();
-            cc.addComponent(Schema.COLUMN_SCHEDULE_DELIVERY, SERIALIZER_STRING);
+            cc.addComponent(Schema.COLUMN_SCHEDULE_DELIVERY_TIME, SERIALIZER_STRING);
             mutator.addInsertion(sms.getDbId(), columnFamilyName,
                     HFactory.createColumn(cc, sms.getScheduleDeliveryTime(), SERIALIZER_COMPOSITE, SERIALIZER_DATE));
         }
@@ -797,7 +817,7 @@ public class DBOperations {
 
             } else if (name.equals(Schema.COLUMN_MESSAGE)) {
                 sms.setShortMessage(SERIALIZER_BYTE_ARRAY.fromByteBuffer(col.getValue()));
-            } else if (name.equals(Schema.COLUMN_SCHEDULE_DELIVERY)) {
+            } else if (name.equals(Schema.COLUMN_SCHEDULE_DELIVERY_TIME)) {
                 Date val = SERIALIZER_DATE.fromByteBuffer(col.getValue());
                 sms.setScheduleDeliveryTime(val);
             } else if (name.equals(Schema.COLUMN_VALIDITY_PERIOD)) {

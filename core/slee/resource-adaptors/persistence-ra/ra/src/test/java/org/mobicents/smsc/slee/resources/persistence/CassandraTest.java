@@ -89,7 +89,7 @@ public class CassandraTest {
 	public void testingLifeCycle() throws Exception {
 
 //		Date d = new Date();
-		
+
 		if (!this.cassandraDbInited)
 			return;
 
@@ -265,13 +265,14 @@ public class CassandraTest {
 
 	public void scheduling() throws Exception {
 
-		Date inSystemDate = new Date(113, 3, 20, 10, 20, 30);
+//		Date inSystemDate = new Date(113, 3, 20, 10, 20, 30);
+		Date inSystemDate = new Date();
 		
 		// 1 - scheduling by dueTime
 		int maxRecordCount = 100;
-		List<SmsSet> lst = this.sbb.fetchSchedulableSmsSets(maxRecordCount);
-
+		List<SmsSet> lst = this.sbb.fetchSchedulableSmsSets(maxRecordCount, null);
 		assertEquals(lst.size(), 1);
+
 		SmsSet smsSet_a = lst.get(0);
 		this.checkTestSmsSet(smsSet_a, 1, this.ta1);
 		assertEquals(smsSet_a.getInSystem(), 1);
@@ -281,8 +282,8 @@ public class CassandraTest {
 			TargetAddress lock = this.sbb.obtainSynchroObject(new TargetAddress(smsSet));
 			try {
 				synchronized (lock) {
-					this.sbb.setDestination(smsSet, "ClusterName_1", "destSystemId_1", "destEsmeId_1", SmType.DELIVER_SM);
-					this.sbb.fetchSchedulableSms(smsSet);
+					this.sbb.setDestination(smsSet, "ClusterName_1", "destSystemId_1", "destEsmeId_1", SmType.SMS_FOR_SS7);
+					this.sbb.fetchSchedulableSms(smsSet, false);
 
 					// checking for sms count
 					int smsCnt = smsSet.getSmsCount();
@@ -326,8 +327,8 @@ public class CassandraTest {
 			TargetAddress lock = this.sbb.obtainSynchroObject(new TargetAddress(this.smsSetSched2));
 			try {
 				synchronized (lock) {
-					this.sbb.setDestination(this.smsSetSched2, "ClusterName_2", "destSystemId_2", "destEsmeId_2", SmType.SUBMIT_SM);
-					this.sbb.fetchSchedulableSms(this.smsSetSched2);
+					this.sbb.setDestination(this.smsSetSched2, "ClusterName_2", "destSystemId_2", "destEsmeId_2", SmType.SMS_FOR_ESME);
+					this.sbb.fetchSchedulableSms(this.smsSetSched2, false);
 
 					// checking for sms count
 					int smsCnt = this.smsSetSched2.getSmsCount();
@@ -353,6 +354,14 @@ public class CassandraTest {
 				this.sbb.obtainSynchroObject(lock);
 			}
 		}
+		
+		// 3 - make inSystem==2 and check fetchSchedulableSmsSets()
+//		for (SmsSet smsSet : lst) {
+//			this.sbb;
+//		}
+
+		lst = this.sbb.fetchSchedulableSmsSets(maxRecordCount, null);
+		assertEquals(lst.size(), 0);
 	}
 
 	public void processSuccessDelivery() throws Exception {
@@ -477,7 +486,7 @@ public class CassandraTest {
 					}
 				}
 
-				this.sbb.fetchSchedulableSms(smsSetSched1);
+				this.sbb.fetchSchedulableSms(smsSetSched1, false);
 				if (smsSetSched1.getSmsCount() > 0) {
 					// new message found - continue delivering ......
 				} else {
@@ -680,7 +689,112 @@ public class CassandraTest {
 		assertNull(sms_y3);
 		assertNull(sms_y4);
 	}
-	
+
+	@Test(groups = { "cassandra" })
+	public void testingfetchSchedulableSmsWithExcludeNonScheduleDeliveryTime() throws Exception {
+
+		if (!this.cassandraDbInited)
+			return;
+
+		this.clearDatabase();
+
+		Date curDate = new Date();
+		Date scheduleDeliveryTime = MessageUtil.addHours(curDate, 1);
+		SmsSet smsSet_a = this.sbb.obtainSmsSet(ta1);
+		Sms sms_a1 = this.createTestSms(1, smsSet_a, id1);
+		Sms sms_a2 = this.createTestSms(2, smsSet_a, id2);
+		sms_a1.setScheduleDeliveryTime(null);
+		sms_a2.setScheduleDeliveryTime(scheduleDeliveryTime);
+		this.sbb.createLiveSms(sms_a1);
+		this.sbb.createLiveSms(sms_a2);
+
+		this.sbb.fetchSchedulableSms(smsSet_a, false);
+		assertEquals(smsSet_a.getSmsCount(), 2);
+
+		Date newDate = MessageUtil.checkScheduleDeliveryTime(smsSet_a, curDate);
+		assertTrue(newDate.equals(curDate));
+
+		this.sbb.fetchSchedulableSms(smsSet_a, true);
+		assertEquals(smsSet_a.getSmsCount(), 1);
+
+		smsSet_a.clearSmsList();
+		newDate = MessageUtil.checkScheduleDeliveryTime(smsSet_a, curDate);
+		assertTrue(newDate.equals(curDate));
+
+
+		this.clearDatabase();
+
+		scheduleDeliveryTime = MessageUtil.addHours(curDate, -1);
+		smsSet_a = this.sbb.obtainSmsSet(ta1);
+		sms_a1 = this.createTestSms(1, smsSet_a, id1);
+		sms_a2 = this.createTestSms(2, smsSet_a, id2);
+		sms_a1.setScheduleDeliveryTime(null);
+		sms_a2.setScheduleDeliveryTime(scheduleDeliveryTime);
+		this.sbb.createLiveSms(sms_a1);
+		this.sbb.createLiveSms(sms_a2);
+
+		this.sbb.fetchSchedulableSms(smsSet_a, false);
+		assertEquals(smsSet_a.getSmsCount(), 2);
+
+		this.sbb.fetchSchedulableSms(smsSet_a, true);
+		assertEquals(smsSet_a.getSmsCount(), 2);
+
+
+		this.clearDatabase();
+
+		scheduleDeliveryTime = MessageUtil.addHours(curDate, 1);
+		smsSet_a = this.sbb.obtainSmsSet(ta1);
+		sms_a2 = this.createTestSms(2, smsSet_a, id2);
+		sms_a2.setScheduleDeliveryTime(scheduleDeliveryTime);
+		this.sbb.createLiveSms(sms_a2);
+		this.sbb.fetchSchedulableSms(smsSet_a, false);
+		newDate = MessageUtil.checkScheduleDeliveryTime(smsSet_a, curDate);
+		assertTrue(newDate.equals(scheduleDeliveryTime));
+
+
+		this.clearDatabase();
+
+		scheduleDeliveryTime = MessageUtil.addHours(curDate, -1);
+		smsSet_a = this.sbb.obtainSmsSet(ta1);
+		sms_a2 = this.createTestSms(2, smsSet_a, id2);
+		sms_a2.setScheduleDeliveryTime(scheduleDeliveryTime);
+		this.sbb.createLiveSms(sms_a2);
+		this.sbb.fetchSchedulableSms(smsSet_a, false);
+		newDate = MessageUtil.checkScheduleDeliveryTime(smsSet_a, curDate);
+		assertTrue(newDate.equals(curDate));
+
+
+		this.clearDatabase();
+
+		scheduleDeliveryTime = MessageUtil.addHours(curDate, 1);
+		Date scheduleDeliveryTime2 = MessageUtil.addHours(curDate, 2);
+		smsSet_a = this.sbb.obtainSmsSet(ta1);
+		sms_a1 = this.createTestSms(1, smsSet_a, id1);
+		sms_a2 = this.createTestSms(2, smsSet_a, id2);
+		sms_a1.setScheduleDeliveryTime(scheduleDeliveryTime);
+		sms_a2.setScheduleDeliveryTime(scheduleDeliveryTime2);
+		this.sbb.createLiveSms(sms_a1);
+		this.sbb.createLiveSms(sms_a2);
+		this.sbb.fetchSchedulableSms(smsSet_a, false);
+		newDate = MessageUtil.checkScheduleDeliveryTime(smsSet_a, curDate);
+		assertTrue(newDate.equals(scheduleDeliveryTime));
+
+
+		this.clearDatabase();
+
+		scheduleDeliveryTime = MessageUtil.addHours(curDate, 1);
+		scheduleDeliveryTime2 = MessageUtil.addHours(curDate, 2);
+		smsSet_a = this.sbb.obtainSmsSet(ta1);
+		sms_a1 = this.createTestSms(1, smsSet_a, id1);
+		sms_a2 = this.createTestSms(2, smsSet_a, id2);
+		sms_a1.setScheduleDeliveryTime(scheduleDeliveryTime2);
+		sms_a2.setScheduleDeliveryTime(scheduleDeliveryTime);
+		this.sbb.createLiveSms(sms_a1);
+		this.sbb.createLiveSms(sms_a2);
+		this.sbb.fetchSchedulableSms(smsSet_a, false);
+		newDate = MessageUtil.checkScheduleDeliveryTime(smsSet_a, curDate);
+		assertTrue(newDate.equals(scheduleDeliveryTime));
+	}
 
 
 	private SmsSet createTestSmsSet(int num, TargetAddress ta) {
@@ -781,7 +895,7 @@ public class CassandraTest {
 			assertEquals(sms.imsi, "12345678901234");
 			assertEquals(sms.nnnDigits, "3355778");
 			assertEquals(sms.smStatus, (num == 1 ? 0 : ErrorCode.MEMORY_FULL.getCode()));
-			assertEquals(sms.smType, (num == 1 ? SmType.DELIVER_SM.getCode() : SmType.SUBMIT_SM.getCode()));
+			assertEquals(sms.smType, (num == 1 ? SmType.SMS_FOR_SS7.getCode() : SmType.SMS_FOR_ESME.getCode()));
 			assertEquals(sms.deliveryCount, 1);
 		}
 	}

@@ -60,6 +60,7 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
@@ -98,17 +99,15 @@ public abstract class AlertSbb implements Sbb {
 	 */
 
 	public void onInvokeTimeout(InvokeTimeout evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onInvokeTimeout" + evt);
-		}
+		this.logger.severe("\nRx :  onInvokeTimeout" + evt);
 	}
 
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onErrorComponent" + event);
+		this.logger.severe("\nRx :  onErrorComponent" + event);
 	}
 
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onRejectComponent" + event);
+		this.logger.severe("\nRx :  onRejectComponent" + event);
 	}
 
 	/**
@@ -117,57 +116,59 @@ public abstract class AlertSbb implements Sbb {
 
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogDelimiter=" + evt);
+			this.logger.fine("\nRx :  onDialogDelimiter=" + evt);
 		}
 	}
 
 	public void onDialogAccept(DialogAccept evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogAccept=" + evt);
+			this.logger.fine("\nRx :  onDialogAccept=" + evt);
 		}
 	}
 
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogReject=" + evt);
+		this.logger.severe("\nRx :  onDialogReject=" + evt);
 	}
 
 	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogUserAbort=" + evt);
+		this.logger.severe("\nRx :  onDialogUserAbort=" + evt);
 	}
 
 	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogProviderAbort=" + evt);
+		this.logger.severe("\nRx :  onDialogProviderAbort=" + evt);
 	}
 
 	public void onDialogClose(DialogClose evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogClose" + evt);
+			this.logger.fine("\nRx :  onDialogClose" + evt);
 		}
 	}
 
 	public void onDialogNotice(DialogNotice evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogNotice=" + evt);
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogNotice" + evt);
+		}
 	}
 
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogTimeout" + evt);
+		this.logger.severe("\nRx :  onDialogTimeout" + evt);
 	}
 
 	public void onDialogRequest(DialogRequest evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogRequest" + evt);
+			this.logger.fine("\nRx :  onDialogRequest" + evt);
 		}
 	}
 
 	public void onDialogRelease(DialogRelease evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogRelease" + evt);
+			this.logger.fine("\nRx :  onDialogRelease" + evt);
 		}
 	}
 
 	public void onAlertServiceCentreRequest(AlertServiceCentreRequest evt, ActivityContextInterface aci) {
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received onAlertServiceCentreRequest= " + evt);
+			this.logger.info("\nReceived onAlertServiceCentreRequest= " + evt);
 		}
 
 		try {
@@ -176,6 +177,10 @@ public abstract class AlertSbb implements Sbb {
 			if (mapApplicationContext.getApplicationContextVersion() == MAPApplicationContextVersion.version2) {
 				// Send back response only for V2
 				mapDialogSms.addAlertServiceCentreResponse(evt.getInvokeId());
+				if (this.logger.isInfoEnabled()) {
+					this.logger.info("\nSending AlertServiceCentreResponse");
+				}
+
 				mapDialogSms.close(false);
 			} else {
 				mapDialogSms.release();
@@ -222,7 +227,10 @@ public abstract class AlertSbb implements Sbb {
 						return;
 					}
 
-					pers.setDeliveringProcessScheduled(smsSet, new Date(), 0);
+					pers.fetchSchedulableSms(smsSet, false);
+					Date newDueDate = new Date();
+					newDueDate = MessageUtil.checkScheduleDeliveryTime(smsSet, newDueDate);
+					pers.setDeliveringProcessScheduled(smsSet, newDueDate, 0);
 				} catch (PersistenceException e) {
 					this.logger.severe("PersistenceException when setupAlert()" + e.getMessage(), e);
 				}

@@ -36,13 +36,13 @@ import javax.slee.facilities.Tracer;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.slee.SbbContextExt;
-import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
-import org.mobicents.smsc.slee.resources.peristence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
+import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
@@ -90,7 +90,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 	public void onDeliverSm(SmsSetEvent event, ActivityContextInterface aci, EventContext eventContext) {
 
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received Deliver SMS. event= " + event + "this=" + this);
+			this.logger.info("\nReceived Deliver SMS. event= " + event + "this=" + this);
 		}
 
 		SmsSet smsSet = event.getSmsSet();
@@ -116,7 +116,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 	public void onDeliverSmResp(DeliverSmResp event, ActivityContextInterface aci, EventContext eventContext) {
 		if (logger.isInfoEnabled()) {
-			logger.info(String.format("onDeliverSmResp : DeliverSmResp=%s", event));
+			logger.info(String.format("\nonDeliverSmResp : DeliverSmResp=%s", event));
 		}
 
 //		event.getCommandId();
@@ -173,7 +173,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 			// no more messages are in cache now - lets check if there are more messages in a database
 			try {
-				pers.fetchSchedulableSms(smsSet);
+				pers.fetchSchedulableSms(smsSet, false);
 			} catch (PersistenceException e1) {
 				this.logger.severe("PersistenceException when invoking fetchSchedulableSms(smsSet) from RxSmppServerSbb.onDeliverSmResp(): " + e1.toString(), e1);
 			}
@@ -199,14 +199,14 @@ public abstract class RxSmppServerSbb implements Sbb {
 	}
 
 	public void onPduRequestTimeout(PduRequestTimeout event, ActivityContextInterface aci, EventContext eventContext) {
-		logger.severe(String.format("onPduRequestTimeout : PduRequestTimeout=%s", event));
+		logger.severe(String.format("\nonPduRequestTimeout : PduRequestTimeout=%s", event));
 
 		this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "PduRequestTimeout: ");
 	}
 
 	public void onRecoverablePduException(RecoverablePduException event, ActivityContextInterface aci,
 			EventContext eventContext) {
-		logger.severe(String.format("onRecoverablePduException : RecoverablePduException=%s", event));
+		logger.severe(String.format("\nonRecoverablePduException : RecoverablePduException=%s", event));
 
 		this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "RecoverablePduException: ");
 	}
@@ -248,8 +248,11 @@ public abstract class RxSmppServerSbb implements Sbb {
 			EsmeManagement esmeManagement = EsmeManagement.getInstance();
 			Esme esme = esmeManagement.getEsmeByClusterName(smsSet.getDestClusterName());
 			if (esme == null) {
-				throw new SmscProcessingException("RxSmppServerSbb.sendDeliverSm(): Received DELIVER_SM SmsEvent but no Esme found for destClusterName: "
-						+ smsSet.getDestClusterName() + ", Message=" + sms, 0, 0, null);
+				String s = "\nRxSmppServerSbb.sendDeliverSm(): Received DELIVER_SM SmsEvent but no Esme found for destClusterName: "
+						+ smsSet.getDestClusterName() + ", Message=" + sms;
+				logger.warning(s);
+				this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, s);
+				return;
 			}
 
 			smsSet.setDestSystemId(esme.getSystemId());
@@ -284,6 +287,10 @@ public abstract class RxSmppServerSbb implements Sbb {
 			// TODO : waiting for 2 secs for window to accept our request, is it
 			// good? Should time be more here?
 			SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, deliverSm, 2000);
+			if (logger.isInfoEnabled()) {
+				logger.info(String.format("\nsent deliverSm to ESME: ", deliverSm));
+			}
+
 			ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory.getActivityContextInterface(smppServerTransaction);
 			smppTxaci.attach(this.sbbContext.getSbbLocalObject());
 
@@ -367,7 +374,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 					if (goodMsgCnt == 0) {
 						// no more messages to send
 						// firstly we search for new uploaded message
-						pers.fetchSchedulableSms(smsSet);
+						pers.fetchSchedulableSms(smsSet, false);
 						if (smsSet.getSmsCount() == 0)
 							errorAction = ErrorAction.permanentFailure;
 					}
@@ -418,7 +425,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 		try {
 			synchronized (lock) {
 				try {
-					pers.fetchSchedulableSms(smsSet);
+					pers.fetchSchedulableSms(smsSet, false);
 					int cnt = smsSet.getSmsCount();
 					for (int i1 = 0; i1 < cnt; i1++) {
 						Sms sms = smsSet.getSms(i1);

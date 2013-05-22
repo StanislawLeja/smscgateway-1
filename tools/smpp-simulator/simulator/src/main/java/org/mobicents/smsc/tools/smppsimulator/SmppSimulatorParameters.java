@@ -40,15 +40,20 @@ public class SmppSimulatorParameters {
 	private String password = "test";
 	private long requestExpiryTimeout = 30000;
 	private long windowMonitorInterval = 15000;
+	
+	private boolean rejectIncomingDeliveryMessage = false;
 
-	private TON ton = TON.International;
-	private NPI npi = NPI.ISDN;
+	private TON sourceTon = TON.International;
+	private NPI sourceNpi = NPI.ISDN;
+	private TON destTon = TON.International;
+	private NPI destNpi = NPI.ISDN;
 	private String sourceAddress = "6666";
 	private String destAddress = "5555";
 
 	private String messageText = "Hello!";
 	private EncodingType encodingType = EncodingType.GSM7;
 	private SplittingType splittingType = SplittingType.DoNotSplit;
+	private ValidityType validityType = ValidityType.NoSpecial;
 
 	public int getWindowSize() {
 		return windowSize;
@@ -137,22 +142,38 @@ public class SmppSimulatorParameters {
     }
 
 
-    public TON getTON() {
-        return this.ton;
+    public TON getSourceTON() {
+        return this.sourceTon;
     }
 
-    public void setTON(TON value) {
-        this.ton = value;
+    public void setSourceTON(TON value) {
+        this.sourceTon = value;
     }
 
-    public NPI getNPI() {
-        return this.npi;
+    public NPI getSourceNPI() {
+        return this.sourceNpi;
     }
 
-    public void setNPI(NPI value) {
-        this.npi = value;
+    public void setSourceNPI(NPI value) {
+        this.sourceNpi = value;
     }
-    
+
+    public TON getDestTON() {
+        return this.destTon;
+    }
+
+    public void setDestTON(TON value) {
+        this.destTon = value;
+    }
+
+    public NPI getDestNPI() {
+        return this.destNpi;
+    }
+
+    public void setDestNPI(NPI value) {
+        this.destNpi = value;
+    }
+
     public String getSourceAddress() {
         return this.sourceAddress;
     }
@@ -194,8 +215,25 @@ public class SmppSimulatorParameters {
 		splittingType = val;
 	}
 
+	public ValidityType getValidityType() {
+		return validityType;
+	}
 
-    public enum EncodingType {
+	public void setValidityType(ValidityType validityType) {
+		this.validityType = validityType;
+	}
+
+
+	public boolean isRejectIncomingDeliveryMessage() {
+		return rejectIncomingDeliveryMessage;
+	}
+
+	public void setRejectIncomingDeliveryMessage(boolean rejectIncomingDeliveryMessage) {
+		this.rejectIncomingDeliveryMessage = rejectIncomingDeliveryMessage;
+	}
+
+
+	public enum EncodingType {
     	GSM7, UCS2,
     }
 
@@ -229,6 +267,10 @@ public class SmppSimulatorParameters {
 		public int getCode() {
 			return this.code;
 		}
+    }
+
+    public enum ValidityType {
+		NoSpecial, ValidityPeriod_5min, ScheduleDeliveryTime_5min;
     }
 }
 

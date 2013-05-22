@@ -56,7 +56,7 @@ public class Schema {
     public static final String COLUMN_MESSAGE = "MESSAGE";
     public static final String COLUMN_OPTIONAL_PARAMETERS = "OPTIONAL_PARAMETERS";
     public static final String COLUMN_SUBMIT_DATE = "SUBMIT_DATE";
-    public static final String COLUMN_SCHEDULE_DELIVERY = "SCHEDULE_DELIVERY";
+    public static final String COLUMN_SCHEDULE_DELIVERY_TIME = "SCHEDULE_DELIVERY_TIME";
     public static final String COLUMN_VALIDITY_PERIOD = "VALIDITY_PERIOD";
     public static final String COLUMN_ORIG_ESME_NAME = "ORIG_ESME_NAME";
     public static final String COLUMN_ORIG_SYSTEM_ID = "ORIG_SYSTEM_ID";
@@ -136,7 +136,7 @@ public class Schema {
 		tmp.add(COLUMN_DEFAULT_MSG_ID);
 		tmp.add(COLUMN_MESSAGE);
 		tmp.add(COLUMN_OPTIONAL_PARAMETERS);
-		tmp.add(COLUMN_SCHEDULE_DELIVERY);
+		tmp.add(COLUMN_SCHEDULE_DELIVERY_TIME);
 		tmp.add(COLUMN_VALIDITY_PERIOD);
         tmp.add(COLUMN_DELIVERY_COUNT);
 
@@ -171,7 +171,7 @@ public class Schema {
         tmp.add(COLUMN_DEFAULT_MSG_ID);
         tmp.add(COLUMN_MESSAGE);
         tmp.add(COLUMN_OPTIONAL_PARAMETERS);
-        tmp.add(COLUMN_SCHEDULE_DELIVERY);
+        tmp.add(COLUMN_SCHEDULE_DELIVERY_TIME);
         tmp.add(COLUMN_VALIDITY_PERIOD);
         tmp.add(COLUMN_IMSI);
         tmp.add(COLUMN_NNN_DIGITS);

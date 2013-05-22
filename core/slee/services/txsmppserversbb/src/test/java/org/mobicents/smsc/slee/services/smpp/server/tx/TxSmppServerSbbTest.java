@@ -33,10 +33,9 @@ import javax.slee.SbbLocalObject;
 import javax.slee.TransactionRequiredLocalException;
 import javax.slee.TransactionRolledbackLocalException;
 
-import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
-import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.SmppSessionsProxy;
@@ -261,7 +260,7 @@ public class TxSmppServerSbbTest {
 	}
 
 	private void checkSmsSet(SmsSet smsSet, Date curDate, boolean isSubmitMsg) throws PersistenceException, TlvConvertException {
-		this.pers.fetchSchedulableSms(smsSet);
+		this.pers.fetchSchedulableSms(smsSet, false);
 
 		assertEquals(smsSet.getDestAddr(), "5555");
 		assertEquals(smsSet.getDestAddrTon(), SmppConstants.TON_INTERNATIONAL);
@@ -333,7 +332,7 @@ public class TxSmppServerSbbTest {
 //		smsSet_x1.setDestAddrNpi(ta1.getAddrNpi());
 
 		SmsSet smsSet_x1 = this.pers.obtainSmsSet(ta1);
-		this.pers.fetchSchedulableSms(smsSet_x1);
+		this.pers.fetchSchedulableSms(smsSet_x1, false);
 
 		this.pers.deleteSmsSet(smsSet_x1);
 		int cnt = smsSet_x1.getSmsCount();

@@ -72,13 +72,12 @@ import org.mobicents.protocols.ss7.map.smstpdu.SmsSubmitTpduImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.ValidityPeriodImpl;
-import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
-import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.MAPDialogSmsProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPServiceSmsProxy;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
@@ -185,7 +184,7 @@ public class MoSbbTest {
 		assertEquals(dialog.getResponseCount(), 1);
 		assertEquals(dialog.getErrorList().size(), 0);
 
-		this.pers.fetchSchedulableSms(smsSet);
+		this.pers.fetchSchedulableSms(smsSet, false);
 
 		assertEquals(smsSet.getDestAddr(), "5555");
 		assertEquals(smsSet.getDestAddrTon(), SmppConstants.TON_INTERNATIONAL);
@@ -288,7 +287,7 @@ public class MoSbbTest {
 		assertEquals(dialog.getResponseCount(), 1);
 		assertEquals(dialog.getErrorList().size(), 0);
 
-		this.pers.fetchSchedulableSms(smsSet);
+		this.pers.fetchSchedulableSms(smsSet, false);
 
 		assertEquals(smsSet.getDestAddr(), "5555");
 		assertEquals(smsSet.getDestAddrTon(), SmppConstants.TON_INTERNATIONAL);
@@ -382,7 +381,7 @@ public class MoSbbTest {
 		assertEquals(dialog.getResponseCount(), 1);
 		assertEquals(dialog.getErrorList().size(), 0);
 
-		this.pers.fetchSchedulableSms(smsSet);
+		this.pers.fetchSchedulableSms(smsSet, false);
 
 		assertEquals(smsSet.getDestAddr(), "5555");
 		assertEquals(smsSet.getDestAddrTon(), SmppConstants.TON_INTERNATIONAL);
@@ -490,7 +489,7 @@ public class MoSbbTest {
 		// smsSet_x1.setDestAddrNpi(ta1.getAddrNpi());
 
 		SmsSet smsSet_x1 = this.pers.obtainSmsSet(ta1);
-		this.pers.fetchSchedulableSms(smsSet_x1);
+		this.pers.fetchSchedulableSms(smsSet_x1, false);
 
 		this.pers.deleteSmsSet(smsSet_x1);
 		int cnt = smsSet_x1.getSmsCount();

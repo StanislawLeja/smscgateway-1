@@ -34,10 +34,8 @@ import javax.slee.ActivityContextInterface;
 import javax.slee.CreateException;
 import javax.slee.EventContext;
 import javax.slee.RolledBackContext;
-import javax.slee.SLEEException;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
-import javax.slee.TransactionRequiredLocalException;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
@@ -49,14 +47,14 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
-import org.mobicents.smsc.slee.resources.peristence.MessageUtil;
 
-import org.mobicents.smsc.slee.resources.peristence.SmppExtraConstants;
-import org.mobicents.smsc.slee.resources.peristence.SmscProcessingException;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.persistence.SmppExtraConstants;
 import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
+import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
@@ -107,7 +105,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		String esmeName = esme.getName();
 
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received SUBMIT_SM = " + event + " from Esme name=" + esmeName);
+			this.logger.info("\nReceived SUBMIT_SM = " + event + " from Esme name=" + esmeName);
 		}
 
 		Sms sms;
@@ -330,13 +328,13 @@ public abstract class TxSmppServerSbb implements Sbb {
 	}
 
 	public void onPduRequestTimeout(PduRequestTimeout event, ActivityContextInterface aci, EventContext eventContext) {
-		logger.severe(String.format("onPduRequestTimeout : PduRequestTimeout=%s", event));
+		logger.severe(String.format("\nonPduRequestTimeout : PduRequestTimeout=%s", event));
 		// TODO : Handle this
 	}
 
 	public void onRecoverablePduException(RecoverablePduException event, ActivityContextInterface aci,
 			EventContext eventContext) {
-		logger.severe(String.format("onRecoverablePduException : RecoverablePduException=%s", event));
+		logger.severe(String.format("\nonRecoverablePduException : RecoverablePduException=%s", event));
 		// TODO : Handle this
 	}
 
@@ -429,11 +427,14 @@ public abstract class TxSmppServerSbb implements Sbb {
 			throw new SmscProcessingException("SourceAddress digits are absent", SmppConstants.STATUS_INVSRCADR, MAPErrorCode.systemFailure, null);
 		}
 		sms.setSourceAddr(event.getSourceAddress().getAddress());
-		switch(event.getSourceAddress().getTon()){
+		switch (event.getSourceAddress().getTon()) {
 		case SmppConstants.TON_UNKNOWN:
 			sms.setSourceAddrTon(smscPropertiesManagement.getDefaultTon());
 			break;
 		case SmppConstants.TON_INTERNATIONAL:
+			sms.setSourceAddrTon(event.getSourceAddress().getTon());
+			break;
+		case SmppConstants.TON_ALPHANUMERIC:
 			sms.setSourceAddrTon(event.getSourceAddress().getTon());
 			break;
 		default:
@@ -566,6 +567,8 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
 		try {
+			// TODO: we can make this some check will we send this message or not
+
 			store.createLiveSms(sms);
 			if (sms.getScheduleDeliveryTime() == null)
 				store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));

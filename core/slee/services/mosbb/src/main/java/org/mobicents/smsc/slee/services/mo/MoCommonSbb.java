@@ -27,17 +27,13 @@ import javax.naming.InitialContext;
 import javax.slee.ActivityContextInterface;
 import javax.slee.CreateException;
 import javax.slee.RolledBackContext;
-import javax.slee.SLEEException;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
-import javax.slee.TransactionRequiredLocalException;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
-import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
-import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.slee.resource.map.MAPContextInterfaceFactory;
 import org.mobicents.slee.resource.map.events.DialogAccept;
@@ -53,13 +49,11 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.resources.peristence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
-
-import com.cloudhopper.smpp.SmppConstants;
 
 /**
  * 
@@ -103,23 +97,15 @@ public abstract class MoCommonSbb implements Sbb {
 	 */
 
 	public void onInvokeTimeout(InvokeTimeout evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onInvokeTimeout" + evt);
-		}
+		this.logger.severe("\nRx :  onInvokeTimeout" + evt);
 	}
 
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
-		}
+		this.logger.severe("\nRx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
 	}
 
-//	public void onProviderErrorComponent(ProviderErrorComponent event, ActivityContextInterface aci) {
-//		this.logger.severe("Rx :  onProviderErrorComponent" + event);
-//	}
-
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onRejectComponent" + event);
+		this.logger.severe("\nRx :  onRejectComponent" + event);
 	}
 
 	/**
@@ -128,60 +114,55 @@ public abstract class MoCommonSbb implements Sbb {
 
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogDelimiter=" + evt);
+			this.logger.fine("\nRx :  onDialogDelimiter=" + evt);
 		}
 	}
 
 	public void onDialogAccept(DialogAccept evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogAccept=" + evt);
+			this.logger.fine("\nRx :  onDialogAccept=" + evt);
 		}
 	}
 
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
-		if (logger.isWarningEnabled()) {
-			this.logger.warning("Rx :  onDialogReject=" + evt);
-		}
-
-		// TODO : Error condition. Take care
+		this.logger.severe("\nRx :  onDialogReject=" + evt);
 	}
 
 	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogUserAbort=" + evt);
-
-		// TODO : Error condition. Take care
+		this.logger.severe("\nRx :  onDialogUserAbort=" + evt);
 	}
 
 	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogProviderAbort=" + evt);
+		this.logger.severe("\nRx :  onDialogProviderAbort=" + evt);
 	}
 
 	public void onDialogClose(DialogClose evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogClose" + evt);
+			this.logger.fine("\nRx :  onDialogClose" + evt);
 		}
 	}
 
 	public void onDialogNotice(DialogNotice evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onDialogNotice" + evt);
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogNotice" + evt);
 		}
 	}
 
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogTimeout" + evt);
+		if (this.logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogTimeout" + evt);
+		}
 	}
 
 	public void onDialogRequest(DialogRequest evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogRequest" + evt);
+			this.logger.fine("\nRx :  onDialogRequest" + evt);
 		}
 	}
 
 	public void onDialogRelease(DialogRelease evt, ActivityContextInterface aci) {
 		if (logger.isInfoEnabled()) {
-			// TODO : Should be fine
-			this.logger.info("Rx :  DialogRelease" + evt);
+			this.logger.info("\nRx :  DialogRelease" + evt);
 		}
 	}
 

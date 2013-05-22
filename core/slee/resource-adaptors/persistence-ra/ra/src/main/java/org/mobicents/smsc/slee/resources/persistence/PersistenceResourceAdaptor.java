@@ -73,9 +73,9 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
         	}
 
         	@Override
-        	public void setDeliveringProcessScheduled(SmsSet smsSet, Date newDueDate, int newDueDelay) throws PersistenceException {
-        		DBOperations.setDeliveringProcessScheduled(keyspace, smsSet, newDueDate, newDueDelay);
-        	}
+			public void setDeliveringProcessScheduled(SmsSet smsSet, Date newDueDate, int newDueDelay) throws PersistenceException {
+				DBOperations.setDeliveringProcessScheduled(keyspace, smsSet, newDueDate, newDueDelay);
+			}
 
         	@Override
         	public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId, SmType type) {
@@ -148,8 +148,8 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
         	}
 
         	@Override
-        	public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount) throws PersistenceException {
-        		return DBOperations.fetchSchedulableSmsSets(keyspace, maxRecordCount);
+        	public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount, Tracer tracer) throws PersistenceException {
+        		return DBOperations.fetchSchedulableSmsSets(keyspace, maxRecordCount, tracer);
         	}
 
         	@Override
@@ -163,8 +163,8 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
         	}
 
         	@Override
-        	public void fetchSchedulableSms(SmsSet smsSet) throws PersistenceException {
-        		DBOperations.fetchSchedulableSms(keyspace, smsSet);
+        	public void fetchSchedulableSms(SmsSet smsSet, boolean excludeNonScheduleDeliveryTime) throws PersistenceException {
+        		DBOperations.fetchSchedulableSms(keyspace, smsSet, excludeNonScheduleDeliveryTime);
         	}
         };
     }

@@ -20,10 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.resources.peristence;
+package org.mobicents.smsc.slee.resources.persistence;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -83,11 +82,27 @@ public class MessageUtil {
 			c.add(Calendar.SECOND, sc);
 			res = c.getTime();
 		} else {
-			String s1 = val.substring(0, 12);
+//			String s1 = val.substring(0, 12);
 			String s2 = val.substring(12, 13);
 			String s3 = val.substring(13, 15);
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMddhhmmss"); // yyMMddhhmmsstnnp
-			Date date = dateFormat.parse(s1);
+
+			String yrS = val.substring(0, 2);
+			String mnS = val.substring(2, 4);
+			String dyS = val.substring(4, 6);
+			String hrS = val.substring(6, 8);
+			String miS = val.substring(8, 10);
+			String scS = val.substring(10, 12);
+			int yr = Integer.parseInt(yrS);
+			int mn = Integer.parseInt(mnS);
+			int dy = Integer.parseInt(dyS);
+			int hr = Integer.parseInt(hrS);
+			int mi = Integer.parseInt(miS);
+			int sc = Integer.parseInt(scS);
+			Date date = new Date(yr + 100, mn - 1, dy, hr, mi, sc);
+
+//			SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMddhhmmss"); // yyMMddhhmmsstnnp
+//			Date date = dateFormat.parse(s1);
+
 			int dSec = Integer.parseInt(s2);
 			int tZone = Integer.parseInt(s3);
 			int curTimezoneOffset = date.getTimezoneOffset();
@@ -316,5 +331,29 @@ public class MessageUtil {
 			sb.append("0");
 		sb.append(sec);
 	}
+
+	public static Date checkScheduleDeliveryTime(final SmsSet smsSet, Date newDueDate) {
+		Date minDate = null;
+		int smsCount = smsSet.getSmsCount();
+		for (int i1 = 0; i1 < smsCount; i1++) {
+			Sms sms = smsSet.getSms(i1);
+			if (sms.getScheduleDeliveryTime() != null) {
+				if (minDate == null)
+					minDate = sms.getScheduleDeliveryTime();
+				else {
+					if (minDate.after(sms.getScheduleDeliveryTime()))
+						minDate = sms.getScheduleDeliveryTime();
+				}
+			} else {
+				if (minDate == null)
+					minDate = newDueDate;
+			}
+		}
+		if (minDate != null && newDueDate.before(minDate)) {
+			newDueDate = minDate;
+		}
+		return newDueDate;
+	}
+
 }
 

@@ -38,7 +38,19 @@
 				<include>com.cloudhopper:ch-commons-charset</include>
 				<include>com.cloudhopper:ch-commons-util</include>
 
+				<include>com.telscale.smsc:smpp-server-ra-library</include>
+
+
+
+
 <!--
+		<groupId>com.telscale.smsc</groupId>
+		<artifactId>persistence-ra-parent</artifactId>
+		<version>6.1.2-TelScale-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>persistence-ra-library</artifactId>
+
 
 				<include>com.sun.jdmk:jmxtools</include>
 				<include>org.mobicents.protocols.sctp:sctp-api</include>

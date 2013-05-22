@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.slee.facilities.Tracer;
+
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
@@ -71,14 +73,14 @@ public interface PersistenceRAInterface {
     public void setNewMessageScheduled(SmsSet smsSet, Date newDueDate) throws PersistenceException;
 
     /**
-     * Set this TargetAddress as scheduled after last delivery failure 
-     * IN_SYSTEM=1; DUE_DATE=newDueDate; DUE_DELAY = newDueDelay
-     * 
-     * @param smsSet
-     * @param newDueDate
-     * @param newDueDelay
-     */
-    public void setDeliveringProcessScheduled(SmsSet smsSet, Date newDueDate, int newDueDelay) throws PersistenceException;
+	 * Set this TargetAddress as scheduled after last delivery failure
+	 * IN_SYSTEM=1; DUE_DATE=newDueDate; DUE_DELAY = newDueDelay
+	 * 
+	 * @param smsSet
+	 * @param newDueDate
+	 * @param newDueDelay
+	 */
+	public void setDeliveringProcessScheduled(SmsSet smsSet, Date newDueDate, int newDueDelay) throws PersistenceException;
 
     /**
      * Set destination for SmsSet + SmType. Database is not updated for these fields
@@ -227,7 +229,7 @@ public interface PersistenceRAInterface {
      * @return
      * @throws PersistenceException
      */
-    public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount) throws PersistenceException;
+    public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount, Tracer tracer) throws PersistenceException;
 
 	/**
 	 * Fill SmsSet with sms from LIVE_SMS
@@ -235,8 +237,8 @@ public interface PersistenceRAInterface {
 	 * @param smsSet
 	 * @throws PersistenceException
 	 */
-	public void fetchSchedulableSms(SmsSet smsSet) throws PersistenceException;
-    
+	public void fetchSchedulableSms(SmsSet smsSet, boolean excludeNonScheduleDeliveryTime) throws PersistenceException;
+
     /**
      * Obtaining synchronizing object for a TargetAddress
      * @param ta

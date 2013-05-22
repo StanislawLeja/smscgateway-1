@@ -65,7 +65,7 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
 
     public void onReportSMDeliveryStatusResponse(ReportSMDeliveryStatusResponse evt, ActivityContextInterface aci) {
         if (this.logger.isInfoEnabled()) {
-            this.logger.info("Received REPORT_SM_DELIVERY_STATUS_RESPONSE = " + evt);
+            this.logger.info("\nReceived REPORT_SM_DELIVERY_STATUS_RESPONSE = " + evt);
         }
 
         if (this.getSmDeliveryOutcome() != SMDeliveryOutcome.successfulTransfer) {
@@ -73,7 +73,7 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
                 PersistenceRAInterface pers = this.getStore();
                 pers.setAlertingSupported(this.getTargetId(), true);
             } catch (PersistenceException e1) {
-                this.logger.severe("PersistenceException when setAlertingSupported() in onSendRoutingInfoForSMResponse(): "
+                this.logger.severe("\nPersistenceException when setAlertingSupported() in onSendRoutingInfoForSMResponse(): "
                         + e1.getMessage(), e1);
             }
         }
@@ -89,7 +89,7 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
 	public void setupReportSMDeliveryStatusRequest(ISDNAddressString msisdn, AddressString serviceCentreAddress, SMDeliveryOutcome smDeliveryOutcome,
 			SccpAddress destAddress, MAPApplicationContext mapApplicationContext, String targetId) {
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received setupReportSMDeliveryStatus request msisdn= " + msisdn + ", serviceCentreAddress=" + serviceCentreAddress
+			this.logger.info("\nReceived setupReportSMDeliveryStatus request msisdn= " + msisdn + ", serviceCentreAddress=" + serviceCentreAddress
 					+ ", sMDeliveryOutcome=" + smDeliveryOutcome + ", mapApplicationContext=" + mapApplicationContext);
 		}
 
@@ -105,6 +105,11 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
 			mtFOSmsDialogACI.attach(this.sbbContext.getSbbLocalObject());
 
 			mapDialogSms.addReportSMDeliveryStatusRequest(msisdn, serviceCentreAddress, smDeliveryOutcome, null, null, false, false, null, null);
+			
+			if (this.logger.isInfoEnabled())
+				this.logger.info("\nSending: ReportSMDeliveryStatusRequest: msisdn=" + msisdn + ", serviceCenterAddress=" + serviceCentreAddress
+						+ ", smDeliveryOutcome=" + smDeliveryOutcome);
+
 			mapDialogSms.send();
 		} catch (MAPException e) {
 			this.logger.severe("MAPException when sending reportSMDeliveryStatusRequest: " + e.getMessage(), e);

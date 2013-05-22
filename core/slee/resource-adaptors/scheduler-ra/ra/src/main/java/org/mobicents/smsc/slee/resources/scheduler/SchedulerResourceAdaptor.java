@@ -401,22 +401,10 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
 			String destClusterName = smsRouteManagement.getEsmeClusterName(smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(), smsSet.getDestAddr());
 
-
-			// !!!!- .................................
-			this.tracer.severe("*******************: getEsmeClusterName: " + destClusterName + ", ton=" + smsSet.getDestAddrTon() + ", npi="
-					+ smsSet.getDestAddrNpi() + ", DestAddr=" + smsSet.getDestAddr());
-			// !!!!- .................................
-
-
-
-//			EsmeManagement esmeManagement = EsmeManagement.getInstance();
-//			Esme esme = esmeManagement.getEsmeByClusterName(destClusterName);
-//			DBOperations.setDestination(smsSet, destClusterName, destSystemId, destEsmeId, type);
-//			DBOperations.setDestination(smsSet, destClusterName, null, null, destClusterName != null ? SmType.DELIVER_SM : SmType.SUBMIT_SM);
 			smsSet.setDestClusterName(destClusterName);
-			smsSet.setType(destClusterName != null ? SmType.DELIVER_SM : SmType.SUBMIT_SM);
+			smsSet.setType(destClusterName != null ? SmType.SMS_FOR_ESME : SmType.SMS_FOR_SS7);
 
-			final String eventName = smsSet.getType() == SmType.DELIVER_SM ? EVENT_DELIVER_SM : EVENT_SUBMIT_SM;
+			final String eventName = smsSet.getType() == SmType.SMS_FOR_ESME ? EVENT_DELIVER_SM : EVENT_SUBMIT_SM;
 			final FireableEventType eventTypeId = this.eventIdCache.getEventId(eventName);
 			SmsSetEvent event = new SmsSetEvent();
 			event.setSmsSet(smsSet);
@@ -447,7 +435,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	}
 
 	protected List<SmsSet> fetchSchedulable(int maxRecordCount) throws PersistenceException {
-		List<SmsSet> res = DBOperations.fetchSchedulableSmsSets(this.keyspace, maxRecordCount);
+		List<SmsSet> res = DBOperations.fetchSchedulableSmsSets(this.keyspace, maxRecordCount, this.tracer);
 		return res;
 	}
 
@@ -459,7 +447,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				if (!b1)
 					throw new PersistenceException("SmsSet record is not found when markAsInSystem()");
 
-				DBOperations.fetchSchedulableSms(keyspace, smsSet);
+				DBOperations.fetchSchedulableSms(keyspace, smsSet, smsSet.getType() == SmType.SMS_FOR_SS7);
 				DBOperations.setDeliveryStart(keyspace, smsSet, new Date());
 			} finally {
 				SmsSetCashe.getInstance().addSmsSet(lock);
