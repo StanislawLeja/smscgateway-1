@@ -84,4 +84,8 @@ public interface SmscPropertiesManagementMBean {
 
 	public void setDueDelayMultiplicator(int dueDelayMultiplicator);
 
+	public int getMaxMessageLengthReducer();
+
+	public void setMaxMessageLengthReducer(int maxMessageLengReducer);
+
 }

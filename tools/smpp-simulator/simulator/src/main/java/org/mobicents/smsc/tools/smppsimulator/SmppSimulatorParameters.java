@@ -55,6 +55,10 @@ public class SmppSimulatorParameters {
 	private SplittingType splittingType = SplittingType.DoNotSplit;
 	private ValidityType validityType = ValidityType.NoSpecial;
 
+	private int bulkDestAddressRangeStart = 500000;
+	private int bulkDestAddressRangeEnd = 600000;
+	private int bulkMessagePerSecond = 10;
+
 	public int getWindowSize() {
 		return windowSize;
 	}
@@ -230,6 +234,30 @@ public class SmppSimulatorParameters {
 
 	public void setRejectIncomingDeliveryMessage(boolean rejectIncomingDeliveryMessage) {
 		this.rejectIncomingDeliveryMessage = rejectIncomingDeliveryMessage;
+	}
+
+	public int getBulkDestAddressRangeStart() {
+		return bulkDestAddressRangeStart;
+	}
+
+	public void setBulkDestAddressRangeStart(int bulkDestAddressRangeStart) {
+		this.bulkDestAddressRangeStart = bulkDestAddressRangeStart;
+	}
+
+	public int getBulkDestAddressRangeEnd() {
+		return bulkDestAddressRangeEnd;
+	}
+
+	public void setBulkDestAddressRangeEnd(int bulkDestAddressRangeEnd) {
+		this.bulkDestAddressRangeEnd = bulkDestAddressRangeEnd;
+	}
+
+	public int getBulkMessagePerSecond() {
+		return bulkMessagePerSecond;
+	}
+
+	public void setBulkMessagePerSecond(int bulkMessagePerSecond) {
+		this.bulkMessagePerSecond = bulkMessagePerSecond;
 	}
 
 

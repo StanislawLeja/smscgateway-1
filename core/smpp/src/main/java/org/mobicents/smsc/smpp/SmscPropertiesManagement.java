@@ -57,6 +57,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String SECOND_DUE_DELAY = "secondDueDelay";
 	private static final String MAX_DUE_DELAY = "maxDueDelay";
 	private static final String DUE_DELAY_MULTIPLICATOR = "dueDelayMultiplicator";
+	private static final String MAX_MESSAGE_LENGTH_REDUCER = "maxMessageLengthReducer";
 
 	private static final String TAB_INDENT = "\t";
 	private static final String CLASS_ATTRIBUTE = "type";
@@ -91,6 +92,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private int maxDueDelay = 3600 * 24;
 	// next delay (after failure will be calculated as "prevDueDelay * dueDelayMultiplicator / 100")
 	private int dueDelayMultiplicator = 200;
+	// 	
+	private int maxMessageLengthReducer = 6;
 
 	private SmscPropertiesManagement(String name) {
 		this.name = name;
@@ -237,7 +240,17 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.dueDelayMultiplicator = dueDelayMultiplicator;
 	}
 
-	
+	@Override
+	public int getMaxMessageLengthReducer() {
+		return maxMessageLengthReducer;
+	}
+
+	@Override
+	public void setMaxMessageLengthReducer(int maxMessageLengReducer) {
+		this.maxMessageLengthReducer = maxMessageLengReducer;
+	}
+
+
 	public void start() throws Exception {
 
 		this.persistFile.clear();
@@ -295,7 +308,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.secondDueDelay, SECOND_DUE_DELAY, Integer.class);
 			writer.write(this.maxDueDelay, MAX_DUE_DELAY, Integer.class);
 			writer.write(this.dueDelayMultiplicator, DUE_DELAY_MULTIPLICATOR, Integer.class);
-			
+			writer.write(this.maxMessageLengthReducer, MAX_MESSAGE_LENGTH_REDUCER, Integer.class);
+
 			writer.close();
 		} catch (Exception e) {
 			logger.error("Error while persisting the Rule state in file", e);
@@ -346,6 +360,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			val = reader.read(DUE_DELAY_MULTIPLICATOR, Integer.class);
 			if (val != null)
 				this.dueDelayMultiplicator = val;
+			val = reader.read(MAX_MESSAGE_LENGTH_REDUCER, Integer.class);
+			if (val != null)
+				this.maxMessageLengthReducer = val;
 			
 			reader.close();
 		} catch (XMLStreamException ex) {

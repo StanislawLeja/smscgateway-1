@@ -44,9 +44,12 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JButton;
 
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.EncodingType;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.SplittingType;
+import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.ValidityType;
 
 import com.cloudhopper.commons.util.windowing.WindowFuture;
 import com.cloudhopper.smpp.SmppConstants;
@@ -69,12 +72,16 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.JLabel;
 
 /**
  * 
@@ -92,13 +99,22 @@ public class SmppTestingForm extends JDialog {
 	private JTable tNotif;
 	private JButton btStart;
 	private JButton btStop;
-	
+	private JButton btStartBulk;
+	private JButton btStopBulk;
+	private javax.swing.Timer tm;
+	private JLabel lbState;
+
 	private ThreadPoolExecutor executor;
 	private ScheduledThreadPoolExecutor monitorExecutor;
 	private DefaultSmppClient clientBootstrap;
 	private SmppSession session0;
 
-	public SmppTestingForm(JFrame owner){
+	protected Timer timer;
+	protected AtomicInteger messagesSent = new AtomicInteger();
+	protected AtomicInteger segmentsSent = new AtomicInteger();
+	protected AtomicInteger responsesRcvd = new AtomicInteger();
+
+	public SmppTestingForm(JFrame owner) {
 		super(owner, true);
 		setModal(false);
 		addWindowListener(new WindowAdapter() {
@@ -166,23 +182,23 @@ public class SmppTestingForm extends JDialog {
 		panel.add(panel_2);
 		panel_2.setLayout(null);
 		
-		btStart = new JButton("Start");
+		btStart = new JButton("Start a session");
 		btStart.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				start();
 			}
 		});
-		btStart.setBounds(10, 11, 90, 23);
+		btStart.setBounds(10, 11, 141, 23);
 		panel_2.add(btStart);
 		
-		btStop = new JButton("Stop");
+		btStop = new JButton("Stop a session");
 		btStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				stop();
 			}
 		});
 		btStop.setEnabled(false);
-		btStop.setBounds(104, 11, 90, 23);
+		btStop.setBounds(158, 11, 122, 23);
 		panel_2.add(btStop);
 		
 		JButton btRefreshState = new JButton("Refresh state");
@@ -191,7 +207,7 @@ public class SmppTestingForm extends JDialog {
 				refreshState();
 			}
 		});
-		btRefreshState.setBounds(204, 11, 148, 23);
+		btRefreshState.setBounds(286, 11, 148, 23);
 		panel_2.add(btRefreshState);
 		
 		JButton btOpeEventWindow = new JButton("Open event window");
@@ -200,7 +216,7 @@ public class SmppTestingForm extends JDialog {
 				openEventWindow();
 			}
 		});
-		btOpeEventWindow.setBounds(357, 11, 159, 23);
+		btOpeEventWindow.setBounds(439, 11, 159, 23);
 		panel_2.add(btOpeEventWindow);
 		
 		JButton btConfigSubmitData = new JButton("Configure data for a message submitting");
@@ -232,11 +248,41 @@ public class SmppTestingForm extends JDialog {
 		JButton btSendMessage = new JButton("Submit a message");
 		btSendMessage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				submitMessage();
+				submitMessage(param.getEncodingType(), param.getMessageText(), param.getSplittingType(), param.getValidityType(), param.getDestAddress());
 			}
 		});
 		btSendMessage.setBounds(11, 80, 341, 23);
 		panel_2.add(btSendMessage);
+		
+		btStartBulk = new JButton("Start bulk sending");
+		btStartBulk.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				startBulkSending();
+			}
+		});
+		btStartBulk.setBounds(10, 116, 201, 23);
+		panel_2.add(btStartBulk);
+		
+		btStopBulk = new JButton("Stop bulk sending");
+		btStopBulk.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				stopBulkSending();
+			}
+		});
+		btStopBulk.setEnabled(false);
+		btStopBulk.setBounds(223, 116, 211, 23);
+		panel_2.add(btStopBulk);
+		
+		lbState = new JLabel("-");
+		lbState.setBounds(10, 152, 732, 16);
+		panel_2.add(lbState);
+
+		this.tm = new javax.swing.Timer(5000, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				refreshState();
+			}
+		});
+		this.tm.start();
 		
 	}
 
@@ -253,49 +299,57 @@ public class SmppTestingForm extends JDialog {
 		return msgRef;
 	}
 
-	private void submitMessage() {
+	private void submitMessage(EncodingType encodingType, String messageText, SplittingType splittingType, ValidityType validityType, String destAddr) {
+		if (session0 == null)
+			return;
+
         try {
         	int dcs = 0;
 			ArrayList<byte[]> msgLst = new ArrayList<byte[]>();
         	int msgRef = 0;
 
-            EncodingType et = param.getEncodingType();
+            EncodingType et = encodingType;
             byte[] buf = null;
-            int maxLen = 0;
-            int maxSplLen = 0;
             boolean addSegmTlv = false;
             int esmClass = 0;
     		switch (et) {
     		case GSM7:
     			dcs = 0;
-    			buf = this.param.getMessageText().getBytes();
-                maxLen = 160;
-                maxSplLen = 153;
+    			buf = messageText.getBytes();
+//                maxLen = 160;
+//                maxSplLen = 153;
     			break;
     		case UCS2:
     			dcs = 8;
     			Charset ucs2Charset = Charset.forName("UTF-16BE");
-				ByteBuffer bb = ucs2Charset.encode(this.param.getMessageText());
+				ByteBuffer bb = ucs2Charset.encode(messageText);
 				buf = new byte[bb.limit()];
 				bb.get(buf);
-    			maxLen = 140;
-                maxSplLen = 134;
+//    			maxLen = 140;
+//                maxSplLen = 134;
                 break;
     		}
+    		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
+			int maxLen = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
+			int maxSplLen = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
 
+    		int segmCnt = 0;
 			if (buf.length > maxLen) { // may be message splitting
-				SplittingType st = param.getSplittingType();
+				SplittingType st = splittingType;
 				switch (st) {
 				case DoNotSplit:
 					// we do not split
 					msgLst.add(buf);
+					ArrayList<byte[]> r1 = this.splitByteArr(buf, maxSplLen);
+					segmCnt = r1.size();
 					break;
 				case SplitWithParameters:
 					msgRef = getNextMsgRef();
-					ArrayList<byte[]> r1 = this.splitByteArr(buf, maxSplLen);
+					r1 = this.splitByteArr(buf, maxSplLen);
 					for (byte[] bf : r1) {
 						msgLst.add(bf);
 					}
+					segmCnt = msgLst.size();
 					addSegmTlv = true;
 					break;
 				case SplitWithUdh:
@@ -316,14 +370,16 @@ public class SmppTestingForm extends JDialog {
 						System.arraycopy(bf, 0, bf2, bf1.length, bf.length);
 						msgLst.add(bf2);
 					}
+					segmCnt = msgLst.size();
 					esmClass = 0x40;
 					break;
 				}
 			} else {
 				msgLst.add(buf);
+				segmCnt = 1;
 			}
 
-        	this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv, esmClass, param.getValidityType());
+        	this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv, esmClass, validityType, segmCnt, destAddr);
 		} catch (Exception e) {
 			this.addMessage("Failure to submit message", e.toString());
 			return;
@@ -355,7 +411,7 @@ public class SmppTestingForm extends JDialog {
 	}
 
 	private void doSubmitMessage(int dcs, ArrayList<byte[]> msgLst, int msgRef, boolean addSegmTlv, int esmClass,
-			SmppSimulatorParameters.ValidityType validityType) throws Exception {
+			SmppSimulatorParameters.ValidityType validityType, int segmentCnt, String destAddr) throws Exception {
 		int i1 = 0;
 		for (byte[] buf : msgLst) {
 			i1++;
@@ -363,7 +419,7 @@ public class SmppTestingForm extends JDialog {
 			SubmitSm pdu = new SubmitSm();
 
 	        pdu.setSourceAddress(new Address((byte)this.param.getSourceTON().getCode(), (byte)this.param.getSourceNPI().getCode(), this.param.getSourceAddress()));
-	        pdu.setDestAddress(new Address((byte)this.param.getDestTON().getCode(), (byte)this.param.getDestNPI().getCode(), this.param.getDestAddress()));
+	        pdu.setDestAddress(new Address((byte)this.param.getDestTON().getCode(), (byte)this.param.getDestNPI().getCode(), destAddr));
 	        pdu.setEsmClass((byte) esmClass);
 
 			switch (validityType) {
@@ -402,10 +458,15 @@ public class SmppTestingForm extends JDialog {
 
 	        WindowFuture<Integer,PduRequest,PduResponse> future0 = session0.sendRequestPdu(pdu, 10000, false);
 
-	        this.addMessage("Request=" + pdu.getName(), pdu.toString());
+			this.messagesSent.incrementAndGet();
+			if (this.timer == null) {
+				this.addMessage("Request=" + pdu.getName(), pdu.toString());
+			}
 		}
+
+		this.segmentsSent.addAndGet(segmentCnt);
 	}
-	
+
 	private void setEventMsg() {
 		ListSelectionModel l = tNotif.getSelectionModel();
 		if (!l.isSelectionEmpty()) {
@@ -418,6 +479,10 @@ public class SmppTestingForm extends JDialog {
 	}
 
 	private void start() {
+		this.messagesSent = new AtomicInteger();
+		this.segmentsSent = new AtomicInteger();
+		this.responsesRcvd = new AtomicInteger();
+
 		this.addMessage("Trying to start a new session", "");
 
 		this.executor = (ThreadPoolExecutor)Executors.newCachedThreadPool();
@@ -502,7 +567,8 @@ public class SmppTestingForm extends JDialog {
 	}
 
 	private void refreshState() {
-		// .................
+		this.lbState.setText("messageSegmentsSent=" + this.segmentsSent.get() + ", submitMessagesSent=" + this.messagesSent.get() + ", submitResponsesRcvd="
+				+ this.responsesRcvd.get());
 	}
 
 	public void setData(SmppSimulatorForm mainForm, SmppSimulatorParameters param) {
@@ -536,6 +602,88 @@ public class SmppTestingForm extends JDialog {
 		this.eventForm = new EventForm(this);
 		this.eventForm.setVisible(true);
 		setEventMsg();
+	}
+
+	private void doStopTimer() {
+		if (this.timer != null) {
+			this.timer.cancel();
+			this.timer = null;
+		}
+	}
+	
+	private void startBulkSending() {
+		this.doStopTimer();
+
+		this.timer = new Timer();
+		this.timer.scheduleAtFixedRate(new TimerTask() {
+			@Override
+			public void run() {
+				doSendSmppMessages();
+			}
+		}, 1 * 1000, 1 * 1000);
+
+		this.btStartBulk.setEnabled(false);
+		this.btStopBulk.setEnabled(true);
+	}
+
+	private void stopBulkSending() {
+		this.doStopTimer();
+
+		this.btStartBulk.setEnabled(true);
+		this.btStopBulk.setEnabled(false);
+	}
+
+	private String bigMessage = "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
+	
+	private void doSendSmppMessages() {
+
+		Random rand = new Random();
+		
+		for (int i1 = 0; i1 < this.param.getBulkMessagePerSecond(); i1++) {
+			int n = this.param.getBulkDestAddressRangeEnd() - this.param.getBulkDestAddressRangeStart() + 1;
+			if (n < 1)
+				n = 1;
+			int j1 = rand.nextInt(n);
+			Integer destAddr = this.param.getBulkDestAddressRangeStart() + j1;
+			String destAddrS = destAddr.toString();
+
+			int j2 = rand.nextInt(2);
+			int j3 = rand.nextInt(3);
+			EncodingType encodingType;
+			if (j2 == 0)
+				encodingType = EncodingType.GSM7;
+			else
+				encodingType = EncodingType.UCS2;
+			SplittingType splittingType;
+			switch (j3) {
+			case 0:
+				splittingType = SplittingType.DoNotSplit;
+				break;
+			case 1:
+				splittingType = SplittingType.SplitWithParameters;
+				break;
+			default:
+				splittingType = SplittingType.SplitWithUdh;
+				break;
+			}
+			
+			int j4 = rand.nextInt(5);
+			String msg = this.param.getMessageText();
+			if (j4 == 0)
+				msg = bigMessage;
+
+			
+			// .........................
+//			msg = bigMessage;
+//			splittingType = SplittingType.DoNotSplit;
+//			encodingType = EncodingType.UCS2;
+			// .........................
+			// TODO: ..................
+
+			
+
+			this.submitMessage(encodingType, msg, splittingType, param.getValidityType(), destAddrS);
+		}
 	}
 
 	public synchronized void addMessage(String msg, String info) {

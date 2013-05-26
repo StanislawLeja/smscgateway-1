@@ -77,8 +77,11 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
 
     @Override
     public void fireExpectedPduResponseReceived(PduAsyncResponse pduAsyncResponse) {
-		testingForm.addMessage("Response=" + pduAsyncResponse.getResponse().getName(), "Req: " + pduAsyncResponse.getRequest().toString() + "\nResp: "
-				+ pduAsyncResponse.getResponse().toString());
+		this.testingForm.responsesRcvd.incrementAndGet();
+		if (this.testingForm.timer == null) {
+			testingForm.addMessage("Response=" + pduAsyncResponse.getResponse().getName(), "Req: " + pduAsyncResponse.getRequest().toString() + "\nResp: "
+					+ pduAsyncResponse.getResponse().toString());
+		}
     }
 
     @Override

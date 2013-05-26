@@ -94,6 +94,7 @@ import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
+import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -726,8 +727,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		return smsSignalInfo;
 	}
 
-	private void sendMtSms(MAPApplicationContext mapApplicationContext, MessageProcessingState messageProcessingState) throws SmscProcessingException {
-		SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+	private void sendMtSms(MAPApplicationContext mapApplicationContext, MessageProcessingState messageProcessingState) throws SmscProcessingException { SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
 		if (smsDeliveryData == null) {
 			throw new SmscProcessingException("SmsDeliveryData CMP missed",-1,-1,null);
 		}
@@ -826,8 +826,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				break;
 			}
 
+			int messageUserDataLengthOnSend = mapDialogSms.getMessageUserDataLengthOnSend();
+			int maxUserDataLength = mapDialogSms.getMaxUserDataLength();
 			if (mapDialogSms.getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1
-					&& mapDialogSms.getMessageUserDataLengthOnSend() >= mapDialogSms.getMaxUserDataLength()) {
+					&& messageUserDataLengthOnSend >= maxUserDataLength - SmscPropertiesManagement.getInstance().getMaxMessageLengthReducer()) {
 				mapDialogSms.cancelInvocation(invokeId);
 				this.setTcEmptySent(1);
 			} else {

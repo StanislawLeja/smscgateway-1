@@ -363,9 +363,13 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	// Helper methods //
 	// /////////////////
 	protected void onTimerTick() {
+		Keyspace kSpace = this.keyspace;
+		if (kSpace == null)
+			return;
+
 		List<SmsSet> schedulableSms;
 		try {
-			schedulableSms = this.fetchSchedulable(this.highWaterMark - this.activeCount);
+			schedulableSms = this.fetchSchedulable(this.highWaterMark - this.activeCount, kSpace);
 		} catch (PersistenceException e1) {
 			this.tracer.severe("PersistenceException when fetching SmsSet list from a database: " + e1.getMessage(), e1);
 			return;
@@ -375,7 +379,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		try {
 			for (SmsSet sms : schedulableSms) {
 				try {
-					if (!injectSms(sms)) {
+					if (!injectSms(kSpace, sms)) {
 						return;
 					}
 					count++;
@@ -390,7 +394,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		}
 	}
 
-	protected boolean injectSms(SmsSet smsSet) throws Exception {
+	protected boolean injectSms(Keyspace kSpace, SmsSet smsSet) throws Exception {
 		// NOTE, we dont sync, +/-1 is not that important vs performance.
 		if (this.activeCount >= this.highWaterMark) {
 			return false;
@@ -423,7 +427,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				}
 			}
  
-			markAsInSystem(smsSet);
+			markAsInSystem(kSpace, smsSet);
 			this.acitivties.put(activity.getActivityHandle(), activity);
 		} catch (Exception e) {
 			this.sleeTransactionManager.rollback();
@@ -434,21 +438,21 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		return true;
 	}
 
-	protected List<SmsSet> fetchSchedulable(int maxRecordCount) throws PersistenceException {
-		List<SmsSet> res = DBOperations.fetchSchedulableSmsSets(this.keyspace, maxRecordCount, this.tracer);
+	protected List<SmsSet> fetchSchedulable(int maxRecordCount, Keyspace kSpace) throws PersistenceException {
+		List<SmsSet> res = DBOperations.fetchSchedulableSmsSets(kSpace, maxRecordCount, this.tracer);
 		return res;
 	}
 
-	protected void markAsInSystem(SmsSet smsSet) throws PersistenceException {
+	protected void markAsInSystem(Keyspace kSpace, SmsSet smsSet) throws PersistenceException {
 		TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
 		synchronized (lock) {
 			try {
-				boolean b1 = DBOperations.checkSmsSetExists(keyspace, new TargetAddress(smsSet));
+				boolean b1 = DBOperations.checkSmsSetExists(kSpace, new TargetAddress(smsSet));
 				if (!b1)
 					throw new PersistenceException("SmsSet record is not found when markAsInSystem()");
 
-				DBOperations.fetchSchedulableSms(keyspace, smsSet, smsSet.getType() == SmType.SMS_FOR_SS7);
-				DBOperations.setDeliveryStart(keyspace, smsSet, new Date());
+				DBOperations.fetchSchedulableSms(kSpace, smsSet, smsSet.getType() == SmType.SMS_FOR_SS7);
+				DBOperations.setDeliveryStart(kSpace, smsSet, new Date());
 			} finally {
 				SmsSetCashe.getInstance().addSmsSet(lock);
 			}
