@@ -74,6 +74,7 @@ import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 /**
@@ -85,7 +86,9 @@ import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterface2 {
 
     private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
-    private static final String LINK = "PersistenceResourceAdaptor";
+    private static final ResourceAdaptorTypeID SCHEDULE_ID = new ResourceAdaptorTypeID("SchedulerResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String PERSISTENCE_LINK = "PersistenceResourceAdaptor";
+    private static final String SCHEDULE_LINK = "SchedulerResourceAdaptor";
     
 	protected static final String MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON = "userSpecificReason";
 	protected static final String MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION = "userResourceLimitation";
@@ -110,15 +113,20 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 	protected MAPApplicationContextVersion maxMAPApplicationContextVersion = null;
 
-	protected PersistenceRAInterface persistence;
+    protected PersistenceRAInterface persistence;
+    protected SchedulerRaSbbInterface scheduler;
 
 	public MtCommonSbb(String className) {
 		this.className = className;
 	}
 
-	public PersistenceRAInterface getStore() {
-		return this.persistence;
-	}
+    public PersistenceRAInterface getStore() {
+        return this.persistence;
+    }
+
+    public SchedulerRaSbbInterface getScheduler() {
+        return this.scheduler;
+    }
 
 	/**
 	 * MAP Components Events
@@ -325,7 +333,9 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 			this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement
 					.getMaxMapVersion());
-			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
+            this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, PERSISTENCE_LINK);
+            this.scheduler = (SchedulerRaSbbInterface) this.sbbContext.getResourceAdaptorInterface(SCHEDULE_ID, SCHEDULE_LINK);
+		
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
@@ -419,6 +429,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 				Date curDate = new Date();
 				try {
 					pers.setDeliveryFailure(smsSet, smStatus, curDate);
+                    this.decrementDeliveryActivityCount();                  
 
 					// first of all we are removing messages that delivery
 					// period is over
@@ -555,6 +566,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 				try {
 					Date lastDelivery = new Date();
 					pers.setDeliverySuccess(smsSet, lastDelivery);
+					this.decrementDeliveryActivityCount();					
 
 					if (!pers.deleteSmsSet(smsSet)) {
 						Date newDueDate = MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay());
@@ -632,6 +644,11 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 			pers.releaseSynchroObject(lock);
 		}
 	}
+
+    private void decrementDeliveryActivityCount() {
+        if (this.scheduler != null)
+            this.scheduler.decrementDeliveryActivityCount();
+    }
 
 	public enum ErrorAction {
 		subscriberBusy, 

@@ -75,6 +75,11 @@
 			<groupId>${pom.groupId}</groupId>
 			<version>${pom.version}</version>
 		</dependency>
+		<dependency>
+			<artifactId>scheduler-ratype</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+		</dependency>
 		<!-- javolution -->
 		<dependency>
 			<groupId>javolution</groupId>

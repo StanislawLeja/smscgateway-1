@@ -86,9 +86,17 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	private int activeCount = 0;
 
-	public SchedulerResourceAdaptor() {
+	private SchedulerRaSbbInterface schedulerRaSbbInterface = null;
+	private SchedulerRaUsageParameters usageParameters;
 
-	}
+    public SchedulerResourceAdaptor() {
+        this.schedulerRaSbbInterface = new SchedulerRaSbbInterface() {
+            @Override
+            public void decrementDeliveryActivityCount() {
+                decrementActivityCount();
+            }
+        };
+    }
 
 	@Override
 	public void activityEnded(ActivityHandle activityHandle) {
@@ -164,8 +172,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	@Override
 	public Object getResourceAdaptorInterface(String arg0) {
-		// return this.raSbbInterface;
-		return null;
+		return this.schedulerRaSbbInterface;
 	}
 
 	@Override
@@ -326,6 +333,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		this.sleeTransactionManager = this.raContext.getSleeTransactionManager();
 		this.sleeEndpoint = this.raContext.getSleeEndpoint();
 		this.raTimerService = this.raContext.getTimer();
+		this.usageParameters = (SchedulerRaUsageParameters)this.raContext.getDefaultUsageParameterSet();
 	}
 
 	@Override
@@ -435,6 +443,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		}
 		this.sleeTransactionManager.commit();
 		this.activeCount++;
+		this.incrementActivityCount();
 		return true;
 	}
 
@@ -459,4 +468,17 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		}
 	}
 
+    private void incrementActivityCount() {
+        this.usageParameters.incrementActivityCount(1);
+    }
+
+    private void decrementActivityCount() {
+//        this.usageParameters.decrementActivityCount(1);
+        SchedulerRaUsageParameters up = (SchedulerRaUsageParameters) this.raContext.getDefaultUsageParameterSet();
+        up.decrementActivityCount(1);
+    }
+
+    private long getActivityCount() {
+        return this.usageParameters.getActivityCount();
+    }
 }

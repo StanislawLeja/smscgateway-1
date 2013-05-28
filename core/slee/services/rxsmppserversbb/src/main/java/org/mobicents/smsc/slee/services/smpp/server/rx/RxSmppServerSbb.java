@@ -44,6 +44,7 @@ import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
@@ -68,7 +69,9 @@ import com.cloudhopper.smpp.type.RecoverablePduException;
 public abstract class RxSmppServerSbb implements Sbb {
 
     private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
-    private static final String LINK = "PersistenceResourceAdaptor";
+    private static final ResourceAdaptorTypeID SCHEDULE_ID = new ResourceAdaptorTypeID("SchedulerResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String PERSISTENCE_LINK = "PersistenceResourceAdaptor";
+    private static final String SCHEDULE_LINK = "SchedulerResourceAdaptor";
 
 	private Tracer logger;
 	private SbbContextExt sbbContext;
@@ -77,6 +80,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 	private SmppSessions smppServerSessions = null;
 
 	private PersistenceRAInterface persistence;
+	private SchedulerRaSbbInterface scheduler;
 
 	public RxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -85,6 +89,10 @@ public abstract class RxSmppServerSbb implements Sbb {
 	public PersistenceRAInterface getStore() {
 		return this.persistence;
 	}
+
+    public SchedulerRaSbbInterface getScheduler() {
+        return this.scheduler;
+    }
 
 
 	public void onDeliverSm(SmsSetEvent event, ActivityContextInterface aci, EventContext eventContext) {
@@ -316,6 +324,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 				try {
 					Date lastDelivery = new Date();
 					pers.setDeliverySuccess(smsSet, lastDelivery);
+                    this.decrementDeliveryActivityCount();                  
 
 					if (!pers.deleteSmsSet(smsSet)) {
 						pers.setNewMessageScheduled(smsSet, MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
@@ -355,6 +364,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 				Date curDate = new Date();
 				try {
 					pers.setDeliveryFailure(smsSet, smStatus, curDate);
+                    this.decrementDeliveryActivityCount();                  
 
 					// first of all we are removing messages that delivery
 					// period is over
@@ -536,7 +546,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 			this.logger = this.sbbContext.getTracer(getClass().getSimpleName());
 
-			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
+			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, PERSISTENCE_LINK);
+            this.scheduler = (SchedulerRaSbbInterface) this.sbbContext.getResourceAdaptorInterface(SCHEDULE_ID, SCHEDULE_LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
@@ -547,6 +558,11 @@ public abstract class RxSmppServerSbb implements Sbb {
 		// TODO Auto-generated method stub
 
 	}
+
+    private void decrementDeliveryActivityCount() {
+        if (this.scheduler != null)
+            this.scheduler.decrementDeliveryActivityCount();
+    }
 
 	public enum ErrorAction {
 		temporaryFailure,
