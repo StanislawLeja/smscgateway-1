@@ -6,6 +6,6 @@ public interface SchedulerRaUsageParameters {
 
     public void incrementActivityCount(long value);
 
-    public void decrementActivityCount(long value);
+//    public void decrementActivityCount(long value);
 
 }

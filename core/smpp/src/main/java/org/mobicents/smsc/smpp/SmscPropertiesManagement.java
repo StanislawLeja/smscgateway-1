@@ -95,6 +95,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// 	
 	private int maxMessageLengthReducer = 6;
 
+
 	private SmscPropertiesManagement(String name) {
 		this.name = name;
 		binding.setClassAttribute(CLASS_ATTRIBUTE);

@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.slee.Address;
 import javax.slee.facilities.Tracer;
@@ -68,7 +67,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	private Keyspace keyspace = null;
 
 	private Timer raTimerService;
-	private ConcurrentHashMap<ActivityHandle, SchedulerActivity> acitivties;
+//	private ConcurrentHashMap<ActivityHandle, SchedulerActivity> acitivties;
 	// this is to avoid wicked SLEE spec - it mandates this.raSbbInterface to be
 	// available before RA starts...
 	// private SchedulerRAInterface raSbbInterface;
@@ -80,11 +79,11 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	// default is 5s ?
 	private long fetchPeriod = 5000;
 	// max intake, 10k rows
-	private int fetchMaxRows = 5000;
+	private int fetchMaxRows = 100;
 
-	private int highWaterMark = 25000;
+	private int maxActivityCount = 500;
 
-	private int activeCount = 0;
+//	private int activeCount = 0;
 
 	private SchedulerRaSbbInterface schedulerRaSbbInterface = null;
 	private SchedulerRaUsageParameters usageParameters;
@@ -103,8 +102,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		if (this.tracer.isFineEnabled()) {
 			this.tracer.fine("Activity with handle " + activityHandle + " ended.");
 		}
-		this.activeCount--;
-		this.acitivties.remove(activityHandle);
+//		this.activeCount--;
+//		this.acitivties.remove(activityHandle);
 	}
 
 	@Override
@@ -182,8 +181,11 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	@Override
 	public void raActive() {
-		this.activeCount = 0;
-		this.acitivties = new ConcurrentHashMap<ActivityHandle, SchedulerActivity>();
+//		this.activeCount = 0;
+//		this.acitivties = new ConcurrentHashMap<ActivityHandle, SchedulerActivity>();
+
+	    this.clearActivityCount();
+
 		this.cluster = HFactory.getOrCreateCluster(this.clusterName, this.hosts);
 		ConfigurableConsistencyLevel ccl = new ConfigurableConsistencyLevel();
 		ccl.setDefaultReadConsistencyLevel(HConsistencyLevel.ONE);
@@ -221,7 +223,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		this.fetchPeriod = (Long) configProperty.getValue();
 
 		configProperty = properties.getProperty(CONF_HIGH_WATER_MARK);
-		this.highWaterMark = (Integer) configProperty.getValue();
+		this.maxActivityCount = (Integer) configProperty.getValue();
 
 	}
 
@@ -377,7 +379,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 		List<SmsSet> schedulableSms;
 		try {
-			schedulableSms = this.fetchSchedulable(this.highWaterMark - this.activeCount, kSpace);
+            schedulableSms = this.fetchSchedulable(this.maxActivityCount - (int) this.getActivityCount(), kSpace);
 		} catch (PersistenceException e1) {
 			this.tracer.severe("PersistenceException when fetching SmsSet list from a database: " + e1.getMessage(), e1);
 			return;
@@ -404,9 +406,9 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	protected boolean injectSms(Keyspace kSpace, SmsSet smsSet) throws Exception {
 		// NOTE, we dont sync, +/-1 is not that important vs performance.
-		if (this.activeCount >= this.highWaterMark) {
-			return false;
-		}
+//		if (this.activeCount >= this.maxActivityCount) {
+//			return false;
+//		}
 		SleeTransaction sleeTx = this.sleeTransactionManager.beginSleeTransaction();
 
 		try {
@@ -436,13 +438,13 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			}
  
 			markAsInSystem(kSpace, smsSet);
-			this.acitivties.put(activity.getActivityHandle(), activity);
+//			this.acitivties.put(activity.getActivityHandle(), activity);
 		} catch (Exception e) {
 			this.sleeTransactionManager.rollback();
 			throw e;
 		}
 		this.sleeTransactionManager.commit();
-		this.activeCount++;
+//		this.activeCount++;
 		this.incrementActivityCount();
 		return true;
 	}
@@ -468,14 +470,18 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		}
 	}
 
+    private void clearActivityCount() {
+        long cnt = this.getActivityCount();
+        this.usageParameters.incrementActivityCount(-cnt);
+
+    }
+
     private void incrementActivityCount() {
         this.usageParameters.incrementActivityCount(1);
     }
 
     private void decrementActivityCount() {
-//        this.usageParameters.decrementActivityCount(1);
-        SchedulerRaUsageParameters up = (SchedulerRaUsageParameters) this.raContext.getDefaultUsageParameterSet();
-        up.decrementActivityCount(1);
+        this.usageParameters.incrementActivityCount(-1);
     }
 
     private long getActivityCount() {
