@@ -38,6 +38,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmsSetCashe;
 import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.SmsRouteManagement;
+import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
@@ -72,16 +73,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	// available before RA starts...
 	// private SchedulerRAInterface raSbbInterface;
 
-	private String hosts = null;
-	private String keyspaceName = null;
-	private String clusterName = null;
-
-	// default is 5s ?
-	private long fetchPeriod = 5000;
-	// max intake, 10k rows
-	private int fetchMaxRows = 100;
-
-	private int maxActivityCount = 500;
 
 //	private int activeCount = 0;
 
@@ -186,14 +177,16 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	    this.clearActivityCount();
 
-		this.cluster = HFactory.getOrCreateCluster(this.clusterName, this.hosts);
+        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        this.cluster = HFactory.getOrCreateCluster(smscPropertiesManagement.getClusterName(), smscPropertiesManagement.getHosts());
 		ConfigurableConsistencyLevel ccl = new ConfigurableConsistencyLevel();
 		ccl.setDefaultReadConsistencyLevel(HConsistencyLevel.ONE);
-		this.keyspace = HFactory.createKeyspace(this.keyspaceName, this.cluster, ccl);
+		this.keyspace = HFactory.createKeyspace(smscPropertiesManagement.getKeyspaceName(), this.cluster, ccl);
 		if (this.tracer.isInfoEnabled()) {
 			this.tracer.info("Scheduler IS up, starting fetch tasks");
 		}
-		this.raTimerService.schedule(new TickTimerTask(), 500, this.fetchPeriod);
+
+		this.raTimerService.schedule(new TickTimerTask(), 500, smscPropertiesManagement.getFetchPeriod());
 	}
 
 	@Override
@@ -207,23 +200,23 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			tracer.fine("Configuring RA Entity " + this.raContext.getEntityName());
 		}
 
-		Property configProperty = properties.getProperty(CONF_CLUSTER_NAME);
-		this.clusterName = (String) configProperty.getValue();
-
-		configProperty = properties.getProperty(CONF_CLUSTER_KEYSPACE);
-		this.keyspaceName = (String) configProperty.getValue();
-
-		configProperty = properties.getProperty(CONF_CLUSTER_HOSTS);
-		this.hosts = (String) configProperty.getValue();
-
-		configProperty = properties.getProperty(CONF_FETCH_MAX_ROWS);
-		this.fetchMaxRows = (Integer) configProperty.getValue();
-
-		configProperty = properties.getProperty(CONF_FETCH_PERIOD);
-		this.fetchPeriod = (Long) configProperty.getValue();
-
-		configProperty = properties.getProperty(CONF_HIGH_WATER_MARK);
-		this.maxActivityCount = (Integer) configProperty.getValue();
+//		Property configProperty = properties.getProperty(CONF_CLUSTER_NAME);
+//		this.clusterName = (String) configProperty.getValue();
+//
+//		configProperty = properties.getProperty(CONF_CLUSTER_KEYSPACE);
+//		this.keyspaceName = (String) configProperty.getValue();
+//
+//		configProperty = properties.getProperty(CONF_CLUSTER_HOSTS);
+//		this.hosts = (String) configProperty.getValue();
+//
+//		configProperty = properties.getProperty(CONF_FETCH_MAX_ROWS);
+//		this.fetchMaxRows = (Integer) configProperty.getValue();
+//
+//		configProperty = properties.getProperty(CONF_FETCH_PERIOD);
+//		this.fetchPeriod = (Long) configProperty.getValue();
+//
+//		configProperty = properties.getProperty(CONF_HIGH_WATER_MARK);
+//		this.maxActivityCount = (Integer) configProperty.getValue();
 
 	}
 
@@ -252,9 +245,9 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		if (tracer.isInfoEnabled()) {
 			tracer.info("Unconfigure RA Entity " + this.raContext.getEntityName());
 		}
-		this.hosts = null;
-		this.keyspaceName = null;
-		this.clusterName = null;
+//		this.hosts = null;
+//		this.keyspaceName = null;
+//		this.clusterName = null;
 
 	}
 
@@ -263,50 +256,50 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		if (tracer.isInfoEnabled()) {
 			tracer.info("Verify configuration in RA Entity " + this.raContext.getEntityName());
 		}
-		Property configProperty = properties.getProperty(CONF_CLUSTER_NAME);
-		if (configProperty == null || configProperty.getValue() == null
-				|| !(configProperty.getValue() instanceof String) || ((String) configProperty.getValue()).isEmpty()) {
-			throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_NAME + "' property: "
-					+ configProperty);
-		}
-
-		configProperty = properties.getProperty(CONF_CLUSTER_KEYSPACE);
-		if (configProperty == null || configProperty.getValue() == null
-				|| !(configProperty.getValue() instanceof String) || ((String) configProperty.getValue()).isEmpty()) {
-			throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_KEYSPACE + "' property: "
-					+ configProperty);
-		}
-
-		configProperty = properties.getProperty(CONF_CLUSTER_HOSTS);
-		if (configProperty == null || configProperty.getValue() == null
-				|| !(configProperty.getValue() instanceof String) || ((String) configProperty.getValue()).isEmpty()) {
-			throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_HOSTS + "' property: "
-					+ configProperty);
-		}
-
-		// TODO: better checks for long/minimal value
-		configProperty = properties.getProperty(CONF_FETCH_MAX_ROWS);
-		if (configProperty == null || configProperty.getValue() == null
-				|| !(configProperty.getValue() instanceof Integer) || ((Integer) configProperty.getValue()) <= 0) {
-			throw new InvalidConfigurationException("Wrong value of '" + CONF_FETCH_MAX_ROWS + "' property: "
-					+ configProperty);
-		}
-
-		configProperty = properties.getProperty(CONF_FETCH_PERIOD);
-		if (configProperty == null || configProperty.getValue() == null || !(configProperty.getValue() instanceof Long)
-				|| ((Long) configProperty.getValue()) <= 0) {
-			throw new InvalidConfigurationException("Wrong value of '" + CONF_FETCH_PERIOD + "' property: "
-					+ configProperty);
-		}
-
-		configProperty = properties.getProperty(CONF_HIGH_WATER_MARK);
-		if (configProperty == null || configProperty.getValue() == null
-				|| !(configProperty.getValue() instanceof Integer) || ((Integer) configProperty.getValue()) <= 0) {
-			throw new InvalidConfigurationException("Wrong value of '" + CONF_HIGH_WATER_MARK + "' property: "
-					+ configProperty);
-		}
-		// CONF_FETCH_MAX_ROWS,CONF_FETCH_PERIOD,CONF_HIGH_WATER_MARK
-		// TODO: add hosts validation: host:port,host2:port,...
+//		Property configProperty = properties.getProperty(CONF_CLUSTER_NAME);
+//		if (configProperty == null || configProperty.getValue() == null
+//				|| !(configProperty.getValue() instanceof String) || ((String) configProperty.getValue()).isEmpty()) {
+//			throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_NAME + "' property: "
+//					+ configProperty);
+//		}
+//
+//		configProperty = properties.getProperty(CONF_CLUSTER_KEYSPACE);
+//		if (configProperty == null || configProperty.getValue() == null
+//				|| !(configProperty.getValue() instanceof String) || ((String) configProperty.getValue()).isEmpty()) {
+//			throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_KEYSPACE + "' property: "
+//					+ configProperty);
+//		}
+//
+//		configProperty = properties.getProperty(CONF_CLUSTER_HOSTS);
+//		if (configProperty == null || configProperty.getValue() == null
+//				|| !(configProperty.getValue() instanceof String) || ((String) configProperty.getValue()).isEmpty()) {
+//			throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_HOSTS + "' property: "
+//					+ configProperty);
+//		}
+//
+//		// TODO: better checks for long/minimal value
+//		configProperty = properties.getProperty(CONF_FETCH_MAX_ROWS);
+//		if (configProperty == null || configProperty.getValue() == null
+//				|| !(configProperty.getValue() instanceof Integer) || ((Integer) configProperty.getValue()) <= 0) {
+//			throw new InvalidConfigurationException("Wrong value of '" + CONF_FETCH_MAX_ROWS + "' property: "
+//					+ configProperty);
+//		}
+//
+//		configProperty = properties.getProperty(CONF_FETCH_PERIOD);
+//		if (configProperty == null || configProperty.getValue() == null || !(configProperty.getValue() instanceof Long)
+//				|| ((Long) configProperty.getValue()) <= 0) {
+//			throw new InvalidConfigurationException("Wrong value of '" + CONF_FETCH_PERIOD + "' property: "
+//					+ configProperty);
+//		}
+//
+//		configProperty = properties.getProperty(CONF_HIGH_WATER_MARK);
+//		if (configProperty == null || configProperty.getValue() == null
+//				|| !(configProperty.getValue() instanceof Integer) || ((Integer) configProperty.getValue()) <= 0) {
+//			throw new InvalidConfigurationException("Wrong value of '" + CONF_HIGH_WATER_MARK + "' property: "
+//					+ configProperty);
+//		}
+//		// CONF_FETCH_MAX_ROWS,CONF_FETCH_PERIOD,CONF_HIGH_WATER_MARK
+//		// TODO: add hosts validation: host:port,host2:port,...
 	}
 
 	@Override
@@ -379,7 +372,17 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 		List<SmsSet> schedulableSms;
 		try {
-            schedulableSms = this.fetchSchedulable(this.maxActivityCount - (int) this.getActivityCount(), kSpace);
+            if (this.tracer.isInfoEnabled())
+                this.tracer.info("Fetching: Starting fetching messages from database");
+
+            SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+            int fetchMaxRows = smscPropertiesManagement.getFetchMaxRows();
+            int fetchAvailRows = smscPropertiesManagement.getMaxActivityCount() - (int) this.getActivityCount();
+            int maxCnt = Math.min(fetchMaxRows, fetchAvailRows);
+            schedulableSms = this.fetchSchedulable(maxCnt, kSpace);
+
+            if (this.tracer.isInfoEnabled())
+                this.tracer.info("Fetching: Fetched " + schedulableSms.size() + " messages (max requested messages=" + maxCnt + ")");
 		} catch (PersistenceException e1) {
 			this.tracer.severe("PersistenceException when fetching SmsSet list from a database: " + e1.getMessage(), e1);
 			return;
@@ -398,8 +401,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				}
 			}
 		} finally {
-			if (this.tracer.isFineEnabled()) {
-				this.tracer.fine("Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.");
+            if (this.tracer.isInfoEnabled()) {
+				this.tracer.info("Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.");
 			}
 		}
 	}

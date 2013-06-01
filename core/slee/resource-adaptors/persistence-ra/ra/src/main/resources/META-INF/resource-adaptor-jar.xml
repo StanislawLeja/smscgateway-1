@@ -30,6 +30,8 @@
 				</resource-adaptor-class-name>
 			</resource-adaptor-class>
 		</resource-adaptor-classes>
+
+        <!-- 
         <config-property>
             <description>
 
@@ -54,5 +56,7 @@
             <config-property-type>java.lang.String</config-property-type>
             <config-property-value>TelestaxSMSC</config-property-value>
         </config-property>
-	</resource-adaptor>
+        -->
+
+    </resource-adaptor>
 </resource-adaptor-jar>

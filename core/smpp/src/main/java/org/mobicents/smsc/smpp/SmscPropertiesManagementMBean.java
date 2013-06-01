@@ -24,6 +24,7 @@ package org.mobicents.smsc.smpp;
 /**
  * 
  * @author Amit Bhayani
+ * @author sergey vetyutnev
  *
  */
 public interface SmscPropertiesManagementMBean {
@@ -87,5 +88,30 @@ public interface SmscPropertiesManagementMBean {
 	public int getMaxMessageLengthReducer();
 
 	public void setMaxMessageLengthReducer(int maxMessageLengReducer);
+
+
+    public String getHosts();
+
+    public void setHosts(String hosts);
+
+    public String getKeyspaceName();
+
+    public void setKeyspaceName(String keyspaceName);
+
+    public String getClusterName();
+
+    public void setClusterName(String clusterName);
+
+    public long getFetchPeriod();
+
+    public void setFetchPeriod(long fetchPeriod);
+
+    public int getFetchMaxRows();
+
+    public void setFetchMaxRows(int fetchMaxRows);
+
+    public int getMaxActivityCount();
+
+    public void setMaxActivityCount(int maxActivityCount);
 
 }

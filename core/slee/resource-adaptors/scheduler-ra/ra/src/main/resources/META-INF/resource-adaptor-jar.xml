@@ -35,6 +35,7 @@
             </resource-adaptor-usage-parameters-interface>
 		</resource-adaptor-classes>
 
+        <!-- 
 		<config-property>
 			<description>
 
@@ -82,5 +83,7 @@
 			<config-property-type>java.lang.Integer</config-property-type>
 			<config-property-value>50000</config-property-value>
 		</config-property>
+        -->
+
 	</resource-adaptor>
 </resource-adaptor-jar>

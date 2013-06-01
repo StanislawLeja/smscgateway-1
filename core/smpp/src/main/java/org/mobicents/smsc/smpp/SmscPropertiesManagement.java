@@ -58,7 +58,13 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String MAX_DUE_DELAY = "maxDueDelay";
 	private static final String DUE_DELAY_MULTIPLICATOR = "dueDelayMultiplicator";
 	private static final String MAX_MESSAGE_LENGTH_REDUCER = "maxMessageLengthReducer";
-
+    private static final String HOSTS = "hosts";
+    private static final String KEYSPACE_NAME = "keyspaceName";
+    private static final String CLUSTER_NAME = "clusterName";
+    private static final String FETCH_PERIOD = "fetchPeriod";
+    private static final String FETCH_MAX_ROWS = "fetchMaxRows";
+    private static final String MAX_ACTIVITY_COUNT = "maxActivityCount";
+	
 	private static final String TAB_INDENT = "\t";
 	private static final String CLASS_ATTRIBUTE = "type";
 	private static final XMLBinding binding = new XMLBinding();
@@ -92,8 +98,21 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private int maxDueDelay = 3600 * 24;
 	// next delay (after failure will be calculated as "prevDueDelay * dueDelayMultiplicator / 100")
 	private int dueDelayMultiplicator = 200;
-	// 	
+	// Empty TC-BEGIN will be used if messageLength > maxPossibleMessageLength - maxMessageLengthReducer 
+	// Recommended value = 6 Possible values from 0 to 12
 	private int maxMessageLengthReducer = 6;
+
+	// parameters for cassandra database access
+    private String hosts = "127.0.0.1:9160";
+    private String keyspaceName = "TelestaxSMSC";
+    private String clusterName = "TelestaxSMSC";
+
+    // period of fetching messages from a database for delivering
+    private long fetchPeriod = 5000;
+    // max message fetching count for one fetching step
+    private int fetchMaxRows = 100;
+    // max count of delivering Activities that are possible at the same time
+    private int maxActivityCount = 500;
 
 
 	private SmscPropertiesManagement(String name) {
@@ -251,6 +270,66 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.maxMessageLengthReducer = maxMessageLengReducer;
 	}
 
+    @Override
+    public String getHosts() {
+        return hosts;
+    }
+
+    @Override
+    public void setHosts(String hosts) {
+        this.hosts = hosts;
+    }
+
+    @Override
+    public String getKeyspaceName() {
+        return keyspaceName;
+    }
+
+    @Override
+    public void setKeyspaceName(String keyspaceName) {
+        this.keyspaceName = keyspaceName;
+    }
+
+    @Override
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    @Override
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
+
+    @Override
+    public long getFetchPeriod() {
+        return fetchPeriod;
+    }
+
+    @Override
+    public void setFetchPeriod(long fetchPeriod) {
+        this.fetchPeriod = fetchPeriod;
+    }
+
+    @Override
+    public int getFetchMaxRows() {
+        return fetchMaxRows;
+    }
+
+    @Override
+    public void setFetchMaxRows(int fetchMaxRows) {
+        this.fetchMaxRows = fetchMaxRows;
+    }
+
+    @Override
+    public int getMaxActivityCount() {
+        return maxActivityCount;
+    }
+
+    @Override
+    public void setMaxActivityCount(int maxActivityCount) {
+        this.maxActivityCount = maxActivityCount;
+    }
+
 
 	public void start() throws Exception {
 
@@ -311,9 +390,16 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.dueDelayMultiplicator, DUE_DELAY_MULTIPLICATOR, Integer.class);
 			writer.write(this.maxMessageLengthReducer, MAX_MESSAGE_LENGTH_REDUCER, Integer.class);
 
+			writer.write(this.hosts, HOSTS, String.class);
+            writer.write(this.keyspaceName, KEYSPACE_NAME, String.class);
+            writer.write(this.clusterName, CLUSTER_NAME, String.class);
+            writer.write(this.fetchPeriod, FETCH_PERIOD, Long.class);
+            writer.write(this.fetchMaxRows, FETCH_MAX_ROWS, Integer.class);
+            writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
+
 			writer.close();
 		} catch (Exception e) {
-			logger.error("Error while persisting the Rule state in file", e);
+			logger.error("Error while persisting the SMSC state in file", e);
 		}
 	}
 
@@ -364,11 +450,23 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			val = reader.read(MAX_MESSAGE_LENGTH_REDUCER, Integer.class);
 			if (val != null)
 				this.maxMessageLengthReducer = val;
-			
+
+            this.hosts = reader.read(HOSTS, String.class);
+            this.keyspaceName = reader.read(KEYSPACE_NAME, String.class);
+            this.clusterName = reader.read(CLUSTER_NAME, String.class);
+            Long vall = reader.read(FETCH_PERIOD, Long.class);
+            if (vall != null)
+                this.fetchPeriod = vall;
+            val = reader.read(FETCH_MAX_ROWS, Integer.class);
+            if (val != null)
+                this.fetchMaxRows = val;
+            val = reader.read(MAX_ACTIVITY_COUNT, Integer.class);
+            if (val != null)
+                this.maxActivityCount = val;
+
 			reader.close();
 		} catch (XMLStreamException ex) {
-			// this.logger.info(
-			// "Error while re-creating Linksets from persisted file", ex);
+            logger.error("Error while loading the SMSC state from file", ex);
 		}
 	}
 }

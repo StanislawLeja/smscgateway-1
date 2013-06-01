@@ -28,6 +28,7 @@ import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 import org.mobicents.smsc.slee.resources.persistence.SmsSetCashe;
 import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
+import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import me.prettyprint.cassandra.model.ConfigurableConsistencyLevel;
 import me.prettyprint.hector.api.Cluster;
@@ -50,9 +51,9 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
     //this is to avoid wicked SLEE spec - it mandates this.raSbbInterface to be available before RA starts...
     private PersistenceRAInterface raSbbInterface;
     
-    private String hosts = null;
-    private String keyspaceName = null;
-    private String clusterName = null;
+//    private String hosts = null;
+//    private String keyspaceName = null;
+//    private String clusterName = null;
 
     public PersistenceResourceAdaptor() {
         this.raSbbInterface = new PersistenceRAInterface() {
@@ -242,10 +243,11 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
 
     @Override
     public void raActive() {
-        this.cluster = HFactory.getOrCreateCluster(this.clusterName, this.hosts);
+        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        this.cluster = HFactory.getOrCreateCluster(smscPropertiesManagement.getClusterName(), smscPropertiesManagement.getHosts());
         ConfigurableConsistencyLevel ccl = new ConfigurableConsistencyLevel();
         ccl.setDefaultReadConsistencyLevel(HConsistencyLevel.ONE);
-        this.keyspace = HFactory.createKeyspace(this.keyspaceName, this.cluster, ccl);
+        this.keyspace = HFactory.createKeyspace(smscPropertiesManagement.getKeyspaceName(), this.cluster, ccl);
     }
 
     @Override
@@ -259,14 +261,14 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             tracer.fine("Configuring RA Entity " + this.raContext.getEntityName());
         }
 
-        Property configProperty = properties.getProperty(CONF_CLUSTER_NAME);
-        this.clusterName = (String) configProperty.getValue();
-
-        configProperty = properties.getProperty(CONF_CLUSTER_KEYSPACE);
-        this.keyspaceName = (String) configProperty.getValue();
-
-        configProperty = properties.getProperty(CONF_CLUSTER_HOSTS);
-        this.hosts = (String) configProperty.getValue();
+//        Property configProperty = properties.getProperty(CONF_CLUSTER_NAME);
+//        this.clusterName = (String) configProperty.getValue();
+//
+//        configProperty = properties.getProperty(CONF_CLUSTER_KEYSPACE);
+//        this.keyspaceName = (String) configProperty.getValue();
+//
+//        configProperty = properties.getProperty(CONF_CLUSTER_HOSTS);
+//        this.hosts = (String) configProperty.getValue();
 
     }
 
@@ -293,9 +295,9 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
         if (tracer.isInfoEnabled()) {
             tracer.info("Unconfigure RA Entity " + this.raContext.getEntityName());
         }
-        this.hosts = null;
-        this.keyspaceName = null;
-        this.clusterName = null;
+//        this.hosts = null;
+//        this.keyspaceName = null;
+//        this.clusterName = null;
         
     }
 
@@ -304,26 +306,26 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
         if (tracer.isInfoEnabled()) {
             tracer.info("Verify configuration in RA Entity " + this.raContext.getEntityName());
         }
-        Property configProperty = properties.getProperty(CONF_CLUSTER_NAME);
-        if (configProperty == null || configProperty.getValue() == null || !(configProperty.getValue() instanceof String)
-                || ((String) configProperty.getValue()).isEmpty()) {
-            throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_NAME + "' property: " + configProperty);
-        }
-
-        configProperty = properties.getProperty(CONF_CLUSTER_KEYSPACE);
-        if (configProperty == null || configProperty.getValue() == null || !(configProperty.getValue() instanceof String)
-                || ((String) configProperty.getValue()).isEmpty()) {
-            throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_KEYSPACE + "' property: "
-                    + configProperty);
-        }
-
-        configProperty = properties.getProperty(CONF_CLUSTER_HOSTS);
-        if (configProperty == null || configProperty.getValue() == null || !(configProperty.getValue() instanceof String)
-                || ((String) configProperty.getValue()).isEmpty()) {
-            throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_HOSTS + "' property: " + configProperty);
-        }
-
-        // TODO: add hosts validation: host:port,host2:port,...
+//        Property configProperty = properties.getProperty(CONF_CLUSTER_NAME);
+//        if (configProperty == null || configProperty.getValue() == null || !(configProperty.getValue() instanceof String)
+//                || ((String) configProperty.getValue()).isEmpty()) {
+//            throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_NAME + "' property: " + configProperty);
+//        }
+//
+//        configProperty = properties.getProperty(CONF_CLUSTER_KEYSPACE);
+//        if (configProperty == null || configProperty.getValue() == null || !(configProperty.getValue() instanceof String)
+//                || ((String) configProperty.getValue()).isEmpty()) {
+//            throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_KEYSPACE + "' property: "
+//                    + configProperty);
+//        }
+//
+//        configProperty = properties.getProperty(CONF_CLUSTER_HOSTS);
+//        if (configProperty == null || configProperty.getValue() == null || !(configProperty.getValue() instanceof String)
+//                || ((String) configProperty.getValue()).isEmpty()) {
+//            throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_HOSTS + "' property: " + configProperty);
+//        }
+//
+//        // TODO: add hosts validation: host:port,host2:port,...
     }
 
     @Override

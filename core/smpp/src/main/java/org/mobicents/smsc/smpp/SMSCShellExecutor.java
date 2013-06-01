@@ -371,9 +371,61 @@ public class SMSCShellExecutor implements ShellExecutor {
 		} else if (parName.equals("maxmapv")) {
 			int val = Integer.parseInt(options[3]);
 			smscPropertiesManagement.setMaxMapVersion(val);
+
+        } else if (parName.equals("defaultvalidityperiodhours")) {
+            int val = Integer.parseInt(options[3]);
+            smscPropertiesManagement.setDefaultValidityPeriodHours(val);
+        } else if (parName.equals("maxvalidityperiodhours")) {
+            int val = Integer.parseInt(options[3]);
+            smscPropertiesManagement.setMaxValidityPeriodHours(val);
+        } else if (parName.equals("defaultton")) {
+            int val = Integer.parseInt(options[3]);
+            smscPropertiesManagement.setDefaultTon(val);
+        } else if (parName.equals("defaultnpi")) {
+            int val = Integer.parseInt(options[3]);
+            smscPropertiesManagement.setDefaultNpi(val);
+        } else if (parName.equals("subscriberbusyduedelay")) {
+            int val = Integer.parseInt(options[3]);
+            smscPropertiesManagement.setSubscriberBusyDueDelay(val);
+        } else if (parName.equals("firstduedelay")) {
+            int val = Integer.parseInt(options[3]);
+            smscPropertiesManagement.setFirstDueDelay(val);
+        } else if (parName.equals("secondduedelay")) {
+            int val = Integer.parseInt(options[3]);
+            smscPropertiesManagement.setSecondDueDelay(val);
+        } else if (parName.equals("maxduedelay")) {
+            int val = Integer.parseInt(options[3]);
+            smscPropertiesManagement.setMaxDueDelay(val);
+        } else if (parName.equals("duedelaymultiplicator")) {
+            int val = Integer.parseInt(options[3]);
+            smscPropertiesManagement.setDueDelayMultiplicator(val);
+        } else if (parName.equals("maxmessagelengthreducer")) {
+            int val = Integer.parseInt(options[3]);
+            smscPropertiesManagement.setMaxMessageLengthReducer(val);
+        } else if (parName.equals("hosts")) {
+            String val = options[3];
+            smscPropertiesManagement.setHosts(val);
+        } else if (parName.equals("keyspacename")) {
+            String val = options[3];
+            smscPropertiesManagement.setKeyspaceName(val);
+        } else if (parName.equals("clusterName")) {
+            String val = options[3];
+            smscPropertiesManagement.setClusterName(val);
+        } else if (parName.equals("fetchperiod")) {
+            long val = Long.parseLong(options[3]);
+            smscPropertiesManagement.setFetchPeriod(val);
+        } else if (parName.equals("fetchmaxrows")) {
+            int val = Integer.parseInt(options[3]);
+            smscPropertiesManagement.setFetchMaxRows(val);
+        } else if (parName.equals("maxactivitycount")) {
+            int val = Integer.parseInt(options[3]);
+            smscPropertiesManagement.setMaxActivityCount(val);
+
+
 		} else {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
+
 
 		return SMSCOAMMessages.PARAMETER_SUCCESSFULLY_SET;
 	}
@@ -489,6 +541,39 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sb.append(smscPropertiesManagement.getMscSsn());
 			} else if (parName.equals("maxmapv")) {
 				sb.append(smscPropertiesManagement.getMaxMapVersion());
+            } else if (parName.equals("defaultvalidityperiodhours")) {
+                sb.append(smscPropertiesManagement.getDefaultValidityPeriodHours());
+            } else if (parName.equals("maxvalidityperiodhours")) {
+                sb.append(smscPropertiesManagement.getMaxValidityPeriodHours());
+            } else if (parName.equals("defaultton")) {
+                sb.append(smscPropertiesManagement.getDefaultTon());
+            } else if (parName.equals("defaultnpi")) {
+                sb.append(smscPropertiesManagement.getDefaultNpi());
+            } else if (parName.equals("subscriberbusyduedelay")) {
+                sb.append(smscPropertiesManagement.getSubscriberBusyDueDelay());
+            } else if (parName.equals("firstduedelay")) {
+                sb.append(smscPropertiesManagement.getFirstDueDelay());
+            } else if (parName.equals("secondduedelay")) {
+                sb.append(smscPropertiesManagement.getSecondDueDelay());
+            } else if (parName.equals("maxduedelay")) {
+                sb.append(smscPropertiesManagement.getMaxDueDelay());
+            } else if (parName.equals("duedelaymultiplicator")) {
+                sb.append(smscPropertiesManagement.getDueDelayMultiplicator());
+            } else if (parName.equals("maxmessagelengthreducer")) {
+                sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
+            } else if (parName.equals("hosts")) {
+                sb.append(smscPropertiesManagement.getHosts());
+            } else if (parName.equals("keyspacename")) {
+                sb.append(smscPropertiesManagement.getKeyspaceName());
+            } else if (parName.equals("clustername")) {
+                sb.append(smscPropertiesManagement.getClusterName());
+            } else if (parName.equals("fetchperiod")) {
+                sb.append(smscPropertiesManagement.getFetchPeriod());
+            } else if (parName.equals("fetchmaxrows")) {
+                sb.append(smscPropertiesManagement.getFetchMaxRows());
+            } else if (parName.equals("maxactivitycount")) {
+                sb.append(smscPropertiesManagement.getMaxActivityCount());
+
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -512,9 +597,96 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getMscSsn());
 			sb.append("\n");
 
-			sb.append("maxmapv = ");
-			sb.append(smscPropertiesManagement.getMaxMapVersion());
-			sb.append("\n");
+            sb.append("maxmapv = ");
+            sb.append(smscPropertiesManagement.getMaxMapVersion());
+            sb.append("\n");
+
+
+            sb.append("defaultValidityPeriodHours = ");
+            sb.append(smscPropertiesManagement.getDefaultValidityPeriodHours());
+            sb.append("\n");
+
+            sb.append("maxValidityPeriodHours = ");
+            sb.append(smscPropertiesManagement.getMaxValidityPeriodHours());
+            sb.append("\n");
+
+            sb.append("defaultTon = ");
+            sb.append(smscPropertiesManagement.getDefaultTon());
+            sb.append("\n");
+
+            sb.append("defaultNpi = ");
+            sb.append(smscPropertiesManagement.getDefaultNpi());
+            sb.append("\n");
+
+            sb.append("subscriberBusyDueDelay = ");
+            sb.append(smscPropertiesManagement.getSubscriberBusyDueDelay());
+            sb.append("\n");
+
+            sb.append("firstDueDelay = ");
+            sb.append(smscPropertiesManagement.getFirstDueDelay());
+            sb.append("\n");
+
+            sb.append("secondDueDelay = ");
+            sb.append(smscPropertiesManagement.getSecondDueDelay());
+            sb.append("\n");
+
+            sb.append("maxDueDelay = ");
+            sb.append(smscPropertiesManagement.getMaxDueDelay());
+            sb.append("\n");
+
+            sb.append("dueDelayMultiplicator = ");
+            sb.append(smscPropertiesManagement.getDueDelayMultiplicator());
+            sb.append("\n");
+
+            sb.append("maxMessageLengthReducer = ");
+            sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
+            sb.append("\n");
+
+            sb.append("hosts = ");
+            sb.append(smscPropertiesManagement.getHosts());
+            sb.append("\n");
+
+            sb.append("keyspaceName = ");
+            sb.append(smscPropertiesManagement.getKeyspaceName());
+            sb.append("\n");
+
+            sb.append("maxActivityCount = ");
+            sb.append(smscPropertiesManagement.getMaxActivityCount());
+            sb.append("\n");
+
+
+            sb.append("fetchPeriod = ");
+            sb.append(smscPropertiesManagement.getFetchPeriod());
+            sb.append("\n");
+
+            sb.append("fetchMaxRows = ");
+            sb.append(smscPropertiesManagement.getFetchMaxRows());
+            sb.append("\n");
+
+            sb.append("maxActivityCount = ");
+            sb.append(smscPropertiesManagement.getMaxActivityCount());
+            sb.append("\n");
+
+
+//      private int defaultValidityPeriodHours = 3 * 24;
+//      private int maxValidityPeriodHours = 10 * 24;
+//      private int defaultTon = 1;
+//      private int defaultNpi = 1;
+
+//      private int subscriberBusyDueDelay = 60 * 2;
+//      private int firstDueDelay = 60;
+//      private int secondDueDelay = 60 * 5;
+//      private int maxDueDelay = 3600 * 24;
+//      private int dueDelayMultiplicator = 200;
+//      private int maxMessageLengthReducer = 6;
+        
+//      private String hosts = "127.0.0.1:9160";
+//      private String keyspaceName = "TelestaxSMSC";
+//      private String clusterName = "TelestaxSMSC";
+
+//      private long fetchPeriod = 5000;
+//      private int fetchMaxRows = 100;
+//      private int maxActivityCount = 500;
 
 			return sb.toString();
 		}
