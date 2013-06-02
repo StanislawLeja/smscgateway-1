@@ -67,10 +67,14 @@ import me.prettyprint.hector.api.query.SliceQuery;
 public class PersistenceRAInterfaceProxy implements PersistenceRAInterface {
 
 	private Keyspace keyspace;
-	
-	public void setKeyspace(Keyspace val) {
-		this.keyspace = val;
-	}
+    
+    public void setKeyspace(Keyspace val) {
+        this.keyspace = val;
+    }
+
+    public Keyspace getKeyspace() {
+        return this.keyspace;
+    }
 
 	@Override
 	public boolean checkSmsSetExists(TargetAddress ta) throws PersistenceException {

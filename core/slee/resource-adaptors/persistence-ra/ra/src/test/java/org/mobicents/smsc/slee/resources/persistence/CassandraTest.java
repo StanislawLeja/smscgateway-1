@@ -25,10 +25,23 @@ package org.mobicents.smsc.slee.resources.persistence;
 import static org.testng.Assert.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.UUID;
+
+import me.prettyprint.cassandra.serializers.ByteBufferSerializer;
+import me.prettyprint.cassandra.serializers.CompositeSerializer;
+import me.prettyprint.cassandra.serializers.IntegerSerializer;
+import me.prettyprint.cassandra.serializers.StringSerializer;
+import me.prettyprint.cassandra.serializers.UUIDSerializer;
+import me.prettyprint.hector.api.beans.ColumnSlice;
+import me.prettyprint.hector.api.beans.Composite;
+import me.prettyprint.hector.api.beans.HColumn;
+import me.prettyprint.hector.api.factory.HFactory;
+import me.prettyprint.hector.api.query.QueryResult;
+import me.prettyprint.hector.api.query.SliceQuery;
 
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
@@ -421,7 +434,8 @@ public class CassandraTest {
 
 					step++;
 
-					this.sbb.archiveDeliveredSms(sms, new GregorianCalendar(2013, 1, 15, 12, 15 + step).getTime());
+                    this.sbb.archiveDeliveredSms(sms, new GregorianCalendar(2013, 1, 15, 12, 15 + step).getTime());
+                    this.testArchiveInSystem(sms.getDbId());
 
 					b1 = this.sbb.checkSmsSetExists(ta1);
 					b2 = this.sbb.checkSmsSetExists(ta2);
@@ -534,6 +548,31 @@ public class CassandraTest {
 	
 	}
 
+    private void testArchiveInSystem(UUID id) {
+        SliceQuery<UUID, Composite, ByteBuffer> query = HFactory.createSliceQuery(this.sbb.getKeyspace(), UUIDSerializer.get(), CompositeSerializer.get(),
+                ByteBufferSerializer.get());
+        query.setColumnFamily(Schema.FAMILY_ARCHIVE);
+        query.setKey(id);
+
+        query.setRange(null, null, false, 100);
+
+        QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
+        ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
+
+        List<HColumn<Composite, ByteBuffer>> coll = cSlice.getColumns();
+        for (HColumn<Composite, ByteBuffer> col : coll) {
+            Composite nm = col.getName();
+            String name = nm.get(0, StringSerializer.get());
+            if (name.equals("IN_SYSTEM")) {
+                Integer val = IntegerSerializer.get().fromByteBuffer(col.getValue());
+                assertNotNull(val);
+                int vall = val;
+                assertEquals(vall, 0);
+            }
+        }
+
+    }
+
 	public void processFailuredDelivery() throws Exception {
 		boolean b1;
 		boolean b2;
@@ -616,6 +655,7 @@ public class CassandraTest {
 				for (int i1 = 0; i1 < cnt; i1++) {
 					Sms sms = smsSetSched2.getSms(i1);
 					this.sbb.archiveFailuredSms(sms);
+                    this.testArchiveInSystem(sms.getDbId());
 				}
 
 				b1 = this.sbb.checkSmsSetExists(ta1);

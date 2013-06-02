@@ -144,6 +144,7 @@ public class Schema {
 
         tmp = new ArrayList<String>();
 		tmp.add(COLUMN_ID);
+        tmp.add(COLUMN_IN_SYSTEM);
         tmp.add(COLUMN_ADDR_DST_DIGITS);
         tmp.add(COLUMN_ADDR_DST_TON);
         tmp.add(COLUMN_ADDR_DST_NPI);

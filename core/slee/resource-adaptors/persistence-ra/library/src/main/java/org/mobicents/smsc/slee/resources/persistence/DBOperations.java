@@ -123,8 +123,6 @@ public class DBOperations {
 
                     QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
                     ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
-                    // List<HColumn<Composite, ByteBuffer>> lst =
-                    // cSlice.getColumns();
 
                     SmsSet smsSet = createSmsSet(cSlice);
 
@@ -926,7 +924,10 @@ public class DBOperations {
 
             FillUpdateFields(sms, mutator, Schema.FAMILY_ARCHIVE);
 
-            Composite cc;
+            Composite cc = new Composite();
+            cc.addComponent(Schema.COLUMN_IN_SYSTEM, SERIALIZER_STRING);
+            mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE, HFactory.createColumn(cc, 0, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
+
             if (sms.getSmsSet().getDestClusterName() != null) {
                 cc = new Composite();
                 cc.addComponent(Schema.COLUMN_DEST_CLUSTER_NAME, SERIALIZER_STRING);
