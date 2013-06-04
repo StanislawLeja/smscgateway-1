@@ -63,7 +63,9 @@
 				<include>com.telscale.protocols.ss7.oam.common:sctp-oam</include>
 				<include>com.telscale.protocols.ss7.oam.common:m3ua-oam</include>
 				<include>com.telscale.protocols.ss7.oam.common:sccp-oam</include>
-
+				
+				<!-- TelScale licensing lib -->
+			 	<include>com.telscale.licensing:lce-core</include>
 			</includes>
 		</dependencySet>
 	</dependencySets>

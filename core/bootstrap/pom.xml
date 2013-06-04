@@ -14,6 +14,13 @@
 	<name>Core : Bootstrap</name>
 
 	<dependencies>
+		<!-- Telscale license -->
+		<dependency>
+			<groupId>com.telscale.licensing</groupId>
+			<artifactId>lce-core</artifactId>
+			<version>${telscale.licensing.version}</version>
+			<classifier>jar-with-dependencies</classifier>
+		</dependency>	
 		<!-- SMSC Dependency -->
 		<dependency>
 			<groupId>${pom.groupId}</groupId>
