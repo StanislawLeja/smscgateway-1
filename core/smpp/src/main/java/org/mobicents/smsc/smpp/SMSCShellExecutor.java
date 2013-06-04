@@ -43,10 +43,17 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 	private SmscManagement smscManagement;
 
-	private static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+	private static SmscPropertiesManagement smscPropertiesManagement;
 
 	public SMSCShellExecutor() {
 
+	}
+	
+	public void start() throws Exception {
+		smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.getSmscManagement().getName());
+		if(logger.isInfoEnabled()){
+			logger.info("Started SMSCShellExecutor "+ this.getSmscManagement().getName());
+		}
 	}
 
 	/**
