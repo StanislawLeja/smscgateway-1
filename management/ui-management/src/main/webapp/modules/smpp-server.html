@@ -70,7 +70,7 @@
 								serviceClass = isSmppServerStarted ? 'active-service' : 'inactive-service';
 								
 								$('#services-table').children('tbody').append('<tr class="service-row"><td style="vertical-align: middle; text-align: center;"><i style="color: ' + (isSmppServerStarted ? '#51A351' : '#BD362F') + ';" class="' + (isSmppServerStarted ? 'icon-play-circle' : 'icon-remove-circle') + '"></i></td>'+
-										'<td><a href="#" onclick="getSmppServerDetails(\''+name+'\')">' + name + '</a></td>' +
+										'<td>' + name + '</td>' +
 										'<td style="font-size: 16px; vertical-align: middle; text-align: center; width: 150px;">' + 
 											'<button class="btn btn-small btn-success"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Start SMPP Server" data-placement="bottom" onclick="serviceOperation(\'start\', \'' + name + '\')"><i class="icon-play"> </i></button> ' +
 											'<button class="btn btn-small btn-danger"' + (!isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Stop SMPP Server" data-placement="bottom" onclick="serviceOperation(\'stop\', \'' + name +  '\')"><i class="icon-stop"> </i></button> ' +
@@ -263,12 +263,6 @@
 						logToConsole("ERROR", "Failure trying to communicate with the SMSC Gateway. Please try again later.");
 					})					
 				
-				}
-				function getSmppServerDetails(name) {
-					alert(name);
-					$('#content').load('modules/smpp-server-properties.html', function() {
-						
-					});
 				}
 				function serviceOperation(operation, name) {
 					mbeanSearch="com.telscale.smsc:layer=SmppServerManagement,name="+name;

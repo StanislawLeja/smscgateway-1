@@ -15,17 +15,40 @@
  					<p>
 					<span id="mss-settings">
 					<ul class="nav nav-tabs" id="myTab">
-  						<li class="active"><a href="#ss7settings" data-toggle="tab">SS7 settings</a></li>
+						<li class="active"><a href="#properties" data-toggle="tab">Properties</a></li>
+  						<li><a href="#ss7settings" data-toggle="tab">SS7 settings</a></li>
+  						<li><a href="#dbsettings" data-toggle="tab">Cassandra</a></li>
+  						<li><a href="#scheduler" data-toggle="tab">Scheduler</a></li>
 					</ul>	
 						
   				 	<div class="tab-content">
-                        <div class="tab-pane active" id="ss7settings">
+                        <div class="tab-pane active" id="properties">
+							<label>Default validity period hours : </label><input id="propdefaultvalidityhrs" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Default validity period hours"></input></br></br>
+							<label>Maximum validity period hours : </label><input id="propmaxvalidityhrs" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Maximum validity period hours"></input></br></br>
+							<label>Default type of number (TON) : </label><input id="propdefaultton" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Default type of number (TON)"></input></br></br>
+							<label>Default numbering plan indicator (NPI) : </label><input id="propdefaultnpi" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Default numbering plan indicator (NPI)"></input></br></br>
+							<label>Subscriber busy due delay : </label><input id="propsubbusduedel" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Subscriber busy due delay"></input></br></br>
+							<label>First due delay : </label><input id="propfirduedel" type="text" style="float: left; height: 28px;"class="input-large" placeholder="First due delay"></input></br></br>
+							<label>Second due delay : </label><input id="propsecduedel" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Second due delay"></input></br></br>
+							<label>Max due delay : </label><input id="propmaxduedel" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Max due delay"></input></br></br>
+                        </div>  				 	
+                        <div class="tab-pane" id="ss7settings">
 							<label>>SMSC Gateway Global Title : </label><input id="ussdgt" type="text" style="float: left; height: 28px;"class="input-large" placeholder="SMSC Gateway Global Title"></input></br></br>
 							<label>>SMSC Gateway subsystem number : </label><input id="ussdssn" type="text" style="float: left; height: 28px;"class="input-large" placeholder="SMSC Gateway subsystem number"></input></br></br>
 							<label>>HLR subsystem number : </label><input id="hlrssn" type="text" style="float: left; height: 28px;"class="input-large" placeholder="HLR subsystem number"></input></br></br>
 							<label>>MSC subsystem number : </label><input id="mscssn" type="text" style="float: left; height: 28px;"class="input-large" placeholder="MSC subsystem number"></input></br></br>
 							<label>>MAP version supported : </label><input id="maxmapv" type="text" style="float: left; height: 28px;"class="input-large" placeholder="MAP version supported"></input></br></br>
                         </div>
+                         <div class="tab-pane" id="dbsettings">
+							<label>Host : </label><input id="cassandrahost" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Cassandra Host"></input></br></br>
+							<label>Port : </label><input id="cassandraport" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Cassandra Port"></input></br></br>
+							<label>Keyspace Name : </label><input id="cassandrakeyspace" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Cassandra Keyspace Name"></input></br></br>
+                        </div>
+                        <div class="tab-pane" id="scheduler">
+							<label>Fetch Period : </label><input id="schedulerfetchperiod" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Scheduler Fetch Period"></input></br></br>
+							<label>Max Rows : </label><input id="schedulerfetchmaxrows" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Scheduler Fetch Max Rows"></input></br></br>
+							<label>Max Activity Count : </label><input id="schedulerfetchmaxactivity" type="text" style="float: left; height: 28px;"class="input-large" placeholder="Max Activity Count"></input></br></br>
+                        </div>                        
 					</div>	
 					</span>					 
 				</p>	
@@ -50,17 +73,57 @@
 								var j4p = new Jolokia({url: window.jolokiaProtocol + "//" + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/" });
 								
 								
+								var propdefaultvalidityhrs = j4p.getAttribute(mbean, "DefaultValidityPeriodHours",{method: "post"});
+								var propmaxvalidityhrs = j4p.getAttribute(mbean, "MaxValidityPeriodHours",{method: "post"});
+								var propdefaultton = j4p.getAttribute(mbean, "DefaultTon",{method: "post"});
+								var propdefaultnpi = j4p.getAttribute(mbean, "DefaultNpi",{method: "post"});
+								var propsubbusduedel = j4p.getAttribute(mbean, "SubscriberBusyDueDelay",{method: "post"});
+								var propfirduedel = j4p.getAttribute(mbean, "FirstDueDelay",{method: "post"});
+								var propsecduedel = j4p.getAttribute(mbean, "SecondDueDelay",{method: "post"});
+								var propmaxduedel = j4p.getAttribute(mbean, "MaxDueDelay",{method: "post"});
+								
+								$("#propdefaultvalidityhrs").val(propdefaultvalidityhrs);
+								$("#propmaxvalidityhrs").val(propmaxvalidityhrs);
+								$("#propdefaultton").val(propdefaultton);
+								$("#propdefaultnpi").val(propdefaultnpi);
+								$("#propsubbusduedel").val(propsubbusduedel);
+								$("#propfirduedel").val(propfirduedel);
+								$("#propsecduedel").val(propsecduedel);
+								$("#propmaxduedel").val(propmaxduedel);
+								
 								var ussdgt = j4p.getAttribute(mbean, "ServiceCenterGt",{method: "post"});
 								var ussdssn = j4p.getAttribute(mbean, "ServiceCenterSsn",{method: "post"});
 								var hlrssn = j4p.getAttribute(mbean, "HlrSsn",{method: "post"});
 								var mscssn = j4p.getAttribute(mbean, "MscSsn",{method: "post"});
 								var maxmapv = j4p.getAttribute(mbean, "MaxMapVersion",{method: "post"});
 								
+								
 								$("#ussdgt").val(ussdgt);
 								$("#ussdssn").val(ussdssn);
 								$("#hlrssn").val(hlrssn);
 								$("#mscssn").val(mscssn);
 								$("#maxmapv").val(maxmapv);
+								
+								
+								var hosts = j4p.getAttribute(mbean, "Hosts",{method: "post"});
+								var hostportarr = hosts.split(":");
+								var cassandrahost = hostportarr[0] 
+								var cassandraport = hostportarr[1]
+								var cassandrakeyspace = j4p.getAttribute(mbean, "KeyspaceName",{method: "post"});
+								
+								
+								$("#cassandrahost").val(cassandrahost);
+								$("#cassandraport").val(cassandraport);
+								$("#cassandrakeyspace").val(cassandrakeyspace);
+								
+								var schedulerfetchperiod = j4p.getAttribute(mbean, "FetchPeriod",{method: "post"});
+								var schedulerfetchmaxrows = j4p.getAttribute(mbean, "FetchMaxRows",{method: "post"});
+								var schedulerfetchmaxactivity = j4p.getAttribute(mbean, "MaxActivityCount",{method: "post"});
+								
+								
+								$("#schedulerfetchperiod").val(schedulerfetchperiod);
+								$("#schedulerfetchmaxrows").val(schedulerfetchmaxrows);
+								$("#schedulerfetchmaxactivity").val(schedulerfetchmaxactivity);								
 								
 							}
 						})
@@ -71,6 +134,98 @@
 					
 					function applyServerSettings() {
 						var formInvalid = false;
+						
+						var propdefaultvalidityhrs = $("#propdefaultvalidityhrs").val();
+						if(propdefaultvalidityhrs.trim() == "") {
+			    			$("#propdefaultvalidityhrs").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#propdefaultvalidityhrs").hasClass("required")) {
+			    			$("#propdefaultvalidityhrs").removeClass("required");		
+			    		}
+						
+						var propmaxvalidityhrs = $("#propmaxvalidityhrs").val();
+						if(propmaxvalidityhrs.trim() == "") {
+			    			$("#propmaxvalidityhrs").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#propmaxvalidityhrs").hasClass("required")) {
+			    			$("#propmaxvalidityhrs").removeClass("required");		
+			    		}
+						
+						var propdefaultton = $("#propdefaultton").val();
+						if(propdefaultton.trim() == "") {
+			    			$("#propdefaultton").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#propdefaultton").hasClass("required")) {
+			    			$("#propdefaultton").removeClass("required");		
+			    		}
+						
+						var propdefaultnpi = $("#propdefaultnpi").val();
+						if(propdefaultnpi.trim() == "") {
+			    			$("#propdefaultnpi").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#propdefaultnpi").hasClass("required")) {
+			    			$("#propdefaultnpi").removeClass("required");		
+			    		}
+						
+						var propsubbusduedel = $("#propsubbusduedel").val();
+						if(propsubbusduedel.trim() == "") {
+			    			$("#propsubbusduedel").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#propsubbusduedel").hasClass("required")) {
+			    			$("#propsubbusduedel").removeClass("required");		
+			    		}
+						
+						var propfirduedel = $("#propfirduedel").val();
+						if(propfirduedel.trim() == "") {
+			    			$("#propfirduedel").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#propfirduedel").hasClass("required")) {
+			    			$("#propfirduedel").removeClass("required");		
+			    		}
+						
+						var propsecduedel = $("#propsecduedel").val();
+						if(propsecduedel.trim() == "") {
+			    			$("#propsecduedel").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#propsecduedel").hasClass("required")) {
+			    			$("#propsecduedel").removeClass("required");		
+			    		}
+						
+						var propmaxduedel = $("#propmaxduedel").val();
+						if(propmaxduedel.trim() == "") {
+			    			$("#propmaxduedel").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#propmaxduedel").hasClass("required")) {
+			    			$("#propmaxduedel").removeClass("required");		
+			    		}
+						
+						
+						var cassandrahost = $("#cassandrahost").val();
+						if(cassandrahost.trim() == "") {
+			    			$("#cassandrahost").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#cassandrahost").hasClass("required")) {
+			    			$("#cassandrahost").removeClass("required");		
+			    		}
+						
+						var cassandraport = $("#cassandraport").val();
+						if(cassandraport.trim() == "") {
+			    			$("#cassandraport").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#cassandraport").hasClass("required")) {
+			    			$("#cassandraport").removeClass("required");		
+			    		}
+						
+						var hosts = cassandrahost + ":" + cassandraport;
+						
+						var cassandrakeyspace = $("#cassandrakeyspace").val();
+						if(cassandrakeyspace.trim() == "") {
+			    			$("#cassandrakeyspace").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#cassandrakeyspace").hasClass("required")) {
+			    			$("#cassandrakeyspace").removeClass("required");		
+			    		}
+						
 						
 						var ussdgt = $("#ussdgt").val();
 						if(ussdgt.trim() == "") {
@@ -112,6 +267,30 @@
 			    			$("#maxmapv").removeClass("required");		
 			    		}
 						
+						var schedulerfetchperiod = $("#schedulerfetchperiod").val();
+						if(schedulerfetchperiod.trim() == "") {
+			    			$("#schedulerfetchperiod").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#schedulerfetchperiod").hasClass("required")) {
+			    			$("#schedulerfetchperiod").removeClass("required");		
+			    		}
+						
+						var schedulerfetchmaxrows = $("#schedulerfetchmaxrows").val();
+						if(schedulerfetchmaxrows.trim() == "") {
+			    			$("#schedulerfetchmaxrows").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#schedulerfetchmaxrows").hasClass("required")) {
+			    			$("#schedulerfetchmaxrows").removeClass("required");		
+			    		}
+						
+						var schedulerfetchmaxactivity = $("#schedulerfetchmaxactivity").val();
+						if(schedulerfetchmaxactivity.trim() == "") {
+			    			$("#schedulerfetchmaxactivity").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#schedulerfetchmaxactivity").hasClass("required")) {
+			    			$("#schedulerfetchmaxactivity").removeClass("required");		
+			    		}
+						
 						if(formInvalid) {
 							$("#login-settings-error").show();
 							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
@@ -133,11 +312,30 @@
 							else {			
 								mbean = html.value[0];
 								var j4p = new Jolokia({url: window.jolokiaProtocol + "//" + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/" });
+								
+								j4p.setAttribute(mbean, "DefaultValidityPeriodHours",propdefaultvalidityhrs,{method: "post"});
+								j4p.setAttribute(mbean, "MaxValidityPeriodHours",propmaxvalidityhrs,{method: "post"});
+								j4p.setAttribute(mbean, "DefaultTon",propdefaultton,{method: "post"});
+								j4p.setAttribute(mbean, "DefaultNpi",propdefaultnpi,{method: "post"});
+								j4p.setAttribute(mbean, "SubscriberBusyDueDelay",propsubbusduedel,{method: "post"});
+								j4p.setAttribute(mbean, "FirstDueDelay",propfirduedel,{method: "post"});
+								j4p.setAttribute(mbean, "SecondDueDelay",propsecduedel,{method: "post"});
+								j4p.setAttribute(mbean, "MaxDueDelay",propmaxduedel,{method: "post"});
+								
+								
+								j4p.setAttribute(mbean, "Hosts",hosts,{method: "post"});
+								j4p.setAttribute(mbean, "KeyspaceName",cassandrakeyspace,{method: "post"});
+								
 								j4p.setAttribute(mbean, "ServiceCenterGt",ussdgt,{method: "post"});	
 								j4p.setAttribute(mbean, "ServiceCenterSsn",ussdssn,{method: "post"});	
 								j4p.setAttribute(mbean, "HlrSsn",hlrssn,{method: "post"});	
 								j4p.setAttribute(mbean, "MscSsn",mscssn,{method: "post"});	
 								j4p.setAttribute(mbean, "MaxMapVersion",maxmapv,{method: "post"});	
+								
+								j4p.setAttribute(mbean, "FetchPeriod",schedulerfetchperiod,{method: "post"});
+								j4p.setAttribute(mbean, "FetchMaxRows",schedulerfetchmaxrows,{method: "post"});
+								j4p.setAttribute(mbean, "MaxActivityCount",schedulerfetchmaxactivity,{method: "post"});
+								
 								logToConsole("INFO", "SMSC Gateway Proerties successfully updated.");
 							}
 						})
