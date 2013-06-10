@@ -134,7 +134,43 @@ public abstract class MoSbb extends MoCommonSbb {
 		SmsSignalInfo smsSignalInfo = evt.getSM_RP_UI();
 		SM_RP_OA smRPOA = evt.getSM_RP_OA();
 
-		AddressString callingPartyAddress = smRPOA.getMsisdn();
+		this.processMoMessage(smsSignalInfo, smRPOA);
+
+		MAPDialogSms dialog = evt.getMAPDialog();
+
+		try {
+			dialog.addMoForwardShortMessageResponse(evt.getInvokeId(), null, null);
+			dialog.close(false);
+		} catch (MAPException e) {
+			logger.severe("Error while sending MoForwardShortMessageResponse ", e);
+		}
+
+	}
+
+    public void onForwardShortMessageRequest(ForwardShortMessageRequest evt, ActivityContextInterface aci) {
+        if (this.logger.isInfoEnabled()) {
+            this.logger.info("Received FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
+        }
+
+        this.setProcessingState(MoProcessingState.OtherDataRecieved);
+
+        SmsSignalInfo smsSignalInfo = evt.getSM_RP_UI();
+        SM_RP_OA smRPOA = evt.getSM_RP_OA();
+
+        this.processMoMessage(smsSignalInfo, smRPOA);
+
+        MAPDialogSms dialog = evt.getMAPDialog();
+
+        try {
+            dialog.addForwardShortMessageResponse(evt.getInvokeId());
+            dialog.close(false);
+        } catch (MAPException e) {
+            logger.severe("Error while sending ForwardShortMessageResponse ", e);
+        }
+    }
+
+    private void processMoMessage(SmsSignalInfo smsSignalInfo, SM_RP_OA smRPOA) {
+        AddressString callingPartyAddress = smRPOA.getMsisdn();
 		if (callingPartyAddress == null) {
 			callingPartyAddress = smRPOA.getServiceCentreAddressOA();
 		}
@@ -163,17 +199,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		} catch (MAPException e1) {
 			logger.severe("Error while decoding SmsSignalInfo ", e1);
 		}
-
-		MAPDialogSms dialog = evt.getMAPDialog();
-
-		try {
-			dialog.addMoForwardShortMessageResponse(evt.getInvokeId(), null, null);
-			dialog.close(false);
-		} catch (MAPException e) {
-			logger.severe("Error while sending ForwardShortMessageResponse ", e);
-		}
-
-	}
+    }
 
 	/**
 	 * Received Ack for MO SMS. But this is error we should never receive this
@@ -183,12 +209,6 @@ public abstract class MoSbb extends MoCommonSbb {
 	 */
 	public void onMoForwardShortMessageResponse(MoForwardShortMessageResponse evt, ActivityContextInterface aci) {
 		this.logger.severe("Received MO_FORWARD_SHORT_MESSAGE_RESPONSE = " + evt);
-	}
-
-	public void onForwardShortMessageRequest(ForwardShortMessageRequest evt, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
-		}
 	}
 
 	/**
