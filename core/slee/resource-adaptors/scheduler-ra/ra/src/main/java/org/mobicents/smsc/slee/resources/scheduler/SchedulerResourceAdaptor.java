@@ -174,19 +174,43 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	public void raActive() {
 //		this.activeCount = 0;
 //		this.acitivties = new ConcurrentHashMap<ActivityHandle, SchedulerActivity>();
+		(new Thread(new ActivateRa())).start();
 
-	    this.clearActivityCount();
+	}
+	
+	private class ActivateRa implements Runnable {
 
-        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-        this.cluster = HFactory.getOrCreateCluster(smscPropertiesManagement.getClusterName(), smscPropertiesManagement.getHosts());
-		ConfigurableConsistencyLevel ccl = new ConfigurableConsistencyLevel();
-		ccl.setDefaultReadConsistencyLevel(HConsistencyLevel.ONE);
-		this.keyspace = HFactory.createKeyspace(smscPropertiesManagement.getKeyspaceName(), this.cluster, ccl);
-		if (this.tracer.isInfoEnabled()) {
-			this.tracer.info("Scheduler IS up, starting fetch tasks");
+		@Override
+		public void run() {
+		    clearActivityCount();
+
+	        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+	        while(smscPropertiesManagement == null){
+	        	 System.out.println(smscPropertiesManagement);
+	        	smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+	        	try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	        }
+	        
+	       
+	        System.out.println(smscPropertiesManagement.getClusterName());
+	        System.out.println(smscPropertiesManagement.getHosts());
+	        
+	        cluster = HFactory.getOrCreateCluster(smscPropertiesManagement.getClusterName(), smscPropertiesManagement.getHosts());
+			ConfigurableConsistencyLevel ccl = new ConfigurableConsistencyLevel();
+			ccl.setDefaultReadConsistencyLevel(HConsistencyLevel.ONE);
+			keyspace = HFactory.createKeyspace(smscPropertiesManagement.getKeyspaceName(), cluster, ccl);
+			if (tracer.isInfoEnabled()) {
+				tracer.info("Scheduler IS up, starting fetch tasks");
+			}
+
+			raTimerService.schedule(new TickTimerTask(), 500, smscPropertiesManagement.getFetchPeriod());
 		}
-
-		this.raTimerService.schedule(new TickTimerTask(), 500, smscPropertiesManagement.getFetchPeriod());
+		
 	}
 
 	@Override
