@@ -10,7 +10,6 @@ import javax.slee.facilities.Tracer;
 import javax.slee.resource.ActivityFlags;
 import javax.slee.resource.ActivityHandle;
 import javax.slee.resource.ConfigProperties;
-import javax.slee.resource.ConfigProperties.Property;
 import javax.slee.resource.EventFlags;
 import javax.slee.resource.FailureReason;
 import javax.slee.resource.FireableEventType;
@@ -52,13 +51,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	private static final String EVENT_DELIVER_SM = "org.mobicents.smsc.slee.services.smpp.server.events.DELIVER_SM";
 	private static final String EVENT_SUBMIT_SM = "org.mobicents.smsc.slee.services.smpp.server.events.SUBMIT_SM";
 
-	private static final String CONF_CLUSTER_NAME = "cluster.name";
-	private static final String CONF_CLUSTER_HOSTS = "cluster.hosts";
-	private static final String CONF_CLUSTER_KEYSPACE = "cluster.keyspace";
-	private static final String CONF_FETCH_MAX_ROWS = "fetch.max.rows";
-	private static final String CONF_FETCH_PERIOD = "fetch.period";
-	private static final String CONF_HIGH_WATER_MARK = "high.water.mark";
-
 	private Tracer tracer = null;
 	private ResourceAdaptorContext raContext = null;
 	private SleeTransactionManager sleeTransactionManager = null;
@@ -68,13 +60,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	private Keyspace keyspace = null;
 
 	private Timer raTimerService;
-//	private ConcurrentHashMap<ActivityHandle, SchedulerActivity> acitivties;
-	// this is to avoid wicked SLEE spec - it mandates this.raSbbInterface to be
-	// available before RA starts...
-	// private SchedulerRAInterface raSbbInterface;
-
-
-//	private int activeCount = 0;
 
 	private SchedulerRaSbbInterface schedulerRaSbbInterface = null;
 	private SchedulerRaUsageParameters usageParameters;
@@ -93,8 +78,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		if (this.tracer.isFineEnabled()) {
 			this.tracer.fine("Activity with handle " + activityHandle + " ended.");
 		}
-//		this.activeCount--;
-//		this.acitivties.remove(activityHandle);
 	}
 
 	@Override
@@ -172,9 +155,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	@Override
 	public void raActive() {
-//		this.activeCount = 0;
-//		this.acitivties = new ConcurrentHashMap<ActivityHandle, SchedulerActivity>();
-
 	    this.clearActivityCount();
 
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
@@ -199,25 +179,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		if (tracer.isFineEnabled()) {
 			tracer.fine("Configuring RA Entity " + this.raContext.getEntityName());
 		}
-
-//		Property configProperty = properties.getProperty(CONF_CLUSTER_NAME);
-//		this.clusterName = (String) configProperty.getValue();
-//
-//		configProperty = properties.getProperty(CONF_CLUSTER_KEYSPACE);
-//		this.keyspaceName = (String) configProperty.getValue();
-//
-//		configProperty = properties.getProperty(CONF_CLUSTER_HOSTS);
-//		this.hosts = (String) configProperty.getValue();
-//
-//		configProperty = properties.getProperty(CONF_FETCH_MAX_ROWS);
-//		this.fetchMaxRows = (Integer) configProperty.getValue();
-//
-//		configProperty = properties.getProperty(CONF_FETCH_PERIOD);
-//		this.fetchPeriod = (Long) configProperty.getValue();
-//
-//		configProperty = properties.getProperty(CONF_HIGH_WATER_MARK);
-//		this.maxActivityCount = (Integer) configProperty.getValue();
-
 	}
 
 	@Override
@@ -245,10 +206,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		if (tracer.isInfoEnabled()) {
 			tracer.info("Unconfigure RA Entity " + this.raContext.getEntityName());
 		}
-//		this.hosts = null;
-//		this.keyspaceName = null;
-//		this.clusterName = null;
-
 	}
 
 	@Override
@@ -256,50 +213,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		if (tracer.isInfoEnabled()) {
 			tracer.info("Verify configuration in RA Entity " + this.raContext.getEntityName());
 		}
-//		Property configProperty = properties.getProperty(CONF_CLUSTER_NAME);
-//		if (configProperty == null || configProperty.getValue() == null
-//				|| !(configProperty.getValue() instanceof String) || ((String) configProperty.getValue()).isEmpty()) {
-//			throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_NAME + "' property: "
-//					+ configProperty);
-//		}
-//
-//		configProperty = properties.getProperty(CONF_CLUSTER_KEYSPACE);
-//		if (configProperty == null || configProperty.getValue() == null
-//				|| !(configProperty.getValue() instanceof String) || ((String) configProperty.getValue()).isEmpty()) {
-//			throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_KEYSPACE + "' property: "
-//					+ configProperty);
-//		}
-//
-//		configProperty = properties.getProperty(CONF_CLUSTER_HOSTS);
-//		if (configProperty == null || configProperty.getValue() == null
-//				|| !(configProperty.getValue() instanceof String) || ((String) configProperty.getValue()).isEmpty()) {
-//			throw new InvalidConfigurationException("Wrong value of '" + CONF_CLUSTER_HOSTS + "' property: "
-//					+ configProperty);
-//		}
-//
-//		// TODO: better checks for long/minimal value
-//		configProperty = properties.getProperty(CONF_FETCH_MAX_ROWS);
-//		if (configProperty == null || configProperty.getValue() == null
-//				|| !(configProperty.getValue() instanceof Integer) || ((Integer) configProperty.getValue()) <= 0) {
-//			throw new InvalidConfigurationException("Wrong value of '" + CONF_FETCH_MAX_ROWS + "' property: "
-//					+ configProperty);
-//		}
-//
-//		configProperty = properties.getProperty(CONF_FETCH_PERIOD);
-//		if (configProperty == null || configProperty.getValue() == null || !(configProperty.getValue() instanceof Long)
-//				|| ((Long) configProperty.getValue()) <= 0) {
-//			throw new InvalidConfigurationException("Wrong value of '" + CONF_FETCH_PERIOD + "' property: "
-//					+ configProperty);
-//		}
-//
-//		configProperty = properties.getProperty(CONF_HIGH_WATER_MARK);
-//		if (configProperty == null || configProperty.getValue() == null
-//				|| !(configProperty.getValue() instanceof Integer) || ((Integer) configProperty.getValue()) <= 0) {
-//			throw new InvalidConfigurationException("Wrong value of '" + CONF_HIGH_WATER_MARK + "' property: "
-//					+ configProperty);
-//		}
-//		// CONF_FETCH_MAX_ROWS,CONF_FETCH_PERIOD,CONF_HIGH_WATER_MARK
-//		// TODO: add hosts validation: host:port,host2:port,...
 	}
 
 	@Override
@@ -372,8 +285,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 		List<SmsSet> schedulableSms;
 		try {
-            if (this.tracer.isInfoEnabled())
-                this.tracer.info("Fetching: Starting fetching messages from database");
+            if (this.tracer.isFineEnabled())
+                this.tracer.fine("Fetching: Starting fetching messages from database");
 
             SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
             int fetchMaxRows = smscPropertiesManagement.getFetchMaxRows();
@@ -381,8 +294,17 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
             int maxCnt = Math.min(fetchMaxRows, fetchAvailRows);
             schedulableSms = this.fetchSchedulable(maxCnt, kSpace);
 
-            if (this.tracer.isInfoEnabled())
-                this.tracer.info("Fetching: Fetched " + schedulableSms.size() + " messages (max requested messages=" + maxCnt + ")");
+            int cnt = 0;
+            if(schedulableSms!=null)
+                cnt = schedulableSms.size();
+            String s1 = "Fetching: Fetched " + schedulableSms.size() + " messages (max requested messages=" + maxCnt + ", fetched messages=" + cnt + ")";
+            if (cnt > 0) {
+                if (this.tracer.isInfoEnabled())
+                    this.tracer.info(s1);
+            } else {
+                if (this.tracer.isFineEnabled())
+                    this.tracer.fine(s1);
+            }
 		} catch (PersistenceException e1) {
 			this.tracer.severe("PersistenceException when fetching SmsSet list from a database: " + e1.getMessage(), e1);
 			return;
@@ -401,17 +323,19 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				}
 			}
 		} finally {
-            if (this.tracer.isInfoEnabled()) {
-				this.tracer.info("Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.");
-			}
+            String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.";
+            if (schedulableSms.size() > 0) {
+                if (this.tracer.isInfoEnabled()) {
+                    this.tracer.info(s2);
+                }
+            } else {
+                if (this.tracer.isFineEnabled())
+                    this.tracer.fine(s2);
+            }
 		}
 	}
 
 	protected boolean injectSms(Keyspace kSpace, SmsSet smsSet) throws Exception {
-		// NOTE, we dont sync, +/-1 is not that important vs performance.
-//		if (this.activeCount >= this.maxActivityCount) {
-//			return false;
-//		}
 		SleeTransaction sleeTx = this.sleeTransactionManager.beginSleeTransaction();
 
 		try {
@@ -441,13 +365,11 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			}
  
 			markAsInSystem(kSpace, smsSet);
-//			this.acitivties.put(activity.getActivityHandle(), activity);
 		} catch (Exception e) {
 			this.sleeTransactionManager.rollback();
 			throw e;
 		}
 		this.sleeTransactionManager.commit();
-//		this.activeCount++;
 		this.incrementActivityCount();
 		return true;
 	}

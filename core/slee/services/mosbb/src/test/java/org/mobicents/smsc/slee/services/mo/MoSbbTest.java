@@ -447,8 +447,10 @@ public class MoSbbTest {
 		sm_RP_OA.setMsisdn(msisdn);
 		AddressField destinationAddress = new AddressFieldImpl(TypeOfNumber.InternationalNumber, NumberingPlanIdentification.ISDNTelephoneNumberingPlan, "5555");
 		ProtocolIdentifier protocolIdentifier = new ProtocolIdentifierImpl(12);
-		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(200);
-		UserData userData = new UserDataImpl(new String("������"), dataCodingScheme, null, null);
+//        DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(200);
+        DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(4);
+        Charset ucs2Charset = Charset.forName("UTF-16BE");
+		UserData userData = new UserDataImpl(new String("������"), dataCodingScheme, null, ucs2Charset);
 //		String decodedMessage, DataCodingScheme dataCodingScheme, UserDataHeader decodedUserDataHeader, Charset gsm8Charset
 		SmsTpdu tpdu = new SmsSubmitTpduImpl(false, false, false, 150, destinationAddress, protocolIdentifier, null, userData);
 		//		boolean rejectDuplicates, boolean replyPathExists, boolean statusReportRequest, int messageReference,

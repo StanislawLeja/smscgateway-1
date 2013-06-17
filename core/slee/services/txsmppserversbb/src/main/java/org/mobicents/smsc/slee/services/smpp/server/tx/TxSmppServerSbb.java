@@ -453,11 +453,12 @@ public abstract class TxSmppServerSbb implements Sbb {
 					MAPErrorCode.systemFailure, null);
 		}
 
-		int dcs = event.getDataCoding();
-		if (dcs != 0 && dcs != 8) {
-			throw new SmscProcessingException("DataCoding scheme does not supported (only 0 an 8 is supported): " + dcs, SmppExtraConstants.ESME_RINVDCS,
-					MAPErrorCode.systemFailure, null);
-		}
+        int dcs = event.getDataCoding();
+        String err = MessageUtil.chechDataCodingSchemeSupport(dcs);
+        if (err != null) {
+            throw new SmscProcessingException("TxSmpp DataCoding scheme does not supported: " + dcs + " - " + err, SmppExtraConstants.ESME_RINVDCS,
+                    MAPErrorCode.systemFailure, null);
+        }
 		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
 		sms.setDataCoding(dcs);
 

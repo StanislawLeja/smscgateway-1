@@ -517,11 +517,12 @@ public abstract class MoSbb extends MoCommonSbb {
 		DataCodingScheme dataCodingScheme = smsSubmitTpdu.getDataCodingScheme();
 		byte[] smsPayload = null;
 		int dcs = dataCodingScheme.getCode();
-		if (dcs != 0 && dcs != 8) {
-			throw new SmscProcessingException("MO DataCoding scheme does not supported (only 0 an 8 is supported): " + dcs, SmppConstants.STATUS_SYSERR,
-					MAPErrorCode.unexpectedDataValue, null);
-		}
-		sms.setDataCoding(dcs);
+        String err = MessageUtil.chechDataCodingSchemeSupport(dcs);
+        if (err != null) {
+            throw new SmscProcessingException("MO DataCoding scheme does not supported: " + dcs + " - " + err, SmppConstants.STATUS_SYSERR,
+                    MAPErrorCode.unexpectedDataValue, null);
+        }
+        sms.setDataCoding(dcs);
 
 		switch (dataCodingScheme.getCharacterSet()) {
 		case GSM7:

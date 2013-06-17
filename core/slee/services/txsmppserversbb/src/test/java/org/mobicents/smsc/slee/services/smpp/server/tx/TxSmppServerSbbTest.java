@@ -33,6 +33,11 @@ import javax.slee.SbbLocalObject;
 import javax.slee.TransactionRequiredLocalException;
 import javax.slee.TransactionRolledbackLocalException;
 
+import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingGroup;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingSchemaIndicationType;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingSchemaMessageClass;
+import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
@@ -207,7 +212,13 @@ public class TxSmppServerSbbTest {
 		Date curDate = new Date();
 		this.fillSm(event, curDate, true);
 		event.setShortMessage(msg);
-		event.setDataCoding((byte) 40);
+		
+        DataCodingSchemeImpl dcss = new DataCodingSchemeImpl(DataCodingGroup.GeneralGroup, null, null, null, CharacterSet.GSM7, true);
+//        DataCodingGroup dataCodingGroup, DataCodingSchemaMessageClass messageClass,
+//        DataCodingSchemaIndicationType dataCodingSchemaIndicationType, Boolean setIndicationActive,
+//        CharacterSet characterSet, boolean isCompressed
+		
+		event.setDataCoding((byte) 4);
 
 		boolean b1 = this.pers.checkSmsSetExists(ta1);
 		assertFalse(b1);
@@ -225,7 +236,7 @@ public class TxSmppServerSbbTest {
 		assertEquals(resp.getOptionalParameterCount(), 1);
 		Tlv tlvr = resp.getOptionalParameter(SmppConstants.TAG_ADD_STATUS_INFO);
 		String errMsg = tlvr.getValueAsString();
-		assertEquals(errMsg, "DataCoding scheme does not supported (only 0 an 8 is supported): 40");
+		assertEquals(errMsg, "TxSmpp DataCoding scheme does not supported: 4 - Only GSM7 and USC2 are supported");
 	}
 
 	private void fillSm(BaseSm event, Date curDate, boolean isSubmitMsg) {

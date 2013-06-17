@@ -22,8 +22,6 @@ import javax.slee.resource.ResourceAdaptorContext;
 import javax.slee.resource.SleeEndpoint;
 import javax.slee.resource.StartActivityException;
 import javax.slee.resource.UnrecognizedActivityHandleException;
-
-import org.mobicents.smsc.smpp.DefaultSmppServerHandler;
 import org.mobicents.smsc.smpp.SmscManagement;
 
 public class SmppServerResourceAdaptor implements ResourceAdaptor {
