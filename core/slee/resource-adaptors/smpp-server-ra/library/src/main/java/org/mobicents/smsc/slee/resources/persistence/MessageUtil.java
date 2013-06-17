@@ -31,6 +31,7 @@ import org.mobicents.protocols.ss7.indicator.NumberingPlan;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
@@ -355,5 +356,20 @@ public class MessageUtil {
 		return newDueDate;
 	}
 
+    /**
+     * Checking if SMSC can process this DataCodingScheme *
+     * 
+     * @param dcs
+     * @return null if SMSC can process or String with error description if not
+     */
+    public static String chechDataCodingSchemeSupport(int dcs) {
+        DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
+        if (dataCodingScheme.getCharacterSet() != CharacterSet.GSM7 && dataCodingScheme.getCharacterSet() != CharacterSet.UCS2)
+            return "Only GSM7 and USC2 are supported";
+        if (dataCodingScheme.getIsCompressed())
+            return "Compressed message are not supported";
+
+        return null;
+    }
 }
 
