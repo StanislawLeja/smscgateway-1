@@ -67,7 +67,7 @@ import me.prettyprint.hector.api.query.SliceQuery;
 public class PersistenceRAInterfaceProxy implements PersistenceRAInterface {
 
 	private Keyspace keyspace;
-    
+
     public void setKeyspace(Keyspace val) {
         this.keyspace = val;
     }

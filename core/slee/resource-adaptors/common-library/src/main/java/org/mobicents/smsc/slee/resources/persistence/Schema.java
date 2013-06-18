@@ -82,16 +82,16 @@ public class Schema {
 	public static final String COLUMN_IMSI = "IMSI";
 	public static final String COLUMN_NNN_DIGITS = "NNN_DIGITS";
 	public static final String COLUMN_NNN_AN = "NNN_AN";
-	public static final String COLUMN_NNN_NP = "NNN_NP";
-    
-    public static final String FAMILY_LIVE = "LIVE";
+    public static final String COLUMN_NNN_NP = "NNN_NP";
+
     public static final String FAMILY_LIVE_SMS = "LIVE_SMS";
     public static final String FAMILY_ARCHIVE = "ARCHIVE";
+    public static final String FAMILY_LIVE = "LIVE";
 
     public static final List<String> COLUMNS_LIVE;
     public static final List<String> COLUMNS_LIVE_SMS;
     public static final List<String> COLUMNS_ARCHIVE;
-    
+
     static{
         List<String> tmp = new ArrayList<String>();
         tmp.add(COLUMN_TARGET_ID);

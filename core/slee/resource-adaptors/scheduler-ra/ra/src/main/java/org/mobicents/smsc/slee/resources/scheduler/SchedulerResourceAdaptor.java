@@ -159,7 +159,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	}
 	
 	private class ActivateRa implements Runnable {
-	    this.clearActivityCount();
 
 		@Override
 		public void run() {

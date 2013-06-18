@@ -19,20 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.smpp;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
+import me.prettyprint.cassandra.model.ConfigurableConsistencyLevel;
+import me.prettyprint.hector.api.Cluster;
+import me.prettyprint.hector.api.HConsistencyLevel;
+import me.prettyprint.hector.api.Keyspace;
+import me.prettyprint.hector.api.factory.HFactory;
 
 import org.apache.log4j.Logger;
 
@@ -46,15 +43,8 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 
 	private static final Logger logger = Logger.getLogger(DatabaseSmsRoutingRule.class);
 
-	private static final String CREATE_STATEMENT = "CREATE TABLE SmsRoutingRule (id int, address varchar(20), systemid varchar(20))";
-	private static final String SELECT_STATEMENT = "select * from SmsRoutingRule where address = '%s'";
-
-	private static final String COLUMN_SYSTEM_ID = "systemid";
-
-	private DataSource ds;
-
-	private String username = "root";
-	private String password = "Green725210!";
+    private Cluster cluster = null;
+	private Keyspace keyspace = null;
 
 	private static final Pattern pattern = Pattern.compile("(([\\+]?[1])|[0]?)");
 
@@ -65,42 +55,18 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 	 */
 	public DatabaseSmsRoutingRule() {
 		this.init();
-
-		this.createTable();
 	}
 
 	private void init() {
-		Context ctx;
-		try {
-			ctx = new InitialContext();
-			ds = (DataSource) ctx.lookup("java:/DefaultDS");
-		} catch (NamingException e) {
-			logger.error("Error while looking up DataSource DefaultDS", e);
-		}
-
-	}
-
-	private void createTable() {
-		Connection con = null;
-		PreparedStatement pstmt = null;
-
-		try {
-			con = ds.getConnection(username, password);
-			pstmt = con.prepareStatement(CREATE_STATEMENT);
-			pstmt.executeUpdate();
-			pstmt.close();
-
-			logger.info("Successfully created table SmsRoutingRule");
-		} catch (SQLException e) {
-			logger.error("Error while crating table SmsRoutingRule", e);
-		} finally {
-			if (con != null)
-				try {
-					con.close();
-				} catch (SQLException e) {
-
-				}
-		}
+        try {
+            SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+            cluster = HFactory.getOrCreateCluster(smscPropertiesManagement.getClusterName(), smscPropertiesManagement.getHosts());
+            ConfigurableConsistencyLevel ccl = new ConfigurableConsistencyLevel();
+            ccl.setDefaultReadConsistencyLevel(HConsistencyLevel.ONE);
+            keyspace = HFactory.createKeyspace(smscPropertiesManagement.getKeyspaceName(), cluster, ccl);
+        } catch (Exception e) {
+            logger.error("Error initializing cassandra database for DatabaseSmsRoutingRule", e);
+        }
 	}
 
 	/*
@@ -124,33 +90,19 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 			}
 		}
 
-		Connection con = null;
-		Statement stmt;
-
 		String systemId = null;
 
 		try {
-			con = ds.getConnection(username, password);
-			stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(String.format(SELECT_STATEMENT, address));
-
-			if (rs.next()) {
-				systemId = rs.getString(COLUMN_SYSTEM_ID);
-			} else {
-				systemId ="icg_sms_y";
-			}
-			stmt.close();
-
-		} catch (SQLException e) {
-			logger.error("Error while selecting from table SmsRoutingRule", e);
-		} finally {
-			if (con != null)
-				try {
-					con.close();
-				} catch (SQLException e) {
-				}
+            DbSmsRoutingRule rr = DBOperations.fetchSmsRoutingRule(keyspace, address);
+            if (rr != null) {
+                systemId = rr.getSystemId();
+            } else {
+                systemId = "icg_sms_y";
+            }
+		} catch (PersistenceException e) {
+			logger.error("PersistenceException while selecting from table SmsRoutingRule", e);
 		}
-		// TODO Auto-generated method stub
+
 		return systemId;
 	}
 

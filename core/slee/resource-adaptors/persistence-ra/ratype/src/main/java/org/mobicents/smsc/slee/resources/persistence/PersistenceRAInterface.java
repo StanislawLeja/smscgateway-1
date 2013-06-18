@@ -28,6 +28,8 @@ import java.util.UUID;
 
 import javax.slee.facilities.Tracer;
 
+import me.prettyprint.hector.api.Keyspace;
+
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
@@ -36,6 +38,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmType;
 import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
+import org.mobicents.smsc.smpp.DbSmsRoutingRule;
 
 /**
  * @author baranowb

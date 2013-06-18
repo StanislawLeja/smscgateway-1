@@ -152,14 +152,17 @@ public class SmscManagement implements SmscManagementMBean {
 		// Step 1 Get the MBeanServer
 		this.mbeanServer = MBeanServerLocator.locateJBoss();
 
-
-
 		// Step 2 Setup ESME
 		this.esmeManagement = EsmeManagement.getInstance(this.name);
 		this.esmeManagement.setPersistDir(this.persistDir);
 		this.esmeManagement.start();
-		
-		// Step 3. Set Routing Rule class
+
+        // Step 3 Setup SMSC Properties
+        this.smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.name);
+        this.smscPropertiesManagement.setPersistDir(this.persistDir);
+        this.smscPropertiesManagement.start();
+
+		// Step 4 Set Routing Rule class
 		SmsRoutingRule smsRoutingRule = null;
 		if (this.smsRoutingRuleClass != null) {
 			smsRoutingRule = (SmsRoutingRule) Class.forName(this.smsRoutingRuleClass).newInstance();
@@ -171,11 +174,6 @@ public class SmscManagement implements SmscManagementMBean {
 		ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ESME_MANAGEMENT
 				+ ",name=" + this.getName());
 		this.registerMBean(this.esmeManagement, EsmeManagementMBean.class, false, esmeObjNname);
-
-		// Step 4 Setup SMSC Properties
-		this.smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.name);
-		this.smscPropertiesManagement.setPersistDir(this.persistDir);
-		this.smscPropertiesManagement.start();
 
 		ObjectName smscObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
 				+ JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT + ",name=" + this.getName());

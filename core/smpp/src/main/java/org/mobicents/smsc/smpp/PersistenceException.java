@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.resources.persistence;
+package org.mobicents.smsc.smpp;
 
 /**
  * @author baranowb
@@ -59,17 +59,4 @@ public class PersistenceException extends Exception {
         super(message, cause);
         // TODO Auto-generated constructor stub
     }
-
-    //requires JDK7 ...
-//    /**
-//     * @param message
-//     * @param cause
-//     * @param enableSuppression
-//     * @param writableStackTrace
-//     */
-//    public PersistenceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-//        super(message, cause, enableSuppression, writableStackTrace);
-//        // TODO Auto-generated constructor stub
-//    }
-
 }
