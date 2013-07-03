@@ -32,7 +32,9 @@ public interface SMSCOAMMessages {
 	/**
 	 * Pre defined messages
 	 */
-	public static final String INVALID_COMMAND = "Invalid Command";
+    public static final String INVALID_COMMAND = "Invalid Command";
+
+    public static final String ILLEGAL_ARGUMENT = "Illegal argument %s: %s";
 
 	/*
 	 * public static final String ADD_ROUTING_RULE_SUCESSFULL =
@@ -59,6 +61,16 @@ public interface SMSCOAMMessages {
 
 	public static final String CREATE_ROUTING_RULE_FAIL_ALREADY_EXIST = "Creation of Routing rule failed. Other Route with name=%s already exist"; // name
 																																					// =
+
+    public static final String UPDATE_DATABASE_RULE_SUCCESSFULL = "Successfully updated databaseRule address=%s";
+
+    public static final String DELETE_DATABASE_RULE_SUCCESSFULL = "Successfully deleted databaseRule address=%s";
+
+    public static final String ACCEPTED_ARCHIVE_GENERATE_CDR_SUCCESSFULL = "Successfully accepted request to generate CDR";
+
+    public static final String BAD_FORMATTED_FROM_FIELD = "Bad formatted dateFrom field";
+
+    public static final String BAD_FORMATTED_TO_FIELD = "Bad formatted dateTo field";
 																																					// systemid
 
 	public static final String NOT_SUPPORTED_YET = "Not supported yet";

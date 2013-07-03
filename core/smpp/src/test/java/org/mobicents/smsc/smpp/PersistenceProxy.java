@@ -23,6 +23,7 @@
 package org.mobicents.smsc.smpp;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import me.prettyprint.cassandra.serializers.ByteBufferSerializer;
 import me.prettyprint.cassandra.serializers.CompositeSerializer;
@@ -77,16 +78,24 @@ public class PersistenceProxy {
         }
     }
 
-    public void addDbSmsRoutingRule(DbSmsRoutingRule dbSmsRoutingRule) throws PersistenceException {
-        DBOperations.addDbSmsRoutingRule(keyspace, dbSmsRoutingRule);
+    public void updateDbSmsRoutingRule(DbSmsRoutingRule dbSmsRoutingRule) throws PersistenceException {
+        DBOperations.updateDbSmsRoutingRule(keyspace, dbSmsRoutingRule);
     }
 
-    public void deleteDbSmsRoutingRule(int id) throws PersistenceException {
-        DBOperations.deleteDbSmsRoutingRule(keyspace, id);
+    public void deleteDbSmsRoutingRule(String address) throws PersistenceException {
+        DBOperations.deleteDbSmsRoutingRule(keyspace, address);
     }
 
-    public DbSmsRoutingRule fetchSmsRoutingRule(String address) throws PersistenceException {
-        return DBOperations.fetchSmsRoutingRule(keyspace, address);
+    public DbSmsRoutingRule getSmsRoutingRule(final String address) throws PersistenceException {
+        return DBOperations.getSmsRoutingRule(keyspace, address);
+    }
+
+    public List<DbSmsRoutingRule> getSmsRoutingRulesRange() throws PersistenceException {
+        return DBOperations.getSmsRoutingRulesRange(keyspace);
+    }
+
+    public List<DbSmsRoutingRule> getSmsRoutingRulesRange(String lastAdress) throws PersistenceException {
+        return DBOperations.getSmsRoutingRulesRange(keyspace, lastAdress);
     }
 
 }

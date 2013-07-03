@@ -24,6 +24,8 @@ package org.mobicents.smsc.slee.resources.persistence;
 
 import java.io.Serializable;
 
+import org.mobicents.smsc.cassandra.SmsSet;
+
 
 /**
  * 

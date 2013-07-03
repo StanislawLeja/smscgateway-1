@@ -7,6 +7,7 @@ import org.mobicents.ss7.management.console.Tree.Node;
 
 /**
  * @author amit bhayani
+ * @author sergey vetyutnev
  * 
  */
 public class SmscCommandHandler extends CommandHandlerWithHelp {
@@ -27,7 +28,24 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 		set.addChild("scssn");
 		set.addChild("hlrssn");
 		set.addChild("mscssn");
-		set.addChild("maxmapv");
+        set.addChild("maxmapv");
+        set.addChild("defaultvalidityperiodhours");
+        set.addChild("maxvalidityperiodhours");
+        set.addChild("defaultton");
+        set.addChild("defaultnpi");
+        set.addChild("subscriberbusyduedelay");
+        set.addChild("firstduedelay");
+        set.addChild("secondduedelay");
+        set.addChild("maxduedelay");
+        set.addChild("duedelaymultiplicator");
+        set.addChild("maxmessagelengthreducer");
+        set.addChild("hosts");
+        set.addChild("keyspacename");
+        set.addChild("clusterName");
+        set.addChild("fetchperiod");
+        set.addChild("fetchmaxrows");
+        set.addChild("maxactivitycount");
+        set.addChild("cdrdatabaseexportduration");
 
 		Node get = parent.addChild("get");
 		get.addChild("scgt");
@@ -35,6 +53,23 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 		get.addChild("hlrssn");
 		get.addChild("mscssn");
 		get.addChild("maxmapv");
+        get.addChild("defaultvalidityperiodhours");
+        get.addChild("maxvalidityperiodhours");
+        get.addChild("defaultton");
+        get.addChild("defaultnpi");
+        get.addChild("subscriberbusyduedelay");
+        get.addChild("firstduedelay");
+        get.addChild("secondduedelay");
+        get.addChild("maxduedelay");
+        get.addChild("duedelaymultiplicator");
+        get.addChild("maxmessagelengthreducer");
+        get.addChild("hosts");
+        get.addChild("keyspacename");
+        get.addChild("clusterName");
+        get.addChild("fetchperiod");
+        get.addChild("fetchmaxrows");
+        get.addChild("maxactivitycount");
+        get.addChild("cdrdatabaseexportduration");
 
 		Node smppServer = parent.addChild("smppserver");
 
@@ -63,6 +98,12 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 		smppServerGet.addChild("default-request-expiry-timeout");
 		smppServerGet.addChild("default-window-monitor-interval");
 		smppServerGet.addChild("default-session-counters-enabled");
+
+        Node databaseRule = parent.addChild("databaserule");
+        databaseRule.addChild("update");
+        databaseRule.addChild("delete");
+        databaseRule.addChild("get");
+        databaseRule.addChild("getrange");
 
 	};
 

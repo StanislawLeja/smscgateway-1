@@ -345,6 +345,111 @@ public class EsmeManagement implements EsmeManagementMBean {
 		}
 	}
 
+    private DatabaseSmsRoutingRule getDatabaseSmsRoutingRule() {
+        SmsRoutingRule smsRoutingRule = SmsRouteManagement.getInstance().getSmsRoutingRule();
+        if (smsRoutingRule != null && (smsRoutingRule instanceof DatabaseSmsRoutingRule)) {
+            return (DatabaseSmsRoutingRule) smsRoutingRule;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public String updateDatabaseRule(String address, String systemId) {
+        DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
+        if (smsRoutingRule == null)
+            return "DatabaseSmsRoutingRule is not defined in the system";
+
+        try {
+            smsRoutingRule.updateDbSmsRoutingRule(address, systemId);
+        } catch (PersistenceException e) {
+            String s = "PersistenceException when updateDatabaseRule: " + e.getMessage();
+            return s;
+        }
+        return null;
+    }
+
+    @Override
+    public String deleteDatabaseRule(String address) {
+        DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
+        if (smsRoutingRule == null)
+            return "DatabaseSmsRoutingRule is not defined in the system";
+
+        try {
+            smsRoutingRule.deleteDbSmsRoutingRule(address);
+        } catch (PersistenceException e) {
+            String s = "PersistenceException when deleteDatabaseRule: " + e.getMessage();
+            return s;
+        }
+        return null;
+    }
+
+    @Override
+    public String getDatabaseRule(String address) {
+        DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
+        if (smsRoutingRule == null)
+            return "DatabaseSmsRoutingRule is not defined in the system";
+
+        try {
+            DbSmsRoutingRule rr = smsRoutingRule.getSmsRoutingRule(address);
+            if (rr != null)
+                return rr.toString();
+            else
+                return "Record not found for: " + address;
+        } catch (PersistenceException e) {
+            String s = "PersistenceException when getDatabaseRule: " + e.getMessage();
+            return s;
+        }
+    }
+
+    @Override
+    public String getDatabaseRulesRange() {
+        DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
+        if (smsRoutingRule == null)
+            return "DatabaseSmsRoutingRule is not defined in the system";
+
+        try {
+            List<DbSmsRoutingRule> rrr = smsRoutingRule.getSmsRoutingRulesRange();
+            StringBuilder sb = new StringBuilder();
+            int i1 = 0;
+            for (DbSmsRoutingRule rr : rrr) {
+                if (i1 == 0)
+                    i1 = 1;
+                else
+                    sb.append("\n");
+                sb.append(rr.toString());
+            }
+            return sb.toString();
+        } catch (PersistenceException e) {
+            String s = "PersistenceException when getSmsRoutingRulesRange-all: " + e.getMessage();
+            return s;
+        }
+    }
+
+    @Override
+    public String getDatabaseRulesRange(String lastAdress) {
+        DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
+        if (smsRoutingRule == null)
+            return "DatabaseSmsRoutingRule is not defined in the system";
+
+        try {
+            List<DbSmsRoutingRule> rrr = smsRoutingRule.getSmsRoutingRulesRange(lastAdress);
+            StringBuilder sb = new StringBuilder();
+            int i1 = 0;
+            for (DbSmsRoutingRule rr : rrr) {
+                if (i1 == 0)
+                    i1 = 1;
+                else
+                    sb.append("\n");
+                sb.append(rr.toString());
+            }
+            return sb.toString();
+        } catch (PersistenceException e) {
+            String s = "PersistenceException when getSmsRoutingRulesRange-lastAdress: " + e.getMessage();
+            return s;
+        }
+    }
+
 	public void start() throws Exception {
 
 		this.mbeanServer = MBeanServerLocator.locateJBoss();

@@ -24,7 +24,7 @@ package org.mobicents.smsc.slee.services.smpp.server.events;
 
 import java.io.Serializable;
 
-import org.mobicents.smsc.slee.resources.persistence.SmsSet;
+import org.mobicents.smsc.cassandra.SmsSet;
 
 /**
  * 

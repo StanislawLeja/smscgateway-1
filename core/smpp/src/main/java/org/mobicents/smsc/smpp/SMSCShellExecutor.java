@@ -22,7 +22,9 @@
 
 package org.mobicents.smsc.smpp;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -35,6 +37,7 @@ import com.cloudhopper.smpp.type.Address;
 
 /**
  * @author amit bhayani
+ * @author sergey vetyutnev
  * 
  */
 public class SMSCShellExecutor implements ShellExecutor {
@@ -296,6 +299,34 @@ public class SMSCShellExecutor implements ShellExecutor {
 				}
 
 				return SMSCOAMMessages.INVALID_COMMAND;
+            } else if (args[1].equals("databaserule")) {
+                String rasCmd = args[2];
+                if (rasCmd == null) {
+                    return SMSCOAMMessages.INVALID_COMMAND;
+                }
+
+                if (rasCmd.equals("update")) {
+                    return this.databaseRuleUpdate(args);
+                } else if (rasCmd.equals("delete")) {
+                    return this.databaseRuleDelete(args);
+                } else if (rasCmd.equals("get")) {
+                    return this.databaseRuleGet(args);
+                } else if (rasCmd.equals("getrange")) {
+                    return this.databaseRuleGetRange(args);
+                }
+
+                return SMSCOAMMessages.INVALID_COMMAND;
+            } else if (args[1].equals("archive")) {
+                String rasCmd = args[2];
+                if (rasCmd == null) {
+                    return SMSCOAMMessages.INVALID_COMMAND;
+                }
+
+                if (rasCmd.equals("generatecdr")) {
+                    return this.archiveGenerateCdr(args);
+                }
+
+                return SMSCOAMMessages.INVALID_COMMAND;
 			}
 
 			return SMSCOAMMessages.INVALID_COMMAND;
@@ -363,76 +394,81 @@ public class SMSCShellExecutor implements ShellExecutor {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		String parName = options[2].toLowerCase();
-		if (parName.equals("scgt")) {
-			smscPropertiesManagement.setServiceCenterGt(options[3]);
-		} else if (parName.equals("scssn")) {
-			int val = Integer.parseInt(options[3]);
-			smscPropertiesManagement.setServiceCenterSsn(val);
-		} else if (parName.equals("hlrssn")) {
-			int val = Integer.parseInt(options[3]);
-			smscPropertiesManagement.setHlrSsn(val);
-		} else if (parName.equals("mscssn")) {
-			int val = Integer.parseInt(options[3]);
-			smscPropertiesManagement.setMscSsn(val);
-		} else if (parName.equals("maxmapv")) {
-			int val = Integer.parseInt(options[3]);
-			smscPropertiesManagement.setMaxMapVersion(val);
+        String parName = options[2].toLowerCase();
+        try {
+            if (parName.equals("scgt")) {
+                smscPropertiesManagement.setServiceCenterGt(options[3]);
+            } else if (parName.equals("scssn")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setServiceCenterSsn(val);
+            } else if (parName.equals("hlrssn")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setHlrSsn(val);
+            } else if (parName.equals("mscssn")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setMscSsn(val);
+            } else if (parName.equals("maxmapv")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setMaxMapVersion(val);
 
-        } else if (parName.equals("defaultvalidityperiodhours")) {
-            int val = Integer.parseInt(options[3]);
-            smscPropertiesManagement.setDefaultValidityPeriodHours(val);
-        } else if (parName.equals("maxvalidityperiodhours")) {
-            int val = Integer.parseInt(options[3]);
-            smscPropertiesManagement.setMaxValidityPeriodHours(val);
-        } else if (parName.equals("defaultton")) {
-            int val = Integer.parseInt(options[3]);
-            smscPropertiesManagement.setDefaultTon(val);
-        } else if (parName.equals("defaultnpi")) {
-            int val = Integer.parseInt(options[3]);
-            smscPropertiesManagement.setDefaultNpi(val);
-        } else if (parName.equals("subscriberbusyduedelay")) {
-            int val = Integer.parseInt(options[3]);
-            smscPropertiesManagement.setSubscriberBusyDueDelay(val);
-        } else if (parName.equals("firstduedelay")) {
-            int val = Integer.parseInt(options[3]);
-            smscPropertiesManagement.setFirstDueDelay(val);
-        } else if (parName.equals("secondduedelay")) {
-            int val = Integer.parseInt(options[3]);
-            smscPropertiesManagement.setSecondDueDelay(val);
-        } else if (parName.equals("maxduedelay")) {
-            int val = Integer.parseInt(options[3]);
-            smscPropertiesManagement.setMaxDueDelay(val);
-        } else if (parName.equals("duedelaymultiplicator")) {
-            int val = Integer.parseInt(options[3]);
-            smscPropertiesManagement.setDueDelayMultiplicator(val);
-        } else if (parName.equals("maxmessagelengthreducer")) {
-            int val = Integer.parseInt(options[3]);
-            smscPropertiesManagement.setMaxMessageLengthReducer(val);
-        } else if (parName.equals("hosts")) {
-            String val = options[3];
-            smscPropertiesManagement.setHosts(val);
-        } else if (parName.equals("keyspacename")) {
-            String val = options[3];
-            smscPropertiesManagement.setKeyspaceName(val);
-        } else if (parName.equals("clusterName")) {
-            String val = options[3];
-            smscPropertiesManagement.setClusterName(val);
-        } else if (parName.equals("fetchperiod")) {
-            long val = Long.parseLong(options[3]);
-            smscPropertiesManagement.setFetchPeriod(val);
-        } else if (parName.equals("fetchmaxrows")) {
-            int val = Integer.parseInt(options[3]);
-            smscPropertiesManagement.setFetchMaxRows(val);
-        } else if (parName.equals("maxactivitycount")) {
-            int val = Integer.parseInt(options[3]);
-            smscPropertiesManagement.setMaxActivityCount(val);
+            } else if (parName.equals("defaultvalidityperiodhours")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setDefaultValidityPeriodHours(val);
+            } else if (parName.equals("maxvalidityperiodhours")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setMaxValidityPeriodHours(val);
+            } else if (parName.equals("defaultton")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setDefaultTon(val);
+            } else if (parName.equals("defaultnpi")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setDefaultNpi(val);
+            } else if (parName.equals("subscriberbusyduedelay")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setSubscriberBusyDueDelay(val);
+            } else if (parName.equals("firstduedelay")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setFirstDueDelay(val);
+            } else if (parName.equals("secondduedelay")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setSecondDueDelay(val);
+            } else if (parName.equals("maxduedelay")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setMaxDueDelay(val);
+            } else if (parName.equals("duedelaymultiplicator")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setDueDelayMultiplicator(val);
+            } else if (parName.equals("maxmessagelengthreducer")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setMaxMessageLengthReducer(val);
+            } else if (parName.equals("hosts")) {
+                String val = options[3];
+                smscPropertiesManagement.setHosts(val);
+            } else if (parName.equals("keyspacename")) {
+                String val = options[3];
+                smscPropertiesManagement.setKeyspaceName(val);
+            } else if (parName.equals("clustername")) {
+                String val = options[3];
+                smscPropertiesManagement.setClusterName(val);
+            } else if (parName.equals("fetchperiod")) {
+                long val = Long.parseLong(options[3]);
+                smscPropertiesManagement.setFetchPeriod(val);
+            } else if (parName.equals("fetchmaxrows")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setFetchMaxRows(val);
+            } else if (parName.equals("maxactivitycount")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setMaxActivityCount(val);
+            } else if (parName.equals("cdrdatabaseexportduration")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setCdrDatabaseExportDuration(val);
 
-
-		} else {
-			return SMSCOAMMessages.INVALID_COMMAND;
-		}
-
+            } else {
+                return SMSCOAMMessages.INVALID_COMMAND;
+            }
+        } catch (IllegalArgumentException e) {
+            return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, parName, e.getMessage());
+        }
 
 		return SMSCOAMMessages.PARAMETER_SUCCESSFULLY_SET;
 	}
@@ -580,6 +616,8 @@ public class SMSCShellExecutor implements ShellExecutor {
                 sb.append(smscPropertiesManagement.getFetchMaxRows());
             } else if (parName.equals("maxactivitycount")) {
                 sb.append(smscPropertiesManagement.getMaxActivityCount());
+            } else if (parName.equals("cdrdatabaseexportduration")) {
+                sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -674,6 +712,10 @@ public class SMSCShellExecutor implements ShellExecutor {
             sb.append(smscPropertiesManagement.getMaxActivityCount());
             sb.append("\n");
 
+            sb.append("cdrDatabaseExportDuration = ");
+            sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
+            sb.append("\n");
+
 
 //      private int defaultValidityPeriodHours = 3 * 24;
 //      private int maxValidityPeriodHours = 10 * 24;
@@ -742,6 +784,133 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		return String.format(SMSCOAMMessages.ESME_STOP_SUCCESSFULL, args[3]);
 	}
+
+    /**
+     * smsc databaseRule update <address> <systemId>
+     * 
+     * @param args
+     * @return
+     */
+    private String databaseRuleUpdate(String[] args) throws Exception {
+        if (args.length < 5 || args.length > 5) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        String address = args[3];
+        if (address == null) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        String systemId = args[4];
+        if (systemId == null) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        String res = this.smscManagement.getEsmeManagement().updateDatabaseRule(address, systemId);
+        if (res == null)
+            return String.format(SMSCOAMMessages.UPDATE_DATABASE_RULE_SUCCESSFULL, address);
+        else
+            return res;
+    }
+
+    /**
+     * smsc databaseRule delete <address>
+     * 
+     * @param args
+     * @return
+     */
+    private String databaseRuleDelete(String[] args) throws Exception {
+        if (args.length < 4 || args.length > 4) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        String address = args[3];
+        if (address == null) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        String res = this.smscManagement.getEsmeManagement().deleteDatabaseRule(address);
+        if (res == null)
+            return String.format(SMSCOAMMessages.DELETE_DATABASE_RULE_SUCCESSFULL, address);
+        else
+            return res;
+    }
+
+    /**
+     * smsc databaseRule get <address>
+     * 
+     * @param args
+     * @return
+     */
+    private String databaseRuleGet(String[] args) throws Exception {
+        if (args.length < 4 || args.length > 4) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        String address = args[3];
+        if (address == null) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        String res = this.smscManagement.getEsmeManagement().getDatabaseRule(address);
+        return res;
+    }
+
+    /**
+     * smsc databaseRule getRange <address>
+     * or
+     * smsc databaseRule getRange
+     * 
+     * @param args
+     * @return
+     */
+    private String databaseRuleGetRange(String[] args) throws Exception {
+        if (args.length < 3 || args.length > 4) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        String res;
+        if (args.length == 4) {
+            String address = args[3];
+            if (address == null) {
+                return SMSCOAMMessages.INVALID_COMMAND;
+            }
+            res = this.smscManagement.getEsmeManagement().getDatabaseRulesRange(address);
+        } else {
+            res = this.smscManagement.getEsmeManagement().getDatabaseRulesRange();
+        }
+
+        return res;
+    }
+
+    /**
+     * smsc archive generateCdr <timeFrom> <timeTo>
+     * 
+     * @param args
+     * @return
+     */
+    private String archiveGenerateCdr(String[] args) throws Exception {
+        if (args.length < 5 || args.length > 5) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        String timeFromS = args[3];
+        String timeToS = args[4];
+        if (timeFromS == null || timeToS == null) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        SimpleDateFormat df = new SimpleDateFormat();
+        Date timeFrom = df.parse(timeFromS);
+        if (timeFrom == null)
+            return SMSCOAMMessages.BAD_FORMATTED_FROM_FIELD;
+        Date timeTo = df.parse(timeToS);
+        if (timeTo == null)
+            return SMSCOAMMessages.BAD_FORMATTED_TO_FIELD;
+
+        ArchiveSms.getInstance().makeCdrDatabaseManualExport(timeFrom, timeTo);
+        return SMSCOAMMessages.ACCEPTED_ARCHIVE_GENERATE_CDR_SUCCESSFULL;
+    }
 
 	public String execute(String[] args) {
 		if (args[0].equals("smsc")) {

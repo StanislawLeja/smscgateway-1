@@ -1,6 +1,6 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -20,14 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.resources.persistence;
+package org.mobicents.smsc.smpp;
+
+import java.util.Date;
 
 /**
  * 
  * @author sergey vetyutnev
  * 
  */
-public class TargetAddressContainer {
-	public TargetAddress targetAddress;
-	public int count;
+public interface ArchiveSmsMBean {
+
+//    so users can 
+//    1) search all sms sent to particular MSISDN
+//    2) search all sms sent from particular MSISDN
+//    3) create CDR for specific time period
+//    4) create reports - like how many SMS/sec for some duration
+//    5) create reports like how many success and how many failed for some duration 
+//    etc etc
+//    but for now we can only have point 3) 
+
+    /**
+     * Performing an export of CDR from archive cassandra database
+     * for a defined period: timeFrom >= [records delivery time] < timeTo 
+     * 
+     * @param timeFrom
+     * @param timeTo
+     */
+    public void makeCdrDatabaseManualExport(Date timeFrom, Date timeTo);
+
 }

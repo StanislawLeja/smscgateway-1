@@ -43,19 +43,19 @@ import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.SbbContextExt;
+import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.Sms;
+import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
-import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmppExtraConstants;
-import org.mobicents.smsc.slee.resources.persistence.Sms;
-import org.mobicents.smsc.slee.resources.persistence.SmsSet;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
-import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 

@@ -27,6 +27,11 @@
 			<artifactId>smpp</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>cassandra-support</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
 
 		<!-- cloudhopper smpp -->
 		<dependency>

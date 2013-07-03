@@ -19,36 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-package org.mobicents.smsc.slee.resources.persistence;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.UUID;
-
-import org.mobicents.smsc.cassandra.DBOperations;
-import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
-
-import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.beans.ColumnSlice;
-import me.prettyprint.hector.api.beans.Composite;
+package org.mobicents.smsc.cassandra;
 
 /**
+ * Type of SMS to indicate where this SMS goes.
  * 
- * @author sergey vetyutnev
+ * @author baranowb
  * 
  */
-public class DBOperationsProxy extends DBOperations {
+public enum SmType {
 
-	public static void doDeleteLiveSms(Keyspace keyspace, Sms sms) throws PersistenceException {
-		DBOperations.deleteLiveSms(keyspace, sms);
-	}
+    /**
+     * ESME terminated message
+     */
+    SMS_FOR_ESME(0),
+    /**
+     * MT message
+     */
+    SMS_FOR_SS7(1);
 
-	protected static Sms doCreateSms(final Keyspace keyspace, final ColumnSlice<Composite, ByteBuffer> cSlice, final UUID dbId, SmsSet smsSet)
-			throws IOException, PersistenceException {
-		return DBOperations.createSms(keyspace, cSlice, dbId, smsSet);
-	}
+    private int code;
 
+    SmType(int code) {
+        this.code = code;
+    }
+
+    public int getCode(){
+        return this.code;
+    }
+    public static SmType fromInt(int v) {
+        switch (v) {
+            case 0:
+                return SMS_FOR_ESME;
+            case 1:
+                return SMS_FOR_SS7;
+            default:
+                throw new IllegalArgumentException("The '" + v + "' is not a valid value!");
+        }
+    }
+    
 }

@@ -22,6 +22,7 @@
 
 package org.mobicents.smsc.smpp;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,7 +94,7 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 		String systemId = null;
 
 		try {
-            DbSmsRoutingRule rr = DBOperations.fetchSmsRoutingRule(keyspace, address);
+            DbSmsRoutingRule rr = DBOperations.getSmsRoutingRule(keyspace, address);
             if (rr != null) {
                 systemId = rr.getSystemId();
             } else {
@@ -106,4 +107,29 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 		return systemId;
 	}
 
+    public void updateDbSmsRoutingRule(String address, String systemId) throws PersistenceException {
+        DbSmsRoutingRule dbSmsRoutingRule = new DbSmsRoutingRule();
+        dbSmsRoutingRule.setAddress(address);
+        dbSmsRoutingRule.setSystemId(systemId);
+
+        DBOperations.updateDbSmsRoutingRule(keyspace, dbSmsRoutingRule);
+    }
+
+    public void deleteDbSmsRoutingRule(String address) throws PersistenceException {
+        DBOperations.deleteDbSmsRoutingRule(keyspace, address);
+    }
+
+    public DbSmsRoutingRule getSmsRoutingRule(String address) throws PersistenceException {
+        return DBOperations.getSmsRoutingRule(keyspace, address);
+    }
+
+    public List<DbSmsRoutingRule> getSmsRoutingRulesRange() throws PersistenceException {
+        return DBOperations.getSmsRoutingRulesRange(keyspace);
+    }
+
+    public List<DbSmsRoutingRule> getSmsRoutingRulesRange(String lastAdress) throws PersistenceException {
+        return DBOperations.getSmsRoutingRulesRange(keyspace, lastAdress);
+    }
+
 }
+

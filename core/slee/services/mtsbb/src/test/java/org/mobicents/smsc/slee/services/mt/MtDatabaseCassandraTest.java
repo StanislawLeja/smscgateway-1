@@ -29,13 +29,13 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
-import org.mobicents.smsc.slee.resources.persistence.ErrorCode;
-import org.mobicents.smsc.slee.resources.persistence.PersistenceException;
+import org.mobicents.smsc.cassandra.ErrorCode;
+import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.Sms;
+import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
-import org.mobicents.smsc.slee.resources.persistence.Sms;
 import org.mobicents.smsc.slee.resources.persistence.SmsProxy;
-import org.mobicents.smsc.slee.resources.persistence.SmsSet;
-import org.mobicents.smsc.slee.resources.persistence.TargetAddress;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;

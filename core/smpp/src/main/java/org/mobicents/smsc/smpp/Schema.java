@@ -36,7 +36,6 @@ import java.util.List;
 public class Schema {
 
     //SmsRoutingRule tables columns and names
-    public static final String COLUMN_ID = "ID";
     public static final String COLUMN_ADDRESS = "ADDRESS";
     public static final String COLUMN_SYSTEM_ID = "SYSTEM_ID";
 
@@ -46,7 +45,6 @@ public class Schema {
 
     static {
         List<String> tmp = new ArrayList<String>();
-        tmp.add(COLUMN_ID);
 
         tmp.add(COLUMN_ADDRESS);
         tmp.add(COLUMN_SYSTEM_ID);

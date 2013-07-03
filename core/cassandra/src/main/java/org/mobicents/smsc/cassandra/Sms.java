@@ -20,11 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.resources.persistence;
+package org.mobicents.smsc.cassandra;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
+
 
 /**
  * 

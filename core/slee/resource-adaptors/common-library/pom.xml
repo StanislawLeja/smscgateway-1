@@ -38,10 +38,22 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>smpp</artifactId>
+			<version>${pom.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
 			<artifactId>mobicents-slee-ra-map-library</artifactId>
 			<groupId>org.mobicents.resources</groupId>
 			<version>${mobicents.resources.map.version}</version>
 			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>cassandra-support</artifactId>
+			<version>${pom.version}</version>
 		</dependency>
 	</dependencies>
 

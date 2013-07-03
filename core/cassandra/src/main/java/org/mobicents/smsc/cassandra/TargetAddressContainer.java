@@ -19,43 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.mobicents.smsc.slee.resources.persistence;
+
+package org.mobicents.smsc.cassandra;
+
 
 /**
- * Type of SMS to indicate where this SMS goes.
  * 
- * @author baranowb
+ * @author sergey vetyutnev
  * 
  */
-public enum SmType {
-
-    /**
-     * ESME terminated message
-     */
-    SMS_FOR_ESME(0),
-    /**
-     * MT message
-     */
-    SMS_FOR_SS7(1);
-
-    private int code;
-
-    SmType(int code) {
-        this.code = code;
-    }
-
-    public int getCode(){
-        return this.code;
-    }
-    public static SmType fromInt(int v) {
-        switch (v) {
-            case 0:
-                return SMS_FOR_ESME;
-            case 1:
-                return SMS_FOR_SS7;
-            default:
-                throw new IllegalArgumentException("The '" + v + "' is not a valid value!");
-        }
-    }
-    
+public class TargetAddressContainer {
+	public TargetAddress targetAddress;
+	public int count;
 }

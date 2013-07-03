@@ -24,6 +24,8 @@ package org.mobicents.smsc.smpp;
 
 import static org.testng.Assert.*;
 
+import java.util.List;
+
 import org.mobicents.smsc.smpp.DbSmsRoutingRule;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -60,82 +62,68 @@ public class DbSmsRoutingRuleTest {
 
         this.clearDatabase();
 
-        DbSmsRoutingRule rl1 = this.sbb.fetchSmsRoutingRule("1111");
-        DbSmsRoutingRule rl11 = this.sbb.fetchSmsRoutingRule("11111");
-        DbSmsRoutingRule rl2 = this.sbb.fetchSmsRoutingRule("2222");
+        DbSmsRoutingRule rl1 = this.sbb.getSmsRoutingRule("1111");
+        DbSmsRoutingRule rl2 = this.sbb.getSmsRoutingRule("2222");
         assertNull(rl1);
-        assertNull(rl11);
         assertNull(rl2);
 
         DbSmsRoutingRule rla = new DbSmsRoutingRule();
-        rla.setId(1);
         rla.setAddress("1111");
         rla.setSystemId("AAA");
 
-        this.sbb.addDbSmsRoutingRule(rla);
-        rl1 = this.sbb.fetchSmsRoutingRule("1111");
-        rl11 = this.sbb.fetchSmsRoutingRule("11111");
-        rl2 = this.sbb.fetchSmsRoutingRule("2222");
+        this.sbb.updateDbSmsRoutingRule(rla);
+        rl1 = this.sbb.getSmsRoutingRule("1111");
+        rl2 = this.sbb.getSmsRoutingRule("2222");
         assertNotNull(rl1);
-        assertNull(rl11);
         assertNull(rl2);
-        assertEquals(rl1.getId(), 1);
         assertEquals(rl1.getAddress(), "1111");
         assertEquals(rl1.getSystemId(), "AAA");
 
 
         rla = new DbSmsRoutingRule();
-        rla.setId(1);
-        rla.setAddress("11111");
-        rla.setSystemId("AAAA");
-
-        this.sbb.addDbSmsRoutingRule(rla);
-        rl1 = this.sbb.fetchSmsRoutingRule("1111");
-        rl11 = this.sbb.fetchSmsRoutingRule("11111");
-        rl2 = this.sbb.fetchSmsRoutingRule("2222");
-        assertNull(rl1);
-        assertNotNull(rl11);
-        assertNull(rl2);
-        assertEquals(rl11.getId(), 1);
-        assertEquals(rl11.getAddress(), "11111");
-        assertEquals(rl11.getSystemId(), "AAAA");
-
-
-        rla = new DbSmsRoutingRule();
-        rla.setId(2);
         rla.setAddress("2222");
         rla.setSystemId("BBB");
 
-        this.sbb.addDbSmsRoutingRule(rla);
-        rl1 = this.sbb.fetchSmsRoutingRule("1111");
-        rl11 = this.sbb.fetchSmsRoutingRule("11111");
-        rl2 = this.sbb.fetchSmsRoutingRule("2222");
-        assertNull(rl1);
-        assertNotNull(rl11);
+        this.sbb.updateDbSmsRoutingRule(rla);
+        rl1 = this.sbb.getSmsRoutingRule("1111");
+        rl2 = this.sbb.getSmsRoutingRule("2222");
+        assertNotNull(rl1);
         assertNotNull(rl2);
-        assertEquals(rl11.getId(), 1);
-        assertEquals(rl11.getAddress(), "11111");
-        assertEquals(rl11.getSystemId(), "AAAA");
-        assertEquals(rl2.getId(), 2);
+        assertEquals(rl1.getAddress(), "1111");
+        assertEquals(rl1.getSystemId(), "AAA");
         assertEquals(rl2.getAddress(), "2222");
         assertEquals(rl2.getSystemId(), "BBB");
 
+        List<DbSmsRoutingRule> lst = this.sbb.getSmsRoutingRulesRange();        
+        assertEquals(lst.size(), 2);
+        DbSmsRoutingRule rl = lst.get(0);
+        assertEquals(rl.getAddress(), "1111");
+        assertEquals(rl.getSystemId(), "AAA");
+        rl = lst.get(1);
+        assertEquals(rl2.getAddress(), "2222");
+        assertEquals(rl2.getSystemId(), "BBB");
 
-        this.sbb.deleteDbSmsRoutingRule(1);
-        rl1 = this.sbb.fetchSmsRoutingRule("1111");
-        rl11 = this.sbb.fetchSmsRoutingRule("11111");
-        rl2 = this.sbb.fetchSmsRoutingRule("2222");
+        lst = this.sbb.getSmsRoutingRulesRange("1111");        
+        assertEquals(lst.size(), 1);
+        rl = lst.get(0);
+        assertEquals(rl2.getAddress(), "2222");
+        assertEquals(rl2.getSystemId(), "BBB");
+
+        lst = this.sbb.getSmsRoutingRulesRange("2222");        
+        assertEquals(lst.size(), 0);
+
+        this.sbb.deleteDbSmsRoutingRule("1111");
+        rl1 = this.sbb.getSmsRoutingRule("1111");
+        rl2 = this.sbb.getSmsRoutingRule("2222");
         assertNull(rl1);
-        assertNull(rl11);
         assertNotNull(rl2);
-        assertEquals(rl2.getId(), 2);
         assertEquals(rl2.getAddress(), "2222");
         assertEquals(rl2.getSystemId(), "BBB");
 
     }
 
     private void clearDatabase() throws Exception {
-        this.sbb.deleteDbSmsRoutingRule(1);
-        this.sbb.deleteDbSmsRoutingRule(2);
+        this.sbb.deleteDbSmsRoutingRule("1111");
+        this.sbb.deleteDbSmsRoutingRule("2222");
     }
 }

@@ -53,6 +53,16 @@ public interface EsmeManagementMBean {
 
 	public Esme destroyEsme(String esmeName) throws Exception;
 
+    public String updateDatabaseRule(String address, String systemId);
+
+    public String deleteDatabaseRule(String address);
+
+    public String getDatabaseRule(String address);
+
+    public String getDatabaseRulesRange();
+
+    public String getDatabaseRulesRange(String lastAdress);
+
 	public void startEsme(String esmeName) throws Exception;
 
 	public void stopEsme(String esmeName) throws Exception;

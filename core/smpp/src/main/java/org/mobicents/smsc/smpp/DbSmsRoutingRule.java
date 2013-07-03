@@ -33,19 +33,10 @@ public class DbSmsRoutingRule implements Serializable {
 
     private static final long serialVersionUID = -4693280752311155768L;
 
-    private int id;
     private String address;
     private String systemId;
 
     public DbSmsRoutingRule() {
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getAddress() {
@@ -68,9 +59,7 @@ public class DbSmsRoutingRule implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("DbSmsRoutingRule [id=");
-        sb.append(id);
-        sb.append(", address=");
+        sb.append("DbSmsRoutingRule [address=");
         sb.append(address);
         sb.append(", systemId=");
         sb.append(systemId);

@@ -64,6 +64,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private static final String FETCH_PERIOD = "fetchPeriod";
     private static final String FETCH_MAX_ROWS = "fetchMaxRows";
     private static final String MAX_ACTIVITY_COUNT = "maxActivityCount";
+    private static final String CDR_DATABASE_EXPORT_DURATION = "cdrDatabaseExportDuration";
 	
 	private static final String TAB_INDENT = "\t";
 	private static final String CLASS_ATTRIBUTE = "type";
@@ -101,6 +102,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// Empty TC-BEGIN will be used if messageLength > maxPossibleMessageLength - maxMessageLengthReducer 
 	// Recommended value = 6 Possible values from 0 to 12
 	private int maxMessageLengthReducer = 6;
+
+	// time duration of exporting CDR's to a log based on cassandra database
+	// possible values: 1, 2, 5, 10, 15, 20, 30, 60 (minutes) or 0 (export is turned off)
+	private int cdrDatabaseExportDuration = 0;
 
 	// parameters for cassandra database access
     private String hosts = "127.0.0.1:9160";
@@ -194,6 +199,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setDefaultValidityPeriodHours(int defaultValidityPeriodHours) {
 		this.defaultValidityPeriodHours = defaultValidityPeriodHours;
+        this.store();
 	}
 
 	public int getMaxValidityPeriodHours() {
@@ -202,6 +208,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setMaxValidityPeriodHours(int maxValidityPeriodHours) {
 		this.maxValidityPeriodHours = maxValidityPeriodHours;
+        this.store();
 	}
 
 	public int getDefaultTon() {
@@ -210,6 +217,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setDefaultTon(int defaultTon) {
 		this.defaultTon = defaultTon;
+        this.store();
 	}
 
 	public int getDefaultNpi() {
@@ -218,6 +226,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setDefaultNpi(int defaultNpi) {
 		this.defaultNpi = defaultNpi;
+        this.store();
 	}
 
 	public int getSubscriberBusyDueDelay() {
@@ -226,6 +235,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setSubscriberBusyDueDelay(int subscriberBusyDueDelay) {
 		this.subscriberBusyDueDelay = subscriberBusyDueDelay;
+        this.store();
 	}
 
 	public int getFirstDueDelay() {
@@ -234,6 +244,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setFirstDueDelay(int firstDueDelay) {
 		this.firstDueDelay = firstDueDelay;
+        this.store();
 	}
 
 	public int getSecondDueDelay() {
@@ -242,6 +253,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setSecondDueDelay(int secondDueDelay) {
 		this.secondDueDelay = secondDueDelay;
+        this.store();
 	}
 
 	public int getMaxDueDelay() {
@@ -250,6 +262,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setMaxDueDelay(int maxDueDelay) {
 		this.maxDueDelay = maxDueDelay;
+        this.store();
 	}
 
 	public int getDueDelayMultiplicator() {
@@ -258,6 +271,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setDueDelayMultiplicator(int dueDelayMultiplicator) {
 		this.dueDelayMultiplicator = dueDelayMultiplicator;
+        this.store();
 	}
 
 	@Override
@@ -268,6 +282,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	@Override
 	public void setMaxMessageLengthReducer(int maxMessageLengReducer) {
 		this.maxMessageLengthReducer = maxMessageLengReducer;
+        this.store();
 	}
 
     @Override
@@ -278,6 +293,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     @Override
     public void setHosts(String hosts) {
         this.hosts = hosts;
+        this.store();
     }
 
     @Override
@@ -288,6 +304,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     @Override
     public void setKeyspaceName(String keyspaceName) {
         this.keyspaceName = keyspaceName;
+        this.store();
     }
 
     @Override
@@ -298,6 +315,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     @Override
     public void setClusterName(String clusterName) {
         this.clusterName = clusterName;
+        this.store();
     }
 
     @Override
@@ -308,6 +326,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     @Override
     public void setFetchPeriod(long fetchPeriod) {
         this.fetchPeriod = fetchPeriod;
+        this.store();
     }
 
     @Override
@@ -318,6 +337,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     @Override
     public void setFetchMaxRows(int fetchMaxRows) {
         this.fetchMaxRows = fetchMaxRows;
+        this.store();
     }
 
     @Override
@@ -328,6 +348,23 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     @Override
     public void setMaxActivityCount(int maxActivityCount) {
         this.maxActivityCount = maxActivityCount;
+        this.store();
+    }
+
+    @Override
+    public int getCdrDatabaseExportDuration() {
+        return cdrDatabaseExportDuration;
+    }
+
+    @Override
+    public void setCdrDatabaseExportDuration(int cdrDatabaseExportDuration) {
+        if (cdrDatabaseExportDuration != 0 && cdrDatabaseExportDuration != 1 && cdrDatabaseExportDuration != 2 && cdrDatabaseExportDuration != 5
+                && cdrDatabaseExportDuration != 10 && cdrDatabaseExportDuration != 15 && cdrDatabaseExportDuration != 20 && cdrDatabaseExportDuration != 30
+                && cdrDatabaseExportDuration != 60)
+            throw new IllegalArgumentException("cdrDatabaseExportDuration value must be 1,2,5,10,15,20,30 or 60 minutes or 0 if CDR export is disabled");
+
+        this.cdrDatabaseExportDuration = cdrDatabaseExportDuration;
+        this.store();
     }
 
 
@@ -397,6 +434,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             writer.write(this.fetchMaxRows, FETCH_MAX_ROWS, Integer.class);
             writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
 
+            writer.write(this.cdrDatabaseExportDuration, CDR_DATABASE_EXPORT_DURATION, Integer.class);
+            
 			writer.close();
 		} catch (Exception e) {
 			logger.error("Error while persisting the SMSC state in file", e);
@@ -464,9 +503,14 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             if (val != null)
                 this.maxActivityCount = val;
 
+            val = reader.read(CDR_DATABASE_EXPORT_DURATION, Integer.class);
+            if (val != null)
+                this.cdrDatabaseExportDuration = val;
+
 			reader.close();
 		} catch (XMLStreamException ex) {
             logger.error("Error while loading the SMSC state from file", ex);
 		}
 	}
+
 }

@@ -50,6 +50,10 @@ public class SmsRouteManagement {
 		this.smsRoutingRule = smsRoutingRule;
 	}
 
+    protected SmsRoutingRule getSmsRoutingRule() {
+        return this.smsRoutingRule;
+    }
+
 	public String getEsmeClusterName(int ton, int npi, String address) {
 		return this.smsRoutingRule.getEsmeClusterName(ton, npi, address);
 	}
