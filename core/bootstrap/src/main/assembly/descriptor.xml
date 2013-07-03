@@ -14,6 +14,24 @@
 			<unpack>false</unpack>
 			<scope>runtime</scope>
 			<includes>
+				<!-- hector -->
+				<include>me.prettyprint:hector-core</include>
+				
+				<!-- hector-core dep tree -->
+				<include>commons-lang:commons-lang</include>
+				<include>commons-pool:commons-pool</include>
+				<include>org.apache.cassandra:cassandra-thrift</include>
+				<include>org.apache.thrift:libthrift</include>
+				<include>org.apache.httpcomponents:httpclient</include>
+				<include>org.apache.httpcomponents:httpcore</include>
+				<include>commons-logging:commons-logging</include>
+				<include>commons-codec:commons-codec</include>
+				<include>com.google.guava:guava</include>
+				<include>org.slf4j:slf4j-api</include>
+				<include>org.slf4j:slf4j-log4j12</include>
+				<include>com.github.stephenc.eaio-uuid:uuid</include>
+				<include>com.ecyrd.speed4j:speed4j</include>
+				
 				<!-- SMSC libraris -->
 				<include>com.telscale.smsc:bootstrap</include>
 				<include>com.telscale.smsc:smpp</include>
