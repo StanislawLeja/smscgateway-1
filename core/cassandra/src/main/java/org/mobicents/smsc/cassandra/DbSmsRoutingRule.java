@@ -20,43 +20,52 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.smpp;
+package org.mobicents.smsc.cassandra;
+
+import java.io.Serializable;
 
 /**
- * @author baranowb
+ * 
+ * @author sergey vetyutnev
  *
  */
-public class PersistenceException extends Exception {
+public class DbSmsRoutingRule implements Serializable {
 
-    /**
-     * 
-     */
-    public PersistenceException() {
-        // TODO Auto-generated constructor stub
+    private static final long serialVersionUID = -4693280752311155768L;
+
+    private String address;
+    private String systemId;
+
+    public DbSmsRoutingRule() {
     }
 
-    /**
-     * @param message
-     */
-    public PersistenceException(String message) {
-        super(message);
-        // TODO Auto-generated constructor stub
+    public String getAddress() {
+        return address;
     }
 
-    /**
-     * @param cause
-     */
-    public PersistenceException(Throwable cause) {
-        super(cause);
-        // TODO Auto-generated constructor stub
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    /**
-     * @param message
-     * @param cause
-     */
-    public PersistenceException(String message, Throwable cause) {
-        super(message, cause);
-        // TODO Auto-generated constructor stub
+    public String getSystemId() {
+        return systemId;
+    }
+
+    public void setSystemId(String systemId) {
+        this.systemId = systemId;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("DbSmsRoutingRule [address=");
+        sb.append(address);
+        sb.append(", systemId=");
+        sb.append(systemId);
+
+        sb.append("]");
+
+        return sb.toString();
     }
 }

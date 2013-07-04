@@ -50,6 +50,11 @@
 			<artifactId>hector-core</artifactId>
 			<version>${hector-core.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>cassandra-support</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
 	</dependencies>
 
 	<profiles>

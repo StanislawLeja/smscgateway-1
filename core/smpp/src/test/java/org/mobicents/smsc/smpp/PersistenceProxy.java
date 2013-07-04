@@ -25,6 +25,11 @@ package org.mobicents.smsc.smpp;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.mobicents.smsc.cassandra.DBOperations;
+import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
+import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.Schema;
+
 import me.prettyprint.cassandra.serializers.ByteBufferSerializer;
 import me.prettyprint.cassandra.serializers.CompositeSerializer;
 import me.prettyprint.cassandra.serializers.IntegerSerializer;

@@ -46,6 +46,8 @@ import javolution.xml.stream.XMLStreamException;
 
 import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
+import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
+import org.mobicents.smsc.cassandra.PersistenceException;
 
 import com.cloudhopper.smpp.SmppBindType;
 import com.cloudhopper.smpp.SmppSession;

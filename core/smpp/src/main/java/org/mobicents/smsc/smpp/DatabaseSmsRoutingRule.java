@@ -33,6 +33,9 @@ import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.factory.HFactory;
 
 import org.apache.log4j.Logger;
+import org.mobicents.smsc.cassandra.DBOperations;
+import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
+import org.mobicents.smsc.cassandra.PersistenceException;
 
 import com.cloudhopper.smpp.SmppConstants;
 

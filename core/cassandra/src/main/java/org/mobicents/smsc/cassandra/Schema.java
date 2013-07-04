@@ -84,13 +84,19 @@ public class Schema {
 	public static final String COLUMN_NNN_AN = "NNN_AN";
     public static final String COLUMN_NNN_NP = "NNN_NP";
 
+    //SmsRoutingRule tables columns and names
+    public static final String COLUMN_ADDRESS = "ADDRESS";
+    public static final String COLUMN_SYSTEM_ID = "SYSTEM_ID";
+
     public static final String FAMILY_LIVE_SMS = "LIVE_SMS";
     public static final String FAMILY_ARCHIVE = "ARCHIVE";
     public static final String FAMILY_LIVE = "LIVE";
+    public static final String FAMILY_SMS_ROUTING_RULE = "SMS_ROUTING_RULE";
 
     public static final List<String> COLUMNS_LIVE;
     public static final List<String> COLUMNS_LIVE_SMS;
     public static final List<String> COLUMNS_ARCHIVE;
+    public static final List<String> COLUMNS_SMS_ROUTING_RULE;
 
     static{
         List<String> tmp = new ArrayList<String>();
@@ -182,6 +188,13 @@ public class Schema {
         tmp.add(COLUMN_SM_TYPE);
         tmp.add(COLUMN_DELIVERY_COUNT);
         COLUMNS_ARCHIVE = Collections.unmodifiableList(tmp);
+
+        tmp = new ArrayList<String>();
+
+        tmp.add(COLUMN_ADDRESS);
+        tmp.add(COLUMN_SYSTEM_ID);
+
+        COLUMNS_SMS_ROUTING_RULE = Collections.unmodifiableList(tmp);
     }
 
 }
