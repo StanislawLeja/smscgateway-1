@@ -35,6 +35,7 @@
 				<!-- SMSC libraris -->
 				<include>com.telscale.smsc:bootstrap</include>
 				<include>com.telscale.smsc:smpp</include>
+				<include>com.telscale.smsc:cassandra-support</include>
 
 				<!-- cloudhopper library -->
 				<include>com.cloudhopper:ch-smpp</include>
