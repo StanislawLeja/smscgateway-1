@@ -435,6 +435,10 @@ public class EsmeManagement implements EsmeManagementMBean {
             return "DatabaseSmsRoutingRule is not defined in the system";
 
         try {
+            DbSmsRoutingRule rr0 = smsRoutingRule.getSmsRoutingRule(lastAdress);
+            if (rr0 == null)
+                return "Record not found for a key: " + lastAdress;
+
             List<DbSmsRoutingRule> rrr = smsRoutingRule.getSmsRoutingRulesRange(lastAdress);
             StringBuilder sb = new StringBuilder();
             int i1 = 0;

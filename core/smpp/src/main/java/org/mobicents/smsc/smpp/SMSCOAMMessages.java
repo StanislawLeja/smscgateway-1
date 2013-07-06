@@ -91,7 +91,9 @@ public interface SMSCOAMMessages {
 
 	public static final String NULL_ESME_ADDRESS_RANGE = "esme-range is compulsory for TRANSCEIVER and RECEIVER";
 
-	public static final String PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set";
+    public static final String PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set";
+
+    public static final String PARAMETER_SUCCESSFULLY_REMOVED = "Parameter has been successfully removed";
 
 	public static final String SMPP_SERVER_PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set. The changed value will take effect after SmppServer is restarted";
 	/**

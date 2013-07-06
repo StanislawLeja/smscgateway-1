@@ -49,6 +49,8 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 
     private Cluster cluster = null;
 	private Keyspace keyspace = null;
+	private SmscPropertiesManagement smscPropertiesManagement;
+	private EsmeManagement esmeManagement;
 
 	private static final Pattern pattern = Pattern.compile("(([\\+]?[1])|[0]?)");
 
@@ -60,6 +62,16 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 	public DatabaseSmsRoutingRule() {
 		this.init();
 	}
+
+    @Override
+    public void setEsmeManagement(EsmeManagement em) {
+        this.esmeManagement = em;
+    }
+
+    @Override
+    public void setSmscPropertiesManagement(SmscPropertiesManagement sm) {
+        this.smscPropertiesManagement = sm;
+    }
 
 	private void init() {
         try {
@@ -101,7 +113,16 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
             if (rr != null) {
                 systemId = rr.getSystemId();
             } else {
-                systemId = "icg_sms_y";
+                if (smscPropertiesManagement == null)
+                    smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+                if (smscPropertiesManagement != null) {
+                    String dcn = smscPropertiesManagement.getDefaultClusterName();
+                    if (dcn != null) {
+                        if (esmeManagement.getEsmeByClusterName(dcn) != null) {
+                            systemId = dcn;
+                        }
+                    }
+                }
             }
 		} catch (PersistenceException e) {
 			logger.error("PersistenceException while selecting from table SmsRoutingRule", e);

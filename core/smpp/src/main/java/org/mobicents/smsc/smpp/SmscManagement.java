@@ -173,8 +173,10 @@ public class SmscManagement implements SmscManagementMBean {
 		if (this.smsRoutingRuleClass != null) {
 			smsRoutingRule = (SmsRoutingRule) Class.forName(this.smsRoutingRuleClass).newInstance();
 		} else {
-			smsRoutingRule = new DefaultSmsRoutingRule(this.esmeManagement);
+			smsRoutingRule = new DefaultSmsRoutingRule();
 		}
+        smsRoutingRule.setEsmeManagement(esmeManagement);
+        smsRoutingRule.setSmscPropertiesManagement(smscPropertiesManagement);
 		SmsRouteManagement.getInstance().setSmsRoutingRule(smsRoutingRule);
 
         // Step 5 Setup ArchiveSms

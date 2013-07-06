@@ -283,9 +283,11 @@ public class SMSCShellExecutor implements ShellExecutor {
 				}
 				return SMSCOAMMessages.INVALID_COMMAND;
 			} else if (args[1].equals("set")) {
-				return this.manageSet(args);
-			} else if (args[1].equals("get")) {
-				return this.manageGet(args);
+                return this.manageSet(args);
+            } else if (args[1].equals("get")) {
+                return this.manageGet(args);
+            } else if (args[1].equals("remove")) {
+				return this.manageRemove(args);
 			} else if (args[1].equals("smppserver")) {
 				String rasCmd = args[2];
 				if (rasCmd == null) {
@@ -299,7 +301,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 				}
 
 				return SMSCOAMMessages.INVALID_COMMAND;
-            } else if (args[1].equals("databaserule")) {
+            } else if (args[1].toLowerCase().equals("databaserule")) {
                 String rasCmd = args[2];
                 if (rasCmd == null) {
                     return SMSCOAMMessages.INVALID_COMMAND;
@@ -311,7 +313,7 @@ public class SMSCShellExecutor implements ShellExecutor {
                     return this.databaseRuleDelete(args);
                 } else if (rasCmd.equals("get")) {
                     return this.databaseRuleGet(args);
-                } else if (rasCmd.equals("getrange")) {
+                } else if (rasCmd.toLowerCase().equals("getrange")) {
                     return this.databaseRuleGetRange(args);
                 }
 
@@ -459,9 +461,11 @@ public class SMSCShellExecutor implements ShellExecutor {
             } else if (parName.equals("maxactivitycount")) {
                 int val = Integer.parseInt(options[3]);
                 smscPropertiesManagement.setMaxActivityCount(val);
-            } else if (parName.equals("cdrdatabaseexportduration")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setCdrDatabaseExportDuration(val);
+//            } else if (parName.equals("cdrdatabaseexportduration")) {
+//                int val = Integer.parseInt(options[3]);
+//                smscPropertiesManagement.setCdrDatabaseExportDuration(val);
+            } else if (parName.equals("default-cluster-name")) {
+                smscPropertiesManagement.setDefaultClusterName(options[3]);
 
             } else {
                 return SMSCOAMMessages.INVALID_COMMAND;
@@ -472,6 +476,26 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		return SMSCOAMMessages.PARAMETER_SUCCESSFULLY_SET;
 	}
+
+    private String manageRemove(String[] options) throws Exception {
+        if (options.length < 3) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        String parName = options[2].toLowerCase();
+        try {
+            if (parName.equals("default-cluster-name")) {
+                smscPropertiesManagement.setDefaultClusterName(null);
+
+            } else {
+                return SMSCOAMMessages.INVALID_COMMAND;
+            }
+        } catch (IllegalArgumentException e) {
+            return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, parName, e.getMessage());
+        }
+
+        return SMSCOAMMessages.PARAMETER_SUCCESSFULLY_REMOVED;
+    }
 
 	/**
 	 * Command is smsc smppserver get <variable>
@@ -616,8 +640,10 @@ public class SMSCShellExecutor implements ShellExecutor {
                 sb.append(smscPropertiesManagement.getFetchMaxRows());
             } else if (parName.equals("maxactivitycount")) {
                 sb.append(smscPropertiesManagement.getMaxActivityCount());
-            } else if (parName.equals("cdrdatabaseexportduration")) {
-                sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
+//            } else if (parName.equals("cdrdatabaseexportduration")) {
+//                sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
+            } else if (parName.equals("default-cluster-name")) {
+                sb.append(smscPropertiesManagement.getDefaultClusterName());
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -712,8 +738,12 @@ public class SMSCShellExecutor implements ShellExecutor {
             sb.append(smscPropertiesManagement.getMaxActivityCount());
             sb.append("\n");
 
-            sb.append("cdrDatabaseExportDuration = ");
-            sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
+//            sb.append("cdrDatabaseExportDuration = ");
+//            sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
+//            sb.append("\n");
+
+            sb.append("default-cluster-name = ");
+            sb.append(smscPropertiesManagement.getDefaultClusterName());
             sb.append("\n");
 
 

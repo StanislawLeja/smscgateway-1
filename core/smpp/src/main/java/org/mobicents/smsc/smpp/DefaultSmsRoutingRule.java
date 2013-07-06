@@ -34,14 +34,24 @@ import com.cloudhopper.smpp.SmppBindType;
  */
 public class DefaultSmsRoutingRule implements SmsRoutingRule {
 
-	private final EsmeManagement esmeManagement;
+    private SmscPropertiesManagement smscPropertiesManagement;
+	private EsmeManagement esmeManagement;
 
 	/**
 	 * 
 	 */
-	public DefaultSmsRoutingRule(EsmeManagement esmeManagement) {
-		this.esmeManagement = esmeManagement;
+	public DefaultSmsRoutingRule() {
 	}
+
+    @Override
+    public void setEsmeManagement(EsmeManagement em) {
+        this.esmeManagement = em;
+    }
+
+    @Override
+    public void setSmscPropertiesManagement(SmscPropertiesManagement sm) {
+        this.smscPropertiesManagement = sm;
+    }
 
 	/*
 	 * (non-Javadoc)

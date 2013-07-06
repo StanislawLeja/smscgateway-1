@@ -115,8 +115,12 @@ public interface SmscPropertiesManagementMBean {
     public void setMaxActivityCount(int maxActivityCount);
 
 
-    public int getCdrDatabaseExportDuration();
+//    public int getCdrDatabaseExportDuration();
+//
+//    public void setCdrDatabaseExportDuration(int cdrDatabaseExportDuration);
 
-    public void setCdrDatabaseExportDuration(int cdrDatabaseExportDuration);
+    public String getDefaultClusterName();
+
+    public void setDefaultClusterName(String val);
 
 }

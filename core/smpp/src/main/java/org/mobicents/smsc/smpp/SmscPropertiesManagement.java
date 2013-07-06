@@ -64,7 +64,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private static final String FETCH_PERIOD = "fetchPeriod";
     private static final String FETCH_MAX_ROWS = "fetchMaxRows";
     private static final String MAX_ACTIVITY_COUNT = "maxActivityCount";
-    private static final String CDR_DATABASE_EXPORT_DURATION = "cdrDatabaseExportDuration";
+//    private static final String CDR_DATABASE_EXPORT_DURATION = "cdrDatabaseExportDuration";
+    private static final String DEFAULT_CLUSTER_NAME = "defaultClusterName";
 	
 	private static final String TAB_INDENT = "\t";
 	private static final String CLASS_ATTRIBUTE = "type";
@@ -105,7 +106,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	// time duration of exporting CDR's to a log based on cassandra database
 	// possible values: 1, 2, 5, 10, 15, 20, 30, 60 (minutes) or 0 (export is turned off)
-	private int cdrDatabaseExportDuration = 0;
+//	private int cdrDatabaseExportDuration = 0;
 
 	// parameters for cassandra database access
     private String hosts = "127.0.0.1:9160";
@@ -119,6 +120,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // max count of delivering Activities that are possible at the same time
     private int maxActivityCount = 500;
 
+    // if destinationAddress does not match to any esme (any ClusterName) or 
+    // a message will be routed to defaultClusterName (only for DatabaseSmsRoutingRule)
+    // (if it is specified)
+    private String defaultClusterName;
 
 	private SmscPropertiesManagement(String name) {
 		this.name = name;
@@ -351,20 +356,30 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         this.store();
     }
 
+//    @Override
+//    public int getCdrDatabaseExportDuration() {
+//        return cdrDatabaseExportDuration;
+//    }
+//
+//    @Override
+//    public void setCdrDatabaseExportDuration(int cdrDatabaseExportDuration) {
+//        if (cdrDatabaseExportDuration != 0 && cdrDatabaseExportDuration != 1 && cdrDatabaseExportDuration != 2 && cdrDatabaseExportDuration != 5
+//                && cdrDatabaseExportDuration != 10 && cdrDatabaseExportDuration != 15 && cdrDatabaseExportDuration != 20 && cdrDatabaseExportDuration != 30
+//                && cdrDatabaseExportDuration != 60)
+//            throw new IllegalArgumentException("cdrDatabaseExportDuration value must be 1,2,5,10,15,20,30 or 60 minutes or 0 if CDR export is disabled");
+//
+//        this.cdrDatabaseExportDuration = cdrDatabaseExportDuration;
+//        this.store();
+//    }
+
     @Override
-    public int getCdrDatabaseExportDuration() {
-        return cdrDatabaseExportDuration;
+    public String getDefaultClusterName() {
+        return defaultClusterName;
     }
 
     @Override
-    public void setCdrDatabaseExportDuration(int cdrDatabaseExportDuration) {
-        if (cdrDatabaseExportDuration != 0 && cdrDatabaseExportDuration != 1 && cdrDatabaseExportDuration != 2 && cdrDatabaseExportDuration != 5
-                && cdrDatabaseExportDuration != 10 && cdrDatabaseExportDuration != 15 && cdrDatabaseExportDuration != 20 && cdrDatabaseExportDuration != 30
-                && cdrDatabaseExportDuration != 60)
-            throw new IllegalArgumentException("cdrDatabaseExportDuration value must be 1,2,5,10,15,20,30 or 60 minutes or 0 if CDR export is disabled");
-
-        this.cdrDatabaseExportDuration = cdrDatabaseExportDuration;
-        this.store();
+    public void setDefaultClusterName(String val) {
+        defaultClusterName = val;
     }
 
 
@@ -434,8 +449,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             writer.write(this.fetchMaxRows, FETCH_MAX_ROWS, Integer.class);
             writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
 
-            writer.write(this.cdrDatabaseExportDuration, CDR_DATABASE_EXPORT_DURATION, Integer.class);
-            
+//            writer.write(this.cdrDatabaseExportDuration, CDR_DATABASE_EXPORT_DURATION, Integer.class);
+            writer.write(this.defaultClusterName, DEFAULT_CLUSTER_NAME, String.class);
+
 			writer.close();
 		} catch (Exception e) {
 			logger.error("Error while persisting the SMSC state in file", e);
@@ -503,9 +519,11 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             if (val != null)
                 this.maxActivityCount = val;
 
-            val = reader.read(CDR_DATABASE_EXPORT_DURATION, Integer.class);
-            if (val != null)
-                this.cdrDatabaseExportDuration = val;
+//            val = reader.read(CDR_DATABASE_EXPORT_DURATION, Integer.class);
+//            if (val != null)
+//                this.cdrDatabaseExportDuration = val;
+
+            this.defaultClusterName = reader.read(DEFAULT_CLUSTER_NAME, String.class);
 
 			reader.close();
 		} catch (XMLStreamException ex) {

@@ -1190,16 +1190,17 @@ public class DBOperations {
                     lastAdress = row.getKey();
 
                     DbSmsRoutingRule res = new DbSmsRoutingRule();
-                    ress.add(res);
+                    res.setAddress(row.getKey());
                     for (HColumn<Composite, ByteBuffer> col : row.getColumnSlice().getColumns()) {
                         Composite nm = col.getName();
                         String name = nm.get(0, SERIALIZER_STRING);
-                        res.setAddress(row.getKey());
 
                         if (name.equals(Schema.COLUMN_SYSTEM_ID)) {
                             res.setSystemId(SERIALIZER_STRING.fromByteBuffer(col.getValue()));
                         }
                     }
+                    if (res.getSystemId() != null)
+                        ress.add(res);
                 }
 
 //                if (rows.getCount() < row_count)
@@ -1211,7 +1212,7 @@ public class DBOperations {
 
             return ress;
         } catch (Exception e) {
-            String msg = "Failed to getSmsRoutingRule DbSmsRoutingRule for all records!";
+            String msg = "Failed to getSmsRoutingRule DbSmsRoutingRule for all records: " + e;
 
             throw new PersistenceException(msg, e);
         }

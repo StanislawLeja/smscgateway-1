@@ -25,15 +25,11 @@ package org.mobicents.smsc.smpp;
 import static org.testng.Assert.*;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import com.cloudhopper.smpp.type.Address;
 
 /**
  * 
@@ -58,17 +54,17 @@ public class DbSmsRoutingRuleTest {
     }
 
 
-    @Test(groups = { "cassandra" })
-    public void testingA() throws Exception {
-        Address address = new Address((byte) 0, (byte) 0, "^.*$");
-
-        Pattern pattern = Pattern.compile("^.*$");
-        Matcher m = pattern.matcher("923008508070");
-        if (m.matches()) {
-            int rrr=0;;
-        }
-
-    }
+//    @Test(groups = { "cassandra" })
+//    public void testingA() throws Exception {
+//        Address address = new Address((byte) 0, (byte) 0, "^.*$");
+//
+//        Pattern pattern = Pattern.compile("^.*$");
+//        Matcher m = pattern.matcher("923008508070");
+//        if (m.matches()) {
+//            int rrr=0;;
+//        }
+//
+//    }
 
     @Test(groups = { "cassandra" })
     public void testingDbSmsRoutingRule() throws Exception {
