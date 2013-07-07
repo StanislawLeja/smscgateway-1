@@ -496,6 +496,10 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 			this.testEventType = testEventType;
 			this.event = event;
 		}
+
+        public String toString() {
+            return "MAPTestEvent[" + testEventType + "]";
+        }
 	}
 }
 

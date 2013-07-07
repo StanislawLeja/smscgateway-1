@@ -295,7 +295,8 @@
 				<cmp-field><cmp-field-name>currentMsgNum</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>informServiceCenterContainer</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>segments</cmp-field-name></cmp-field>
-				<cmp-field><cmp-field-name>tcEmptySent</cmp-field-name></cmp-field>
+                <cmp-field><cmp-field-name>tcEmptySent</cmp-field-name></cmp-field>
+                <cmp-field><cmp-field-name>responseReceived</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>networkNode</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>messageSegmentNumber</cmp-field-name></cmp-field>	
 				<cmp-field><cmp-field-name>smRpDa</cmp-field-name></cmp-field>

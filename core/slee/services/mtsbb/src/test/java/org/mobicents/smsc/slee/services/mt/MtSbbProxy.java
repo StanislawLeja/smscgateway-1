@@ -86,6 +86,7 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 	private int currentMsgNum;
 	private InformServiceCenterContainer informServiceCenterContainer;
 	private int tcEmptySent;
+	private int responseReceived;
 	private SmsSignalInfo[] segments;
 
 	
@@ -168,6 +169,16 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 	public int getTcEmptySent() {
 		return this.tcEmptySent;
 	}
+
+    @Override
+    public void setResponseReceived(int responseReceived) {
+        this.responseReceived = responseReceived;
+    }
+
+    @Override
+    public int getResponseReceived() {
+        return responseReceived;
+    }
 
 	@Override
 	public void setSegments(SmsSignalInfo[] segments) {

@@ -79,6 +79,7 @@ import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextName;
 import org.mobicents.slee.SbbLocalObjectExt;
+import org.mobicents.slee.resource.map.events.DialogClose;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogProviderAbort;
 import org.mobicents.slee.resource.map.events.DialogReject;
@@ -212,7 +213,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			// Now send new SRI with supported ACN (MAP V1)
 			try {
 				this.sendMtSms(this.getMtFoSMSMAPApplicationContext(MAPApplicationContextVersion.version1),
-						MessageProcessingState.resendAfterMapProtocolNegotiation);
+						MessageProcessingState.resendAfterMapProtocolNegotiation, null);
 				return;
 			} catch (SmscProcessingException e) {
 				String reason = "SmscPocessingException when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: " + e.toString();
@@ -245,7 +246,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 			try {
 				this.sendMtSms(this.getMtFoSMSMAPApplicationContext(supportedMAPApplicationContext.getApplicationContextVersion()),
-						MessageProcessingState.resendAfterMapProtocolNegotiation);
+						MessageProcessingState.resendAfterMapProtocolNegotiation, null);
 				return;
 			} catch (SmscProcessingException e) {
 				String reason = "SmscPocessingException when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: " + e.toString();
@@ -355,8 +356,20 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 					}
 				}
 			}
-		}
+		} else if (this.getResponseReceived() == 1) {
+            this.setResponseReceived(0);
+            this.handleSmsResponse((MAPDialogSms)evt.getMAPDialog(), true);
+        }
 	}
+
+    public void onDialogClose(DialogClose evt, ActivityContextInterface aci) {
+        super.onDialogClose(evt, aci);
+
+        if (this.getResponseReceived() == 1) {
+            this.setResponseReceived(0);
+            this.handleSmsResponse((MAPDialogSms)evt.getMAPDialog(), false);
+        }
+    }
 
 	/**
 	 * SMS Event Handlers
@@ -382,7 +395,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		if (this.logger.isInfoEnabled()) {
 			this.logger.info("\nReceived FORWARD_SHORT_MESSAGE_RESPONSE = " + evt);
 		}
-		this.handleSmsResponse(evt.getMAPDialog(), aci);
+        this.setResponseReceived(1);
 	}
 
 	/**
@@ -406,7 +419,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			this.logger.info("\nReceived MT_FORWARD_SHORT_MESSAGE_RESPONSE = " + evt);
 		}
 
-		this.handleSmsResponse(evt.getMAPDialog(), aci);
+        this.setResponseReceived(1);
 	}
 
 	/**
@@ -430,7 +443,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		this.setSmRpOa(sm_RP_OA);
 
 		try {
-			this.sendMtSms(this.getMtFoSMSMAPApplicationContext(this.maxMAPApplicationContextVersion), MessageProcessingState.firstMessageSending);
+            this.sendMtSms(this.getMtFoSMSMAPApplicationContext(this.maxMAPApplicationContextVersion), MessageProcessingState.firstMessageSending, null);
 		} catch (SmscProcessingException e) {
 			String reason = "SmscPocessingException when invoking sendMtSms() from setupMtForwardShortMessageRequest()-firstMessageSending: " + e.toString();
 			this.logger.severe(reason, e);
@@ -470,9 +483,13 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 	public abstract InformServiceCenterContainer getInformServiceCenterContainer();
 
-	public abstract void setTcEmptySent(int tcEmptySent);
+    public abstract void setTcEmptySent(int tcEmptySent);
 
-	public abstract int getTcEmptySent();
+    public abstract int getTcEmptySent();
+
+    public abstract void setResponseReceived(int responseReceived);
+
+    public abstract int getResponseReceived();
 
 
 
@@ -545,7 +562,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	 * Private Methods
 	 */
 
-	private void handleSmsResponse(MAPDialogSms mapDialogSms, ActivityContextInterface aci) {
+	private void handleSmsResponse(MAPDialogSms mapDialogSms, boolean continueDialog) {
 
 		// checking if there are yet message segments
 		int messageSegmentNumber = this.getMessageSegmentNumber();
@@ -555,7 +572,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			messageSegmentNumber++;
 			this.setMessageSegmentNumber(messageSegmentNumber);
 			try {
-				this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.nextSegmentSending);
+                this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.nextSegmentSending, continueDialog ? mapDialogSms : null);
 				return;
 			} catch (SmscProcessingException e) {
 				this.logger.severe("SmscPocessingException when invoking sendMtSms() from handleSmsResponse()-nextSegmentSending: " + e.toString(), e);
@@ -577,7 +594,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			return;
 		}
 		PersistenceRAInterface pers = this.getStore();
-		
+
 		int currentMsgNum = this.doGetCurrentMsgNum();
 		Sms sms = smsSet.getSms(currentMsgNum);
 		Date deliveryDate = new Date();
@@ -601,10 +618,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			}
 
 			try {
-				this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.firstMessageSending);
+				this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.firstMessageSending, continueDialog ? mapDialogSms : null);
 				return;
 			} catch (SmscProcessingException e) {
-				this.logger.severe("SmscPocessingException when invoking sendMtSms() from handleSmsResponse()-firstMessageSending: " + e.toString(), e);
+				this.logger.severe("SmscPocessingException when invoking sendMtSms() from handleSmsResponse(): " + e.toString(), e);
 			}
 		}
 
@@ -620,12 +637,20 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			this.doSetCurrentMsgNum(currentMsgNum);
 
 			try {
-				this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.firstMessageSending);
+				this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.firstMessageSending, continueDialog ? mapDialogSms : null);
 				return;
 			} catch (SmscProcessingException e) {
-				this.logger.severe("SmscPocessingException when invoking sendMtSms() from handleSmsResponse()-firstMessageSending: " + e.toString(), e);
+				this.logger.severe("SmscPocessingException when invoking sendMtSms() from handleSmsResponse(): " + e.toString(), e);
 			}
 		}
+
+        if (continueDialog) {
+            try {
+                mapDialogSms.close(false);
+            } catch (MAPException e) {
+                this.logger.severe("MAPException when closing MAP dialog from handleSmsResponse(): " + e.toString(), e);
+            }
+        }
 
 		// no more messages to send - remove smsSet
 		this.freeSmsSetSucceded(smsSet, pers);
@@ -727,7 +752,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		return smsSignalInfo;
 	}
 
-	private void sendMtSms(MAPApplicationContext mapApplicationContext, MessageProcessingState messageProcessingState) throws SmscProcessingException { SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+    private void sendMtSms(MAPApplicationContext mapApplicationContext, MessageProcessingState messageProcessingState, MAPDialogSms mapDialogSms)
+            throws SmscProcessingException {
+
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
 		if (smsDeliveryData == null) {
 			throw new SmscProcessingException("SmsDeliveryData CMP missed",-1,-1,null);
 		}
@@ -746,13 +774,16 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			moreMessagesToSend = true;
 		}
 
-		MAPDialogSms mapDialogSms = null;
 		try {
-			mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext, this.getServiceCenterSccpAddress(), null,
-					this.getNetworkNode(), null);
+		    boolean newDialog = false;
+            if (mapDialogSms == null) {
+                newDialog = true;
+                mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext, this.getServiceCenterSccpAddress(), null,
+                        this.getNetworkNode(), null);
 
-			ActivityContextInterface mtFOSmsDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);
-			mtFOSmsDialogACI.attach(this.sbbContext.getSbbLocalObject());
+                ActivityContextInterface mtFOSmsDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);
+                mtFOSmsDialogACI.attach(this.sbbContext.getSbbLocalObject());
+            }
 
 			SM_RP_DA sm_RP_DA = this.getSmRpDa();
 			SM_RP_OA sm_RP_OA = this.getSmRpOa();
@@ -828,8 +859,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 			int messageUserDataLengthOnSend = mapDialogSms.getMessageUserDataLengthOnSend();
 			int maxUserDataLength = mapDialogSms.getMaxUserDataLength();
-			if (mapDialogSms.getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1
-					&& messageUserDataLengthOnSend >= maxUserDataLength - SmscPropertiesManagement.getInstance().getMaxMessageLengthReducer()) {
+            if (mapDialogSms.getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1 && newDialog
+                    && messageUserDataLengthOnSend >= maxUserDataLength - SmscPropertiesManagement.getInstance().getMaxMessageLengthReducer()) {
 				mapDialogSms.cancelInvocation(invokeId);
 				this.setTcEmptySent(1);
 			} else {
