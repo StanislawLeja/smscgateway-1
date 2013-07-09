@@ -1,5 +1,5 @@
 CREATE KEYSPACE "TelestaxSMSC"
-         WITH REPLICATION = {'CLASS' : 'SimpleStrategy', 'replication_factor': 1};
+         WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1};
 
 USE "TelestaxSMSC";
 
