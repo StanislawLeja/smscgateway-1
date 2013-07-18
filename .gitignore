@@ -13,3 +13,4 @@ target
 /test-output
 ${env.JBOSS_HOME}
 
+/SmscPropertiesManagementTest_smscproperties.xml

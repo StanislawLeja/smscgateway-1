@@ -26,6 +26,7 @@ import static org.testng.Assert.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,6 +50,7 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMReque
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMResponse;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ConcatenatedShortMessagesIdentifier;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.api.smstpdu.NumberingPlanIdentification;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsTpduType;
@@ -2389,6 +2391,38 @@ public class MtTest {
 		assertTrue(smsSet2.isAlertingSupported());
 	}
 
+    @Test(groups = { "Mt" })
+    public void Ucs2Test() throws Exception {
+        
+        String s1 = "Привет омлетЙ";
+        Charset ucs2Charset = Charset.forName("UTF-16BE");
+        Charset utf8 = Charset.forName("UTF-8");
+//        ByteBuffer bb = ByteBuffer.wrap(textPart);
+//        CharBuffer bf = ucs2Charset.decode(bb);
+//        msg = bf.toString();
+        ByteBuffer bb = utf8.encode(s1);
+        byte[] buf = new byte[bb.limit()];
+        bb.get(buf, 0, bb.limit());
+        String s2 = new String(buf);
+        
+        int gg=0;
+        gg++;
+        
+//        MtSbbProxy proxy = new MtSbbProxy(this.pers);
+//        Sms sms = new Sms();
+//        sms.setDataCoding(8);
+//        byte[] shortMessage = new byte[] { (byte) 0xd8, (byte) 0xb2, (byte) 0xd9, (byte) 0x85, (byte) 0xd8, (byte) 0xa7, (byte) 0xd9, (byte) 0x86, (byte) 0xdb,
+//                (byte) 0x8c, (byte) 0xda, (byte) 0xa9, (byte) 0xd9, (byte) 0x87, 0x20, (byte) 0xd8, (byte) 0xa8, (byte) 0xd8, (byte) 0xb1, (byte) 0xd8,
+//                (byte) 0xb1, (byte) 0xd8, (byte) 0xb3, (byte) 0xdb, (byte) 0x8c };
+//        boolean moreMessagesToSend = false;
+//        int messageReferenceNumber = 0;
+//        int messageSegmentCount = 0;
+//        int messageSegmentNumber = 0;
+//        DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(8);
+//        boolean udhExists = false;
+//        SmsSignalInfo si = proxy.createSignalInfo(sms, shortMessage, moreMessagesToSend, messageReferenceNumber, messageSegmentCount, messageSegmentNumber,
+//                dataCodingScheme, udhExists);
+    }
 
 	private void clearDatabase() throws PersistenceException, IOException {
 

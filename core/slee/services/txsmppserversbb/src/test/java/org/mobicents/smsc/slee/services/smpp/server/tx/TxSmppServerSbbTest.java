@@ -25,6 +25,9 @@ package org.mobicents.smsc.slee.services.smpp.server.tx;
 import static org.testng.Assert.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.util.Date;
 
 import javax.slee.ActivityContextInterface;
@@ -80,8 +83,16 @@ public class TxSmppServerSbbTest {
 
 	private TargetAddress ta1 = new TargetAddress(1, 1, "5555");
 
-	private byte[] msg = { 11, 12, 13, 14, 15, 15 };
+	private static byte[] msg = { 11, 12, 13, 14, 15, 15 };
 	private byte[] msg_ref_num = { 0, 10 };
+
+    static {
+        String s1 = "ПриветHel";
+        Charset utf8Charset = Charset.forName("UTF-8");
+        ByteBuffer bf = utf8Charset.encode(s1);
+        msg = new byte[bf.limit()];
+        bf.get(msg);
+    }
 
 	@BeforeClass
 	public void setUpClass() throws Exception {

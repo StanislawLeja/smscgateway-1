@@ -427,7 +427,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 			writer.write(this.serviceCenterGt, SC_GT, String.class);
 			writer.write(this.serviceCenterSsn, SC_SSN, Integer.class);
-			writer.write(this.hlrSsn, HLR_SSN, Integer.class);
+            writer.write(this.hlrSsn, HLR_SSN, Integer.class);
 			writer.write(this.mscSsn, MSC_SSN, Integer.class);
 			writer.write(this.maxMapVersion, MAX_MAP_VERSION, Integer.class);
 			writer.write(this.defaultValidityPeriodHours, DEFAULT_VALIDITY_PERIOD_HOURS, Integer.class);
@@ -447,10 +447,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             writer.write(this.clusterName, CLUSTER_NAME, String.class);
             writer.write(this.fetchPeriod, FETCH_PERIOD, Long.class);
             writer.write(this.fetchMaxRows, FETCH_MAX_ROWS, Integer.class);
-            writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
-
 //            writer.write(this.cdrDatabaseExportDuration, CDR_DATABASE_EXPORT_DURATION, Integer.class);
+
             writer.write(this.defaultClusterName, DEFAULT_CLUSTER_NAME, String.class);
+            writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
 
 			writer.close();
 		} catch (Exception e) {
@@ -472,7 +472,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			reader.setBinding(binding);
 			this.serviceCenterGt = reader.read(SC_GT, String.class);
 			this.serviceCenterSsn = reader.read(SC_SSN, Integer.class);
-			this.hlrSsn = reader.read(HLR_SSN, Integer.class);
+            this.hlrSsn = reader.read(HLR_SSN, Integer.class);
 			this.mscSsn = reader.read(MSC_SSN, Integer.class);
 			this.maxMapVersion = reader.read(MAX_MAP_VERSION, Integer.class);
 			Integer dvp = reader.read(DEFAULT_VALIDITY_PERIOD_HOURS, Integer.class);
@@ -515,15 +515,16 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             val = reader.read(FETCH_MAX_ROWS, Integer.class);
             if (val != null)
                 this.fetchMaxRows = val;
-            val = reader.read(MAX_ACTIVITY_COUNT, Integer.class);
-            if (val != null)
-                this.maxActivityCount = val;
 
 //            val = reader.read(CDR_DATABASE_EXPORT_DURATION, Integer.class);
 //            if (val != null)
 //                this.cdrDatabaseExportDuration = val;
 
             this.defaultClusterName = reader.read(DEFAULT_CLUSTER_NAME, String.class);
+
+            val = reader.read(MAX_ACTIVITY_COUNT, Integer.class);
+            if (val != null)
+                this.maxActivityCount = val;
 
 			reader.close();
 		} catch (XMLStreamException ex) {

@@ -693,7 +693,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		return res;
 	}
 
-	private SmsSignalInfo createSignalInfo(Sms sms, byte[] shortMessage, boolean moreMessagesToSend, int messageReferenceNumber, int messageSegmentCount,
+	protected SmsSignalInfo createSignalInfo(Sms sms, byte[] shortMessage, boolean moreMessagesToSend, int messageReferenceNumber, int messageSegmentCount,
 			int messageSegmentNumber, DataCodingScheme dataCodingScheme, boolean udhExists) throws MAPException {
 
 		UserDataImpl ud;

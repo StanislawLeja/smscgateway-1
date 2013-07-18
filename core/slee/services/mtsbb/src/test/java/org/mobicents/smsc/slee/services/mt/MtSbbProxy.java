@@ -35,12 +35,15 @@ import javax.slee.TransactionRolledbackLocalException;
 import org.mobicents.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.mobicents.protocols.ss7.map.MAPSmsTpduParameterFactoryImpl;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
+import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbLocalObjectExt;
+import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
@@ -89,6 +92,12 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 	private int responseReceived;
 	private SmsSignalInfo[] segments;
 
+
+    protected SmsSignalInfo createSignalInfo(Sms sms, byte[] shortMessage, boolean moreMessagesToSend, int messageReferenceNumber, int messageSegmentCount,
+            int messageSegmentNumber, DataCodingScheme dataCodingScheme, boolean udhExists) throws MAPException {
+        return super.createSignalInfo(sms, shortMessage, moreMessagesToSend, messageReferenceNumber, messageSegmentCount, messageSegmentNumber,
+                dataCodingScheme, udhExists);
+    }
 	
 	@Override
 	public void setSmsSubmitData(SmsSubmitData smsDeliveryData) {
