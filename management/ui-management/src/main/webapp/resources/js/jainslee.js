@@ -56,6 +56,8 @@ function setAutoCancellableInterval(interval, fn, text) {
 			clearInterval(timerId);
 		}
 	}, interval);
+	// execute first time immediately
+	window[fn]();
 
 	return timerId;
 }
@@ -93,6 +95,11 @@ function prepareBatchRequest() {
 }
  */
 
+function handleError(message, response) {
+	errorUID = ("st" + new Date().getTime()).hashCode();
+	logToConsole("ERROR", message + " (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+	createStackTrace(errorUID, response.stacktrace);
+}
 
 // --- Menu Handling Functions ----------------------------------------------
 
@@ -152,6 +159,15 @@ function clearConsole() {
 	$('#console-log-text').html('');
 }
 
+function toggleConsole() {
+	if($(".console").height() > 50) {
+		minimizeConsole();
+	}
+	else {
+		maximizeConsole();
+	}
+}
+
 function minimizeConsole() {
 	// keep the sticky footer behavior...
 	$('#wrap').animate({'margin-bottom': '-75px'});
@@ -160,8 +176,7 @@ function minimizeConsole() {
 
 	$('.console').animate({'height': '20px'});
 
-	$('#btn-min-console').hide();
-	$('#btn-max-console').show();
+	$('#btn-min-max-console').children("i").toggleClass("icon-double-angle-up").toggleClass("icon-double-angle-down");
 }
 
 function maximizeConsole() {
@@ -172,8 +187,7 @@ function maximizeConsole() {
 
 	$('.console').animate({'height': '160px'});
 
-	$('#btn-max-console').hide();
-	$('#btn-min-console').show();
+	$('#btn-min-max-console').children("i").toggleClass("icon-double-angle-up").toggleClass("icon-double-angle-down");
 	$("html, body").animate({ scrollTop: $(document).height() }, "slow");
 }
 
@@ -572,6 +586,17 @@ String.prototype.hashCode = function(){
     return hash;
 };
 
+String.prototype.addCommas = function() {
+    var x = this.split('.');
+    var x1 = x[0];
+    var x2 = x.length > 1 ? '.' + x[1] : '';
+    var rgx = /(\d+)(\d{3})/;
+    while (rgx.test(x1)) {
+        x1 = x1.replace(rgx, '$1' + ',' + '$2');
+    }
+    return x1 + x2;
+};
+
 String.prototype.toHHMMSS = function () {
     sec_numb    = parseInt(this, 10); // don't forget the second parm
     var days   = Math.floor(sec_numb / (24*3600));
@@ -582,9 +607,9 @@ String.prototype.toHHMMSS = function () {
     if (hours   < 10) {hours   = "0"+hours;}
     if (minutes < 10) {minutes = "0"+minutes;}
     if (seconds < 10) {seconds = "0"+seconds;}
-    var time    = days+'<small>days &nbsp; </small><hr>'+hours+'<small>hours &nbsp;</small><br>'+minutes+'<small>minutes</small><br>'+seconds+'<small>seconds</small><br/>';
+    var time    = days+'<small>days &nbsp; </small><hr>'+hours+'<small>hours &nbsp;</small><br>'+minutes+'<small>minutes</small><br>'+seconds+'<small>seconds</small><br>';
     return time;
-}
+};
 
 // ----
 
@@ -623,6 +648,6 @@ function BatchRequestsFactory() {
 		var requests = prepareBatchRequest();
 		var responses = jolokia.request(requests);
 		return responses;
-	}
+	};
 
 }

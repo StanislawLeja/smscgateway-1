@@ -147,3 +147,16 @@ tbody tr:hover td.component-row-details-cell {
 	display: none;
 	text-align: justify;
 }
+
+.prepended-slider {
+	margin-left: 50px;
+}
+
+textarea.code {
+	font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+}
+
+textarea.hardcore-code {
+	background-color: #000;
+	color: #0F0;
+}
