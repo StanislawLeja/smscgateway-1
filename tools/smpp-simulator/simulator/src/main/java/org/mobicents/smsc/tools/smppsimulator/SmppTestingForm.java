@@ -312,21 +312,26 @@ public class SmppTestingForm extends JDialog {
             byte[] buf = null;
             boolean addSegmTlv = false;
             int esmClass = 0;
+            int msgLenByte = 0;
     		switch (et) {
     		case GSM7:
-    			dcs = 0;
-    			buf = messageText.getBytes();
-//                maxLen = 160;
-//                maxSplLen = 153;
-    			break;
+                dcs = 0;
+                buf = messageText.getBytes();
+                msgLenByte = buf.length;
+                break;
     		case UCS2:
     			dcs = 8;
-    			Charset ucs2Charset = Charset.forName("UTF-16BE");
-				ByteBuffer bb = ucs2Charset.encode(messageText);
+    			ByteBuffer bb;
+                if (splittingType == SplittingType.DoNotSplit) {
+                    Charset utf8Charset = Charset.forName("UTF-8");
+                    bb = utf8Charset.encode(messageText);
+                } else {
+                    Charset ucs2Charset = Charset.forName("UTF-16BE");
+                    bb = ucs2Charset.encode(messageText);
+                }
+                msgLenByte = messageText.length() * 2;
 				buf = new byte[bb.limit()];
 				bb.get(buf);
-//    			maxLen = 140;
-//                maxSplLen = 134;
                 break;
     		}
     		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
@@ -334,7 +339,7 @@ public class SmppTestingForm extends JDialog {
 			int maxSplLen = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
 
     		int segmCnt = 0;
-			if (buf.length > maxLen) { // may be message splitting
+			if (msgLenByte > maxLen) { // may be message splitting
 				SplittingType st = splittingType;
 				switch (st) {
 				case DoNotSplit:

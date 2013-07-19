@@ -38,8 +38,6 @@ import javax.slee.TransactionRolledbackLocalException;
 
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingGroup;
-import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingSchemaIndicationType;
-import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingSchemaMessageClass;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
@@ -48,8 +46,10 @@ import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.SmppSessionsProxy;
+import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 import org.mobicents.smsc.slee.services.smpp.server.tx.TxSmppServerSbb;
 import org.mobicents.smsc.smpp.Esme;
@@ -250,6 +250,79 @@ public class TxSmppServerSbbTest {
 		assertEquals(errMsg, "TxSmpp DataCoding scheme does not supported: 4 - Only GSM7 and USC2 are supported");
 	}
 
+    @Test(groups = { "TxSmppServer" })
+    public void testSubmitSm_createSmsEvent() throws Exception {
+
+        if (!this.cassandraDbInited)
+            return;
+
+        SmscPropertiesManagement spm = SmscPropertiesManagement.getInstance("Test");
+        String sMsgA = "ПриветHel";
+
+        // only message part
+        Charset utf8 = Charset.forName("UTF-8");
+        ByteBuffer bb = utf8.encode(sMsgA);
+        byte[] aMsgA = new byte[bb.limit()];
+        bb.get(aMsgA);
+        Charset ucs2 = Charset.forName("UTF-16BE");
+        bb = ucs2.encode(sMsgA);
+        byte[] aMsgAA = new byte[bb.limit()];
+        bb.get(aMsgAA);
+
+        com.cloudhopper.smpp.pdu.SubmitSm event = new com.cloudhopper.smpp.pdu.SubmitSm();
+        Address addr = new Address();
+        addr.setNpi((byte) 1);
+        addr.setTon((byte) 1);
+        addr.setAddress("2222");
+        event.setSourceAddress(addr);
+
+        Address addr2 = new Address();
+        addr2.setNpi((byte) 1);
+        addr2.setTon((byte) 1);
+        addr2.setAddress("5555");
+        event.setDestAddress(addr2);
+
+        event.setDataCoding((byte) 8);
+        event.setShortMessage(aMsgA);
+
+        Esme origEsme = new Esme();
+        TargetAddress ta = ta1;
+        Sms sms = this.sbb.createSmsEvent(event, origEsme, ta, this.pers);
+
+        Charset ucs2Charset = Charset.forName("UTF-16BE");
+        bb = ByteBuffer.wrap(sms.getShortMessage());
+        CharBuffer bf = ucs2Charset.decode(bb);
+        String msg2 = bf.toString();
+        assertEquals(msg2, sMsgA);
+
+
+        // message part and UDH
+        byte[] udh = new byte[] { 0x05, 0x00, 0x03, 0x29, 0x02, 0x02 };
+        byte[] aMsgB = new byte[aMsgAA.length + udh.length];
+        System.arraycopy(udh, 0, aMsgB, 0, udh.length);
+        System.arraycopy(aMsgAA, 0, aMsgB, udh.length, aMsgAA.length);
+
+        event = new com.cloudhopper.smpp.pdu.SubmitSm();
+        event.setSourceAddress(addr);
+        event.setDestAddress(addr2);
+        event.setDataCoding((byte) 8);
+        event.setShortMessage(aMsgB);
+        event.setEsmClass(SmppConstants.ESM_CLASS_UDHI_MASK);
+
+        sms = this.sbb.createSmsEvent(event, origEsme, ta, this.pers);
+
+        byte[] bf1 = new byte[udh.length];
+        byte[] bf2 = new byte[sms.getShortMessage().length - udh.length];
+        System.arraycopy(sms.getShortMessage(), 0, bf1, 0, udh.length);
+        System.arraycopy(sms.getShortMessage(), udh.length, bf2, 0, bf2.length);
+        bb = ByteBuffer.wrap(bf2);
+        bf = ucs2Charset.decode(bb);
+        msg2 = bf.toString();
+        assertEquals(msg2, sMsgA);
+        assertEquals(bf1, udh);
+
+    }
+
 	private void fillSm(BaseSm event, Date curDate, boolean isSubmitMsg) {
 		Address destAddr = new Address();
 		destAddr.setAddress("5555");
@@ -397,6 +470,10 @@ public class TxSmppServerSbbTest {
 		public void setSmppServerSessions(SmppSessions smppServerSessions) {
 			this.smppServerSessions = smppServerSessions;
 		}
+
+        protected Sms createSmsEvent(BaseSm event, Esme origEsme, TargetAddress ta, PersistenceRAInterface store) throws SmscProcessingException {
+            return super.createSmsEvent(event, origEsme, ta, store);
+        }
 	}
 	
 	private class SmppTransactionProxy implements SmppTransaction, ActivityContextInterface {
@@ -444,6 +521,6 @@ public class TxSmppServerSbbTest {
 			// TODO Auto-generated method stub
 			return false;
 		}
-		
-	}
+
+    }
 }

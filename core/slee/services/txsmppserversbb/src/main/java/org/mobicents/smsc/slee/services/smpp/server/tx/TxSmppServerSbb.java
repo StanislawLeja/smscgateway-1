@@ -46,7 +46,6 @@ import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
-import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
@@ -422,7 +421,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 	}
 
-	private Sms createSmsEvent(BaseSm event, Esme origEsme, TargetAddress ta, PersistenceRAInterface store) throws SmscProcessingException {
+	protected Sms createSmsEvent(BaseSm event, Esme origEsme, TargetAddress ta, PersistenceRAInterface store) throws SmscProcessingException {
 
 		Sms sms = new Sms();
 		sms.setDbId(UUID.randomUUID());
@@ -490,48 +489,47 @@ public abstract class TxSmppServerSbb implements Sbb {
 			}
 		}
 
-		// .............................
-//        if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
-//            // for UCS2 encoding we have to recode UTF-8 -> UCS2 here
-//
-//            byte[] udhData = null;
-//            byte[] textPart = sms.getShortMessage();
-//            if (((sms.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0) && sms.getShortMessage().length > 2) {
-//                // UDH exists
-//                int udhLen = (textPart[0] & 0xFF) + 1;
-//                if (udhLen <= textPart.length) {
-//                    textPart = new byte[textPart.length - udhLen];
-//                    udhData = new byte[udhLen];
-//                    System.arraycopy(sms.getShortMessage(), udhLen, textPart, 0, textPart.length);
-//                    System.arraycopy(sms.getShortMessage(), 0, udhData, 0, udhLen);
-//                }
-//            }
-//            Charset utf8Charset = Charset.forName("UTF-8");
-//            ByteBuffer bb = ByteBuffer.wrap(textPart);
-//            CharBuffer cb = utf8Charset.decode(bb);
-//            Charset ucs2Charset = Charset.forName("UTF-16BE");
-//            ByteBuffer bf2 = ucs2Charset.encode(cb);
-//            byte[] buf2;
-//            if (udhData != null) {
-//                buf2 = new byte[udhData.length + bf2.limit()];
-//                bf2.get(buf2, udhData.length, bf2.limit());
-//                System.arraycopy(udhData, 0, buf2, 0, udhData.length);
-//            } else {
-//                buf2 = new byte[bf2.limit()];
-//                bf2.get(buf2);
-//            }
-//            sms.setShortMessage(buf2);
-//        }
-        // .............................
+        int lenSolid = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
+        int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
+        boolean udhPresent = (event.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
+        Tlv sarMsgRefNum = event.getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
+        Tlv sarTotalSegments = event.getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
+        Tlv sarSegmentSeqnum = event.getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
+        boolean segmentTlvFlag = (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null);
+
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2 && !udhPresent && !segmentTlvFlag) {
+            // for UCS2 encoding we have to recode UTF-8 -> UCS2 here
+
+            byte[] udhData = null;
+            byte[] textPart = sms.getShortMessage();
+            if (udhPresent && sms.getShortMessage().length > 2) {
+                // UDH exists
+                int udhLen = (textPart[0] & 0xFF) + 1;
+                if (udhLen <= textPart.length) {
+                    textPart = new byte[textPart.length - udhLen];
+                    udhData = new byte[udhLen];
+                    System.arraycopy(sms.getShortMessage(), udhLen, textPart, 0, textPart.length);
+                    System.arraycopy(sms.getShortMessage(), 0, udhData, 0, udhLen);
+                }
+            }
+            Charset utf8Charset = Charset.forName("UTF-8");
+            ByteBuffer bb = ByteBuffer.wrap(textPart);
+            CharBuffer cb = utf8Charset.decode(bb);
+            Charset ucs2Charset = Charset.forName("UTF-16BE");
+            ByteBuffer bf2 = ucs2Charset.encode(cb);
+            byte[] buf2;
+            if (udhData != null) {
+                buf2 = new byte[udhData.length + bf2.limit()];
+                bf2.get(buf2, udhData.length, bf2.limit());
+                System.arraycopy(udhData, 0, buf2, 0, udhData.length);
+            } else {
+                buf2 = new byte[bf2.limit()];
+                bf2.get(buf2);
+            }
+            sms.setShortMessage(buf2);
+        }
 
 		// checking max message length 
-		int lenSolid = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
-		int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
-		boolean udhPresent = (event.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
-		Tlv sarMsgRefNum = event.getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
-		Tlv sarTotalSegments = event.getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
-		Tlv sarSegmentSeqnum = event.getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
-		boolean segmentTlvFlag = (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null);
 		if (udhPresent || segmentTlvFlag) {
 			// here splitting by SMSC is not supported
 			if (sms.getShortMessage().length > lenSolid) {
