@@ -22,6 +22,9 @@
 
 package org.mobicents.smsc.slee.services.smpp.server.rx;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.util.Date;
 
 import javax.naming.Context;
@@ -35,6 +38,9 @@ import javax.slee.SbbContext;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
+import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
@@ -283,14 +289,27 @@ public abstract class RxSmppServerSbb implements Sbb {
 			deliverSm.setReplaceIfPresent((byte) sms.getReplaceIfPresent());
 			deliverSm.setDataCoding((byte) sms.getDataCoding());
 
-			if (sms.getShortMessage() != null) {
-				if (sms.getShortMessage().length <= 255) {
-					deliverSm.setShortMessage(sms.getShortMessage());
-				} else {
-					Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, sms.getShortMessage(), null);
-					deliverSm.addOptionalParameter(tlv);
-				}
-			}			
+            byte[] msg = sms.getShortMessage();
+            if (msg != null) {
+                DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(sms.getDataCoding());
+                boolean udhPresent = (sms.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
+                if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2 && !udhPresent) {
+                    Charset ucs2Charset = Charset.forName("UTF-16BE");
+                    ByteBuffer bb = ByteBuffer.wrap(msg);
+                    CharBuffer cb = ucs2Charset.decode(bb);
+                    Charset utf8Charset = Charset.forName("UTF-8");
+                    ByteBuffer bf2 = utf8Charset.encode(cb);
+                    msg = new byte[bf2.limit()];
+                    bf2.get(msg);
+                }
+
+                if (msg.length <= 255) {
+                    deliverSm.setShortMessage(msg);
+                } else {
+                    Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, msg, null);
+                    deliverSm.addOptionalParameter(tlv);
+                }
+            }
 
 			// TODO : waiting for 2 secs for window to accept our request, is it
 			// good? Should time be more here?

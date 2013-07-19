@@ -22,11 +22,15 @@
 
 package org.mobicents.smsc.tools.smppsimulator;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.ClosedChannelException;
+import java.nio.charset.Charset;
 
 import com.cloudhopper.smpp.PduAsyncResponse;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.impl.DefaultSmppSessionHandler;
+import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
 import com.cloudhopper.smpp.type.RecoverablePduException;
@@ -61,9 +65,34 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
         // here we can insert responses
 		if (pduRequest.getCommandId() == SmppConstants.CMD_ID_DELIVER_SM) {
 			PduResponse resp = pduRequest.createResponse();
+
+            if (pduRequest instanceof DeliverSm) {
+                DeliverSm dev = (DeliverSm) pduRequest;
+                String s;
+                byte[] msg = dev.getShortMessage();
+                if (dev.getDataCoding() == 8) {
+                    boolean udhPresent = (dev.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
+                    if (udhPresent) {
+                        Charset ucs2Charset = Charset.forName("UTF-16BE");
+                        ByteBuffer bb = ByteBuffer.wrap(msg);
+                        CharBuffer cb = ucs2Charset.decode(bb);
+                        s = cb.toString();
+                    } else {
+                        Charset utf8Charset = Charset.forName("UTF-8");
+                        ByteBuffer bb = ByteBuffer.wrap(msg);
+                        CharBuffer cb = utf8Charset.decode(bb);
+                        s = cb.toString();
+                    }
+                } else {
+                    s = new String(msg);
+                }
+                testingForm.addMessage("TextReceived: ", s);
+            }
+			
 			if (this.testingForm.getSmppSimulatorParameters().isRejectIncomingDeliveryMessage()) {
 				resp.setCommandStatus(1);
 			}
+
 			testingForm.addMessage("PduResponseSent: " + resp.getName(), resp.toString());
 			return resp;
 		}
