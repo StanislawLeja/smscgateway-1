@@ -52,6 +52,7 @@ public class SmppSimulatorParameters {
 
 	private String messageText = "Hello!";
 	private EncodingType encodingType = EncodingType.GSM7;
+	private boolean messageClass;
 	private SplittingType splittingType = SplittingType.DoNotSplit;
 	private ValidityType validityType = ValidityType.NoSpecial;
 
@@ -261,7 +262,22 @@ public class SmppSimulatorParameters {
 	}
 
 
-	public enum EncodingType {
+	/**
+     * @return the messageClass
+     */
+    public boolean isMessageClass() {
+        return messageClass;
+    }
+
+    /**
+     * @param messageClass the messageClass to set
+     */
+    public void setMessageClass(boolean messageClass) {
+        this.messageClass = messageClass;
+    }
+
+
+    public enum EncodingType {
     	GSM7, UCS2,
     }
 

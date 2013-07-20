@@ -26,7 +26,6 @@ import static org.testng.Assert.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,7 +49,6 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMReque
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMResponse;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ConcatenatedShortMessagesIdentifier;
-import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.api.smstpdu.NumberingPlanIdentification;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsTpduType;
@@ -169,6 +167,7 @@ public class MtTest {
 
 		ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
 		SmsDef sd1 = new SmsDef();
+		sd1.dataCodingScheme = 16;
 		lst.add(sd1);
 		SmsSet smsSet = prepareDatabase(lst);
 
@@ -241,7 +240,7 @@ public class MtTest {
 		assertEquals(scas.getNumberingPlan(), org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN);
 		SmsSignalInfo ssi = mtFsmReq.getSM_RP_UI();
 		SmsDeliverTpdu tpdu = (SmsDeliverTpdu) ssi.decodeTpdu(false);
-		assertEquals(tpdu.getDataCodingScheme().getCode(), 0);
+		assertEquals(tpdu.getDataCodingScheme().getCode(), 16);
 		assertFalse(tpdu.getForwardedOrSpawned());
 		assertFalse(tpdu.getMoreMessagesToSend());
 		assertEquals(tpdu.getOriginatingAddress().getAddressValue(), origDig);

@@ -248,12 +248,13 @@ public class SmppTestingForm extends JDialog {
 		JButton btSendMessage = new JButton("Submit a message");
 		btSendMessage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				submitMessage(param.getEncodingType(), param.getMessageText(), param.getSplittingType(), param.getValidityType(), param.getDestAddress());
+                submitMessage(param.getEncodingType(), param.isMessageClass(), param.getMessageText(), param.getSplittingType(), param.getValidityType(),
+                        param.getDestAddress());
 			}
 		});
 		btSendMessage.setBounds(11, 80, 341, 23);
 		panel_2.add(btSendMessage);
-		
+
 		btStartBulk = new JButton("Start bulk sending");
 		btStartBulk.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -299,7 +300,7 @@ public class SmppTestingForm extends JDialog {
 		return msgRef;
 	}
 
-	private void submitMessage(EncodingType encodingType, String messageText, SplittingType splittingType, ValidityType validityType, String destAddr) {
+	private void submitMessage(EncodingType encodingType, boolean messageClass0, String messageText, SplittingType splittingType, ValidityType validityType, String destAddr) {
 		if (session0 == null)
 			return;
 
@@ -334,6 +335,9 @@ public class SmppTestingForm extends JDialog {
 				bb.get(buf);
                 break;
     		}
+            if (messageClass0) {
+                dcs += 16;
+            }
     		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
 			int maxLen = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
 			int maxSplLen = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
@@ -687,7 +691,7 @@ public class SmppTestingForm extends JDialog {
 
 			
 
-			this.submitMessage(encodingType, msg, splittingType, param.getValidityType(), destAddrS);
+			this.submitMessage(encodingType, false, msg, splittingType, param.getValidityType(), destAddrS);
 		}
 	}
 

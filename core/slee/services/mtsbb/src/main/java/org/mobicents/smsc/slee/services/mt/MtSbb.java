@@ -711,21 +711,22 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			}
 		}
 
-		String msg = "";
-		switch (sms.getDataCoding()) {
-		case 0:
-			msg = new String(textPart);
-			break;
-		case 8:
-			Charset ucs2Charset = Charset.forName("UTF-16BE");
-			ByteBuffer bb = ByteBuffer.wrap(textPart);
-			CharBuffer bf = ucs2Charset.decode(bb);
-			msg = bf.toString();
-			break;
-		default:
-			// we do not support this yet
-			break;
-		}
+        String msg = "";
+        DataCodingScheme dcs = new DataCodingSchemeImpl(sms.getDataCoding());
+        switch (dcs.getCharacterSet()) {
+        case GSM7:
+            msg = new String(textPart);
+            break;
+        case UCS2:
+            Charset ucs2Charset = Charset.forName("UTF-16BE");
+            ByteBuffer bb = ByteBuffer.wrap(textPart);
+            CharBuffer bf = ucs2Charset.decode(bb);
+            msg = bf.toString();
+            break;
+        default:
+            // we do not support this yet
+            break;
+        }
 
 		if (messageSegmentCount > 1) {
 			userDataHeader = this.mapSmsTpduParameterFactory.createUserDataHeader();
