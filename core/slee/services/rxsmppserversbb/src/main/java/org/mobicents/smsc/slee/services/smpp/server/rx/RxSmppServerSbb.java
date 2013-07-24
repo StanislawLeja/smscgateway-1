@@ -291,17 +291,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 
             byte[] msg = sms.getShortMessage();
             if (msg != null) {
-                DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(sms.getDataCoding());
-                boolean udhPresent = (sms.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
-                if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2 && !udhPresent) {
-                    Charset ucs2Charset = Charset.forName("UTF-16BE");
-                    ByteBuffer bb = ByteBuffer.wrap(msg);
-                    CharBuffer cb = ucs2Charset.decode(bb);
-                    Charset utf8Charset = Charset.forName("UTF-8");
-                    ByteBuffer bf2 = utf8Charset.encode(cb);
-                    msg = new byte[bf2.limit()];
-                    bf2.get(msg);
-                }
+                msg = recodeShortMessage(sms.getEsmClass(), sms.getDataCoding(), msg);
 
                 if (msg.length <= 255) {
                     deliverSm.setShortMessage(msg);
@@ -329,6 +319,40 @@ public abstract class RxSmppServerSbb implements Sbb {
 //			nullActivity.endActivity();
 		}
 	}
+
+    protected byte[] recodeShortMessage(int esmeClass, int dataCoding, byte[] msg) {
+        DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dataCoding);
+        boolean udhPresent = (esmeClass & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
+            byte[] textPart = msg;
+            byte[] udhData = null;
+            if (udhPresent && msg.length > 2) {
+                // UDH exists
+                int udhLen = (msg[0] & 0xFF) + 1;
+                if (udhLen <= msg.length) {
+                    textPart = new byte[msg.length - udhLen];
+                    udhData = new byte[udhLen];
+                    System.arraycopy(msg, udhLen, textPart, 0, textPart.length);
+                    System.arraycopy(msg, 0, udhData, 0, udhLen);
+                }
+            }
+
+            Charset ucs2Charset = Charset.forName("UTF-16BE");
+            ByteBuffer bb = ByteBuffer.wrap(textPart);
+            CharBuffer cb = ucs2Charset.decode(bb);
+            Charset utf8Charset = Charset.forName("UTF-8");
+            ByteBuffer bf2 = utf8Charset.encode(cb);
+            if (udhData != null) {
+                msg = new byte[udhData.length + bf2.limit()];
+                System.arraycopy(udhData, 0, msg, 0, udhData.length);
+                bf2.get(msg, udhData.length, bf2.limit());
+            } else {
+                msg = new byte[bf2.limit()];
+                bf2.get(msg);
+            }
+        }
+        return msg;
+    }
 
 	/**
 	 * remove smsSet from LIVE database after all messages has been delivered

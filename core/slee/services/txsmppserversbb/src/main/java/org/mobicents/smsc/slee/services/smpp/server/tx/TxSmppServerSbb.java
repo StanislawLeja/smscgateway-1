@@ -497,7 +497,7 @@ public abstract class TxSmppServerSbb implements Sbb {
         Tlv sarSegmentSeqnum = event.getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
         boolean segmentTlvFlag = (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null);
 
-        if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2 && !udhPresent && !segmentTlvFlag) {
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
             // for UCS2 encoding we have to recode UTF-8 -> UCS2 here
 
             byte[] udhData = null;

@@ -492,24 +492,15 @@ public abstract class MoSbb extends MoCommonSbb {
 					MAPErrorCode.unexpectedDataValue, null);
 		}
 
-//		sms.setOrigSystemId(origEsme.getSystemId());
-//		sms.setOrigEsmeName(origEsme.getName());
-
 		sms.setSubmitDate(new Timestamp(System.currentTimeMillis()));
 
-//		sms.setServiceType(event.getServiceType());
 		sms.setEsmClass(0x03 + (smsSubmitTpdu.getUserDataHeaderIndicator() ? SmppConstants.ESM_CLASS_UDHI_MASK : 0)
 				+ (smsSubmitTpdu.getReplyPathExists() ? SmppConstants.ESM_CLASS_REPLY_PATH_MASK : 0));
 		sms.setProtocolId(smsSubmitTpdu.getProtocolIdentifier().getCode());
 		sms.setPriority(0);
-//		sms.setRegisteredDelivery(event.getRegisteredDelivery());
+
 		// TODO: do we need somehow care with RegisteredDelivery ?
 		sms.setReplaceIfPresent(smsSubmitTpdu.getRejectDuplicates() ? 2 : 0);
-//		sms.setDefaultMsgId(event.getDefaultMsgId());
-
-//		if (smsSubmitTpdu.getStatusReportRequest()) {
-//		sms.setRegisteredDelivery(SmppConstants.REGISTERED_DELIVERY_SMSC_RECEIPT_REQUESTED);
-//	}
 
 		// TODO: care with smsSubmitTpdu.getStatusReportRequest() parameter sending back SMS_STATUS_REPORT tpdu ? 
 

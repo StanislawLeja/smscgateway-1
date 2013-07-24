@@ -46,4 +46,35 @@
 			<version>${jslee.ext.version}</version>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>test</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>${pom.groupId}</groupId>
+					<artifactId>persistence-ra</artifactId>
+					<version>${pom.version}</version>
+					<type>test-jar</type>
+				</dependency>			
+				<dependency>
+					<groupId>org.testng</groupId>
+					<artifactId>testng</artifactId>
+					<version>${testng.version}</version>
+					<scope>test</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<activation>
+				<property>
+					<name>maven.test.skip</name>
+					<value>true</value>
+				</property>
+			</activation>
+		</profile>
+	</profiles>
 </project>

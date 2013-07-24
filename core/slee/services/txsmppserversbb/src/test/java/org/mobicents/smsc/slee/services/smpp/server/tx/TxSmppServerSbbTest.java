@@ -83,15 +83,22 @@ public class TxSmppServerSbbTest {
 
 	private TargetAddress ta1 = new TargetAddress(1, 1, "5555");
 
-	private static byte[] msg = { 11, 12, 13, 14, 15, 15 };
+    private static byte[] msgUtf8;
+    private static byte[] msgUcs2;
 	private byte[] msg_ref_num = { 0, 10 };
 
     static {
         String s1 = "ПриветHel";
+
         Charset utf8Charset = Charset.forName("UTF-8");
         ByteBuffer bf = utf8Charset.encode(s1);
-        msg = new byte[bf.limit()];
-        bf.get(msg);
+        msgUtf8 = new byte[bf.limit()];
+        bf.get(msgUtf8);
+
+        Charset ucs2Charset = Charset.forName("UTF-16BE");
+        bf = ucs2Charset.encode(s1);
+        msgUcs2 = new byte[bf.limit()];
+        bf.get(msgUcs2);
     }
 
 	@BeforeClass
@@ -132,7 +139,7 @@ public class TxSmppServerSbbTest {
 		SubmitSm event = new SubmitSm();
 		Date curDate = new Date();
 		this.fillSm(event, curDate, true);
-		event.setShortMessage(msg);
+		event.setShortMessage(msgUtf8);
 
 		boolean b1 = this.pers.checkSmsSetExists(ta1);
 		assertFalse(b1);
@@ -144,7 +151,7 @@ public class TxSmppServerSbbTest {
 		SmsSet smsSet = this.pers.obtainSmsSet(ta1);
 		this.checkSmsSet(smsSet, curDate, true);
 		Sms sms = smsSet.getSms(0);
-		assertEquals(sms.getShortMessage(), msg);
+		assertEquals(sms.getShortMessage(), msgUcs2);
 
 		assertEquals(this.smppSess.getReqList().size(), 0);
 		assertEquals(this.smppSess.getRespList().size(), 1);
@@ -174,7 +181,7 @@ public class TxSmppServerSbbTest {
 		Date curDate = new Date();
 		this.fillSm(event, curDate, false);
 
-		Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, msg);
+		Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, msgUtf8);
 		event.addOptionalParameter(tlv);
 		tlv = new Tlv(SmppConstants.TAG_SAR_MSG_REF_NUM, msg_ref_num);
 		event.addOptionalParameter(tlv);
@@ -193,7 +200,7 @@ public class TxSmppServerSbbTest {
 		SmsSet smsSet = this.pers.obtainSmsSet(ta1);
 		this.checkSmsSet(smsSet, curDate, false);
 		Sms sms = smsSet.getSms(0);
-		assertEquals(sms.getShortMessage(), msg);
+		assertEquals(sms.getShortMessage(), msgUcs2);
 
 		assertEquals(this.smppSess.getReqList().size(), 0);
 		assertEquals(this.smppSess.getRespList().size(), 1);
@@ -222,7 +229,7 @@ public class TxSmppServerSbbTest {
 		SubmitSm event = new SubmitSm();
 		Date curDate = new Date();
 		this.fillSm(event, curDate, true);
-		event.setShortMessage(msg);
+		event.setShortMessage(msgUtf8);
 		
         DataCodingSchemeImpl dcss = new DataCodingSchemeImpl(DataCodingGroup.GeneralGroup, null, null, null, CharacterSet.GSM7, true);
 //        DataCodingGroup dataCodingGroup, DataCodingSchemaMessageClass messageClass,
@@ -298,9 +305,9 @@ public class TxSmppServerSbbTest {
 
         // message part and UDH
         byte[] udh = new byte[] { 0x05, 0x00, 0x03, 0x29, 0x02, 0x02 };
-        byte[] aMsgB = new byte[aMsgAA.length + udh.length];
+        byte[] aMsgB = new byte[aMsgA.length + udh.length];
         System.arraycopy(udh, 0, aMsgB, 0, udh.length);
-        System.arraycopy(aMsgAA, 0, aMsgB, udh.length, aMsgAA.length);
+        System.arraycopy(aMsgA, 0, aMsgB, udh.length, aMsgA.length);
 
         event = new com.cloudhopper.smpp.pdu.SubmitSm();
         event.setSourceAddress(addr);
@@ -316,6 +323,7 @@ public class TxSmppServerSbbTest {
         System.arraycopy(sms.getShortMessage(), 0, bf1, 0, udh.length);
         System.arraycopy(sms.getShortMessage(), udh.length, bf2, 0, bf2.length);
         bb = ByteBuffer.wrap(bf2);
+//        bf = utf8Charset.decode(bb);
         bf = ucs2Charset.decode(bb);
         msg2 = bf.toString();
         assertEquals(msg2, sMsgA);
