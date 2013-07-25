@@ -44,7 +44,7 @@
 
 		<mobicents.resources.map.version>2.0.0-SNAPSHOT</mobicents.resources.map.version>
 
-		<telscale.licensing.version>1.0.1.Final</telscale.licensing.version>
+		<telscale.licensing.version>1.0.3.Final</telscale.licensing.version>
 	</properties>
 
 	<modules>
