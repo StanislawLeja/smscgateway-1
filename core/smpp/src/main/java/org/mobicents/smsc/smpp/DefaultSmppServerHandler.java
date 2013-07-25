@@ -68,8 +68,8 @@ public class DefaultSmppServerHandler implements SmppServerHandler {
 				sessionConfiguration.getPort());
 
 		if (esme == null) {
-			logger.error(String.format("Received BIND request but no ESME configured for SystemId=%s",
-					bindRequest.getSystemId()));
+			logger.error(String.format("Received BIND request but no ESME configured for SystemId=%s Host=%s Port=%d",
+					bindRequest.getSystemId(), sessionConfiguration.getHost(), sessionConfiguration.getPort()));
 			throw new SmppProcessingException(SmppConstants.STATUS_INVSYSID);
 		}
 
