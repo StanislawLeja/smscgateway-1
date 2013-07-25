@@ -84,6 +84,14 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- License -->
+		<dependency>
+			<groupId>com.telscale.licensing</groupId>
+			<artifactId>lce-core</artifactId>
+			<version>${telscale.licensing.version}</version>
+			<classifier>obfuscated</classifier>
+		</dependency>
+		
 	</dependencies>
 
 	<!-- -->

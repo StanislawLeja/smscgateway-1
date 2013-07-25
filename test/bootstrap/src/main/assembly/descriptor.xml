@@ -108,6 +108,9 @@
 				<include>org.mobicents.protocols.ss7.m3ua:m3ua-cli-sctp</include>
 				<include>org.mobicents.protocols.ss7.m3ua:m3ua-cli-m3ua</include>
 				<include>org.mobicents.protocols.ss7.sccp:sccp-cli</include>
+				
+				<!-- TelScale licensing lib -->
+			 	<include>com.telscale.licensing:lce-core</include>				
 			</includes>
 		</dependencySet>
 	</dependencySets>
