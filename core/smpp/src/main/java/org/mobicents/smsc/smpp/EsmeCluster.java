@@ -21,6 +21,8 @@
  */
 package org.mobicents.smsc.smpp;
 
+import com.cloudhopper.smpp.SmppBindType;
+
 import javolution.util.FastList;
 
 /**
@@ -63,7 +65,7 @@ public class EsmeCluster {
 			}
 
 			Esme esme = this.esmes.get(this.index);
-			if (esme.isBound()) {
+			if (esme.isBound() && (esme.getSmppBindType() == SmppBindType.TRANSMITTER || esme.getSmppBindType() == SmppBindType.TRANSCEIVER)) {
 				return esme;
 			}
 		}
