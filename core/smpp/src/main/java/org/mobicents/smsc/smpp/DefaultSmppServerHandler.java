@@ -64,12 +64,16 @@ public class DefaultSmppServerHandler implements SmppServerHandler {
 			throw new SmppProcessingException(SmppConstants.STATUS_BINDFAIL);
 		}
 
+		SmppBindType smppBindType = this.getSmppBindType(bindRequest.getCommandId());
+
 		Esme esme = this.esmeManagement.getEsmeByPrimaryKey(bindRequest.getSystemId(), sessionConfiguration.getHost(),
-				sessionConfiguration.getPort());
+				sessionConfiguration.getPort(), smppBindType);
 
 		if (esme == null) {
-			logger.error(String.format("Received BIND request but no ESME configured for SystemId=%s Host=%s Port=%d",
-					bindRequest.getSystemId(), sessionConfiguration.getHost(), sessionConfiguration.getPort()));
+			logger.error(String.format(
+					"Received BIND request but no ESME configured for SystemId=%s Host=%s Port=%d SmppBindType=%s",
+					bindRequest.getSystemId(), sessionConfiguration.getHost(), sessionConfiguration.getPort(),
+					smppBindType));
 			throw new SmppProcessingException(SmppConstants.STATUS_INVSYSID);
 		}
 
@@ -89,24 +93,6 @@ public class DefaultSmppServerHandler implements SmppServerHandler {
 			logger.error(String.format("Received BIND request but invalid password for SystemId=%s",
 					bindRequest.getSystemId()));
 			throw new SmppProcessingException(SmppConstants.STATUS_INVPASWD);
-		}
-
-		// Check of BIND is correct?
-		if ((bindRequest.getCommandId() == SmppConstants.CMD_ID_BIND_RECEIVER)
-				&& esme.getSmppBindType() != SmppBindType.RECEIVER) {
-			logger.error(String.format("Received BIND_RECEIVER for SystemId=%s but configured=%s",
-					bindRequest.getSystemId(), esme.getSmppBindType()));
-			throw new SmppProcessingException(SmppConstants.STATUS_INVBNDSTS);
-		} else if ((bindRequest.getCommandId() == SmppConstants.CMD_ID_BIND_TRANSMITTER)
-				&& esme.getSmppBindType() != SmppBindType.TRANSMITTER) {
-			logger.error(String.format("Received BIND_TRANSMITTER for SystemId=%s but configured=%s",
-					bindRequest.getSystemId(), esme.getSmppBindType()));
-			throw new SmppProcessingException(SmppConstants.STATUS_INVBNDSTS);
-		} else if ((bindRequest.getCommandId() == SmppConstants.CMD_ID_BIND_TRANSCEIVER)
-				&& esme.getSmppBindType() != SmppBindType.TRANSCEIVER) {
-			logger.error(String.format("Received BIND_TRANSCEIVER for SystemId=%s but configured=%s",
-					bindRequest.getSystemId(), esme.getSmppBindType()));
-			throw new SmppProcessingException(SmppConstants.STATUS_INVBNDSTS);
 		}
 
 		// Check if TON, NPI and Address Range matches
@@ -164,12 +150,12 @@ public class DefaultSmppServerHandler implements SmppServerHandler {
 
 		SmppSessionConfiguration sessionConfiguration = session.getConfiguration();
 
-		Esme esme = this.esmeManagement.getEsmeByPrimaryKey(sessionConfiguration.getSystemId(),
-				sessionConfiguration.getHost(), sessionConfiguration.getPort());
+		Esme esme = this.esmeManagement.getEsmeByName(sessionConfiguration.getName());
 
 		if (esme == null) {
-			logger.error(String.format("No ESME for SystemId=% Host=%s Port=%d", sessionConfiguration.getSystemId(),
-					sessionConfiguration.getHost(), sessionConfiguration.getPort()));
+			logger.error(String.format("No ESME for Name=%s SystemId=%s Host=%s Port=%d SmppBindType=%s",
+					sessionConfiguration.getSystemId(), sessionConfiguration.getHost(), sessionConfiguration.getPort(),
+					sessionConfiguration.getType()));
 			throw new SmppProcessingException(SmppConstants.STATUS_BINDFAIL);
 		}
 
@@ -202,5 +188,18 @@ public class DefaultSmppServerHandler implements SmppServerHandler {
 
 		// make sure it's really shutdown
 		session.destroy();
+	}
+
+	private SmppBindType getSmppBindType(int commandId) {
+		switch (commandId) {
+		case SmppConstants.CMD_ID_BIND_RECEIVER:
+			return SmppBindType.RECEIVER;
+		case SmppConstants.CMD_ID_BIND_TRANSMITTER:
+			return SmppBindType.TRANSMITTER;
+		case SmppConstants.CMD_ID_BIND_TRANSCEIVER:
+			return SmppBindType.TRANSCEIVER;
+		}
+
+		return null;
 	}
 }
