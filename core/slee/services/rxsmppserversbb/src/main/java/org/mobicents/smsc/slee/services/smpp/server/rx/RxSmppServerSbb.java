@@ -60,8 +60,10 @@ import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.EsmeManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
+import com.cloudhopper.smpp.SmppSession.Type;
 import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.pdu.DeliverSmResp;
+import com.cloudhopper.smpp.pdu.SubmitSm;
 import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.type.Address;
 import com.cloudhopper.smpp.type.RecoverablePduException;
@@ -261,6 +263,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 		try {
 			EsmeManagement esmeManagement = EsmeManagement.getInstance();
 			Esme esme = esmeManagement.getEsmeByClusterName(smsSet.getDestClusterName());
+
 			if (esme == null) {
 				String s = "\nRxSmppServerSbb.sendDeliverSm(): Received DELIVER_SM SmsEvent but no Esme found for destClusterName: "
 						+ smsSet.getDestClusterName() + ", Message=" + sms;
@@ -271,45 +274,87 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 			smsSet.setDestSystemId(esme.getSystemId());
 			smsSet.setDestEsmeName(esme.getName());
-
-			DeliverSm deliverSm = new DeliverSm();
-			deliverSm.setSourceAddress(new Address((byte) sms.getSourceAddrTon(), (byte) sms.getSourceAddrNpi(), sms.getSourceAddr()));
-			deliverSm.setDestAddress(new Address((byte) sms.getSmsSet().getDestAddrTon(), (byte) sms.getSmsSet().getDestAddrNpi(), sms.getSmsSet()
-					.getDestAddr()));
-			deliverSm.setEsmClass((byte) sms.getEsmClass());
-			deliverSm.setProtocolId((byte) sms.getProtocolId());
-			deliverSm.setPriority((byte) sms.getPriority());
-			if (sms.getScheduleDeliveryTime() != null) {
-				deliverSm.setScheduleDeliveryTime(MessageUtil.printSmppAbsoluteDate(sms.getScheduleDeliveryTime(), -(new Date()).getTimezoneOffset()));
-			}
-			if (sms.getValidityPeriod() != null) {
-				deliverSm.setValidityPeriod(MessageUtil.printSmppAbsoluteDate(sms.getValidityPeriod(), -(new Date()).getTimezoneOffset()));
-			}
-			deliverSm.setRegisteredDelivery((byte) sms.getRegisteredDelivery());
-			deliverSm.setReplaceIfPresent((byte) sms.getReplaceIfPresent());
-			deliverSm.setDataCoding((byte) sms.getDataCoding());
-
-            byte[] msg = sms.getShortMessage();
-            if (msg != null) {
-                msg = recodeShortMessage(sms.getEsmClass(), sms.getDataCoding(), msg);
-
-                if (msg.length <= 255) {
-                    deliverSm.setShortMessage(msg);
-                } else {
-                    Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, msg, null);
-                    deliverSm.addOptionalParameter(tlv);
+            if (esme.getSmppSessionType() == Type.CLIENT) {
+                SubmitSm submitSm = new SubmitSm();
+                submitSm.setSourceAddress(new Address((byte) sms.getSourceAddrTon(), (byte) sms.getSourceAddrNpi(), sms.getSourceAddr()));
+                submitSm.setDestAddress(new Address((byte) sms.getSmsSet().getDestAddrTon(), (byte) sms.getSmsSet().getDestAddrNpi(), sms.getSmsSet()
+                        .getDestAddr()));
+                submitSm.setEsmClass((byte) sms.getEsmClass());
+                submitSm.setProtocolId((byte) sms.getProtocolId());
+                submitSm.setPriority((byte) sms.getPriority());
+                if (sms.getScheduleDeliveryTime() != null) {
+                    submitSm.setScheduleDeliveryTime(MessageUtil.printSmppAbsoluteDate(sms.getScheduleDeliveryTime(), -(new Date()).getTimezoneOffset()));
                 }
+                if (sms.getValidityPeriod() != null) {
+                    submitSm.setValidityPeriod(MessageUtil.printSmppAbsoluteDate(sms.getValidityPeriod(), -(new Date()).getTimezoneOffset()));
+                }
+                submitSm.setRegisteredDelivery((byte) sms.getRegisteredDelivery());
+                submitSm.setReplaceIfPresent((byte) sms.getReplaceIfPresent());
+                submitSm.setDataCoding((byte) sms.getDataCoding());
+
+                byte[] msg = sms.getShortMessage();
+                if (msg != null) {
+                    msg = recodeShortMessage(sms.getEsmClass(), sms.getDataCoding(), msg);
+
+                    if (msg.length <= 255) {
+                        submitSm.setShortMessage(msg);
+                    } else {
+                        Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, msg, null);
+                        submitSm.addOptionalParameter(tlv);
+                    }
+                }
+
+                // TODO : waiting for 2 secs for window to accept our request,
+                // is it
+                // good? Should time be more here?
+                SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, submitSm, 2000);
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("\nsent submitSm to ESME: ", submitSm));
+                }
+
+                ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory.getActivityContextInterface(smppServerTransaction);
+                smppTxaci.attach(this.sbbContext.getSbbLocalObject());
+            } else {
+                DeliverSm deliverSm = new DeliverSm();
+                deliverSm.setSourceAddress(new Address((byte) sms.getSourceAddrTon(), (byte) sms.getSourceAddrNpi(), sms.getSourceAddr()));
+                deliverSm.setDestAddress(new Address((byte) sms.getSmsSet().getDestAddrTon(), (byte) sms.getSmsSet().getDestAddrNpi(), sms.getSmsSet()
+                        .getDestAddr()));
+                deliverSm.setEsmClass((byte) sms.getEsmClass());
+                deliverSm.setProtocolId((byte) sms.getProtocolId());
+                deliverSm.setPriority((byte) sms.getPriority());
+                if (sms.getScheduleDeliveryTime() != null) {
+                    deliverSm.setScheduleDeliveryTime(MessageUtil.printSmppAbsoluteDate(sms.getScheduleDeliveryTime(), -(new Date()).getTimezoneOffset()));
+                }
+                if (sms.getValidityPeriod() != null) {
+                    deliverSm.setValidityPeriod(MessageUtil.printSmppAbsoluteDate(sms.getValidityPeriod(), -(new Date()).getTimezoneOffset()));
+                }
+                deliverSm.setRegisteredDelivery((byte) sms.getRegisteredDelivery());
+                deliverSm.setReplaceIfPresent((byte) sms.getReplaceIfPresent());
+                deliverSm.setDataCoding((byte) sms.getDataCoding());
+
+                byte[] msg = sms.getShortMessage();
+                if (msg != null) {
+                    msg = recodeShortMessage(sms.getEsmClass(), sms.getDataCoding(), msg);
+
+                    if (msg.length <= 255) {
+                        deliverSm.setShortMessage(msg);
+                    } else {
+                        Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, msg, null);
+                        deliverSm.addOptionalParameter(tlv);
+                    }
+                }
+
+                // TODO : waiting for 2 secs for window to accept our request,
+                // is it
+                // good? Should time be more here?
+                SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, deliverSm, 2000);
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("\nsent deliverSm to ESME: ", deliverSm));
+                }
+
+                ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory.getActivityContextInterface(smppServerTransaction);
+                smppTxaci.attach(this.sbbContext.getSbbLocalObject());
             }
-
-			// TODO : waiting for 2 secs for window to accept our request, is it
-			// good? Should time be more here?
-			SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, deliverSm, 2000);
-			if (logger.isInfoEnabled()) {
-				logger.info(String.format("\nsent deliverSm to ESME: ", deliverSm));
-			}
-
-			ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory.getActivityContextInterface(smppServerTransaction);
-			smppTxaci.attach(this.sbbContext.getSbbLocalObject());
 
 		} catch (Exception e) {
 			throw new SmscProcessingException("RxSmppServerSbb.sendDeliverSm(): Exception while trying to send DELIVERY Report for received SmsEvent="

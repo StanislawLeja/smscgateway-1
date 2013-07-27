@@ -66,6 +66,7 @@ import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.pdu.BaseSm;
 import com.cloudhopper.smpp.pdu.DataSmResp;
+import com.cloudhopper.smpp.pdu.DeliverSmResp;
 import com.cloudhopper.smpp.pdu.SubmitSmResp;
 import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.tlv.TlvConvertException;
@@ -308,15 +309,15 @@ public abstract class TxSmppServerSbb implements Sbb {
 	}
 
 	public void onDeliverSm(com.cloudhopper.smpp.pdu.DeliverSm event, ActivityContextInterface aci) {
-		logger.severe(String.format("onDeliverSm : this must not be", event));
-
-		SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
-		Esme esme = smppServerTransaction.getEsme();
-		String esmeName = esme.getName();
-
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received DELIVER_SM = " + event + " from Esme name=" + esmeName);
-		}
+//		logger.severe(String.format("onDeliverSm : this must not be", event));
+//
+//		SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
+//		Esme esme = smppServerTransaction.getEsme();
+//		String esmeName = esme.getName();
+//
+//		if (this.logger.isInfoEnabled()) {
+//			this.logger.info("Received DELIVER_SM = " + event + " from Esme name=" + esmeName);
+//		}
 
 //		SmsEvent smsEvent = this.createSmsEvent(event);
 //		this.processSms(smsEvent);
@@ -329,6 +330,90 @@ public abstract class TxSmppServerSbb implements Sbb {
 //		} catch (Exception e) {
 //			this.logger.severe("Error while trying to send DeliverSmResp=" + response, e);
 //		}
+
+		SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
+        Esme esme = smppServerTransaction.getEsme();
+        String esmeName = esme.getName();
+
+        if (this.logger.isInfoEnabled()) {
+            this.logger.info("\nReceived DELIVER_SM = " + event + " from Esme name=" + esmeName);
+        }
+
+        Sms sms;
+        try {
+            TargetAddress ta = createDestTargetAddress(event);
+            PersistenceRAInterface store = getStore();
+            TargetAddress lock = store.obtainSynchroObject(ta);
+
+            try {
+                synchronized (lock) {
+                    sms = this.createSmsEvent(event, esme, ta, store);
+                    this.processSms(sms, store);
+                }
+            } finally {
+                store.releaseSynchroObject(lock);
+            }
+        } catch (SmscProcessingException e1) {
+            this.logger.severe(e1.getMessage(), e1);
+
+            DeliverSmResp response = event.createResponse();
+            response.setCommandStatus(e1.getSmppErrorCode());
+            String s = e1.getMessage();
+            if (s != null) {
+                if (s.length() > 255)
+                    s = s.substring(0, 255);
+                Tlv tlv;
+                try {
+                    tlv = TlvUtil.createNullTerminatedStringTlv(SmppConstants.TAG_ADD_STATUS_INFO, s);
+                    response.addOptionalParameter(tlv);
+                } catch (TlvConvertException e) {
+                    this.logger.severe("TlvConvertException while storing TAG_ADD_STATUS_INFO Tlv parameter", e);
+                }
+            }
+
+            // Lets send the Response with error here
+            try {
+                this.smppServerSessions.sendResponsePdu(esme, event, response);
+            } catch (Exception e) {
+                this.logger.severe("Error while trying to send SubmitSmResponse=" + response, e);
+            }
+
+            return;
+        } catch (Throwable e1) {
+            String s = "Exception when processing SubmitSm message: " + e1.getMessage();
+            this.logger.severe(s, e1);
+
+            DeliverSmResp response = event.createResponse();
+            response.setCommandStatus(SmppConstants.STATUS_SYSERR);
+            if (s.length() > 255)
+                s = s.substring(0, 255);
+            Tlv tlv;
+            try {
+                tlv = TlvUtil.createNullTerminatedStringTlv(SmppConstants.TAG_ADD_STATUS_INFO, s);
+                response.addOptionalParameter(tlv);
+            } catch (TlvConvertException e) {
+                this.logger.severe("TlvConvertException while storing TAG_ADD_STATUS_INFO Tlv parameter", e);
+            }
+
+            // Lets send the Response with error here
+            try {
+                this.smppServerSessions.sendResponsePdu(esme, event, response);
+            } catch (Exception e) {
+                this.logger.severe("Error while trying to send SubmitSmResponse=" + response, e);
+            }
+            
+            return;
+        }
+
+        DeliverSmResp response = event.createResponse();
+        response.setMessageId(((Long) sms.getMessageId()).toString());
+
+        // Lets send the Response with success here
+        try {
+            this.smppServerSessions.sendResponsePdu(esme, event, response);
+        } catch (Throwable e) {
+            this.logger.severe("Error while trying to send SubmitSmResponse=" + response, e);
+        }
 	}
 
 	public void onPduRequestTimeout(PduRequestTimeout event, ActivityContextInterface aci, EventContext eventContext) {
@@ -481,6 +566,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		// short message data
 		sms.setShortMessage(event.getShortMessage());
+
 		if (event.getShortMessageLength() == 0) {
 			// Probably the message_payload Optional Parameter is being used
 			Tlv messagePaylod = event.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
@@ -488,6 +574,9 @@ public abstract class TxSmppServerSbb implements Sbb {
 				sms.setShortMessage(messagePaylod.getValue());
 			}
 		}
+        if (sms.getShortMessage() == null) {
+            sms.setShortMessage(new byte[0]);
+        }
 
         int lenSolid = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
         int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
