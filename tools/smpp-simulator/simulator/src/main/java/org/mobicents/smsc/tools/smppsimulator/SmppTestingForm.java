@@ -53,15 +53,21 @@ import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.ValidityTy
 
 import com.cloudhopper.commons.util.windowing.WindowFuture;
 import com.cloudhopper.smpp.SmppConstants;
+import com.cloudhopper.smpp.SmppServerConfiguration;
 import com.cloudhopper.smpp.SmppSession;
 import com.cloudhopper.smpp.SmppSessionConfiguration;
 import com.cloudhopper.smpp.impl.DefaultSmppClient;
+import com.cloudhopper.smpp.impl.DefaultSmppServer;
 import com.cloudhopper.smpp.impl.DefaultSmppSessionHandler;
+import com.cloudhopper.smpp.pdu.BaseSm;
+import com.cloudhopper.smpp.pdu.DataSm;
+import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
 import com.cloudhopper.smpp.pdu.SubmitSm;
 import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.type.Address;
+import com.cloudhopper.smpp.type.SmppChannelException;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -109,6 +115,7 @@ public class SmppTestingForm extends JDialog {
 	private ScheduledThreadPoolExecutor monitorExecutor;
 	private DefaultSmppClient clientBootstrap;
 	private SmppSession session0;
+	private DefaultSmppServer defaultSmppServer;
 
 	protected Timer timer;
 	protected AtomicInteger messagesSent = new AtomicInteger();
@@ -294,6 +301,14 @@ public class SmppTestingForm extends JDialog {
 		return this.param;
 	}
 
+    public void setSmppSession(SmppSession smppSession) {
+        this.session0 = smppSession;
+    }
+
+    public SmppSession getSmppSession() {
+        return this.session0;
+    }
+
 	private int getNextMsgRef() {
 		msgRef++;
 		if (msgRef > 255)
@@ -461,29 +476,46 @@ public class SmppTestingForm extends JDialog {
 		for (byte[] buf : msgLst) {
 			i1++;
 
-			SubmitSm pdu = new SubmitSm();
+            BaseSm pdu;
+			switch(this.param.getSendingMessageType()){
+            case SubmitSm:
+                SubmitSm submitPdu = new SubmitSm();
+                pdu = submitPdu;
+                break;
+            case DataSm:
+                DataSm dataPdu = new DataSm();
+                pdu = dataPdu;
+                break;
+            case DeliverSm:
+                DeliverSm deliverPdu = new DeliverSm();
+                pdu = deliverPdu;
+                break;
+            default:
+                return;
+			}
 
-	        pdu.setSourceAddress(new Address((byte)this.param.getSourceTON().getCode(), (byte)this.param.getSourceNPI().getCode(), this.param.getSourceAddress()));
-	        pdu.setDestAddress(new Address((byte)this.param.getDestTON().getCode(), (byte)this.param.getDestNPI().getCode(), destAddr));
-	        pdu.setEsmClass((byte) esmClass);
+            pdu.setSourceAddress(new Address((byte)this.param.getSourceTON().getCode(), (byte)this.param.getSourceNPI().getCode(), this.param.getSourceAddress()));
+            pdu.setDestAddress(new Address((byte)this.param.getDestTON().getCode(), (byte)this.param.getDestNPI().getCode(), destAddr));
+            pdu.setEsmClass((byte) esmClass);
 
 			switch (validityType) {
 			case ValidityPeriod_5min:
-				pdu.setValidityPeriod(MessageUtil.printSmppRelativeDate(0, 0, 0, 0, 5, 0));
+			    pdu.setValidityPeriod(MessageUtil.printSmppRelativeDate(0, 0, 0, 0, 5, 0));
 				break;
 			case ScheduleDeliveryTime_5min:
-				pdu.setScheduleDeliveryTime(MessageUtil.printSmppRelativeDate(0, 0, 0, 0, 5, 0));
+			    pdu.setScheduleDeliveryTime(MessageUtil.printSmppRelativeDate(0, 0, 0, 0, 5, 0));
 				break;
 			}
 
-			pdu.setDataCoding((byte) dcs);
+            pdu.setDataCoding((byte) dcs);
+            pdu.setRegisteredDelivery((byte) this.param.getMcDeliveryReceipt().getCode());
 
-			if (buf.length < 250)
-				pdu.setShortMessage(buf);
-			else {
-				Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, buf);
-				pdu.addOptionalParameter(tlv);
-			}
+            if (buf.length < 250 && this.param.getSendingMessageType() != SmppSimulatorParameters.SendingMessageType.DataSm)
+                pdu.setShortMessage(buf);
+            else {
+                Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, buf);
+                pdu.addOptionalParameter(tlv);
+            }
 
 			if (addSegmTlv) {
 				byte[] buf1 = new byte[2];
@@ -528,11 +560,12 @@ public class SmppTestingForm extends JDialog {
 		this.segmentsSent = new AtomicInteger();
 		this.responsesRcvd = new AtomicInteger();
 
-		this.addMessage("Trying to start a new session", "");
+        this.addMessage("Trying to start a new " + this.param.getSmppSessionType() + " session", "");
 
-		this.executor = (ThreadPoolExecutor)Executors.newCachedThreadPool();
-        this.monitorExecutor = (ScheduledThreadPoolExecutor)Executors.newScheduledThreadPool(1, new ThreadFactory() {
+        this.executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        this.monitorExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1, new ThreadFactory() {
             private AtomicInteger sequence = new AtomicInteger(0);
+
             @Override
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(r);
@@ -540,37 +573,75 @@ public class SmppTestingForm extends JDialog {
                 return t;
             }
         });
-        clientBootstrap = new DefaultSmppClient(Executors.newCachedThreadPool(), 1, monitorExecutor);
 
-        DefaultSmppSessionHandler sessionHandler = new ClientSmppSessionHandler(this);
+        if (this.param.getSmppSessionType() == SmppSession.Type.CLIENT) {
+            clientBootstrap = new DefaultSmppClient(Executors.newCachedThreadPool(), 1, monitorExecutor);
 
-        SmppSessionConfiguration config0 = new SmppSessionConfiguration();
-        config0.setWindowSize(this.param.getWindowSize());
-        config0.setName("Tester.Session.0");
-        config0.setType(this.param.getBindType());
-        config0.setHost(this.param.getHost());
-        config0.setPort(this.param.getPort());
-        config0.setConnectTimeout(this.param.getConnectTimeout());
-        config0.setSystemId(this.param.getSystemId());
-        config0.setPassword(this.param.getPassword());
-		config0.setAddressRange(new Address((byte) 1, (byte) 1, "6666"));
-        config0.getLoggingOptions().setLogBytes(true);
-        // to enable monitoring (request expiration)
-        config0.setRequestExpiryTimeout(this.param.getRequestExpiryTimeout());
-        config0.setWindowMonitorInterval(this.param.getWindowMonitorInterval());
-        config0.setCountersEnabled(true);
+            DefaultSmppSessionHandler sessionHandler = new ClientSmppSessionHandler(this);
 
-        try {
-			session0 = clientBootstrap.bind(config0, sessionHandler);
-		} catch (Exception e) {
-			this.addMessage("Failure to start a new session", e.toString());
-			return;
-		}
+            SmppSessionConfiguration config0 = new SmppSessionConfiguration();
+            config0.setWindowSize(this.param.getWindowSize());
+            config0.setName("Tester.Session.0");
+            config0.setType(this.param.getBindType());
+            config0.setHost(this.param.getHost());
+            config0.setPort(this.param.getPort());
+            config0.setConnectTimeout(this.param.getConnectTimeout());
+            config0.setSystemId(this.param.getSystemId());
+            config0.setPassword(this.param.getPassword());
+            config0.setAddressRange(new Address((byte) 1, (byte) 1, "6666"));
+            config0.getLoggingOptions().setLogBytes(true);
+            // to enable monitoring (request expiration)
+            config0.setRequestExpiryTimeout(this.param.getRequestExpiryTimeout());
+            config0.setWindowMonitorInterval(this.param.getWindowMonitorInterval());
+            config0.setCountersEnabled(true);
 
-        enableStart(false);
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+            try {
+                session0 = clientBootstrap.bind(config0, sessionHandler);
+            } catch (Exception e) {
+                this.addMessage("Failure to start a new session", e.toString());
+                return;
+            }
 
-		this.addMessage("Session has been successfully started", "");
+            enableStart(false);
+            setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+
+            this.addMessage("Session has been successfully started", "");
+        } else {
+
+            SmppServerConfiguration configuration = new SmppServerConfiguration();
+            configuration.setName("Test SMPP server");
+            configuration.setPort(this.param.getPort());
+            configuration.setBindTimeout(5000);
+            configuration.setSystemId(this.param.getSystemId());
+            configuration.setAutoNegotiateInterfaceVersion(true);
+            configuration.setInterfaceVersion(SmppConstants.VERSION_3_4);
+            configuration.setMaxConnectionSize(SmppConstants.DEFAULT_SERVER_MAX_CONNECTION_SIZE);
+            configuration.setNonBlockingSocketsEnabled(true);
+
+            configuration.setDefaultRequestExpiryTimeout(SmppConstants.DEFAULT_REQUEST_EXPIRY_TIMEOUT);
+            configuration.setDefaultWindowMonitorInterval(SmppConstants.DEFAULT_WINDOW_MONITOR_INTERVAL);
+
+            configuration.setDefaultWindowSize(SmppConstants.DEFAULT_WINDOW_SIZE);
+
+            configuration.setDefaultWindowWaitTimeout(SmppConstants.DEFAULT_WINDOW_WAIT_TIMEOUT);
+            configuration.setDefaultSessionCountersEnabled(true);
+
+            configuration.setJmxEnabled(false);
+
+            this.defaultSmppServer = new DefaultSmppServer(configuration, new DefaultSmppServerHandler(this), executor, monitorExecutor);
+            try {
+                this.defaultSmppServer.start();
+            } catch (SmppChannelException e1) {
+                this.addMessage("Failure to start a defaultSmppServer", e1.toString());
+                return;
+            }
+
+            enableStart(false);
+            setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+
+            this.addMessage("SMPP Server has been successfully started", "");
+
+        }
 	}
 
 	public void stop() {
@@ -578,13 +649,18 @@ public class SmppTestingForm extends JDialog {
 
 		this.doStop();
 	}
-	
+
 	public void doStop() {
-		if (session0 != null) {
-			session0.unbind(5000);
-			session0.destroy();
-			session0 = null;
-		}
+        if (this.session0 != null) {
+            this.session0.unbind(5000);
+            this.session0.destroy();
+            this.session0 = null;
+        }
+        if (this.defaultSmppServer != null) {
+            this.defaultSmppServer.stop();
+            this.defaultSmppServer.destroy();
+            this.defaultSmppServer = null;
+        }
 
 		if (clientBootstrap != null) {
 			try {
@@ -606,7 +682,7 @@ public class SmppTestingForm extends JDialog {
 		this.addMessage("Session has been stopped", "");
 	}
 
-	private void enableStart(boolean enabled) {
+	public void enableStart(boolean enabled) {
 		this.btStart.setEnabled(enabled);
 		this.btStop.setEnabled(!enabled);
 	}

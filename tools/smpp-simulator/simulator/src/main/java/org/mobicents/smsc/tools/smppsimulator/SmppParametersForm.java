@@ -35,6 +35,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 
 import com.cloudhopper.smpp.SmppBindType;
+import com.cloudhopper.smpp.SmppSession;
+
 import javax.swing.JCheckBox;
 
 /**
@@ -49,6 +51,7 @@ public class SmppParametersForm extends JDialog {
 	private SmppSimulatorParameters data;
 	private JTextField tbWindowSize;
 	private JComboBox<SmppBindType> cbBindType;
+    private JComboBox<SmppSession.Type> cbSmppSessionType;
 	private JTextField tbHost;
 	private JTextField tbPort;
 	private JTextField tbConnectTimeout;
@@ -64,18 +67,18 @@ public class SmppParametersForm extends JDialog {
 		setTitle("SMPP general parameters");
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 620, 413);
+		setBounds(100, 100, 620, 451);
 		
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.CENTER);
 		panel.setLayout(null);
 		
 		JLabel lblSmppWindowSize = new JLabel("<html>SMPP window size. The maximum number of requests \r\n<br>permitted to be outstanding (unacknowledged) at a given time\r\n</html>");
-		lblSmppWindowSize.setBounds(10, 174, 401, 33);
+		lblSmppWindowSize.setBounds(10, 225, 401, 33);
 		panel.add(lblSmppWindowSize);
 		
 		tbWindowSize = new JTextField();
-		tbWindowSize.setBounds(424, 173, 86, 20);
+		tbWindowSize.setBounds(424, 224, 86, 20);
 		panel.add(tbWindowSize);
 		tbWindowSize.setColumns(10);
 		
@@ -85,7 +88,7 @@ public class SmppParametersForm extends JDialog {
 				doCancel();
 			}
 		});
-		btCancel.setBounds(466, 344, 136, 23);
+		btCancel.setBounds(466, 382, 136, 23);
 		panel.add(btCancel);
 		
 		JButton btOK = new JButton("OK");
@@ -94,7 +97,7 @@ public class SmppParametersForm extends JDialog {
 				doOK();
 			}
 		});
-		btOK.setBounds(325, 344, 136, 23);
+		btOK.setBounds(325, 382, 136, 23);
 		panel.add(btOK);
 		
 		JLabel lblSmppBindType = new JLabel("SMPP bind type");
@@ -109,7 +112,7 @@ public class SmppParametersForm extends JDialog {
 		lblSmscHost.setBounds(10, 70, 401, 14);
 		panel.add(lblSmscHost);
 		
-		JLabel lblSmscPort = new JLabel("SMSC port");
+		JLabel lblSmscPort = new JLabel("SMSC port (for client mode), local port (for server mode)");
 		lblSmscPort.setBounds(10, 101, 401, 14);
 		panel.add(lblSmscPort);
 		
@@ -124,12 +127,12 @@ public class SmppParametersForm extends JDialog {
 		panel.add(tbPort);
 		
 		JLabel lblConnecttimeoutmilliseconds = new JLabel("ConnectTimeout (milliseconds)");
-		lblConnecttimeoutmilliseconds.setBounds(10, 214, 401, 14);
+		lblConnecttimeoutmilliseconds.setBounds(10, 265, 401, 14);
 		panel.add(lblConnecttimeoutmilliseconds);
 		
 		tbConnectTimeout = new JTextField();
 		tbConnectTimeout.setColumns(10);
-		tbConnectTimeout.setBounds(424, 211, 86, 20);
+		tbConnectTimeout.setBounds(424, 262, 86, 20);
 		panel.add(tbConnectTimeout);
 		
 		JLabel lblSystemid = new JLabel("SystemId");
@@ -151,26 +154,34 @@ public class SmppParametersForm extends JDialog {
 		panel.add(tbPassword);
 		
 		JLabel lblRequestexpirytimeoutmilliseconds = new JLabel("RequestExpiryTimeout (milliseconds)");
-		lblRequestexpirytimeoutmilliseconds.setBounds(10, 242, 401, 14);
+		lblRequestexpirytimeoutmilliseconds.setBounds(10, 293, 401, 14);
 		panel.add(lblRequestexpirytimeoutmilliseconds);
 		
 		tbRequestExpiryTimeout = new JTextField();
 		tbRequestExpiryTimeout.setColumns(10);
-		tbRequestExpiryTimeout.setBounds(424, 239, 86, 20);
+		tbRequestExpiryTimeout.setBounds(424, 290, 86, 20);
 		panel.add(tbRequestExpiryTimeout);
 		
 		JLabel lblWindowmonitorintervalmilliseconds = new JLabel("WindowMonitorInterval (milliseconds)");
-		lblWindowmonitorintervalmilliseconds.setBounds(10, 270, 401, 14);
+		lblWindowmonitorintervalmilliseconds.setBounds(10, 321, 401, 14);
 		panel.add(lblWindowmonitorintervalmilliseconds);
 		
 		tbWindowMonitorInterval = new JTextField();
 		tbWindowMonitorInterval.setColumns(10);
-		tbWindowMonitorInterval.setBounds(424, 267, 86, 20);
+		tbWindowMonitorInterval.setBounds(424, 318, 86, 20);
 		panel.add(tbWindowMonitorInterval);
 		
 		cbRejectIncomingDeliveryMessage = new JCheckBox("Rejecting of incoming SMPP delivery messages");
-		cbRejectIncomingDeliveryMessage.setBounds(10, 293, 524, 25);
+		cbRejectIncomingDeliveryMessage.setBounds(10, 344, 524, 25);
 		panel.add(cbRejectIncomingDeliveryMessage);
+		
+		JLabel lblSmppRole = new JLabel("Smpp session type");
+		lblSmppRole.setBounds(10, 155, 401, 14);
+		panel.add(lblSmppRole);
+		
+		cbSmppSessionType = new JComboBox();
+		cbSmppSessionType.setBounds(424, 152, 180, 20);
+		panel.add(cbSmppSessionType);
 
 	}
 
@@ -186,16 +197,27 @@ public class SmppParametersForm extends JDialog {
 		this.tbRequestExpiryTimeout.setText(((Long) data.getRequestExpiryTimeout()).toString());
 		this.tbWindowMonitorInterval.setText(((Long) data.getWindowMonitorInterval()).toString());
 
-		this.cbBindType.removeAllItems();
-		SmppBindType[] vall = SmppBindType.values();
-		SmppBindType dv = null;
-		for (SmppBindType v : vall) {
-			this.cbBindType.addItem(v);
-			if (v == data.getBindType())
-				dv = v;
-		}
-		if (dv != null)
-			this.cbBindType.setSelectedItem(dv);
+        this.cbBindType.removeAllItems();
+        SmppBindType[] vall = SmppBindType.values();
+        SmppBindType dv = null;
+        for (SmppBindType v : vall) {
+            this.cbBindType.addItem(v);
+            if (v == data.getBindType())
+                dv = v;
+        }
+        if (dv != null)
+            this.cbBindType.setSelectedItem(dv);
+
+        this.cbSmppSessionType.removeAllItems();
+        SmppSession.Type[] vall2 = SmppSession.Type.values();
+        SmppSession.Type dv2 = null;
+        for (SmppSession.Type v : vall2) {
+            this.cbSmppSessionType.addItem(v);
+            if (v == data.getSmppSessionType())
+                dv2 = v;
+        }
+        if (dv2 != null)
+            this.cbSmppSessionType.setSelectedItem(dv2);
 		
 		this.cbRejectIncomingDeliveryMessage.setSelected(this.data.isRejectIncomingDeliveryMessage());
 	}
@@ -250,7 +272,8 @@ public class SmppParametersForm extends JDialog {
 			return;
 		}
 
-		this.data.setBindType((SmppBindType) cbBindType.getSelectedItem());
+        this.data.setBindType((SmppBindType) cbBindType.getSelectedItem());
+        this.data.setSmppSessionType((SmppSession.Type) cbSmppSessionType.getSelectedItem());
 
 		this.data.setRejectIncomingDeliveryMessage(this.cbRejectIncomingDeliveryMessage.isSelected());
 

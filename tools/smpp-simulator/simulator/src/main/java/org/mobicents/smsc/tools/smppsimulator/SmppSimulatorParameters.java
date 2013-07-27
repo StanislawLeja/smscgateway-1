@@ -23,6 +23,7 @@
 package org.mobicents.smsc.tools.smppsimulator;
 
 import com.cloudhopper.smpp.SmppBindType;
+import com.cloudhopper.smpp.SmppSession;
 
 /**
  * 
@@ -54,7 +55,10 @@ public class SmppSimulatorParameters {
 	private EncodingType encodingType = EncodingType.GSM7;
 	private boolean messageClass;
 	private SplittingType splittingType = SplittingType.DoNotSplit;
-	private ValidityType validityType = ValidityType.NoSpecial;
+    private ValidityType validityType = ValidityType.NoSpecial;
+    private MCDeliveryReceipt mcDeliveryReceipt = MCDeliveryReceipt.No;
+    private SendingMessageType sendingMessageType = SendingMessageType.SubmitSm;
+    private SmppSession.Type smppSessionType = SmppSession.Type.CLIENT;
 
 	private int bulkDestAddressRangeStart = 500000;
 	private int bulkDestAddressRangeEnd = 600000;
@@ -261,19 +265,43 @@ public class SmppSimulatorParameters {
 		this.bulkMessagePerSecond = bulkMessagePerSecond;
 	}
 
-
-	/**
-     * @return the messageClass
-     */
     public boolean isMessageClass() {
         return messageClass;
     }
 
-    /**
-     * @param messageClass the messageClass to set
-     */
     public void setMessageClass(boolean messageClass) {
         this.messageClass = messageClass;
+    }
+
+    public MCDeliveryReceipt getMcDeliveryReceipt() {
+        return mcDeliveryReceipt;
+    }
+
+    public void setMcDeliveryReceipt(MCDeliveryReceipt msDeliveryReceipt) {
+        this.mcDeliveryReceipt = msDeliveryReceipt;
+    }
+
+    public SendingMessageType getSendingMessageType() {
+        return sendingMessageType;
+    }
+
+    public void setSendingMessageType(SendingMessageType sendingMessageType) {
+        this.sendingMessageType = sendingMessageType;
+    }
+
+
+    /**
+     * @return the smppSessionType
+     */
+    public SmppSession.Type getSmppSessionType() {
+        return smppSessionType;
+    }
+
+    /**
+     * @param smppSessionType the smppSessionType to set
+     */
+    public void setSmppSessionType(SmppSession.Type smppSessionType) {
+        this.smppSessionType = smppSessionType;
     }
 
 
@@ -315,6 +343,24 @@ public class SmppSimulatorParameters {
 
     public enum ValidityType {
 		NoSpecial, ValidityPeriod_5min, ScheduleDeliveryTime_5min;
+    }
+
+    public enum MCDeliveryReceipt {
+        No(0), onSuccessOrFailure(1), onFailure(2), onSuccess(3);
+
+        private int code;
+
+        private MCDeliveryReceipt(int val) {
+            this.code = val;
+        }
+
+        public int getCode() {
+            return this.code;
+        }
+    }
+
+    public enum SendingMessageType {
+        SubmitSm, DataSm, DeliverSm;
     }
 }
 

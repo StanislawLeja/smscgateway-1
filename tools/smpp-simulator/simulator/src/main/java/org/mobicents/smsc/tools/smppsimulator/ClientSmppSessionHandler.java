@@ -34,7 +34,7 @@ import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import com.cloudhopper.smpp.PduAsyncResponse;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.impl.DefaultSmppSessionHandler;
-import com.cloudhopper.smpp.pdu.DeliverSm;
+import com.cloudhopper.smpp.pdu.BaseSm;
 import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
 import com.cloudhopper.smpp.type.RecoverablePduException;
@@ -64,12 +64,14 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
     public PduResponse firePduRequestReceived(PduRequest pduRequest) {
         testingForm.addMessage("PduRequestReceived: " + pduRequest.getName(), pduRequest.toString());
 
-        // here we can insert responses
-        if (pduRequest.getCommandId() == SmppConstants.CMD_ID_DELIVER_SM) {
-            PduResponse resp = pduRequest.createResponse();
+        PduResponse resp = pduRequest.createResponse();
 
-            if (pduRequest instanceof DeliverSm) {
-                DeliverSm dev = (DeliverSm) pduRequest;
+        // here we can insert responses
+        if (pduRequest.getCommandId() == SmppConstants.CMD_ID_DELIVER_SM || pduRequest.getCommandId() == SmppConstants.CMD_ID_DATA_SM
+                || pduRequest.getCommandId() == SmppConstants.CMD_ID_SUBMIT_SM) {
+
+            if (pduRequest instanceof BaseSm) {
+                BaseSm dev = (BaseSm) pduRequest;
                 String s;
                 byte[] msg = dev.getShortMessage();
                 DataCodingScheme dcs = new DataCodingSchemeImpl(dev.getDataCoding());
@@ -97,9 +99,9 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
             }
 
             testingForm.addMessage("PduResponseSent: " + resp.getName(), resp.toString());
-            return resp;
         }
-        return null;
+
+        return resp;
     }
 
     @Override

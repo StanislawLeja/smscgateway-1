@@ -36,6 +36,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
+import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.ValidityType;
 
 /**
  * 
@@ -62,6 +63,8 @@ public class SmppMessageParamForm extends JDialog {
 	private JTextField tbBulkDestAddressRangeEnd;
 	private JTextField tbBulkMessagePerSecond;
 	private JCheckBox cbMessageClass;
+	private JComboBox<SmppSimulatorParameters.SendingMessageType> cbSendingMessageType;
+	private JComboBox<SmppSimulatorParameters.MCDeliveryReceipt> cbMcDeliveryReceipt;
 
 	public SmppMessageParamForm(JDialog owner) {
 		super(owner, true);
@@ -69,7 +72,7 @@ public class SmppMessageParamForm extends JDialog {
 		setTitle("SMPP message parameters");
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 620, 641);
+		setBounds(100, 100, 620, 709);
 
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.CENTER);
@@ -93,7 +96,7 @@ public class SmppMessageParamForm extends JDialog {
 				doOK();
 			}
 		});
-		button.setBounds(325, 572, 136, 23);
+		button.setBounds(327, 640, 136, 23);
 		panel.add(button);
 		
 		JButton button_1 = new JButton("Cancel");
@@ -102,7 +105,7 @@ public class SmppMessageParamForm extends JDialog {
 				doCancel();
 			}
 		});
-		button_1.setBounds(466, 572, 136, 23);
+		button_1.setBounds(468, 640, 136, 23);
 		panel.add(button_1);
 
 		cbSplittingType = new JComboBox<SmppSimulatorParameters.SplittingType>();
@@ -180,7 +183,7 @@ public class SmppMessageParamForm extends JDialog {
 						panel.add(cbValidityType);
 						
 						JPanel panel_1 = new JPanel();
-						panel_1.setBounds(10, 407, 592, 152);
+						panel_1.setBounds(10, 475, 592, 152);
 						panel.add(panel_1);
 						panel_1.setLayout(null);
 						
@@ -218,6 +221,22 @@ public class SmppMessageParamForm extends JDialog {
 						cbMessageClass = new JCheckBox("Add message class 0");
 						cbMessageClass.setBounds(349, 135, 255, 25);
 						panel.add(cbMessageClass);
+						
+						JLabel lblSendingMessageType = new JLabel("Sending message type");
+						lblSendingMessageType.setBounds(10, 407, 329, 14);
+						panel.add(lblSendingMessageType);
+						
+						cbSendingMessageType = new JComboBox<SmppSimulatorParameters.SendingMessageType>();
+						cbSendingMessageType.setBounds(349, 404, 255, 20);
+						panel.add(cbSendingMessageType);
+						
+						JLabel lblMcdeliveryreceiptRequestin = new JLabel("MCDeliveryReceipt request (in registered_delivery)");
+						lblMcdeliveryreceiptRequestin.setBounds(10, 437, 329, 14);
+						panel.add(lblMcdeliveryreceiptRequestin);
+
+						cbMcDeliveryReceipt = new JComboBox<SmppSimulatorParameters.MCDeliveryReceipt>();
+						cbMcDeliveryReceipt.setBounds(349, 434, 255, 20);
+						panel.add(cbMcDeliveryReceipt);
 	}
 
 	public void setData(SmppSimulatorParameters data) {
@@ -297,16 +316,39 @@ public class SmppMessageParamForm extends JDialog {
 		if (dvNPI != null)
 			this.cbDestNPI.setSelectedItem(dvNPI);
 
-		this.cbValidityType.removeAllItems();
-		SmppSimulatorParameters.ValidityType[] vallValType = SmppSimulatorParameters.ValidityType.values();
-		SmppSimulatorParameters.ValidityType dvValType = null;
-		for (SmppSimulatorParameters.ValidityType v : vallValType) {
-			this.cbValidityType.addItem(v);
-			if (v == data.getValidityType())
-				dvValType = v;
-		}
-		if (dvValType != null)
-			this.cbValidityType.setSelectedItem(dvValType);
+        this.cbValidityType.removeAllItems();
+        SmppSimulatorParameters.ValidityType[] vallValType = SmppSimulatorParameters.ValidityType.values();
+        SmppSimulatorParameters.ValidityType dvValType = null;
+        for (SmppSimulatorParameters.ValidityType v : vallValType) {
+            this.cbValidityType.addItem(v);
+            if (v == data.getValidityType())
+                dvValType = v;
+        }
+        if (dvValType != null)
+            this.cbValidityType.setSelectedItem(dvValType);
+
+        this.cbSendingMessageType.removeAllItems();
+        SmppSimulatorParameters.SendingMessageType[] vallSendingMessageType = SmppSimulatorParameters.SendingMessageType.values();
+        SmppSimulatorParameters.SendingMessageType dvSendingMessageType = null;
+        for (SmppSimulatorParameters.SendingMessageType v : vallSendingMessageType) {
+            this.cbSendingMessageType.addItem(v);
+            if (v == data.getSendingMessageType())
+                dvSendingMessageType = v;
+        }
+        if (dvSendingMessageType != null)
+            this.cbSendingMessageType.setSelectedItem(dvSendingMessageType);
+
+        this.cbMcDeliveryReceipt.removeAllItems();
+        SmppSimulatorParameters.MCDeliveryReceipt[] vallMcDeliveryReceipt = SmppSimulatorParameters.MCDeliveryReceipt.values();
+        SmppSimulatorParameters.MCDeliveryReceipt dvMcDeliveryReceipt = null;
+        for (SmppSimulatorParameters.MCDeliveryReceipt v : vallMcDeliveryReceipt) {
+            this.cbMcDeliveryReceipt.addItem(v);
+            if (v == data.getMcDeliveryReceipt())
+                dvMcDeliveryReceipt = v;
+        }
+        if (dvMcDeliveryReceipt != null)
+            this.cbMcDeliveryReceipt.setSelectedItem(dvMcDeliveryReceipt);
+
 
         this.cbMessageClass.setSelected(data.isMessageClass());
 	}
@@ -356,7 +398,9 @@ public class SmppMessageParamForm extends JDialog {
 		this.data.setSourceNPI((SmppSimulatorParameters.NPI) cbSrcNPI.getSelectedItem());
 		this.data.setDestTON((SmppSimulatorParameters.TON) cbDestTON.getSelectedItem());
 		this.data.setDestNPI((SmppSimulatorParameters.NPI) cbDestNPI.getSelectedItem());
-		this.data.setValidityType((SmppSimulatorParameters.ValidityType) cbValidityType.getSelectedItem());
+        this.data.setValidityType((SmppSimulatorParameters.ValidityType) cbValidityType.getSelectedItem());
+        this.data.setSendingMessageType((SmppSimulatorParameters.SendingMessageType) cbSendingMessageType.getSelectedItem());
+        this.data.setMcDeliveryReceipt((SmppSimulatorParameters.MCDeliveryReceipt) cbMcDeliveryReceipt.getSelectedItem());
 
         this.data.setMessageClass(this.cbMessageClass.isSelected());
 
