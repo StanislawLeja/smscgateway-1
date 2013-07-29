@@ -171,7 +171,7 @@ $(function () {
 });
 	function updateEsmes() {
 		mbeanSearch="com.telscale.smsc:layer=Esme,name=*";
-		var mbean;
+		var mbeanVar;
 		$.ajax({
 			dataType: "json",
 			url: window.jolokiaProtocol + "//" + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/search/" + mbeanSearch
@@ -185,151 +185,168 @@ $(function () {
 				$('.service-row').remove();
 				$('.text-info').remove();
 				jQuery.each(html.value, function() {
-					mbean = this;
-					var j4p = new Jolokia({url: window.jolokiaProtocol + "//" + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/" });
-					
-					var isSmppServerStarted = j4p.getAttribute(mbean, "Started",{method: "post"});
-					
-					var name = j4p.getAttribute(mbean, "Name",{method: "post"});
-					var clusterName = j4p.getAttribute(mbean, "ClusterName",{method: "post"});
-					
-					var esmeAddress = j4p.getAttribute(mbean, "Address",{method: "post"});
+					mbeanVar = this;
 					
 					
-					var systemId = j4p.getAttribute(mbean, "SystemId",{method: "post"});
-					var localType = j4p.getAttribute(mbean, "LocalTypeName",{method: "post"});
-					var state = j4p.getAttribute(mbean, "StateName",{method: "post"});
-					
-					var systemType = j4p.getAttribute(mbean, "SystemType",{method: "post"});
-					var bindType = j4p.getAttribute(mbean, "BindTypeName",{method: "post"});
-					var interfaceVersion = j4p.getAttribute(mbean, "InterfaceVersionName",{method: "post"});
-					var password = j4p.getAttribute(mbean, "Password",{method: "post"});
-					
-					var windowSize = j4p.getAttribute(mbean, "WindowSize",{method: "post"});
-					var requestExpiryTimeout = j4p.getAttribute(mbean, "RequestExpiryTimeout",{method: "post"});
-					var windowMonitorInterval = j4p.getAttribute(mbean, "WindowMonitorInterval",{method: "post"});
-					var windowWaitTimeout = j4p.getAttribute(mbean, "WindowWaitTimeout",{method: "post"});
-					var maxWindowSize = j4p.getAttribute(mbean, "MaxWindowSize",{method: "post"});
-					var windowMonitorEnabled = j4p.getAttribute(mbean, "WindowMonitorEnabled",{method: "post"});
-					
-					var boundDuration = j4p.getAttribute(mbean, "BoundDuration",{method: "post"});
-					var rxDataSMCounter = j4p.getAttribute(mbean, "RxDataSMCounter",{method: "post"});
-					var rxDeliverSMCounter = j4p.getAttribute(mbean, "RxDeliverSMCounter",{method: "post"});
-					var rxEnquireLinkCounter = j4p.getAttribute(mbean, "RxEnquireLinkCounter",{method: "post"});
-					var rxSubmitSMCounter = j4p.getAttribute(mbean, "RxSubmitSMCounter",{method: "post"});
-					var txDataSMCounter = j4p.getAttribute(mbean, "TxDataSMCounter",{method: "post"});
-					var txDeliverSMCounter = j4p.getAttribute(mbean, "TxDeliverSMCounter",{method: "post"});
-					var txEnquireLinkCounter = j4p.getAttribute(mbean, "TxEnquireLinkCounter",{method: "post"});
-					var txSubmitSMCounter = j4p.getAttribute(mbean, "TxSubmitSMCounter",{method: "post"});
-					
-					var localAddressAndPort = j4p.getAttribute(mbean, "LocalAddressAndPort",{method: "post"});
-					var remoteAddressAndPort = j4p.getAttribute(mbean, "RemoteAddressAndPort",{method: "post"});
-					var remoteTypeName = j4p.getAttribute(mbean, "RemoteTypeName",{method: "post"});
-					
-					var bound = j4p.getAttribute(mbean, "Bound",{method: "post"});
-					var closed = j4p.getAttribute(mbean, "Closed",{method: "post"});
-					var binding = j4p.getAttribute(mbean, "Binding",{method: "post"});
-					var unbinding = j4p.getAttribute(mbean, "Unbinding",{method: "post"});
-					
-					
-					if(systemType == null || systemType==""){
-						systemType = "null";
-					}
-					
-					serviceClass = isSmppServerStarted ? 'active-service' : 'inactive-service';
-					
-					$('#esmes-table').children('tbody').append('<tr class="service-row"><td style="vertical-align: middle; text-align: center;"><i style="color: ' + (isSmppServerStarted ? '#51A351' : '#BD362F') + ';" class="' + (isSmppServerStarted ? 'icon-play-circle' : 'icon-remove-circle') + '"></i></td>'+
-							'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + name + '</td>' +
-							'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + systemId + '</td>' +
-							'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + localType + '</td>' +
-							'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + state + '</td>' +
-							'<td style="font-size: 16px; vertical-align: middle; text-align: center; width: 150px;">' + 
-								'<button class="btn btn-small btn-success"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Start ESME" data-placement="bottom" onclick="esmeOperation(\'startEsme\', \'' + name + '\')"><i class="icon-play"> </i></button> ' +
-								'<button class="btn btn-small btn-danger"' + (!isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Stop ESME" data-placement="bottom" onclick="esmeOperation(\'stopEsme\', \'' + name +  '\')"><i class="icon-stop"> </i></button> ' +
-								'<button class="btn btn-small btn-danger"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Remove ESME" data-placement="bottom" onclick="esmeOperation(\'destroyEsme\', \'' + name +  '\')"><i class="icon-remove"> </i></button> ' +
-							'</td></tr>'+
+					jolokia.request(
+							[
+								{ type: "read", mbean: mbeanVar },
+							],
+							{ success: [
+								function(response) {
+									
+									var isSmppServerStarted = response.value.Started;
+									
+									var name = response.value.Name;
+									var clusterName = response.value.ClusterName;
+									
+									var esmeAddress = response.value.Address;
+									
+									
+									var systemId = response.value.SystemId;
+									var localType = response.value.LocalTypeName;
+									var state = response.value.StateName;
+									
+									var systemType = response.value.SystemType;
+									var bindType = response.value.BindTypeName;
+									var interfaceVersion = response.value.InterfaceVersionName;
+									var password = response.value.Password;
+									
+									var windowSize = response.value.WindowSize;
+									var requestExpiryTimeout = response.value.RequestExpiryTimeout;
+									var windowMonitorInterval = response.value.WindowMonitorInterval;
+									var windowWaitTimeout = response.value.WindowWaitTimeout;
+									var maxWindowSize = response.value.MaxWindowSize;
+									var windowMonitorEnabled = response.value.WindowMonitorEnabled;
+									
+									var boundDuration = response.value.BoundDuration;
+									var rxDataSMCounter = response.value.RxDataSMCounter;
+									var rxDeliverSMCounter = response.value.RxDeliverSMCounter;
+									var rxEnquireLinkCounter = response.value.RxEnquireLinkCounter;
+									var rxSubmitSMCounter = response.value.RxSubmitSMCounter;
+									var txDataSMCounter = response.value.TxDataSMCounter;
+									var txDeliverSMCounter = response.value.TxDeliverSMCounter;
+									var txEnquireLinkCounter = response.value.TxEnquireLinkCounter;
+									var txSubmitSMCounter = response.value.TxSubmitSMCounter;
+									
+									var localAddressAndPort = response.value.LocalAddressAndPort;
+									var remoteAddressAndPort = response.value.RemoteAddressAndPort;
+									var remoteTypeName = response.value.RemoteTypeName;
+									
+									var bound = response.value.Bound;
+									var closed = response.value.Closed;
+									var binding = response.value.Binding;
+									var unbinding = response.value.Unbinding;	
+									
+									
+									if(systemType == null || systemType==""){
+										systemType = "null";
+									}
+									
+									serviceClass = isSmppServerStarted ? 'active-service' : 'inactive-service';
+									
+									$('#esmes-table').children('tbody').append('<tr class="service-row"><td style="vertical-align: middle; text-align: center;"><i style="color: ' + (isSmppServerStarted ? '#51A351' : '#BD362F') + ';" class="' + (isSmppServerStarted ? 'icon-play-circle' : 'icon-remove-circle') + '"></i></td>'+
+											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + name + '</td>' +
+											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + systemId + '</td>' +
+											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + localType + '</td>' +
+											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + state + '</td>' +
+											'<td style="font-size: 16px; vertical-align: middle; text-align: center; width: 150px;">' + 
+												'<button class="btn btn-small btn-success"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Start ESME" data-placement="bottom" onclick="esmeOperation(\'startEsme\', \'' + name + '\')"><i class="icon-play"> </i></button> ' +
+												'<button class="btn btn-small btn-danger"' + (!isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Stop ESME" data-placement="bottom" onclick="esmeOperation(\'stopEsme\', \'' + name +  '\')"><i class="icon-stop"> </i></button> ' +
+												'<button class="btn btn-small btn-danger"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Remove ESME" data-placement="bottom" onclick="esmeOperation(\'destroyEsme\', \'' + name +  '\')"><i class="icon-remove"> </i></button> ' +
+											'</td></tr>'+
 
 
-							'<tr class="text-info" style="display: none;"><td colspan=6>' +
-							'<div class="bs-docs-example bs-docs-example-submenus"> '+
-					        '    <div>'+
-					        '      <p class="muted">SMPP Properties</p>'+
-									'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
-										'<dt>ClusterName</dt> <dd>' + clusterName + ' </dd>' + 
-										'<dt>SystemType</dt> <dd>' + systemType + ' </dd>' + 
-										'<dt>BindType</dt> <dd>' + bindType + ' </dd>' + 
-										'<dt>InterfaceVersion</dt> <dd>' + interfaceVersion + ' </dd>' + 
-										'<dt>Password</dt> <dd>' + password + ' </dd>' + 
-									'</dl>'+
-					        '    </div>'+
-				        		'<hr style="margin: 5px 0;"/>' +
-						        '    <div>'+
-						        '      <p class="muted">ESME Address</p>'+
-										'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
-											'<dt>TypeOfNumber</dt> <dd>' + esmeAddress.ton + ' </dd>' +
-											'<dt>NumberPlanIndicator</dt> <dd>' + esmeAddress.npi + ' </dd>' +
-											'<dt>AddressRange</dt> <dd>' + esmeAddress.address + ' </dd>' +
-										'</dl>'+
-						        '    </div>'+				        		
-					        	'<hr style="margin: 5px 0;"/>' +
-					        '    <div>'+
-					        '      <p class="muted">Configuration</p>'+
-									'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
-										'<dt>WindowSize</dt> <dd>' + windowSize + ' </dd>' +
-										'<dt>RequestExpiryTimeout</dt> <dd>' + requestExpiryTimeout + ' </dd>' +
-										'<dt>WindowMonitorInterval</dt> <dd>' + windowMonitorInterval + ' </dd>' +
-										'<dt>WindowWaitTimeout</dt> <dd>' + windowWaitTimeout + ' </dd>' +
-										'<dt>MaxWindowSize</dt> <dd>' + maxWindowSize + ' </dd>' +
-										'<dt>WindowMonitorEnabled</dt> <dd>' + windowMonitorEnabled + ' </dd>' +
-									'</dl>'+
-					        '    </div>'+	
-					        '<hr style="margin: 5px 0;"/>' +
-					        '    <div>'+
-					        '      <p class="muted">Statistics</p>'+
-									'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
-									'<dt>BoundDuration</dt> <dd>' + boundDuration + ' </dd>' +
-									'<dt>RxDataSMCounter</dt> <dd>' + rxDataSMCounter + ' </dd>' +
-									'<dt>RxDeliverSMCounter</dt> <dd>' + rxDeliverSMCounter + ' </dd>' +
-									'<dt>RxEnquireLinkCounter</dt> <dd>' + rxEnquireLinkCounter + ' </dd>' +
-									'<dt>RxSubmitSMCounter</dt> <dd>' + rxSubmitSMCounter + ' </dd>' +
-									'<dt>TxDataSMCounter</dt> <dd>' + txDataSMCounter + ' </dd>' +
-									'<dt>TxDeliverSMCounter</dt> <dd>' + txDeliverSMCounter + ' </dd>' +
-									'<dt>TxEnquireLinkCounter</dt> <dd>' + txEnquireLinkCounter + ' </dd>' +
-									'<dt>TxSubmitSMCounter</dt> <dd>' + txSubmitSMCounter + ' </dd>' +
-									'</dl>'+
-					        '    </div>'+
-					        '<hr style="margin: 5px 0;"/>' +
-					        '    <div>'+
-					        '      <p class="muted">Various</p>'+
-									'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
-									'<dt>LocalAddressAndPort</dt> <dd>' + localAddressAndPort + ' </dd>' +
-									'<dt>RemoteAddressAndPort</dt> <dd>' + remoteAddressAndPort + ' </dd>' +
-									'<dt>RemoteTypeName</dt> <dd>' + remoteTypeName + ' </dd>' +
-									'</dl>'+
-					        '    </div>'+	
-					        '<hr style="margin: 5px 0;"/>' +
-					        '    <div>'+
-					        '      <p class="muted">State</p>'+
-									'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
-									'<dt>Bound</dt> <dd>' + bound + ' </dd>' +
-									'<dt>Closed</dt> <dd>' + closed + ' </dd>' +
-									'<dt>Binding</dt> <dd>' + binding + ' </dd>' +
-									'<dt>Unbinding</dt> <dd>' + unbinding + ' </dd>' +
-									'</dl>'+
-					        '    </div>'+	
-					        '<hr style="margin: 5px 0;"/>' +
-					        '<div class="btn-group">'+
-					        '              <button type="button" class="btn" onclick="disableLogBytes(\'' + name +  '\')"><i class="icon-ban-circle"></i> DisableLogBytes</button>'+
-					        '              <button type="button" class="btn" onclick="disableLogPdu(\'' + name +  '\')"><i class="icon-ban-circle"></i> DisableLogPdu</button>'+
-					        '              <button type="button" class="btn" onclick="dumpWindow(\'' + name +  '\')"><i class="icon-comment-alt"></i> DumpWindow</button>'+
-					        '              <button type="button" class="btn" onclick="enableLogBytes(\'' + name +  '\')"><i class="icon-check"></i> EnableLogBytes</button>'+
-					        '              <button type="button" class="btn" onclick="enableLogPdu(\'' + name +  '\')"><i class="icon-check"></i> EnableLogPdu</button>'+
-					        '              <button type="button" class="btn" onclick="resetCounters(\'' + name +  '\')"><i class="icon-spinner"></i> ResetCounters</button>'+
-					        '            </div>'+
-					 		'</div>'+
-					 		
-							'</td></tr>'
-					);
+											'<tr class="text-info" style="display: none;"><td colspan=6>' +
+											'<div class="bs-docs-example bs-docs-example-submenus"> '+
+									        '    <div>'+
+									        '      <p class="muted">SMPP Properties</p>'+
+													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+														'<dt>ClusterName</dt> <dd>' + clusterName + ' </dd>' + 
+														'<dt>SystemType</dt> <dd>' + systemType + ' </dd>' + 
+														'<dt>BindType</dt> <dd>' + bindType + ' </dd>' + 
+														'<dt>InterfaceVersion</dt> <dd>' + interfaceVersion + ' </dd>' + 
+														'<dt>Password</dt> <dd>' + password + ' </dd>' + 
+													'</dl>'+
+									        '    </div>'+
+								        		'<hr style="margin: 5px 0;"/>' +
+										        '    <div>'+
+										        '      <p class="muted">ESME Address</p>'+
+														'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+															'<dt>TypeOfNumber</dt> <dd>' + esmeAddress.ton + ' </dd>' +
+															'<dt>NumberPlanIndicator</dt> <dd>' + esmeAddress.npi + ' </dd>' +
+															'<dt>AddressRange</dt> <dd>' + esmeAddress.address + ' </dd>' +
+														'</dl>'+
+										        '    </div>'+				        		
+									        	'<hr style="margin: 5px 0;"/>' +
+									        '    <div>'+
+									        '      <p class="muted">Configuration</p>'+
+													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+														'<dt>WindowSize</dt> <dd>' + windowSize + ' </dd>' +
+														'<dt>RequestExpiryTimeout</dt> <dd>' + requestExpiryTimeout + ' </dd>' +
+														'<dt>WindowMonitorInterval</dt> <dd>' + windowMonitorInterval + ' </dd>' +
+														'<dt>WindowWaitTimeout</dt> <dd>' + windowWaitTimeout + ' </dd>' +
+														'<dt>MaxWindowSize</dt> <dd>' + maxWindowSize + ' </dd>' +
+														'<dt>WindowMonitorEnabled</dt> <dd>' + windowMonitorEnabled + ' </dd>' +
+													'</dl>'+
+									        '    </div>'+	
+									        '<hr style="margin: 5px 0;"/>' +
+									        '    <div>'+
+									        '      <p class="muted">Statistics</p>'+
+													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+													'<dt>BoundDuration</dt> <dd>' + boundDuration + ' </dd>' +
+													'<dt>RxDataSMCounter</dt> <dd>' + rxDataSMCounter + ' </dd>' +
+													'<dt>RxDeliverSMCounter</dt> <dd>' + rxDeliverSMCounter + ' </dd>' +
+													'<dt>RxEnquireLinkCounter</dt> <dd>' + rxEnquireLinkCounter + ' </dd>' +
+													'<dt>RxSubmitSMCounter</dt> <dd>' + rxSubmitSMCounter + ' </dd>' +
+													'<dt>TxDataSMCounter</dt> <dd>' + txDataSMCounter + ' </dd>' +
+													'<dt>TxDeliverSMCounter</dt> <dd>' + txDeliverSMCounter + ' </dd>' +
+													'<dt>TxEnquireLinkCounter</dt> <dd>' + txEnquireLinkCounter + ' </dd>' +
+													'<dt>TxSubmitSMCounter</dt> <dd>' + txSubmitSMCounter + ' </dd>' +
+													'</dl>'+
+									        '    </div>'+
+									        '<hr style="margin: 5px 0;"/>' +
+									        '    <div>'+
+									        '      <p class="muted">Various</p>'+
+													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+													'<dt>LocalAddressAndPort</dt> <dd>' + localAddressAndPort + ' </dd>' +
+													'<dt>RemoteAddressAndPort</dt> <dd>' + remoteAddressAndPort + ' </dd>' +
+													'<dt>RemoteTypeName</dt> <dd>' + remoteTypeName + ' </dd>' +
+													'</dl>'+
+									        '    </div>'+	
+									        '<hr style="margin: 5px 0;"/>' +
+									        '    <div>'+
+									        '      <p class="muted">State</p>'+
+													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+													'<dt>Bound</dt> <dd>' + bound + ' </dd>' +
+													'<dt>Closed</dt> <dd>' + closed + ' </dd>' +
+													'<dt>Binding</dt> <dd>' + binding + ' </dd>' +
+													'<dt>Unbinding</dt> <dd>' + unbinding + ' </dd>' +
+													'</dl>'+
+									        '    </div>'+	
+									        '<hr style="margin: 5px 0;"/>' +
+									        '<div class="btn-group">'+
+									        '              <button type="button" class="btn" onclick="disableLogBytes(\'' + name +  '\')"><i class="icon-ban-circle"></i> DisableLogBytes</button>'+
+									        '              <button type="button" class="btn" onclick="disableLogPdu(\'' + name +  '\')"><i class="icon-ban-circle"></i> DisableLogPdu</button>'+
+									        '              <button type="button" class="btn" onclick="dumpWindow(\'' + name +  '\')"><i class="icon-comment-alt"></i> DumpWindow</button>'+
+									        '              <button type="button" class="btn" onclick="enableLogBytes(\'' + name +  '\')"><i class="icon-check"></i> EnableLogBytes</button>'+
+									        '              <button type="button" class="btn" onclick="enableLogPdu(\'' + name +  '\')"><i class="icon-check"></i> EnableLogPdu</button>'+
+									        '              <button type="button" class="btn" onclick="resetCounters(\'' + name +  '\')"><i class="icon-spinner"></i> ResetCounters</button>'+
+									        '            </div>'+
+									 		'</div>'+
+									 		
+											'</td></tr>'
+									);									
+									
+								}],
+								error: function(value){
+									errorUID = ("st" + new Date().getTime()).hashCode();
+									createStackTrace(errorUID, value.stacktrace);
+									logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+								}
+							}
+						); 
+
 				});
 			}
 		})
@@ -343,6 +360,11 @@ $(function () {
 				{
 					success: function(value) {
 						logToConsole('INFO', 'Successfully disabled log bytes for Esme ' + esmeName );
+					},
+					error: function(value){
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
 					}
 				});	
 	}
@@ -352,6 +374,11 @@ $(function () {
 				{
 					success: function(value) {
 						logToConsole('INFO', 'Successfully disabled log pdu for Esme ' + esmeName );
+					},
+					error: function(value){
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
 					}
 				});	
 	}	
@@ -361,6 +388,11 @@ $(function () {
 				{
 					success: function(value) {
 						logToConsole('INFO', 'Successfully dumped window for Esme ' + esmeName );
+					},
+					error: function(value){
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
 					}
 				});	
 	}
@@ -370,6 +402,11 @@ $(function () {
 				{
 					success: function(value) {
 						logToConsole('INFO', 'Successfully enabled log bytes for Esme ' + esmeName );
+					},
+					error: function(value){
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
 					}
 				});	
 	}	
@@ -379,6 +416,11 @@ $(function () {
 				{
 					success: function(value) {
 						logToConsole('INFO', 'Successfully enabled log pdu for Esme ' + esmeName );
+					},
+					error: function(value){
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
 					}
 				});	
 	}	
@@ -388,6 +430,11 @@ $(function () {
 				{
 					success: function(value) {
 						logToConsole('INFO', 'Successfully resetted counters for Esme ' + esmeName );
+					},
+					error: function(value){
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
 					}
 				});	
 	}	
@@ -398,6 +445,11 @@ $(function () {
 					success: function(value) {
 						updateEsmes();
 						logToConsole('INFO', 'Successfully '+operation+'ed Esme ' + name );
+					},
+					error: function(value){
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
 					}
 				});	
 		
@@ -565,7 +617,12 @@ $(function () {
 						updateEsmes();
 						logToConsole('INFO', 'ESME ' + esmeName + ' created successfuly.');
 						$('#entities-modal').modal('hide');
-					}
+					},
+					error: function(value){
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+					}					
 				});		
 		
 	}

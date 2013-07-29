@@ -103,25 +103,34 @@
 								<span class="add-on">MAP version supported</span>
 								<input id="maxmapv" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
 							</span>	
+							<h5 style="border-bottom: 1px solid #DDD;">Others</h5>        						                		
+							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="empty TC-BEGIN will be used if messageLength > maxPossibleMessageLength - maxMessageLengthReduce. Recommended value = 6 Possible values from 0 to 12">
+								<span class="add-on">Max Message Length Reducer</span>
+								<input id="maxmessagelengthreducer" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
+							</span>								
                         </div>
                          <div class="tab-pane" id="dbsettings">
 							<h5 style="border-bottom: 1px solid #DDD;">Cassandra Configuration</h5>
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Cassandra Host Address">
+							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cassandra host address">
 								<span class="add-on">Host Address</span>
 								<input id="cassandrahost" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
 							</span>                         
 							<br/><br/>
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Cassandra Port">
+							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cassandra port">
 								<span class="add-on">Port</span>
 								<input id="cassandraport" type="text" class="input-mini" style="width: 100px; margin-right: 12px; text-align: center;" value="0" />
 							</span>                         
 							<br/><br/>
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Cassandra Keyspace Name">
+							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cassandra keyspace name">
 								<span class="add-on">Keyspace Name</span>
 								<input id="cassandrakeyspace" type="text" class="input-mini" style="width: 100px; margin-right: 12px; text-align: center;" value="0" />
 							</span>                         
 							<br/><br/>
-							
+							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cassandra cluster name">
+								<span class="add-on">Cluster Name</span>
+								<input id="cassandraclustername" type="text" class="input-mini" style="width: 100px; margin-right: 12px; text-align: center;" value="0" />
+							</span>                         
+							<br/><br/>							
 																					
                         </div>
                         <div class="tab-pane" id="scheduler">
@@ -151,87 +160,56 @@
 				
 					$(document).ready(function () {												
 						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
-						var mbean;
-						$.ajax({
-							dataType: "json",
-							url: window.jolokiaProtocol + "//" + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/search/" + mbeanSearch
-						})
-						.done(function(html) {
-							if (html.error) {
-								logToConsole("ERROR", html.error);
-							}
-							else {			
-								mbean = html.value[0];
-								var j4p = new Jolokia({url: window.jolokiaProtocol + "//" + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/" });
-								
-								
-								var propdefaultvalidityhrs = j4p.getAttribute(mbean, "DefaultValidityPeriodHours",{method: "post"});
-								var propmaxvalidityhrs = j4p.getAttribute(mbean, "MaxValidityPeriodHours",{method: "post"});
-								var propdefaultton = j4p.getAttribute(mbean, "DefaultTon",{method: "post"});
-								var propdefaultnpi = j4p.getAttribute(mbean, "DefaultNpi",{method: "post"});
-								
-								var esmedefaultclustername = j4p.getAttribute(mbean, "DefaultClusterName",{method: "post"});
-								
-								var propsubbusduedel = j4p.getAttribute(mbean, "SubscriberBusyDueDelay",{method: "post"});
-								var propfirduedel = j4p.getAttribute(mbean, "FirstDueDelay",{method: "post"});
-								var propsecduedel = j4p.getAttribute(mbean, "SecondDueDelay",{method: "post"});
-								var propmaxduedel = j4p.getAttribute(mbean, "MaxDueDelay",{method: "post"});
-								
-								var duedelaymultiplicator = j4p.getAttribute(mbean, "DueDelayMultiplicator",{method: "post"});
-								
-								$("#propdefaultvalidityhrs").val(propdefaultvalidityhrs);
-								$("#propmaxvalidityhrs").val(propmaxvalidityhrs);
-								$("#propdefaultton").val(propdefaultton);
-								$("#propdefaultnpi").val(propdefaultnpi);
-								
-								$("#esmedefaultclustername").val(esmedefaultclustername);
-								
-								$("#propsubbusduedel").val(propsubbusduedel);
-								$("#propfirduedel").val(propfirduedel);
-								$("#propsecduedel").val(propsecduedel);
-								$("#propmaxduedel").val(propmaxduedel);
-								
-								$("#duedelaymultiplicator").val(duedelaymultiplicator);
-								
-								var ussdgt = j4p.getAttribute(mbean, "ServiceCenterGt",{method: "post"});
-								var ussdssn = j4p.getAttribute(mbean, "ServiceCenterSsn",{method: "post"});
-								var hlrssn = j4p.getAttribute(mbean, "HlrSsn",{method: "post"});
-								var mscssn = j4p.getAttribute(mbean, "MscSsn",{method: "post"});
-								var maxmapv = j4p.getAttribute(mbean, "MaxMapVersion",{method: "post"});
-								
-								
-								$("#ussdgt").val(ussdgt);
-								$("#ussdssn").val(ussdssn);
-								$("#hlrssn").val(hlrssn);
-								$("#mscssn").val(mscssn);
-								$("#maxmapv").val(maxmapv);
-								
-								
-								var hosts = j4p.getAttribute(mbean, "Hosts",{method: "post"});
-								var hostportarr = hosts.split(":");
-								var cassandrahost = hostportarr[0] 
-								var cassandraport = hostportarr[1]
-								var cassandrakeyspace = j4p.getAttribute(mbean, "KeyspaceName",{method: "post"});
-								
-								
-								$("#cassandrahost").val(cassandrahost);
-								$("#cassandraport").val(cassandraport);
-								$("#cassandrakeyspace").val(cassandrakeyspace);
-								
-								var schedulerfetchperiod = j4p.getAttribute(mbean, "FetchPeriod",{method: "post"});
-								var schedulerfetchmaxrows = j4p.getAttribute(mbean, "FetchMaxRows",{method: "post"});
-								var schedulerfetchmaxactivity = j4p.getAttribute(mbean, "MaxActivityCount",{method: "post"});
-								
-								
-								$("#schedulerfetchperiod").val(schedulerfetchperiod);
-								$("#schedulerfetchmaxrows").val(schedulerfetchmaxrows);
-								$("#schedulerfetchmaxactivity").val(schedulerfetchmaxactivity);								
-								
-							}
-						})
-						.fail(function() {
-							logToConsole("ERROR", "Failure trying to communicate with the SMSC Gateway. Please try again later.");
-						})
+						jolokia.request(
+								[
+									{ type: "read", mbean: mbeanSearch },
+								],
+								{ success: [
+									function(response) {
+										$("#propdefaultvalidityhrs").val(response.value.DefaultValidityPeriodHours);
+										$("#propmaxvalidityhrs").val(response.value.MaxValidityPeriodHours);
+										$("#propdefaultton").val(response.value.DefaultTon);
+										$("#propdefaultnpi").val(response.value.DefaultNpi);
+										
+										$("#esmedefaultclustername").val(response.value.DefaultClusterName);
+										
+										$("#propsubbusduedel").val(response.value.SubscriberBusyDueDelay);
+										$("#propfirduedel").val(response.value.FirstDueDelay);
+										$("#propsecduedel").val(response.value.SecondDueDelay);
+										$("#propmaxduedel").val(response.value.MaxDueDelay);
+										
+										$("#duedelaymultiplicator").val(response.value.DueDelayMultiplicator);
+										
+										$("#ussdgt").val(response.value.ServiceCenterGt);
+										$("#ussdssn").val(response.value.ServiceCenterSsn);
+										$("#hlrssn").val(response.value.HlrSsn);
+										$("#mscssn").val(response.value.MscSsn);
+										$("#maxmapv").val(response.value.MaxMapVersion);
+										$("#maxmessagelengthreducer").val(response.value.MaxMessageLengthReducer);
+										
+										
+										var hosts = response.value.Hosts;
+										var hostportarr = hosts.split(":");
+										var cassandrahost = hostportarr[0] 
+										var cassandraport = hostportarr[1]
+										
+										
+										$("#cassandrahost").val(cassandrahost);
+										$("#cassandraport").val(cassandraport);
+										$("#cassandrakeyspace").val(response.value.KeyspaceName);
+										$("#cassandraclustername").val(response.value.ClusterName);
+										
+										$("#schedulerfetchperiod").val(response.value.FetchPeriod);
+										$("#schedulerfetchmaxrows").val(response.value.FetchMaxRows);
+										$("#schedulerfetchmaxactivity").val(response.value.MaxActivityCount);										
+										
+									}],
+									error: function(response) {
+										alert("Jolokia request failed: " + response.error);
+									} 
+								}
+							);						
+					
 	    			});
 					
 					function applyServerSettings() {
@@ -269,6 +247,8 @@
 			    			$("#propdefaultnpi").removeClass("required");		
 			    		}
 						
+						var propesmedefaultclustername = $("esmedefaultclustername").val();
+						
 						var propsubbusduedel = $("#propsubbusduedel").val();
 						if(propsubbusduedel.trim() == "") {
 			    			$("#propsubbusduedel").addClass("required");					    			
@@ -301,6 +281,14 @@
 			    			$("#propmaxduedel").removeClass("required");		
 			    		}
 						
+						var duedelaymultiplicator = $("#duedelaymultiplicator").val();
+						if(duedelaymultiplicator.trim() == "") {
+			    			$("#duedelaymultiplicator").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#duedelaymultiplicator").hasClass("required")) {
+			    			$("#duedelaymultiplicator").removeClass("required");		
+			    		}
+						
 						
 						var cassandrahost = $("#cassandrahost").val();
 						if(cassandrahost.trim() == "") {
@@ -327,6 +315,8 @@
 			    		} else if($("#cassandrakeyspace").hasClass("required")) {
 			    			$("#cassandrakeyspace").removeClass("required");		
 			    		}
+						
+						var cassandraclustername = $("#cassandraclustername").val();
 						
 						
 						var ussdgt = $("#ussdgt").val();
@@ -369,6 +359,14 @@
 			    			$("#maxmapv").removeClass("required");		
 			    		}
 						
+						var maxmessagelengthreducer = $("#maxmessagelengthreducer").val();
+						if(maxmessagelengthreducer.trim() == "") {
+			    			$("#maxmessagelengthreducer").addClass("required");					    			
+			    			formInvalid = true;
+			    		} else if($("#maxmessagelengthreducer").hasClass("required")) {
+			    			$("#maxmessagelengthreducer").removeClass("required");		
+			    		}
+						
 						var schedulerfetchperiod = $("#schedulerfetchperiod").val();
 						if(schedulerfetchperiod.trim() == "") {
 			    			$("#schedulerfetchperiod").addClass("required");					    			
@@ -401,48 +399,42 @@
 							$("#login-settings-error").hide();
 						}
 						
+						
 						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
-						var mbean;
-						$.ajax({
-							dataType: "json",
-							url: window.jolokiaProtocol + "//" + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/search/" + mbeanSearch
-						})
-						.done(function(html) {
-							if (html.error) {
-								logToConsole("ERROR", html.error);
-							}
-							else {			
-								mbean = html.value[0];
-								var j4p = new Jolokia({url: window.jolokiaProtocol + "//" + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/" });
-								
-								j4p.setAttribute(mbean, "DefaultValidityPeriodHours",propdefaultvalidityhrs,{method: "post"});
-								j4p.setAttribute(mbean, "MaxValidityPeriodHours",propmaxvalidityhrs,{method: "post"});
-								j4p.setAttribute(mbean, "DefaultTon",propdefaultton,{method: "post"});
-								j4p.setAttribute(mbean, "DefaultNpi",propdefaultnpi,{method: "post"});
-								j4p.setAttribute(mbean, "SubscriberBusyDueDelay",propsubbusduedel,{method: "post"});
-								j4p.setAttribute(mbean, "FirstDueDelay",propfirduedel,{method: "post"});
-								j4p.setAttribute(mbean, "SecondDueDelay",propsecduedel,{method: "post"});
-								j4p.setAttribute(mbean, "MaxDueDelay",propmaxduedel,{method: "post"});
-								
-								
-								j4p.setAttribute(mbean, "Hosts",hosts,{method: "post"});
-								j4p.setAttribute(mbean, "KeyspaceName",cassandrakeyspace,{method: "post"});
-								
-								j4p.setAttribute(mbean, "ServiceCenterGt",ussdgt,{method: "post"});	
-								j4p.setAttribute(mbean, "ServiceCenterSsn",ussdssn,{method: "post"});	
-								j4p.setAttribute(mbean, "HlrSsn",hlrssn,{method: "post"});	
-								j4p.setAttribute(mbean, "MscSsn",mscssn,{method: "post"});	
-								j4p.setAttribute(mbean, "MaxMapVersion",maxmapv,{method: "post"});	
-								
-								j4p.setAttribute(mbean, "FetchPeriod",schedulerfetchperiod,{method: "post"});
-								j4p.setAttribute(mbean, "FetchMaxRows",schedulerfetchmaxrows,{method: "post"});
-								j4p.setAttribute(mbean, "MaxActivityCount",schedulerfetchmaxactivity,{method: "post"});
-								
-								logToConsole("INFO", "SMSC Gateway Proerties successfully updated.");
-							}
-						})
-						.fail(function() {
-							logToConsole("ERROR", "Failure trying to communicate with the Telscale SMSC Gateway. Please try again later.");
-						})						
+						jolokia.request(
+								[
+									{ type: "write", mbean: mbeanSearch, attribute: "DefaultValidityPeriodHours", value: propdefaultvalidityhrs },
+									{ type: "write", mbean: mbeanSearch, attribute: "MaxValidityPeriodHours", value: propmaxvalidityhrs },
+									{ type: "write", mbean: mbeanSearch, attribute: "DefaultTon", value: propdefaultton },
+									{ type: "write", mbean: mbeanSearch, attribute: "DefaultNpi", value: propdefaultnpi },
+									{ type: "write", mbean: mbeanSearch, attribute: "DefaultClusterName", value: propesmedefaultclustername },
+									{ type: "write", mbean: mbeanSearch, attribute: "SubscriberBusyDueDelay", value: propsubbusduedel },
+									{ type: "write", mbean: mbeanSearch, attribute: "FirstDueDelay", value: propfirduedel },
+									{ type: "write", mbean: mbeanSearch, attribute: "SecondDueDelay", value: propsecduedel },
+									{ type: "write", mbean: mbeanSearch, attribute: "MaxDueDelay", value: propmaxduedel },
+									{ type: "write", mbean: mbeanSearch, attribute: "DueDelayMultiplicator", value: duedelaymultiplicator },
+									{ type: "write", mbean: mbeanSearch, attribute: "Hosts", value: hosts },
+									{ type: "write", mbean: mbeanSearch, attribute: "KeyspaceName", value: cassandrakeyspace },
+									{ type: "write", mbean: mbeanSearch, attribute: "ClusterName", value: cassandraclustername },
+									{ type: "write", mbean: mbeanSearch, attribute: "ServiceCenterGt", value: ussdgt },
+									{ type: "write", mbean: mbeanSearch, attribute: "ServiceCenterSsn", value: ussdssn },
+									{ type: "write", mbean: mbeanSearch, attribute: "HlrSsn", value: hlrssn },
+									{ type: "write", mbean: mbeanSearch, attribute: "MscSsn", value: mscssn },
+									{ type: "write", mbean: mbeanSearch, attribute: "MaxMapVersion", value: maxmapv },
+									{ type: "write", mbean: mbeanSearch, attribute: "MaxMessageLengthReducer", value: maxmessagelengthreducer },
+									{ type: "write", mbean: mbeanSearch, attribute: "FetchPeriod", value: schedulerfetchperiod },
+									{ type: "write", mbean: mbeanSearch, attribute: "FetchMaxRows", value: schedulerfetchmaxrows },
+									{ type: "write", mbean: mbeanSearch, attribute: "MaxActivityCount", value: schedulerfetchmaxactivity },
+								],
+								{
+									success: function(response) {
+										logToConsole("INFO", "SMSC Gateway Proerties successfully updated.");
+									},
+									error: function(response) {
+										logToConsole("ERROR", "Failure trying to communicate with the Telscale SMSC Gateway. Please try again later.");
+									} 
+								}
+							);
+									
 					}
 					</script>
