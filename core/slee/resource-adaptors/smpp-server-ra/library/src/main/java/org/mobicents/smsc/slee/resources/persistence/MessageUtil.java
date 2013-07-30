@@ -22,9 +22,15 @@
 
 package org.mobicents.smsc.slee.resources.persistence;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.sql.Timestamp;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
@@ -36,6 +42,7 @@ import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
+import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.SmppConstants;
 
 /**
@@ -371,6 +378,93 @@ public class MessageUtil {
             return "Compressed message are not supported";
 
         return null;
+    }
+
+    private static final String DELIVERY_ACK_ID = "id:";
+    private static final String DELIVERY_ACK_SUB = " sub:";
+    private static final String DELIVERY_ACK_DLVRD = " dlvrd:";
+    private static final String DELIVERY_ACK_SUBMIT_DATE = " submit date:";
+    private static final String DELIVERY_ACK_DONE_DATE = " done date:";
+    private static final String DELIVERY_ACK_STAT = " stat:";
+    private static final String DELIVERY_ACK_ERR = " err:";
+    private static final String DELIVERY_ACK_TEXT = " text:";
+    private static final String DELIVERY_ACK_STATE_DELIVERED = "DELIVRD";
+    private static final String DELIVERY_ACK_STATE_UNDELIVERABLE = "UNDELIV";
+    private static final byte ESME_DELIVERY_ACK = 0x04;
+    private static final SimpleDateFormat DELIVERY_ACK_DATE_FORMAT = new SimpleDateFormat("yyMMddHHmm");
+
+    public static boolean isReceiptOnSuccess(int registeredDelivery) {
+        int code = registeredDelivery & 0x03;
+        if (code == 1 || code == 3)
+            return true;
+        else
+            return false;
+    }
+
+    public static boolean isReceiptOnFailure(int registeredDelivery) {
+        int code = registeredDelivery & 0x03;
+        if (code == 1 || code == 2)
+            return true;
+        else
+            return false;
+    }
+
+    public static Sms createReceiptSms(Sms sms, boolean devivered) {
+        Sms receipt = new Sms();
+        receipt.setDbId(UUID.randomUUID());
+        receipt.setSourceAddr(sms.getSmsSet().getDestAddr());
+        receipt.setSourceAddrNpi(sms.getSmsSet().getDestAddrNpi());
+        receipt.setSourceAddrTon(sms.getSmsSet().getDestAddrTon());
+
+        receipt.setSubmitDate(sms.getSubmitDate());
+
+        receipt.setMessageId(sms.getMessageId());
+
+        StringBuffer sb = new StringBuffer();
+        DataCodingScheme dcs = new DataCodingSchemeImpl(sms.getDataCoding());
+        if (devivered) {
+            sb.append(DELIVERY_ACK_ID).append(sms.getMessageIdText()).append(DELIVERY_ACK_SUB).append("001").append(DELIVERY_ACK_DLVRD).append("001")
+                    .append(DELIVERY_ACK_SUBMIT_DATE).append(DELIVERY_ACK_DATE_FORMAT.format(sms.getSubmitDate())).append(DELIVERY_ACK_DONE_DATE)
+                    .append(DELIVERY_ACK_DATE_FORMAT.format(new Timestamp(System.currentTimeMillis()))).append(DELIVERY_ACK_STAT)
+                    .append(DELIVERY_ACK_STATE_DELIVERED).append(DELIVERY_ACK_ERR).append("000").append(DELIVERY_ACK_TEXT)
+                    .append(getFirst20CharOfSMS(sms.getShortMessage(), dcs));
+        } else {
+            sb.append(DELIVERY_ACK_ID).append(sms.getMessageIdText()).append(DELIVERY_ACK_SUB).append("001").append(DELIVERY_ACK_DLVRD).append("001")
+                    .append(DELIVERY_ACK_SUBMIT_DATE).append(DELIVERY_ACK_DATE_FORMAT.format(sms.getSubmitDate())).append(DELIVERY_ACK_DONE_DATE)
+                    .append(DELIVERY_ACK_DATE_FORMAT.format(new Timestamp(System.currentTimeMillis()))).append(DELIVERY_ACK_STAT)
+                    .append(DELIVERY_ACK_STATE_UNDELIVERABLE).append(DELIVERY_ACK_ERR).append(sms.getSmsSet().getStatus().getCodeText())
+                    .append(DELIVERY_ACK_TEXT).append(getFirst20CharOfSMS(sms.getShortMessage(), dcs));
+        }
+
+        byte[] textBytes;
+        if (dcs.getCharacterSet() == CharacterSet.UCS2) {
+            receipt.setDataCoding(8);
+            textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_UCS_2);
+        } else {
+            receipt.setDataCoding(0);
+            textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_GSM);
+        }
+
+        receipt.setShortMessage(textBytes);
+        receipt.setEsmClass(ESME_DELIVERY_ACK);
+
+        return receipt;
+    }
+
+    private static String getFirst20CharOfSMS(byte[] rawSms, DataCodingScheme dcs) {
+        String first20CharOfSms;
+        if (dcs.getCharacterSet() == CharacterSet.UCS2) {
+            Charset ucs2Charset = Charset.forName("UTF-16BE");
+            ByteBuffer bb = ByteBuffer.wrap(rawSms);
+            CharBuffer bf = ucs2Charset.decode(bb);
+            first20CharOfSms = bf.toString();
+        } else {
+            first20CharOfSms = new String(rawSms);
+        }
+        if (first20CharOfSms.length() > 20) {
+            first20CharOfSms = first20CharOfSms.substring(0, 20);
+        }
+        return first20CharOfSms;
     }
 }
 

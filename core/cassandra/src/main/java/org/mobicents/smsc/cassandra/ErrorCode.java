@@ -380,9 +380,13 @@ public enum ErrorCode {
     ErrorCode(int v) {
         this.code = v;
     }
-    
-    public int getCode(){
+
+    public int getCode() {
         return code;
+    }
+
+    public String getCodeText() {
+        return String.format("%03d", code);
     }
 
     public static ErrorCode fromInt(int code) {

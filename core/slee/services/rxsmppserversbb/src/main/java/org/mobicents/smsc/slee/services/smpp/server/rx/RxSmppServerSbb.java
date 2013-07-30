@@ -25,6 +25,7 @@ package org.mobicents.smsc.slee.services.smpp.server.rx;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Date;
 
 import javax.naming.Context;
@@ -46,6 +47,7 @@ import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
@@ -67,6 +69,7 @@ import com.cloudhopper.smpp.pdu.SubmitSm;
 import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.type.Address;
 import com.cloudhopper.smpp.type.RecoverablePduException;
+import com.cloudhopper.smpp.util.SmppUtil;
 
 /**
  * 
@@ -160,8 +163,28 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 			Date deliveryDate = new Date();
 			try {
-//				generateCdr(sms, CdrGenerator.CDR_SUCCESS, MtCommonSbb.CDR_SUCCESS_NO_REASON);
+
+			    //				generateCdr(sms, CdrGenerator.CDR_SUCCESS, MtCommonSbb.CDR_SUCCESS_NO_REASON);
 				pers.archiveDeliveredSms(sms, deliveryDate);
+
+	            // adding a success receipt if it is needed
+	            int registeredDelivery = sms.getRegisteredDelivery();
+	            if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
+	                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
+	                TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(ta);
+	                try {
+	                    synchronized (lock) {
+	                        Sms receipt = MessageUtil.createReceiptSms(sms, true);
+	                        SmsSet backSmsSet = pers.obtainSmsSet(ta);
+	                        receipt.setSmsSet(backSmsSet);
+	                        pers.createLiveSms(receipt);
+                            pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                            this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
+	                    }
+	                } finally {
+	                    SmsSetCashe.getInstance().removeSmsSet(lock);
+	                }
+	            }
 			} catch (PersistenceException e1) {
 				this.logger.severe("PersistenceException when archiveDeliveredSms() in RxSmppServerSbb.onDeliverSmResp(): " + e1.getMessage(), e1);
 				// we do not "return" here because even if storing into archive database is failed 
@@ -445,6 +468,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 //			this.generateCdr(smsa, CdrGenerator.CDR_FAILED, reason);
 
 		PersistenceRAInterface pers = this.getStore();
+        ArrayList<Sms> lstFailured = new ArrayList<Sms>();
 
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
 		synchronized (lock) {
@@ -483,6 +507,12 @@ public abstract class RxSmppServerSbb implements Sbb {
 						break;
 
 					case permanentFailure:
+                        for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
+                            Sms sms = smsSet.getSms(currentMsgNum);
+                            if (sms != null) {
+                                lstFailured.add(sms);
+                            }
+                        }
 						this.freeSmsSetFailured(smsSet, pers);
 						break;
 					}
@@ -495,6 +525,31 @@ public abstract class RxSmppServerSbb implements Sbb {
 				pers.releaseSynchroObject(lock);
 			}
 		}
+
+        for (Sms sms : lstFailured) {
+            // adding an error receipt if it is needed
+            int registeredDelivery = sms.getRegisteredDelivery();
+            if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
+                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
+                lock = SmsSetCashe.getInstance().addSmsSet(ta);
+                try {
+                    synchronized (lock) {
+                        try {
+                            Sms receipt = MessageUtil.createReceiptSms(sms, false);
+                            SmsSet backSmsSet = pers.obtainSmsSet(ta);
+                            receipt.setSmsSet(backSmsSet);
+                            pers.createLiveSms(receipt);
+                            pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                            this.logger.info("Adding an error receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
+                        } catch (PersistenceException e) {
+                            this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet) - adding delivery receipt" + e.getMessage(), e);
+                        }
+                    }
+                } finally {
+                    SmsSetCashe.getInstance().removeSmsSet(lock);
+                }
+            }
+        }
 	}
 
 	/**
