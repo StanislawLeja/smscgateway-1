@@ -91,12 +91,13 @@ import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.SmsSetCashe;
+import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
-
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.tlv.Tlv;
@@ -601,6 +602,26 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		try {
 			generateCdr(sms, CdrGenerator.CDR_SUCCESS, MtCommonSbb.CDR_SUCCESS_NO_REASON);
 			pers.archiveDeliveredSms(sms, deliveryDate);
+
+	        // adding a success receipt if it is needed
+            int registeredDelivery = sms.getRegisteredDelivery();
+            if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
+                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
+                TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(ta);
+                try {
+                    synchronized (lock) {
+                        Sms receipt = MessageUtil.createReceiptSms(sms, true);
+                        SmsSet backSmsSet = pers.obtainSmsSet(ta);
+                        receipt.setSmsSet(backSmsSet);
+                        pers.createLiveSms(receipt);
+                        pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                        this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
+                    }
+                } finally {
+                    SmsSetCashe.getInstance().removeSmsSet(lock);
+                }
+            }
+
 		} catch (PersistenceException e1) {
 			this.logger.severe("PersistenceException when archiveDeliveredSms() in handleSmsResponse(): " + e1.getMessage(), e1);
 			// we do not "return" here because even if storing into archive database is failed 

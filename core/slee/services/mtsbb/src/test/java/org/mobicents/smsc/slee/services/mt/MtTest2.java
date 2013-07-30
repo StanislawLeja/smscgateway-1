@@ -3,7 +3,6 @@ package org.mobicents.smsc.slee.services.mt;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.sql.Timestamp;
 
 import org.mobicents.protocols.ss7.map.api.smstpdu.AbsoluteTimeStamp;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AddressField;
@@ -23,7 +22,12 @@ public class MtTest2 {
 
     @Test(groups = { "Mt" })
     public void Ucs2Test() throws Exception {
-        
+
+//        Long msgId = 15L;
+//        String s1 = msgId.toString(10);
+//        String sss2 = String.format("%010d", 15L);
+
+
         String s11 = "زمانیکه بررسی";
         Charset ucs2Charset = Charset.forName("UTF-16BE");
         Charset utf8 = Charset.forName("UTF-8");

@@ -22,6 +22,7 @@
 
 package org.mobicents.smsc.slee.services.mt;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import javax.naming.Context;
@@ -70,12 +71,15 @@ import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+
+import com.cloudhopper.smpp.util.SmppUtil;
 
 /**
  * 
@@ -421,6 +425,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 			this.logger.info(sb.toString());
 
 		PersistenceRAInterface pers = this.getStore();
+		ArrayList<Sms> lstFailured = new ArrayList<Sms>();
 
 		SMDeliveryOutcome smDeliveryOutcome = null;
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
@@ -441,6 +446,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 						if (sms != null) {
 							if (sms.getValidityPeriod().before(curDate)) {
 								pers.archiveFailuredSms(sms);
+								lstFailured.add(sms);
 								removedMsgCnt++;
 							} else {
 								goodMsgCnt++;
@@ -481,6 +487,13 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 						break;
 
 					case permanentFailure:
+	                    smsCnt = smsSet.getSmsCount();
+                        for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
+                            Sms sms = smsSet.getSms(currentMsgNum);
+                            if (sms != null) {
+                                lstFailured.add(sms);
+                            }
+                        }
 						this.freeSmsSetFailured(smsSet, pers);
 						break;
 					}
@@ -493,6 +506,31 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 				pers.releaseSynchroObject(lock);
 			}
 		}
+
+        for (Sms sms : lstFailured) {
+            // adding an error receipt if it is needed
+            int registeredDelivery = sms.getRegisteredDelivery();
+            if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
+                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
+                lock = SmsSetCashe.getInstance().addSmsSet(ta);
+                try {
+                    synchronized (lock) {
+                        try {
+                            Sms receipt = MessageUtil.createReceiptSms(sms, false);
+                            SmsSet backSmsSet = pers.obtainSmsSet(ta);
+                            receipt.setSmsSet(backSmsSet);
+                            pers.createLiveSms(receipt);
+                            pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                            this.logger.info("Adding an error receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
+                        } catch (PersistenceException e) {
+                            this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet) - adding delivery receipt" + e.getMessage(), e);
+                        }
+                    }
+                } finally {
+                    SmsSetCashe.getInstance().removeSmsSet(lock);
+                }
+            }
+        }
 
 		if (smDeliveryOutcome != null) {
 			this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(), smDeliveryOutcome, smsSet.getTargetId());

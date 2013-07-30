@@ -137,9 +137,13 @@ public class Sms implements Serializable {
 	/**
 	 * Unique message ID assigned by SMSC (since SMSC started)
 	 */
-	public long getMessageId() {
-		return messageId;
-	}
+    public long getMessageId() {
+        return messageId;
+    }
+
+    public String getMessageIdText() {
+        return String.format("%010d", messageId);
+    }
 
 	public void setMessageId(long messageId) {
 		this.messageId = messageId;
