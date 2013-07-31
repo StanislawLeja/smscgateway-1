@@ -28,22 +28,19 @@
 		<stream.version>1.0.0.CR1</stream.version>
 		<sctp.version>1.4.0.FINAL</sctp.version>
 		<commons.version>1.0.0.CR1</commons.version>
-		<ss7.version>6.1.4.GA-TelScale</ss7.version>
-		<jss7.telscale.version>6.1.4.GA-TelScale</jss7.telscale.version>
 		<log4j.version>1.2.14</log4j.version>
 		<junit.version>3.8.1</junit.version>
-
 		<!-- cloudhopper smpp -->
 		<ch.smpp.version>5.0.0</ch.smpp.version>
 		<slf4j.version>1.5.0</slf4j.version>
-
 		<!-- hector -->
 		<hector-core.version>1.0-5</hector-core.version>
-
-		<jslee.ext.version>1.0.0.BETA2</jslee.ext.version>
-
-		<mobicents.resources.map.version>2.0.0-SNAPSHOT</mobicents.resources.map.version>
-
+		<!-- TelScale properties -->
+		<ss7.version>6.1.4.GA-TelScale</ss7.version>
+		<jss7.telscale.version>6.1.4.GA-TelScale</jss7.telscale.version>
+		<ts.slee.version>6.1.1.GA-TelScale</ts.slee.version>
+		<jslee.ext.version>${ts.slee.version}</jslee.ext.version>
+		<mobicents.resources.map.version>${jss7.telscale.version}</mobicents.resources.map.version>
 		<telscale.licensing.version>1.0.3.Final</telscale.licensing.version>
 	</properties>
 
