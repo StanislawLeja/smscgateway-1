@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>resource-adaptors-parent</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.1.2-TelScale-SNAPSHOT</version>
+		<version>6.1.4.GA-TelScale</version>
 	</parent>
 
 	<artifactId>smpp-server-ra</artifactId>

@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.telscale.smsc</groupId>
 		<artifactId>hector-client-ra-parent</artifactId>
-		<version>6.1.2-TelScale-SNAPSHOT</version>
+		<version>6.1.4.GA-TelScale</version>
 	</parent>
 
 	<artifactId>hector-client-ra-du</artifactId>

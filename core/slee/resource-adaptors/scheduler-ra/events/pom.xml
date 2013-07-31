@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.telscale.smsc</groupId>
 		<artifactId>scheduler-ra-parent</artifactId>
-		<version>6.1.2-TelScale-SNAPSHOT</version>
+		<version>6.1.4.GA-TelScale</version>
 	</parent>
 
 	<artifactId>scheduler-ra-events</artifactId>
