@@ -5,6 +5,7 @@
 		<artifactId>telscale-smsc-parent</artifactId>
 		<groupId>com.telscale.smsc</groupId>
 		<version>6.1.2-TelScale-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>ui-management</artifactId>
