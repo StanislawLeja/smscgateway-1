@@ -21,8 +21,8 @@
 	<properties>
 		<testng.version>6.2</testng.version>
 		<javolution.version>5.5.1</javolution.version>
-		<compiler.plugin.version>2.0.2</compiler.plugin.version>
-		<compile.source>1.5</compile.source>
+		<compiler.plugin.version>2.3.1</compiler.plugin.version>
+		<compile.source>1.7</compile.source>
 		<!-- mobicents but not strictly ss7 -->
 		<asn.version>2.0.2.FINAL</asn.version>
 		<stream.version>1.0.0.CR1</stream.version>
@@ -42,6 +42,7 @@
 		<jslee.ext.version>${ts.slee.version}</jslee.ext.version>
 		<mobicents.resources.map.version>${jss7.telscale.version}</mobicents.resources.map.version>
 		<telscale.licensing.version>1.0.3.Final</telscale.licensing.version>
+		<project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
 	</properties>
 
 	<modules>
