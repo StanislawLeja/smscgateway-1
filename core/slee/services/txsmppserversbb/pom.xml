@@ -29,11 +29,6 @@
 			<version>${pom.version}</version>
 		</dependency>
 		<dependency>
-			<artifactId>smsc-events</artifactId>
-			<groupId>${pom.groupId}</groupId>
-			<version>${pom.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>com.telscale.smsc</groupId>
 			<artifactId>smpp-server-ra-library</artifactId>
 			<version>${pom.version}</version>
