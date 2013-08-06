@@ -95,7 +95,7 @@
 			<groupId>com.telscale.licensing</groupId>
 			<artifactId>lce-core</artifactId>
 			<version>${telscale.licensing.version}</version>
-			<classifier>jar-with-dependencies</classifier>
+			<classifier>obfuscated</classifier>
 		</dependency>	
 		<!-- SMSC Dependency -->
 		<dependency>
