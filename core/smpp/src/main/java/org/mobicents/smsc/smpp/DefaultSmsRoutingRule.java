@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import javolution.util.FastList;
 
 import com.cloudhopper.smpp.SmppBindType;
+import com.cloudhopper.smpp.SmppSession;
 
 /**
  * @author Amit Bhayani
@@ -34,7 +35,7 @@ import com.cloudhopper.smpp.SmppBindType;
  */
 public class DefaultSmsRoutingRule implements SmsRoutingRule {
 
-    private SmscPropertiesManagement smscPropertiesManagement;
+	private SmscPropertiesManagement smscPropertiesManagement;
 	private EsmeManagement esmeManagement;
 
 	/**
@@ -43,15 +44,15 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 	public DefaultSmsRoutingRule() {
 	}
 
-    @Override
-    public void setEsmeManagement(EsmeManagement em) {
-        this.esmeManagement = em;
-    }
+	@Override
+	public void setEsmeManagement(EsmeManagement em) {
+		this.esmeManagement = em;
+	}
 
-    @Override
-    public void setSmscPropertiesManagement(SmscPropertiesManagement sm) {
-        this.smscPropertiesManagement = sm;
-    }
+	@Override
+	public void setSmscPropertiesManagement(SmscPropertiesManagement sm) {
+		this.smscPropertiesManagement = sm;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -66,8 +67,12 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 				.getNext()) != end;) {
 			Esme esme = n.getValue();
 			SmppBindType sessionBindType = esme.getSmppBindType();
+			SmppSession.Type smppSessionType = esme.getSmppSessionType();
 
-			if (sessionBindType == SmppBindType.TRANSCEIVER || sessionBindType == SmppBindType.RECEIVER) {
+			if (sessionBindType == SmppBindType.TRANSCEIVER
+					|| (sessionBindType == SmppBindType.RECEIVER && smppSessionType == SmppSession.Type.SERVER)
+					|| (sessionBindType == SmppBindType.TRANSMITTER && smppSessionType == SmppSession.Type.CLIENT)) {
+
 				Pattern p = esme.getAddressRangePattern();
 				if (p == null) {
 					continue;
