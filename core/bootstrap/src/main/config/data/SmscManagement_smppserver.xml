@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<port value="2776"/>
+<port value="2775"/>
 <bindTimeout value="5000"/>
 <systemId value="TelscaleSMSC"/>
 <autoNegotiateInterfaceVersion value="true"/>
