@@ -464,7 +464,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 //            } else if (parName.equals("cdrdatabaseexportduration")) {
 //                int val = Integer.parseInt(options[3]);
 //                smscPropertiesManagement.setCdrDatabaseExportDuration(val);
-            } else if (parName.equals("default-cluster-name")) {
+            } else if (parName.equals("esmedefaultcluster")) {
                 smscPropertiesManagement.setEsmeDefaultClusterName(options[3]);
 
             } else {
@@ -484,7 +484,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 
         String parName = options[2].toLowerCase();
         try {
-            if (parName.equals("default-cluster-name")) {
+            if (parName.equals("esmedefaultcluster")) {
                 smscPropertiesManagement.setEsmeDefaultClusterName(null);
 
             } else {
@@ -642,7 +642,7 @@ public class SMSCShellExecutor implements ShellExecutor {
                 sb.append(smscPropertiesManagement.getMaxActivityCount());
 //            } else if (parName.equals("cdrdatabaseexportduration")) {
 //                sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
-            } else if (parName.equals("default-cluster-name")) {
+            } else if (parName.equals("esmedefaultcluster")) {
                 sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
 
 			} else {

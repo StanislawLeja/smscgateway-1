@@ -68,7 +68,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("fetchmaxrows");
         set.addChild("maxactivitycount");
 //        set.addChild("cdrdatabaseexportduration");
-        set.addChild("default-cluster-name");
+        set.addChild("esmedefaultcluster");
 
 		Node get = parent.addChild("get");
 		get.addChild("scgt");
@@ -93,7 +93,10 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("fetchmaxrows");
         get.addChild("maxactivitycount");
 //        get.addChild("cdrdatabaseexportduration");
-        get.addChild("default-cluster-name");
+        get.addChild("esmedefaultcluster");
+        
+        Node remove = parent.addChild("remove");
+        remove.addChild("esmedefaultcluster");
 
 		Node smppServer = parent.addChild("smppserver");
 
