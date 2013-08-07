@@ -21,10 +21,10 @@
  */
 package org.mobicents.smsc.smpp;
 
+import javolution.util.FastList;
+
 import com.cloudhopper.smpp.SmppBindType;
 import com.cloudhopper.smpp.SmppSession;
-
-import javolution.util.FastList;
 
 /**
  * 
@@ -34,6 +34,9 @@ import javolution.util.FastList;
 public class EsmeCluster {
 	private final String clusterName;
 	private final FastList<Esme> esmes = new FastList<Esme>();
+
+	// These are the ESME's that will be used to transmit PDU to remote side
+	private final FastList<Esme> esmesToSendPdu = new FastList<Esme>();
 
 	private volatile int index = 0;
 
@@ -49,11 +52,23 @@ public class EsmeCluster {
 		synchronized (this.esmes) {
 			this.esmes.add(esme);
 		}
+
+		synchronized (this.esmesToSendPdu) {
+			if (esme.getSmppBindType() == SmppBindType.TRANSCEIVER
+					|| (esme.getSmppBindType() == SmppBindType.RECEIVER && esme.getSmppSessionType() == SmppSession.Type.SERVER)
+					|| (esme.getSmppBindType() == SmppBindType.TRANSMITTER && esme.getSmppSessionType() == SmppSession.Type.CLIENT)) {
+				this.esmesToSendPdu.add(esme);
+			}
+		}
 	}
 
 	void removeEsme(Esme esme) {
 		synchronized (this.esmes) {
 			this.esmes.remove(esme);
+		}
+
+		synchronized (this.esmesToSendPdu) {
+			this.esmesToSendPdu.remove(esme);
 		}
 	}
 
@@ -64,17 +79,14 @@ public class EsmeCluster {
 	 */
 	synchronized Esme getNextEsme() {
 		// TODO synchronized is correct here?
-		for (int i = 0; i < this.esmes.size(); i++) {
+		for (int i = 0; i < this.esmesToSendPdu.size(); i++) {
 			this.index++;
-			if (this.index == this.esmes.size()) {
+			if (this.index == this.esmesToSendPdu.size()) {
 				this.index = 0;
 			}
 
-			Esme esme = this.esmes.get(this.index);
-			if (esme.isBound()
-					&& (esme.getSmppBindType() == SmppBindType.TRANSCEIVER
-							|| (esme.getSmppBindType() == SmppBindType.RECEIVER && esme.getSmppSessionType() == SmppSession.Type.SERVER) 
-							|| (esme.getSmppBindType() == SmppBindType.TRANSMITTER && esme.getSmppSessionType() == SmppSession.Type.CLIENT))) {
+			Esme esme = this.esmesToSendPdu.get(this.index);
+			if (esme.isBound()) {
 				return esme;
 			}
 		}
