@@ -171,7 +171,7 @@
 										$("#propdefaultton").val(response.value.DefaultTon);
 										$("#propdefaultnpi").val(response.value.DefaultNpi);
 										
-										$("#esmedefaultclustername").val(response.value.DefaultClusterName);
+										$("#esmedefaultclustername").val(response.value.EsmeDefaultClusterName);
 										
 										$("#propsubbusduedel").val(response.value.SubscriberBusyDueDelay);
 										$("#propfirduedel").val(response.value.FirstDueDelay);
@@ -407,7 +407,7 @@
 									{ type: "write", mbean: mbeanSearch, attribute: "MaxValidityPeriodHours", value: propmaxvalidityhrs },
 									{ type: "write", mbean: mbeanSearch, attribute: "DefaultTon", value: propdefaultton },
 									{ type: "write", mbean: mbeanSearch, attribute: "DefaultNpi", value: propdefaultnpi },
-									{ type: "write", mbean: mbeanSearch, attribute: "DefaultClusterName", value: propesmedefaultclustername },
+									{ type: "write", mbean: mbeanSearch, attribute: "EsmeDefaultClusterName", value: propesmedefaultclustername },
 									{ type: "write", mbean: mbeanSearch, attribute: "SubscriberBusyDueDelay", value: propsubbusduedel },
 									{ type: "write", mbean: mbeanSearch, attribute: "FirstDueDelay", value: propfirduedel },
 									{ type: "write", mbean: mbeanSearch, attribute: "SecondDueDelay", value: propsecduedel },
