@@ -742,7 +742,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 //            sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
 //            sb.append("\n");
 
-            sb.append("default-cluster-name = ");
+            sb.append("esmedefaultcluster = ");
             sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
             sb.append("\n");
 

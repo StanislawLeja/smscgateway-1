@@ -65,7 +65,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private static final String FETCH_MAX_ROWS = "fetchMaxRows";
     private static final String MAX_ACTIVITY_COUNT = "maxActivityCount";
 //    private static final String CDR_DATABASE_EXPORT_DURATION = "cdrDatabaseExportDuration";
-    private static final String DEFAULT_CLUSTER_NAME = "defaultClusterName";
+    private static final String ESME_DEFAULT_CLUSTER_NAME = "esmeDefaultCluster";
 	
 	private static final String TAB_INDENT = "\t";
 	private static final String CLASS_ATTRIBUTE = "type";
@@ -123,7 +123,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // if destinationAddress does not match to any esme (any ClusterName) or 
     // a message will be routed to defaultClusterName (only for DatabaseSmsRoutingRule)
     // (if it is specified)
-    private String defaultClusterName;
+    private String esmeDefaultClusterName;
 
 	private SmscPropertiesManagement(String name) {
 		this.name = name;
@@ -374,12 +374,13 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     @Override
     public String getEsmeDefaultClusterName() {
-        return defaultClusterName;
+        return esmeDefaultClusterName;
     }
 
     @Override
     public void setEsmeDefaultClusterName(String val) {
-        defaultClusterName = val;
+        esmeDefaultClusterName = val;
+        this.store();
     }
 
 
@@ -449,7 +450,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             writer.write(this.fetchMaxRows, FETCH_MAX_ROWS, Integer.class);
 //            writer.write(this.cdrDatabaseExportDuration, CDR_DATABASE_EXPORT_DURATION, Integer.class);
 
-            writer.write(this.defaultClusterName, DEFAULT_CLUSTER_NAME, String.class);
+            writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
             writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
 
 			writer.close();
@@ -520,7 +521,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 //            if (val != null)
 //                this.cdrDatabaseExportDuration = val;
 
-            this.defaultClusterName = reader.read(DEFAULT_CLUSTER_NAME, String.class);
+            this.esmeDefaultClusterName = reader.read(ESME_DEFAULT_CLUSTER_NAME, String.class);
 
             val = reader.read(MAX_ACTIVITY_COUNT, Integer.class);
             if (val != null)
