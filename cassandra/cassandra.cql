@@ -64,7 +64,7 @@ CREATE INDEX ON "LIVE_SMS" ("MESSAGE_ID");
 
 CREATE TABLE "ARCHIVE" ( 
 	"ID" uuid, 
-      "IN_SYSTEM" int, 
+    "IN_SYSTEM" int, 
 
 	"ADDR_DST_DIGITS" ascii,
 	"ADDR_DST_TON" int, 
@@ -117,6 +117,6 @@ CREATE INDEX ON "ARCHIVE" ("DELIVERY_DATE");
 
 CREATE TABLE "SMS_ROUTING_RULE" (
     "ADDRESS" text PRIMARY KEY,
-    "SYSTEM_ID" text, 
+    "CLUSTER_NAME" text, 
 );
 

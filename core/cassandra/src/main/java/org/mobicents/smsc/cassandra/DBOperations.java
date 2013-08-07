@@ -1006,17 +1006,11 @@ public class DBOperations {
             Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
 
             Composite cc;
-//            if (dbSmsRoutingRule.getAddress() != null) {
-//                cc = new Composite();
-//                cc.addComponent(Schema.COLUMN_ADDRESS, SERIALIZER_STRING);
-//                mutator.addInsertion(dbSmsRoutingRule.getId(), Schema.FAMILY_SMS_ROUTING_RULE,
-//                        HFactory.createColumn(cc, dbSmsRoutingRule.getAddress(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//            }
-            if (dbSmsRoutingRule.getSystemId() != null) {
+            if (dbSmsRoutingRule.getClusterName() != null) {
                 cc = new Composite();
-                cc.addComponent(Schema.COLUMN_SYSTEM_ID, SERIALIZER_STRING);
+                cc.addComponent(Schema.COLUMN_CLUSTER_NAME, SERIALIZER_STRING);
                 mutator.addInsertion(dbSmsRoutingRule.getAddress(), Schema.FAMILY_SMS_ROUTING_RULE,
-                        HFactory.createColumn(cc, dbSmsRoutingRule.getSystemId(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
+                        HFactory.createColumn(cc, dbSmsRoutingRule.getClusterName(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
             }
 
             mutator.execute();
@@ -1129,8 +1123,8 @@ public class DBOperations {
                 String name = nm.get(0, SERIALIZER_STRING);
                 res.setAddress(address);
 
-                if (name.equals(Schema.COLUMN_SYSTEM_ID)) {
-                    res.setSystemId(SERIALIZER_STRING.fromByteBuffer(col.getValue()));
+                if (name.equals(Schema.COLUMN_CLUSTER_NAME)) {
+                    res.setClusterName(SERIALIZER_STRING.fromByteBuffer(col.getValue()));
                 }
             }
 
@@ -1195,16 +1189,13 @@ public class DBOperations {
                         Composite nm = col.getName();
                         String name = nm.get(0, SERIALIZER_STRING);
 
-                        if (name.equals(Schema.COLUMN_SYSTEM_ID)) {
-                            res.setSystemId(SERIALIZER_STRING.fromByteBuffer(col.getValue()));
+                        if (name.equals(Schema.COLUMN_CLUSTER_NAME)) {
+                            res.setClusterName(SERIALIZER_STRING.fromByteBuffer(col.getValue()));
                         }
                     }
-                    if (res.getSystemId() != null)
+                    if (res.getClusterName() != null)
                         ress.add(res);
                 }
-
-//                if (rows.getCount() < row_count)
-//                    break;
 
                 // now we support only one step - 100 records
                 break;

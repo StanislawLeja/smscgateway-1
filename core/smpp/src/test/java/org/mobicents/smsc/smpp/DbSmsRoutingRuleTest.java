@@ -81,7 +81,7 @@ public class DbSmsRoutingRuleTest {
 
         DbSmsRoutingRule rla = new DbSmsRoutingRule();
         rla.setAddress("1111");
-        rla.setSystemId("AAA");
+        rla.setClusterName("AAA");
 
         this.sbb.updateDbSmsRoutingRule(rla);
         rl1 = this.sbb.getSmsRoutingRule("1111");
@@ -89,12 +89,12 @@ public class DbSmsRoutingRuleTest {
         assertNotNull(rl1);
         assertNull(rl2);
         assertEquals(rl1.getAddress(), "1111");
-        assertEquals(rl1.getSystemId(), "AAA");
+        assertEquals(rl1.getClusterName(), "AAA");
 
 
         rla = new DbSmsRoutingRule();
         rla.setAddress("2222");
-        rla.setSystemId("BBB");
+        rla.setClusterName("BBB");
 
         this.sbb.updateDbSmsRoutingRule(rla);
         rl1 = this.sbb.getSmsRoutingRule("1111");
@@ -102,24 +102,24 @@ public class DbSmsRoutingRuleTest {
         assertNotNull(rl1);
         assertNotNull(rl2);
         assertEquals(rl1.getAddress(), "1111");
-        assertEquals(rl1.getSystemId(), "AAA");
+        assertEquals(rl1.getClusterName(), "AAA");
         assertEquals(rl2.getAddress(), "2222");
-        assertEquals(rl2.getSystemId(), "BBB");
+        assertEquals(rl2.getClusterName(), "BBB");
 
         List<DbSmsRoutingRule> lst = this.sbb.getSmsRoutingRulesRange();        
         assertEquals(lst.size(), 2);
         DbSmsRoutingRule rl = lst.get(0);
         assertEquals(rl.getAddress(), "1111");
-        assertEquals(rl.getSystemId(), "AAA");
+        assertEquals(rl.getClusterName(), "AAA");
         rl = lst.get(1);
         assertEquals(rl2.getAddress(), "2222");
-        assertEquals(rl2.getSystemId(), "BBB");
+        assertEquals(rl2.getClusterName(), "BBB");
 
         lst = this.sbb.getSmsRoutingRulesRange("1111");        
         assertEquals(lst.size(), 1);
         rl = lst.get(0);
         assertEquals(rl2.getAddress(), "2222");
-        assertEquals(rl2.getSystemId(), "BBB");
+        assertEquals(rl2.getClusterName(), "BBB");
 
         lst = this.sbb.getSmsRoutingRulesRange("2222");        
         assertEquals(lst.size(), 0);
@@ -130,7 +130,7 @@ public class DbSmsRoutingRuleTest {
         assertNull(rl1);
         assertNotNull(rl2);
         assertEquals(rl2.getAddress(), "2222");
-        assertEquals(rl2.getSystemId(), "BBB");
+        assertEquals(rl2.getClusterName(), "BBB");
 
     }
 
