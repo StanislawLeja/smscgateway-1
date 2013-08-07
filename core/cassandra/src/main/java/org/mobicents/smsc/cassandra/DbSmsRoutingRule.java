@@ -34,7 +34,7 @@ public class DbSmsRoutingRule implements Serializable {
     private static final long serialVersionUID = -4693280752311155768L;
 
     private String address;
-    private String systemId;
+    private String clusterName;
 
     public DbSmsRoutingRule() {
     }
@@ -47,12 +47,12 @@ public class DbSmsRoutingRule implements Serializable {
         this.address = address;
     }
 
-    public String getSystemId() {
-        return systemId;
+    public String getClusterName() {
+        return clusterName;
     }
 
-    public void setSystemId(String systemId) {
-        this.systemId = systemId;
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
     }
 
     @Override
@@ -61,8 +61,8 @@ public class DbSmsRoutingRule implements Serializable {
 
         sb.append("DbSmsRoutingRule [address=");
         sb.append(address);
-        sb.append(", systemId=");
-        sb.append(systemId);
+        sb.append(", clusterName=");
+        sb.append(clusterName);
 
         sb.append("]");
 

@@ -86,7 +86,7 @@ public class Schema {
 
     //SmsRoutingRule tables columns and names
     public static final String COLUMN_ADDRESS = "ADDRESS";
-    public static final String COLUMN_SYSTEM_ID = "SYSTEM_ID";
+    public static final String COLUMN_CLUSTER_NAME = "CLUSTER_NAME";
 
     public static final String FAMILY_LIVE_SMS = "LIVE_SMS";
     public static final String FAMILY_ARCHIVE = "ARCHIVE";
@@ -192,7 +192,7 @@ public class Schema {
         tmp = new ArrayList<String>();
 
         tmp.add(COLUMN_ADDRESS);
-        tmp.add(COLUMN_SYSTEM_ID);
+        tmp.add(COLUMN_CLUSTER_NAME);
 
         COLUMNS_SMS_ROUTING_RULE = Collections.unmodifiableList(tmp);
     }

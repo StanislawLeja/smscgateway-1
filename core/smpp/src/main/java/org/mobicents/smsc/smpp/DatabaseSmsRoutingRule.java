@@ -106,12 +106,12 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 			}
 		}
 
-		String systemId = null;
+		String clusterName = null;
 
 		try {
             DbSmsRoutingRule rr = DBOperations.getSmsRoutingRule(keyspace, address);
             if (rr != null) {
-                systemId = rr.getSystemId();
+                clusterName = rr.getClusterName();
             } else {
                 if (smscPropertiesManagement == null)
                     smscPropertiesManagement = SmscPropertiesManagement.getInstance();
@@ -119,7 +119,7 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
                     String dcn = smscPropertiesManagement.getEsmeDefaultClusterName();
                     if (dcn != null) {
                         if (esmeManagement.getEsmeByClusterName(dcn) != null) {
-                            systemId = dcn;
+                            clusterName = dcn;
                         }
                     }
                 }
@@ -128,13 +128,13 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 			logger.error("PersistenceException while selecting from table SmsRoutingRule", e);
 		}
 
-		return systemId;
+		return clusterName;
 	}
 
-    public void updateDbSmsRoutingRule(String address, String systemId) throws PersistenceException {
+    public void updateDbSmsRoutingRule(String address, String clusterName) throws PersistenceException {
         DbSmsRoutingRule dbSmsRoutingRule = new DbSmsRoutingRule();
         dbSmsRoutingRule.setAddress(address);
-        dbSmsRoutingRule.setSystemId(systemId);
+        dbSmsRoutingRule.setClusterName(clusterName);
 
         DBOperations.updateDbSmsRoutingRule(keyspace, dbSmsRoutingRule);
     }
