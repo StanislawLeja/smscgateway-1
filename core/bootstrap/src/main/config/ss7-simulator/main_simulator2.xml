@@ -4,7 +4,7 @@
 	<instance_L2 value="SCCP"/>
 	<instance_L3 value="TCAP+MAP"/>
 	<instance_TestTask value="SMS_TEST_CLIENT"/>
-	<m3ua storePcapTrace="true" isSctpServer="false" localPort="8011" remotePort="8012" ipChannelType="TCP" dpc="2" opc="1" si="3" routingConext="101" networkAppearance="102" m3uaFunctionality="IPSP" m3uaExchangeType="SE" m3uaIPSPType="CLIENT">
+	<m3ua storePcapTrace="true" isSctpServer="false" localPort="8011" remotePort="8012" ipChannelType="SCTP" dpc="2" opc="1" si="3" routingConext="101" networkAppearance="102" m3uaFunctionality="IPSP" m3uaExchangeType="SE" m3uaIPSPType="CLIENT">
 		<localHost value="127.0.0.1"/>
 		<remoteHost value="127.0.0.1"/>
 	</m3ua>
