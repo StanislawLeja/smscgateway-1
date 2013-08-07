@@ -119,8 +119,8 @@ public interface SmscPropertiesManagementMBean {
 //
 //    public void setCdrDatabaseExportDuration(int cdrDatabaseExportDuration);
 
-    public String getDefaultClusterName();
+    public String getEsmeDefaultClusterName();
 
-    public void setDefaultClusterName(String val);
+    public void setEsmeDefaultClusterName(String val);
 
 }

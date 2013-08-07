@@ -116,7 +116,7 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
                 if (smscPropertiesManagement == null)
                     smscPropertiesManagement = SmscPropertiesManagement.getInstance();
                 if (smscPropertiesManagement != null) {
-                    String dcn = smscPropertiesManagement.getDefaultClusterName();
+                    String dcn = smscPropertiesManagement.getEsmeDefaultClusterName();
                     if (dcn != null) {
                         if (esmeManagement.getEsmeByClusterName(dcn) != null) {
                             systemId = dcn;

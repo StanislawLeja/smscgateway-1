@@ -373,12 +373,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 //    }
 
     @Override
-    public String getDefaultClusterName() {
+    public String getEsmeDefaultClusterName() {
         return defaultClusterName;
     }
 
     @Override
-    public void setDefaultClusterName(String val) {
+    public void setEsmeDefaultClusterName(String val) {
         defaultClusterName = val;
     }
 
