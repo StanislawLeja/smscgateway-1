@@ -41,8 +41,6 @@ public class SmppSessionsImpl implements SmppSessions {
 
 	private static Tracer tracer;
 
-	private SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
-
 	private SmppServerResourceAdaptor smppServerResourceAdaptor = null;
 
 	protected SmppSessionHandlerInterfaceImpl smppSessionHandlerInterfaceImpl = null;
@@ -57,15 +55,6 @@ public class SmppSessionsImpl implements SmppSessions {
 		}
 		this.smppSessionHandlerInterfaceImpl = new SmppSessionHandlerInterfaceImpl();
 
-	}
-
-	public String getEsmeClusterName(int ton, int npi, String address) {
-		return this.smsRouteManagement.getEsmeClusterName(ton, npi, address);
-	}
-
-	public Esme getEsmeByClusterName(String esmeName) {
-		// TODO get ESME
-		return null;
 	}
 
 	protected SmppSessionHandlerInterface getSmppSessionHandlerInterface() {

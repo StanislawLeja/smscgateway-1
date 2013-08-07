@@ -22,6 +22,7 @@
 package org.mobicents.smsc.smpp;
 
 import com.cloudhopper.smpp.SmppBindType;
+import com.cloudhopper.smpp.SmppSession;
 
 import javolution.util.FastList;
 
@@ -56,8 +57,13 @@ public class EsmeCluster {
 		}
 	}
 
-	// TODO synchronized is correct here?
+	/**
+	 * This method is to find the correct ESME to send the SMS
+	 * 
+	 * @return
+	 */
 	synchronized Esme getNextEsme() {
+		// TODO synchronized is correct here?
 		for (int i = 0; i < this.esmes.size(); i++) {
 			this.index++;
 			if (this.index == this.esmes.size()) {
@@ -65,7 +71,10 @@ public class EsmeCluster {
 			}
 
 			Esme esme = this.esmes.get(this.index);
-			if (esme.isBound() && (esme.getSmppBindType() == SmppBindType.TRANSMITTER || esme.getSmppBindType() == SmppBindType.TRANSCEIVER)) {
+			if (esme.isBound()
+					&& (esme.getSmppBindType() == SmppBindType.TRANSCEIVER
+							|| (esme.getSmppBindType() == SmppBindType.RECEIVER && esme.getSmppSessionType() == SmppSession.Type.SERVER) 
+							|| (esme.getSmppBindType() == SmppBindType.TRANSMITTER && esme.getSmppSessionType() == SmppSession.Type.CLIENT))) {
 				return esme;
 			}
 		}

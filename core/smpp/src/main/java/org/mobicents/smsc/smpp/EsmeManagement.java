@@ -229,13 +229,13 @@ public class EsmeManagement implements EsmeManagementMBean {
 				throw new Exception(String.format(SMSCOAMMessages.CREATE_EMSE_FAIL_ALREADY_EXIST, name));
 			}
 
-			// SystemId:IP:Port combination should be unique
-			String primaryKey = systemId + host + port;
-			String existingPrimaryKey = esme.getSystemId() + esme.getHost() + esme.getPort();
+			// SystemId:IP:Port:SmppBindType combination should be unique
+			String primaryKey = systemId + host + port + smppBindType.name();
+			String existingPrimaryKey = esme.getSystemId() + esme.getHost() + esme.getPort() + esme.getSmppBindType().name();
 
 			if (primaryKey.equals(existingPrimaryKey)) {
 				throw new Exception(String.format(SMSCOAMMessages.CREATE_EMSE_FAIL_PRIMARY_KEY_ALREADY_EXIST, systemId,
-						host, port));
+						host, port, smppBindType));
 			}
 		}// for loop
 

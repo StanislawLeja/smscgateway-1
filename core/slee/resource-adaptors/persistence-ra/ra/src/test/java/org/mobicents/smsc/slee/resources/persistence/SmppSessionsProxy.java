@@ -60,18 +60,6 @@ public class SmppSessionsProxy implements SmppSessions {
 	}
 	
 	@Override
-	public String getEsmeClusterName(int ton, int npi, String address) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Esme getEsmeByClusterName(String esmeClusterName) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public long getNextMessageId() {
 		return mId++;
 	}

@@ -15,12 +15,6 @@ import com.cloudhopper.smpp.type.UnrecoverablePduException;
 
 public interface SmppSessions {
 
-	// TODO : May be rename this method as we want SmppServerSession to send SMS
-	// to ESME
-	public String getEsmeClusterName(int ton, int npi, String address);
-
-	public Esme getEsmeByClusterName(String esmeClusterName);
-
 	public long getNextMessageId();
 
 	/**
