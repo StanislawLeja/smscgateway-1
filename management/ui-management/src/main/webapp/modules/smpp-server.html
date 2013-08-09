@@ -48,6 +48,7 @@
 						else {		
 							
 							$('.service-row').remove();
+							$('.text-info').remove();
 							jQuery.each(html.value, function() {
 								mbeanVar = this;
 								
@@ -74,16 +75,84 @@
 												var defaultWindowMonitorInterval = response.value.DefaultWindowMonitorInterval;
 												var defaultSessionCountersEnabled = response.value.DefaultSessionCountersEnabled;
 												
+												var sessionSize = response.value.SessionSize;
+												var transceiverSessionSize = response.value.TransceiverSessionSize;
+												var transmitterSessionSize = response.value.TransmitterSessionSize;
+												var receiverSessionSize = response.value.ReceiverSessionSize;
+												var sessionCreated = response.value.SessionCreated;
+												var sessionDestroyed = response.value.SessionDestroyed;
+												
+												
+												var connectionSize = response.value.ConnectionSize;
+												var channelConnects = response.value.ChannelConnects;
+												var channelDisconnects = response.value.ChannelDisconnects;
+												
+												var bindTimeouts = response.value.BindTimeouts;
+												var bindRequested = response.value.BindRequested;
+												
+												var nonBlockingSocketsEnabled = response.value.NonBlockingSocketsEnabled;
+												var reuseAddress = response.value.ReuseAddress;
+												
 												
 												serviceClass = isSmppServerStarted ? 'active-service' : 'inactive-service';
 												
 												$('#services-table').children('tbody').append('<tr class="service-row"><td style="vertical-align: middle; text-align: center;"><i style="color: ' + (isSmppServerStarted ? '#51A351' : '#BD362F') + ';" class="' + (isSmppServerStarted ? 'icon-play-circle' : 'icon-remove-circle') + '"></i></td>'+
-														'<td>' + name + '</td>' +
-														'<td style="font-size: 16px; vertical-align: middle; text-align: center; width: 150px;">' + 
+														'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + name + '</td>' +
+														'<td style="cursor: pointer; font-size: 16px; vertical-align: middle; text-align: center; width: 150px;" onclick="$(this).parent().next().toggle();">' + 
 															'<button class="btn btn-small btn-success"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Start SMPP Server" data-placement="bottom" onclick="serviceOperation(\'start\', \'' + name + '\')"><i class="icon-play"> </i></button> ' +
 															'<button class="btn btn-small btn-danger"' + (!isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Stop SMPP Server" data-placement="bottom" onclick="serviceOperation(\'stop\', \'' + name +  '\')"><i class="icon-stop"> </i></button> ' +
 															'<a href="#entities-modal'+name+'" role="button" class="btn btn-info btn-small" data-toggle="modal"><i class="icon-external-link"></i></a>' +
-														'</td>' );		
+														'</td></tr>'+
+												
+														'<tr class="text-info" style="display: none;"><td>&nbsp;</td><td colspan=2>' +
+														'<div class="bs-docs-example bs-docs-example-submenus"> '+
+												        '    <div>'+
+												        '      <p class="muted">Session Details</p>'+
+																'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+																	'<dt>Current Session Size</dt> <dd>' + sessionSize + ' </dd>' + 
+																	'<dt>Current Transceiver Session Size</dt> <dd>' + transceiverSessionSize + ' </dd>' + 
+																	'<dt>Current Transmitter Session Size</dt> <dd>' + transmitterSessionSize + ' </dd>' + 
+																	'<dt>Current Receiver Session Size</dt> <dd>' + receiverSessionSize + ' </dd>' + 
+																	'<dt>Total Sessions Created</dt> <dd>' + sessionCreated + ' </dd>' + 
+																	'<dt>Total Sessions Destroyed</dt> <dd>' + sessionDestroyed + ' </dd>' + 
+																'</dl>'+
+												        '    </div>'+
+											        		'<hr style="margin: 5px 0;"/>' +
+													        '    <div>'+
+													        '      <p class="muted">Connection Details</p>'+
+																	'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+																		'<dt>Connection Size</dt> <dd>' + connectionSize + ' </dd>' + 
+																		'<dt>Channel Connects</dt> <dd>' + channelConnects + ' </dd>' + 
+																		'<dt>Channel Disconnects</dt> <dd>' + channelDisconnects + ' </dd>' + 
+																	'</dl>'+
+													        '    </div>'+	
+													        
+											        		'<hr style="margin: 5px 0;"/>' +
+													        '    <div>'+
+													        '      <p class="muted">Bind Details</p>'+
+																	'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+																		'<dt>Bind Timeouts</dt> <dd>' + bindTimeouts + ' </dd>' +
+																		'<dt>Bind Requested</dt> <dd>' + bindRequested + ' </dd>' +
+																	'</dl>'+
+													        '    </div>'+		
+											        		'<hr style="margin: 5px 0;"/>' +
+													        '    <div>'+
+													        '      <p class="muted">Miscellaneous Details</p>'+
+																	'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+																		'<dt>Non Blocking Sockets Enabled</dt> <dd>' + nonBlockingSocketsEnabled + ' </dd>' +
+																		'<dt>Reuse Address</dt> <dd>' + reuseAddress + ' </dd>' +
+																	'</dl>'+
+													        '    </div>'+
+													        
+													        '<hr style="margin: 5px 0;"/>' +
+													        '<div class="btn-group">'+
+													        '              <button type="button" class="btn" onclick="resetCounters(\'' + name +  '\')"><i class="icon-spinner"></i> Reset Counters</button>'+
+													        '</div>'+
+													        
+													        
+											        	'</div>'+
+														'</td></tr>'												
+												);		
 												
 												$('#services-table-wrapper').append('<div id="entities-modal'+name+'" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'+
 														'<div class="modal-header">'+
@@ -327,6 +396,21 @@
 					
 					
 				}
+				function resetCounters(mbeanName){
+					var mbeanSearch="com.telscale.smsc:layer=SmppServerManagement,name="+mbeanName;
+					jolokia.execute(mbeanSearch,"resetCounters",
+							{
+								success: function(value) {
+									logToConsole('INFO', 'Successfully resetted counters for SMPP Server ' + mbeanName );
+									updateServices();
+								},
+								error: function(value){
+									errorUID = ("st" + new Date().getTime()).hashCode();
+									createStackTrace(errorUID, value.stacktrace);
+									logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+								}
+							});	
+				}					
 				$(document).ready(function () {
 					updateServices();
 				});
