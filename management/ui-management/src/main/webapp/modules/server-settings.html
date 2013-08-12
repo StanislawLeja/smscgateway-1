@@ -204,8 +204,10 @@
 										$("#schedulerfetchmaxactivity").val(response.value.MaxActivityCount);										
 										
 									}],
-									error: function(response) {
-										alert("Jolokia request failed: " + response.error);
+									error: function(value) {
+										errorUID = ("st" + new Date().getTime()).hashCode();
+										createStackTrace(errorUID, value.stacktrace);
+										logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");										
 									} 
 								}
 							);						
@@ -248,8 +250,6 @@
 			    		}
 						
 						var propesmedefaultclustername = $("#esmedefaultclustername").val();
-						
-						alert(propesmedefaultclustername);
 						
 						var propsubbusduedel = $("#propsubbusduedel").val();
 						if(propsubbusduedel.trim() == "") {

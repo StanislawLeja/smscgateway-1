@@ -51,11 +51,11 @@ public class SMSCShellExecutor implements ShellExecutor {
 	public SMSCShellExecutor() {
 
 	}
-	
+
 	public void start() throws Exception {
 		smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.getSmscManagement().getName());
-		if(logger.isInfoEnabled()){
-			logger.info("Started SMSCShellExecutor "+ this.getSmscManagement().getName());
+		if (logger.isInfoEnabled()) {
+			logger.info("Started SMSCShellExecutor " + this.getSmscManagement().getName());
 		}
 	}
 
@@ -283,10 +283,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 				}
 				return SMSCOAMMessages.INVALID_COMMAND;
 			} else if (args[1].equals("set")) {
-                return this.manageSet(args);
-            } else if (args[1].equals("get")) {
-                return this.manageGet(args);
-            } else if (args[1].equals("remove")) {
+				return this.manageSet(args);
+			} else if (args[1].equals("get")) {
+				return this.manageGet(args);
+			} else if (args[1].equals("remove")) {
 				return this.manageRemove(args);
 			} else if (args[1].equals("smppserver")) {
 				String rasCmd = args[2];
@@ -301,34 +301,34 @@ public class SMSCShellExecutor implements ShellExecutor {
 				}
 
 				return SMSCOAMMessages.INVALID_COMMAND;
-            } else if (args[1].toLowerCase().equals("databaserule")) {
-                String rasCmd = args[2];
-                if (rasCmd == null) {
-                    return SMSCOAMMessages.INVALID_COMMAND;
-                }
+			} else if (args[1].toLowerCase().equals("databaserule")) {
+				String rasCmd = args[2];
+				if (rasCmd == null) {
+					return SMSCOAMMessages.INVALID_COMMAND;
+				}
 
-                if (rasCmd.equals("update")) {
-                    return this.databaseRuleUpdate(args);
-                } else if (rasCmd.equals("delete")) {
-                    return this.databaseRuleDelete(args);
-                } else if (rasCmd.equals("get")) {
-                    return this.databaseRuleGet(args);
-                } else if (rasCmd.toLowerCase().equals("getrange")) {
-                    return this.databaseRuleGetRange(args);
-                }
+				if (rasCmd.equals("update")) {
+					return this.databaseRuleUpdate(args);
+				} else if (rasCmd.equals("delete")) {
+					return this.databaseRuleDelete(args);
+				} else if (rasCmd.equals("get")) {
+					return this.databaseRuleGet(args);
+				} else if (rasCmd.toLowerCase().equals("getrange")) {
+					return this.databaseRuleGetRange(args);
+				}
 
-                return SMSCOAMMessages.INVALID_COMMAND;
-            } else if (args[1].equals("archive")) {
-                String rasCmd = args[2];
-                if (rasCmd == null) {
-                    return SMSCOAMMessages.INVALID_COMMAND;
-                }
+				return SMSCOAMMessages.INVALID_COMMAND;
+			} else if (args[1].equals("archive")) {
+				String rasCmd = args[2];
+				if (rasCmd == null) {
+					return SMSCOAMMessages.INVALID_COMMAND;
+				}
 
-                if (rasCmd.equals("generatecdr")) {
-                    return this.archiveGenerateCdr(args);
-                }
+				if (rasCmd.equals("generatecdr")) {
+					return this.archiveGenerateCdr(args);
+				}
 
-                return SMSCOAMMessages.INVALID_COMMAND;
+				return SMSCOAMMessages.INVALID_COMMAND;
 			}
 
 			return SMSCOAMMessages.INVALID_COMMAND;
@@ -396,106 +396,106 @@ public class SMSCShellExecutor implements ShellExecutor {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-        String parName = options[2].toLowerCase();
-        try {
-            if (parName.equals("scgt")) {
-                smscPropertiesManagement.setServiceCenterGt(options[3]);
-            } else if (parName.equals("scssn")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setServiceCenterSsn(val);
-            } else if (parName.equals("hlrssn")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setHlrSsn(val);
-            } else if (parName.equals("mscssn")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setMscSsn(val);
-            } else if (parName.equals("maxmapv")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setMaxMapVersion(val);
+		String parName = options[2].toLowerCase();
+		try {
+			if (parName.equals("scgt")) {
+				smscPropertiesManagement.setServiceCenterGt(options[3]);
+			} else if (parName.equals("scssn")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setServiceCenterSsn(val);
+			} else if (parName.equals("hlrssn")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setHlrSsn(val);
+			} else if (parName.equals("mscssn")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setMscSsn(val);
+			} else if (parName.equals("maxmapv")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setMaxMapVersion(val);
 
-            } else if (parName.equals("defaultvalidityperiodhours")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setDefaultValidityPeriodHours(val);
-            } else if (parName.equals("maxvalidityperiodhours")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setMaxValidityPeriodHours(val);
-            } else if (parName.equals("defaultton")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setDefaultTon(val);
-            } else if (parName.equals("defaultnpi")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setDefaultNpi(val);
-            } else if (parName.equals("subscriberbusyduedelay")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setSubscriberBusyDueDelay(val);
-            } else if (parName.equals("firstduedelay")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setFirstDueDelay(val);
-            } else if (parName.equals("secondduedelay")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setSecondDueDelay(val);
-            } else if (parName.equals("maxduedelay")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setMaxDueDelay(val);
-            } else if (parName.equals("duedelaymultiplicator")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setDueDelayMultiplicator(val);
-            } else if (parName.equals("maxmessagelengthreducer")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setMaxMessageLengthReducer(val);
-            } else if (parName.equals("hosts")) {
-                String val = options[3];
-                smscPropertiesManagement.setHosts(val);
-            } else if (parName.equals("keyspacename")) {
-                String val = options[3];
-                smscPropertiesManagement.setKeyspaceName(val);
-            } else if (parName.equals("clustername")) {
-                String val = options[3];
-                smscPropertiesManagement.setClusterName(val);
-            } else if (parName.equals("fetchperiod")) {
-                long val = Long.parseLong(options[3]);
-                smscPropertiesManagement.setFetchPeriod(val);
-            } else if (parName.equals("fetchmaxrows")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setFetchMaxRows(val);
-            } else if (parName.equals("maxactivitycount")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setMaxActivityCount(val);
-//            } else if (parName.equals("cdrdatabaseexportduration")) {
-//                int val = Integer.parseInt(options[3]);
-//                smscPropertiesManagement.setCdrDatabaseExportDuration(val);
-            } else if (parName.equals("esmedefaultcluster")) {
-                smscPropertiesManagement.setEsmeDefaultClusterName(options[3]);
+			} else if (parName.equals("defaultvalidityperiodhours")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setDefaultValidityPeriodHours(val);
+			} else if (parName.equals("maxvalidityperiodhours")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setMaxValidityPeriodHours(val);
+			} else if (parName.equals("defaultton")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setDefaultTon(val);
+			} else if (parName.equals("defaultnpi")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setDefaultNpi(val);
+			} else if (parName.equals("subscriberbusyduedelay")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setSubscriberBusyDueDelay(val);
+			} else if (parName.equals("firstduedelay")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setFirstDueDelay(val);
+			} else if (parName.equals("secondduedelay")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setSecondDueDelay(val);
+			} else if (parName.equals("maxduedelay")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setMaxDueDelay(val);
+			} else if (parName.equals("duedelaymultiplicator")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setDueDelayMultiplicator(val);
+			} else if (parName.equals("maxmessagelengthreducer")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setMaxMessageLengthReducer(val);
+			} else if (parName.equals("hosts")) {
+				String val = options[3];
+				smscPropertiesManagement.setHosts(val);
+			} else if (parName.equals("keyspacename")) {
+				String val = options[3];
+				smscPropertiesManagement.setKeyspaceName(val);
+			} else if (parName.equals("clustername")) {
+				String val = options[3];
+				smscPropertiesManagement.setClusterName(val);
+			} else if (parName.equals("fetchperiod")) {
+				long val = Long.parseLong(options[3]);
+				smscPropertiesManagement.setFetchPeriod(val);
+			} else if (parName.equals("fetchmaxrows")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setFetchMaxRows(val);
+			} else if (parName.equals("maxactivitycount")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setMaxActivityCount(val);
+				// } else if (parName.equals("cdrdatabaseexportduration")) {
+				// int val = Integer.parseInt(options[3]);
+				// smscPropertiesManagement.setCdrDatabaseExportDuration(val);
+			} else if (parName.equals("esmedefaultcluster")) {
+				smscPropertiesManagement.setEsmeDefaultClusterName(options[3]);
 
-            } else {
-                return SMSCOAMMessages.INVALID_COMMAND;
-            }
-        } catch (IllegalArgumentException e) {
-            return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, parName, e.getMessage());
-        }
+			} else {
+				return SMSCOAMMessages.INVALID_COMMAND;
+			}
+		} catch (IllegalArgumentException e) {
+			return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, parName, e.getMessage());
+		}
 
 		return SMSCOAMMessages.PARAMETER_SUCCESSFULLY_SET;
 	}
 
-    private String manageRemove(String[] options) throws Exception {
-        if (options.length < 3) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
+	private String manageRemove(String[] options) throws Exception {
+		if (options.length < 3) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
 
-        String parName = options[2].toLowerCase();
-        try {
-            if (parName.equals("esmedefaultcluster")) {
-                smscPropertiesManagement.setEsmeDefaultClusterName(null);
+		String parName = options[2].toLowerCase();
+		try {
+			if (parName.equals("esmedefaultcluster")) {
+				smscPropertiesManagement.setEsmeDefaultClusterName(null);
 
-            } else {
-                return SMSCOAMMessages.INVALID_COMMAND;
-            }
-        } catch (IllegalArgumentException e) {
-            return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, parName, e.getMessage());
-        }
+			} else {
+				return SMSCOAMMessages.INVALID_COMMAND;
+			}
+		} catch (IllegalArgumentException e) {
+			return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, parName, e.getMessage());
+		}
 
-        return SMSCOAMMessages.PARAMETER_SUCCESSFULLY_REMOVED;
-    }
+		return SMSCOAMMessages.PARAMETER_SUCCESSFULLY_REMOVED;
+	}
 
 	/**
 	 * Command is smsc smppserver get <variable>
@@ -608,42 +608,42 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sb.append(smscPropertiesManagement.getMscSsn());
 			} else if (parName.equals("maxmapv")) {
 				sb.append(smscPropertiesManagement.getMaxMapVersion());
-            } else if (parName.equals("defaultvalidityperiodhours")) {
-                sb.append(smscPropertiesManagement.getDefaultValidityPeriodHours());
-            } else if (parName.equals("maxvalidityperiodhours")) {
-                sb.append(smscPropertiesManagement.getMaxValidityPeriodHours());
-            } else if (parName.equals("defaultton")) {
-                sb.append(smscPropertiesManagement.getDefaultTon());
-            } else if (parName.equals("defaultnpi")) {
-                sb.append(smscPropertiesManagement.getDefaultNpi());
-            } else if (parName.equals("subscriberbusyduedelay")) {
-                sb.append(smscPropertiesManagement.getSubscriberBusyDueDelay());
-            } else if (parName.equals("firstduedelay")) {
-                sb.append(smscPropertiesManagement.getFirstDueDelay());
-            } else if (parName.equals("secondduedelay")) {
-                sb.append(smscPropertiesManagement.getSecondDueDelay());
-            } else if (parName.equals("maxduedelay")) {
-                sb.append(smscPropertiesManagement.getMaxDueDelay());
-            } else if (parName.equals("duedelaymultiplicator")) {
-                sb.append(smscPropertiesManagement.getDueDelayMultiplicator());
-            } else if (parName.equals("maxmessagelengthreducer")) {
-                sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
-            } else if (parName.equals("hosts")) {
-                sb.append(smscPropertiesManagement.getHosts());
-            } else if (parName.equals("keyspacename")) {
-                sb.append(smscPropertiesManagement.getKeyspaceName());
-            } else if (parName.equals("clustername")) {
-                sb.append(smscPropertiesManagement.getClusterName());
-            } else if (parName.equals("fetchperiod")) {
-                sb.append(smscPropertiesManagement.getFetchPeriod());
-            } else if (parName.equals("fetchmaxrows")) {
-                sb.append(smscPropertiesManagement.getFetchMaxRows());
-            } else if (parName.equals("maxactivitycount")) {
-                sb.append(smscPropertiesManagement.getMaxActivityCount());
-//            } else if (parName.equals("cdrdatabaseexportduration")) {
-//                sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
-            } else if (parName.equals("esmedefaultcluster")) {
-                sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
+			} else if (parName.equals("defaultvalidityperiodhours")) {
+				sb.append(smscPropertiesManagement.getDefaultValidityPeriodHours());
+			} else if (parName.equals("maxvalidityperiodhours")) {
+				sb.append(smscPropertiesManagement.getMaxValidityPeriodHours());
+			} else if (parName.equals("defaultton")) {
+				sb.append(smscPropertiesManagement.getDefaultTon());
+			} else if (parName.equals("defaultnpi")) {
+				sb.append(smscPropertiesManagement.getDefaultNpi());
+			} else if (parName.equals("subscriberbusyduedelay")) {
+				sb.append(smscPropertiesManagement.getSubscriberBusyDueDelay());
+			} else if (parName.equals("firstduedelay")) {
+				sb.append(smscPropertiesManagement.getFirstDueDelay());
+			} else if (parName.equals("secondduedelay")) {
+				sb.append(smscPropertiesManagement.getSecondDueDelay());
+			} else if (parName.equals("maxduedelay")) {
+				sb.append(smscPropertiesManagement.getMaxDueDelay());
+			} else if (parName.equals("duedelaymultiplicator")) {
+				sb.append(smscPropertiesManagement.getDueDelayMultiplicator());
+			} else if (parName.equals("maxmessagelengthreducer")) {
+				sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
+			} else if (parName.equals("hosts")) {
+				sb.append(smscPropertiesManagement.getHosts());
+			} else if (parName.equals("keyspacename")) {
+				sb.append(smscPropertiesManagement.getKeyspaceName());
+			} else if (parName.equals("clustername")) {
+				sb.append(smscPropertiesManagement.getClusterName());
+			} else if (parName.equals("fetchperiod")) {
+				sb.append(smscPropertiesManagement.getFetchPeriod());
+			} else if (parName.equals("fetchmaxrows")) {
+				sb.append(smscPropertiesManagement.getFetchMaxRows());
+			} else if (parName.equals("maxactivitycount")) {
+				sb.append(smscPropertiesManagement.getMaxActivityCount());
+				// } else if (parName.equals("cdrdatabaseexportduration")) {
+				// sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
+			} else if (parName.equals("esmedefaultcluster")) {
+				sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -668,104 +668,101 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getMscSsn());
 			sb.append("\n");
 
-            sb.append("maxmapv = ");
-            sb.append(smscPropertiesManagement.getMaxMapVersion());
-            sb.append("\n");
+			sb.append("maxmapv = ");
+			sb.append(smscPropertiesManagement.getMaxMapVersion());
+			sb.append("\n");
 
+			sb.append("defaultValidityPeriodHours = ");
+			sb.append(smscPropertiesManagement.getDefaultValidityPeriodHours());
+			sb.append("\n");
 
-            sb.append("defaultValidityPeriodHours = ");
-            sb.append(smscPropertiesManagement.getDefaultValidityPeriodHours());
-            sb.append("\n");
+			sb.append("maxValidityPeriodHours = ");
+			sb.append(smscPropertiesManagement.getMaxValidityPeriodHours());
+			sb.append("\n");
 
-            sb.append("maxValidityPeriodHours = ");
-            sb.append(smscPropertiesManagement.getMaxValidityPeriodHours());
-            sb.append("\n");
+			sb.append("defaultTon = ");
+			sb.append(smscPropertiesManagement.getDefaultTon());
+			sb.append("\n");
 
-            sb.append("defaultTon = ");
-            sb.append(smscPropertiesManagement.getDefaultTon());
-            sb.append("\n");
+			sb.append("defaultNpi = ");
+			sb.append(smscPropertiesManagement.getDefaultNpi());
+			sb.append("\n");
 
-            sb.append("defaultNpi = ");
-            sb.append(smscPropertiesManagement.getDefaultNpi());
-            sb.append("\n");
+			sb.append("subscriberBusyDueDelay = ");
+			sb.append(smscPropertiesManagement.getSubscriberBusyDueDelay());
+			sb.append("\n");
 
-            sb.append("subscriberBusyDueDelay = ");
-            sb.append(smscPropertiesManagement.getSubscriberBusyDueDelay());
-            sb.append("\n");
+			sb.append("firstDueDelay = ");
+			sb.append(smscPropertiesManagement.getFirstDueDelay());
+			sb.append("\n");
 
-            sb.append("firstDueDelay = ");
-            sb.append(smscPropertiesManagement.getFirstDueDelay());
-            sb.append("\n");
+			sb.append("secondDueDelay = ");
+			sb.append(smscPropertiesManagement.getSecondDueDelay());
+			sb.append("\n");
 
-            sb.append("secondDueDelay = ");
-            sb.append(smscPropertiesManagement.getSecondDueDelay());
-            sb.append("\n");
+			sb.append("maxDueDelay = ");
+			sb.append(smscPropertiesManagement.getMaxDueDelay());
+			sb.append("\n");
 
-            sb.append("maxDueDelay = ");
-            sb.append(smscPropertiesManagement.getMaxDueDelay());
-            sb.append("\n");
+			sb.append("dueDelayMultiplicator = ");
+			sb.append(smscPropertiesManagement.getDueDelayMultiplicator());
+			sb.append("\n");
 
-            sb.append("dueDelayMultiplicator = ");
-            sb.append(smscPropertiesManagement.getDueDelayMultiplicator());
-            sb.append("\n");
+			sb.append("maxMessageLengthReducer = ");
+			sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
+			sb.append("\n");
 
-            sb.append("maxMessageLengthReducer = ");
-            sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
-            sb.append("\n");
+			sb.append("hosts = ");
+			sb.append(smscPropertiesManagement.getHosts());
+			sb.append("\n");
 
-            sb.append("hosts = ");
-            sb.append(smscPropertiesManagement.getHosts());
-            sb.append("\n");
+			sb.append("keyspaceName = ");
+			sb.append(smscPropertiesManagement.getKeyspaceName());
+			sb.append("\n");
 
-            sb.append("keyspaceName = ");
-            sb.append(smscPropertiesManagement.getKeyspaceName());
-            sb.append("\n");
+			sb.append("maxActivityCount = ");
+			sb.append(smscPropertiesManagement.getMaxActivityCount());
+			sb.append("\n");
 
-            sb.append("maxActivityCount = ");
-            sb.append(smscPropertiesManagement.getMaxActivityCount());
-            sb.append("\n");
+			sb.append("fetchPeriod = ");
+			sb.append(smscPropertiesManagement.getFetchPeriod());
+			sb.append("\n");
 
+			sb.append("fetchMaxRows = ");
+			sb.append(smscPropertiesManagement.getFetchMaxRows());
+			sb.append("\n");
 
-            sb.append("fetchPeriod = ");
-            sb.append(smscPropertiesManagement.getFetchPeriod());
-            sb.append("\n");
+			sb.append("maxActivityCount = ");
+			sb.append(smscPropertiesManagement.getMaxActivityCount());
+			sb.append("\n");
 
-            sb.append("fetchMaxRows = ");
-            sb.append(smscPropertiesManagement.getFetchMaxRows());
-            sb.append("\n");
+			// sb.append("cdrDatabaseExportDuration = ");
+			// sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
+			// sb.append("\n");
 
-            sb.append("maxActivityCount = ");
-            sb.append(smscPropertiesManagement.getMaxActivityCount());
-            sb.append("\n");
+			sb.append("esmedefaultcluster = ");
+			sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
+			sb.append("\n");
 
-//            sb.append("cdrDatabaseExportDuration = ");
-//            sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
-//            sb.append("\n");
+			// private int defaultValidityPeriodHours = 3 * 24;
+			// private int maxValidityPeriodHours = 10 * 24;
+			// private int defaultTon = 1;
+			// private int defaultNpi = 1;
 
-            sb.append("esmedefaultcluster = ");
-            sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
-            sb.append("\n");
+			// private int subscriberBusyDueDelay = 60 * 2;
+			// private int firstDueDelay = 60;
+			// private int secondDueDelay = 60 * 5;
+			// private int maxDueDelay = 3600 * 24;
+			// private int dueDelayMultiplicator = 200;
+			// private int maxMessageLengthReducer = 6;
 
+			// private String hosts = "127.0.0.1:9160";
+			// private String keyspaceName = "TelestaxSMSC";
+			// private String clusterName = "TelestaxSMSC";
 
-//      private int defaultValidityPeriodHours = 3 * 24;
-//      private int maxValidityPeriodHours = 10 * 24;
-//      private int defaultTon = 1;
-//      private int defaultNpi = 1;
-
-//      private int subscriberBusyDueDelay = 60 * 2;
-//      private int firstDueDelay = 60;
-//      private int secondDueDelay = 60 * 5;
-//      private int maxDueDelay = 3600 * 24;
-//      private int dueDelayMultiplicator = 200;
-//      private int maxMessageLengthReducer = 6;
-        
-//      private String hosts = "127.0.0.1:9160";
-//      private String keyspaceName = "TelestaxSMSC";
-//      private String clusterName = "TelestaxSMSC";
-
-//      private long fetchPeriod = 5000;
-//      private int fetchMaxRows = 100;
-//      private int maxActivityCount = 500;
+			// private long fetchPeriod = 5000;
+			// private int fetchMaxRows = 100;
+			// private int maxActivityCount = 500;
 
 			return sb.toString();
 		}
@@ -815,132 +812,124 @@ public class SMSCShellExecutor implements ShellExecutor {
 		return String.format(SMSCOAMMessages.ESME_STOP_SUCCESSFULL, args[3]);
 	}
 
-    /**
-     * smsc databaseRule update <address> <systemId>
-     * 
-     * @param args
-     * @return
-     */
-    private String databaseRuleUpdate(String[] args) throws Exception {
-        if (args.length < 5 || args.length > 5) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
+	/**
+	 * smsc databaseRule update <address> <systemId>
+	 * 
+	 * @param args
+	 * @return
+	 */
+	private String databaseRuleUpdate(String[] args) throws Exception {
+		if (args.length < 5 || args.length > 5) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
 
-        String address = args[3];
-        if (address == null) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
+		String address = args[3];
+		if (address == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
 
-        String systemId = args[4];
-        if (systemId == null) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
+		String systemId = args[4];
+		if (systemId == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
 
-        String res = this.smscManagement.getEsmeManagement().updateDatabaseRule(address, systemId);
-        if (res == null)
-            return String.format(SMSCOAMMessages.UPDATE_DATABASE_RULE_SUCCESSFULL, address);
-        else
-            return res;
-    }
+		this.smscManagement.getEsmeManagement().updateDatabaseRule(address, systemId);
+		return String.format(SMSCOAMMessages.UPDATE_DATABASE_RULE_SUCCESSFULL, address);
+	}
 
-    /**
-     * smsc databaseRule delete <address>
-     * 
-     * @param args
-     * @return
-     */
-    private String databaseRuleDelete(String[] args) throws Exception {
-        if (args.length < 4 || args.length > 4) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
+	/**
+	 * smsc databaseRule delete <address>
+	 * 
+	 * @param args
+	 * @return
+	 */
+	private String databaseRuleDelete(String[] args) throws Exception {
+		if (args.length < 4 || args.length > 4) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
 
-        String address = args[3];
-        if (address == null) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
+		String address = args[3];
+		if (address == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
 
-        String res = this.smscManagement.getEsmeManagement().deleteDatabaseRule(address);
-        if (res == null)
-            return String.format(SMSCOAMMessages.DELETE_DATABASE_RULE_SUCCESSFULL, address);
-        else
-            return res;
-    }
+		this.smscManagement.getEsmeManagement().deleteDatabaseRule(address);
+		return String.format(SMSCOAMMessages.DELETE_DATABASE_RULE_SUCCESSFULL, address);
+	}
 
-    /**
-     * smsc databaseRule get <address>
-     * 
-     * @param args
-     * @return
-     */
-    private String databaseRuleGet(String[] args) throws Exception {
-        if (args.length < 4 || args.length > 4) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
+	/**
+	 * smsc databaseRule get <address>
+	 * 
+	 * @param args
+	 * @return
+	 */
+	private String databaseRuleGet(String[] args) throws Exception {
+		if (args.length < 4 || args.length > 4) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
 
-        String address = args[3];
-        if (address == null) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
+		String address = args[3];
+		if (address == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
 
-        String res = this.smscManagement.getEsmeManagement().getDatabaseRule(address);
-        return res;
-    }
+		String res = this.smscManagement.getEsmeManagement().getDatabaseRule(address);
+		return res;
+	}
 
-    /**
-     * smsc databaseRule getRange <address>
-     * or
-     * smsc databaseRule getRange
-     * 
-     * @param args
-     * @return
-     */
-    private String databaseRuleGetRange(String[] args) throws Exception {
-        if (args.length < 3 || args.length > 4) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
+	/**
+	 * smsc databaseRule getRange <address> or smsc databaseRule getRange
+	 * 
+	 * @param args
+	 * @return
+	 */
+	private String databaseRuleGetRange(String[] args) throws Exception {
+		if (args.length < 3 || args.length > 4) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
 
-        String res;
-        if (args.length == 4) {
-            String address = args[3];
-            if (address == null) {
-                return SMSCOAMMessages.INVALID_COMMAND;
-            }
-            res = this.smscManagement.getEsmeManagement().getDatabaseRulesRange(address);
-        } else {
-            res = this.smscManagement.getEsmeManagement().getDatabaseRulesRange();
-        }
+		String res;
+		if (args.length == 4) {
+			String address = args[3];
+			if (address == null) {
+				return SMSCOAMMessages.INVALID_COMMAND;
+			}
+			res = this.smscManagement.getEsmeManagement().getDatabaseRulesRange(address);
+		} else {
+			res = this.smscManagement.getEsmeManagement().getDatabaseRulesRange();
+		}
 
-        return res;
-    }
+		return res;
+	}
 
-    /**
-     * smsc archive generateCdr <timeFrom> <timeTo>
-     * 
-     * @param args
-     * @return
-     */
-    private String archiveGenerateCdr(String[] args) throws Exception {
-        if (args.length < 5 || args.length > 5) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
+	/**
+	 * smsc archive generateCdr <timeFrom> <timeTo>
+	 * 
+	 * @param args
+	 * @return
+	 */
+	private String archiveGenerateCdr(String[] args) throws Exception {
+		if (args.length < 5 || args.length > 5) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
 
-        String timeFromS = args[3];
-        String timeToS = args[4];
-        if (timeFromS == null || timeToS == null) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
+		String timeFromS = args[3];
+		String timeToS = args[4];
+		if (timeFromS == null || timeToS == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
 
-        SimpleDateFormat df = new SimpleDateFormat();
-        Date timeFrom = df.parse(timeFromS);
-        if (timeFrom == null)
-            return SMSCOAMMessages.BAD_FORMATTED_FROM_FIELD;
-        Date timeTo = df.parse(timeToS);
-        if (timeTo == null)
-            return SMSCOAMMessages.BAD_FORMATTED_TO_FIELD;
+		SimpleDateFormat df = new SimpleDateFormat();
+		Date timeFrom = df.parse(timeFromS);
+		if (timeFrom == null)
+			return SMSCOAMMessages.BAD_FORMATTED_FROM_FIELD;
+		Date timeTo = df.parse(timeToS);
+		if (timeTo == null)
+			return SMSCOAMMessages.BAD_FORMATTED_TO_FIELD;
 
-        ArchiveSms.getInstance().makeCdrDatabaseManualExport(timeFrom, timeTo);
-        return SMSCOAMMessages.ACCEPTED_ARCHIVE_GENERATE_CDR_SUCCESSFULL;
-    }
+		ArchiveSms.getInstance().makeCdrDatabaseManualExport(timeFrom, timeTo);
+		return SMSCOAMMessages.ACCEPTED_ARCHIVE_GENERATE_CDR_SUCCESSFULL;
+	}
 
 	public String execute(String[] args) {
 		if (args[0].equals("smsc")) {

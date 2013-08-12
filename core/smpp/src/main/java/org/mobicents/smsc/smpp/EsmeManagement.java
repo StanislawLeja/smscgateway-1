@@ -47,7 +47,6 @@ import javolution.xml.stream.XMLStreamException;
 import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
-import org.mobicents.smsc.cassandra.PersistenceException;
 
 import com.cloudhopper.smpp.SmppBindType;
 import com.cloudhopper.smpp.SmppSession;
@@ -231,7 +230,8 @@ public class EsmeManagement implements EsmeManagementMBean {
 
 			// SystemId:IP:Port:SmppBindType combination should be unique
 			String primaryKey = systemId + host + port + smppBindType.name();
-			String existingPrimaryKey = esme.getSystemId() + esme.getHost() + esme.getPort() + esme.getSmppBindType().name();
+			String existingPrimaryKey = esme.getSystemId() + esme.getHost() + esme.getPort()
+					+ esme.getSmppBindType().name();
 
 			if (primaryKey.equals(existingPrimaryKey)) {
 				throw new Exception(String.format(SMSCOAMMessages.CREATE_EMSE_FAIL_PRIMARY_KEY_ALREADY_EXIST, systemId,
@@ -359,103 +359,77 @@ public class EsmeManagement implements EsmeManagementMBean {
 	}
 
 	@Override
-	public String updateDatabaseRule(String address, String systemId) {
+	public void updateDatabaseRule(String address, String systemId) throws Exception {
 		DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
 		if (smsRoutingRule == null)
-			return "DatabaseSmsRoutingRule is not defined in the system";
+			throw new Exception("DatabaseSmsRoutingRule is not defined in the system");
 
-		try {
-			smsRoutingRule.updateDbSmsRoutingRule(address, systemId);
-		} catch (PersistenceException e) {
-			String s = "PersistenceException when updateDatabaseRule: " + e.getMessage();
-			return s;
-		}
-		return null;
+		smsRoutingRule.updateDbSmsRoutingRule(address, systemId);
 	}
 
 	@Override
-	public String deleteDatabaseRule(String address) {
+	public void deleteDatabaseRule(String address) throws Exception {
 		DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
 		if (smsRoutingRule == null)
-			return "DatabaseSmsRoutingRule is not defined in the system";
+			throw new Exception("DatabaseSmsRoutingRule is not defined in the system");
 
-		try {
-			smsRoutingRule.deleteDbSmsRoutingRule(address);
-		} catch (PersistenceException e) {
-			String s = "PersistenceException when deleteDatabaseRule: " + e.getMessage();
-			return s;
-		}
-		return null;
+		smsRoutingRule.deleteDbSmsRoutingRule(address);
 	}
 
 	@Override
-	public String getDatabaseRule(String address) {
+	public String getDatabaseRule(String address) throws Exception {
 		DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
 		if (smsRoutingRule == null)
-			return "DatabaseSmsRoutingRule is not defined in the system";
+			throw new Exception("DatabaseSmsRoutingRule is not defined in the system");
 
-		try {
-			DbSmsRoutingRule rr = smsRoutingRule.getSmsRoutingRule(address);
-			if (rr != null)
-				return rr.toString();
+		DbSmsRoutingRule rr = smsRoutingRule.getSmsRoutingRule(address);
+		if (rr != null)
+			return rr.toString();
+		else
+			return "Record not found for: " + address;
+	}
+
+	@Override
+	public String getDatabaseRulesRange() throws Exception {
+		DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
+		if (smsRoutingRule == null)
+			throw new Exception("DatabaseSmsRoutingRule is not defined in the system");
+
+		List<DbSmsRoutingRule> rrr = smsRoutingRule.getSmsRoutingRulesRange();
+		StringBuilder sb = new StringBuilder();
+		int i1 = 0;
+		for (DbSmsRoutingRule rr : rrr) {
+			if (i1 == 0)
+				i1 = 1;
 			else
-				return "Record not found for: " + address;
-		} catch (PersistenceException e) {
-			String s = "PersistenceException when getDatabaseRule: " + e.getMessage();
-			return s;
+				sb.append("\n");
+			sb.append(rr.toString());
 		}
+		return sb.toString();
+
 	}
 
 	@Override
-	public String getDatabaseRulesRange() {
+	public String getDatabaseRulesRange(String lastAdress) throws Exception {
 		DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
 		if (smsRoutingRule == null)
-			return "DatabaseSmsRoutingRule is not defined in the system";
+			throw new Exception("DatabaseSmsRoutingRule is not defined in the system");
 
-		try {
-			List<DbSmsRoutingRule> rrr = smsRoutingRule.getSmsRoutingRulesRange();
-			StringBuilder sb = new StringBuilder();
-			int i1 = 0;
-			for (DbSmsRoutingRule rr : rrr) {
-				if (i1 == 0)
-					i1 = 1;
-				else
-					sb.append("\n");
-				sb.append(rr.toString());
-			}
-			return sb.toString();
-		} catch (PersistenceException e) {
-			String s = "PersistenceException when getSmsRoutingRulesRange-all: " + e.getMessage();
-			return s;
+		DbSmsRoutingRule rr0 = smsRoutingRule.getSmsRoutingRule(lastAdress);
+		if (rr0 == null)
+			return "Record not found for a key: " + lastAdress;
+
+		List<DbSmsRoutingRule> rrr = smsRoutingRule.getSmsRoutingRulesRange(lastAdress);
+		StringBuilder sb = new StringBuilder();
+		int i1 = 0;
+		for (DbSmsRoutingRule rr : rrr) {
+			if (i1 == 0)
+				i1 = 1;
+			else
+				sb.append("\n");
+			sb.append(rr.toString());
 		}
-	}
-
-	@Override
-	public String getDatabaseRulesRange(String lastAdress) {
-		DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
-		if (smsRoutingRule == null)
-			return "DatabaseSmsRoutingRule is not defined in the system";
-
-		try {
-			DbSmsRoutingRule rr0 = smsRoutingRule.getSmsRoutingRule(lastAdress);
-			if (rr0 == null)
-				return "Record not found for a key: " + lastAdress;
-
-			List<DbSmsRoutingRule> rrr = smsRoutingRule.getSmsRoutingRulesRange(lastAdress);
-			StringBuilder sb = new StringBuilder();
-			int i1 = 0;
-			for (DbSmsRoutingRule rr : rrr) {
-				if (i1 == 0)
-					i1 = 1;
-				else
-					sb.append("\n");
-				sb.append(rr.toString());
-			}
-			return sb.toString();
-		} catch (PersistenceException e) {
-			String s = "PersistenceException when getSmsRoutingRulesRange-lastAdress: " + e.getMessage();
-			return s;
-		}
+		return sb.toString();
 	}
 
 	public void start() throws Exception {
