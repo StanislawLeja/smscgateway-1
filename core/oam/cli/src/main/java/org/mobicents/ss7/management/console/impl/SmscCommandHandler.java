@@ -63,7 +63,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("maxmessagelengthreducer");
         set.addChild("hosts");
         set.addChild("keyspacename");
-        set.addChild("clusterName");
+        set.addChild("clustername");
         set.addChild("fetchperiod");
         set.addChild("fetchmaxrows");
         set.addChild("maxactivitycount");
@@ -88,7 +88,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("maxmessagelengthreducer");
         get.addChild("hosts");
         get.addChild("keyspacename");
-        get.addChild("clusterName");
+        get.addChild("clustername");
         get.addChild("fetchperiod");
         get.addChild("fetchmaxrows");
         get.addChild("maxactivitycount");
@@ -102,29 +102,29 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 
 		Node smppServerSet = smppServer.addChild("set");
 		smppServerSet.addChild("port");
-		smppServerSet.addChild("bind-timeout");
-		smppServerSet.addChild("system-id");
-		smppServerSet.addChild("auto-negotiate-version");
-		smppServerSet.addChild("interface-version");
-		smppServerSet.addChild("max-connection-size");
-		smppServerSet.addChild("default-window-size");
-		smppServerSet.addChild("default-window-wait-timeout");
-		smppServerSet.addChild("default-request-expiry-timeout");
-		smppServerSet.addChild("default-window-monitor-interval");
-		smppServerSet.addChild("default-session-counters-enabled");
+		smppServerSet.addChild("bindtimeout");
+		smppServerSet.addChild("systemid");
+		smppServerSet.addChild("autonegotiateversion");
+		smppServerSet.addChild("interfaceversion");
+		smppServerSet.addChild("maxconnectionsize");
+		smppServerSet.addChild("defaultwindowsize");
+		smppServerSet.addChild("defaultwindowwaittimeout");
+		smppServerSet.addChild("defaultrequestexpirytimeout");
+		smppServerSet.addChild("defaultwindowmonitorinterval");
+		smppServerSet.addChild("defaultsessioncountersenabled");
 
 		Node smppServerGet = smppServer.addChild("get");
 		smppServerGet.addChild("port");
-		smppServerGet.addChild("bind-timeout");
-		smppServerGet.addChild("system-id");
-		smppServerGet.addChild("auto-negotiate-version");
-		smppServerGet.addChild("interface-version");
-		smppServerGet.addChild("max-connection-size");
-		smppServerGet.addChild("default-window-size");
-		smppServerGet.addChild("default-window-wait-timeout");
-		smppServerGet.addChild("default-request-expiry-timeout");
-		smppServerGet.addChild("default-window-monitor-interval");
-		smppServerGet.addChild("default-session-counters-enabled");
+		smppServerGet.addChild("bindtimeout");
+		smppServerGet.addChild("systemid");
+		smppServerGet.addChild("autonegotiateversion");
+		smppServerGet.addChild("interfaceversion");
+		smppServerGet.addChild("maxconnectionsize");
+		smppServerGet.addChild("defaultwindowsize");
+		smppServerGet.addChild("defaultwindowwaittimeout");
+		smppServerGet.addChild("defaultrequestexpirytimeout");
+		smppServerGet.addChild("defaultwindowmonitorinterval");
+		smppServerGet.addChild("defaultsessioncountersenabled");
 
         Node databaseRule = parent.addChild("databaserule");
         databaseRule.addChild("update");

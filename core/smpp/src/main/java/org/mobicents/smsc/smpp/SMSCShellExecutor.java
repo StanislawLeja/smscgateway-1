@@ -355,33 +355,33 @@ public class SMSCShellExecutor implements ShellExecutor {
 		String parName = options[3].toLowerCase();
 		if (parName.equals("port")) {
 			smppServerManagement.setBindPort(Integer.parseInt(options[4]));
-		} else if (parName.equals("bind-timeout")) {
+		} else if (parName.equals("bindtimeout")) {
 			int val = Integer.parseInt(options[4]);
 			smppServerManagement.setBindTimeout(val);
-		} else if (parName.equals("system-id")) {
+		} else if (parName.equals("systemid")) {
 			smppServerManagement.setSystemId(options[4]);
-		} else if (parName.equals("auto-negotiate-version")) {
+		} else if (parName.equals("autonegotiateversion")) {
 			boolean val = Boolean.parseBoolean(options[4]);
 			smppServerManagement.setAutoNegotiateInterfaceVersion(val);
-		} else if (parName.equals("interface-version")) {
+		} else if (parName.equals("interfaceversion")) {
 			double val = Double.parseDouble(options[4]);
 			smppServerManagement.setInterfaceVersion(val);
-		} else if (parName.equals("max-connection-size")) {
+		} else if (parName.equals("maxconnectionsize")) {
 			int val = Integer.parseInt(options[4]);
 			smppServerManagement.setMaxConnectionSize(val);
-		} else if (parName.equals("default-window-size")) {
+		} else if (parName.equals("defaultwindowsize")) {
 			int val = Integer.parseInt(options[4]);
 			smppServerManagement.setDefaultWindowSize(val);
-		} else if (parName.equals("default-window-wait-timeout")) {
+		} else if (parName.equals("defaultwindowwaittimeout")) {
 			int val = Integer.parseInt(options[4]);
 			smppServerManagement.setDefaultWindowWaitTimeout(val);
-		} else if (parName.equals("default-request-expiry-timeout")) {
+		} else if (parName.equals("defaultrequestexpirytimeout")) {
 			int val = Integer.parseInt(options[4]);
 			smppServerManagement.setDefaultRequestExpiryTimeout(val);
-		} else if (parName.equals("default-window-monitor-interval")) {
+		} else if (parName.equals("defaultwindowmonitorinterval")) {
 			int val = Integer.parseInt(options[4]);
 			smppServerManagement.setDefaultWindowMonitorInterval(val);
-		} else if (parName.equals("default-session-counters-enabled")) {
+		} else if (parName.equals("defaultsessioncountersenabled")) {
 			boolean val = Boolean.parseBoolean(options[4]);
 			smppServerManagement.setDefaultSessionCountersEnabled(val);
 		} else {
@@ -516,25 +516,25 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(" = ");
 			if (parName.equals("port")) {
 				sb.append(smppServerManagement.getBindPort());
-			} else if (parName.equals("bind-timeout")) {
+			} else if (parName.equals("bindtimeout")) {
 				sb.append(smppServerManagement.getBindTimeout());
-			} else if (parName.equals("system-id")) {
+			} else if (parName.equals("systemid")) {
 				sb.append(smppServerManagement.getSystemId());
-			} else if (parName.equals("auto-negotiate-version")) {
+			} else if (parName.equals("autonegotiateversion")) {
 				sb.append(smppServerManagement.isAutoNegotiateInterfaceVersion());
-			} else if (parName.equals("interface-version")) {
+			} else if (parName.equals("interfaceversion")) {
 				sb.append(smppServerManagement.getInterfaceVersion());
-			} else if (parName.equals("max-connection-size")) {
+			} else if (parName.equals("maxconnectionsize")) {
 				sb.append(smppServerManagement.getMaxConnectionSize());
-			} else if (parName.equals("default-window-size")) {
+			} else if (parName.equals("defaultwindowsize")) {
 				sb.append(smppServerManagement.getDefaultWindowSize());
-			} else if (parName.equals("default-window-wait-timeout")) {
+			} else if (parName.equals("defaultwindowwaittimeout")) {
 				sb.append(smppServerManagement.getDefaultWindowWaitTimeout());
-			} else if (parName.equals("default-request-expiry-timeout")) {
+			} else if (parName.equals("defaultrequestexpirytimeout")) {
 				sb.append(smppServerManagement.getDefaultRequestExpiryTimeout());
-			} else if (parName.equals("default-window-monitor-interval")) {
+			} else if (parName.equals("defaultwindowmonitorinterval")) {
 				sb.append(smppServerManagement.getDefaultWindowMonitorInterval());
-			} else if (parName.equals("default-session-counters-enabled")) {
+			} else if (parName.equals("defaultsessioncountersenabled")) {
 				sb.append(smppServerManagement.isDefaultSessionCountersEnabled());
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
