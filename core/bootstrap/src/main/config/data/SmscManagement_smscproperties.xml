@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<scgt value="923330053058"/>
+<scgt value="222202222000"/>
 <scssn value="8"/>
-<hlrssn value="6"/>
+<hlrssn value="8"/>
 <mscssn value="8"/>
 <maxmapv value="3"/>
+<defaultValidityPeriodHours value="72"/>
+<maxValidityPeriodHours value="240"/>
+<defaultTon value="1"/>
+<defaultNpi value="1"/>
+<subscriberBusyDueDelay value="120"/>
+<firstDueDelay value="60"/>
+<secondDueDelay value="300"/>
+<maxDueDelay value="86400"/>
+<dueDelayMultiplicator value="200"/>
+<maxMessageLengthReducer value="6"/>
+<hosts value="127.0.0.1:9160"/>
+<keyspaceName value="TelestaxSMSC"/>
+<clusterName value="TelestaxSMSC"/>
+<fetchPeriod value="5000"/>
+<fetchMaxRows value="100"/>
+<maxActivityCount value="500"/>

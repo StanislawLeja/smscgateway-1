@@ -1,31 +1,61 @@
+/*
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.mobicents.smsc.slee.services.mo;
 
 import java.sql.Timestamp;
+import java.util.Date;
+import java.util.UUID;
 
 import javax.slee.ActivityContextInterface;
 import javax.slee.InitialEventSelector;
-import javax.slee.facilities.ActivityContextNamingFacility;
-import javax.slee.facilities.NameAlreadyBoundException;
-import javax.slee.nullactivity.NullActivity;
 
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
 import org.mobicents.protocols.ss7.map.api.MAPDialog;
 import org.mobicents.protocols.ss7.map.api.MAPException;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
+import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.service.sms.ForwardShortMessageRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.ForwardShortMessageResponse;
 import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.protocols.ss7.map.api.service.sms.MoForwardShortMessageRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.MoForwardShortMessageResponse;
+import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
+import org.mobicents.protocols.ss7.map.api.smstpdu.AbsoluteTimeStamp;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AddressField;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
-import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
+import org.mobicents.protocols.ss7.map.api.smstpdu.NumberingPlanIdentification;
+import org.mobicents.protocols.ss7.map.api.smstpdu.SmsCommandTpdu;
+import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverReportTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsSubmitTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
+import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriod;
+import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriodFormat;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogNotice;
 import org.mobicents.slee.resource.map.events.DialogProviderAbort;
@@ -35,12 +65,23 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.resources.smpp.server.SmppServerSession;
-import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
+import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.Sms;
+import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.TargetAddress;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 
 import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.SmppConstants;
 
+/**
+ * 
+ * @author amit bhayani
+ * @author servey vetyutnev
+ * 
+ */
 public abstract class MoSbb extends MoCommonSbb {
 
 	private static final String className = "MoSbb";
@@ -126,53 +167,153 @@ public abstract class MoSbb extends MoCommonSbb {
 	 */
 	public void onMoForwardShortMessageRequest(MoForwardShortMessageRequest evt, ActivityContextInterface aci) {
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received MO_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
+			this.logger.info("\nReceived MO_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
 		}
 
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
 
-		SmsSignalInfo smsSignalInfo = evt.getSM_RP_UI();
-		SM_RP_OA smRPOA = evt.getSM_RP_OA();
+		MAPDialogSms dialog = evt.getMAPDialog();
 
-		this.processMoMessage(smsSignalInfo, smRPOA);
+		try {
+			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
+		} catch (SmscProcessingException e1) {
+			this.logger.severe(e1.getMessage(), e1);
+			try {
+				MAPErrorMessage errorMessage;
+				switch (e1.getMapErrorCode()) {
+				case MAPErrorCode.unexpectedDataValue:
+					errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+							.createMAPErrorMessageExtensionContainer((long) MAPErrorCode.unexpectedDataValue, null);
+					break;
+				case MAPErrorCode.systemFailure:
+					errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+							.createMAPErrorMessageSystemFailure(dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null, null);
+					break;
+				default:
+					errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+							.createMAPErrorMessageSystemFailure(dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null, null);
+					break;
+				}
+				dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+				if (this.logger.isInfoEnabled()) {
+					this.logger.info("\nSent ErrorComponent = " + errorMessage);
+				}
+
+				dialog.close(false);
+			} catch (Throwable e) {
+				logger.severe("Error while sending Error message", e);
+				return;
+			}
+			return;
+		} catch (Throwable e1) {
+			this.logger.severe("Exception while processing MO message: " + e1.getMessage(), e1);
+			try {
+				MAPErrorMessage errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+						.createMAPErrorMessageSystemFailure(dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null, null);
+				dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+				dialog.close(false);
+			} catch (Throwable e) {
+				logger.severe("Error while sending Error message", e);
+				return;
+			}
+			return;
+		}
+
+		try {
+			dialog.addMoForwardShortMessageResponse(evt.getInvokeId(), null, null);
+			if (this.logger.isInfoEnabled()) {
+				this.logger.info("\nSent MoForwardShortMessageResponse = " + evt);
+			}
+
+			dialog.close(false);
+		} catch (Throwable e) {
+			logger.severe("Error while sending MoForwardShortMessageResponse ", e);
+		}
+	}
+
+	/**
+	 * Received Ack for MO SMS. But this is error we should never receive this
+	 * 
+	 * @param evt
+	 * @param aci
+	 */
+	public void onMoForwardShortMessageResponse(MoForwardShortMessageResponse evt, ActivityContextInterface aci) {
+		this.logger.severe("Received MO_FORWARD_SHORT_MESSAGE_RESPONSE = " + evt);
+	}
+
+	public void onForwardShortMessageRequest(ForwardShortMessageRequest evt, ActivityContextInterface aci) {
+		if (this.logger.isInfoEnabled()) {
+			this.logger.info("Received FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
+		}
+
+		this.setProcessingState(MoProcessingState.OtherDataRecieved);
 
 		MAPDialogSms dialog = evt.getMAPDialog();
 
 		try {
-			dialog.addMoForwardShortMessageResponse(evt.getInvokeId(), null, null);
-			dialog.close(false);
-		} catch (MAPException e) {
-			logger.severe("Error while sending MoForwardShortMessageResponse ", e);
+			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
+		} catch (SmscProcessingException e1) {
+			this.logger.severe(e1.getMessage(), e1);
+			try {
+				MAPErrorMessage errorMessage;
+				switch (e1.getMapErrorCode()) {
+				case MAPErrorCode.unexpectedDataValue:
+					errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+							.createMAPErrorMessageExtensionContainer((long) MAPErrorCode.unexpectedDataValue, null);
+					break;
+				case MAPErrorCode.systemFailure:
+					errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+							.createMAPErrorMessageSystemFailure(dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null, null);
+					break;
+				default:
+					errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+							.createMAPErrorMessageSystemFailure(dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null, null);
+					break;
+				}
+				dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+				if (this.logger.isInfoEnabled()) {
+					this.logger.info("\nSent ErrorComponent = " + errorMessage);
+				}
+
+				dialog.close(false);
+			} catch (Throwable e) {
+				logger.severe("Error while sending Error message", e);
+				return;
+			}
+			return;
+		} catch (Throwable e1) {
+			this.logger.severe("Exception while processing MO message: " + e1.getMessage(), e1);
+			try {
+				MAPErrorMessage errorMessage = dialog.getService().getMAPProvider().getMAPErrorMessageFactory()
+						.createMAPErrorMessageSystemFailure(dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null, null);
+				dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+				dialog.close(false);
+			} catch (Throwable e) {
+				logger.severe("Error while sending Error message", e);
+				return;
+			}
+			return;
 		}
 
+		try {
+			dialog.addForwardShortMessageResponse(evt.getInvokeId());
+			if (this.logger.isInfoEnabled()) {
+				this.logger.info("\nSent ForwardShortMessageResponse = " + evt);
+			}
+
+			dialog.close(false);
+		} catch (Throwable e) {
+			logger.severe("Error while sending ForwardShortMessageResponse ", e);
+		}
 	}
 
-    public void onForwardShortMessageRequest(ForwardShortMessageRequest evt, ActivityContextInterface aci) {
-        if (this.logger.isInfoEnabled()) {
-            this.logger.info("Received FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
-        }
+	private void processMoMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo) throws SmscProcessingException {
 
-        this.setProcessingState(MoProcessingState.OtherDataRecieved);
-
-        SmsSignalInfo smsSignalInfo = evt.getSM_RP_UI();
-        SM_RP_OA smRPOA = evt.getSM_RP_OA();
-
-        this.processMoMessage(smsSignalInfo, smRPOA);
-
-        MAPDialogSms dialog = evt.getMAPDialog();
-
-        try {
-            dialog.addForwardShortMessageResponse(evt.getInvokeId());
-            dialog.close(false);
-        } catch (MAPException e) {
-            logger.severe("Error while sending ForwardShortMessageResponse ", e);
-        }
-    }
-
-    private void processMoMessage(SmsSignalInfo smsSignalInfo, SM_RP_OA smRPOA) {
-        AddressString callingPartyAddress = smRPOA.getMsisdn();
+		// TODO: check if smRPDA contains local SMSC address and reject messages if not equal ???
+		
+		ISDNAddressString callingPartyAddress = smRPOA.getMsisdn();
 		if (callingPartyAddress == null) {
-			callingPartyAddress = smRPOA.getServiceCentreAddressOA();
+			throw new SmscProcessingException("MO callingPartyAddress is absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
 		}
 
 		SmsTpdu smsTpdu = null;
@@ -186,29 +327,67 @@ public abstract class MoSbb extends MoCommonSbb {
 				if (this.logger.isInfoEnabled()) {
 					this.logger.info("Received SMS_SUBMIT = " + smsSubmitTpdu);
 				}
+//				AddressField af = smsSubmitTpdu.getDestinationAddress();
 				this.handleSmsSubmitTpdu(smsSubmitTpdu, callingPartyAddress);
 				break;
-			case SMS_DELIVER:
-				SmsDeliverTpdu smsDeliverTpdu = (SmsDeliverTpdu) smsTpdu;
-				this.logger.severe("Received SMS_DELIVER = " + smsDeliverTpdu);
+			case SMS_DELIVER_REPORT:
+				SmsDeliverReportTpdu smsDeliverReportTpdu = (SmsDeliverReportTpdu) smsTpdu;
+				if (this.logger.isInfoEnabled()) {
+					this.logger.info("Received SMS_DELIVER_REPORT = " + smsDeliverReportTpdu);
+				}
+				// TODO: implement it - processing of SMS_DELIVER_REPORT
+//				this.handleSmsDeliverReportTpdu(smsDeliverReportTpdu, callingPartyAddress);
+				break;
+			case SMS_COMMAND:
+				SmsCommandTpdu smsCommandTpdu = (SmsCommandTpdu) smsTpdu;
+				if (this.logger.isInfoEnabled()) {
+					this.logger.info("Received SMS_COMMAND = " + smsCommandTpdu);
+				}
+				// TODO: implement it - processing of SMS_COMMAND
+//				this.handleSmsDeliverReportTpdu(smsDeliverReportTpdu, callingPartyAddress);
 				break;
 			default:
-				this.logger.severe("Received non SMS_SUBMIT or SMS_DELIVER = " + smsTpdu);
+				this.logger.severe("Received non SMS_SUBMIT or SMS_DELIVER_REPORT or SMS_COMMAND = " + smsTpdu);
 				break;
 			}
 		} catch (MAPException e1) {
 			logger.severe("Error while decoding SmsSignalInfo ", e1);
 		}
-    }
+	}
 
-	/**
-	 * Received Ack for MO SMS. But this is error we should never receive this
-	 * 
-	 * @param evt
-	 * @param aci
-	 */
-	public void onMoForwardShortMessageResponse(MoForwardShortMessageResponse evt, ActivityContextInterface aci) {
-		this.logger.severe("Received MO_FORWARD_SHORT_MESSAGE_RESPONSE = " + evt);
+	private TargetAddress createDestTargetAddress(AddressField af) throws SmscProcessingException {
+
+		if (af == null || af.getAddressValue() == null || af.getAddressValue().isEmpty()) {
+			throw new SmscProcessingException("MO DestAddress digits are absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+		}
+
+		int destTon, destNpi;
+		switch (af.getTypeOfNumber()) {
+		case Unknown:
+			destTon = smscPropertiesManagement.getDefaultTon();
+			break;
+		case InternationalNumber:
+			destTon = af.getTypeOfNumber().getCode();
+			break;
+		default:
+			throw new SmscProcessingException("MO DestAddress TON not supported: " + af.getTypeOfNumber().getCode(), SmppConstants.STATUS_SYSERR,
+					MAPErrorCode.unexpectedDataValue, null);
+		}
+		NumberingPlanIdentification npi;
+		switch (af.getNumberingPlanIdentification()) {
+		case Unknown:
+			destNpi = smscPropertiesManagement.getDefaultNpi();
+			break;
+		case ISDNTelephoneNumberingPlan:
+			destNpi = af.getNumberingPlanIdentification().getCode();
+			break;
+		default:
+			throw new SmscProcessingException("MO DestAddress NPI not supported: " + af.getNumberingPlanIdentification().getCode(), SmppConstants.STATUS_SYSERR,
+					MAPErrorCode.unexpectedDataValue, null);
+		}
+
+		TargetAddress ta = new TargetAddress(destTon, destNpi, af.getAddressValue());
+		return ta;
 	}
 
 	/**
@@ -244,62 +423,97 @@ public abstract class MoSbb extends MoCommonSbb {
 	}
 
 	/**
-	 * Fire the SUBMIT_SM event to be consumed by MtSbb to send it to Mobile
-	 * 
-	 * @param event
-	 * @param aci
-	 * @param address
-	 */
-	public abstract void fireSubmitSm(SmsEvent event, ActivityContextInterface aci, javax.slee.Address address);
-
-	/**
-	 * Fire DELIVER_SM event to be consumed by RxSmppServerSbb to send it to
-	 * ESME
-	 * 
-	 * @param event
-	 * @param aci
-	 * @param address
-	 */
-	public abstract void fireDeliverSm(SmsEvent event, ActivityContextInterface aci, javax.slee.Address address);
-
-	/**
 	 * Private Methods
 	 * 
 	 * @throws MAPException
 	 */
 
-	private void handleSmsSubmitTpdu(SmsSubmitTpdu smsSubmitTpdu, AddressString callingPartyAddress)
-			throws MAPException {
+	private void handleSmsSubmitTpdu(SmsSubmitTpdu smsSubmitTpdu, AddressString callingPartyAddress) throws SmscProcessingException {
 
-		AddressField destinationAddress = smsSubmitTpdu.getDestinationAddress();
+		TargetAddress ta = createDestTargetAddress(smsSubmitTpdu.getDestinationAddress());
+		PersistenceRAInterface store = obtainStore(ta);
+		TargetAddress lock = store.obtainSynchroObject(ta);
+
+		try {
+			synchronized (lock) {
+				Sms sms = this.createSmsEvent(smsSubmitTpdu, ta, store, callingPartyAddress);
+				this.processSms(sms, store);
+			}
+		} finally {
+			store.releaseSynchroObject(lock);
+		}
+	}
+
+	private Sms createSmsEvent(SmsSubmitTpdu smsSubmitTpdu, TargetAddress ta, PersistenceRAInterface store, AddressString callingPartyAddress)
+			throws SmscProcessingException {
 
 		UserData userData = smsSubmitTpdu.getUserData();
+		try {
+			userData.decode();
+		} catch (MAPException e) {
+			throw new SmscProcessingException("MO MAPException when decoding user data", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+		}
 
-		userData.decode();
+		Sms sms = new Sms();
+		sms.setDbId(UUID.randomUUID());
 
-		// TODO : Is decoding correct? May be we should send the raw data
-		// userData.decode();
-		// String decodedMessage = userData.getDecodedMessage();
-		//
-		// if (this.logger.isInfoEnabled()) {
-		// this.logger.info("decodedMessage SMS_SUBMIT = " + decodedMessage);
-		// }
+		// checking parameters first
+		if (callingPartyAddress == null || callingPartyAddress.getAddress() == null || callingPartyAddress.getAddress().isEmpty()) {
+			throw new SmscProcessingException("MO SourceAddress digits are absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+		}
+		if (callingPartyAddress.getAddressNature() == null) {
+			throw new SmscProcessingException("MO SourceAddress AddressNature is absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+		}
+		if (callingPartyAddress.getNumberingPlan() == null) {
+			throw new SmscProcessingException("MO SourceAddress NumberingPlan is absent", SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+		}
+		sms.setSourceAddr(callingPartyAddress.getAddress());
+		switch(callingPartyAddress.getAddressNature()){
+		case unknown:
+			sms.setSourceAddrTon(smscPropertiesManagement.getDefaultTon());
+			break;
+		case international_number:
+			sms.setSourceAddrTon(callingPartyAddress.getAddressNature().getIndicator());
+			break;
+		default:
+			throw new SmscProcessingException("MO SourceAddress TON not supported: " + callingPartyAddress.getAddressNature(), SmppConstants.STATUS_SYSERR,
+					MAPErrorCode.unexpectedDataValue, null);
+		}
 
-		SmsEvent rxSMS = new SmsEvent();
-		rxSMS.setSourceAddr(callingPartyAddress.getAddress());
-		rxSMS.setSourceAddrNpi((byte) callingPartyAddress.getNumberingPlan().getIndicator());
-		rxSMS.setSourceAddrTon((byte) callingPartyAddress.getAddressNature().getIndicator());
+		switch (callingPartyAddress.getNumberingPlan()) {
+		case unknown:
+			sms.setSourceAddrNpi(smscPropertiesManagement.getDefaultNpi());
+			break;
+		case ISDN:
+			sms.setSourceAddrNpi(callingPartyAddress.getNumberingPlan().getIndicator());
+			break;
+		default:
+			throw new SmscProcessingException("MO SourceAddress NPI not supported: " + callingPartyAddress.getNumberingPlan(), SmppConstants.STATUS_SYSERR,
+					MAPErrorCode.unexpectedDataValue, null);
+		}
 
-		rxSMS.setDestAddr(destinationAddress.getAddressValue());
-		rxSMS.setDestAddrNpi((byte) destinationAddress.getNumberingPlanIdentification().getCode());
-		rxSMS.setDestAddrTon((byte) destinationAddress.getTypeOfNumber().getCode());
-		//
-		// deliveryReport.setSystemId(original.getSystemId());
-		//
-		rxSMS.setSubmitDate(new Timestamp(System.currentTimeMillis()));
+		sms.setSubmitDate(new Timestamp(System.currentTimeMillis()));
 
-		DataCodingScheme dataCodingScheme = userData.getDataCodingScheme();
+		sms.setEsmClass(0x03 + (smsSubmitTpdu.getUserDataHeaderIndicator() ? SmppConstants.ESM_CLASS_UDHI_MASK : 0)
+				+ (smsSubmitTpdu.getReplyPathExists() ? SmppConstants.ESM_CLASS_REPLY_PATH_MASK : 0));
+		sms.setProtocolId(smsSubmitTpdu.getProtocolIdentifier().getCode());
+		sms.setPriority(0);
+
+		// TODO: do we need somehow care with RegisteredDelivery ?
+		sms.setReplaceIfPresent(smsSubmitTpdu.getRejectDuplicates() ? 2 : 0);
+
+		// TODO: care with smsSubmitTpdu.getStatusReportRequest() parameter sending back SMS_STATUS_REPORT tpdu ? 
+
+
+		DataCodingScheme dataCodingScheme = smsSubmitTpdu.getDataCodingScheme();
 		byte[] smsPayload = null;
+		int dcs = dataCodingScheme.getCode();
+        String err = MessageUtil.chechDataCodingSchemeSupport(dcs);
+        if (err != null) {
+            throw new SmscProcessingException("MO DataCoding scheme does not supported: " + dcs + " - " + err, SmppConstants.STATUS_SYSERR,
+                    MAPErrorCode.unexpectedDataValue, null);
+        }
+        sms.setDataCoding(dcs);
 
 		switch (dataCodingScheme.getCharacterSet()) {
 		case GSM7:
@@ -321,142 +535,71 @@ public abstract class MoSbb extends MoCommonSbb {
 		default:
 			smsPayload = userData.getEncodedData();
 			break;
-
-//		case GSM8:
-//			// TODO : Is this correct?
-//			smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
-//			break;
-//		case UCS2:
-//			smsPayload = userData.getEncodedData();
-//			break;
-//		default:
-//			logger.warning("Received unrecognized DataCodingScheme " + dataCodingScheme);
-//			smsPayload = userData.getEncodedData();
-//			break;
 		}
 
-		rxSMS.setShortMessage(smsPayload);
+		sms.setShortMessage(smsPayload);
 
-		if (smsSubmitTpdu.getStatusReportRequest()) {
-			rxSMS.setRegisteredDelivery(SmppConstants.REGISTERED_DELIVERY_SMSC_RECEIPT_REQUESTED);
-		}
-
-		rxSMS.setEsmClass((byte) (userData.getEncodedUserDataHeaderIndicator() ? 0x40 : 0));
-
-		rxSMS.setDataCoding((byte) dataCodingScheme.getCode());
-
-		// TODO More parameters
-
-		SmppServerSession smppSession = smppServerSessions.getSmppSession(rxSMS.getDestAddrTon(),
-				rxSMS.getDestAddrNpi(), rxSMS.getDestAddr());
-
-		if (smppSession == null) {
-			if (this.logger.isInfoEnabled()) {
-				this.logger.info(String.format("No SmppServerSession for MoSMS=%s Will send to to Mt module", rxSMS));
+		// ValidityPeriod processing
+		ValidityPeriod vp = smsSubmitTpdu.getValidityPeriod();
+		ValidityPeriodFormat vpf = smsSubmitTpdu.getValidityPeriodFormat();
+		Date validityPeriod = null;
+		if (vp != null && vpf!=null && vpf!=ValidityPeriodFormat.fieldNotPresent) {
+			switch(vpf){
+			case fieldPresentAbsoluteFormat:
+				AbsoluteTimeStamp ats = vp.getAbsoluteFormatValue();
+				Date dt = new Date(ats.getYear(), ats.getMonth(), ats.getDay(), ats.getHour(), ats.getMinute(), ats.getSecond());
+				int i1 = ats.getTimeZone() * 15 * 60;
+				int i2 = -new Date().getTimezoneOffset() * 60;
+				long i3 = (i2 - i1) * 1000;
+				validityPeriod = new Date(dt.getTime() + i3);
+				break;
+			case fieldPresentRelativeFormat:
+				validityPeriod = new Date(new Date().getTime() + (long)(vp.getRelativeFormatHours() * 3600 * 1000));
+				break;
+			case fieldPresentEnhancedFormat:
+				this.logger.info("Recieved unsupported ValidityPeriodFormat: PresentEnhancedFormat - we skip it");
+				break;
 			}
+		}
+		MessageUtil.applyValidityPeriod(sms, validityPeriod, false);
 
-			this.processSubmitSM(rxSMS);
+		SmsSet smsSet;
+		try {
+			smsSet = store.obtainSmsSet(ta);
+		} catch (PersistenceException e1) {
+			throw new SmscProcessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
+					SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
+		}
+		sms.setSmsSet(smsSet);
 
-		} else if (!smppSession.isBound()) {
-			this.logger.severe(String.format("Received MoSMS=%s but SmppSession=%s is not BOUND", rxSMS,
-					smppSession.getSystemId()));
-			// TODO : Add to SnF module
-		} else {
-			rxSMS.setSystemId(smppSession.getSystemId());
+		long messageId = this.smppServerSessions.getNextMessageId();
+		sms.setMessageId(messageId);
+		sms.setMoMessageRef(smsSubmitTpdu.getMessageReference());
 
-			NullActivity nullActivity = this.sbbContext.getNullActivityFactory().createNullActivity();
-			ActivityContextInterface nullActivityContextInterface = this.sbbContext
-					.getNullActivityContextInterfaceFactory().getActivityContextInterface(nullActivity);
+		// TODO: process case when smsSubmitTpdu.getRejectDuplicates()==true: we need reject message with same MessageId+same source and dest addresses ?
 
-			this.fireDeliverSm(rxSMS, nullActivityContextInterface, null);
+		return sms;
+	}
+
+	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
+		try {
+			// TODO: we can make this some check will we send this message or not
+
+			store.createLiveSms(sms);
+			store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+		} catch (PersistenceException e) {
+			throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
+					MAPErrorCode.systemFailure, null, e);
 		}
 	}
 
-	private void processSubmitSM(SmsEvent event) {
-
-		String destAddr = event.getDestAddr();
-
-		ActivityContextNamingFacility activityContextNamingFacility = this.sbbContext
-				.getActivityContextNamingFacility();
-
-		ActivityContextInterface nullActivityContextInterface = null;
-		try {
-			nullActivityContextInterface = activityContextNamingFacility.lookup(destAddr);
-		} catch (Exception e) {
-			logger.severe(String.format(
-					"Exception while lookup NullActivityContextInterface for jndi name=%s for SmsEvent=%s", destAddr,
-					event), e);
-		}
-
-		NullActivity nullActivity = null;
-		if (nullActivityContextInterface == null) {
-			// If null means there are no SMS handled by Mt for this destination
-			// address. Lets create new NullActivity and bind it to
-			// naming-facility
-			if (this.logger.isInfoEnabled()) {
-				this.logger.info(String
-						.format("lookup of NullActivityContextInterface returned null, create new NullActivity"));
-			}
-
-			nullActivity = this.sbbContext.getNullActivityFactory().createNullActivity();
-			nullActivityContextInterface = this.sbbContext.getNullActivityContextInterfaceFactory()
-					.getActivityContextInterface(nullActivity);
-
-			try {
-				activityContextNamingFacility.bind(nullActivityContextInterface, destAddr);
-			} catch (NameAlreadyBoundException e) {
-				// Kill existing nullActivity
-				nullActivity.endActivity();
-
-				// If name already bound, we do lookup again because this is one
-				// of the race conditions
-				try {
-					nullActivityContextInterface = activityContextNamingFacility.lookup(destAddr);
-				} catch (Exception ex) {
-					logger.severe(
-							String.format(
-									"Exception while second lookup NullActivityContextInterface for jndi name=%s for SmsEvent=%s",
-									destAddr, event), ex);
-					// TODO take care of error conditions.
-					return;
-				}
-
-			} catch (Exception e) {
-				logger.severe(String.format(
-						"Exception while binding NullActivityContextInterface to jndi name=%s for SmsEvent=%s",
-						destAddr, event), e);
-
-				if (nullActivity != null) {
-					nullActivity.endActivity();
-				}
-
-				// TODO take care of error conditions.
-				return;
-
-			}
-		}// if (nullActivityContextInterface == null)
-
-		MoActivityContextInterface txSmppServerSbbActivityContextInterface = this
-				.asSbbActivityContextInterface(nullActivityContextInterface);
-		int pendingEventsOnNullActivity = txSmppServerSbbActivityContextInterface.getPendingEventsOnNullActivity();
-		pendingEventsOnNullActivity = pendingEventsOnNullActivity + 1;
-
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info(String.format("pendingEventsOnNullActivity = %d", pendingEventsOnNullActivity));
-		}
-
-		txSmppServerSbbActivityContextInterface.setPendingEventsOnNullActivity(pendingEventsOnNullActivity);
-		// We have NullActivityContextInterface, lets fire SmsEvent on this
-		this.fireSubmitSm(event, nullActivityContextInterface, null);
-
+	public enum MoProcessingState {
+		OnlyRequestRecieved,
+		OtherDataRecieved,
 	}
 
 	public abstract void setProcessingState(MoProcessingState processingState);
 
 	public abstract MoProcessingState getProcessingState();
 
-	public enum MoProcessingState {
-		OnlyRequestRecieved,
-		OtherDataRecieved,
-	}
 }

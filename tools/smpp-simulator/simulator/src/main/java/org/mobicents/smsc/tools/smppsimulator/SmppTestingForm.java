@@ -44,32 +44,51 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JButton;
 
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
+import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.EncodingType;
+import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.SplittingType;
+import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.ValidityType;
+
 import com.cloudhopper.commons.util.windowing.WindowFuture;
+import com.cloudhopper.smpp.SmppConstants;
+import com.cloudhopper.smpp.SmppServerConfiguration;
 import com.cloudhopper.smpp.SmppSession;
 import com.cloudhopper.smpp.SmppSessionConfiguration;
 import com.cloudhopper.smpp.impl.DefaultSmppClient;
+import com.cloudhopper.smpp.impl.DefaultSmppServer;
 import com.cloudhopper.smpp.impl.DefaultSmppSessionHandler;
+import com.cloudhopper.smpp.pdu.BaseSm;
+import com.cloudhopper.smpp.pdu.DataSm;
+import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
 import com.cloudhopper.smpp.pdu.SubmitSm;
+import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.type.Address;
-import com.cloudhopper.smpp.type.RecoverablePduException;
 import com.cloudhopper.smpp.type.SmppChannelException;
-import com.cloudhopper.smpp.type.SmppTimeoutException;
-import com.cloudhopper.smpp.type.UnrecoverablePduException;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.JLabel;
 
 /**
  * 
@@ -87,13 +106,23 @@ public class SmppTestingForm extends JDialog {
 	private JTable tNotif;
 	private JButton btStart;
 	private JButton btStop;
-	
+	private JButton btStartBulk;
+	private JButton btStopBulk;
+	private javax.swing.Timer tm;
+	private JLabel lbState;
+
 	private ThreadPoolExecutor executor;
 	private ScheduledThreadPoolExecutor monitorExecutor;
 	private DefaultSmppClient clientBootstrap;
 	private SmppSession session0;
+	private DefaultSmppServer defaultSmppServer;
 
-	public SmppTestingForm(JFrame owner){
+	protected Timer timer;
+	protected AtomicInteger messagesSent = new AtomicInteger();
+	protected AtomicInteger segmentsSent = new AtomicInteger();
+	protected AtomicInteger responsesRcvd = new AtomicInteger();
+
+	public SmppTestingForm(JFrame owner) {
 		super(owner, true);
 		setModal(false);
 		addWindowListener(new WindowAdapter() {
@@ -161,23 +190,23 @@ public class SmppTestingForm extends JDialog {
 		panel.add(panel_2);
 		panel_2.setLayout(null);
 		
-		btStart = new JButton("Start");
+		btStart = new JButton("Start a session");
 		btStart.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				start();
 			}
 		});
-		btStart.setBounds(10, 11, 90, 23);
+		btStart.setBounds(10, 11, 141, 23);
 		panel_2.add(btStart);
 		
-		btStop = new JButton("Stop");
+		btStop = new JButton("Stop a session");
 		btStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				stop();
 			}
 		});
 		btStop.setEnabled(false);
-		btStop.setBounds(104, 11, 90, 23);
+		btStop.setBounds(158, 11, 122, 23);
 		panel_2.add(btStop);
 		
 		JButton btRefreshState = new JButton("Refresh state");
@@ -186,7 +215,7 @@ public class SmppTestingForm extends JDialog {
 				refreshState();
 			}
 		});
-		btRefreshState.setBounds(204, 11, 148, 23);
+		btRefreshState.setBounds(286, 11, 148, 23);
 		panel_2.add(btRefreshState);
 		
 		JButton btOpeEventWindow = new JButton("Open event window");
@@ -195,7 +224,7 @@ public class SmppTestingForm extends JDialog {
 				openEventWindow();
 			}
 		});
-		btOpeEventWindow.setBounds(357, 11, 159, 23);
+		btOpeEventWindow.setBounds(439, 11, 159, 23);
 		panel_2.add(btOpeEventWindow);
 		
 		JButton btConfigSubmitData = new JButton("Configure data for a message submitting");
@@ -227,30 +256,292 @@ public class SmppTestingForm extends JDialog {
 		JButton btSendMessage = new JButton("Submit a message");
 		btSendMessage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				submitMessage();
+                submitMessage(param.getEncodingType(), param.isMessageClass(), param.getMessageText(), param.getSplittingType(), param.getValidityType(),
+                        param.getDestAddress());
 			}
 		});
 		btSendMessage.setBounds(11, 80, 341, 23);
 		panel_2.add(btSendMessage);
+
+		btStartBulk = new JButton("Start bulk sending");
+		btStartBulk.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				startBulkSending();
+			}
+		});
+		btStartBulk.setBounds(10, 116, 201, 23);
+		panel_2.add(btStartBulk);
+		
+		btStopBulk = new JButton("Stop bulk sending");
+		btStopBulk.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				stopBulkSending();
+			}
+		});
+		btStopBulk.setEnabled(false);
+		btStopBulk.setBounds(223, 116, 211, 23);
+		panel_2.add(btStopBulk);
+		
+		lbState = new JLabel("-");
+		lbState.setBounds(10, 152, 732, 16);
+		panel_2.add(lbState);
+
+		this.tm = new javax.swing.Timer(5000, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				refreshState();
+			}
+		});
+		this.tm.start();
 		
 	}
 
-	private void submitMessage() {
+	private int msgRef = 0;
+
+	public SmppSimulatorParameters getSmppSimulatorParameters() {
+		return this.param;
+	}
+
+    public void setSmppSession(SmppSession smppSession) {
+        this.session0 = smppSession;
+    }
+
+    public SmppSession getSmppSession() {
+        return this.session0;
+    }
+
+	private int getNextMsgRef() {
+		msgRef++;
+		if (msgRef > 255)
+			msgRef = 1;
+		return msgRef;
+	}
+
+	private void submitMessage(EncodingType encodingType, boolean messageClass0, String messageText, SplittingType splittingType, ValidityType validityType, String destAddr) {
+		if (session0 == null)
+			return;
+
         try {
-            SubmitSm pdu = new SubmitSm();
+        	int dcs = 0;
+			ArrayList<byte[]> msgLst = new ArrayList<byte[]>();
+        	int msgRef = 0;
 
-            pdu.setSourceAddress(new Address((byte)0x01, (byte)0x00, "40404"));
-            pdu.setDestAddress(new Address((byte)0x01, (byte)0x01, "44555519205"));
+            EncodingType et = encodingType;
+            byte[] buf = null;
+            boolean addSegmTlv = false;
+            int esmClass = 0;
+            int msgLenByte = 0;
+    		switch (et) {
+    		case GSM7:
+                dcs = 0;
+                buf = messageText.getBytes();
+                msgLenByte = buf.length;
+                break;
+    		case UCS2:
+    			dcs = 8;
+    			ByteBuffer bb;
+//                if (splittingType == SplittingType.DoNotSplit) {
+//                Charset utf8Charset = Charset.forName("UTF-8");
+//                bb = utf8Charset.encode(messageText);
+//                } else {
 
-            pdu.setShortMessage(this.param.getMessageText().getBytes());
+    			Charset ucs2Charset = Charset.forName("UTF-16BE");
+                bb = ucs2Charset.encode(messageText);
 
-            WindowFuture<Integer,PduRequest,PduResponse> future0 = session0.sendRequestPdu(pdu, 10000, false);
-            
-            this.addMessage("SubmitSm sent", pdu.toString());
+//                }
+
+                msgLenByte = messageText.length() * 2;
+				buf = new byte[bb.limit()];
+				bb.get(buf);
+                break;
+    		}
+            if (messageClass0) {
+                dcs += 16;
+            }
+    		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
+			int maxLen = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
+			int maxSplLen = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
+
+    		int segmCnt = 0;
+			if (msgLenByte > maxLen) { // may be message splitting
+				SplittingType st = splittingType;
+				switch (st) {
+				case DoNotSplit:
+					// we do not split
+					msgLst.add(buf);
+					ArrayList<byte[]> r1 = this.splitByteArr(buf, maxSplLen);
+					segmCnt = r1.size();
+					break;
+				case SplitWithParameters:
+					msgRef = getNextMsgRef();
+					r1 = this.splitByteArr(buf, maxSplLen);
+					for (byte[] bf : r1) {
+						msgLst.add(bf);
+					}
+					segmCnt = msgLst.size();
+					addSegmTlv = true;
+					break;
+				case SplitWithUdh:
+					msgRef = getNextMsgRef();
+					r1 = this.splitByteArr(buf, maxSplLen);
+					byte[] bf1 = new byte[6];
+					bf1[0] = 5; // total UDH length
+					bf1[1] = 0; // UDH id
+					bf1[2] = 3; // UDH length
+					bf1[3] = (byte) msgRef; // refNum
+					bf1[4] = (byte) r1.size(); // segmCnt
+					int i1 = 0;
+					for (byte[] bf : r1) {
+						i1++;
+						bf1[5] = (byte) i1; // segmNum
+						byte[] bf2 = new byte[bf1.length + bf.length];
+						System.arraycopy(bf1, 0, bf2, 0, bf1.length);
+						System.arraycopy(bf, 0, bf2, bf1.length, bf.length);
+						msgLst.add(bf2);
+					}
+					segmCnt = msgLst.size();
+					esmClass = 0x40;
+					break;
+				}
+			} else {
+				msgLst.add(buf);
+				segmCnt = 1;
+			}
+
+            if (et == EncodingType.UCS2) {
+                for (int i1 = 0; i1 < msgLst.size(); i1++) {
+                    byte[] udhData = null;
+                    byte[] textPart = msgLst.get(i1);
+                    if (esmClass != 0 && textPart.length > 2) {
+                        // UDH exists
+                        int udhLen = (textPart[0] & 0xFF) + 1;
+                        if (udhLen <= textPart.length) {
+                            textPart = new byte[textPart.length - udhLen];
+                            udhData = new byte[udhLen];
+                            System.arraycopy(msgLst.get(i1), udhLen, textPart, 0, textPart.length);
+                            System.arraycopy(msgLst.get(i1), 0, udhData, 0, udhLen);
+                        }
+                    }
+                    Charset ucs2Charset = Charset.forName("UTF-16BE");
+                    ByteBuffer bb = ByteBuffer.wrap(textPart);
+                    CharBuffer cb = ucs2Charset.decode(bb);
+                    Charset utf8Charset = Charset.forName("UTF-8");
+                    ByteBuffer bf2 = utf8Charset.encode(cb);
+                    byte[] buf2;
+                    if (udhData != null) {
+                        buf2 = new byte[udhData.length + bf2.limit()];
+                        bf2.get(buf2, udhData.length, bf2.limit());
+                        System.arraycopy(udhData, 0, buf2, 0, udhData.length);
+                    } else {
+                        buf2 = new byte[bf2.limit()];
+                        bf2.get(buf2);
+                    }
+                    msgLst.set(i1, buf2);
+                }
+            }
+
+        	this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv, esmClass, validityType, segmCnt, destAddr);
 		} catch (Exception e) {
 			this.addMessage("Failure to submit message", e.toString());
 			return;
 		}
+	}
+
+	private ArrayList<byte[]> splitByteArr(byte[] buf, int maxLen) {
+		ArrayList<byte[]> res = new ArrayList<byte[]>();
+
+		byte[] prevBuf = buf;
+
+		while (true) {
+			if (prevBuf.length <= maxLen) {
+				res.add(prevBuf);
+				break;
+			}
+
+			byte[] segm = new byte[maxLen];
+			byte[] newBuf = new byte[prevBuf.length - maxLen];
+
+			System.arraycopy(prevBuf, 0, segm, 0, maxLen);
+			System.arraycopy(prevBuf, maxLen, newBuf, 0, prevBuf.length - maxLen);
+			
+			res.add(segm);
+			prevBuf = newBuf;
+		}
+
+		return res;
+	}
+
+	private void doSubmitMessage(int dcs, ArrayList<byte[]> msgLst, int msgRef, boolean addSegmTlv, int esmClass,
+			SmppSimulatorParameters.ValidityType validityType, int segmentCnt, String destAddr) throws Exception {
+		int i1 = 0;
+		for (byte[] buf : msgLst) {
+			i1++;
+
+            BaseSm pdu;
+			switch(this.param.getSendingMessageType()){
+            case SubmitSm:
+                SubmitSm submitPdu = new SubmitSm();
+                pdu = submitPdu;
+                break;
+            case DataSm:
+                DataSm dataPdu = new DataSm();
+                pdu = dataPdu;
+                break;
+            case DeliverSm:
+                DeliverSm deliverPdu = new DeliverSm();
+                pdu = deliverPdu;
+                break;
+            default:
+                return;
+			}
+
+            pdu.setSourceAddress(new Address((byte)this.param.getSourceTON().getCode(), (byte)this.param.getSourceNPI().getCode(), this.param.getSourceAddress()));
+            pdu.setDestAddress(new Address((byte)this.param.getDestTON().getCode(), (byte)this.param.getDestNPI().getCode(), destAddr));
+            pdu.setEsmClass((byte) esmClass);
+
+			switch (validityType) {
+			case ValidityPeriod_5min:
+			    pdu.setValidityPeriod(MessageUtil.printSmppRelativeDate(0, 0, 0, 0, 5, 0));
+				break;
+			case ScheduleDeliveryTime_5min:
+			    pdu.setScheduleDeliveryTime(MessageUtil.printSmppRelativeDate(0, 0, 0, 0, 5, 0));
+				break;
+			}
+
+            pdu.setDataCoding((byte) dcs);
+            pdu.setRegisteredDelivery((byte) this.param.getMcDeliveryReceipt().getCode());
+
+            if (buf.length < 250 && this.param.getSendingMessageType() != SmppSimulatorParameters.SendingMessageType.DataSm)
+                pdu.setShortMessage(buf);
+            else {
+                Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, buf);
+                pdu.addOptionalParameter(tlv);
+            }
+
+			if (addSegmTlv) {
+				byte[] buf1 = new byte[2];
+				buf1[0] = 0;
+				buf1[1] = (byte)msgRef;
+				Tlv tlv = new Tlv(SmppConstants.TAG_SAR_MSG_REF_NUM, buf1);
+				pdu.addOptionalParameter(tlv);
+				buf1 = new byte[1];
+				buf1[0] = (byte) msgLst.size();
+				tlv = new Tlv(SmppConstants.TAG_SAR_TOTAL_SEGMENTS, buf1);
+				pdu.addOptionalParameter(tlv);
+				buf1 = new byte[1];
+				buf1[0] = (byte)i1;
+				tlv = new Tlv(SmppConstants.TAG_SAR_SEGMENT_SEQNUM, buf1);
+				pdu.addOptionalParameter(tlv);
+			}
+
+	        WindowFuture<Integer,PduRequest,PduResponse> future0 = session0.sendRequestPdu(pdu, 10000, false);
+
+			this.messagesSent.incrementAndGet();
+			if (this.timer == null) {
+				this.addMessage("Request=" + pdu.getName(), pdu.toString());
+			}
+		}
+
+		this.segmentsSent.addAndGet(segmentCnt);
 	}
 
 	private void setEventMsg() {
@@ -265,11 +556,16 @@ public class SmppTestingForm extends JDialog {
 	}
 
 	private void start() {
-		this.addMessage("Trying to start a new session", "");
+		this.messagesSent = new AtomicInteger();
+		this.segmentsSent = new AtomicInteger();
+		this.responsesRcvd = new AtomicInteger();
 
-		this.executor = (ThreadPoolExecutor)Executors.newCachedThreadPool();
-        this.monitorExecutor = (ScheduledThreadPoolExecutor)Executors.newScheduledThreadPool(1, new ThreadFactory() {
+        this.addMessage("Trying to start a new " + this.param.getSmppSessionType() + " session", "");
+
+        this.executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        this.monitorExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1, new ThreadFactory() {
             private AtomicInteger sequence = new AtomicInteger(0);
+
             @Override
             public Thread newThread(Runnable r) {
                 Thread t = new Thread(r);
@@ -277,36 +573,75 @@ public class SmppTestingForm extends JDialog {
                 return t;
             }
         });
-        clientBootstrap = new DefaultSmppClient(Executors.newCachedThreadPool(), 1, monitorExecutor);
 
-        DefaultSmppSessionHandler sessionHandler = new ClientSmppSessionHandler(this);
+        if (this.param.getSmppSessionType() == SmppSession.Type.CLIENT) {
+            clientBootstrap = new DefaultSmppClient(Executors.newCachedThreadPool(), 1, monitorExecutor);
 
-        SmppSessionConfiguration config0 = new SmppSessionConfiguration();
-        config0.setWindowSize(this.param.getWindowSize());
-        config0.setName("Tester.Session.0");
-        config0.setType(this.param.getBindType());
-        config0.setHost(this.param.getHost());
-        config0.setPort(this.param.getPort());
-        config0.setConnectTimeout(this.param.getConnectTimeout());
-        config0.setSystemId(this.param.getSystemId());
-        config0.setPassword(this.param.getPassword());
-        config0.getLoggingOptions().setLogBytes(true);
-        // to enable monitoring (request expiration)
-        config0.setRequestExpiryTimeout(this.param.getRequestExpiryTimeout());
-        config0.setWindowMonitorInterval(this.param.getWindowMonitorInterval());
-        config0.setCountersEnabled(true);
+            DefaultSmppSessionHandler sessionHandler = new ClientSmppSessionHandler(this);
 
-        try {
-			session0 = clientBootstrap.bind(config0, sessionHandler);
-		} catch (Exception e) {
-			this.addMessage("Failure to start a new session", e.toString());
-			return;
-		}
+            SmppSessionConfiguration config0 = new SmppSessionConfiguration();
+            config0.setWindowSize(this.param.getWindowSize());
+            config0.setName("Tester.Session.0");
+            config0.setType(this.param.getBindType());
+            config0.setHost(this.param.getHost());
+            config0.setPort(this.param.getPort());
+            config0.setConnectTimeout(this.param.getConnectTimeout());
+            config0.setSystemId(this.param.getSystemId());
+            config0.setPassword(this.param.getPassword());
+            config0.setAddressRange(new Address((byte) 1, (byte) 1, "6666"));
+            config0.getLoggingOptions().setLogBytes(true);
+            // to enable monitoring (request expiration)
+            config0.setRequestExpiryTimeout(this.param.getRequestExpiryTimeout());
+            config0.setWindowMonitorInterval(this.param.getWindowMonitorInterval());
+            config0.setCountersEnabled(true);
 
-        enableStart(false);
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+            try {
+                session0 = clientBootstrap.bind(config0, sessionHandler);
+            } catch (Exception e) {
+                this.addMessage("Failure to start a new session", e.toString());
+                return;
+            }
 
-		this.addMessage("Session has been successfully started", "");
+            enableStart(false);
+            setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+
+            this.addMessage("Session has been successfully started", "");
+        } else {
+
+            SmppServerConfiguration configuration = new SmppServerConfiguration();
+            configuration.setName("Test SMPP server");
+            configuration.setPort(this.param.getPort());
+            configuration.setBindTimeout(5000);
+            configuration.setSystemId(this.param.getSystemId());
+            configuration.setAutoNegotiateInterfaceVersion(true);
+            configuration.setInterfaceVersion(SmppConstants.VERSION_3_4);
+            configuration.setMaxConnectionSize(SmppConstants.DEFAULT_SERVER_MAX_CONNECTION_SIZE);
+            configuration.setNonBlockingSocketsEnabled(true);
+
+            configuration.setDefaultRequestExpiryTimeout(SmppConstants.DEFAULT_REQUEST_EXPIRY_TIMEOUT);
+            configuration.setDefaultWindowMonitorInterval(SmppConstants.DEFAULT_WINDOW_MONITOR_INTERVAL);
+
+            configuration.setDefaultWindowSize(SmppConstants.DEFAULT_WINDOW_SIZE);
+
+            configuration.setDefaultWindowWaitTimeout(SmppConstants.DEFAULT_WINDOW_WAIT_TIMEOUT);
+            configuration.setDefaultSessionCountersEnabled(true);
+
+            configuration.setJmxEnabled(false);
+
+            this.defaultSmppServer = new DefaultSmppServer(configuration, new DefaultSmppServerHandler(this), executor, monitorExecutor);
+            try {
+                this.defaultSmppServer.start();
+            } catch (SmppChannelException e1) {
+                this.addMessage("Failure to start a defaultSmppServer", e1.toString());
+                return;
+            }
+
+            enableStart(false);
+            setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+
+            this.addMessage("SMPP Server has been successfully started", "");
+
+        }
 	}
 
 	public void stop() {
@@ -314,13 +649,18 @@ public class SmppTestingForm extends JDialog {
 
 		this.doStop();
 	}
-	
+
 	public void doStop() {
-		if (session0 != null) {
-			session0.unbind(5000);
-			session0.destroy();
-			session0 = null;
-		}
+        if (this.session0 != null) {
+            this.session0.unbind(5000);
+            this.session0.destroy();
+            this.session0 = null;
+        }
+        if (this.defaultSmppServer != null) {
+            this.defaultSmppServer.stop();
+            this.defaultSmppServer.destroy();
+            this.defaultSmppServer = null;
+        }
 
 		if (clientBootstrap != null) {
 			try {
@@ -342,13 +682,14 @@ public class SmppTestingForm extends JDialog {
 		this.addMessage("Session has been stopped", "");
 	}
 
-	private void enableStart(boolean enabled) {
+	public void enableStart(boolean enabled) {
 		this.btStart.setEnabled(enabled);
 		this.btStop.setEnabled(!enabled);
 	}
 
 	private void refreshState() {
-		// .................
+		this.lbState.setText("messageSegmentsSent=" + this.segmentsSent.get() + ", submitMessagesSent=" + this.messagesSent.get() + ", submitResponsesRcvd="
+				+ this.responsesRcvd.get());
 	}
 
 	public void setData(SmppSimulatorForm mainForm, SmppSimulatorParameters param) {
@@ -382,6 +723,88 @@ public class SmppTestingForm extends JDialog {
 		this.eventForm = new EventForm(this);
 		this.eventForm.setVisible(true);
 		setEventMsg();
+	}
+
+	private void doStopTimer() {
+		if (this.timer != null) {
+			this.timer.cancel();
+			this.timer = null;
+		}
+	}
+	
+	private void startBulkSending() {
+		this.doStopTimer();
+
+		this.timer = new Timer();
+		this.timer.scheduleAtFixedRate(new TimerTask() {
+			@Override
+			public void run() {
+				doSendSmppMessages();
+			}
+		}, 1 * 1000, 1 * 1000);
+
+		this.btStartBulk.setEnabled(false);
+		this.btStopBulk.setEnabled(true);
+	}
+
+	private void stopBulkSending() {
+		this.doStopTimer();
+
+		this.btStartBulk.setEnabled(true);
+		this.btStopBulk.setEnabled(false);
+	}
+
+	private String bigMessage = "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
+	
+	private void doSendSmppMessages() {
+
+		Random rand = new Random();
+		
+		for (int i1 = 0; i1 < this.param.getBulkMessagePerSecond(); i1++) {
+			int n = this.param.getBulkDestAddressRangeEnd() - this.param.getBulkDestAddressRangeStart() + 1;
+			if (n < 1)
+				n = 1;
+			int j1 = rand.nextInt(n);
+			Integer destAddr = this.param.getBulkDestAddressRangeStart() + j1;
+			String destAddrS = destAddr.toString();
+
+			int j2 = rand.nextInt(2);
+			int j3 = rand.nextInt(3);
+			EncodingType encodingType;
+			if (j2 == 0)
+				encodingType = EncodingType.GSM7;
+			else
+				encodingType = EncodingType.UCS2;
+			SplittingType splittingType;
+			switch (j3) {
+			case 0:
+				splittingType = SplittingType.DoNotSplit;
+				break;
+			case 1:
+				splittingType = SplittingType.SplitWithParameters;
+				break;
+			default:
+				splittingType = SplittingType.SplitWithUdh;
+				break;
+			}
+			
+			int j4 = rand.nextInt(5);
+			String msg = this.param.getMessageText();
+			if (j4 == 0)
+				msg = bigMessage;
+
+			
+			// .........................
+//			msg = bigMessage;
+//			splittingType = SplittingType.DoNotSplit;
+//			encodingType = EncodingType.UCS2;
+			// .........................
+			// TODO: ..................
+
+			
+
+			this.submitMessage(encodingType, false, msg, splittingType, param.getValidityType(), destAddrS);
+		}
 	}
 
 	public synchronized void addMessage(String msg, String info) {

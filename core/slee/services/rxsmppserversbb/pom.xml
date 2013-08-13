@@ -6,14 +6,14 @@
 	<parent>
 		<groupId>com.telscale.smsc</groupId>
 		<artifactId>services-parent</artifactId>
-		<version>6.1.2-TelScale-SNAPSHOT</version>
+		<version>6.1.4.GA-TelScale</version>
 	</parent>
 
 	<artifactId>rx-smppserver-sbb</artifactId>
 	<name>Core : SLEE : Services Rx SMPP Server SBB</name>
 	<dependencies>
 		<dependency>
-			<artifactId>smsc-events</artifactId>
+			<artifactId>persistence-ratype</artifactId>
 			<groupId>${pom.groupId}</groupId>
 			<version>${pom.version}</version>
 		</dependency>
@@ -22,8 +22,18 @@
 			<groupId>${pom.groupId}</groupId>
 		</dependency>
 		<dependency>
+			<artifactId>smsc-library</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
 			<artifactId>smpp-server-ra-ratype</artifactId>
 			<groupId>${pom.groupId}</groupId>
+		</dependency>
+		<dependency>
+			<artifactId>scheduler-ratype</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.servers.jainslee.api</groupId>
@@ -31,4 +41,35 @@
 			<version>${jslee.ext.version}</version>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>test</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>${pom.groupId}</groupId>
+					<artifactId>persistence-ra</artifactId>
+					<version>${pom.version}</version>
+					<type>test-jar</type>
+				</dependency>			
+				<dependency>
+					<groupId>org.testng</groupId>
+					<artifactId>testng</artifactId>
+					<version>${testng.version}</version>
+					<scope>test</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<activation>
+				<property>
+					<name>maven.test.skip</name>
+					<value>true</value>
+				</property>
+			</activation>
+		</profile>
+	</profiles>
 </project>

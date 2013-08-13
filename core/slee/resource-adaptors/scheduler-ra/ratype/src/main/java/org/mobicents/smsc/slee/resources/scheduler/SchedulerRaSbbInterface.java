@@ -1,0 +1,7 @@
+package org.mobicents.smsc.slee.resources.scheduler;
+
+public interface SchedulerRaSbbInterface {
+
+    public void decrementDeliveryActivityCount();
+
+}

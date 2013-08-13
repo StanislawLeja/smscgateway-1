@@ -23,6 +23,7 @@
 package org.mobicents.smsc.tools.smppsimulator;
 
 import com.cloudhopper.smpp.SmppBindType;
+import com.cloudhopper.smpp.SmppSession;
 
 /**
  * 
@@ -40,10 +41,28 @@ public class SmppSimulatorParameters {
 	private String password = "test";
 	private long requestExpiryTimeout = 30000;
 	private long windowMonitorInterval = 15000;
+	
+	private boolean rejectIncomingDeliveryMessage = false;
+
+	private TON sourceTon = TON.International;
+	private NPI sourceNpi = NPI.ISDN;
+	private TON destTon = TON.International;
+	private NPI destNpi = NPI.ISDN;
+	private String sourceAddress = "6666";
+	private String destAddress = "5555";
 
 	private String messageText = "Hello!";
 	private EncodingType encodingType = EncodingType.GSM7;
+	private boolean messageClass;
 	private SplittingType splittingType = SplittingType.DoNotSplit;
+    private ValidityType validityType = ValidityType.NoSpecial;
+    private MCDeliveryReceipt mcDeliveryReceipt = MCDeliveryReceipt.No;
+    private SendingMessageType sendingMessageType = SendingMessageType.SubmitSm;
+    private SmppSession.Type smppSessionType = SmppSession.Type.CLIENT;
+
+	private int bulkDestAddressRangeStart = 500000;
+	private int bulkDestAddressRangeEnd = 600000;
+	private int bulkMessagePerSecond = 10;
 
 	public int getWindowSize() {
 		return windowSize;
@@ -131,10 +150,57 @@ public class SmppSimulatorParameters {
         this.windowMonitorInterval = windowMonitorInterval;
     }
 
-    
-    
 
-    public String getMessageText() {
+    public TON getSourceTON() {
+        return this.sourceTon;
+    }
+
+    public void setSourceTON(TON value) {
+        this.sourceTon = value;
+    }
+
+    public NPI getSourceNPI() {
+        return this.sourceNpi;
+    }
+
+    public void setSourceNPI(NPI value) {
+        this.sourceNpi = value;
+    }
+
+    public TON getDestTON() {
+        return this.destTon;
+    }
+
+    public void setDestTON(TON value) {
+        this.destTon = value;
+    }
+
+    public NPI getDestNPI() {
+        return this.destNpi;
+    }
+
+    public void setDestNPI(NPI value) {
+        this.destNpi = value;
+    }
+
+    public String getSourceAddress() {
+        return this.sourceAddress;
+    }
+
+    public void setSourceAddress(String value) {
+        this.sourceAddress = value;
+    }
+    
+    public String getDestAddress() {
+        return this.destAddress;
+    }
+
+    public void setDestAddress(String value) {
+        this.destAddress = value;
+    }
+
+
+	public String getMessageText() {
         return this.messageText;
     }
 
@@ -158,6 +224,86 @@ public class SmppSimulatorParameters {
 		splittingType = val;
 	}
 
+	public ValidityType getValidityType() {
+		return validityType;
+	}
+
+	public void setValidityType(ValidityType validityType) {
+		this.validityType = validityType;
+	}
+
+
+	public boolean isRejectIncomingDeliveryMessage() {
+		return rejectIncomingDeliveryMessage;
+	}
+
+	public void setRejectIncomingDeliveryMessage(boolean rejectIncomingDeliveryMessage) {
+		this.rejectIncomingDeliveryMessage = rejectIncomingDeliveryMessage;
+	}
+
+	public int getBulkDestAddressRangeStart() {
+		return bulkDestAddressRangeStart;
+	}
+
+	public void setBulkDestAddressRangeStart(int bulkDestAddressRangeStart) {
+		this.bulkDestAddressRangeStart = bulkDestAddressRangeStart;
+	}
+
+	public int getBulkDestAddressRangeEnd() {
+		return bulkDestAddressRangeEnd;
+	}
+
+	public void setBulkDestAddressRangeEnd(int bulkDestAddressRangeEnd) {
+		this.bulkDestAddressRangeEnd = bulkDestAddressRangeEnd;
+	}
+
+	public int getBulkMessagePerSecond() {
+		return bulkMessagePerSecond;
+	}
+
+	public void setBulkMessagePerSecond(int bulkMessagePerSecond) {
+		this.bulkMessagePerSecond = bulkMessagePerSecond;
+	}
+
+    public boolean isMessageClass() {
+        return messageClass;
+    }
+
+    public void setMessageClass(boolean messageClass) {
+        this.messageClass = messageClass;
+    }
+
+    public MCDeliveryReceipt getMcDeliveryReceipt() {
+        return mcDeliveryReceipt;
+    }
+
+    public void setMcDeliveryReceipt(MCDeliveryReceipt msDeliveryReceipt) {
+        this.mcDeliveryReceipt = msDeliveryReceipt;
+    }
+
+    public SendingMessageType getSendingMessageType() {
+        return sendingMessageType;
+    }
+
+    public void setSendingMessageType(SendingMessageType sendingMessageType) {
+        this.sendingMessageType = sendingMessageType;
+    }
+
+
+    /**
+     * @return the smppSessionType
+     */
+    public SmppSession.Type getSmppSessionType() {
+        return smppSessionType;
+    }
+
+    /**
+     * @param smppSessionType the smppSessionType to set
+     */
+    public void setSmppSessionType(SmppSession.Type smppSessionType) {
+        this.smppSessionType = smppSessionType;
+    }
+
 
     public enum EncodingType {
     	GSM7, UCS2,
@@ -165,6 +311,56 @@ public class SmppSimulatorParameters {
 
     public enum SplittingType {
     	DoNotSplit, SplitWithParameters, SplitWithUdh,
+    }
+
+    public enum TON {
+		Unknown(0), International(1), National(2), Network_Specific(3), Subscriber_Number(4), Alfanumeric(5), Abbreviated(6);
+
+		private int code;
+
+		private TON(int val) {
+			this.code = val;
+		}
+
+		public int getCode() {
+			return this.code;
+		}
+    }
+
+    public enum NPI {
+		Unknown(0), ISDN(1), Data(3), Telex(4), Land_Mobile(6), National(8), Private(9), ERMES(10), Internet_IP(14), WAP_Client_Id(18);
+
+		private int code;
+
+		private NPI(int val) {
+			this.code = val;
+		}
+
+		public int getCode() {
+			return this.code;
+		}
+    }
+
+    public enum ValidityType {
+		NoSpecial, ValidityPeriod_5min, ScheduleDeliveryTime_5min;
+    }
+
+    public enum MCDeliveryReceipt {
+        No(0), onSuccessOrFailure(1), onFailure(2), onSuccess(3);
+
+        private int code;
+
+        private MCDeliveryReceipt(int val) {
+            this.code = val;
+        }
+
+        public int getCode() {
+            return this.code;
+        }
+    }
+
+    public enum SendingMessageType {
+        SubmitSm, DataSm, DeliverSm;
     }
 }
 

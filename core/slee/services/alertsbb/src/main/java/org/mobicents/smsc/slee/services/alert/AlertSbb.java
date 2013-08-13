@@ -19,7 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.slee.services.alert;
+
+import java.util.Date;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -30,6 +33,7 @@ import javax.slee.RolledBackContext;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
 import javax.slee.facilities.Tracer;
+import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
@@ -37,6 +41,8 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
+import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
+import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.service.sms.AlertServiceCentreRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.slee.SbbContextExt;
@@ -54,8 +60,22 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.TargetAddress;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 
+/**
+ * 
+ * @author amit bhayani
+ * @author sergey vetyutnev
+ * 
+ */
 public abstract class AlertSbb implements Sbb {
+
+    private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String LINK = "PersistenceResourceAdaptor";
 
 	protected Tracer logger;
 	protected SbbContextExt sbbContext;
@@ -64,8 +84,14 @@ public abstract class AlertSbb implements Sbb {
 	protected MAPProvider mapProvider;
 	protected MAPParameterFactory mapParameterFactory;
 
+	protected PersistenceRAInterface persistence;
+
 
 	public AlertSbb() {
+	}
+
+	public PersistenceRAInterface getStore() {
+		return this.persistence;
 	}
 
 	/**
@@ -73,24 +99,15 @@ public abstract class AlertSbb implements Sbb {
 	 */
 
 	public void onInvokeTimeout(InvokeTimeout evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onInvokeTimeout" + evt);
-		}
+		this.logger.severe("\nRx :  onInvokeTimeout" + evt);
 	}
 
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
-
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
-		}
+		this.logger.severe("\nRx :  onErrorComponent" + event);
 	}
 
-//	public void onProviderErrorComponent(ProviderErrorComponent event, ActivityContextInterface aci) {
-//		this.logger.severe("Rx :  onProviderErrorComponent" + event);
-//	}
-
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onRejectComponent" + event);
+		this.logger.severe("\nRx :  onRejectComponent" + event);
 	}
 
 	/**
@@ -99,73 +116,127 @@ public abstract class AlertSbb implements Sbb {
 
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogDelimiter=" + evt);
+			this.logger.fine("\nRx :  onDialogDelimiter=" + evt);
 		}
 	}
 
 	public void onDialogAccept(DialogAccept evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogAccept=" + evt);
+			this.logger.fine("\nRx :  onDialogAccept=" + evt);
 		}
 	}
 
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
-		if (logger.isWarningEnabled()) {
-			this.logger.warning("Rx :  onDialogReject=" + evt);
-		}
+		this.logger.severe("\nRx :  onDialogReject=" + evt);
 	}
 
 	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogUserAbort=" + evt);
+		this.logger.severe("\nRx :  onDialogUserAbort=" + evt);
 	}
 
 	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogProviderAbort=" + evt);
+		this.logger.severe("\nRx :  onDialogProviderAbort=" + evt);
 	}
 
 	public void onDialogClose(DialogClose evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogClose" + evt);
+			this.logger.fine("\nRx :  onDialogClose" + evt);
 		}
 	}
 
 	public void onDialogNotice(DialogNotice evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onDialogNotice" + evt);
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogNotice" + evt);
 		}
 	}
 
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogTimeout" + evt);
+		this.logger.severe("\nRx :  onDialogTimeout" + evt);
 	}
 
 	public void onDialogRequest(DialogRequest evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogRequest" + evt);
+			this.logger.fine("\nRx :  onDialogRequest" + evt);
 		}
 	}
 
 	public void onDialogRelease(DialogRelease evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			// TODO : Should be fine
-			this.logger.info("Rx :  DialogRelease" + evt);
+		if (logger.isFineEnabled()) {
+			this.logger.fine("\nRx :  onDialogRelease" + evt);
 		}
 	}
 
 	public void onAlertServiceCentreRequest(AlertServiceCentreRequest evt, ActivityContextInterface aci) {
+		if (this.logger.isInfoEnabled()) {
+			this.logger.info("\nReceived onAlertServiceCentreRequest= " + evt);
+		}
+
 		try {
-			
 			MAPDialogSms mapDialogSms = evt.getMAPDialog();
 			MAPApplicationContext mapApplicationContext = mapDialogSms.getApplicationContext();
 			if (mapApplicationContext.getApplicationContextVersion() == MAPApplicationContextVersion.version2) {
 				// Send back response only for V2
 				mapDialogSms.addAlertServiceCentreResponse(evt.getInvokeId());
+				if (this.logger.isInfoEnabled()) {
+					this.logger.info("\nSending AlertServiceCentreResponse");
+				}
+
 				mapDialogSms.close(false);
 			} else {
 				mapDialogSms.release();
 			}
+
+			this.setupAlert(evt.getMsisdn(), evt.getServiceCentreAddress());
 		} catch (MAPException e) {
 			logger.severe("Exception while trying to send back AlertServiceCentreResponse", e);
+		}
+	}
+
+	private void setupAlert(ISDNAddressString msisdn, AddressString serviceCentreAddress) {
+		PersistenceRAInterface pers = this.getStore();
+
+		int addrTon = msisdn.getAddressNature().getIndicator();
+		int addrNpi = msisdn.getNumberingPlan().getIndicator();
+		String addr = msisdn.getAddress();
+		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(addrTon, addrNpi, addr));
+		try {
+			synchronized (lock) {
+
+				try {
+					boolean b1 = pers.checkSmsSetExists(lock);
+					if (!b1) {
+						if (this.logger.isInfoEnabled()) {
+							this.logger.info("AlertServiceCentre received but no SmsSet is present: addr=" + addr + ", ton=" + addrTon + ", npi=" + addrNpi);
+						}
+						return;
+					}
+
+					SmsSet smsSet = pers.obtainSmsSet(lock);
+					if (smsSet.getInSystem() == 2) {
+						if (this.logger.isInfoEnabled()) {
+							this.logger.info("AlertServiceCentre received but no SmsSet is already in active state (InSystem==2): addr=" + addr + ", ton="
+									+ addrTon + ", npi=" + addrNpi);
+						}
+						return;
+					}
+					if (smsSet.getInSystem() == 0) {
+						if (this.logger.isInfoEnabled()) {
+							this.logger.info("AlertServiceCentre received but no SmsSet is already in passive state (InSystem==0): addr=" + addr + ", ton="
+									+ addrTon + ", npi=" + addrNpi);
+						}
+						return;
+					}
+
+					pers.fetchSchedulableSms(smsSet, false);
+					Date newDueDate = new Date();
+					newDueDate = MessageUtil.checkScheduleDeliveryTime(smsSet, newDueDate);
+					pers.setDeliveringProcessScheduled(smsSet, newDueDate, 0);
+				} catch (PersistenceException e) {
+					this.logger.severe("PersistenceException when setupAlert()" + e.getMessage(), e);
+				}
+			}
+		} finally {
+			pers.releaseSynchroObject(lock);
 		}
 	}
 
@@ -237,6 +308,7 @@ public abstract class AlertSbb implements Sbb {
 			this.mapParameterFactory = this.mapProvider.getMAPParameterFactory();
 
 			this.logger = this.sbbContext.getTracer(AlertSbb.class.getSimpleName());
+			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
 
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);

@@ -7,14 +7,18 @@
 	<parent>
 		<artifactId>slee</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.1.2-TelScale-SNAPSHOT</version>
+		<version>6.1.4.GA-TelScale</version>
 	</parent>
 
 	<artifactId>services-parent</artifactId>
 	<name>Core : SLEE : Services Parent</name>
 
 	<modules>
+		<module>library</module>
+		<!-- 
 		<module>events</module>
+		<module>persistencesbb</module>
+		 -->
 		<module>alertsbb</module>
 		<module>txsmppserversbb</module>
 		<module>rxsmppserversbb</module>
@@ -38,6 +42,11 @@
 			<dependency>
 				<groupId>org.mobicents.resources</groupId>
 				<artifactId>mobicents-slee-ra-map-ratype</artifactId>
+				<version>${mobicents.resources.map.version}</version>
+			</dependency>
+			<dependency>
+				<artifactId>mobicents-slee-ra-map-library</artifactId>
+				<groupId>org.mobicents.resources</groupId>
 				<version>${mobicents.resources.map.version}</version>
 			</dependency>
 		</dependencies>

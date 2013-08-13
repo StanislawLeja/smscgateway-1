@@ -1,6 +1,6 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -24,7 +24,7 @@ package org.mobicents.smsc.smpp;
 
 /**
  * 
- * @author zaheer abbas
+ * @author Amit Bhayani
  * 
  */
 public interface SMSCOAMMessages {
@@ -32,7 +32,9 @@ public interface SMSCOAMMessages {
 	/**
 	 * Pre defined messages
 	 */
-	public static final String INVALID_COMMAND = "Invalid Command";
+    public static final String INVALID_COMMAND = "Invalid Command";
+
+    public static final String ILLEGAL_ARGUMENT = "Illegal argument %s: %s";
 
 	/*
 	 * public static final String ADD_ROUTING_RULE_SUCESSFULL =
@@ -49,14 +51,26 @@ public interface SMSCOAMMessages {
 
 	public static final String CREATE_ESME_SUCCESSFULL = "Successfully created ESME name=%s";
 
-	public static final String CREATE_EMSE_FAIL_ALREADY_EXIST = "Creation of EMSE failed. Other ESME with name=%s already exist"; // name
-																																	// =
-																																	// systemid
+	public static final String CREATE_EMSE_FAIL_ALREADY_EXIST = "Creation of EMSE failed. Other ESME with name=%s already exist";
+
+	public static final String CREATE_EMSE_FAIL_PORT_CANNOT_BE_LESS_THAN_ZERO = "Creation of EMSE failed. Port cannot be less than 0 for CLIENT Sessions";
+
+	public static final String CREATE_EMSE_FAIL_PRIMARY_KEY_ALREADY_EXIST = "Creation of EMSE failed. Other ESME with same SystemId=%s host=%s port=%d and SmppBindType=%s already exist";
 
 	public static final String CREATE_ROUTING_RULE_SUCCESSFULL = "Successfully created Routing rule name=%s";
 
 	public static final String CREATE_ROUTING_RULE_FAIL_ALREADY_EXIST = "Creation of Routing rule failed. Other Route with name=%s already exist"; // name
 																																					// =
+
+    public static final String UPDATE_DATABASE_RULE_SUCCESSFULL = "Successfully updated databaseRule address=%s";
+
+    public static final String DELETE_DATABASE_RULE_SUCCESSFULL = "Successfully deleted databaseRule address=%s";
+
+    public static final String ACCEPTED_ARCHIVE_GENERATE_CDR_SUCCESSFULL = "Successfully accepted request to generate CDR";
+
+    public static final String BAD_FORMATTED_FROM_FIELD = "Bad formatted dateFrom field";
+
+    public static final String BAD_FORMATTED_TO_FIELD = "Bad formatted dateTo field";
 																																					// systemid
 
 	public static final String NOT_SUPPORTED_YET = "Not supported yet";
@@ -65,13 +79,23 @@ public interface SMSCOAMMessages {
 
 	public static final String NO_ROUTING_RULE_DEFINED_YET = "No Routing rule defined yet";
 
-	public static final String DELETE_ESME_FAILED_NO_ESME_FOUND = "No Esme found with given systemId %s";
+	public static final String DELETE_ESME_FAILED_NO_ESME_FOUND = "No Esme found with given name %s";
 
-	public static final String DELETE_ESME_SUCCESSFUL = "Successfully deleted Esme with given systemId %s";
+	public static final String DELETE_ESME_FAILED_ESME_STARTED = "Cannot remove ESME. Please stop ESME before removing";
+
+	public static final String DELETE_ESME_SUCCESSFUL = "Successfully deleted Esme with given name %s";
+
+	public static final String START_ESME_FAILED_ALREADY_STARTED = "Esme with given name %s is already started";
+
+	public static final String INVALID_SMPP_BIND_TYPE = "Invalid SMPP Bind Type %s. Allowed are TRANSCEIVER, TRANSMITTER or RECEIVER";
 
 	public static final String NULL_ESME_ADDRESS_RANGE = "esme-range is compulsory for TRANSCEIVER and RECEIVER";
-	
-	public static final String PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set";
+
+    public static final String PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set";
+
+    public static final String PARAMETER_SUCCESSFULLY_REMOVED = "Parameter has been successfully removed";
+
+	public static final String SMPP_SERVER_PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set. The changed value will take effect after SmppServer is restarted";
 	/**
 	 * Generic constants
 	 */
@@ -86,8 +110,10 @@ public interface SMSCOAMMessages {
 	 */
 	public static final String SHOW_ASSIGNED_TO = "Assigned to :\n";
 
-	public static final String SHOW_ESME_SYSTEM_ID = "ESME systemId=";
-	
+	public static final String SHOW_ESME_NAME = "ESME name=";
+
+	public static final String SHOW_ESME_SYSTEM_ID = " systemId=";
+
 	public static final String SHOW_ESME_STATE = " state=";
 
 	public static final String SHOW_ESME_PASSWORD = " password=";
@@ -113,5 +139,7 @@ public interface SMSCOAMMessages {
 	public static final String SHOW_STARTED = " started=";
 
 	public static final String SHOW_ADDRESS = " address=";
+
+	public static final String SHOW_CLUSTER_NAME = " clusterName=";
 
 }

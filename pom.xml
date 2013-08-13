@@ -5,12 +5,12 @@
 	<parent>
 		<artifactId>mobicents-parent</artifactId>
 		<groupId>org.mobicents</groupId>
-		<version>6.1.1.GA-TelScale</version>
+		<version>6.1.4.GA-TelScale</version>
 	</parent>
 
 	<artifactId>telscale-smsc-parent</artifactId>
 	<groupId>com.telscale.smsc</groupId>
-	<version>6.1.2-TelScale-SNAPSHOT</version>
+	<version>6.1.4.GA-TelScale</version>
 
 	<packaging>pom</packaging>
 
@@ -21,31 +21,35 @@
 	<properties>
 		<testng.version>6.2</testng.version>
 		<javolution.version>5.5.1</javolution.version>
-		<compiler.plugin.version>2.0.2</compiler.plugin.version>
-		<compile.source>1.5</compile.source>
+		<compiler.plugin.version>2.3.1</compiler.plugin.version>
+		<compile.source>1.7</compile.source>
 		<!-- mobicents but not strictly ss7 -->
-		<asn.version>2.0.1.FINAL</asn.version>
+		<asn.version>2.0.2.FINAL</asn.version>
 		<stream.version>1.0.0.CR1</stream.version>
-		<sctp.version>1.3.0-SNAPSHOT</sctp.version>
+		<sctp.version>1.4.0.FINAL</sctp.version>
 		<commons.version>1.0.0.CR1</commons.version>
-		<ss7.version>2.0.0-SNAPSHOT</ss7.version>
-		<jss7.telscale.version>6.1.2-TelScale-SNAPSHOT</jss7.telscale.version>
 		<log4j.version>1.2.14</log4j.version>
 		<junit.version>3.8.1</junit.version>
-
 		<!-- cloudhopper smpp -->
-		 <ch.smpp.version>5.0.0</ch.smpp.version>
-		 <slf4j.version>[1.5.0,)</slf4j.version>
-
-		<jslee.ext.version>1.0.0.BETA2</jslee.ext.version>
-
-		<mobicents.resources.map.version>2.0.0-SNAPSHOT</mobicents.resources.map.version>
+		<ch.smpp.version>5.0.0</ch.smpp.version>
+		<slf4j.version>1.5.0</slf4j.version>
+		<!-- hector -->
+		<hector-core.version>1.0-5</hector-core.version>
+		<!-- TelScale properties -->
+		<ss7.version>6.1.4.GA-TelScale</ss7.version>
+		<jss7.telscale.version>6.1.4.GA-TelScale</jss7.telscale.version>
+		<ts.slee.version>6.1.1.GA-TelScale</ts.slee.version>
+		<jslee.ext.version>${ts.slee.version}</jslee.ext.version>
+		<mobicents.resources.map.version>${jss7.telscale.version}</mobicents.resources.map.version>
+		<telscale.licensing.version>1.0.3.Final</telscale.licensing.version>
+		<project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
 	</properties>
 
 	<modules>
 		<module>core</module>
 		<module>test</module>
 		<module>tools</module>
+		<module>management/ui-management</module>
 	</modules>
 
 	<profiles>

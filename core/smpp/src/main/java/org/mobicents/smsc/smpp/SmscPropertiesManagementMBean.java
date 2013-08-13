@@ -1,6 +1,6 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -21,6 +21,12 @@
  */
 package org.mobicents.smsc.smpp;
 
+/**
+ * 
+ * @author Amit Bhayani
+ * @author sergey vetyutnev
+ *
+ */
 public interface SmscPropertiesManagementMBean {
 
 	public String getServiceCenterGt();
@@ -42,4 +48,79 @@ public interface SmscPropertiesManagementMBean {
 	public int getMaxMapVersion();
 
 	public void setMaxMapVersion(int maxMapVersion);
+
+	public int getDefaultValidityPeriodHours();
+
+	public void setDefaultValidityPeriodHours(int defaultValidityPeriodHours);
+
+	public int getMaxValidityPeriodHours();
+
+	public void setMaxValidityPeriodHours(int maxValidityPeriodHours);
+
+	public int getDefaultTon();
+
+	public void setDefaultTon(int defaultTon);
+
+	public int getDefaultNpi();
+
+	public void setDefaultNpi(int defaultNpi);
+
+	public int getSubscriberBusyDueDelay();
+
+	public void setSubscriberBusyDueDelay(int subscriberBusyDueDelay);
+
+	public int getFirstDueDelay();
+
+	public void setFirstDueDelay(int firstDueDelay);
+
+	public int getSecondDueDelay();
+
+	public void setSecondDueDelay(int secondDueDelay);
+
+	public int getMaxDueDelay();
+
+	public void setMaxDueDelay(int maxDueDelay);
+
+	public int getDueDelayMultiplicator();
+
+	public void setDueDelayMultiplicator(int dueDelayMultiplicator);
+
+	public int getMaxMessageLengthReducer();
+
+	public void setMaxMessageLengthReducer(int maxMessageLengReducer);
+
+
+    public String getHosts();
+
+    public void setHosts(String hosts);
+
+    public String getKeyspaceName();
+
+    public void setKeyspaceName(String keyspaceName);
+
+    public String getClusterName();
+
+    public void setClusterName(String clusterName);
+
+    public long getFetchPeriod();
+
+    public void setFetchPeriod(long fetchPeriod);
+
+    public int getFetchMaxRows();
+
+    public void setFetchMaxRows(int fetchMaxRows);
+
+    public int getMaxActivityCount();
+
+    public void setMaxActivityCount(int maxActivityCount);
+
+
+//    public int getCdrDatabaseExportDuration();
+//
+//    public void setCdrDatabaseExportDuration(int cdrDatabaseExportDuration);
+
+    public String getEsmeDefaultClusterName();
+
+    public void setEsmeDefaultClusterName(String val);
+
 }

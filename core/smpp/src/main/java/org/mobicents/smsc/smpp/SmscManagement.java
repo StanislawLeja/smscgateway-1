@@ -1,6 +1,6 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -24,10 +24,18 @@ package org.mobicents.smsc.smpp;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
+import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import javax.management.StandardMBean;
 
 import javolution.text.TextBuilder;
 import javolution.xml.XMLBinding;
@@ -39,12 +47,16 @@ import org.jboss.mx.util.MBeanServerLocator;
  * @author Amit Bhayani
  * 
  */
-public class SmscManagement {
+public class SmscManagement implements SmscManagementMBean {
 	private static final Logger logger = Logger.getLogger(SmscManagement.class);
 
-	public static final String JMX_DOMAIN = "org.mobicents.smsc";
-
-	private static final String ROUTING_RULE_LIST = "routingRuleList";
+	public static final String JMX_DOMAIN = "com.telscale.smsc";
+	public static final String JMX_LAYER_SMSC_MANAGEMENT = "SmscManagement";
+    public static final String JMX_LAYER_ESME_MANAGEMENT = "EsmeManagement";
+    public static final String JMX_LAYER_ARCHIVE_SMS = "ArchiveSms";
+	public static final String JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT = "SmscPropertiesManagement";
+	public static final String JMX_LAYER_SMPP_SERVER_MANAGEMENT = "SmppServerManagement";
+	public static final String JMX_LAYER_SMPP_CLIENT_MANAGEMENT = "SmppClientManagement";
 
 	protected static final String SMSC_PERSIST_DIR_KEY = "smsc.persist.dir";
 	protected static final String USER_DIR_KEY = "user.dir";
@@ -61,21 +73,49 @@ public class SmscManagement {
 
 	private String persistDir = null;
 
-	private SmppServer smppServer = null;
+	private SmppServerManagement smppServerManagement = null;
+	private SmppClientManagement smppClientManagement = null;
+
+	private ThreadPoolExecutor executor = null;
+	private ScheduledThreadPoolExecutor monitorExecutor = null;
 
 	private EsmeManagement esmeManagement = null;
 	private SmscPropertiesManagement smscPropertiesManagement = null;
+	private ArchiveSms archiveSms;
 
 	private MBeanServer mbeanServer = null;
 
-	public SmscManagement(String name) {
+	private String smsRoutingRuleClass;
+
+	private SmppSessionHandlerInterface smppSessionHandlerInterface = null;
+
+	private boolean isStarted = false;
+
+	private static SmscManagement instance = null;
+
+	private SmscManagement(String name) {
 		this.name = name;
 		binding.setClassAttribute(CLASS_ATTRIBUTE);
 		binding.setAlias(Esme.class, "esme");
 	}
 
+	public static SmscManagement getInstance(String name) {
+		if (instance == null) {
+			instance = new SmscManagement(name);
+		}
+		return instance;
+	}
+
+	public static SmscManagement getInstance() {
+		return instance;
+	}
+
 	public String getName() {
 		return name;
+	}
+
+	public void setSmppSessionHandlerInterface(SmppSessionHandlerInterface smppSessionHandlerInterface) {
+		this.smppSessionHandlerInterface = smppSessionHandlerInterface;
 	}
 
 	public String getPersistDir() {
@@ -86,42 +126,71 @@ public class SmscManagement {
 		this.persistDir = persistDir;
 	}
 
-	public SmppServer getSmppServer() {
-		return smppServer;
+	public SmppServerManagement getSmppServerManagement() {
+		return smppServerManagement;
 	}
 
-	public void setSmppServer(SmppServer smppServer) {
-		this.smppServer = smppServer;
+    public EsmeManagement getEsmeManagement() {
+        return esmeManagement;
+    }
+
+    public ArchiveSms getArchiveSms() {
+        return archiveSms;
+    }
+
+	/**
+	 * @return the smsRoutingRuleClass
+	 */
+	public String getSmsRoutingRuleClass() {
+		return smsRoutingRuleClass;
 	}
 
-	public EsmeManagement getEsmeManagement() {
-		return esmeManagement;
+	/**
+	 * @param smsRoutingRuleClass
+	 *            the smsRoutingRuleClass to set
+	 */
+	public void setSmsRoutingRuleClass(String smsRoutingRuleClass) {
+		this.smsRoutingRuleClass = smsRoutingRuleClass;
 	}
 
-	public void start() throws Exception {
-		if (this.smppServer == null) {
-			throw new Exception("SmppServer not set");
-		}
+	public void startSmscManagement() throws Exception {
 
-		this.esmeManagement = new EsmeManagement(this.name);
+		// Step 1 Get the MBeanServer
+		this.mbeanServer = MBeanServerLocator.locateJBoss();
+
+		// Step 2 Setup ESME
+		this.esmeManagement = EsmeManagement.getInstance(this.name);
 		this.esmeManagement.setPersistDir(this.persistDir);
 		this.esmeManagement.start();
 
-		this.smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.name);
-		this.smscPropertiesManagement.setPersistDir(this.persistDir);
-		this.smscPropertiesManagement.start();
+        // Step 3 Setup SMSC Properties
+        this.smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.name);
+        this.smscPropertiesManagement.setPersistDir(this.persistDir);
+        this.smscPropertiesManagement.start();
 
-		// Register the MBeans
-		this.mbeanServer = MBeanServerLocator.locateJBoss();
+		// Step 4 Set Routing Rule class
+		SmsRoutingRule smsRoutingRule = null;
+		if (this.smsRoutingRuleClass != null) {
+			smsRoutingRule = (SmsRoutingRule) Class.forName(this.smsRoutingRuleClass).newInstance();
+		} else {
+			smsRoutingRule = new DefaultSmsRoutingRule();
+		}
+        smsRoutingRule.setEsmeManagement(esmeManagement);
+        smsRoutingRule.setSmscPropertiesManagement(smscPropertiesManagement);
+		SmsRouteManagement.getInstance().setSmsRoutingRule(smsRoutingRule);
 
-		ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":name=EsmeManagement");
-		StandardMBean esmeMxBean = new StandardMBean(this.esmeManagement, EsmeManagementMBean.class, true);
-		this.mbeanServer.registerMBean(esmeMxBean, esmeObjNname);
+        // Step 5 Setup ArchiveSms
+        this.archiveSms = ArchiveSms.getInstance(this.name);
+        this.archiveSms.start();
 
-		ObjectName smscObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":name=SmscPropertiesManagement");
-		StandardMBean smscMxBean = new StandardMBean(this.smscPropertiesManagement,
-				SmscPropertiesManagementMBean.class, true);
-		this.mbeanServer.registerMBean(smscMxBean, smscObjNname);
+        ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ESME_MANAGEMENT + ",name=" + this.getName());
+        this.registerMBean(this.esmeManagement, EsmeManagementMBean.class, false, esmeObjNname);
+
+        ObjectName smscObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT + ",name=" + this.getName());
+        this.registerMBean(this.smscPropertiesManagement, SmscPropertiesManagementMBean.class, true, smscObjNname);
+
+        ObjectName arhiveObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ARCHIVE_SMS + ",name=" + this.getName());
+        this.registerMBean(this.archiveSms, ArchiveSmsMBean.class, false, arhiveObjNname);
 
 		this.persistFile.clear();
 
@@ -141,23 +210,88 @@ public class SmscManagement {
 			logger.warn(String.format("Failed to load the SS7 configuration file. \n%s", e.getMessage()));
 		}
 
-		this.smppServer.setEsmeManagement(this.esmeManagement);
+		// Step 5. Get DefaultSmppServerHandler
 
+		// for monitoring thread use, it's preferable to create your own
+		// instance of an executor and cast it to a ThreadPoolExecutor from
+		// Executors.newCachedThreadPool() this permits exposing thinks like
+		// executor.getActiveCount() via JMX possible no point renaming the
+		// threads in a factory since underlying Netty framework does not easily
+		// allow you to customize your thread names
+		this.executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+
+		// to enable automatic expiration of requests, a second scheduled
+		// executor
+		// is required which is what a monitor task will be executed with - this
+		// is probably a thread pool that can be shared with between all client
+		// bootstraps
+		this.monitorExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1, new ThreadFactory() {
+			private AtomicInteger sequence = new AtomicInteger(0);
+
+			@Override
+			public Thread newThread(Runnable r) {
+				Thread t = new Thread(r);
+				t.setName("SmppSessionWindowMonitorPool-" + sequence.getAndIncrement());
+				return t;
+			}
+		});
+
+		// Step 6 Start SMPP Server
+		this.smppServerManagement = new SmppServerManagement(this.name, this.esmeManagement,
+				this.smppSessionHandlerInterface, this.executor, this.monitorExecutor);
+		this.smppServerManagement.setPersistDir(this.persistDir);
+		this.smppServerManagement.start();
+
+		ObjectName smppServerManaObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+				+ JMX_LAYER_SMPP_SERVER_MANAGEMENT + ",name=" + this.getName());
+		this.registerMBean(this.smppServerManagement, SmppServerManagementMBean.class, true, smppServerManaObjName);
+
+		// Ste 7 Start SMPP Clients
+		this.smppClientManagement = new SmppClientManagement(this.name, this.esmeManagement,
+				this.smppSessionHandlerInterface, this.executor, this.monitorExecutor);
+
+		this.esmeManagement.setSmppClient(this.smppClientManagement);
+		this.smppClientManagement.start();
+
+		ObjectName smppClientManaObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+				+ JMX_LAYER_SMPP_CLIENT_MANAGEMENT + ",name=" + this.getName());
+		this.registerMBean(this.smppClientManagement, SmppClientManagementMBean.class, true, smppClientManaObjName);
+
+		this.isStarted = true;
 		logger.info("Started SmscManagement");
 	}
 
-	public void stop() throws Exception {
-		this.esmeManagement.stop();
+	public void stopSmscManagement() throws Exception {
+        this.archiveSms.stop();
+        ObjectName arhiveObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ARCHIVE_SMS + ",name=" + this.getName());
+        this.unregisterMbean(arhiveObjNname);
+
+        this.esmeManagement.stop();
+		ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ESME_MANAGEMENT
+				+ ",name=" + this.getName());
+		this.unregisterMbean(esmeObjNname);
+
 		this.smscPropertiesManagement.stop();
+		ObjectName smscObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+				+ JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT + ",name=" + this.getName());
+		this.unregisterMbean(smscObjNname);
+
+		this.smppServerManagement.stop();
+		ObjectName smppServerManaObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+				+ JMX_LAYER_SMPP_SERVER_MANAGEMENT + ",name=" + this.getName());
+		this.unregisterMbean(smppServerManaObjName);
+
+		this.smppClientManagement.stop();
+		ObjectName smppClientManaObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+				+ JMX_LAYER_SMPP_CLIENT_MANAGEMENT + ",name=" + this.getName());
+		this.unregisterMbean(smppClientManaObjName);
+
+		this.executor.shutdownNow();
+		this.monitorExecutor.shutdownNow();
+
+		this.isStarted = false;
+		
 		this.store();
-
-		if (this.mbeanServer != null) {
-			ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":name=EsmeManagement");
-			this.mbeanServer.unregisterMBean(esmeObjNname);
-
-			ObjectName smscObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":name=SmscPropertiesManagement");
-			this.mbeanServer.unregisterMBean(smscObjNname);
-		}
 	}
 
 	/**
@@ -165,21 +299,6 @@ public class SmscManagement {
 	 */
 	public void store() {
 
-		// TODO : Should we keep reference to Objects rather than recreating
-		// everytime?
-		// try {
-		// XMLObjectWriter writer = XMLObjectWriter.newInstance(new
-		// FileOutputStream(persistFile.toString()));
-		// writer.setBinding(binding);
-		// // Enables cross-references.
-		// // writer.setReferenceResolver(new XMLReferenceResolver());
-		// writer.setIndentation(TAB_INDENT);
-		// writer.write(esmes, ESME_LIST, FastList.class);
-		//
-		// writer.close();
-		// } catch (Exception e) {
-		// logger.error("Error while persisting the Rule state in file", e);
-		// }
 	}
 
 	/**
@@ -189,17 +308,33 @@ public class SmscManagement {
 	 */
 	public void load() throws FileNotFoundException {
 
-		// XMLObjectReader reader = null;
-		// try {
-		// reader = XMLObjectReader.newInstance(new
-		// FileInputStream(persistFile.toString()));
-		//
-		// reader.setBinding(binding);
-		// esmes = reader.read(ESME_LIST, FastList.class);
-		//
-		// } catch (XMLStreamException ex) {
-		// // this.logger.info(
-		// // "Error while re-creating Linksets from persisted file", ex);
-		// }
+	}
+
+	@Override
+	public boolean isStarted() {
+		return this.isStarted;
+	}
+
+	protected <T> void registerMBean(T implementation, Class<T> mbeanInterface, boolean isMXBean, ObjectName name) {
+		try {
+			this.mbeanServer.registerMBean(implementation, name);
+		} catch (InstanceAlreadyExistsException e) {
+			logger.error(String.format("Error while registering MBean %s", mbeanInterface.getName()), e);
+		} catch (MBeanRegistrationException e) {
+			logger.error(String.format("Error while registering MBean %s", mbeanInterface.getName()), e);
+		} catch (NotCompliantMBeanException e) {
+			logger.error(String.format("Error while registering MBean %s", mbeanInterface.getName()), e);
+		}
+	}
+
+	protected void unregisterMbean(ObjectName name) {
+
+		try {
+			this.mbeanServer.unregisterMBean(name);
+		} catch (MBeanRegistrationException e) {
+			logger.error(String.format("Error while unregistering MBean %s", name), e);
+		} catch (InstanceNotFoundException e) {
+			logger.error(String.format("Error while unregistering MBean %s", name), e);
+		}
 	}
 }

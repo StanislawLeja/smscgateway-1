@@ -201,8 +201,8 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 		if (this.currentMapMessageCount % 7 == 0) {
 			// Send back AbsentSubscriber for every 7th MtSMS
 			try {
-				MAPErrorMessage mapErrorMessage = mAPErrorMessageFactory.createMAPErrorMessageAbsentSubscriberSM(
-						AbsentSubscriberDiagnosticSM.IMSIDetached, null, null);
+				MAPErrorMessage mapErrorMessage = mAPErrorMessageFactory.createMAPErrorMessageAbsentSubscriberSM(AbsentSubscriberDiagnosticSM.IMSIDetached,
+						null, null);
 				mapDialogSms.sendErrorComponent(event.getInvokeId(), mapErrorMessage);
 				mapDialogSms.close(false);
 			} catch (MAPException e) {
@@ -288,8 +288,8 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 		if (this.currentMapMessageCount % 7 == 0) {
 			// Send back AbsentSubscriber for every 7th MtSMS
 			try {
-				MAPErrorMessage mapErrorMessage = mAPErrorMessageFactory.createMAPErrorMessageAbsentSubscriberSM(
-						AbsentSubscriberDiagnosticSM.IMSIDetached, null, null);
+				MAPErrorMessage mapErrorMessage = mAPErrorMessageFactory.createMAPErrorMessageAbsentSubscriberSM(AbsentSubscriberDiagnosticSM.IMSIDetached,
+						null, null);
 				mapDialogSms.sendErrorComponent(event.getInvokeId(), mapErrorMessage);
 				mapDialogSms.close(false);
 			} catch (MAPException e) {

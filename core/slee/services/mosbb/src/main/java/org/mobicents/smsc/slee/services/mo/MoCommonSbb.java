@@ -1,3 +1,25 @@
+/*
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.mobicents.smsc.slee.services.mo;
 
 import javax.naming.Context;
@@ -8,6 +30,7 @@ import javax.slee.RolledBackContext;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
 import javax.slee.facilities.Tracer;
+import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
@@ -26,9 +49,23 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.resources.smpp.server.SmppServerSessions;
+import org.mobicents.smsc.cassandra.TargetAddress;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
+import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
+import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
+/**
+ * 
+ * @author amit bhayani
+ * @author servey vetyutnev
+ * 
+ */
 public abstract class MoCommonSbb implements Sbb {
+    
+    private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String LINK = "PersistenceResourceAdaptor";
+    protected static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
 	private final String className;
 
@@ -39,10 +76,20 @@ public abstract class MoCommonSbb implements Sbb {
 	protected MAPProvider mapProvider;
 	protected MAPParameterFactory mapParameterFactory;
 	
-	protected SmppServerSessions smppServerSessions = null;
+	protected SmppSessions smppServerSessions = null;
 
+	protected PersistenceRAInterface persistence;
 	public MoCommonSbb(String className) {
 		this.className = className;
+	}
+
+	public PersistenceRAInterface getStore() {
+		return this.persistence;
+	}
+
+	protected PersistenceRAInterface obtainStore(TargetAddress ta) throws SmscProcessingException {
+	    PersistenceRAInterface store = this.getStore();
+		return store;
 	}
 
 	/**
@@ -50,23 +97,15 @@ public abstract class MoCommonSbb implements Sbb {
 	 */
 
 	public void onInvokeTimeout(InvokeTimeout evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onInvokeTimeout" + evt);
-		}
+		this.logger.severe("\nRx :  onInvokeTimeout" + evt);
 	}
 
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
-		}
+		this.logger.severe("\nRx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
 	}
 
-//	public void onProviderErrorComponent(ProviderErrorComponent event, ActivityContextInterface aci) {
-//		this.logger.severe("Rx :  onProviderErrorComponent" + event);
-//	}
-
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onRejectComponent" + event);
+		this.logger.severe("\nRx :  onRejectComponent" + event);
 	}
 
 	/**
@@ -74,60 +113,55 @@ public abstract class MoCommonSbb implements Sbb {
 	 */
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogDelimiter=" + evt);
+			this.logger.fine("\nRx :  onDialogDelimiter=" + evt);
 		}
 	}
 
 	public void onDialogAccept(DialogAccept evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogAccept=" + evt);
+			this.logger.fine("\nRx :  onDialogAccept=" + evt);
 		}
 	}
 
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
-		if (logger.isWarningEnabled()) {
-			this.logger.warning("Rx :  onDialogReject=" + evt);
-		}
-
-		// TODO : Error condition. Take care
+		this.logger.severe("\nRx :  onDialogReject=" + evt);
 	}
 
 	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogUserAbort=" + evt);
-
-		// TODO : Error condition. Take care
+		this.logger.severe("\nRx :  onDialogUserAbort=" + evt);
 	}
 
 	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogProviderAbort=" + evt);
+		this.logger.severe("\nRx :  onDialogProviderAbort=" + evt);
 	}
 
 	public void onDialogClose(DialogClose evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogClose" + evt);
+			this.logger.fine("\nRx :  onDialogClose" + evt);
 		}
 	}
 
 	public void onDialogNotice(DialogNotice evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onDialogNotice" + evt);
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogNotice" + evt);
 		}
 	}
 
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogTimeout" + evt);
+		if (this.logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogTimeout" + evt);
+		}
 	}
 
 	public void onDialogRequest(DialogRequest evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogRequest" + evt);
+			this.logger.fine("\nRx :  onDialogRequest" + evt);
 		}
 	}
 
 	public void onDialogRelease(DialogRelease evt, ActivityContextInterface aci) {
 		if (logger.isInfoEnabled()) {
-			// TODO : Should be fine
-			this.logger.info("Rx :  DialogRelease" + evt);
+			this.logger.info("\nRx :  DialogRelease" + evt);
 		}
 	}
 
@@ -199,10 +233,10 @@ public abstract class MoCommonSbb implements Sbb {
 			this.mapProvider = (MAPProvider) ctx.lookup("slee/resources/map/2.0/provider");
 			this.mapParameterFactory = this.mapProvider.getMAPParameterFactory();
 			
-			this.smppServerSessions = (SmppServerSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
+			this.smppServerSessions = (SmppSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
 
 			this.logger = this.sbbContext.getTracer(this.className);
-
+			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}

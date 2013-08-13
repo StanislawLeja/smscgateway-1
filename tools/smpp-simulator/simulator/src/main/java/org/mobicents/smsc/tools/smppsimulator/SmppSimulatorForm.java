@@ -61,22 +61,23 @@ public class SmppSimulatorForm {
 
 	public static void main(String[] args) {
 
-		setupLog4j();
-
-		// trying to read the ini-file
-		try {
-			BufferedInputStream bis = new BufferedInputStream(new FileInputStream("SmppSimulatorParameters.xml"));
-			XMLDecoder d = new XMLDecoder(bis);
-			initPar = (SmppSimulatorParameters) d.readObject();
-			d.close();
-		} catch (Exception e) {
-			// we ignore exceptions
-		}
+//		setupLog4j();
+//
+//		// trying to read the ini-file
+//		try {
+//			BufferedInputStream bis = new BufferedInputStream(new FileInputStream("SmppSimulatorParameters.xml"));
+//			XMLDecoder d = new XMLDecoder(bis);
+//			initPar = (SmppSimulatorParameters) d.readObject();
+//			d.close();
+//		} catch (Exception e) {
+//			// we ignore exceptions
+//		}
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					SmppSimulatorForm window = new SmppSimulatorForm(initPar);
+//					SmppSimulatorForm window = new SmppSimulatorForm(initPar);
+					SmppSimulatorForm window = new SmppSimulatorForm();
 					window.frmSmppSimulator.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -92,13 +93,26 @@ public class SmppSimulatorForm {
 	/**
 	 * Create the application.
 	 */
-	public SmppSimulatorForm(SmppSimulatorParameters par) {
+	public SmppSimulatorForm() {
 		initialize();
+
+		setupLog4j();
+
+		// trying to read the ini-file
+		SmppSimulatorParameters par = null;
+		try {
+			BufferedInputStream bis = new BufferedInputStream(new FileInputStream("SmppSimulatorParameters.xml"));
+			XMLDecoder d = new XMLDecoder(bis);
+			initPar = (SmppSimulatorParameters) d.readObject();
+			d.close();
+		} catch (Exception e) {
+			// we ignore exceptions
+		}
 		
 		if (par == null) {
 			this.par = new SmppSimulatorParameters();
-		} else {
-			this.par = par;
+//		} else {
+//			this.par = par;
 		}
 	}
 
@@ -161,7 +175,7 @@ public class SmppSimulatorForm {
 		panel.add(btnRun);
 	}
 
-	private JFrame getJFrame() {
+	public JFrame getJFrame() {
 		return this.frmSmppSimulator;
 	}
 

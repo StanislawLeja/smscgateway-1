@@ -19,19 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.mobicents.smsc.slee.services.mt;
 
-import javax.slee.EventContext;
+package org.mobicents.smsc.slee.services.mt;
 
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
+import org.mobicents.protocols.ss7.map.api.primitives.LMSI;
+import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 
 /**
  * 
  * @author amit bhayani
+ * @author sergey vetyutnev
  * 
  */
 public interface MtForwardSmsInterface {
-	public void setupMtForwardShortMessageRequest(ISDNAddressString networkNode, IMSI imsi,
-			EventContext nullActivityEventContext);
+
+	public void setupMtForwardShortMessageRequest(ISDNAddressString networkNode, IMSI imsi, LMSI lmci);
+
+	public void doSetSmsSubmitData(SmsSubmitData smsDeliveryData);
+
+	public SmsSubmitData doGetSmsSubmitData();
+
+	public void doSetCurrentMsgNum(int currentMsgNum);
+
+	public int doGetCurrentMsgNum();
+
+	public void doSetInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer);
+
+	public InformServiceCenterContainer doGetInformServiceCenterContainer();
+
 }

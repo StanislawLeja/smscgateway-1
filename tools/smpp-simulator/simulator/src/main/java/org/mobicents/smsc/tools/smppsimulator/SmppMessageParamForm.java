@@ -25,6 +25,7 @@ package org.mobicents.smsc.tools.smppsimulator;
 import java.awt.BorderLayout;
 
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
@@ -33,6 +34,9 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JCheckBox;
+import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.ValidityType;
 
 /**
  * 
@@ -48,6 +52,19 @@ public class SmppMessageParamForm extends JDialog {
 	private JTextArea tbMessage;
 	private JComboBox<SmppSimulatorParameters.EncodingType> cbEncodingType;
 	private JComboBox<SmppSimulatorParameters.SplittingType> cbSplittingType;
+	private JComboBox<SmppSimulatorParameters.TON> cbSrcTON;
+	private JComboBox<SmppSimulatorParameters.NPI> cbSrcNPI;
+	private JTextField tbSourceAddress;
+	private JTextField tbDestAddress;
+	private JComboBox<SmppSimulatorParameters.TON> cbDestTON;
+	private JComboBox<SmppSimulatorParameters.NPI> cbDestNPI;
+	private JComboBox<SmppSimulatorParameters.ValidityType> cbValidityType;
+	private JTextField tbBulkDestAddressRangeStart;
+	private JTextField tbBulkDestAddressRangeEnd;
+	private JTextField tbBulkMessagePerSecond;
+	private JCheckBox cbMessageClass;
+	private JComboBox<SmppSimulatorParameters.SendingMessageType> cbSendingMessageType;
+	private JComboBox<SmppSimulatorParameters.MCDeliveryReceipt> cbMcDeliveryReceipt;
 
 	public SmppMessageParamForm(JDialog owner) {
 		super(owner, true);
@@ -55,7 +72,7 @@ public class SmppMessageParamForm extends JDialog {
 		setTitle("SMPP message parameters");
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 620, 382);
+		setBounds(100, 100, 620, 709);
 
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.CENTER);
@@ -79,7 +96,7 @@ public class SmppMessageParamForm extends JDialog {
 				doOK();
 			}
 		});
-		button.setBounds(327, 320, 136, 23);
+		button.setBounds(327, 640, 136, 23);
 		panel.add(button);
 		
 		JButton button_1 = new JButton("Cancel");
@@ -88,15 +105,15 @@ public class SmppMessageParamForm extends JDialog {
 				doCancel();
 			}
 		});
-		button_1.setBounds(468, 320, 136, 23);
+		button_1.setBounds(468, 640, 136, 23);
 		panel.add(button_1);
 
 		cbSplittingType = new JComboBox<SmppSimulatorParameters.SplittingType>();
-		cbSplittingType.setBounds(349, 134, 255, 20);
+		cbSplittingType.setBounds(349, 165, 255, 20);
 		panel.add(cbSplittingType);
 		
 		JLabel lblMessageSplittingType = new JLabel("Message splitting type");
-		lblMessageSplittingType.setBounds(10, 137, 329, 14);
+		lblMessageSplittingType.setBounds(10, 168, 329, 14);
 		panel.add(lblMessageSplittingType);
 				
 				tbMessage = new JTextArea();
@@ -106,12 +123,132 @@ public class SmppMessageParamForm extends JDialog {
 						JScrollPane scrollPane = new JScrollPane(tbMessage);
 						scrollPane.setBounds(0, 40, 604, 58);
 						panel.add(scrollPane);
+						
+						JLabel lblTypeOfNumber = new JLabel("Source address: Type of number");
+						lblTypeOfNumber.setBounds(10, 199, 329, 14);
+						panel.add(lblTypeOfNumber);
+						
+						cbSrcTON = new JComboBox<SmppSimulatorParameters.TON>();
+						cbSrcTON.setBounds(349, 196, 255, 20);
+						panel.add(cbSrcTON);
+						
+						JLabel lblNumberingPlanIndicator = new JLabel("Source address: Numbering plan indicator");
+						lblNumberingPlanIndicator.setBounds(10, 227, 329, 14);
+						panel.add(lblNumberingPlanIndicator);
+						
+						cbSrcNPI = new JComboBox<SmppSimulatorParameters.NPI>();
+						cbSrcNPI.setBounds(349, 224, 255, 20);
+						panel.add(cbSrcNPI);
+						
+						tbSourceAddress = new JTextField();
+						tbSourceAddress.setBounds(349, 312, 255, 20);
+						panel.add(tbSourceAddress);
+						tbSourceAddress.setColumns(10);
+						
+						JLabel lblSourceAddress = new JLabel("Source address");
+						lblSourceAddress.setBounds(10, 315, 329, 14);
+						panel.add(lblSourceAddress);
+						
+						tbDestAddress = new JTextField();
+						tbDestAddress.setColumns(10);
+						tbDestAddress.setBounds(349, 342, 255, 20);
+						panel.add(tbDestAddress);
+						
+						JLabel lblDestinationAddress = new JLabel("Destination address");
+						lblDestinationAddress.setBounds(10, 345, 329, 14);
+						panel.add(lblDestinationAddress);
+						
+						JLabel lblDestinationAddressType = new JLabel("Destination address: Type of number");
+						lblDestinationAddressType.setBounds(10, 257, 329, 14);
+						panel.add(lblDestinationAddressType);
+						
+						JLabel lblDestinationAddressNumbering = new JLabel("Destination address: Numbering plan indicator");
+						lblDestinationAddressNumbering.setBounds(10, 285, 329, 14);
+						panel.add(lblDestinationAddressNumbering);
+						
+						cbDestTON = new JComboBox<SmppSimulatorParameters.TON>();
+						cbDestTON.setBounds(349, 254, 255, 20);
+						panel.add(cbDestTON);
+						
+						cbDestNPI = new JComboBox<SmppSimulatorParameters.NPI>();
+						cbDestNPI.setBounds(349, 282, 255, 20);
+						panel.add(cbDestNPI);
+						
+						JLabel lblValidityPeriod = new JLabel("Validity period / schedule delivery time");
+						lblValidityPeriod.setBounds(10, 377, 329, 14);
+						panel.add(lblValidityPeriod);
+
+						cbValidityType = new JComboBox<SmppSimulatorParameters.ValidityType>();
+						cbValidityType.setBounds(349, 374, 255, 20);
+						panel.add(cbValidityType);
+						
+						JPanel panel_1 = new JPanel();
+						panel_1.setBounds(10, 475, 592, 152);
+						panel.add(panel_1);
+						panel_1.setLayout(null);
+						
+						JLabel lblBulkMessageSending = new JLabel("Bulk message sending options");
+						lblBulkMessageSending.setBounds(12, 13, 329, 14);
+						panel_1.add(lblBulkMessageSending);
+						
+						JLabel lblDestinationAddressRange = new JLabel("Destination address range start");
+						lblDestinationAddressRange.setBounds(12, 43, 329, 14);
+						panel_1.add(lblDestinationAddressRange);
+						
+						tbBulkDestAddressRangeStart = new JTextField();
+						tbBulkDestAddressRangeStart.setColumns(10);
+						tbBulkDestAddressRangeStart.setBounds(351, 40, 229, 20);
+						panel_1.add(tbBulkDestAddressRangeStart);
+						
+						tbBulkDestAddressRangeEnd = new JTextField();
+						tbBulkDestAddressRangeEnd.setColumns(10);
+						tbBulkDestAddressRangeEnd.setBounds(351, 70, 229, 20);
+						panel_1.add(tbBulkDestAddressRangeEnd);
+						
+						JLabel lblDestinationAddressRange_1 = new JLabel("Destination address range end");
+						lblDestinationAddressRange_1.setBounds(12, 73, 329, 14);
+						panel_1.add(lblDestinationAddressRange_1);
+						
+						JLabel lblBulkMessagesPer = new JLabel("Bulk messages per second");
+						lblBulkMessagesPer.setBounds(12, 104, 329, 14);
+						panel_1.add(lblBulkMessagesPer);
+						
+						tbBulkMessagePerSecond = new JTextField();
+						tbBulkMessagePerSecond.setColumns(10);
+						tbBulkMessagePerSecond.setBounds(351, 101, 229, 20);
+						panel_1.add(tbBulkMessagePerSecond);
+						
+						cbMessageClass = new JCheckBox("Add message class 0");
+						cbMessageClass.setBounds(349, 135, 255, 25);
+						panel.add(cbMessageClass);
+						
+						JLabel lblSendingMessageType = new JLabel("Sending message type");
+						lblSendingMessageType.setBounds(10, 407, 329, 14);
+						panel.add(lblSendingMessageType);
+						
+						cbSendingMessageType = new JComboBox<SmppSimulatorParameters.SendingMessageType>();
+						cbSendingMessageType.setBounds(349, 404, 255, 20);
+						panel.add(cbSendingMessageType);
+						
+						JLabel lblMcdeliveryreceiptRequestin = new JLabel("MCDeliveryReceipt request (in registered_delivery)");
+						lblMcdeliveryreceiptRequestin.setBounds(10, 437, 329, 14);
+						panel.add(lblMcdeliveryreceiptRequestin);
+
+						cbMcDeliveryReceipt = new JComboBox<SmppSimulatorParameters.MCDeliveryReceipt>();
+						cbMcDeliveryReceipt.setBounds(349, 434, 255, 20);
+						panel.add(cbMcDeliveryReceipt);
 	}
 
 	public void setData(SmppSimulatorParameters data) {
 		this.data = data;
 
 		this.tbMessage.setText(data.getMessageText());
+		this.tbSourceAddress.setText(data.getSourceAddress());
+		this.tbDestAddress.setText(data.getDestAddress());
+
+		this.tbBulkDestAddressRangeStart.setText(((Integer)data.getBulkDestAddressRangeStart()).toString());
+		this.tbBulkDestAddressRangeEnd.setText(((Integer)data.getBulkDestAddressRangeEnd()).toString());
+		this.tbBulkMessagePerSecond.setText(((Integer)data.getBulkMessagePerSecond()).toString());
 
 		this.cbEncodingType.removeAllItems();
 		SmppSimulatorParameters.EncodingType[] vallET = SmppSimulatorParameters.EncodingType.values();
@@ -132,8 +269,88 @@ public class SmppMessageParamForm extends JDialog {
 			if (v == data.getSplittingType())
 				dvST = v;
 		}
-		if (dv != null)
+		if (dvST != null)
 			this.cbSplittingType.setSelectedItem(dvST);
+
+		this.cbSrcTON.removeAllItems();
+		SmppSimulatorParameters.TON[] vallTON = SmppSimulatorParameters.TON.values();
+		SmppSimulatorParameters.TON dvTON = null;
+		for (SmppSimulatorParameters.TON v : vallTON) {
+			this.cbSrcTON.addItem(v);
+			if (v == data.getSourceTON())
+				dvTON = v;
+		}
+		if (dvTON != null)
+			this.cbSrcTON.setSelectedItem(dvTON);
+
+		this.cbDestTON.removeAllItems();
+		vallTON = SmppSimulatorParameters.TON.values();
+		dvTON = null;
+		for (SmppSimulatorParameters.TON v : vallTON) {
+			this.cbDestTON.addItem(v);
+			if (v == data.getDestTON())
+				dvTON = v;
+		}
+		if (dvTON != null)
+			this.cbDestTON.setSelectedItem(dvTON);
+
+		this.cbSrcNPI.removeAllItems();
+		SmppSimulatorParameters.NPI[] vallNPI = SmppSimulatorParameters.NPI.values();
+		SmppSimulatorParameters.NPI dvNPI = null;
+		for (SmppSimulatorParameters.NPI v : vallNPI) {
+			this.cbSrcNPI.addItem(v);
+			if (v == data.getSourceNPI())
+				dvNPI = v;
+		}
+		if (dvNPI != null)
+			this.cbSrcNPI.setSelectedItem(dvNPI);
+
+		this.cbDestNPI.removeAllItems();
+		vallNPI = SmppSimulatorParameters.NPI.values();
+		dvNPI = null;
+		for (SmppSimulatorParameters.NPI v : vallNPI) {
+			this.cbDestNPI.addItem(v);
+			if (v == data.getDestNPI())
+				dvNPI = v;
+		}
+		if (dvNPI != null)
+			this.cbDestNPI.setSelectedItem(dvNPI);
+
+        this.cbValidityType.removeAllItems();
+        SmppSimulatorParameters.ValidityType[] vallValType = SmppSimulatorParameters.ValidityType.values();
+        SmppSimulatorParameters.ValidityType dvValType = null;
+        for (SmppSimulatorParameters.ValidityType v : vallValType) {
+            this.cbValidityType.addItem(v);
+            if (v == data.getValidityType())
+                dvValType = v;
+        }
+        if (dvValType != null)
+            this.cbValidityType.setSelectedItem(dvValType);
+
+        this.cbSendingMessageType.removeAllItems();
+        SmppSimulatorParameters.SendingMessageType[] vallSendingMessageType = SmppSimulatorParameters.SendingMessageType.values();
+        SmppSimulatorParameters.SendingMessageType dvSendingMessageType = null;
+        for (SmppSimulatorParameters.SendingMessageType v : vallSendingMessageType) {
+            this.cbSendingMessageType.addItem(v);
+            if (v == data.getSendingMessageType())
+                dvSendingMessageType = v;
+        }
+        if (dvSendingMessageType != null)
+            this.cbSendingMessageType.setSelectedItem(dvSendingMessageType);
+
+        this.cbMcDeliveryReceipt.removeAllItems();
+        SmppSimulatorParameters.MCDeliveryReceipt[] vallMcDeliveryReceipt = SmppSimulatorParameters.MCDeliveryReceipt.values();
+        SmppSimulatorParameters.MCDeliveryReceipt dvMcDeliveryReceipt = null;
+        for (SmppSimulatorParameters.MCDeliveryReceipt v : vallMcDeliveryReceipt) {
+            this.cbMcDeliveryReceipt.addItem(v);
+            if (v == data.getMcDeliveryReceipt())
+                dvMcDeliveryReceipt = v;
+        }
+        if (dvMcDeliveryReceipt != null)
+            this.cbMcDeliveryReceipt.setSelectedItem(dvMcDeliveryReceipt);
+
+
+        this.cbMessageClass.setSelected(data.isMessageClass());
 	}
 
 	public SmppSimulatorParameters getData() {
@@ -144,9 +361,48 @@ public class SmppMessageParamForm extends JDialog {
 //		this.data = new SmppSimulatorParameters();
 
 		this.data.setMessageText(this.tbMessage.getText());
+		this.data.setSourceAddress(this.tbSourceAddress.getText());
+		this.data.setDestAddress(this.tbDestAddress.getText());
+
+		try {
+			int val = Integer.parseInt(this.tbBulkDestAddressRangeStart.getText());
+			if (val < 0)
+				throw new NumberFormatException();
+			data.setBulkDestAddressRangeStart(val);
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(this, "Error in BulkDestAddressRangeStart filed - it must be digital and positive");
+			return;
+		}
+		try {
+			int val = Integer.parseInt(this.tbBulkDestAddressRangeEnd.getText());
+			if (val < 0)
+				throw new NumberFormatException();
+			data.setBulkDestAddressRangeEnd(val);
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(this, "Error in BulkDestAddressRangeEnd filed - it must be digital and positive");
+			return;
+		}
+		try {
+			int val = Integer.parseInt(this.tbBulkMessagePerSecond.getText());
+			if (val < 0)
+				throw new NumberFormatException();
+			data.setBulkMessagePerSecond(val);
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(this, "Error in BulkMessagePerSecond filed - it must be digital and positive");
+			return;
+		}
 
 		this.data.setEncodingType((SmppSimulatorParameters.EncodingType) cbEncodingType.getSelectedItem());
 		this.data.setSplittingType((SmppSimulatorParameters.SplittingType) cbSplittingType.getSelectedItem());
+		this.data.setSourceTON((SmppSimulatorParameters.TON) cbSrcTON.getSelectedItem());
+		this.data.setSourceNPI((SmppSimulatorParameters.NPI) cbSrcNPI.getSelectedItem());
+		this.data.setDestTON((SmppSimulatorParameters.TON) cbDestTON.getSelectedItem());
+		this.data.setDestNPI((SmppSimulatorParameters.NPI) cbDestNPI.getSelectedItem());
+        this.data.setValidityType((SmppSimulatorParameters.ValidityType) cbValidityType.getSelectedItem());
+        this.data.setSendingMessageType((SmppSimulatorParameters.SendingMessageType) cbSendingMessageType.getSelectedItem());
+        this.data.setMcDeliveryReceipt((SmppSimulatorParameters.MCDeliveryReceipt) cbMcDeliveryReceipt.getSelectedItem());
+
+        this.data.setMessageClass(this.cbMessageClass.isSelected());
 
 		this.dispose();
 	}

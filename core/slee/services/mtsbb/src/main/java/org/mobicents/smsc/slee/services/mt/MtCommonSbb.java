@@ -19,21 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.slee.services.mt;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.slee.ActivityContextInterface;
 import javax.slee.CreateException;
-import javax.slee.EventContext;
 import javax.slee.RolledBackContext;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
 import javax.slee.facilities.Tracer;
-import javax.slee.nullactivity.NullActivity;
+import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
@@ -42,17 +42,13 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
 import org.mobicents.protocols.ss7.map.api.MAPSmsTpduParameterFactory;
-import org.mobicents.protocols.ss7.map.api.dialog.MAPAbortProviderReason;
-import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
 import org.mobicents.protocols.ss7.map.api.dialog.ProcedureCancellationReason;
 import org.mobicents.protocols.ss7.map.api.dialog.ResourceUnavailableReason;
-import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
-import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
-import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessageSMDeliveryFailure;
-import org.mobicents.protocols.ss7.map.api.errors.SMEnumeratedDeliveryFailureCause;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
+import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
+import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.asn.comp.Problem;
@@ -71,65 +67,40 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.slee.services.smpp.server.events.SmsEvent;
+import org.mobicents.smsc.cassandra.ErrorCode;
+import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.Sms;
+import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.SmsSetCashe;
+import org.mobicents.smsc.cassandra.TargetAddress;
+import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
-import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.util.SmppUtil;
 
 /**
  * 
  * @author amit bhayani
+ * @author sergey vetyutnev
  * 
  */
-public abstract class MtCommonSbb implements Sbb {
+public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterface2 {
 
-	private static final byte ESME_DELIVERY_ACK = 0x08;
+    private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
+    private static final ResourceAdaptorTypeID SCHEDULE_ID = new ResourceAdaptorTypeID("SchedulerResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String PERSISTENCE_LINK = "PersistenceResourceAdaptor";
+    private static final String SCHEDULE_LINK = "SchedulerResourceAdaptor";
+    
+	protected static final String MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON = "userSpecificReason";
+	protected static final String MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION = "userResourceLimitation";
+	protected static final String MAP_USER_ABORT_CHOICE_UNKNOWN = "DialogUserAbort_Unknown";
 
-	/**
-	 * MAP Error Code from MAPErrorCode TODO : May be MAPErrorCode must be Enum?
-	 */
-	private static final String MAP_ERR_CODE_SYSTEM_FAILURE = "systemFailure";
-	private static final String MAP_ERR_CODE_DATA_MISSING = "dataMissing";
-	private static final String MAP_ERR_CODE_UNEXPECTED_DATA_VALUE = "unexpectedDataValue";
-	private static final String MAP_ERR_CODE_FACILITY_NOT_SUPPORTED = "facilityNotSupported";
-	private static final String MAP_ERR_CODE_INCOMPATIBLE_TERMINAL = "incompatibleTerminal";
-	private static final String MAP_ERR_CODE_RESOURCE_LIMITATION = "resourceLimitation";
-
-	private static final String MAP_ERR_CODE_SUBSCRIBER_BUSY_FOR_MTSMS = "subscriberBusyForMTSMS";
-	private static final String MAP_ERR_CODE_SM_DELIVERY_FAILURE = "smDeliveryFailure_";
-	private static final String MAP_ERR_CODE_MESSAGE_WAITING_LIST_FULL = "messageWaitingListFull";
-	private static final String MAP_ERR_CODE_ABSENT_SUBSCRIBER_SM = "absentSubscriberSM";
-	private static final String MAP_ERR_CODE_UNKNOWN = "errorComponent_unknown_";
-
-	private static final String MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON = "userSpecificReason";
-	private static final String MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION = "userResourceLimitation";
-	private static final String MAP_USER_ABORT_CHOICE_UNKNOWN = "DialogUserAbort_Unknown";
-
-	private static final String DIALOG_TIMEOUT = "dialogTimeout";
-
-	private static final String CDR_SUCCESS_NO_REASON = "";
-
-	private static final String DELIVERY_ACK_ID = "id:";
-	private static final String DELIVERY_ACK_SUB = " sub:";
-	private static final String DELIVERY_ACK_DLVRD = " dlvrd:";
-	private static final String DELIVERY_ACK_SUBMIT_DATE = " submit date:";
-	private static final String DELIVERY_ACK_DONE_DATE = " done date:";
-	private static final String DELIVERY_ACK_STAT = " stat:";
-	private static final String DELIVERY_ACK_ERR = " err:";
-	private static final String DELIVERY_ACK_TEXT = " text:";
-
-	private static final String DELIVERY_ACK_STATE_DELIVERED = "DELIVRD";
-	private static final String DELIVERY_ACK_STATE_EXPIRED = "EXPIRED";
-	private static final String DELIVERY_ACK_STATE_DELETED = "DELETED";
-	private static final String DELIVERY_ACK_STATE_UNDELIVERABLE = "UNDELIV";
-	private static final String DELIVERY_ACK_STATE_ACCEPTED = "ACCEPTD";
-	private static final String DELIVERY_ACK_STATE_UNKNOWN = "UNKNOWN";
-	private static final String DELIVERY_ACK_STATE_REJECTED = "REJECTD";
+	protected static final String CDR_SUCCESS_NO_REASON = "";
 
 	protected static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-
-	private final SimpleDateFormat DELIVERY_ACK_DATE_FORMAT = new SimpleDateFormat("yyMMddHHmm");
 
 	private final String className;
 
@@ -146,57 +117,36 @@ public abstract class MtCommonSbb implements Sbb {
 
 	protected MAPApplicationContextVersion maxMAPApplicationContextVersion = null;
 
+    protected PersistenceRAInterface persistence;
+    protected SchedulerRaSbbInterface scheduler;
+
 	public MtCommonSbb(String className) {
 		this.className = className;
 	}
+
+    public PersistenceRAInterface getStore() {
+        return this.persistence;
+    }
+
+    public SchedulerRaSbbInterface getScheduler() {
+        return this.scheduler;
+    }
 
 	/**
 	 * MAP Components Events
 	 */
 
-	public void onInvokeTimeout(InvokeTimeout evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onInvokeTimeout" + evt);
-		}
-	}
-
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
-
 		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
-		}
-		// if (mapErrorMessage.isEmAbsentSubscriberSM()) {
-		// this.sendReportSMDeliveryStatusRequest(SMDeliveryOutcome.absentSubscriber);
-		// }
-
-		MAPErrorMessage mapErrorMessage = event.getMAPErrorMessage();
-		String reason = this.getErrorComponentReason(mapErrorMessage);
-
-		SmsEvent original = this.getOriginalSmsEvent();
-
-		if (original != null) {
-			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original, reason);
-			}
+			this.logger.info("\nRx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
 		}
 	}
-
-//	public void onProviderErrorComponent(ProviderErrorComponent event, ActivityContextInterface aci) {
-//		this.logger.severe("Rx :  onProviderErrorComponent" + event);
-//
-//		MAPProviderError mapProviderError = event.getMAPProviderError();
-//		SmsEvent original = this.getOriginalSmsEvent();
-//
-//		if (original != null) {
-//			if (original.getSystemId() != null) {
-//				this.sendFailureDeliverSmToEsms(original, mapProviderError.toString());
-//			}
-//		}
-//	}
 
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onRejectComponent" + event);
+		this.logger.severe("\nRx :  onRejectComponent" + event);
+	}
 
+	protected String getRejectComponentReason(RejectComponent event) {
 		Problem problem = event.getProblem();
 		String reason = null;
 		switch (problem.getType()) {
@@ -217,12 +167,17 @@ public abstract class MtCommonSbb implements Sbb {
 			break;
 		}
 
-		SmsEvent original = this.getOriginalSmsEvent();
+		try {
+			event.getMAPDialog().close(false);
+		} catch (Exception e) {
+		}
 
-		if (original != null) {
-			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original, reason);
-			}
+		return reason;
+	}
+
+	public void onInvokeTimeout(InvokeTimeout evt, ActivityContextInterface aci) {
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx : onInvokeTimeout=" + evt);
 		}
 	}
 
@@ -230,40 +185,25 @@ public abstract class MtCommonSbb implements Sbb {
 	 * Dialog Events
 	 */
 
-	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
-		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogDelimiter=" + evt);
-		}
-	}
-
-	public void onDialogAccept(DialogAccept evt, ActivityContextInterface aci) {
-		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogAccept=" + evt);
-		}
-	}
-
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
 		if (logger.isWarningEnabled()) {
-			this.logger.warning("Rx :  onDialogReject=" + evt);
+			this.logger.warning("\nRx : onDialogReject=" + evt);
 		}
+	}
 
-		// TODO : Error condition. Take care
-
-		MAPRefuseReason refuseReason = evt.getRefuseReason();
-
-		SmsEvent original = this.getOriginalSmsEvent();
-
-		if (original != null) {
-			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original, refuseReason.toString());
-			}
+	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogProviderAbort=" + evt);
 		}
 	}
 
 	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogUserAbort=" + evt);
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogUserAbort=" + evt);
+		}
+	}
 
-		// TODO : Error condition. Take care
+	protected String getUserAbortReason(DialogUserAbort evt) {
 		MAPUserAbortChoice userReason = evt.getUserReason();
 		String reason = null;
 		if (userReason.isUserSpecificReason()) {
@@ -279,69 +219,49 @@ public abstract class MtCommonSbb implements Sbb {
 		} else {
 			reason = MAP_USER_ABORT_CHOICE_UNKNOWN;
 		}
+		return reason;
+	}
 
-		SmsEvent original = this.getOriginalSmsEvent();
-
-		if (original != null) {
-			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original, reason);
-			}
+	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogTimeout=" + evt);
 		}
 	}
 
-	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogProviderAbort=" + evt);
+	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
+		if (logger.isFineEnabled()) {
+			this.logger.fine("\nRx :  onDialogDelimiter=" + evt);
+		}
+	}
 
-		MAPAbortProviderReason abortProviderReason = evt.getAbortProviderReason();
-
-		SmsEvent original = this.getOriginalSmsEvent();
-
-		if (original != null) {
-			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original, abortProviderReason.toString());
-			}
+	public void onDialogAccept(DialogAccept evt, ActivityContextInterface aci) {
+		if (logger.isFineEnabled()) {
+			this.logger.fine("\nRx :  onDialogAccept=" + evt);
 		}
 	}
 
 	public void onDialogClose(DialogClose evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogClose" + evt);
+			this.logger.fine("\nRx :  onDialogClose=" + evt);
 		}
 	}
 
 	public void onDialogNotice(DialogNotice evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("Rx :  onDialogNotice" + evt);
-		}
-	}
-
-	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
-		this.logger.severe("Rx :  onDialogTimeout" + evt);
-
-		SmsEvent original = this.getOriginalSmsEvent();
-
-		if (original != null) {
-			if (original.getSystemId() != null) {
-				this.sendFailureDeliverSmToEsms(original, DIALOG_TIMEOUT);
-			}
+		if (logger.isWarningEnabled()) {
+			this.logger.warning("\nRx :  onDialogNotice" + evt);
 		}
 	}
 
 	public void onDialogRequest(DialogRequest evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("Rx :  onDialogRequest" + evt);
+			this.logger.fine("\nRx :  onDialogRequest=" + evt);
 		}
 	}
 
 	public void onDialogRelease(DialogRelease evt, ActivityContextInterface aci) {
 		if (logger.isInfoEnabled()) {
-			// TODO : Should be fine
-			this.logger.info("Rx :  DialogRelease" + evt);
+			this.logger.info("\nRx :  DialogRelease=" + evt);
 		}
-
-		MtActivityContextInterface mtSbbActivityContextInterface = this.asSbbActivityContextInterface(this
-				.getNullActivityEventContext().getActivityContextInterface());
-		this.resumeNullActivityEventDelivery(mtSbbActivityContextInterface, this.getNullActivityEventContext());
 	}
 
 	/**
@@ -417,11 +337,13 @@ public abstract class MtCommonSbb implements Sbb {
 
 			this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement
 					.getMaxMapVersion());
+            this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, PERSISTENCE_LINK);
+            this.scheduler = (SchedulerRaSbbInterface) this.sbbContext.getResourceAdaptorInterface(SCHEDULE_ID, SCHEDULE_LINK);
+		
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
 		// TODO : Handle proper error
-
 	}
 
 	@Override
@@ -430,26 +352,9 @@ public abstract class MtCommonSbb implements Sbb {
 	}
 
 	/**
-	 * Fire SmsEvent
-	 * 
-	 * @param event
-	 * @param aci
-	 * @param address
-	 */
-	public abstract void fireSendDeliveryReportSms(SmsEvent event, ActivityContextInterface aci,
-			javax.slee.Address address);
-
-	/**
-	 * CMPs
-	 */
-	public abstract void setNullActivityEventContext(EventContext eventContext);
-
-	public abstract EventContext getNullActivityEventContext();
-
-	/**
 	 * Sbb ACI
 	 */
-	public abstract MtActivityContextInterface asSbbActivityContextInterface(ActivityContextInterface aci);
+//	public abstract MtActivityContextInterface asSbbActivityContextInterface(ActivityContextInterface aci);
 
 	/**
 	 * TODO : This is repetitive in each Sbb. Find way to make it static
@@ -462,10 +367,8 @@ public abstract class MtCommonSbb implements Sbb {
 	protected AddressString getServiceCenterAddressString() {
 
 		if (this.serviceCenterAddress == null) {
-			this.serviceCenterAddress = this.mapParameterFactory.createAddressString(
-					AddressNature.international_number,
-					org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN,
-					smscPropertiesManagement.getServiceCenterGt());
+			this.serviceCenterAddress = this.mapParameterFactory.createAddressString(AddressNature.international_number,
+					org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, smscPropertiesManagement.getServiceCenterGt());
 		}
 		return this.serviceCenterAddress;
 	}
@@ -479,143 +382,158 @@ public abstract class MtCommonSbb implements Sbb {
 	 */
 	protected SccpAddress getServiceCenterSccpAddress() {
 		if (this.serviceCenterSCCPAddress == null) {
-			GT0100 gt = new GT0100(0, NumberingPlan.ISDN_TELEPHONY, NatureOfAddress.INTERNATIONAL,
-					smscPropertiesManagement.getServiceCenterGt());
+			GT0100 gt = new GT0100(0, NumberingPlan.ISDN_TELEPHONY, NatureOfAddress.INTERNATIONAL, smscPropertiesManagement.getServiceCenterGt());
 			this.serviceCenterSCCPAddress = new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
 					smscPropertiesManagement.getServiceCenterSsn());
 		}
 		return this.serviceCenterSCCPAddress;
 	}
 
-	protected void resumeNullActivityEventDelivery(MtActivityContextInterface mtSbbActivityContextInterface,
-			EventContext nullActivityEventContext) {
-		if (mtSbbActivityContextInterface.getPendingEventsOnNullActivity() == 0) {
-			// If no more events pending, lets end NullActivity
-			NullActivity nullActivity = (NullActivity) nullActivityEventContext.getActivityContextInterface()
-					.getActivity();
-			nullActivity.endActivity();
-			if (logger.isInfoEnabled()) {
-				this.logger.info(String.format("No more events to be fired on NullActivity=%s:  Ended", nullActivity));
+	protected ISDNAddressString getCalledPartyISDNAddressString(String destinationAddress, int ton, int npi) {
+		return this.mapParameterFactory.createISDNAddressString(AddressNature.getInstance(ton),
+				org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.getInstance(npi), destinationAddress);
+	}
+
+	protected void onDeliveryError(ErrorAction errorAction, ErrorCode smStatus, String reason) {
+
+		SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+		if (smsDeliveryData == null) {
+			if (this.logger.isInfoEnabled())
+				this.logger.info("SmsDeliveryData CMP missed");
+			return;
+		}
+		SmsSet smsSet = smsDeliveryData.getSmsSet();
+		if (smsSet == null) {
+			this.logger.severe("In SmsDeliveryData CMP smsSet is missed");
+			return;
+		}
+		int currentMsgNum = this.doGetCurrentMsgNum();
+		Sms smsa = smsSet.getSms(currentMsgNum);
+		if (smsa != null)
+			this.generateCdr(smsa, CdrGenerator.CDR_FAILED, reason);
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("onDeliveryError: errorAction=");
+		sb.append(errorAction);
+		sb.append(", smStatus=");
+		sb.append(smStatus);
+		sb.append(", smsSet=");
+		sb.append(smsSet);
+		sb.append(", reason=");
+		sb.append(", reason=");
+		if (this.logger.isInfoEnabled())
+			this.logger.info(sb.toString());
+
+		PersistenceRAInterface pers = this.getStore();
+		ArrayList<Sms> lstFailured = new ArrayList<Sms>();
+
+		SMDeliveryOutcome smDeliveryOutcome = null;
+		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
+		synchronized (lock) {
+			try {
+				Date curDate = new Date();
+				try {
+					pers.setDeliveryFailure(smsSet, smStatus, curDate);
+                    this.decrementDeliveryActivityCount();                  
+
+					// first of all we are removing messages that delivery
+					// period is over
+					int smsCnt = smsSet.getSmsCount();
+					int goodMsgCnt = 0;
+					int removedMsgCnt = 0;
+					for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
+						Sms sms = smsSet.getSms(currentMsgNum);
+						if (sms != null) {
+							if (sms.getValidityPeriod().before(curDate)) {
+								pers.archiveFailuredSms(sms);
+								lstFailured.add(sms);
+								removedMsgCnt++;
+							} else {
+								goodMsgCnt++;
+							}
+						}
+					}
+
+					if (goodMsgCnt == 0 || removedMsgCnt > 0) {
+						// no more messages to send
+						// firstly we search for new uploaded message
+						pers.fetchSchedulableSms(smsSet, false);
+						if (smsSet.getSmsCount() == 0)
+							errorAction = ErrorAction.permanentFailure;
+					}
+
+					switch (errorAction) {
+					case subscriberBusy:
+						this.rescheduleSmsSet(smsSet, true, pers);
+						break;
+
+					case memoryCapacityExceededFlag:
+						smDeliveryOutcome = SMDeliveryOutcome.memoryCapacityExceeded;
+						this.rescheduleSmsSet(smsSet, false, pers);
+						break;
+
+					case mobileNotReachableFlag:
+						smDeliveryOutcome = SMDeliveryOutcome.absentSubscriber;
+						this.rescheduleSmsSet(smsSet, false, pers);
+						break;
+
+					case notReachableForGprs:
+						smDeliveryOutcome = SMDeliveryOutcome.absentSubscriber;
+						this.rescheduleSmsSet(smsSet, false, pers);
+						break;
+
+					case temporaryFailure:
+						this.rescheduleSmsSet(smsSet, false, pers);
+						break;
+
+					case permanentFailure:
+	                    smsCnt = smsSet.getSmsCount();
+                        for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
+                            Sms sms = smsSet.getSms(currentMsgNum);
+                            if (sms != null) {
+                                lstFailured.add(sms);
+                            }
+                        }
+						this.freeSmsSetFailured(smsSet, pers);
+						break;
+					}
+
+				} catch (PersistenceException e) {
+					this.logger.severe("PersistenceException when onDeliveryError()" + e.getMessage(), e);
+				}
+
+			} finally {
+				pers.releaseSynchroObject(lock);
 			}
 		}
-		// Resume delivery for rest of the SMS's for this MSISDN
-		if (nullActivityEventContext.isSuspended()) {
-			nullActivityEventContext.resumeDelivery();
-		}
-	}
 
-	protected SmsEvent getOriginalSmsEvent() {
-		EventContext nullActivityEventContext = this.getNullActivityEventContext();
-		SmsEvent smsEvent = null;
-		try {
-			smsEvent = (SmsEvent) nullActivityEventContext.getEvent();
-		} catch (Exception e) {
-			this.logger.severe(
-					String.format("Exception while trying to retrieve SmsEvent from NullActivity EventContext"), e);
-		}
+        for (Sms sms : lstFailured) {
+            // adding an error receipt if it is needed
+            int registeredDelivery = sms.getRegisteredDelivery();
+            if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
+                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
+                lock = SmsSetCashe.getInstance().addSmsSet(ta);
+                try {
+                    synchronized (lock) {
+                        try {
+                            Sms receipt = MessageUtil.createReceiptSms(sms, false);
+                            SmsSet backSmsSet = pers.obtainSmsSet(ta);
+                            receipt.setSmsSet(backSmsSet);
+                            pers.createLiveSms(receipt);
+                            pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                            this.logger.info("Adding an error receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
+                        } catch (PersistenceException e) {
+                            this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet) - adding delivery receipt" + e.getMessage(), e);
+                        }
+                    }
+                } finally {
+                    SmsSetCashe.getInstance().removeSmsSet(lock);
+                }
+            }
+        }
 
-		return smsEvent;
-	}
-
-	protected void sendFailureDeliverSmToEsms(SmsEvent original, String reason) {
-		// TODO check if SmppSession available for this SystemId, if not send to
-		// SnF module
-
-		this.generateCdr(original, CdrGenerator.CDR_FAILED, reason);
-
-		byte registeredDelivery = original.getRegisteredDelivery();
-
-		// Send Delivery Receipt only if requested
-		if (SmppUtil.isSmscDeliveryReceiptRequested(registeredDelivery)
-				|| SmppUtil.isSmscDeliveryReceiptOnFailureRequested(registeredDelivery)) {
-			SmsEvent deliveryReport = new SmsEvent();
-			deliveryReport.setSourceAddr(original.getDestAddr());
-			deliveryReport.setSourceAddrNpi(original.getDestAddrNpi());
-			deliveryReport.setSourceAddrTon(original.getDestAddrTon());
-
-			deliveryReport.setDestAddr(original.getSourceAddr());
-			deliveryReport.setDestAddrNpi(original.getSourceAddrNpi());
-			deliveryReport.setDestAddrTon(original.getSourceAddrTon());
-
-			// Setting SystemId as null, so RxSmppServerSbb actually tries to
-			// find real SmppServerSession from Destination TON, NPI and address
-			// range
-			deliveryReport.setSystemId(null);
-
-			deliveryReport.setSubmitDate(original.getSubmitDate());
-
-			deliveryReport.setMessageId(original.getMessageId());
-
-			// TODO : Set appropriate error code in err:
-			StringBuffer sb = new StringBuffer();
-			sb.append(DELIVERY_ACK_ID).append(original.getMessageId()).append(DELIVERY_ACK_SUB).append("001")
-					.append(DELIVERY_ACK_DLVRD).append("001").append(DELIVERY_ACK_SUBMIT_DATE)
-					.append(DELIVERY_ACK_DATE_FORMAT.format(original.getSubmitDate())).append(DELIVERY_ACK_DONE_DATE)
-					.append(DELIVERY_ACK_DATE_FORMAT.format(new Timestamp(System.currentTimeMillis())))
-					.append(DELIVERY_ACK_STAT).append(DELIVERY_ACK_STATE_UNDELIVERABLE).append(DELIVERY_ACK_ERR)
-					.append("001").append(DELIVERY_ACK_TEXT)
-					.append(this.getFirst20CharOfSMS(original.getShortMessage()));
-
-			byte[] textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_GSM);
-
-			deliveryReport.setShortMessage(textBytes);
-			deliveryReport.setEsmClass(ESME_DELIVERY_ACK);
-
-			NullActivity nullActivity = this.sbbContext.getNullActivityFactory().createNullActivity();
-			ActivityContextInterface nullActivityContextInterface = this.sbbContext
-					.getNullActivityContextInterfaceFactory().getActivityContextInterface(nullActivity);
-
-			this.fireSendDeliveryReportSms(deliveryReport, nullActivityContextInterface, null);
-		}
-	}
-
-	protected void sendSuccessDeliverSmToEsms(SmsEvent original) {
-		// TODO check if SmppSession available for this SystemId, if not send to
-		// SnF module
-
-		this.generateCdr(original, CdrGenerator.CDR_SUCCESS, CDR_SUCCESS_NO_REASON);
-
-		byte registeredDelivery = original.getRegisteredDelivery();
-
-		// Send Delivery Receipt only if requested
-		if (SmppUtil.isSmscDeliveryReceiptRequested(registeredDelivery)) {
-			SmsEvent deliveryReport = new SmsEvent();
-			deliveryReport.setSourceAddr(original.getDestAddr());
-			deliveryReport.setSourceAddrNpi(original.getDestAddrNpi());
-			deliveryReport.setSourceAddrTon(original.getDestAddrTon());
-
-			deliveryReport.setDestAddr(original.getSourceAddr());
-			deliveryReport.setDestAddrNpi(original.getSourceAddrNpi());
-			deliveryReport.setDestAddrTon(original.getSourceAddrTon());
-
-			// Setting SystemId as null, so RxSmppServerSbb actually tries to
-			// find real SmppServerSession from Destination TON, NPI and address
-			// range
-			deliveryReport.setSystemId(null);
-
-			deliveryReport.setSubmitDate(original.getSubmitDate());
-
-			deliveryReport.setMessageId(original.getMessageId());
-
-			StringBuffer sb = new StringBuffer();
-			sb.append(DELIVERY_ACK_ID).append(original.getMessageId()).append(DELIVERY_ACK_SUB).append("001")
-					.append(DELIVERY_ACK_DLVRD).append("001").append(DELIVERY_ACK_SUBMIT_DATE)
-					.append(DELIVERY_ACK_DATE_FORMAT.format(original.getSubmitDate())).append(DELIVERY_ACK_DONE_DATE)
-					.append(DELIVERY_ACK_DATE_FORMAT.format(new Timestamp(System.currentTimeMillis())))
-					.append(DELIVERY_ACK_STAT).append(DELIVERY_ACK_STATE_DELIVERED).append(DELIVERY_ACK_ERR)
-					.append("000").append(DELIVERY_ACK_TEXT)
-					.append(this.getFirst20CharOfSMS(original.getShortMessage()));
-
-			byte[] textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_GSM);
-
-			deliveryReport.setShortMessage(textBytes);
-			deliveryReport.setEsmClass(ESME_DELIVERY_ACK);
-
-			NullActivity nullActivity = this.sbbContext.getNullActivityFactory().createNullActivity();
-			ActivityContextInterface nullActivityContextInterface = this.sbbContext
-					.getNullActivityContextInterfaceFactory().getActivityContextInterface(nullActivity);
-
-			this.fireSendDeliveryReportSms(deliveryReport, nullActivityContextInterface, null);
+		if (smDeliveryOutcome != null) {
+			this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(), smDeliveryOutcome, smsSet.getTargetId());
 		}
 	}
 
@@ -627,7 +545,7 @@ public abstract class MtCommonSbb implements Sbb {
 		return first20CharOfSms;
 	}
 
-	protected void generateCdr(SmsEvent smsEvent, String status, String reason) {
+	protected void generateCdr(Sms smsEvent, String status, String reason) {
 		// Format is
 		// SUBMIT_DATE,SOURCE_ADDRESS,SOURCE_TON,SOURCE_NPI,DESTINATION_ADDRESS,DESTINATION_TON,DESTINATION_NPI,STATUS,SYSTEM-ID,MESSAGE-ID,First
 		// 20 char of SMS, REASON
@@ -636,85 +554,148 @@ public abstract class MtCommonSbb implements Sbb {
 		sb.append(smsEvent.getSubmitDate()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddr())
 				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrTon())
 				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrNpi())
-				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getDestAddr()).append(CdrGenerator.CDR_SEPARATOR)
-				.append(smsEvent.getDestAddrTon()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getDestAddrNpi())
+				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddr()).append(CdrGenerator.CDR_SEPARATOR)
+				.append(smsEvent.getSmsSet().getDestAddrTon()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddrNpi())
 				.append(CdrGenerator.CDR_SEPARATOR).append(status).append(CdrGenerator.CDR_SEPARATOR)
-				.append(smsEvent.getSystemId()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getMessageId())
+				.append(smsEvent.getOrigSystemId()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getMessageId())
 				.append(CdrGenerator.CDR_SEPARATOR).append(this.getFirst20CharOfSMS(smsEvent.getShortMessage()))
 				.append(CdrGenerator.CDR_SEPARATOR).append(reason);
 
 		CdrGenerator.generateCdr(sb.toString());
 	}
 
-	private String getErrorComponentReason(MAPErrorMessage mapErrorMessage) {
-		String reason = null;
-		int errCode = mapErrorMessage.getErrorCode().intValue();
-		switch (errCode) {
-		case MAPErrorCode.systemFailure:
-			reason = MAP_ERR_CODE_SYSTEM_FAILURE;
-			break;
-		case MAPErrorCode.dataMissing:
-			reason = MAP_ERR_CODE_DATA_MISSING;
-			break;
-		case MAPErrorCode.unexpectedDataValue:
-			reason = MAP_ERR_CODE_UNEXPECTED_DATA_VALUE;
-			break;
-		case MAPErrorCode.facilityNotSupported:
-			reason = MAP_ERR_CODE_FACILITY_NOT_SUPPORTED;
-			break;
-		case MAPErrorCode.incompatibleTerminal:
-			reason = MAP_ERR_CODE_INCOMPATIBLE_TERMINAL;
-			break;
-		case MAPErrorCode.resourceLimitation:
-			reason = MAP_ERR_CODE_RESOURCE_LIMITATION;
-			break;
-		// case MAPErrorCode.noRoamingNumberAvailable:
-		// reason = "noRoamingNumberAvailable";
-		// break;
-		// case MAPErrorCode.absentSubscriber:
-		// reason = "absentSubscriber";
-		// break;
-		// case MAPErrorCode.busySubscriber:
-		// reason = "busySubscriber";
-		// break;
-		// case MAPErrorCode.noSubscriberReply:
-		// reason = "noSubscriberReply";
-		// break;
-		// case MAPErrorCode.callBarred:
-		// reason = "callBarred";
-		// break;
-		// case MAPErrorCode.forwardingFailed:
-		// reason = "forwardingFailed";
-		// break;
-		// case MAPErrorCode.orNotAllowed:
-		// reason = "orNotAllowed";
-		// break;
-		// case MAPErrorCode.forwardingViolation:
-		// reason = "forwardingViolation";
-		// break;
-		// case MAPErrorCode.cugReject:
-		// reason = "cugReject";
-		// break;
-		case MAPErrorCode.subscriberBusyForMTSMS:
-			reason = MAP_ERR_CODE_SUBSCRIBER_BUSY_FOR_MTSMS;
-			break;
-		case MAPErrorCode.smDeliveryFailure:
-			MAPErrorMessageSMDeliveryFailure mapErrorMessageSMDeliveryFailure = mapErrorMessage
-					.getEmSMDeliveryFailure();
-			SMEnumeratedDeliveryFailureCause smEnumeratedDeliveryFailureCause = mapErrorMessageSMDeliveryFailure
-					.getSMEnumeratedDeliveryFailureCause();
-			reason = MAP_ERR_CODE_SM_DELIVERY_FAILURE + smEnumeratedDeliveryFailureCause.toString();
-			break;
-		case MAPErrorCode.messageWaitingListFull:
-			reason = MAP_ERR_CODE_MESSAGE_WAITING_LIST_FULL;
-			break;
-		case MAPErrorCode.absentSubscriberSM:
-			reason = MAP_ERR_CODE_ABSENT_SUBSCRIBER_SM;
-			break;
-		default:
-			reason = MAP_ERR_CODE_UNKNOWN + errCode;
+	public abstract void doSetSmsSubmitData(SmsSubmitData smsDeliveryData);
+
+	public abstract SmsSubmitData doGetSmsSubmitData();
+
+	public abstract void doSetCurrentMsgNum(int currentMsgNum);
+
+	public abstract int doGetCurrentMsgNum();
+
+	public abstract void doSetInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer);
+
+	public abstract InformServiceCenterContainer doGetInformServiceCenterContainer();
+
+
+	/**
+	 * Mark a message that its delivery has been started
+	 * 
+	 * @param sms
+	 */
+	protected void startMessageDelivery(Sms sms) {
+
+		try {
+			this.getStore().setDeliveryStart(sms);
+		} catch (PersistenceException e) {
+			this.logger.severe("PersistenceException when setDeliveryStart(sms)" + e.getMessage(), e);
 		}
-		return reason;
+	}
+
+	/**
+	 * remove smsSet from LIVE database after all messages has been delivered
+	 * 
+	 * @param smsSet
+	 */
+	protected void freeSmsSetSucceded(SmsSet smsSet, PersistenceRAInterface pers) {
+
+		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
+		try {
+			synchronized (lock) {
+				try {
+					Date lastDelivery = new Date();
+					pers.setDeliverySuccess(smsSet, lastDelivery);
+					this.decrementDeliveryActivityCount();					
+
+					if (!pers.deleteSmsSet(smsSet)) {
+						Date newDueDate = MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay());
+						pers.fetchSchedulableSms(smsSet, false);
+						newDueDate = MessageUtil.checkScheduleDeliveryTime(smsSet, newDueDate);
+						pers.setNewMessageScheduled(smsSet, newDueDate);
+					}
+				} catch (PersistenceException e) {
+					this.logger.severe("PersistenceException when freeSmsSetSucceded(SmsSet smsSet)" + e.getMessage(), e);
+				}
+			}
+		} finally {
+			pers.releaseSynchroObject(lock);
+		}
+	}
+
+	/**
+	 * remove smsSet from LIVE database after permanent delivery failure
+	 * 
+	 * @param smsSet
+	 * @param pers
+	 */
+	protected void freeSmsSetFailured(SmsSet smsSet, PersistenceRAInterface pers) {
+
+		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
+		try {
+			synchronized (lock) {
+				try {
+					pers.fetchSchedulableSms(smsSet, false);
+					int cnt = smsSet.getSmsCount();
+					for (int i1 = 0; i1 < cnt; i1++) {
+						Sms sms = smsSet.getSms(i1);
+						pers.archiveFailuredSms(sms);
+					}
+
+					pers.deleteSmsSet(smsSet);
+				} catch (PersistenceException e) {
+					this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet)" + e.getMessage(), e);
+				}
+			}
+		} finally {
+			pers.releaseSynchroObject(lock);
+		}
+	}
+
+	/**
+	 * make new schedule time for smsSet after temporary failure
+	 * 
+	 * @param smsSet
+	 */
+	protected void rescheduleSmsSet(SmsSet smsSet, boolean busySuscriber, PersistenceRAInterface pers) {
+
+		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
+		try {
+			synchronized (lock) {
+
+				try {
+					int prevDueDelay = smsSet.getDueDelay();
+					int newDueDelay;
+					if (busySuscriber) {
+						newDueDelay = MessageUtil.computeDueDelaySubscriberBusy();
+					} else {
+						newDueDelay = MessageUtil.computeNextDueDelay(prevDueDelay);
+					}
+
+					Date newDueDate = new Date(new Date().getTime() + newDueDelay * 1000);
+
+					newDueDate = MessageUtil.checkScheduleDeliveryTime(smsSet, newDueDate);
+					pers.setDeliveringProcessScheduled(smsSet, newDueDate, newDueDelay);
+				} catch (PersistenceException e) {
+					this.logger.severe("PersistenceException when rescheduleSmsSet(SmsSet smsSet)" + e.getMessage(), e);
+				}
+			}
+		} finally {
+			pers.releaseSynchroObject(lock);
+		}
+	}
+
+    private void decrementDeliveryActivityCount() {
+        if (this.scheduler != null)
+            this.scheduler.decrementDeliveryActivityCount();
+    }
+
+	public enum ErrorAction {
+		subscriberBusy, 
+		memoryCapacityExceededFlag, // MNRF 
+		mobileNotReachableFlag, // MNRF
+		notReachableForGprs, // MNRG
+		permanentFailure,
+		temporaryFailure,
 	}
 
 }
+

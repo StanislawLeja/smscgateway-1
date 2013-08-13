@@ -13,6 +13,9 @@
 		<sbb-classes>
 			<sbb-abstract-class>
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.smpp.server.rx.RxSmppServerSbb</sbb-abstract-class-name>
+
+				<cmp-field><cmp-field-name>smsDeliveryData</cmp-field-name></cmp-field>
+				<cmp-field><cmp-field-name>currentMsgNum</cmp-field-name></cmp-field>
 			</sbb-abstract-class>
 		</sbb-classes>
 
@@ -67,5 +70,31 @@
 				<resource-adaptor-entity-link>SmppServerRA</resource-adaptor-entity-link>
 			</resource-adaptor-entity-binding>
 		</resource-adaptor-type-binding>
+
+		<resource-adaptor-type-binding>
+			<resource-adaptor-type-ref>
+				<resource-adaptor-type-name>PersistenceResourceAdaptorType</resource-adaptor-type-name>
+				<resource-adaptor-type-vendor>org.mobicents</resource-adaptor-type-vendor>
+				<resource-adaptor-type-version>1.0</resource-adaptor-type-version>
+			</resource-adaptor-type-ref>
+			
+			<resource-adaptor-entity-binding>
+				<resource-adaptor-object-name>slee/resources/persistence/1.0/provider</resource-adaptor-object-name>
+				<resource-adaptor-entity-link>PersistenceResourceAdaptor</resource-adaptor-entity-link>
+			</resource-adaptor-entity-binding>
+		</resource-adaptor-type-binding>		
+
+		<resource-adaptor-type-binding>
+			<resource-adaptor-type-ref>
+				<resource-adaptor-type-name>SchedulerResourceAdaptorType</resource-adaptor-type-name>
+				<resource-adaptor-type-vendor>org.mobicents</resource-adaptor-type-vendor>
+				<resource-adaptor-type-version>1.0</resource-adaptor-type-version>
+			</resource-adaptor-type-ref>
+
+			<resource-adaptor-entity-binding>
+				<resource-adaptor-object-name>slee/resources/scheduler/1.0/provider</resource-adaptor-object-name>
+				<resource-adaptor-entity-link>SchedulerResourceAdaptor</resource-adaptor-entity-link>
+			</resource-adaptor-entity-binding>
+		</resource-adaptor-type-binding>		
 	</sbb>
 </sbb-jar>
