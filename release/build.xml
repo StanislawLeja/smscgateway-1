@@ -191,7 +191,7 @@
             <arg value="clone" />
             <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-smscgateway.git" />
             <arg value="-b" />
-            <arg value="persistence" />
+            <arg value="master" />
             <arg value="${checkout.telscale-smsc.dir}" />
         </exec>
     </target>
