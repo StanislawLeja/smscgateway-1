@@ -148,8 +148,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		String systemType = null;
 		SmppInterfaceVersionType smppVersionType = null;
-		byte esmeTonType = 0;
-		byte esmeNpiType = 0;
+		byte esmeTonType = (byte)smscPropertiesManagement.getDefaultTon();
+		byte esmeNpiType = (byte)smscPropertiesManagement.getDefaultNpi();
 		String esmeAddrRange = null;
 		String clusterName = name;
 
@@ -206,10 +206,6 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		}
 
-		if ((SmppBindType.TRANSCEIVER == smppBindType || SmppBindType.RECEIVER == smppBindType)
-				&& esmeAddrRange == null) {
-			return SMSCOAMMessages.NULL_ESME_ADDRESS_RANGE;
-		}
 		Address address = new Address(esmeTonType, esmeNpiType, esmeAddrRange);
 		Esme esme = this.smscManagement.getEsmeManagement().createEsme(name, systemId, password, host, intPort,
 				smppBindType, systemType, smppVersionType, address, smppSessionType, windowSize, connectTimeout,
