@@ -1,0 +1,41 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<packaging>pom</packaging>
+	
+	<artifactId>ts-mobicents-slee-ra-map</artifactId>
+	<groupId>org.mobicents.resources</groupId>
+	<version>6.1.4.GA-TelScale</version>
+
+	<name>Telscale :: Resources :: ${pom.artifactId}</name>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.mobicents.resources</groupId>
+			<artifactId>mobicents-slee-ra-map-du</artifactId>
+			<version>${project.version}</version>
+		</dependency>		
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>src/main/assembly/descriptor.xml</descriptor>
+					</descriptors>
+					<finalName>map</finalName>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+							<goal>directory-single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
