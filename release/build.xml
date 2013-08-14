@@ -230,6 +230,8 @@
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
     	<mkdir dir="${release.dir}/jboss-5.1.0.GA/server/default/data"/>
+	    <copy file="${basedir}/telestax-license.xml" todir="${release.dir}/jboss-5.1.0.GA/server/default/conf" failonerror="true" />
+	    <copy file="${basedir}/profile.xml" todir="${release.dir}/jboss-5.1.0.GA/server/default/conf/bootstrap" failonerror="true" overwrite="true"/>
 		<!--simulator-->
         <copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/telscale-smsc-server" failonerror="true">
                 <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/target/telscale-smsc-server">
@@ -245,6 +247,8 @@
                         <include name="**" />
                 </fileset>
         </copy>
+	    <copy file="${basedir}/telestax-license.xml" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/conf" failonerror="true" />
+	    <copy file="${basedir}/profile.xml" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/bootstrap" failonerror="true" overwrite="true"/>
 		<!--tools-->
 		<copy todir="${release.dir}/tools/TelScale-jss7-simulator" failonerror="true">
 		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/ss7/Telscale-ss7-simulator">
