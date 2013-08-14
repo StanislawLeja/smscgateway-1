@@ -251,8 +251,8 @@
 		                <include name="**" />
 		        </fileset>
 		</copy>
-		<copy todir="${release.dir}/tools/TelScale-smsc-simulator" failonerror="true">
-		        <fileset dir="${checkout.telscale-smsc.dir}/test/bootstrap/target/smsc-server">
+		<copy todir="${release.dir}/tools/TelScale-smpp-simulator" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/tools/smpp-simulator/bootstrap/target/simulator-smpp">
 		                <include name="**" />
 		        </fileset>
 		</copy>
@@ -272,7 +272,17 @@
 		<!-- TelScale Management HQ -->
 		<echo>TelScale Management Hq</echo>
 		<copy file="${checkout.telscale-management-hq.dir}/telscale-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-		<copy file="${checkout.telscale-management-hq.dir}/telscale-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />	
+		<copy file="${checkout.telscale-management-hq.dir}/telscale-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+    	
+		<!-- Cassandra -->
+		<echo>Copy Cassandra conf</echo>
+		<copy todir="${release.dir}/cassandra" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/cassandra">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+		<!-- jss7 config-->    	
+		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/main_simulator2.xml" todir="${release.dir}/tools/TelScale-jss7-simulator/bin" failonerror="true" />
     	
     	
     </target>
