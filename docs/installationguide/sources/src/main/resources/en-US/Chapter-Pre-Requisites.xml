@@ -57,6 +57,12 @@
 									<entry> </entry>	
 									
 								</row>
+								<row>
+									<entry>Database</entry>
+									<entry>You must have Cassandra database (version 1.2 or higher) installed. We recommend that you use the latest version (1.2.6 is the most recent version yet).</entry>
+									<entry> </entry>	
+									
+								</row>
 					<!--			
 								<row>
 									<entry>SCTP libraries</entry>

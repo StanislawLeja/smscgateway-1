@@ -7,10 +7,23 @@
 	id="revision_history">
 	<title>Revision History</title>
 	<simpara>
-		<revhistory>		
+		<revhistory>	
+			<revision>
+				<revnumber>2.0</revnumber>
+				<date>August 12, 2013</date>
+				<author>
+					<firstname>Vinu S</firstname>
+					<surname>Renish</surname>
+				</author>
+				<revdescription>
+					<simplelist>
+						<member>Document edited to incorporate changes for 6.1.4.GA release. Instructions added for Cassandra set up.</member>
+					</simplelist>
+				</revdescription>
+			</revision>	
 			<revision>
 				<revnumber>1.0</revnumber>
-				<date>June 2 2012</date>
+				<date>June 2, 2012</date>
 				<author>
 					<firstname>Vinu S</firstname>
 					<surname>Renish</surname>

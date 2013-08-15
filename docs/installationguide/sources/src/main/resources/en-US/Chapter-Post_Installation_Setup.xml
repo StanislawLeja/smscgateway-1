@@ -22,23 +22,66 @@
  				</varlistentry>
 </variablelist>
 	</section>
-	<!--<section id="database_settings">
+	<section id="database_settings">
 		<title>Database Settings</title>
 		<para>
-			Every transaction in the &THIS.PLATFORM; &THIS.APPLICATION; is logged in a Database. By default, transactions are logged in the HSQLDB that comes bundled with JBoss AS and leverages the JBoss AS DataSource. However this is only made available to allow the platform to run "out of the box". You must configure a production ready Database prior to using the Gateway in a production environment. &THIS.PLATFORM; &THIS.APPLICATION; has been tested with PostgreSQL and MySQL.
-		</para>
-		<para>
-			The example HSQLDB DataSource is bound to the JNDI name java:/DefaultDS and its descriptor is available in the file <filename>smsc-telscale-slee-&tl;version&gt;/jboss-5.1.0.GA/server/default/deploy/hsqldb-ds.xml</filename>. You must delete this datasource and configure the Platform to use your choice of Database. For instructions on configuring an alternate DataSource, please refer to Chapter 14, "Using Other Databases" in the JBoss AS Getting Started Guide available <ulink url="https://community.jboss.org/wiki/JBossAS5InstallationAndGettingStartedGuide">here</ulink>. You will also find a lot of examples in the folder <filename>smsc-telscale-slee-&tl;version&gt;/jboss-5.1.0.GA/docs/examples/jca/</filename>.
-		</para>
-		<warning>
-			<para>HSQLDB must not be used in a production environment. You must ensure that you delete this datasource and configure a production-friendly Database like PostgreSQL or MySQL.</para>
-		</warning>
-		
-	</section>-->
+			You must ensure that you configure the database correctly before using the &THIS.PLATFORM; &THIS.APPLICATION; in production. Cassandra has the concept of a keyspace, which is similar to a database in a RDBMS. You must create a keyspace by following the instructions in the procedure below:</para> 
+		<procedure>
+			<title>Create a Cassandra database (keyspace)</title>
+			<step><para>
+			You must have the database running prior to creating the keyspace. For instructions on how to run Cassandra, please refer to the vendor documentation available in their website <ulink url="http://wiki.apache.org/cassandra/GettingStarted"></ulink>.
+<screen><![CDATA[
+[vinu@vinu-neha]$ cd $CASSANDRA_HOME
+[vinu@vinu-neha cassandra]$ ./bin/cassandra -f
+]]>
+</screen>    
+			</para></step>
+			<step><para>
+			When you have the database running successfully, you can proceed to creating the keyspace by launching the <literal>telscale-smscgateway-&lt;version&gt;/cassandra/cassandra.cql</literal> script available in the &THIS.PLATFORM; &THIS.APPLICATION; distributive. If you are using Linux, then change your working directory to the Cassandra Database installation directory and at the command prompt enter the following command:
+<screen><![CDATA[
+[vinu@vinu-neha]$ cd $CASSANDRA_HOME
+[vinu@vinu-neha cassandra]$ ./bin/cqlsh -f  $SMSC_DIR/cassandra/cassadra.cql
+
+where $SMSC_DIR is the installation directory of TelScale SMSC Gateway.
+]]>
+</screen>
+
+If you are using Microsoft Windows, you must run the <literal>telscale-smscgateway-&lt;version&gt;/cassandra/cassandra.cql</literal> script at the command prompt by entering the following command:
+<screen><![CDATA[
+C:\cassandra> python cqlsh -f $SMSC_DIR/cassandra/cassandra.cql
+
+where $SMSC_DIR is the installation directory of TelScale SMSC Gateway.
+]]>
+</screen>
+You may have to resolve folder paths by specifying appropriate folder path in the commands.
+			</para></step>
+			<step><para>
+			If the above step is executed successfully, the script must not return any error message.
+			</para></step>
+			<step><para>
+A new database (keyspace) will be created locally (a single working Cassandra node). It is a Cassandra cluster which has only one node. By adding more nodes, you can make it a multi node cluster.  
+			</para></step>
+		</procedure>
+		<procedure>
+		<title>Destroy a Cassandra database (keyspace)</title>
+		<step><para>To destroy a Cassandra database (keyspace) you can make use of the <literal>cql</literal> command:
+<screen><![CDATA[
+DROP KEYSPACE "TelestaxSMSC";
+]]>
+</screen>
+		</para></step>
+		<step><para>
+Executing the above <literal>cql</literal> command will result in the immediate, irreversible removal of the keyspace 'TelestaxSMSC', including all column families and data contained in the keyspace.
+		</para></step>
+		</procedure>
+
+	</section>
 <section id="ss7_smsc_settings">
 		<title>Configuring the Gateway</title>
 		<para>
-		Now that you have installed &THIS.PLATFORM; &THIS.APPLICATION; to suit your needs, you can go ahead and configure the SS7 Stack and the SMSC Gateway to meet your requirements. The &THIS.PLATFORM; jSS7 Stack Admin Guide in the <filename>telscale-smscgateway-&lt;version&gt;/docs/ss7/</filename> folder will assist you in configuring and managing the SS7 Stack. Only when you have completely configured the SS7 Stack to meet your requirements, you must go ahead with configuring the SMSC Gateway. The &THIS.PLATFORM; &THIS.APPLICATION; Admin Guide in the <filename>telscale-smscgateway-&lt;version&gt;/docs/smsc/</filename> folder will assist you in configuring and managing the SMSC Gateway. To configure and manage both the Stack and the Gateway you must use the Command Line Interface (CLI) tool that comes with the platform. For instructions on starting the Shell and help with commands, please refer to the &THIS.PLATFORM; &THIS.APPLICATION; Admin Guide.
+		Now that you have installed &THIS.PLATFORM; &THIS.APPLICATION; to suit your needs, you can go ahead and configure the SS7 Stack and the SMSC Gateway to meet your requirements. The &THIS.PLATFORM; jSS7 Stack Admin Guide in the <filename>telscale-smscgateway-&lt;version&gt;/docs/ss7/</filename> folder will assist you in configuring and managing the SS7 Stack. Only when you have completely configured the SS7 Stack to meet your requirements, you must go ahead with configuring the SMSC Gateway. 
+		</para>
+		<para>The &THIS.PLATFORM; &THIS.APPLICATION; Admin Guide in the <filename>telscale-smscgateway-&lt;version&gt;/docs/smsc/</filename> folder will assist you in configuring and managing the SMSC Gateway. To configure and manage both the Stack and the Gateway you can use the Command Line Interface (CLI) tool or the GUI Management Console that comes with the platform.
 		</para>	
 	</section>
 

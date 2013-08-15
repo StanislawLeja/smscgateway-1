@@ -44,6 +44,7 @@
 
 <screen><![CDATA[
 |- telscale-smscgateway-<version>
+		|- cassandra
 		|- docs
 				|+ jss7
 				|+ slee
@@ -62,7 +63,8 @@
 		|- tools
 				|+ eclipslee
 				|+ jopr-plugin
-				|+ jss7-simulator
+				|+ Telscale-jss7-simulator
+				|+ Telscale-smsc-simulator
 				|+ remote-slee-connection
 				|+ test-msc-simulator
 				|+ twiddle
