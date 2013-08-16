@@ -25,130 +25,164 @@
                         <div class="tab-pane active" id="properties" style="margin-left: 10px;">
                         	
                         	<h5 style="border-bottom: 1px solid #DDD;">SMS Validity Configuration</h5> 
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMS arrives without validity period, default validity period (in hours) will be used">
-								<span class="add-on">Default validity period hours (in hours)</span>
-								<input id="propdefaultvalidityhrs" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
-							</span>
+                        	
+                        	<div id="div-propdefaultvalidityhrs" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMS arrives without validity period, default validity period (in hours) will be used">
+									<span class="add-on">Default validity period hours (in hours)</span>
+									<input id="propdefaultvalidityhrs" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span>
+							</div>	
+							<div id="div-propmaxvalidityhrs" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMS arrives with validity period greater than maximum validity period configured, it will be reset to maximum validity">
+									<span class="add-on">Maximum validity period (in hours)</span>
+									<input id="propmaxvalidityhrs" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span>
+							</div>
 							&nbsp;
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMS arrives with validity period greater than maximum validity period configured, it will be reset to maximum validity">
-								<span class="add-on">Maximum validity period (in hours)</span>
-								<input id="propmaxvalidityhrs" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
-							</span>
-							
                         	<h5 style="border-bottom: 1px solid #DDD;">SMPP/ESME Configuration</h5> 
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMS is received via SMPP without TON, below configured TON will be used">
-								<span class="add-on">Default type of number (TON)</span>
-								<input id="propdefaultton" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
-							</span>														
+                        	<div id="div-propdefaultton" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMS is received via SMPP without TON, below configured TON will be used">
+									<span class="add-on">Default type of number (TON)</span>
+									<input id="propdefaultton" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span>						
+							</div>								
+							<div id="div-propdefaultnpi" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMS is received via SMPP without NPI, below configured NPI will be used">
+									<span class="add-on">Default numbering plan indicator (NPI)</span>
+									<input id="propdefaultnpi" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span>
+							</div>
+							<div id="div-esmedefaultclustername" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if destinationAddress does not match to any esme (any ClusterName) or a message will be routed to defaultClusterName (only for DatabaseSmsRoutingRule) if it is specified">
+									<span class="add-on">Cluster Name</span>
+									<input id="esmedefaultclustername" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
+								</span>                         
+							</div>
 							&nbsp;
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMS is received via SMPP without NPI, below configured NPI will be used">
-								<span class="add-on">Default numbering plan indicator (NPI)</span>
-								<input id="propdefaultnpi" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
-							</span>
-							&nbsp;
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if destinationAddress does not match to any esme (any ClusterName) or a message will be routed to defaultClusterName (only for DatabaseSmsRoutingRule) if it is specified">
-								<span class="add-on">Cluster Name</span>
-								<input id="esmedefaultclustername" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
-							</span>                         
-                        	<h5 style="border-bottom: 1px solid #DDD;">Delivery Delay Configuration</h5> 
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="delay after delivering failure with cause subscriber busy (sec)">
-								<span class="add-on">Subscriber busy due delay (in sec)</span>
-								<input id="propsubbusduedel" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
-							</span>														
-							&nbsp;	
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="delay before first delivering try after incoming message receiving (sec) ">
-								<span class="add-on">First due delay (in sec)</span>
-								<input id="propfirduedel" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
-							</span>														
-							&nbsp;	
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="delay after first delivering failure (sec)">
-								<span class="add-on">Second due delay (in sec)</span>
-								<input id="propsecduedel" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
-							</span>														
-							&nbsp;																					                        
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="max possible delay between delivering failure (sec)">
-								<span class="add-on">Max due delay (in sec)</span>
-								<input id="propmaxduedel" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
-							</span>														
-							&nbsp;																					                        
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="next delay (after failure will be calculated as prevDueDelay * dueDelayMultiplicator / 100")">
-								<span class="add-on">Due delay multiplicator</span>
-								<input id="duedelaymultiplicator" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
-							</span>														
-							&nbsp;							
+                        	<h5 style="border-bottom: 1px solid #DDD;">Delivery Delay Configuration</h5>
+                        	<div id="div-propsubbusduedel" class="control-group"> 
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="delay after delivering failure with cause subscriber busy (sec)">
+									<span class="add-on">Subscriber busy due delay (in sec)</span>
+									<input id="propsubbusduedel" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span>														
+							</div>
+							<div id="div-propfirduedel" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="delay before first delivering try after incoming message receiving (sec) ">
+									<span class="add-on">First due delay (in sec)</span>
+									<input id="propfirduedel" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span>												
+							</div>		
+							<div id="div-propsecduedel" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="delay after first delivering failure (sec)">
+									<span class="add-on">Second due delay (in sec)</span>
+									<input id="propsecduedel" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span>												
+							</div>		
+							<div id="div-propmaxduedel" class="control-group">									                        
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="max possible delay between delivering failure (sec)">
+									<span class="add-on">Max due delay (in sec)</span>
+									<input id="propmaxduedel" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span>												
+							</div>		
+							<div id="div-duedelaymultiplicator" class="control-group">									                        
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="next delay (after failure will be calculated as prevDueDelay * dueDelayMultiplicator / 100")">
+									<span class="add-on">Due delay multiplicator</span>
+									<input id="duedelaymultiplicator" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span>												
+							</div>		
                         </div>  				 	
                         <div class="tab-pane" id="ss7settings">
                         	<h5 style="border-bottom: 1px solid #DDD;">Global Title Configuration</h5>
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC Gateway Global Title">
-								<span class="add-on">SMSC Gateway Global Title</span>
-								<input id="ussdgt" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
-							</span>
-							<h5 style="border-bottom: 1px solid #DDD;">Sub System Number Configuration</h5>        
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC Gateway subsystem number">
-								<span class="add-on">SMSC Gateway subsystem number</span>
-								<input id="ussdssn" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
-							</span>	
+                        	<div id="div-ussdgt" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC Gateway Global Title">
+									<span class="add-on">SMSC Gateway Global Title</span>
+									<input id="ussdgt" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
+								</span>
+							</div>
 							&nbsp;
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="HLR subsystem number">
-								<span class="add-on">HLR subsystem number</span>
-								<input id="hlrssn" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
-							</span>	
+							<h5 style="border-bottom: 1px solid #DDD;">Sub System Number Configuration</h5>
+							<div id="div-ussdssn" class="control-group">        
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC Gateway subsystem number">
+									<span class="add-on">SMSC Gateway subsystem number</span>
+									<input id="ussdssn" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
+								</span>	
+							</div>
+							<div id="div-hlrssn" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="HLR subsystem number">
+									<span class="add-on">HLR subsystem number</span>
+									<input id="hlrssn" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
+								</span>	
+							</div>
+							<div id="div-mscssn" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="MSC subsystem number">
+									<span class="add-on">MSC subsystem number</span>
+									<input id="mscssn" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
+								</span>
+							</div>
 							&nbsp;
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="MSC subsystem number">
-								<span class="add-on">MSC subsystem number</span>
-								<input id="mscssn" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
-							</span>
-							<h5 style="border-bottom: 1px solid #DDD;">SS7 Version Configuration</h5>        						                		
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="this is MAP version supported. The outgoing message will be formed for this MAP version, if far end returns error indicating lower/highers version, SMSC Gw will automatically create new message with lower/highers version of MAP message">
-								<span class="add-on">MAP version supported</span>
-								<input id="maxmapv" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
-							</span>	
-							<h5 style="border-bottom: 1px solid #DDD;">Others</h5>        						                		
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="empty TC-BEGIN will be used if messageLength > maxPossibleMessageLength - maxMessageLengthReduce. Recommended value = 6 Possible values from 0 to 12">
-								<span class="add-on">Max Message Length Reducer</span>
-								<input id="maxmessagelengthreducer" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
-							</span>								
+							<h5 style="border-bottom: 1px solid #DDD;">SS7 Version Configuration</h5>
+							<div id="div-maxmapv" class="control-group">        						                		
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="this is MAP version supported. The outgoing message will be formed for this MAP version, if far end returns error indicating lower/highers version, SMSC Gw will automatically create new message with lower/highers version of MAP message">
+									<span class="add-on">MAP version supported</span>
+									<input id="maxmapv" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
+								</span>	
+							</div>
+							&nbsp;
+							<h5 style="border-bottom: 1px solid #DDD;">Others</h5>
+							<div id="div-maxmessagelengthreducer" class="control-group">        						                		
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="empty TC-BEGIN will be used if messageLength > maxPossibleMessageLength - maxMessageLengthReduce. Recommended value = 6 Possible values from 0 to 12">
+									<span class="add-on">Max Message Length Reducer</span>
+									<input id="maxmessagelengthreducer" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
+								</span>								
+							</div>
                         </div>
                          <div class="tab-pane" id="dbsettings">
 							<h5 style="border-bottom: 1px solid #DDD;">Cassandra Configuration</h5>
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cassandra host address">
-								<span class="add-on">Host Address</span>
-								<input id="cassandrahost" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
-							</span>                         
-							<br/><br/>
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cassandra port">
-								<span class="add-on">Port</span>
-								<input id="cassandraport" type="text" class="input-mini" style="width: 100px; margin-right: 12px; text-align: center;" value="0" />
-							</span>                         
-							<br/><br/>
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cassandra keyspace name">
-								<span class="add-on">Keyspace Name</span>
-								<input id="cassandrakeyspace" type="text" class="input-mini" style="width: 100px; margin-right: 12px; text-align: center;" value="0" />
-							</span>                         
-							<br/><br/>
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cassandra cluster name">
-								<span class="add-on">Cluster Name</span>
-								<input id="cassandraclustername" type="text" class="input-mini" style="width: 100px; margin-right: 12px; text-align: center;" value="0" />
-							</span>                         
-							<br/><br/>							
-																					
+							<div id="div-cassandrahost" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cassandra host address">
+									<span class="add-on">Host Address</span>
+									<input id="cassandrahost" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
+								</span>                         
+							</div>
+							<div id="div-cassandraport" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cassandra port">
+									<span class="add-on">Port</span>
+									<input id="cassandraport" type="text" class="input-mini" style="width: 100px; margin-right: 12px; text-align: center;" value="0" />
+								</span>                         
+							</div>
+							<div id="div-cassandrakeyspace" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cassandra keyspace name">
+									<span class="add-on">Keyspace Name</span>
+									<input id="cassandrakeyspace" type="text" class="input-mini" style="width: 100px; margin-right: 12px; text-align: center;" value="0" />
+								</span>                         
+							</div>
+							<div id="div-cassandraclustername" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cassandra cluster name">
+									<span class="add-on">Cluster Name</span>
+									<input id="cassandraclustername" type="text" class="input-mini" style="width: 100px; margin-right: 12px; text-align: center;" value="0" />
+								</span>                         
+							</div>
                         </div>
                         <div class="tab-pane" id="scheduler">
 							<h5 style="border-bottom: 1px solid #DDD;">Scheduler Configuration</h5>
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="period of fetching messages from a database for delivering">
-								<span class="add-on">Fetch Period (in ms)</span>
-								<input id="schedulerfetchperiod" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
-							</span> 
-							&nbsp;
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="max message fetching count for one fetching step">
-								<span class="add-on">Max Rows</span>
-								<input id="schedulerfetchmaxrows" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
-							</span> 
-							&nbsp;
+							<div id="div-schedulerfetchperiod" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="period of fetching messages from a database for delivering">
+									<span class="add-on">Fetch Period (in ms)</span>
+									<input id="schedulerfetchperiod" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span> 
+							</div>
+							<div id="div-schedulerfetchmaxrows" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="max message fetching count for one fetching step">
+									<span class="add-on">Max Rows</span>
+									<input id="schedulerfetchmaxrows" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span> 
+							</div>
+							<div id="div-schedulerfetchmaxactivity" class="control-group">
 							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="max count of delivering Activities that are possible at the same time">
 								<span class="add-on">Max Activity Count</span>
 								<input id="schedulerfetchmaxactivity" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 							</span> 
+							</div>
                         </div>                        
 					</div>	
 					</span>					 
@@ -219,103 +253,103 @@
 						
 						var propdefaultvalidityhrs = $("#propdefaultvalidityhrs").val();
 						if(propdefaultvalidityhrs.trim() == "") {
-			    			$("#propdefaultvalidityhrs").addClass("required");					    			
+			    			$("#div-propdefaultvalidityhrs").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#propdefaultvalidityhrs").hasClass("required")) {
-			    			$("#propdefaultvalidityhrs").removeClass("required");		
+			    		} else if($("#div-propdefaultvalidityhrs").hasClass("error")) {
+			    			$("#div-propdefaultvalidityhrs").removeClass("error");		
 			    		}
 						
 						var propmaxvalidityhrs = $("#propmaxvalidityhrs").val();
 						if(propmaxvalidityhrs.trim() == "") {
-			    			$("#propmaxvalidityhrs").addClass("required");					    			
+			    			$("#div-propmaxvalidityhrs").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#propmaxvalidityhrs").hasClass("required")) {
-			    			$("#propmaxvalidityhrs").removeClass("required");		
+			    		} else if($("#div-propmaxvalidityhrs").hasClass("error")) {
+			    			$("#div-propmaxvalidityhrs").removeClass("error");		
 			    		}
 						
 						var propdefaultton = $("#propdefaultton").val();
 						if(propdefaultton.trim() == "") {
-			    			$("#propdefaultton").addClass("required");					    			
+			    			$("#div-propdefaultton").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#propdefaultton").hasClass("required")) {
-			    			$("#propdefaultton").removeClass("required");		
+			    		} else if($("#div-propdefaultton").hasClass("error")) {
+			    			$("#div-propdefaultton").removeClass("error");		
 			    		}
 						
 						var propdefaultnpi = $("#propdefaultnpi").val();
 						if(propdefaultnpi.trim() == "") {
-			    			$("#propdefaultnpi").addClass("required");					    			
+			    			$("#div-propdefaultnpi").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#propdefaultnpi").hasClass("required")) {
-			    			$("#propdefaultnpi").removeClass("required");		
+			    		} else if($("#div-propdefaultnpi").hasClass("error")) {
+			    			$("#div-propdefaultnpi").removeClass("error");		
 			    		}
 						
 						var propesmedefaultclustername = $("#esmedefaultclustername").val();
 						
 						var propsubbusduedel = $("#propsubbusduedel").val();
 						if(propsubbusduedel.trim() == "") {
-			    			$("#propsubbusduedel").addClass("required");					    			
+			    			$("#div-propsubbusduedel").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#propsubbusduedel").hasClass("required")) {
-			    			$("#propsubbusduedel").removeClass("required");		
+			    		} else if($("#div-propsubbusduedel").hasClass("error")) {
+			    			$("#div-propsubbusduedel").removeClass("error");		
 			    		}
 						
 						var propfirduedel = $("#propfirduedel").val();
 						if(propfirduedel.trim() == "") {
-			    			$("#propfirduedel").addClass("required");					    			
+			    			$("#div-propfirduedel").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#propfirduedel").hasClass("required")) {
-			    			$("#propfirduedel").removeClass("required");		
+			    		} else if($("#div-propfirduedel").hasClass("error")) {
+			    			$("#div-propfirduedel").removeClass("error");		
 			    		}
 						
 						var propsecduedel = $("#propsecduedel").val();
 						if(propsecduedel.trim() == "") {
-			    			$("#propsecduedel").addClass("required");					    			
+			    			$("#div-propsecduedel").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#propsecduedel").hasClass("required")) {
-			    			$("#propsecduedel").removeClass("required");		
+			    		} else if($("#div-propsecduedel").hasClass("error")) {
+			    			$("#div-propsecduedel").removeClass("error");		
 			    		}
 						
 						var propmaxduedel = $("#propmaxduedel").val();
 						if(propmaxduedel.trim() == "") {
-			    			$("#propmaxduedel").addClass("required");					    			
+			    			$("#div-propmaxduedel").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#propmaxduedel").hasClass("required")) {
-			    			$("#propmaxduedel").removeClass("required");		
+			    		} else if($("#div-propmaxduedel").hasClass("error")) {
+			    			$("#div-propmaxduedel").removeClass("error");		
 			    		}
 						
 						var duedelaymultiplicator = $("#duedelaymultiplicator").val();
 						if(duedelaymultiplicator.trim() == "") {
-			    			$("#duedelaymultiplicator").addClass("required");					    			
+			    			$("#div-duedelaymultiplicator").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#duedelaymultiplicator").hasClass("required")) {
-			    			$("#duedelaymultiplicator").removeClass("required");		
+			    		} else if($("#div-duedelaymultiplicator").hasClass("error")) {
+			    			$("#div-duedelaymultiplicator").removeClass("error");		
 			    		}
 						
 						
 						var cassandrahost = $("#cassandrahost").val();
 						if(cassandrahost.trim() == "") {
-			    			$("#cassandrahost").addClass("required");					    			
+			    			$("#div-cassandrahost").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#cassandrahost").hasClass("required")) {
-			    			$("#cassandrahost").removeClass("required");		
+			    		} else if($("#div-cassandrahost").hasClass("error")) {
+			    			$("#div-cassandrahost").removeClass("error");		
 			    		}
 						
 						var cassandraport = $("#cassandraport").val();
 						if(cassandraport.trim() == "") {
-			    			$("#cassandraport").addClass("required");					    			
+			    			$("#div-cassandraport").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#cassandraport").hasClass("required")) {
-			    			$("#cassandraport").removeClass("required");		
+			    		} else if($("#div-cassandraport").hasClass("error")) {
+			    			$("#div-cassandraport").removeClass("error");		
 			    		}
 						
 						var hosts = cassandrahost + ":" + cassandraport;
 						
 						var cassandrakeyspace = $("#cassandrakeyspace").val();
 						if(cassandrakeyspace.trim() == "") {
-			    			$("#cassandrakeyspace").addClass("required");					    			
+			    			$("#div-cassandrakeyspace").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#cassandrakeyspace").hasClass("required")) {
-			    			$("#cassandrakeyspace").removeClass("required");		
+			    		} else if($("#div-cassandrakeyspace").hasClass("error")) {
+			    			$("#div-cassandrakeyspace").removeClass("error");		
 			    		}
 						
 						var cassandraclustername = $("#cassandraclustername").val();
@@ -323,74 +357,74 @@
 						
 						var ussdgt = $("#ussdgt").val();
 						if(ussdgt.trim() == "") {
-			    			$("#ussdgt").addClass("required");					    			
+			    			$("#div-ussdgt").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#ussdgt").hasClass("required")) {
-			    			$("#ussdgt").removeClass("required");		
+			    		} else if($("#div-ussdgt").hasClass("error")) {
+			    			$("#div-ussdgt").removeClass("error");		
 			    		}
 						
 						var ussdssn = $("#ussdssn").val();
 						if(ussdssn.trim() == "") {
-			    			$("#ussdssn").addClass("required");					    			
+			    			$("#div-ussdssn").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#ussdssn").hasClass("required")) {
-			    			$("#ussdssn").removeClass("required");		
+			    		} else if($("#div-ussdssn").hasClass("error")) {
+			    			$("#div-ussdssn").removeClass("error");		
 			    		}		
 						
 						var hlrssn = $("#hlrssn").val();
 						if(hlrssn.trim() == "") {
-			    			$("#hlrssn").addClass("required");					    			
+			    			$("#div-hlrssn").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#hlrssn").hasClass("required")) {
-			    			$("#hlrssn").removeClass("required");		
+			    		} else if($("#div-hlrssn").hasClass("error")) {
+			    			$("#div-hlrssn").removeClass("error");		
 			    		}	
 						
 						var mscssn = $("#mscssn").val();
 						if(mscssn.trim() == "") {
-			    			$("#mscssn").addClass("required");					    			
+			    			$("#div-mscssn").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#mscssn").hasClass("required")) {
-			    			$("#mscssn").removeClass("required");		
+			    		} else if($("#div-mscssn").hasClass("error")) {
+			    			$("#div-mscssn").removeClass("error");		
 			    		}
 						
 						var maxmapv = $("#maxmapv").val();
 						if(maxmapv.trim() == "") {
-			    			$("#maxmapv").addClass("required");					    			
+			    			$("#div-maxmapv").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#maxmapv").hasClass("required")) {
-			    			$("#maxmapv").removeClass("required");		
+			    		} else if($("#div-maxmapv").hasClass("error")) {
+			    			$("#div-maxmapv").removeClass("error");		
 			    		}
 						
 						var maxmessagelengthreducer = $("#maxmessagelengthreducer").val();
 						if(maxmessagelengthreducer.trim() == "") {
-			    			$("#maxmessagelengthreducer").addClass("required");					    			
+			    			$("#div-maxmessagelengthreducer").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#maxmessagelengthreducer").hasClass("required")) {
-			    			$("#maxmessagelengthreducer").removeClass("required");		
+			    		} else if($("#div-maxmessagelengthreducer").hasClass("error")) {
+			    			$("#div-maxmessagelengthreducer").removeClass("error");		
 			    		}
 						
 						var schedulerfetchperiod = $("#schedulerfetchperiod").val();
 						if(schedulerfetchperiod.trim() == "") {
-			    			$("#schedulerfetchperiod").addClass("required");					    			
+			    			$("#div-schedulerfetchperiod").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#schedulerfetchperiod").hasClass("required")) {
-			    			$("#schedulerfetchperiod").removeClass("required");		
+			    		} else if($("#div-schedulerfetchperiod").hasClass("error")) {
+			    			$("#div-schedulerfetchperiod").removeClass("error");		
 			    		}
 						
 						var schedulerfetchmaxrows = $("#schedulerfetchmaxrows").val();
 						if(schedulerfetchmaxrows.trim() == "") {
-			    			$("#schedulerfetchmaxrows").addClass("required");					    			
+			    			$("#div-schedulerfetchmaxrows").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#schedulerfetchmaxrows").hasClass("required")) {
-			    			$("#schedulerfetchmaxrows").removeClass("required");		
+			    		} else if($("#div-schedulerfetchmaxrows").hasClass("error")) {
+			    			$("#div-schedulerfetchmaxrows").removeClass("error");		
 			    		}
 						
 						var schedulerfetchmaxactivity = $("#schedulerfetchmaxactivity").val();
 						if(schedulerfetchmaxactivity.trim() == "") {
-			    			$("#schedulerfetchmaxactivity").addClass("required");					    			
+			    			$("#div-schedulerfetchmaxactivity").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#schedulerfetchmaxactivity").hasClass("required")) {
-			    			$("#schedulerfetchmaxactivity").removeClass("required");		
+			    		} else if($("#div-schedulerfetchmaxactivity").hasClass("error")) {
+			    			$("#div-schedulerfetchmaxactivity").removeClass("error");		
 			    		}
 						
 						if(formInvalid) {
