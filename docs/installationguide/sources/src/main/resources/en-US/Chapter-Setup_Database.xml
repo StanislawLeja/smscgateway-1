@@ -1,0 +1,17 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "${ent.filename}">
+%BOOK_ENTITIES;
+]>
+
+<chapter
+	id="setup_database">
+	<title>Database Setup</title>
+	<para>
+&THIS.PLATFORM; &THIS.APPLICATION; stores messages using Cassandra database. The database is used for storing unsent messages, messages successfully sent and messages that failed to be sent. You must have Cassandra database (version 1.2 or higher) installed. We recommend that you use the latest version (1.2.6 is the most recent version yet).
+	</para>
+	<para>
+	To install the Cassandra database, look for distributives at the offical Apache website here <ulink url="http://cassandra.apache.org/download/"></ulink>. We recommend that you download the latest binaries and install the database following the instructions specified in the Apache documentation in their website <ulink url="http://wiki.apache.org/cassandra/GettingStarted"></ulink>.
+	</para>
+</chapter>
+
