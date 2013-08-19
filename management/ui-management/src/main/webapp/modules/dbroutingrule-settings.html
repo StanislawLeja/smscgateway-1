@@ -19,15 +19,18 @@
 					<h5>Update Configuration</h5>						
 					<div id="dbrr-update-configuration-wrapper">
 						<div class="input-prepend">
+							<div id="div-updatemsisdn" class="control-group">
 							<span id="updatemsisdn-span" class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="updates existing routing rule if exist else creates new. MSISDN for which rule is to be set.">
 								<span class="add-on">MSISDN</span>
 								<input id="updatemsisdn" type="text" class="input-mini" style="width: 220px; margin-right: 12px; text-align: center;" value="" />
 							</span>
-							&nbsp;
+							</div>
+							<div id="div-updtaemsisdnclunme" class="control-group">
 							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cluster name of ESME where the message should be routed for configured MSISDN.">
 								<span class="add-on">ESME cluster name</span>
 								<input id="updtaemsisdnclunme" type="text" class="input-mini" style="width: 180px; margin-right: 12px; text-align: center;" value="" />
 							</span>					
+							</div>
 						</div>
 						<div class="row">
 							<span class="span12" style="text-align: right;">
@@ -41,10 +44,12 @@
 					<h5>Delete Configuration</h5>
 					<div id="dbrr-delete-configuration-wrapper">
 						<div class="input-prepend">
+							<div id="div-deletemsisdn" class="control-group">
 							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="delete the routing rule set for given MSISDN.">
 								<span class="add-on">MSISDN</span>
 								<input id="deletemsisdn" type="text" class="input-mini" style="width: 220px; margin-right: 12px; text-align: center;" value="" />
 							</span>
+							</div>
 						</div>
 						<div class="row">
 							<span class="span12" style="text-align: right;">
@@ -58,10 +63,12 @@
 					<h5>View Configuration</h5>
 					<div id="dbrr-view-configuration-wrapper">
 						<div class="input-prepend">
+							<div id="div-viewmsisdn" class="control-group">
 							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="view the routing rule (cluster name) set for given MSISDN.">
 								<span class="add-on">MSISDN</span>
 								<input id="viewmsisdn" type="text" class="input-mini" style="width: 220px; margin-right: 12px; text-align: center;" value="" />
 							</span>
+							</div>
 						</div>
 						<div class="row">
 							<span class="span12" style="text-align: right;">
@@ -81,18 +88,18 @@
 						
 						var updatemsisdn = $("#updatemsisdn").val();
 						if(updatemsisdn.trim() == "") {
-			    			$("#updatemsisdn-span").addClass("required");					    			
+			    			$("#div-updatemsisdn").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#updatemsisdn-span").hasClass("required")) {
-			    			$("#updatemsisdn-span").removeClass("required");		
+			    		} else if($("#div-updatemsisdn").hasClass("error")) {
+			    			$("#div-updatemsisdn").removeClass("error");		
 			    		}
 						
 						var updtaemsisdnclunme = $("#updtaemsisdnclunme").val();
 						if(updtaemsisdnclunme.trim() == "") {
-			    			$("#updtaemsisdnclunme").addClass("required");					    			
+			    			$("#div-updtaemsisdnclunme").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#updtaemsisdnclunme").hasClass("required")) {
-			    			$("#updtaemsisdnclunme").removeClass("required");		
+			    		} else if($("#div-updtaemsisdnclunme").hasClass("error")) {
+			    			$("#div-updtaemsisdnclunme").removeClass("error");		
 			    		}
 						
 						if(formInvalid) {
@@ -123,10 +130,10 @@
 						
 						var deletemsisdn = $("#deletemsisdn").val();
 						if(deletemsisdn.trim() == "") {
-			    			$("#deletemsisdn").addClass("required");					    			
+			    			$("#div-deletemsisdn").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#deletemsisdn").hasClass("required")) {
-			    			$("#deletemsisdn").removeClass("required");		
+			    		} else if($("#div-deletemsisdn").hasClass("error")) {
+			    			$("#div-deletemsisdn").removeClass("error");		
 			    		}
 						
 						if(formInvalid) {
@@ -157,10 +164,10 @@
 						
 						var viewmsisdn = $("#viewmsisdn").val();
 						if(viewmsisdn.trim() == "") {
-			    			$("#viewmsisdn").addClass("required");					    			
+			    			$("#div-viewmsisdn").addClass("error");					    			
 			    			formInvalid = true;
-			    		} else if($("#viewmsisdn").hasClass("required")) {
-			    			$("#viewmsisdn").removeClass("required");		
+			    		} else if($("#div-viewmsisdn").hasClass("error")) {
+			    			$("#div-viewmsisdn").removeClass("error");		
 			    		}
 						
 						if(formInvalid) {

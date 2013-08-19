@@ -50,101 +50,183 @@
 		</div>
 		<p>
 			<span>
-				<label>ESME Name : </label>
-				<input id="esmeName" style="" type="text" placeholder="ESME Name" />
-				<br/>
-				<label>System Id : </label>
-				<input id="systemId" style="" type="text" placeholder="System Id" />
-				<br/>	
-				<label>Password : </label>
-				<input id="password" style="" type="text" placeholder="Password" />
-				<br/>								
-				<label>IP Address: </label>
-				<input id="ipAddress" style="" type="text" placeholder="IP Address" />
-				<br/>
-				<label>IP Port: </label>
-				<input id="ipPort" style="" type="text" placeholder="IP Port" />
-				<br/>
-				<label id="smppBindTypeLabel">Smpp Bind Type: </label>
-				<div id="smppBindTypeBtnGrp" class="btn-group" data-toggle="buttons-radio" >
-				    <button type="button" class="btn btn-mini" data-name="SmppBindType,TRANSCEIVER">
-				        TRANSCEIVER
-				    </button>
-				    <button type="button" class="btn btn-mini" data-name="SmppBindType,TRANSMITTER">
-				        TRANSMITTER
-				    </button>
-				    <button type="button" class="btn btn-mini" data-name="SmppBindType,RECEIVER">
-				        RECEIVER
-				    </button>
+				<div id="div-esmeName" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="unique name for this ESME">
+						<span class="add-on">ESME Name</span>
+						<input id="esmeName" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="ESME Name" />
+					</span>				
 				</div>
-				<br/>	
-				<label id="smppSessionTypeLabel">Smpp Session Type: </label>
-				<div id="smppSessionTypeBtnGrp" class="btn-group" data-toggle="buttons-radio" >
-				    <button type="button" class="btn btn-mini" data-name="SmppSessionType,CLIENT">
-				        CLIENT
-				    </button>
-				    <button type="button" class="btn btn-mini" data-name="SmppSessionType,SERVER">
-				        SERVER
-				    </button>
+				
+				<div id="div-systemId" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="is used to identify an ESME or an SMSC at bind time. An ESME system_id identifies the ESME or ESME agent to the SMSC. The SMSC system_id provides an identification of the SMSC to the ESME.">
+						<span class="add-on">System Id</span>
+						<input id="systemId" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="System Id" />
+					</span>								
 				</div>
-				<br/>
-				<label id="systemTypeLabel">System Type: </label>
-				<input id="systemType" style="" type="text" placeholder="System Type" />
-				<br/>				
-				<label id="versionLabel">Version: </label>
-				<div id="versionBtnGrp" class="btn-group" data-toggle="buttons-radio" >
-				    <button type="button" class="btn btn-mini" data-name="SmppVersion,3.3">
-				        3.3
-				    </button>
-				    <button type="button" class="btn btn-mini" data-name="SmppVersion,3.4">
-				        3.4
-				    </button>
-				    <button type="button" class="btn btn-mini" data-name="SmppVersion,5.0">
-				        5.0
-				    </button>				    
+				
+				<div id="div-password" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="is used by the SMSC to authenticate the identity of the binding ESME. The Service Provider may require ESME’s to provide a password when binding to the SMSC">
+						<span class="add-on">Password</span>
+						<input id="password" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Password" />
+					</span>					
 				</div>
-				<br/>
-				<label>ESME Type of number (TON): </label>
-				<input id="esmeTon" style="" type="text" placeholder="ESME Type of number" value="0"/>
-				<br/>
-				<label>ESME Number plan indicator (NPI): </label>
-				<input id="esmeNpi" style="" type="text" placeholder="ESME Number plan indicator" value="0"/>
-				<br/>
-				<label>ESME Range: </label>
-				<input id="esmeRange" style="" type="text" placeholder="ESME Range" value="^[0-9a-zA-Z]*"/>
-				<br/>
-				<label>Cluster Name: </label>
-				<input id="clusterName" style="" type="text" placeholder="Cluster Name" />
-				<br/>						
-				<label>Windows Size: </label>
-				<input id="windowSize" style="" type="text" placeholder="Window Size" value="1"/>
-				<br/>						
-				<label>Connect Timeout: </label>
-				<input id="connectTimeout" style="" type="text" placeholder="Connect Timeout" value="10000"/>
-				<br/>
-				<label>Request Expiry Timeout: </label>
-				<input id="reqExpTimeout" style="" type="text" placeholder="Request Expiry Timeout" value="-1"/>
-				<br/>				
-				<label>Windows Monitor Interval: </label>
-				<input id="windowMonitorInterval" style="" type="text" placeholder="Window Monitor Interval" value="-1"/>
-				<br/>
-				<label>Windows Wait Timeout: </label>
-				<input id="windowWaitTimeout" style="" type="text" placeholder="Window Wait Timeout" value="60000"/>
-				<br/>
-				<label>Counters Enabled: </label>
-				<div id="countersEnabledBtnGrp" class="btn-group" data-toggle="buttons-radio" >
-				    <button type="button" class="btn btn-mini" data-name="CountersEnabled,True">
-				        Yes
-				    </button>
-				    <button type="button" class="btn btn-mini" data-name="CountersEnabled,False">
-				        No
-				    </button>
+				
+				<div id="div-ipAddress" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMSC is acting as ESME, the BIND request will be sent to configured ip and port. If SMSC is acting as Server, it will accept incoming BIND request from specified IP and Port. If port is unknown, pass -1 as willd character">
+						<span class="add-on">IP Address</span>
+						<input id="ipAddress" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="IP Address" />
+					</span>					
 				</div>
+				
+				<div id="div-ipPort" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMSC is acting as ESME, the BIND request will be sent to configured ip and port. If SMSC is acting as Server, it will accept incoming BIND request from specified IP and Port. If port is unknown, pass -1 as willd character">
+						<span class="add-on">Port</span>
+						<input id="ipPort" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Port" />
+					</span>	
+				</div>
+				
+				<div id="div-smppBindTypeBtnGrp" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMSC is acting as ESME, it will initiate corresponding bind else if its server it will accept corresponding bind from remote ESME">
+						<span class="add-on">Smpp Bind Type</span>
+						<select id="smppBindType" >
+							<option>TRANSCEIVER</option>
+							<option>TRANSMITTER</option>
+							<option>RECEIVER</option>
+						</select>
+					</span>
+				</div>
+
+				<div id="div-smppSessionTypeBtnGrp" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SERVER, SMSC acts as server listening for incoming SMPP binds. If CLIENT, SMSC will initiate SMPP bind to remote server">
+						<span class="add-on">Smpp Session Type</span>
+						<select id="smppSessionType" >
+							<option>CLIENT</option>
+							<option>SERVER</option>
+						</select>
+					</span>
+				</div>
+
+				<div id="div-systemType" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="is used to categorize the type of ESME that is binding to the SMSC">
+						<span class="add-on">System Type</span>
+						<input id="systemType" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="System Type" />
+					</span>	
+				</div>
+				
+				<div id="div-version" class="control-group">		
+				
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="indicate the version of the SMPP protocol">
+						<span class="add-on">Version</span>
+						<select id="version" >
+							<option>3.3</option>
+							<option selected="selected">3.4</option>
+							<option>5.0</option>
+						</select>
+					</span>
+				</div>
+				
+				<div id="div-esmeTon" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMSC is acting as server, esme-ton for incoming BIND request should match with configured value. If SMSC is initiating BIND then this value will be included in bind request">
+						<span class="add-on">ESME Type of number (TON)</span>
+						<select id="esmeTon" >
+							<option value="0">Unknown</option>
+							<option value="1">International</option>
+							<option value="2">National</option>
+							<option value="3">Network Specific</option>
+							<option value="4">Subscriber Number</option>
+							<option value="5">Alphanumeric</option>
+							<option value="6">Abbreviated</option>
+							<option value="7">Reserved</option>
+						</select>
+					</span>	
+				</div>
+								
+				<div id="div-esmeNpi" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMSC is acting as server, esme-npi for incoming BIND request should match with configured value. If SMSC is initiating BIND then this value will be included in bind request.">
+						<span class="add-on">ESME Number plan indicator (NPI)</span>
+						<select id="esmeNpi" >
+							<option value="0">Unknown</option>
+							<option value="1">ISDN (E163/E164)</option>
+							<option value="3">Data (X.121)</option>
+							<option value="4">Telex (F.69)</option>
+							<option value="6">Land Mobile (E.212)</option>
+							<option value="8">National</option>
+							<option value="9">Private</option>
+							<option value="10">ERMES</option>
+							<option value="14">Internet (IP)</option>
+							<option value="18">WAP Client Id</option>
+						</select>
+					</span>	
+				</div>				
+				
+				<div id="div-esmeRange" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMSC is acting as server, incoming bind request's esme-range should match with configured one. If incoming doesn't carry esme-range, one defined here will be used. If SMSC is acting as client, the bind request initiated will carry this esme-range.">
+						<span class="add-on">ESME Range</span>
+						<input id="esmeRange" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="ESME Range" value="^[0-9a-zA-Z]*"/>
+					</span>	
+				</div>
+	
+				<div id="div-clusterName" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="its possible to group different SMPP connections together by specifying same cluster-name. All the SMPP connection 's that are capable of sending out SMS are candidates for grouping ">
+						<span class="add-on">Cluster Name</span>
+						<input id="clusterName" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Cluster Name" />
+					</span>	
+				</div>
+					
+				<div id="div-windowSize" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="window size is the amount of unacknowledged requests that are permitted to be outstanding/unacknowledged at any given time. If more requests are added, underlying stack will throw exception. This value is set only when ESME is defined as Client side. For Server side this value is taken from SMPP Server Setting">
+						<span class="add-on">Windows Size</span>
+						<input id="windowSize" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Windows Size" value="1"/>
+					</span>	
+				</div>
+													
+				<div id="div-connectTimeout" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Time within which the connection to remote SMSCR server should be established. This is useful only when ESME is defined as Client Side. For Server side this value is taken from SMPP Server Setting.">
+						<span class="add-on">Connect Timeout</span>
+						<input id="connectTimeout" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Connect Timeout" value="10000"/>
+					</span>	
+				</div>
+												
+				<div id="div-reqExpTimeout" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Amount of time to wait in milli seconds for an endpoint to respond to before it expires. -1 is disabled. This is useful only when ESME is defined as Client Side. For Server side this value is taken from SMPP Server Setting.">
+						<span class="add-on">Request Expiry Timeout</span>
+						<input id="reqExpTimeout" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Request Expiry Timeout" value="-1"/>
+					</span>	
+				</div>
+							
+				<div id="div-windowMonitorInterval" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Amount of time between executions of monitoring the window for requests that expire. It's recommended that this generally either matches or is half the value of request-expiry-timeout. Therefore, at worst a request would could take up 1.5X the requestExpiryTimeout to clear out. -1 is disabled. This is useful only when ESME is defined as Client Side. For Server side this value is taken from SMPP Server Setting.">
+						<span class="add-on">Windows Monitor Interval</span>
+						<input id="windowMonitorInterval" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Windows Monitor Interval" value="-1"/>
+					</span>	
+				</div>
+											
+				<div id="div-windowWaitTimeout" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Amount of time to wait until a slot opens up in the sendWindow. This is useful only when ESME is defined as Client Side. For Server side this value is taken from SMPP Server Setting.">
+						<span class="add-on">Windows Wait Timeout</span>
+						<input id="windowWaitTimeout" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Windows Wait Timeout" value="60000"/>
+					</span>	
+				</div>
+
+				<div id="div-countersEnabled" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC exposes the statistics for SMPP connections. This is useful only when ESME is defined as Client Side. For Server side this value is taken from SMPP Server Setting.">
+						<span class="add-on">Counters Enabled</span>
+						<select id="countersEnabled" >
+							<option>True</option>
+							<option>False</option>
+						</select>
+					</span>
+				</div>
+							
+				
 				<div id="realform"></div>
-				<br/>
-				<label>Enquire Link Delay: </label>
-				<input id="enqLinkDelay" style="" type="text" placeholder="Enquire Link Delay" value="30000"/>
-				<br/>
+
+				<div id="div-enqLinkDelay" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="When SMSC connects to remote server as CLIENT, it sends ENQUIRE_LINK every configured enquire-link-delay">
+						<span class="add-on">Enquire Link Delay</span>
+						<input id="enqLinkDelay" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Enquire Link Delay" value="30000"/>
+					</span>	
+				</div>
 																																																																				
 				<button id="add-entity-button" class="btn btn btn-primary" onclick="createEsme()">Create</button>
 			</span>
@@ -460,108 +542,86 @@ $(function () {
 		
 		var esmeName = $("#esmeName").val();
 		if(esmeName.trim() == "") {
-			$("#esmeName").addClass("required");
+			$("#div-esmeName").addClass("error");
 			if(focusNotSet){
 				$("#esmeName").focus();
 				focusNotSet = false;
 			}
 			formInvalid = true;
-		} else if($("#esmeName").hasClass("required")) {
-			$("#esmeName").removeClass("required");		
+		} else if($("#div-esmeName").hasClass("error")) {
+			$("#div-esmeName").removeClass("error");		
 		}
 		
 		var systemId = $("#systemId").val();
 		if(systemId.trim() == "") {
-			$("#systemId").addClass("required");
+			$("#div-systemId").addClass("error");
 			if(focusNotSet){
 				$("#systemId").focus();
 				focusNotSet = false;
 			}
 			formInvalid = true;
-		} else if($("#systemId").hasClass("required")) {
-			$("#systemId").removeClass("required");		
+		} else if($("#div-systemId").hasClass("error")) {
+			$("#div-systemId").removeClass("error");		
 		}
 		
 		var password = $("#password").val();
 		if(password.trim() == "") {
-			$("#password").addClass("required");		
+			$("#div-password").addClass("error");		
 			if(focusNotSet){
 				$("#password").focus();
 				focusNotSet = false;
 			}
 			formInvalid = true;
-		} else if($("#password").hasClass("required")) {
-			$("#password").removeClass("required");		
+		} else if($("#div-password").hasClass("error")) {
+			$("#div-password").removeClass("error");		
 		}
 		
 		var ipAddress = $("#ipAddress").val();
 		if(ipAddress.trim() == "") {
-			$("#ipAddress").addClass("required");		
+			$("#div-ipAddress").addClass("error");		
 			if(focusNotSet){
 				$("#ipAddress").focus();
 				focusNotSet = false;
 			}
 			formInvalid = true;
-		} else if($("#ipAddress").hasClass("required")) {
-			$("#ipAddress").removeClass("required");		
+		} else if($("#div-ipAddress").hasClass("error")) {
+			$("#div-ipAddress").removeClass("error");		
 		}
 		
 		var ipPort = $("#ipPort").val();
 		if(ipPort.trim() == "") {
-			$("#ipPort").addClass("required");		
+			$("#div-ipPort").addClass("error");		
 			if(focusNotSet){
 				$("#ipPort").focus();
 				focusNotSet = false;
 			}
 			formInvalid = true;
-		} else if($("#ipPort").hasClass("required")) {
-			$("#ipPort").removeClass("required");		
+		} else if($("#div-ipPort").hasClass("error")) {
+			$("#div-ipPort").removeClass("error");		
 		}
+
+		var e = document.getElementById("smppBindType");
+		var smppBindType = e.options[e.selectedIndex].text;
 		
-		var smppBindType = $("#SmppBindType").val();
-		if(smppBindType == null) {
-			$("#smppBindTypeBtnGrp").addClass("required");		
-			if(focusNotSet){
-				$("#smppBindTypeLabel").focus();
-				focusNotSet = false;
-			}
-			formInvalid = true;
-		} else if($("#smppBindTypeBtnGrp").hasClass("required")) {
-			$("#smppBindTypeBtnGrp").removeClass("required");		
-		}	
-		
-		var smppSessionType = $("#SmppSessionType").val();
-		if(smppSessionType == null) {
-			$("#smppSessionTypeBtnGrp").addClass("required");		
-			if(focusNotSet){
-				$("#smppSessionTypeLabel").focus();
-				focusNotSet = false;
-			}
-			formInvalid = true;
-		} else if($("#smppSessionTypeBtnGrp").hasClass("required")) {
-			$("#smppSessionTypeBtnGrp").removeClass("required");		
-		}
+		var e1 = document.getElementById("smppSessionType");
+		var smppSessionType = e1.options[e.selectedIndex].text;		
 		
 		var systemType = $("#systemType").val();
 		
-		var smppVersion = $("#SmppVersion").val();
-		if(smppVersion == null) {
-			$("#versionBtnGrp").addClass("required");		
-			if(focusNotSet){
-				$("#versionLabel").focus();
-				focusNotSet = false;
-			}
-			formInvalid = true;
-		} else if($("#versionBtnGrp").hasClass("required")) {
-			$("#versionBtnGrp").removeClass("required");		
-		}		
 		
+		var e2 = document.getElementById("version");
+		var smppVersion = e2.options[e.selectedIndex].text;	
 		
-		var esmeTon = $("#esmeTon").val();
-		var esmeNpi = $("#esmeNpi").val();
+		var e3 = document.getElementById("esmeTon");
+		var esmeTon = e3.options[e.selectedIndex].value;	
+		
+		var e4 = document.getElementById("esmeNpi");
+		var esmeNpi = e4.options[e.selectedIndex].value;
+		
 		var esmeRange = $("#esmeRange").val();
 		var clusterName = $("#clusterName").val();
 		var windowSize = $("#windowSize").val();
+		
 		if(windowSize == null){
 			windowSize = "1";//SmppConstants.DEFAULT_WINDOW_SIZE
 		}
@@ -586,17 +646,8 @@ $(function () {
 			windowWaitTimeout = "60000";
 		}
 		
-		var countersEnabled = $("#CountersEnabled").val();
-		if(countersEnabled == null) {
-			$("#countersEnabledBtnGrp").addClass("required");		
-			if(focusNotSet){
-				$("#countersEnabledBtnGrp").focus();
-				focusNotSet = false;
-			}
-			formInvalid = true;
-		} else if($("#countersEnabledBtnGrp").hasClass("required")) {
-			$("#countersEnabledBtnGrp").removeClass("required");		
-		}
+		var e5 = document.getElementById("countersEnabled");
+		var countersEnabled = e5.options[e.selectedIndex].text;	
 		
 		var enqLinkDelay = $("#enqLinkDelay").val();
 		if(enqLinkDelay == null){
