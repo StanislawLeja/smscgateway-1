@@ -264,6 +264,9 @@
 							{ success: [
 								function(response) {
 									
+									var host = response.value.Host;
+									var port = response.value.Port;
+									
 									var isSmppServerStarted = response.value.Started;
 									
 									var name = response.value.Name;
@@ -378,6 +381,7 @@
 									        '    <div>'+
 									        '      <p class="muted">Various</p>'+
 													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+													'<dt>ConfiguredAddressAndPort</dt> <dd>' + host +':'+ port + ' </dd>' +
 													'<dt>LocalAddressAndPort</dt> <dd>' + localAddressAndPort + ' </dd>' +
 													'<dt>RemoteAddressAndPort</dt> <dd>' + remoteAddressAndPort + ' </dd>' +
 													'<dt>RemoteTypeName</dt> <dd>' + remoteTypeName + ' </dd>' +
@@ -591,22 +595,27 @@
 		var smppBindType = e.options[e.selectedIndex].text;
 		
 		var e1 = document.getElementById("smppSessionType");
-		var smppSessionType = e1.options[e.selectedIndex].text;		
+		var smppSessionType = e1.options[e1.selectedIndex].text;		
 		
 		var systemType = $("#systemType").val();
 		
 		
 		var e2 = document.getElementById("version");
-		var smppVersion = e2.options[e.selectedIndex].text;	
+		var smppVersion = e2.options[e2.selectedIndex].text;	
 		
 		var e3 = document.getElementById("esmeTon");
-		var esmeTon = e3.options[e.selectedIndex].value;	
+		var esmeTon = e3.options[e3.selectedIndex].value;	
 		
 		var e4 = document.getElementById("esmeNpi");
-		var esmeNpi = e4.options[e.selectedIndex].value;
+		var esmeNpi = e4.options[e4.selectedIndex].value;
 		
 		var esmeRange = $("#esmeRange").val();
 		var clusterName = $("#clusterName").val();
+		
+		if(clusterName.trim() == ""){
+			clusterName = esmeName;
+		}
+		
 		var windowSize = $("#windowSize").val();
 		
 		if(windowSize == null){
@@ -634,7 +643,7 @@
 		}
 		
 		var e5 = document.getElementById("countersEnabled");
-		var countersEnabled = e5.options[e.selectedIndex].text;	
+		var countersEnabled = e5.options[e5.selectedIndex].text;	
 		
 		var enqLinkDelay = $("#enqLinkDelay").val();
 		if(enqLinkDelay == null){
