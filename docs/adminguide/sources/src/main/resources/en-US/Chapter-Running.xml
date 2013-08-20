@@ -91,6 +91,9 @@ Halting VM]]></screen></para></step>
 ]]>
 </screen>
 </para>	
+			<para>
+By default, the SMSC Simulator profile is configured for use in Linux systems. For using it under Micsrosoft Windows you need to open the file <filename>telscale-smscgateway-6.1.1.GA/jboss-5.1.0.GA/server/simulator/data/SCTPManagement_sctp.xml</filename> and replace (in two places) <literal>ipChannelType="0"</literal> to <literal>ipChannelType="1"</literal> for using a TCP connection instead of SCTP (SCTP is not supported under Windows). 
+			</para>
 		<section id="configuring_the_gateway_simulator_profile">
 			<title>Configuring the Gateway in Simulator Profile</title>
 			<para>In order to configure the Gateway in a Simulator Profile, you can make use of the following commands:</para>
@@ -168,7 +171,7 @@ This will launch the Simulator GUI Application.
 			</step>
 			<step>
 						<para>
-							When the GUI shows up, select "main" (default) as host name and press the 'Start' button. The Simulator is already pre-configured to connect to the SMSC Gateway (running in simulator profile). Press 'Run test' and again click on 'Start' in the next screen. The Simulator will connect to SMSC (via m3ua protocol).
+							When the GUI shows up, select "main" (default) as host name [or type "win" as host name under Windows] and press the 'Start' button. The Simulator is already pre-configured to connect to the SMSC Gateway (running in simulator profile). Press 'Run test' and again click on 'Start' in the next screen. The Simulator will connect to SMSC (via m3ua protocol).
 						</para>
 
 			</step>
@@ -219,7 +222,7 @@ This will launch the Simulator GUI Application.
 			</step>
 			<step>
 						<para>
-							When the GUI shows up, select "main" (default) as host name and press the 'Start' button. The Simulator is already pre-configured to connect to the SMSC Gateway (running in simulator profile). Press 'Run test' and again click on 'Start' in the next screen. The Simulator will connect to SMSC (via m3ua protocol).
+							When the GUI shows up, select "main" (default) as host name [or type "win" as host name under Windows] and press the 'Start' button. The Simulator is already pre-configured to connect to the SMSC Gateway (running in simulator profile). Press 'Run test' and again click on 'Start' in the next screen. The Simulator will connect to SMSC (via m3ua protocol).
 						</para>
 
 			</step>
