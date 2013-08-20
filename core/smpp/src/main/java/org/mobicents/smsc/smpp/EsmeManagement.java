@@ -148,27 +148,45 @@ public class EsmeManagement implements EsmeManagementMBean {
 
 	protected Esme getEsmeByPrimaryKey(String SystemId, String host, int port, SmppBindType smppBindType) {
 
+		Esme discoveredEsme = null;
+
 		// Check for actual SystemId, host and port
 		for (FastList.Node<Esme> n = esmes.head(), end = esmes.tail(); (n = n.getNext()) != end;) {
 			Esme esme = n.getValue();
 
-			if (esme.getSystemId().equals(SystemId) && esme.getHost().equals(host) && esme.getPort() == port
-					&& esme.getSmppBindType() == smppBindType) {
-				return esme;
-			}
+			if (esme.getSystemId().equals(SystemId) && esme.getSmppBindType() == smppBindType) {
+				discoveredEsme = esme;
+				if (esme.getHost().equals(host) && esme.getPort() == port) {
+					// exact match found
+					return esme;
+				}
+
+				if (esme.getHost().equals(host) && esme.getPort() == -1) {
+					// Hosts match but port is any
+					if (esme.getStateName().equals(com.cloudhopper.smpp.SmppSession.STATES[SmppSession.STATE_CLOSED])) {
+						return esme;
+					}
+				}
+
+				if (esme.getHost().equals("-1") & esme.getPort() == port) {
+					// Host is any but port matches
+					if (esme.getStateName().equals(com.cloudhopper.smpp.SmppSession.STATES[SmppSession.STATE_CLOSED])) {
+						return esme;
+					}
+				}
+
+				if (esme.getHost().equals("-1") & esme.getPort() == -1) {
+					// Host is any and port is also any
+					if (esme.getStateName().equals(com.cloudhopper.smpp.SmppSession.STATES[SmppSession.STATE_CLOSED])) {
+						return esme;
+					}
+				}
+
+			}// esme.getSystemId().equals(SystemId) && esme.getSmppBindType() ==
+				// smppBindType
 		}
 
-		// Check for actual SystemId, host and port will be -1
-		for (FastList.Node<Esme> n = esmes.head(), end = esmes.tail(); (n = n.getNext()) != end;) {
-			Esme esme = n.getValue();
-
-			if (esme.getSystemId().equals(SystemId) && esme.getHost().equals(host) && esme.getPort() == -1
-					&& esme.getSmppBindType() == smppBindType) {
-				return esme;
-			}
-		}
-
-		return null;
+		return discoveredEsme;
 	}
 
 	public Esme createEsme(String name, String systemId, String password, String host, int port, String smppBindType,
@@ -216,8 +234,14 @@ public class EsmeManagement implements EsmeManagementMBean {
 			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
 			int enquireLinkDelay) throws Exception {
 
-		if (smppSessionType == SmppSession.Type.CLIENT && port < 1) {
-			throw new Exception(SMSCOAMMessages.CREATE_EMSE_FAIL_PORT_CANNOT_BE_LESS_THAN_ZERO);
+		if (smppSessionType == SmppSession.Type.CLIENT) {
+			if (port < 1) {
+				throw new Exception(SMSCOAMMessages.CREATE_EMSE_FAIL_PORT_CANNOT_BE_LESS_THAN_ZERO);
+			}
+
+			if (host == null || host.equals("-1")) {
+				throw new Exception(SMSCOAMMessages.CREATE_EMSE_FAIL_HOST_CANNOT_BE_ANONYMOUS);
+			}
 		}
 
 		for (FastList.Node<Esme> n = esmes.head(), end = esmes.tail(); (n = n.getNext()) != end;) {
@@ -228,10 +252,25 @@ public class EsmeManagement implements EsmeManagementMBean {
 				throw new Exception(String.format(SMSCOAMMessages.CREATE_EMSE_FAIL_ALREADY_EXIST, name));
 			}
 
-			// SystemId:IP:Port:SmppBindType combination should be unique
-			String primaryKey = systemId + host + port + smppBindType.name();
-			String existingPrimaryKey = esme.getSystemId() + esme.getHost() + esme.getPort()
-					+ esme.getSmppBindType().name();
+			// SystemId:IP:Port:SmppBindType combination should be unique for
+			// CLIENT. For SERVER it accepts multiple incoming binds as far as
+			// host is anonymous (-1) and/or port is -1
+			String primaryKey = systemId + smppBindType.name();
+			String existingPrimaryKey = esme.getSystemId() + esme.getSmppBindType().name();
+
+			if (smppSessionType == SmppSession.Type.SERVER) {
+				if (!host.equals("-1") && port != -1) {
+					primaryKey = primaryKey + host + port;
+					existingPrimaryKey = existingPrimaryKey + esme.getHost() + esme.getPort();
+				} else {
+					//Let the ESME be created
+					primaryKey = "X";
+					existingPrimaryKey = "Y";
+				}
+			} else {
+				primaryKey = primaryKey + host + port;
+				existingPrimaryKey = existingPrimaryKey + esme.getHost() + esme.getPort();
+			}
 
 			if (primaryKey.equals(existingPrimaryKey)) {
 				throw new Exception(String.format(SMSCOAMMessages.CREATE_EMSE_FAIL_PRIMARY_KEY_ALREADY_EXIST, systemId,

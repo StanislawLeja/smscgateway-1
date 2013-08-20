@@ -33,4 +33,7 @@ public interface EsmeMBean extends DefaultSmppSessionMXBean {
 	public boolean isStarted();
 	public String getClusterName();
 	public Address getAddress();
+	
+	public String getHost();
+	public int getPort();
 }

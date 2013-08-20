@@ -242,6 +242,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	/**
 	 * @return the host
 	 */
+	@Override
 	public String getHost() {
 		return host;
 	}
@@ -257,6 +258,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	/**
 	 * @return the port
 	 */
+	@Override
 	public int getPort() {
 		return port;
 	}
@@ -492,8 +494,8 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			String addressRange = xml.getAttribute(ESME_ADDRESS_RANGE, null);
 
 			esme.address = new Address(ton, npi, addressRange);
-			
-			if(addressRange!=null){
+
+			if (addressRange != null) {
 				esme.pattern = Pattern.compile(addressRange);
 			}
 
@@ -504,7 +506,6 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			esme.windowWaitTimeout = xml.getAttribute(WINDOW_WAIT_TIMEOUT, 0);
 			esme.countersEnabled = xml.getAttribute(COUNTERS_ENABLED, true);
 			esme.enquireLinkDelay = xml.getAttribute(ENQUIRE_LINK_DELAY, 30000);
-			
 
 		}
 
@@ -680,7 +681,12 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		if (this.defaultSmppSession != null) {
 			return this.defaultSmppSession.getRemoteTypeName();
 		}
-		return null;
+
+		if (this.smppSessionType == SmppSession.Type.SERVER) {
+			return SmppSession.Type.CLIENT.toString();
+		} else {
+			return SmppSession.Type.SERVER.toString();
+		}
 	}
 
 	@Override
