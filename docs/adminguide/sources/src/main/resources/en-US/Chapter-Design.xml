@@ -36,7 +36,9 @@
 		</caption>
 	</mediaobject>
 	<para>
-		&THIS.PLATFORM; &THIS.APPLICATION; provides four basic services of an SMSC as shown in the figure above. Each of these four services are implemented in the Gateway as a module that can be activated or deactivated based on the needs of an operator. 
+		&THIS.PLATFORM; &THIS.APPLICATION; provides four basic services of an SMSC as shown in the figure above. Each of these four services are implemented in the Gateway as a module that can be activated or deactivated based on the needs of an operator. All these services interact with the Cassandra database for storing data (messages not yet sent and an archive for sent/failed to send messages) and retreiving data for messages that are pending to be sent.
+	</para>
+	<para>
 		<variablelist>
 			<title>Service Modules</title>
 			<varlistentry>
@@ -77,7 +79,7 @@ SMPP.
 				<varlistentry>
 					<term>Web Interface
 					</term>
-					<listitem><para>Future releases of &THIS.PLATFORM; &THIS.APPLICATION; will also include an easy to use Web Interface administration tool that will allow you to manage and monitor the Gateway via a convenient Web console.
+					<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; also includes an easy to use Web Interface administration tool that allows you to manage and monitor the Gateway via a convenient Web console.
 					</para></listitem>
 				</varlistentry>
 				<varlistentry>

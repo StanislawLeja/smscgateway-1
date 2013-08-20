@@ -9,7 +9,7 @@
     <title>Overview </title>
         <section id="smsc_gateway_desc">
             <title>SMSC Gateway</title>
-            <para>SMSC (Short Message Service Center) is a telecommunications network facility responsible for handling the SMS operations of a wireless network. When a subscriber sends an SMS message from a mobile phone, the message first reaches the SMS Center which then forwards the message to the desired destination. The SMS Center is responsible for routing the SMS messages and regulating the process. If the recipient is not reachable (the phone is switched off or out of coverage area etc.) the SMS Center will store the message and forward it to the recipient when available. </para>
+            <para>SMSC (Short Message Service Center) is a telecommunications network facility responsible for handling the SMS operations of a wireless network. When a subscriber sends an SMS message from a mobile phone, the message first reaches the SMS Center which then forwards the message to the desired destination. The SMS Center is responsible for routing the SMS messages and regulating the process. If the recipient is not reachable (the phone is switched off or out of coverage area etc.) the SMS Center will store the message to a database and forward it to the recipient when available. Messages that are delivered successfully and messages that failed to be delivered are stored in an archive database for logging purposes.</para>
         </section>
     <section id="telscale_smsc_overview">
         <title>&THIS.PLATFORM; &THIS.APPLICATION;</title>
@@ -42,7 +42,7 @@
                     <listitem>
                         <para>
                             &THIS.PLATFORM; &THIS.APPLICATION; comes with an efficient Command Line Interface (CLI) tool allowing you to easily configure the gateway at run-time and manage it using
-                            simple commands rather than do everything manually. Future releases will include an efficient Web Interface administration tool for easy management and monitoring through a Web console. In addition there will also be a Web based campaign tool to define and manage campaigns.
+                            simple commands rather than do everything manually. &THIS.PLATFORM; &THIS.APPLICATION; also includes an efficient Web Interface administration tool for easy management and monitoring through a Web console. <!--In addition there will also be a Web based campaign tool to define and manage campaigns.-->
                         </para>
                     </listitem>
                 </varlistentry>               
