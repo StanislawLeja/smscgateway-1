@@ -2,38 +2,194 @@ Name
 	smsc esme create
 
 SYNOPSIS
-	smsc esme create <Any 4/5 digit number> <password> <host-ip> <port> system-type 
-	<sms | vms | ota> interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton> 
-	esme-npi <esmeaddress npi> esme-range <esme address range>
+	smsc esme create name <systemId> <Specify password> <host-ip> <port> 
+	<SmppBindType> <SmppSession.Type> system-type <sms | vms | ota > 
+	interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton> 
+	esme-npi <esme address npi> esme-range <esme address range> 
+	cluster-name <clusterName> window-size <windowSize> 
+	connect-timeout <connectTimeout> request-expiry-timeout <requestExpiryTimeout> 
+	window-monitor-interval <windowMonitorInterval> 
+	window-wait-timeout <windowWaitTimeout> counters-enabled <true | false> 
+	enquire-link-delay <30000>
 
 DESCRIPTION
 	This command is used to configure a new ESME.
 
 PARAMETERS
-	System Id		- Should match with the BIND request coming from ESME
 
-	Password		- Should match with the BIND request coming from ESME
+	Standard Parameters
 
-	host-ip			- Ignored, so pass any value
+	Name			- A unique name for this ESME configuration. You can 
+				  define as many ESMEs as you want as far as the name is 
+				  unique and the combination of 
+				  SystemId:host-ip:port:SmppBindType is unique.
 
-	port			- Ignored, so pass any value
+	System Id		- This is used to identify an ESME or an SMSC at bind 
+				  time. An 'ESME system_id' identifies the ESME or ESME 
+				  agent to the SMSC. The 'SMSC system_id' provides an 
+				  identification of the SMSC to the ESME.
 
-	esme-range		- Mandatory for TRANSCEIVER/RECEIVER because this is used 
-				  to match the incoming SMS (MoForwards) destination 
-				  number to route to ESME
+	Password		- It is used by the SMSC to authenticate the identity of 
+				  the binding ESME. The Service Provider may require 
+				  ESME’s to provide a password when binding to the SMSC.
 
-	system-type		- Optional
-	
-	interface-version	- Optional
+	host-ip	& port		- If the SMSC is acting as an ESME, the BIND request will 
+				  be sent to the configured IP and Port. If the SMSC is 
+				  acting as a Server, it will accept incoming BIND 
+				  requests from the specified IP and Port. 
+				  If the port is unknown, you must pass '-1' as wild 
+				  character.
 
-EXAMPLES
-	smsc esme create 1234567890 password 127.0.0.1 2775 TRANSCEIVER esme-ton 0 
-	esme-npi 0 esme-range [0-9a-zA-Z]
+	SmppBindType 		- Possible values: TRANSCEIVER, TRANSMITTER or RECEIVER. 
+				  If the SMSC is acting as an ESME, it will initiate 
+				  corresponding bind. If the SMSC is acting as a Server,
+				  it will accept corresponding bind from a remote ESME.
+
+	SmppSession.Type 	- Possible values: SERVER or CLIENT. 
+				  If the value is 'SERVER', the SMSC acts as a Server 
+				  listening for incoming SMPP binds. 
+				  If the value is 'CLIENT', the SMSC will initiate 
+				  SMPP bind to a remote Server.
+
+	Optional Parameters
+
+	system-type 		- Default value is null. 
+				  This is used to categorize the type of ESME that is 
+				  binding to the SMSC.
+
+	interface-version	- Default value is 3.4. 
+
+				  It is used to indicate the version of the SMPP protocol.
+
+				  It is set in 'SMPPServer Settings'. 
+
+	esme-ton 		- Default value is 1 (International).
+
+				  If the SMSC is acting as a Server, esme-ton for incoming 
+				  BIND request should match with the configured value. 
+				  If the SMSC is initiating the BIND then this value will 
+				  be included in the bind request.
+
+				  It is set in "Server Settings". 
+				 
+				  Possible values:
+
+				  Value 	Description
+				  ----------------------------------
+				  0 		Unknown
+				  1 		International
+				  2 		National
+				  3 		Network Specific
+				  4 		Subscriber Number
+				  5		Alphanumeric
+				  6		Abbreviated
+				  7		Reserved Ext
+
+	esme-npi 		- Default value is 1 [ISDN (E163/E164)]  
+
+				  If the SMSC is acting as a Server, the esme-npi for 
+				  incoming BIND request should match with the configured 
+				  value. 
+				  If the SMSC is initiating the BIND then this value will 
+				  be included in bind request.
+
+				  It is set in "Server Settings". 
+
+				  Possible values:
+
+				  Value 	Description
+				  ----------------------------------
+				  0 		Unknown
+				  1 		ISDN (E163/E164)
+				  3 		Data (X.121)
+				  4 		Telex (F.69)
+				  6 		Land Mobile (E.212)
+				  8		National
+				  9		Private
+				  10		ERMES 
+				  12		Internet (IP)
+				  18		WAP Client Id (to be defined by WAP Forum)		
+
+	esme-range 		- If the SMSC is acting as a Server, the incoming bind 
+				  request's 'esme-range' should match with the configured 
+				  value. If the incoming bind doesn't carry an esme-range,
+				  the value defined here will be used.
+
+				  If the SMSC is acting as a Client, the bind request 
+				  initiated will carry this esme-range.
+
+				  If the routing rule is not defined, SMS routing between 
+				  different ESMEs happens based on the esme-range.
+
+	cluster-name 		- If it is not specified then its same as the name. 
+				  It is possible to group different SMPP connections 
+				  together by specifying the same cluster-name. 
+				  All the SMPP connection's that are capable of sending 
+				  out SMS are candidates for grouping.
+
+	window-size 		- Default value is 1. 
+				  The window size is the amount of unacknowledged requests
+				  that are permitted to be outstanding/unacknowledged at 
+				  any given time. If more requests are added, the 
+				  underlying stack will throw an exception.
+
+				  This value is set only when ESME is defined as Client 
+				  side. For Server side this value is taken from the 
+				  'SMPP Server Settings'.
+	  
+	connect-timeout		- Default value is 10000 milli seconds. 
+				  This parameter is used to specify the time within which 
+				  the connection to a remote SMSC server should be 
+				  established.
+
+				  This is useful only when ESME is defined as Client Side. 
+				  For Server side this value is taken from the
+				  the 'SMPP Server Settings'.
+
+	request-expiry-timeout	- Default value is -1 (disabled). 
+				  This parameter is used to specify the time to wait in 
+				  milli seconds for an endpoint to respond to before it 
+				  expires.
+
+				  This is useful only when ESME is defined as Client Side. 
+				  For Server side this value is taken from the
+				  the 'SMPP Server Settings'.
+
+	window-monitor-interval	- Default value is -1 (disabled).
+				  This parameter is used to specify the time between 
+				  executions of monitoring the window for requests that 
+				  expire. It is recommended that this value, generally, 
+				  either matches or is half the value of 
+				  'request-expiry-timeout'. Therefore, in the worst case
+				  scenario, a request could take upto 1.5 times the 
+				  'requestExpiryTimeout' to clear out.
+
+				  This is useful only when ESME is defined as Client Side. 
+				  For Server side this value is taken from the
+				  the 'SMPP Server Settings'.
+
+	window-wait-timeout 	- Default value is 60000 milli seconds. 
+				  This parameter is used to specify the time to wait 
+				  until a slot opens up in the 'sendWindow'.
+
+				  This is useful only when ESME is defined as Client Side. 
+				  For Server side this value is taken from the
+				  the 'SMPP Server Settings'.
+
+	counters-enabled 	- Default value is true. 
+				  When this is enabled, SMSC exposes the statistics for
+				  SMPP connections.
+
+				  This is useful only when ESME is defined as Client Side. 
+				  For Server side this value is taken from the
+				  the 'SMPP Server Settings'.
+
+	enquire-link-delay	- Default value is 30000 milli seconds. 
+				  When SMSC connects to a remote server as CLIENT, it 
+				  sends an 'ENQUIRE_LINK' after every configured 
+				  enquire-link-delay.
 
 SEE ALSO
 	smsc get scgt, smsc set scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
 	smsc set hlrssn, smsc get mscssn, smsc set mscssn, smsc get maxmapv, 
 	smsc set maxmapv
-
-
-
