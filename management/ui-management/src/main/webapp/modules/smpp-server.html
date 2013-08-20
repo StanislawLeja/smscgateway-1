@@ -166,17 +166,25 @@
 																	'<div id="' + name + '" class="accordion-body">' +
 																		'<div class="accordion-inner">' +
 																			'<strong><i class="icon-list"></i> SMPP Server Configuration Properties</strong>' +
+																			
+																			'<div class="alert alert-error" id="login-settings-error" style="display:none;">'+
+																			  '<button type="button" class="close">&times;</button>'+
+																			  'Some Fields are not correctly filled out, please double check the settings below !'+
+																			'</div>'+																			
+																			
 																			'<table class="table table-condensed table-striped">' + 
 																				'<thead><tr><th style="width: 40%;">Name</th><th style="width: 55%;">Value</th><th>&nbsp;</th></tr></thead>' +
 																				'<tbody>'+
 																					'<tr data-toggle="tooltip" title="SystemId sent back in BIND response. Provides an identification of the SMSC to the ESME">'+
 																						'<td style="font-size: 0.9em;">SystemId</td>'+
 																						'<td style="font-size: 0.9em; padding: 0;">'+
+																							'<div id="div-' + name +'SystemId-input" class="control-group">'+
 																							'<span id="' + name +'SystemId-input" style="display: none;">'+
 																								'<input type="text" class="input-small" value="' + systremId + '" /> ' +
 																								'<i class="icon-ok" style="cursor: pointer;" onclick="onSmppServrConfigOk(\'' + name+ '\', \'SystemId\', \'' + name+"SystemId" + '\')"></i> ' +
 																								'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"SystemId"+']\').toggle(); $(\'input[id^='+name+"SystemId"+']\').focus();"></i>' + 
 																							'</span>'+
+																							'</div>' +
 																							'<span id="' +name + 'SystemId-text">' + systremId + '</span>'+
 																						'</td>'+
 																						'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"SystemId"+']\').toggle(); $(\'input[id^='+name+"SystemId"+']\').focus();"></i>' +
@@ -186,11 +194,13 @@
 																					'<tr data-toggle="tooltip" title="server listens to this port for incoming requests">'+
 																						'<td style="font-size: 0.9em;">BindPort</td>'+
 																						'<td style="font-size: 0.9em; padding: 0;">'+
+																							'<div id="div-' + name +'Port-input" class="control-group">'+
 																							'<span id="'+name + 'Port-input" style="display: none;" >'+
 																								'<input type="text" class="input-small" value="' + port + '" /> ' +
 																								'<i class="icon-ok" style="cursor: pointer;" onclick="onSmppServrConfigOk(\'' + name+ '\', \'BindPort\', \'' + name+"Port" + '\')"></i> ' +
 																								'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"Port"+']\').toggle(); $(\'input[id^='+name+"Port"+']\').focus();"></i>' + 
 																							'</span>'+
+																							'</div>' +
 																							'<span id="' +name+ 'Port-text">' + port + '</span>'+
 																						'</td>'+
 																						'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"Port"+']\').toggle(); $(\'input[id^='+name+"Port"+']\').focus();"></i>' +
@@ -200,11 +210,13 @@
 																					'<tr data-toggle="tooltip" title="length of time (ms) to wait for a bind request before server automatically closes connection">'+
 																						'<td style="font-size: 0.9em;">BindTimeout</td>'+
 																						'<td style="font-size: 0.9em; padding: 0;">'+
+																							'<div id="div-' + name +'BindTimeout-input" class="control-group">'+
 																							'<span id="' +name + 'BindTimeout-input" style="display: none;" >'+
 																								'<input type="text" class="input-small" value="' + bindTimeout + '" /> ' +
 																								'<i class="icon-ok" style="cursor: pointer;" onclick="onSmppServrConfigOk(\'' + name+ '\', \'BindTimeout\', \'' + name+"BindTimeout" + '\')"></i> ' +
 																								'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"BindTimeout"+']\').toggle(); $(\'input[id^='+name+"BindTimeout"+']\').focus();"></i>' + 
 																							'</span>'+
+																							'</div>' +
 																							'<span id="' +name+ 'BindTimeout-text">' + bindTimeout + '</span>'+
 																						'</td>'+
 																						'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"BindTimeout"+']\').toggle(); $(\'input[id^='+name+"BindTimeout"+']\').focus();"></i>' +
@@ -214,11 +226,13 @@
 																					'<tr data-toggle="tooltip" title="if true, <= 3.3 for interface version normalizes to version 3.3 and >= 3.4 for interface version normalizes to version 3.4">'+
 																						'<td style="font-size: 0.9em;">AutoNegotiateInterfaceVersion</td>'+
 																						'<td style="font-size: 0.9em; padding: 0;">'+
+																							'<div id="div-' + name +'AutoNegotiateInterfaceVersion-input" class="control-group">'+
 																							'<span id="' +name+ 'AutoNegotiateInterfaceVersion-input" style="display: none;">'+
 																								'<input type="text" class="input-small" value="' + autoNegotiateInterfaceVersion + '" /> ' +
 																								'<i class="icon-ok" style="cursor: pointer;" onclick="onSmppServrConfigOk(\'' + name+ '\', \'AutoNegotiateInterfaceVersion\', \'' + name+"AutoNegotiateInterfaceVersion" + '\')"></i> ' +
 																								'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"AutoNegotiateInterfaceVersion"+']\').toggle(); $(\'input[id^='+name+"AutoNegotiateInterfaceVersion"+']\').focus();"></i>' + 
 																							'</span>'+
+																							'</div>' +
 																							'<span id="' +name+ 'AutoNegotiateInterfaceVersion-text">' + autoNegotiateInterfaceVersion + '</span>'+
 																						'</td>'+
 																						'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"AutoNegotiateInterfaceVersion"+']\').toggle(); $(\'input[id^='+name+"AutoNegotiateInterfaceVersion"+']\').focus();"></i>' +
@@ -228,11 +242,13 @@
 																					'<tr data-toggle="tooltip" title="smpp version the server supports">'+
 																						'<td style="font-size: 0.9em;">InterfaceVersion</td>'+
 																						'<td style="font-size: 0.9em; padding: 0;">'+
+																							'<div id="div-' + name +'InterfaceVersion-input" class="control-group">'+
 																							'<span id="' +name+ 'InterfaceVersion-input" style="display: none;">'+
 																								'<input type="text" class="input-small" value="' + interfaceVersion + '" /> ' +
 																								'<i class="icon-ok" style="cursor: pointer;" onclick="onSmppServrConfigOk(\'' + name+ '\', \'InterfaceVersion\', \'' + name+"InterfaceVersion" + '\')"></i> ' +
 																								'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"InterfaceVersion"+']\').toggle(); $(\'input[id^='+name+"InterfaceVersion"+']\').focus();"></i>' + 
 																							'</span>'+
+																							'</div>' +
 																							'<span id="' +name+ 'InterfaceVersion-text">' + interfaceVersion + '</span>'+
 																						'</td>'+
 																						'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"InterfaceVersion"+']\').toggle(); $(\'input[id^='+name+"InterfaceVersion"+']\').focus();"></i>' +
@@ -242,11 +258,13 @@
 																					'<tr data-toggle="tooltip" title="max number of connections/sessions this server will expect to handle">'+
 																						'<td style="font-size: 0.9em;">MaxConnectionSize</td>'+
 																						'<td style="font-size: 0.9em; padding: 0;">'+
+																							'<div id="div-' + name +'MaxConnSize-input" class="control-group">'+
 																							'<span id="' +name+ 'MaxConnSize-input" style="display: none;">'+
 																								'<input type="text" class="input-small" value="' + maxConnectionSize + '" /> ' +
 																								'<i class="icon-ok" style="cursor: pointer;" onclick="onSmppServrConfigOk(\'' + name+ '\', \'MaxConnectionSize\', \'' + name+"MaxConnSize" + '\')"></i> ' +
 																								'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"MaxConnSize"+']\').toggle(); $(\'input[id^='+name+"MaxConnSize"+']\').focus();"></i>' + 
 																							'</span>'+
+																							'</div>' +
 																							'<span id="' +name+ 'MaxConnSize-text">' + maxConnectionSize + '</span>'+
 																						'</td>'+
 																						'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"MaxConnSize"+']\').toggle(); $(\'input[id^='+name+"MaxConnSize"+']\').focus();"></i>' +
@@ -256,11 +274,13 @@
 																					'<tr data-toggle="tooltip" title="window size is the amount of unacknowledged requests that are permitted to be outstanding/unacknowledged at any given time">'+
 																						'<td style="font-size: 0.9em;">DefaultWindowSize</td>'+
 																						'<td style="font-size: 0.9em; padding: 0;">'+
+																							'<div id="div-' + name +'DefWindSize-input" class="control-group">'+
 																							'<span id="' +name+ 'DefWindSize-input" style="display: none;">'+
 																								'<input type="text" class="input-small" value="' + defaultWindowSize + '" /> ' +
 																								'<i class="icon-ok" style="cursor: pointer;" onclick="onSmppServrConfigOk(\'' + name+ '\', \'DefaultWindowSize\', \'' + name+"DefWindSize" + '\')"></i> ' +
 																								'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"DefWindSize"+']\').toggle(); $(\'input[id^='+name+"DefWindSize"+']\').focus();"></i>' + 
 																							'</span>'+
+																							'</div>' +
 																							'<span id="' +name+ 'DefWindSize-text">' + defaultWindowSize + '</span>'+
 																						'</td>'+
 																						'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"DefWindSize"+']\').toggle(); $(\'input[id^='+name+"DefWindSize"+']\').focus();"></i>' +
@@ -270,11 +290,13 @@
 																					'<tr data-toggle="tooltip" title="amount of time to wait until a slot opens up in the sendWindow">'+
 																						'<td style="font-size: 0.9em;">DefaultWindowWaitTimeout</td>'+
 																						'<td style="font-size: 0.9em; padding: 0;">'+
+																							'<div id="div-' + name +'DefWindWtTimout-input" class="control-group">'+
 																							'<span id="' +name+ 'DefWindWtTimout-input" style="display: none;">'+
 																								'<input type="text" class="input-small" value="' + defaultWindowWaitTimeout + '" /> ' +
 																								'<i class="icon-ok" style="cursor: pointer;" onclick="onSmppServrConfigOk(\'' + name+ '\', \'DefaultWindowWaitTimeout\', \'' + name+"DefWindWtTimout" + '\')"></i> ' +
 																								'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"DefWindWtTimout"+']\').toggle(); $(\'input[id^='+name+"DefWindWtTimout"+']\').focus();"></i>' + 
 																							'</span>'+
+																							'</div>' +
 																							'<span id="' +name+ 'DefWindWtTimout-text">' + defaultWindowWaitTimeout + '</span>'+
 																						'</td>'+
 																						'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"DefWindWtTimout"+']\').toggle(); $(\'input[id^='+name+"DefWindWtTimout"+']\').focus();"></i>' +
@@ -284,11 +306,13 @@
 																					'<tr data-toggle="tooltip" title="amount of time to wait for an endpoint to respond to a request before it expires. Defaults to disabled (-1)">'+
 																						'<td style="font-size: 0.9em;">DefaultRequestExpiryTimeout</td>'+
 																						'<td style="font-size: 0.9em; padding: 0;">'+
+																							'<div id="div-' + name +'DefReqExpTimout-input" class="control-group">'+
 																							'<span id="' + name + 'DefReqExpTimout-input" style="display: none;">'+
 																								'<input type="text" class="input-small" value="' + defaultRequestExpiryTimeout + '" /> ' +
 																								'<i class="icon-ok" style="cursor: pointer;" onclick="onSmppServrConfigOk(\'' + name+ '\', \'DefaultRequestExpiryTimeout\', \'' + name+"DefReqExpTimout" + '\')"></i> ' +
 																								'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"DefReqExpTimout"+']\').toggle(); $(\'input[id^='+name+"DefReqExpTimout"+']\').focus();"></i>' + 
 																							'</span>'+
+																							'</div>' +
 																							'<span id="' +name+ 'DefReqExpTimout-text">' + defaultRequestExpiryTimeout + '</span>'+
 																						'</td>'+
 																						'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"DefReqExpTimout"+']\').toggle(); $(\'input[id^='+name+"DefReqExpTimout"+']\').focus();"></i>' +
@@ -298,11 +322,13 @@
 																					'<tr data-toggle="tooltip" title="amount of time between executions of monitoring the window for requests that expire. Its recommended that this generally either matches or is half the value of requestExpiryTimeout. Therefore, at worst a request would could take up 1.5X the requestExpiryTimeout to clear out">'+
 																						'<td style="font-size: 0.9em;">DefaultWindowMonitorInterval</td>'+
 																						'<td style="font-size: 0.9em; padding: 0;">'+
+																							'<div id="div-' + name +'DefWinMonIntrv-input" class="control-group">'+
 																							'<span id="' + name + 'DefWinMonIntrv-input" style="display: none;">'+
 																								'<input type="text" class="input-small" value="' + defaultWindowMonitorInterval + '" /> ' +
 																								'<i class="icon-ok" style="cursor: pointer;" onclick="onSmppServrConfigOk(\'' + name+ '\', \'DefaultWindowMonitorInterval\', \'' + name+"DefWinMonIntrv" + '\')"></i> ' +
 																								'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"DefWinMonIntrv"+']\').toggle(); $(\'input[id^='+name+"DefWinMonIntrv"+']\').focus();"></i>' + 
 																							'</span>'+
+																							'</div>' +
 																							'<span id="' +name+ 'DefWinMonIntrv-text">' + defaultWindowMonitorInterval + '</span>'+
 																						'</td>'+
 																						'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"DefWinMonIntrv"+']\').toggle(); $(\'input[id^='+name+"DefWinMonIntrv"+']\').focus();"></i>' +
@@ -312,11 +338,13 @@
 																					'<tr data-toggle="tooltip" title="tracks counters for SMPP operations">'+
 																						'<td style="font-size: 0.9em;">DefaultSessionCountersEnabled</td>'+
 																						'<td style="font-size: 0.9em; padding: 0;">'+
+																							'<div id="div-' + name +'DefSesCouEna-input" class="control-group">'+
 																							'<span id="' + name + 'DefSesCouEna-input" style="display: none;">'+
 																								'<input type="text" class="input-small" value="' + defaultSessionCountersEnabled + '" /> ' +
 																								'<i class="icon-ok" style="cursor: pointer;" onclick="onSmppServrConfigOk(\'' + name+ '\', \'DefaultSessionCountersEnabled\', \'' + name+"DefSesCouEna" + '\')"></i> ' +
 																								'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"DefSesCouEna"+']\').toggle(); $(\'input[id^='+name+"DefSesCouEna"+']\').focus();"></i>' + 
 																							'</span>'+
+																							'</div>' +
 																							'<span id="' +name+ 'DefSesCouEna-text">' + defaultSessionCountersEnabled + '</span>'+
 																						'</td>'+
 																						'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"DefSesCouEna"+']\').toggle(); $(\'input[id^='+name+"DefSesCouEna"+']\').focus();"></i>' +
@@ -330,8 +358,10 @@
 																'</div>'+
 														'</div>'+
 														'<div class="modal-footer">'+
-														'<span>Properties updated will be reflected only after SMPP Server is stopped and started again!</span>'+
-															'<a href="#" onclick="$(\'#entities-modal'+name+'\').modal(\'hide\'); return false;" class="btn">Close</a>'+
+														'<div class="control-group warning">'+
+														'<label class="control-label" for="inputWarning">Properties updated will be reflected only after SMPP Server is stopped and started again!</label>'+
+														'</div>'+
+														'<a href="#" onclick="$(\'#entities-modal'+name+'\').modal(\'hide\'); return false;" class="btn">Close</a>'+
 														'</div>'+										
 													'</div>');																					
 												
@@ -366,10 +396,29 @@
 					
 				}
 				function onSmppServrConfigOk(mbeanName, propertyName, spanId){
+					var formInvalid = false;
+					
 					var spanElement = document.getElementById(spanId + "-input");
 					var eleChild = spanElement.childNodes;
 					var inputTextEle = eleChild[0];
 					var spanElementTxt = document.getElementById(spanId + "-text");
+					
+					var propvalue = inputTextEle.value;
+					
+					if(propvalue.trim() == "") {
+						$("#div-"+spanId + "-input").addClass("error");					    			
+		    			formInvalid = true;
+		    		} else if($("#div-"+spanId + "-input").hasClass("error")) {
+		    			$("#div-"+spanId + "-input").removeClass("error");		
+		    		}	
+					
+					if(formInvalid) {
+						$("#login-settings-error").show();
+						logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+						return false;
+					} else {
+						$("#login-settings-error").hide();
+					}					
 					
 					var mbeanSearch="com.telscale.smsc:layer=SmppServerManagement,name="+mbeanName;
 					jolokia.request(
