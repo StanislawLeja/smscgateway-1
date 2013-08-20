@@ -923,7 +923,7 @@ EXAMPLES
 		</section>
 		<section id="SMPP_Server_Settings_Edit">
 		<title>Edit SMPP Server Properties</title>
-<section id="SMPP_Server_Settings_Edit_CLI">
+			<section id="SMPP_Server_Settings_Edit_CLI">
 			<title>Using CLI</title>
 <para>
 You can edit the properties of the SMPP Server by issuing appropriate commands for every property as described below:
@@ -1129,9 +1129,10 @@ DESCRIPTION
 				</para></step>
 			</procedure>
 			</section>
-			</section>
-
 		</section>
+
+
+
 		<section id="SMPP_Server_Settings_Start">
 		<title>Start SMPP Server</title>
 			<section id="SMPP_Server_Settings_Start_GUI">
@@ -1174,7 +1175,7 @@ DESCRIPTION
 		</section>
 		<section id="SMPP_Server_Settings_Reset_Counters">
 		<title>Reset Counters for SMPP Server</title>
-<section id="SMPP_Server_Settings_Stop_GUI">
+			<section id="SMPP_Server_Settings_Reset_Counters_GUI">
 			<title>Using GUI</title>
 			<procedure>
 				<title>Reset Counters for SMPP Server using GUI</title>
