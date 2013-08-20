@@ -1,0 +1,26 @@
+Name
+	smsc databaserule update
+
+SYNOPSIS
+	smsc databaserule update <address> <systemId>
+
+DESCRIPTION
+	This command is used to add or update a Database Rule. 
+
+	Database Rules are Rules that are used for routing messages to a proper ESME. 
+	
+	When you define a rule using the above command, you are creating a routing rule
+	that states:
+	"If the destination address of a message corresponds with the value specified in
+	the 'address' field, then the message be sent to an ESME identified by the value
+	specified in the 'systemId' field".
+
+	To add a new rule you must issue the command with only the systemId parameter.
+
+	To update an existing rule, you must issue the command with both the address 
+	parameter and the systemId parameter.
+
+SEE ALSO
+	smsc esme_create, smsc get scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
+	smsc set hlrssn, smsc get mscssn, smsc set mscssn, smsc get maxmapv, 
+	smsc set maxmapv
