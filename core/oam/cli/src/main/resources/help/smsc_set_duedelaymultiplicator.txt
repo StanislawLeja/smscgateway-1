@@ -1,0 +1,29 @@
+Name
+	smsc set duedelaymultiplicator
+
+SYNOPSIS
+	smsc set duedelaymultiplicator <due-delay-multiplicator>
+
+DESCRIPTION
+	This command is used to set a value for due-delay-multiplicator. This parameter 
+	specifies the delay multiplicator value before another delivery attempt (after 
+	failure) is made. 
+
+	After a message delivery failure (if message validity period is not over and the 
+	failure is temporary), a delay period is induced before the next delivery attempt.
+	This delay period is calculated as follows: 
+
+	Delay after the first delivery failure = 
+				second-due-delay
+
+	Delay after every consecutive delivery failure = 
+				prev-due-delay * due-delay-multiplicator / 100 
+			        where prev-due-delay is the delay at the previous step.
+
+EXAMPLES
+	smsc set duedelaymultiplicator 200
+
+SEE ALSO
+	smsc esme_create, smsc get scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
+	smsc set hlrssn, smsc get mscssn, smsc set mscssn, smsc get maxmapv, 
+	smsc set maxmapv
