@@ -109,21 +109,21 @@
 												        '    <div>'+
 												        '      <p class="muted">Session Details</p>'+
 																'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
-																	'<dt>Current Session Size</dt> <dd>' + sessionSize + ' </dd>' + 
-																	'<dt>Current Transceiver Session Size</dt> <dd>' + transceiverSessionSize + ' </dd>' + 
-																	'<dt>Current Transmitter Session Size</dt> <dd>' + transmitterSessionSize + ' </dd>' + 
-																	'<dt>Current Receiver Session Size</dt> <dd>' + receiverSessionSize + ' </dd>' + 
-																	'<dt>Total Sessions Created</dt> <dd>' + sessionCreated + ' </dd>' + 
-																	'<dt>Total Sessions Destroyed</dt> <dd>' + sessionDestroyed + ' </dd>' + 
+																	'<dt>CurrentSessionSize</dt> <dd>' + sessionSize + ' </dd>' + 
+																	'<dt>CurrentTransceiverSessionSize</dt> <dd>' + transceiverSessionSize + ' </dd>' + 
+																	'<dt>CurrentTransmitterSessionSize</dt> <dd>' + transmitterSessionSize + ' </dd>' + 
+																	'<dt>CurrentReceiverSessionSize</dt> <dd>' + receiverSessionSize + ' </dd>' + 
+																	'<dt>TotalSessionsCreated</dt> <dd>' + sessionCreated + ' </dd>' + 
+																	'<dt>TotalSessionsDestroyed</dt> <dd>' + sessionDestroyed + ' </dd>' + 
 																'</dl>'+
 												        '    </div>'+
 											        		'<hr style="margin: 5px 0;"/>' +
 													        '    <div>'+
 													        '      <p class="muted">Connection Details</p>'+
 																	'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
-																		'<dt>Connection Size</dt> <dd>' + connectionSize + ' </dd>' + 
-																		'<dt>Channel Connects</dt> <dd>' + channelConnects + ' </dd>' + 
-																		'<dt>Channel Disconnects</dt> <dd>' + channelDisconnects + ' </dd>' + 
+																		'<dt>ConnectionSize</dt> <dd>' + connectionSize + ' </dd>' + 
+																		'<dt>ChannelConnects</dt> <dd>' + channelConnects + ' </dd>' + 
+																		'<dt>ChannelDisconnects</dt> <dd>' + channelDisconnects + ' </dd>' + 
 																	'</dl>'+
 													        '    </div>'+	
 													        
@@ -131,22 +131,22 @@
 													        '    <div>'+
 													        '      <p class="muted">Bind Details</p>'+
 																	'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
-																		'<dt>Bind Timeouts</dt> <dd>' + bindTimeouts + ' </dd>' +
-																		'<dt>Bind Requested</dt> <dd>' + bindRequested + ' </dd>' +
+																		'<dt>BindTimeouts</dt> <dd>' + bindTimeouts + ' </dd>' +
+																		'<dt>BindRequested</dt> <dd>' + bindRequested + ' </dd>' +
 																	'</dl>'+
 													        '    </div>'+		
 											        		'<hr style="margin: 5px 0;"/>' +
 													        '    <div>'+
 													        '      <p class="muted">Miscellaneous Details</p>'+
 																	'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
-																		'<dt>Non Blocking Sockets Enabled</dt> <dd>' + nonBlockingSocketsEnabled + ' </dd>' +
-																		'<dt>Reuse Address</dt> <dd>' + reuseAddress + ' </dd>' +
+																		'<dt>NonBlockingSocketsEnabled</dt> <dd>' + nonBlockingSocketsEnabled + ' </dd>' +
+																		'<dt>ReuseAddress</dt> <dd>' + reuseAddress + ' </dd>' +
 																	'</dl>'+
 													        '    </div>'+
 													        
 													        '<hr style="margin: 5px 0;"/>' +
 													        '<div class="btn-group">'+
-													        '              <button type="button" class="btn" onclick="resetCounters(\'' + name +  '\')"><i class="icon-spinner"></i> Reset Counters</button>'+
+													        '	<button type="button" class="btn" onclick="resetCounters(\'' + name +  '\')"><i class="icon-spinner"></i> Reset Counters</button>'+
 													        '</div>'+
 													        
 													        
