@@ -27,7 +27,7 @@
 	<para>The diagram below depicts a high level design of &THIS.PLATFORM; &THIS.APPLICATION;.</para>
 	<mediaobject>
 		<imageobject>
-			<imagedata width="300px" align="center" fileref="images/smsc-application-design-overview.png" format="PNG" />
+			<imagedata align="center" fileref="images/smsc-application-design-overview.png" format="PNG" />
 		</imageobject>
 		<caption>
 			<para>&THIS.APPLICATION;
@@ -42,22 +42,16 @@
 		<variablelist>
 			<title>Service Modules</title>
 			<varlistentry>
-				<term>Mo (Mobile originated) module
-</term>
-				<listitem><para>Handles mobile originated SMS.
-</para></listitem>
+				<term>Mo (Mobile originated) module</term>
+				<listitem><para>Handles mobile originated SMS.</para></listitem>
 			</varlistentry>
 			<varlistentry>
-				<term>Mt (Mobile terminated)
-</term>
+				<term>Mt (Mobile terminated)</term>
 				<listitem><para>Delivers SMS to mobile.</para></listitem>
 			</varlistentry>
 			<varlistentry>
-				<term>Rx SMPP module 
-</term>
-				<listitem><para>Listens for incoming SMS from ESME and routes them to Mt
-module.
-</para></listitem>
+				<term>Rx SMPP module</term>
+				<listitem><para>Listens for incoming SMS from ESME and routes them to Mt module.</para></listitem>
 			</varlistentry>
 			<varlistentry>
 				<term>Tx SMPP module
