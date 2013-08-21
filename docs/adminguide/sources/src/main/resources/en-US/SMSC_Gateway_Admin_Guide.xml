@@ -11,6 +11,5 @@
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Chapter-Running.xml" /> 
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Chapter-Configuring.xml" />
 	<xi:include href="Revision_History.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
-	<index />
 </book>
 
