@@ -15,7 +15,7 @@
 	<property name="telscale.smsc.release.version" value="6.1.4.GA"/>
 	
 	<!--GET Telscale-Slee & Telscale-jss7 - properties-->
-	<property name="telscale-slee.version" value="6.1.1.GA" />
+	<property name="telscale-slee.version" value="6.1.2.GA" />
 	<property name="telscale-slee.download.distro.file" value="telscale-slee-${telscale-slee.version}.zip" />
 	<property name="telscale-slee.download.url" value="ftp://ftp.box.com/TelScale%20JAIN-SLEE/${telscale-slee.download.distro.file}" />
 	<property name="telscale-slee.distro.zip.path" value="${checkout.dir}/${telscale-slee.download.distro.file}" />
@@ -47,8 +47,8 @@
 		</classpath>
 	</taskdef>
 	
-	<target name="release" depends="clean,get-deps,extract-deps,clean-up-telscale-slee, build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip,bundle-documentation" />
-	<target name="release-no-clean" depends="get-deps,extract-deps,clean-up-telscale-slee, build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip,bundle-documentation" />
+	<target name="release" depends="clean,get-deps,extract-deps,clean-up-telscale-slee,build-map-ra,checkout-smsc-persistence,build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip,bundle-documentation" />
+	<target name="release-no-clean" depends="get-deps,extract-deps,clean-up-telscale-slee, build-map-ra,checkout-smsc-persistence,build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip,bundle-documentation" />
 	
     <target name="deploy">
     	<ant antfile="${ant.file.telscale.smscgw.release}" target="release">
@@ -196,23 +196,23 @@
         </exec>
     </target>
 	
-    <target name="build-smsc" depends="checkout-smsc-persistence">
+    <target name="build-smsc">
         <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.telscale-smsc.dir}">
                 <arg line="${release.build.goals} -Dmaven.test.skip=true" />
         </exec>
     </target>
 	
-    <target name="package-map-ra" depends="checkout-smsc-persistence">
+    <target name="build-map-ra">
         <exec failonerror="true" executable="${mvn.executable}" dir="${base.dir}/map-ra">
                 <arg line="clean install" />
         </exec>
     </target>
 	
 	
-    <target name="copy-smsc" depends="package-map-ra">
+    <target name="copy-smsc">
         <echo>Copy Telscale Map RA</echo>
         <copy todir="${release.dir}/resources/map" failonerror="true">
-                <fileset dir="${base.dir}/map-ra/target/map-ts-ra">
+                <fileset dir="${base.dir}/map-ra/target/map-ts-ra.dir">
                         <include name="**" />
                 </fileset>
         </copy>
