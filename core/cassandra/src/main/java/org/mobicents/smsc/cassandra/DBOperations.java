@@ -140,9 +140,8 @@ public class DBOperations {
                         mutator.addInsertion(ta.getTargetId(), Schema.FAMILY_LIVE,
                                 HFactory.createColumn(cc, ta.getAddrNpi(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 
-                        cc = new Composite();
                         cc = createLiveColumnComposite(ta, Schema.COLUMN_IN_SYSTEM);
-                        mutator.addInsertion(ta.getAddr(), Schema.FAMILY_LIVE,
+                        mutator.addInsertion(ta.getTargetId(), Schema.FAMILY_LIVE,
                                 HFactory.createColumn(cc, 0, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
 
                         mutator.execute();
