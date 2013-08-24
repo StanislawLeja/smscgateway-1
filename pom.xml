@@ -33,8 +33,16 @@
 		<!-- cloudhopper smpp -->
 		<ch.smpp.version>5.0.0</ch.smpp.version>
 		<slf4j.version>1.5.0</slf4j.version>
-		<!-- hector -->
-		<hector-core.version>1.0-5</hector-core.version>
+		
+		<!-- Cassandra Driver and dependency -->
+		<cassandra-driver-core.version>1.0.2</cassandra-driver-core.version>
+		<google-guava.version>14.0.1</google-guava.version>
+		<yammer-metrics.version>2.2.0</yammer-metrics.version>
+		<netty.version>3.6.3.Final</netty.version>
+		<cassandra-thrift.version>1.2.6</cassandra-thrift.version>
+		<apache-thrift.version>0.7.0</apache-thrift.version>
+		<jackson.version>1.9.2</jackson.version>
+		
 		<!-- TelScale properties -->
 		<ss7.version>6.1.4.GA-TelScale</ss7.version>
 		<jss7.telscale.version>6.1.4.GA-TelScale</jss7.telscale.version>
@@ -47,6 +55,7 @@
 
 	<modules>
 		<module>core</module>
+		
 		<module>test</module>
 		<module>tools</module>
 		<module>management/ui-management</module>

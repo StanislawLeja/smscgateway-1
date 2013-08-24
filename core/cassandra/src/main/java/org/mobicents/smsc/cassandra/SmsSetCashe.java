@@ -22,7 +22,7 @@
 
 package org.mobicents.smsc.cassandra;
 
-
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javolution.util.FastMap;
 
@@ -34,7 +34,8 @@ import javolution.util.FastMap;
 public class SmsSetCashe {
 
 	private FastMap<TargetAddress, TargetAddressContainer> lstSmsSetUnderAtomicOper = new FastMap<TargetAddress, TargetAddressContainer>();
-	private int activityCount = 0;
+
+	private AtomicInteger activityCount = new AtomicInteger(0);
 
 	private static SmsSetCashe singeltone;
 
@@ -50,42 +51,42 @@ public class SmsSetCashe {
 	}
 
 	public TargetAddress addSmsSet(TargetAddress ta) {
-		synchronized (this) {
+		synchronized (lstSmsSetUnderAtomicOper) {
 			TargetAddressContainer cont = lstSmsSetUnderAtomicOper.get(ta);
 			if (cont != null) {
 				cont.count++;
 				return cont.targetAddress;
+
 			} else {
 				cont = new TargetAddressContainer();
+				lstSmsSetUnderAtomicOper.put(ta, cont);
+
 				cont.count = 1;
 				cont.targetAddress = ta;
-				lstSmsSetUnderAtomicOper.put(ta, cont);
 				return ta;
 			}
 		}
+
 	}
 
 	public void removeSmsSet(TargetAddress ta) {
-		synchronized (this) {
+		synchronized (lstSmsSetUnderAtomicOper) {
 			TargetAddressContainer cont = lstSmsSetUnderAtomicOper.get(ta);
+
 			if (--cont.count <= 0)
 				lstSmsSetUnderAtomicOper.remove(ta);
 		}
 	}
 
 	public void incrementActivityCount() {
-		synchronized (this) {
-			activityCount++;
-		}
+		activityCount.incrementAndGet();
 	}
 
 	public void decrementActivityCount() {
-		synchronized (this) {
-			activityCount--;
-		}
+		activityCount.decrementAndGet();
 	}
 
 	public int getActivityCount() {
-		return activityCount;
+		return activityCount.get();
 	}
 }

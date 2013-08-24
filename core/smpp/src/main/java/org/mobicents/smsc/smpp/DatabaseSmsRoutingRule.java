@@ -26,12 +26,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import me.prettyprint.cassandra.model.ConfigurableConsistencyLevel;
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.HConsistencyLevel;
-import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.factory.HFactory;
-
 import org.apache.log4j.Logger;
 import org.mobicents.smsc.cassandra.DBOperations;
 import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
@@ -47,14 +41,14 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 
 	private static final Logger logger = Logger.getLogger(DatabaseSmsRoutingRule.class);
 
-    private Cluster cluster = null;
-	private Keyspace keyspace = null;
 	private SmscPropertiesManagement smscPropertiesManagement;
 	private EsmeManagement esmeManagement;
 
 	private static final Pattern pattern = Pattern.compile("(([\\+]?[1])|[0]?)");
 
 	private static final String USA_COUNTRY_CODE = "1";
+
+	private DBOperations dbOperations = null;
 
 	/**
 	 * 
@@ -63,26 +57,22 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 		this.init();
 	}
 
-    @Override
-    public void setEsmeManagement(EsmeManagement em) {
-        this.esmeManagement = em;
-    }
+	@Override
+	public void setEsmeManagement(EsmeManagement em) {
+		this.esmeManagement = em;
+	}
 
-    @Override
-    public void setSmscPropertiesManagement(SmscPropertiesManagement sm) {
-        this.smscPropertiesManagement = sm;
-    }
+	@Override
+	public void setSmscPropertiesManagement(SmscPropertiesManagement sm) {
+		this.smscPropertiesManagement = sm;
+	}
 
 	private void init() {
-        try {
-            SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-            cluster = HFactory.getOrCreateCluster(smscPropertiesManagement.getClusterName(), smscPropertiesManagement.getHosts());
-            ConfigurableConsistencyLevel ccl = new ConfigurableConsistencyLevel();
-            ccl.setDefaultReadConsistencyLevel(HConsistencyLevel.ONE);
-            keyspace = HFactory.createKeyspace(smscPropertiesManagement.getKeyspaceName(), cluster, ccl);
-        } catch (Exception e) {
-            logger.error("Error initializing cassandra database for DatabaseSmsRoutingRule", e);
-        }
+		try {
+			dbOperations = DBOperations.getInstance();
+		} catch (Exception e) {
+			logger.error("Error initializing cassandra database for DatabaseSmsRoutingRule", e);
+		}
 	}
 
 	/*
@@ -109,21 +99,21 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 		String clusterName = null;
 
 		try {
-            DbSmsRoutingRule rr = DBOperations.getSmsRoutingRule(keyspace, address);
-            if (rr != null) {
-                clusterName = rr.getClusterName();
-            } else {
-                if (smscPropertiesManagement == null)
-                    smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-                if (smscPropertiesManagement != null) {
-                    String dcn = smscPropertiesManagement.getEsmeDefaultClusterName();
-                    if (dcn != null) {
-                        if (esmeManagement.getEsmeByClusterName(dcn) != null) {
-                            clusterName = dcn;
-                        }
-                    }
-                }
-            }
+			DbSmsRoutingRule rr = dbOperations.getSmsRoutingRule(address);
+			if (rr != null) {
+				clusterName = rr.getClusterName();
+			} else {
+				if (smscPropertiesManagement == null)
+					smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+				if (smscPropertiesManagement != null) {
+					String dcn = smscPropertiesManagement.getEsmeDefaultClusterName();
+					if (dcn != null) {
+						if (esmeManagement.getEsmeByClusterName(dcn) != null) {
+							clusterName = dcn;
+						}
+					}
+				}
+			}
 		} catch (PersistenceException e) {
 			logger.error("PersistenceException while selecting from table SmsRoutingRule", e);
 		}
@@ -131,29 +121,28 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 		return clusterName;
 	}
 
-    public void updateDbSmsRoutingRule(String address, String clusterName) throws PersistenceException {
-        DbSmsRoutingRule dbSmsRoutingRule = new DbSmsRoutingRule();
-        dbSmsRoutingRule.setAddress(address);
-        dbSmsRoutingRule.setClusterName(clusterName);
+	public void updateDbSmsRoutingRule(String address, String clusterName) throws PersistenceException {
+		DbSmsRoutingRule dbSmsRoutingRule = new DbSmsRoutingRule();
+		dbSmsRoutingRule.setAddress(address);
+		dbSmsRoutingRule.setClusterName(clusterName);
 
-        DBOperations.updateDbSmsRoutingRule(keyspace, dbSmsRoutingRule);
-    }
+		dbOperations.updateDbSmsRoutingRule(dbSmsRoutingRule);
+	}
 
-    public void deleteDbSmsRoutingRule(String address) throws PersistenceException {
-        DBOperations.deleteDbSmsRoutingRule(keyspace, address);
-    }
+	public void deleteDbSmsRoutingRule(String address) throws PersistenceException {
+		dbOperations.deleteDbSmsRoutingRule(address);
+	}
 
-    public DbSmsRoutingRule getSmsRoutingRule(String address) throws PersistenceException {
-        return DBOperations.getSmsRoutingRule(keyspace, address);
-    }
+	public DbSmsRoutingRule getSmsRoutingRule(String address) throws PersistenceException {
+		return dbOperations.getSmsRoutingRule(address);
+	}
 
-    public List<DbSmsRoutingRule> getSmsRoutingRulesRange() throws PersistenceException {
-        return DBOperations.getSmsRoutingRulesRange(keyspace);
-    }
+	public List<DbSmsRoutingRule> getSmsRoutingRulesRange() throws PersistenceException {
+		return dbOperations.getSmsRoutingRulesRange();
+	}
 
-    public List<DbSmsRoutingRule> getSmsRoutingRulesRange(String lastAdress) throws PersistenceException {
-        return DBOperations.getSmsRoutingRulesRange(keyspace, lastAdress);
-    }
+	public List<DbSmsRoutingRule> getSmsRoutingRulesRange(String lastAdress) throws PersistenceException {
+		return dbOperations.getSmsRoutingRulesRange(lastAdress);
+	}
 
 }
-

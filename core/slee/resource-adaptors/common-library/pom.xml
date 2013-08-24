@@ -37,12 +37,7 @@
 			<version>${javolution.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>${pom.groupId}</groupId>
-			<artifactId>smpp</artifactId>
-			<version>${pom.version}</version>
-			<scope>provided</scope>
-		</dependency>
+
 		<dependency>
 			<artifactId>mobicents-slee-ra-map-library</artifactId>
 			<groupId>org.mobicents.resources</groupId>

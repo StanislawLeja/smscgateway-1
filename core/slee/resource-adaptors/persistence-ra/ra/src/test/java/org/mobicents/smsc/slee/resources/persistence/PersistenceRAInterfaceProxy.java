@@ -66,109 +66,103 @@ import me.prettyprint.hector.api.query.SliceQuery;
  */
 public class PersistenceRAInterfaceProxy implements PersistenceRAInterface {
 
-	private Keyspace keyspace;
-
-    public void setKeyspace(Keyspace val) {
-        this.keyspace = val;
-    }
-
-    public Keyspace getKeyspace() {
-        return this.keyspace;
-    }
+	private DBOperations dbOperations = DBOperations.getInstance();
 
 	@Override
 	public boolean checkSmsSetExists(TargetAddress ta) throws PersistenceException {
-		return DBOperations.checkSmsSetExists(this.keyspace, ta);
+		return dbOperations.checkSmsSetExists(this.keyspace, ta);
 	}
 
 	@Override
 	public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException {
-		return DBOperations.obtainSmsSet(this.keyspace, ta);
+		return dbOperations.obtainSmsSet(ta);
 	}
 
 	@Override
 	public void setNewMessageScheduled(SmsSet smsSet, Date newDueDate) throws PersistenceException {
-		DBOperations.setNewMessageScheduled(this.keyspace, smsSet, newDueDate);
+		dbOperations.setNewMessageScheduled(smsSet, newDueDate);
 	}
 
 	@Override
-	public void setDeliveringProcessScheduled(SmsSet smsSet, Date newDueDate, int newDueDelay) throws PersistenceException {
-		DBOperations.setDeliveringProcessScheduled(this.keyspace, smsSet, newDueDate, newDueDelay);
+	public void setDeliveringProcessScheduled(SmsSet smsSet, Date newDueDate, int newDueDelay)
+			throws PersistenceException {
+		dbOperations.setDeliveringProcessScheduled(smsSet, newDueDate, newDueDelay);
 	}
 
 	@Override
-	public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId, SmType type) {
-		DBOperations.setDestination(smsSet, destClusterName, destSystemId, destEsmeId, type);
+	public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId,
+			SmType type) {
+		dbOperations.setDestination(smsSet, destClusterName, destSystemId, destEsmeId, type);
 	}
 
 	@Override
 	public void setRoutingInfo(SmsSet smsSet, IMSI imsi, LocationInfoWithLMSI locationInfoWithLMSI) {
-		DBOperations.setRoutingInfo(smsSet, imsi, locationInfoWithLMSI);
+		dbOperations.setRoutingInfo(smsSet, imsi, locationInfoWithLMSI);
 	}
 
 	@Override
 	public void setDeliveryStart(SmsSet smsSet, Date inSystemDate) throws PersistenceException {
-		DBOperations.setDeliveryStart(this.keyspace, smsSet, inSystemDate);
+		dbOperations.setDeliveryStart(smsSet, inSystemDate);
 	}
 
 	@Override
 	public void setDeliveryStart(Sms sms) throws PersistenceException {
-		DBOperations.setDeliveryStart(this.keyspace, sms);
+		dbOperations.setDeliveryStart(sms);
 	}
 
 	@Override
 	public void setDeliverySuccess(SmsSet smsSet, Date lastDelivery) throws PersistenceException {
-		DBOperations.setDeliverySuccess(this.keyspace, smsSet, lastDelivery);
+		dbOperations.setDeliverySuccess(smsSet, lastDelivery);
 	}
 
 	@Override
 	public void setDeliveryFailure(SmsSet smsSet, ErrorCode smStatus, Date lastDelivery) throws PersistenceException {
-		DBOperations.setDeliveryFailure(this.keyspace, smsSet, smStatus, lastDelivery);
+		dbOperations.setDeliveryFailure(smsSet, smStatus, lastDelivery);
 	}
 
 	@Override
 	public void setAlertingSupported(String targetId, boolean alertingSupported) throws PersistenceException {
-		DBOperations.setAlertingSupported(this.keyspace, targetId, alertingSupported);
+		dbOperations.setAlertingSupported(targetId, alertingSupported);
 	}
 
 	@Override
 	public boolean deleteSmsSet(SmsSet smsSet) throws PersistenceException {
-		return DBOperations.deleteSmsSet(this.keyspace, smsSet);
+		return dbOperations.deleteSmsSet(smsSet);
 	}
 
 	@Override
 	public void createLiveSms(Sms sms) throws PersistenceException {
-		DBOperations.createLiveSms(this.keyspace, sms);
+		dbOperations.createLiveSms(sms);
 	}
 
 	@Override
 	public Sms obtainLiveSms(UUID dbId) throws PersistenceException {
-		return DBOperations.obtainLiveSms(this.keyspace, dbId);
+		return dbOperations.obtainLiveSms(dbId);
 	}
 
 	@Override
 	public Sms obtainLiveSms(long messageId) throws PersistenceException {
-		return DBOperations.obtainLiveSms(this.keyspace, messageId);
+		return dbOperations.obtainLiveSms(messageId);
 	}
 
 	@Override
 	public void updateLiveSms(Sms sms) throws PersistenceException {
-		DBOperations.updateLiveSms(this.keyspace, sms);
+		dbOperations.updateLiveSms(sms);
 	}
 
 	@Override
 	public void archiveDeliveredSms(Sms sms, Date deliveryDate) throws PersistenceException {
-		DBOperations.archiveDeliveredSms(this.keyspace, sms, deliveryDate);
+		dbOperations.archiveDeliveredSms(sms, deliveryDate);
 	}
 
 	@Override
 	public void archiveFailuredSms(Sms sms) throws PersistenceException {
-		DBOperations.archiveFailuredSms(this.keyspace, sms);
+		dbOperations.archiveFailuredSms(sms);
 	}
 
 	@Override
 	public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount, Tracer tracer) throws PersistenceException {
-		return DBOperations.fetchSchedulableSmsSets(this.keyspace, maxRecordCount, tracer);
+		return dbOperations.fetchSchedulableSmsSets(maxRecordCount, tracer);
 	}
 
 	@Override
@@ -178,7 +172,7 @@ public class PersistenceRAInterfaceProxy implements PersistenceRAInterface {
 
 	@Override
 	public void releaseSynchroObject(TargetAddress ta) {
-    	SmsSetCashe.getInstance().removeSmsSet(ta);
+		SmsSetCashe.getInstance().removeSmsSet(ta);
 	}
 
 	@Override
@@ -187,22 +181,8 @@ public class PersistenceRAInterfaceProxy implements PersistenceRAInterface {
 	}
 
 	public boolean testCassandraAccess() {
-		Cluster cluster = HFactory.getOrCreateCluster("TestCluster", new CassandraHostConfigurator("localhost:9160"));
-		Keyspace keyspace = HFactory.createKeyspace("TelestaxSMSC", cluster);
-
 		try {
-			ColumnQuery<String, Composite, ByteBuffer> query = HFactory.createColumnQuery(keyspace, StringSerializer.get(), CompositeSerializer.get(), ByteBufferSerializer.get());
-			query.setColumnFamily(Schema.FAMILY_LIVE);
-			Composite coKey3 = new Composite();
-//			coKey3.addComponent(1, IntegerSerializer.get());
-//			coKey3.addComponent(4, IntegerSerializer.get());
-			coKey3.addComponent(Schema.COLUMN_ADDR_DST_TON, StringSerializer.get());
-			query.setName(coKey3);
-			query.setKey("111");
-
-			QueryResult<HColumn<Composite,ByteBuffer>> result = query.execute();
-
-			this.setKeyspace(keyspace);
+			dbOperations.checkSmsSetExists(new TargetAddress(0, 0, "1111"));
 
 			return true;
 		} catch (Exception e) {
@@ -213,7 +193,7 @@ public class PersistenceRAInterfaceProxy implements PersistenceRAInterface {
 	public void deleteLiveSms(UUID id) throws PersistenceException {
 		Sms sms = new Sms();
 		sms.setDbId(id);
-		DBOperationsProxy.doDeleteLiveSms(this.keyspace, sms);
+		dbOperations.doDeleteLiveSms(this.keyspace, sms);
 	}
 
 	public void deleteArchiveSms(UUID id) throws PersistenceException {
@@ -224,8 +204,8 @@ public class PersistenceRAInterfaceProxy implements PersistenceRAInterface {
 	}
 
 	public SmsProxy obtainArchiveSms(UUID dbId) throws PersistenceException, IOException {
-		SliceQuery<UUID, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, UUIDSerializer.get(), DBOperations.SERIALIZER_COMPOSITE,
-				ByteBufferSerializer.get());
+		SliceQuery<UUID, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, UUIDSerializer.get(),
+				DBOperations.SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
 		query.setColumnFamily(Schema.FAMILY_ARCHIVE);
 		query.setRange(null, null, false, 100);
 		Composite cc = new Composite();

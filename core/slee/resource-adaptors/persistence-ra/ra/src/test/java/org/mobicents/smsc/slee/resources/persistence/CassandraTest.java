@@ -51,6 +51,7 @@ import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.protocols.ss7.map.primitives.IMSIImpl;
 import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.mobicents.protocols.ss7.map.service.sms.LocationInfoWithLMSIImpl;
+import org.mobicents.smsc.cassandra.DBOperations;
 import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Schema;
@@ -88,6 +89,8 @@ public class CassandraTest {
 	@BeforeClass
 	public void setUpClass() throws Exception {
 		System.out.println("setUpClass");
+		
+		DBOperations.getInstance().start("127.0.0.1", "TelestaxSMSC");
 
 		this.cassandraDbInited = this.sbb.testCassandraAccess();
 	}
@@ -95,7 +98,9 @@ public class CassandraTest {
 	@AfterClass
 	public void tearDownClass() throws Exception {
 		System.out.println("tearDownClass");
+		DBOperations.getInstance().stop();
 	}
+
 
 
 
@@ -284,7 +289,15 @@ public class CassandraTest {
 		
 		// 1 - scheduling by dueTime
 		int maxRecordCount = 100;
+		
+		long currentTime = System.currentTimeMillis();
+		
 		List<SmsSet> lst = this.sbb.fetchSchedulableSmsSets(maxRecordCount, null);
+		
+		long currentTime1 = System.currentTimeMillis();
+		
+		System.err.println("fetchSchedulableSmsSets took "+ (currentTime1 - currentTime));
+		
 		assertEquals(lst.size(), 1);
 
 		SmsSet smsSet_a = lst.get(0);

@@ -46,9 +46,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>me.prettyprint</groupId>
-			<artifactId>hector-core</artifactId>
-			<version>${hector-core.version}</version>
+			<groupId>com.datastax.cassandra</groupId>
+			<artifactId>cassandra-driver-core</artifactId>
+			<version>${cassandra-driver-core.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${pom.groupId}</groupId>

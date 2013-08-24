@@ -22,7 +22,6 @@
 
 package org.mobicents.smsc.cassandra;
 
-
 /**
  * 
  * @author sergey vetyutnev
@@ -30,5 +29,5 @@ package org.mobicents.smsc.cassandra;
  */
 public class TargetAddressContainer {
 	public TargetAddress targetAddress;
-	public int count;
+	public volatile int count;
 }

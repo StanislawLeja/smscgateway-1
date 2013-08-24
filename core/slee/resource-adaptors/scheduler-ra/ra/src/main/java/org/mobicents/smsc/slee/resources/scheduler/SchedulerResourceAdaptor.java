@@ -2,8 +2,9 @@ package org.mobicents.smsc.slee.resources.scheduler;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.slee.Address;
 import javax.slee.facilities.Tracer;
@@ -21,12 +22,6 @@ import javax.slee.resource.ResourceAdaptorContext;
 import javax.slee.resource.SleeEndpoint;
 import javax.slee.transaction.SleeTransaction;
 import javax.slee.transaction.SleeTransactionManager;
-
-import me.prettyprint.cassandra.model.ConfigurableConsistencyLevel;
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.HConsistencyLevel;
-import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.factory.HFactory;
 
 import org.mobicents.smsc.cassandra.DBOperations;
 import org.mobicents.smsc.cassandra.PersistenceException;
@@ -56,22 +51,22 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	private SleeTransactionManager sleeTransactionManager = null;
 	private SleeEndpoint sleeEndpoint = null;
 	private EventIDCache eventIdCache;
-	private Cluster cluster = null;
-	private Keyspace keyspace = null;
 
-	private Timer raTimerService;
+	private ScheduledExecutorService scheduler = null;
 
 	private SchedulerRaSbbInterface schedulerRaSbbInterface = null;
 	private SchedulerRaUsageParameters usageParameters;
 
-    public SchedulerResourceAdaptor() {
-        this.schedulerRaSbbInterface = new SchedulerRaSbbInterface() {
-            @Override
-            public void decrementDeliveryActivityCount() {
-                decrementActivityCount();
-            }
-        };
-    }
+	private DBOperations dbOperations = null;
+
+	public SchedulerResourceAdaptor() {
+		this.schedulerRaSbbInterface = new SchedulerRaSbbInterface() {
+			@Override
+			public void decrementDeliveryActivityCount() {
+				decrementActivityCount();
+			}
+		};
+	}
 
 	@Override
 	public void activityEnded(ActivityHandle activityHandle) {
@@ -155,42 +150,37 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	@Override
 	public void raActive() {
+		// FIXME : This is bad hack
 		(new Thread(new ActivateRa())).start();
-	}
-	
-	private class ActivateRa implements Runnable {
 
+	}
+
+	private class ActivateRa implements Runnable {
 		@Override
 		public void run() {
-		    clearActivityCount();
+			clearActivityCount();
 
-	        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-	        while(smscPropertiesManagement == null){
-	        	 System.out.println(smscPropertiesManagement);
-	        	smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-	        	try {
+			SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+
+			while (smscPropertiesManagement == null) {
+				if (tracer.isInfoEnabled()) {
+					tracer.info("SmscPropertiesManagement is null. Will try again ");
+				}
+				smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					tracer.severe("InterruptedException while trying to make ActicateRa slee for 1 sec", e);
 				}
-	        }
-	        
-	       
-	        System.out.println(smscPropertiesManagement.getClusterName());
-	        System.out.println(smscPropertiesManagement.getHosts());
-	        
-	        cluster = HFactory.getOrCreateCluster(smscPropertiesManagement.getClusterName(), smscPropertiesManagement.getHosts());
-			ConfigurableConsistencyLevel ccl = new ConfigurableConsistencyLevel();
-			ccl.setDefaultReadConsistencyLevel(HConsistencyLevel.ONE);
-			keyspace = HFactory.createKeyspace(smscPropertiesManagement.getKeyspaceName(), cluster, ccl);
-			if (tracer.isInfoEnabled()) {
-				tracer.info("Scheduler IS up, starting fetch tasks");
 			}
 
-			raTimerService.schedule(new TickTimerTask(), 500, smscPropertiesManagement.getFetchPeriod());
+			dbOperations = DBOperations.getInstance();
+
+			scheduler = Executors.newScheduledThreadPool(1);
+			scheduler.scheduleAtFixedRate(new TickTimerTask(), 500, smscPropertiesManagement.getFetchPeriod(),
+					TimeUnit.MILLISECONDS);
+
 		}
-		
 	}
 
 	@Override
@@ -208,14 +198,16 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	@Override
 	public void raInactive() {
 
+		this.scheduler.shutdown();
+		try {
+			this.scheduler.awaitTermination(120, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			tracer.severe("InterruptedException while awaiting termination of tasks", e);
+		}
 		if (tracer.isInfoEnabled()) {
 			tracer.info("Inactivated RA Entity " + this.raContext.getEntityName());
 		}
-		if (this.cluster != null) {
-			this.cluster.getConnectionManager().shutdown();
-		}
-		this.cluster = null;
-		this.keyspace = null;
+
 	}
 
 	@Override
@@ -264,8 +256,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		this.eventIdCache = new EventIDCache(this.raContext, EVENT_VENDOR, EVENT_VERSION);
 		this.sleeTransactionManager = this.raContext.getSleeTransactionManager();
 		this.sleeEndpoint = this.raContext.getSleeEndpoint();
-		this.raTimerService = this.raContext.getTimer();
-		this.usageParameters = (SchedulerRaUsageParameters)this.raContext.getDefaultUsageParameterSet();
+		this.usageParameters = (SchedulerRaUsageParameters) this.raContext.getDefaultUsageParameterSet();
 	}
 
 	@Override
@@ -275,13 +266,12 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		this.raContext = null;
 		this.sleeTransactionManager = null;
 		this.sleeEndpoint = null;
-		this.raTimerService = null;
 	}
 
 	// /////////////////
 	// Helper classes //
 	// /////////////////
-	protected class TickTimerTask extends TimerTask {
+	protected class TickTimerTask implements Runnable {
 
 		@Override
 		public void run() {
@@ -303,34 +293,30 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	// Helper methods //
 	// /////////////////
 	protected void onTimerTick() {
-		Keyspace kSpace = this.keyspace;
-		if (kSpace == null)
-			return;
 
 		List<SmsSet> schedulableSms;
 		try {
-            if (this.tracer.isFineEnabled())
-                this.tracer.fine("Fetching: Starting fetching messages from database");
+			if (this.tracer.isFineEnabled())
+				this.tracer.fine("Fetching: Starting fetching messages from database");
 
-            SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-            int fetchMaxRows = smscPropertiesManagement.getFetchMaxRows();
-            int fetchAvailRows = smscPropertiesManagement.getMaxActivityCount() - (int) this.getActivityCount();
-            int maxCnt = Math.min(fetchMaxRows, fetchAvailRows);
-            schedulableSms = this.fetchSchedulable(maxCnt, kSpace);
+			SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+			int fetchMaxRows = smscPropertiesManagement.getFetchMaxRows();
+			int fetchAvailRows = smscPropertiesManagement.getMaxActivityCount() - (int) this.getActivityCount();
+			int maxCnt = Math.min(fetchMaxRows, fetchAvailRows);
+			schedulableSms = this.fetchSchedulable(maxCnt);
 
-            int cnt = 0;
-            if(schedulableSms!=null)
-                cnt = schedulableSms.size();
-            String s1 = "Fetching: Fetched " + schedulableSms.size() + " messages (max requested messages=" + maxCnt + ", fetched messages=" + cnt + ")";
-            if (cnt > 0) {
-                if (this.tracer.isInfoEnabled())
-                    this.tracer.info(s1);
-            } else {
-                if (this.tracer.isFineEnabled())
-                    this.tracer.fine(s1);
-            }
+			int cnt = 0;
+			if (schedulableSms != null)
+				cnt = schedulableSms.size();
+
+			if (this.tracer.isInfoEnabled()) {
+				String s1 = "Fetching: Fetched " + schedulableSms.size() + " messages (max requested messages="
+						+ maxCnt + ", fetched messages=" + cnt + ")";
+				this.tracer.info(s1);
+			}
 		} catch (PersistenceException e1) {
-			this.tracer.severe("PersistenceException when fetching SmsSet list from a database: " + e1.getMessage(), e1);
+			this.tracer
+					.severe("PersistenceException when fetching SmsSet list from a database: " + e1.getMessage(), e1);
 			return;
 		}
 
@@ -338,7 +324,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		try {
 			for (SmsSet sms : schedulableSms) {
 				try {
-					if (!injectSms(kSpace, sms)) {
+					if (!injectSms(sms)) {
 						return;
 					}
 					count++;
@@ -347,24 +333,28 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				}
 			}
 		} finally {
-            String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.";
-            if (schedulableSms.size() > 0) {
-                if (this.tracer.isInfoEnabled()) {
-                    this.tracer.info(s2);
-                }
-            } else {
-                if (this.tracer.isFineEnabled())
-                    this.tracer.fine(s2);
-            }
+			String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.";
+			if (schedulableSms.size() > 0) {
+				if (this.tracer.isInfoEnabled()) {
+					this.tracer.info(s2);
+				}
+			} else {
+				if (this.tracer.isFineEnabled())
+					this.tracer.fine(s2);
+			}
 		}
 	}
 
-	protected boolean injectSms(Keyspace kSpace, SmsSet smsSet) throws Exception {
+	protected boolean injectSms(SmsSet smsSet) throws Exception {
+		long currentTime = System.currentTimeMillis();
 		SleeTransaction sleeTx = this.sleeTransactionManager.beginSleeTransaction();
+
+		this.tracer.warning("beginSleeTransaction took " + (System.currentTimeMillis() - currentTime));
 
 		try {
 			SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
-			String destClusterName = smsRouteManagement.getEsmeClusterName(smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(), smsSet.getDestAddr());
+			String destClusterName = smsRouteManagement.getEsmeClusterName(smsSet.getDestAddrTon(),
+					smsSet.getDestAddrNpi(), smsSet.getDestAddr());
 
 			smsSet.setDestClusterName(destClusterName);
 			smsSet.setType(destClusterName != null ? SmType.SMS_FOR_ESME : SmType.SMS_FOR_SS7);
@@ -373,11 +363,19 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			final FireableEventType eventTypeId = this.eventIdCache.getEventId(eventName);
 			SmsSetEvent event = new SmsSetEvent();
 			event.setSmsSet(smsSet);
+
+			currentTime = System.currentTimeMillis();
+
 			SchedulerActivityImpl activity = new SchedulerActivityImpl();
 			this.sleeEndpoint.startActivityTransacted(activity.getActivityHandle(), activity);
 
+			long currentTime1 = System.currentTimeMillis();
+			this.tracer.warning("startActivityTransacted took " + (currentTime1 - currentTime));
+
 			try {
 				this.sleeEndpoint.fireEventTransacted(activity.getActivityHandle(), eventTypeId, event, null, null);
+
+				this.tracer.warning("fireEventTransacted took " + (System.currentTimeMillis() - currentTime1));
 			} catch (Exception e) {
 				if (this.tracer.isSevereEnabled()) {
 					this.tracer.severe("Failed to fire SmsSet event Class=: " + eventTypeId.getEventClassName(), e);
@@ -387,53 +385,83 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				} catch (Exception ee) {
 				}
 			}
- 
-			markAsInSystem(kSpace, smsSet);
+			currentTime = System.currentTimeMillis();
+			markAsInSystem(smsSet);
+
+			currentTime1 = System.currentTimeMillis();
+			this.tracer.warning("markAsInSystem took " + (currentTime1 - currentTime));
+
 		} catch (Exception e) {
 			this.sleeTransactionManager.rollback();
 			throw e;
 		}
+
+		long currentTime1 = System.currentTimeMillis();
 		this.sleeTransactionManager.commit();
+
+		this.tracer.warning("commit took " + (System.currentTimeMillis() - currentTime1));
 		this.incrementActivityCount();
 		return true;
 	}
 
-	protected List<SmsSet> fetchSchedulable(int maxRecordCount, Keyspace kSpace) throws PersistenceException {
-		List<SmsSet> res = DBOperations.fetchSchedulableSmsSets(kSpace, maxRecordCount, this.tracer);
+	protected List<SmsSet> fetchSchedulable(int maxRecordCount) throws PersistenceException {
+		List<SmsSet> res = dbOperations.fetchSchedulableSmsSets(maxRecordCount, this.tracer);
 		return res;
 	}
 
-	protected void markAsInSystem(Keyspace kSpace, SmsSet smsSet) throws PersistenceException {
+	protected void markAsInSystem(SmsSet smsSet) throws PersistenceException {
+
+		long currentTime = System.currentTimeMillis();
+
 		TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
+
+		long currentTime1 = System.currentTimeMillis();
+
+		this.tracer.warning("addSmsSet took " + (currentTime1 - currentTime));
 		synchronized (lock) {
 			try {
-				boolean b1 = DBOperations.checkSmsSetExists(kSpace, new TargetAddress(smsSet));
+				boolean b1 = dbOperations.checkSmsSetExists(new TargetAddress(smsSet));
+
+				currentTime = System.currentTimeMillis();
+
+				this.tracer.warning("checkSmsSetExists took " + (currentTime - currentTime1));
+
 				if (!b1)
 					throw new PersistenceException("SmsSet record is not found when markAsInSystem()");
 
-				DBOperations.fetchSchedulableSms(kSpace, smsSet, smsSet.getType() == SmType.SMS_FOR_SS7);
-				DBOperations.setDeliveryStart(kSpace, smsSet, new Date());
+				dbOperations.fetchSchedulableSms(smsSet, smsSet.getType() == SmType.SMS_FOR_SS7);
+
+				currentTime1 = System.currentTimeMillis();
+
+				this.tracer.warning("fetchSchedulableSms took " + (currentTime1 - currentTime));
+
+				dbOperations.setDeliveryStart(smsSet, new Date());
+
+				currentTime = System.currentTimeMillis();
+
+				this.tracer.warning("setDeliveryStart took " + (currentTime - currentTime1));
+
 			} finally {
-				SmsSetCashe.getInstance().addSmsSet(lock);
+				SmsSetCashe.getInstance().removeSmsSet(lock);
 			}
 		}
 	}
 
-    private void clearActivityCount() {
-        long cnt = this.getActivityCount();
-        this.usageParameters.incrementActivityCount(-cnt);
+	private void clearActivityCount() {
+		long cnt = this.getActivityCount();
+		this.usageParameters.incrementActivityCount(-cnt);
 
-    }
+	}
 
-    private void incrementActivityCount() {
-        this.usageParameters.incrementActivityCount(1);
-    }
+	private void incrementActivityCount() {
+		this.usageParameters.incrementActivityCount(1);
+	}
 
-    private void decrementActivityCount() {
-        this.usageParameters.incrementActivityCount(-1);
-    }
+	private void decrementActivityCount() {
+		this.usageParameters.incrementActivityCount(-1);
+	}
 
-    private long getActivityCount() {
-        return this.usageParameters.getActivityCount();
-    }
+	private long getActivityCount() {
+		return this.usageParameters.getActivityCount();
+	}
 }

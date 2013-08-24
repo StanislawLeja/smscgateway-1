@@ -24,12 +24,6 @@ package org.mobicents.smsc.smpp;
 
 import java.util.Date;
 
-import me.prettyprint.cassandra.model.ConfigurableConsistencyLevel;
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.HConsistencyLevel;
-import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.factory.HFactory;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -39,52 +33,46 @@ import org.apache.log4j.Logger;
  */
 public class ArchiveSms implements ArchiveSmsMBean {
 
-    private static final Logger logger = Logger.getLogger(ArchiveSms.class);
+	private static final Logger logger = Logger.getLogger(ArchiveSms.class);
 
-    private final String name;
-    private Cluster cluster = null;
-    private Keyspace keyspace = null;
+	private final String name;
 
-    private static ArchiveSms instance = null;
+	private static ArchiveSms instance = null;
 
-    private ArchiveSms(String name) {
-        this.name = name;
-    }
+	private ArchiveSms(String name) {
+		this.name = name;
+	}
 
-    protected static ArchiveSms getInstance(String name) {
-        if (instance == null) {
-            instance = new ArchiveSms(name);
-        }
-        return instance;
-    }
+	protected static ArchiveSms getInstance(String name) {
+		if (instance == null) {
+			instance = new ArchiveSms(name);
+		}
+		return instance;
+	}
 
-    public static ArchiveSms getInstance() {
-        return instance;
-    }
+	public static ArchiveSms getInstance() {
+		return instance;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void start() throws Exception {
-        try {
-            SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-            cluster = HFactory.getOrCreateCluster(smscPropertiesManagement.getClusterName(), smscPropertiesManagement.getHosts());
-            ConfigurableConsistencyLevel ccl = new ConfigurableConsistencyLevel();
-            ccl.setDefaultReadConsistencyLevel(HConsistencyLevel.ONE);
-            keyspace = HFactory.createKeyspace(smscPropertiesManagement.getKeyspaceName(), cluster, ccl);
-        } catch (Exception e) {
-            logger.error("Error initializing cassandra database for ArchiveSms", e);
-        }
-    }    
+	public void start() throws Exception {
+		try {
 
-    public void stop() {
-    }    
-    
-    @Override
-    public void makeCdrDatabaseManualExport(Date timeFrom, Date timeTo) {
-        // TODO Auto-generated method stub
+		} catch (Exception e) {
+			logger.error("Error initializing cassandra database for ArchiveSms", e);
+		}
+	}
 
-    }
+	public void stop() {
+	}
+
+	@Override
+	public void makeCdrDatabaseManualExport(Date timeFrom, Date timeTo) {
+		// TODO Auto-generated method stub
+
+	}
 
 }

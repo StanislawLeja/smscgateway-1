@@ -13,9 +13,9 @@
 		<resource-adaptor-type-version>1.0</resource-adaptor-type-version>
 
 		<library-ref>
-			<library-name>me.prettyprint</library-name>
-			<library-vendor>hector-core</library-vendor>
-			<library-version>1.0-5</library-version>
+			<library-name>library-persistence</library-name>
+			<library-vendor>telestax</library-vendor>
+			<library-version>1.0</library-version>
 		</library-ref>
 
 		<resource-adaptor-type-classes>
