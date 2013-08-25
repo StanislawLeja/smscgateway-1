@@ -150,48 +150,24 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	@Override
 	public void raActive() {
-		// FIXME : This is bad hack
-		(new Thread(new ActivateRa())).start();
+		clearActivityCount();
 
-	}
+		SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+		this.dbOperations = DBOperations.getInstance();
 
-	private class ActivateRa implements Runnable {
-		@Override
-		public void run() {
-			clearActivityCount();
-
-			SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-
-			while (smscPropertiesManagement == null) {
-				if (tracer.isInfoEnabled()) {
-					tracer.info("SmscPropertiesManagement is null. Will try again ");
-				}
-				smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					tracer.severe(
-							"InterruptedException while trying to Activate Scheduler Ra. Waiting on SmscPropertiesManagement",
-							e);
-				}
-			}
-
-			dbOperations = DBOperations.getInstance();
-
-			while (!dbOperations.isStarted()) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					tracer.severe(
-							"InterruptedException while trying to Activate Scheduler Ra. Waiting on DBOperations", e);
-				}
-			}
-
-			scheduler = Executors.newScheduledThreadPool(1);
-			scheduler.scheduleAtFixedRate(new TickTimerTask(), 500, smscPropertiesManagement.getFetchPeriod(),
-					TimeUnit.MILLISECONDS);
-
+		if (!this.dbOperations.isStarted()) {
+			throw new RuntimeException("DBOperations not started yet!");
 		}
+
+		scheduler = Executors.newScheduledThreadPool(1);
+
+		scheduler.scheduleAtFixedRate(new TickTimerTask(), 500, smscPropertiesManagement.getFetchPeriod(),
+				TimeUnit.MILLISECONDS);
+
+		if (tracer.isInfoEnabled()) {
+			tracer.info("SchedulerResourceAdaptor " + raContext.getEntityName() + " Activated");
+		}
+
 	}
 
 	@Override
@@ -208,15 +184,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	@Override
 	public void raInactive() {
-
-		this.scheduler.shutdown();
-		try {
-			this.scheduler.awaitTermination(120, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			tracer.severe("InterruptedException while awaiting termination of tasks", e);
-		}
 		if (tracer.isInfoEnabled()) {
-			tracer.info("Inactivated RA Entity " + this.raContext.getEntityName());
+			tracer.info("Inactivated SchedulerResourceAdaptor RA Entity " + this.raContext.getEntityName());
 		}
 
 	}
@@ -225,6 +194,13 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	public void raStopping() {
 		if (tracer.isInfoEnabled()) {
 			tracer.info("Stopping RA Entity " + this.raContext.getEntityName());
+		}
+
+		this.scheduler.shutdown();
+		try {
+			this.scheduler.awaitTermination(120, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			tracer.severe("InterruptedException while awaiting termination of tasks", e);
 		}
 	}
 

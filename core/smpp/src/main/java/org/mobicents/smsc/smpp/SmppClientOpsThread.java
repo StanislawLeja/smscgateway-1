@@ -74,6 +74,10 @@ public class SmppClientOpsThread implements Runnable {
 	 */
 	protected void setStarted(boolean started) {
 		this.started = started;
+		
+		synchronized (this.waitObject) {
+			this.waitObject.notify();
+		}
 	}
 
 	protected void scheduleConnect(Esme esme) {
