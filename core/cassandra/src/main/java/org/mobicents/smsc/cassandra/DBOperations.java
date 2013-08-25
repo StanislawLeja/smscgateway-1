@@ -43,6 +43,7 @@ import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Cluster.Builder;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PreparedStatement;
@@ -100,17 +101,26 @@ public class DBOperations {
 	public static DBOperations getInstance() {
 		return instance;
 	}
+	
+	public boolean isStarted() {
+		return started;
+	}
 
     protected Session getSession() {
         return this.session;
     }
 
-	public void start(String ip, String keyspace) throws Exception {
+    public void start(String ip, int port, String keyspace) throws Exception {
 		if (this.started) {
 			throw new Exception("DBOperations already started");
 		}
 
-		this.cluster = Cluster.builder().addContactPoint(ip).build();
+		Builder builder = Cluster.builder();
+
+		builder.withPort(port);
+		builder.addContactPoint(ip);
+
+		this.cluster = builder.build();
 		Metadata metadata = cluster.getMetadata();
 
 		logger.info(String.format("Connected to cluster: %s\n", metadata.getClusterName()));
