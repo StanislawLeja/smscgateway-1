@@ -25,8 +25,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javolution.text.TextBuilder;
 import javolution.xml.XMLBinding;
@@ -71,8 +74,8 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 	private String persistDir = null;
 
 	final private String name;
-	private final ThreadPoolExecutor executor;
-	private final ScheduledThreadPoolExecutor monitorExecutor;
+	private ThreadPoolExecutor executor;
+	private ScheduledThreadPoolExecutor monitorExecutor;
 	private final EsmeManagement esmeManagement;
 
 	private int port = 2776;
@@ -101,11 +104,8 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 	private SmppSessionHandlerInterface smppSessionHandlerInterface;
 
 	public SmppServerManagement(String name, EsmeManagement esmeManagement,
-			SmppSessionHandlerInterface smppSessionHandlerInterface, ThreadPoolExecutor executor,
-			ScheduledThreadPoolExecutor monitorExecutor) {
+			SmppSessionHandlerInterface smppSessionHandlerInterface) {
 		this.name = name;
-		this.executor = executor;
-		this.monitorExecutor = monitorExecutor;
 		this.esmeManagement = esmeManagement;
 		this.smppSessionHandlerInterface = smppSessionHandlerInterface;
 
@@ -232,6 +232,30 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 		// We bind to JBoss MBean
 		configuration.setJmxEnabled(false);
 
+
+		// for monitoring thread use, it's preferable to create your own
+		// instance of an executor and cast it to a ThreadPoolExecutor from
+		// Executors.newCachedThreadPool() this permits exposing thinks like
+		// executor.getActiveCount() via JMX possible no point renaming the
+		// threads in a factory since underlying Netty framework does not easily
+		// allow you to customize your thread names
+		this.executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+
+		// to enable automatic expiration of requests, a second scheduled
+		// executor is required which is what a monitor task will be executed
+		// with - this is probably a thread pool that can be shared with between
+		// all client bootstraps
+		this.monitorExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1, new ThreadFactory() {
+			private AtomicInteger sequence = new AtomicInteger(0);
+
+			@Override
+			public Thread newThread(Runnable r) {
+				Thread t = new Thread(r);
+				t.setName("SmppServer-SessionWindowMonitorPool-" + sequence.getAndIncrement());
+				return t;
+			}
+		});
+
 		// create a server, start it up
 		this.defaultSmppServer = new DefaultSmppServer(configuration, new DefaultSmppServerHandler(esmeManagement,
 				this.smppSessionHandlerInterface), executor, monitorExecutor);
@@ -244,6 +268,10 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 	public void stop() throws Exception {
 		logger.info("Stopping SMPP server...");
 		this.defaultSmppServer.stop();
+
+		this.executor.shutdownNow();
+		this.monitorExecutor.shutdownNow();
+
 		logger.info("SMPP server stopped");
 		logger.info(String.format("Server counters: %s", this.defaultSmppServer.getCounters()));
 

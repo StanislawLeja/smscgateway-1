@@ -77,9 +77,6 @@ public class SmscManagement implements SmscManagementMBean {
 	private SmppServerManagement smppServerManagement = null;
 	private SmppClientManagement smppClientManagement = null;
 
-	private ThreadPoolExecutor executor = null;
-	private ScheduledThreadPoolExecutor monitorExecutor = null;
-
 	private EsmeManagement esmeManagement = null;
 	private SmscPropertiesManagement smscPropertiesManagement = null;
 	private ArchiveSms archiveSms;
@@ -153,61 +150,57 @@ public class SmscManagement implements SmscManagementMBean {
 	public void setSmsRoutingRuleClass(String smsRoutingRuleClass) {
 		this.smsRoutingRuleClass = smsRoutingRuleClass;
 	}
-	
+
 	public void start() throws Exception {
-		logger.info("Starting SmscManagemet "+name);
-		
+		logger.info("Starting SmscManagemet " + name);
+
 		// Step 1 Get the MBeanServer
 		this.mbeanServer = MBeanServerLocator.locateJBoss();
-		
+
 		// Step 2 Setup SMSC Properties
 		this.smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.name);
 		this.smscPropertiesManagement.setPersistDir(this.persistDir);
 		this.smscPropertiesManagement.start();
-		
+
 		ObjectName smscObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
 				+ JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT + ",name=" + this.getName());
 		this.registerMBean(this.smscPropertiesManagement, SmscPropertiesManagementMBean.class, true, smscObjNname);
-		
-		
+
 		// Step 3 start DBOperations
 		String[] hostsArr = this.smscPropertiesManagement.getHosts().split(":");
 		String host = hostsArr[0];
 		int port = Integer.parseInt(hostsArr[1]);
 		DBOperations.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName());
-		
-		
+
 		// Step 4 Setup ArchiveSms
 		this.archiveSms = ArchiveSms.getInstance(this.name);
 		this.archiveSms.start();
-		
 
 		ObjectName arhiveObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ARCHIVE_SMS
 				+ ",name=" + this.getName());
 		this.registerMBean(this.archiveSms, ArchiveSmsMBean.class, false, arhiveObjNname);
-		
-		logger.info("Started SmscManagemet "+name);
-		
+
+		logger.info("Started SmscManagemet " + name);
+
 	}
-	
+
 	public void stop() throws Exception {
-		logger.info("Stopping SmscManagemet "+name);
-		
+		logger.info("Stopping SmscManagemet " + name);
+
 		this.smscPropertiesManagement.stop();
 		ObjectName smscObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
 				+ JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT + ",name=" + this.getName());
 		this.unregisterMbean(smscObjNname);
-		
-		
+
 		DBOperations.getInstance().stop();
-		
+
 		this.archiveSms.stop();
 		ObjectName arhiveObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ARCHIVE_SMS
 				+ ",name=" + this.getName());
 		this.unregisterMbean(arhiveObjNname);
-		
-		logger.info("Stopped SmscManagemet "+name);
-		
+
+		logger.info("Stopped SmscManagemet " + name);
+
 	}
 
 	public void startSmscManagement() throws Exception {
@@ -216,7 +209,6 @@ public class SmscManagement implements SmscManagementMBean {
 		this.esmeManagement = EsmeManagement.getInstance(this.name);
 		this.esmeManagement.setPersistDir(this.persistDir);
 		this.esmeManagement.start();
-		
 
 		ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ESME_MANAGEMENT
 				+ ",name=" + this.getName());
@@ -251,35 +243,9 @@ public class SmscManagement implements SmscManagementMBean {
 			logger.warn(String.format("Failed to load the SS7 configuration file. \n%s", e.getMessage()));
 		}
 
-		// Step 5. Get DefaultSmppServerHandler
-
-		// for monitoring thread use, it's preferable to create your own
-		// instance of an executor and cast it to a ThreadPoolExecutor from
-		// Executors.newCachedThreadPool() this permits exposing thinks like
-		// executor.getActiveCount() via JMX possible no point renaming the
-		// threads in a factory since underlying Netty framework does not easily
-		// allow you to customize your thread names
-		this.executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-
-		// to enable automatic expiration of requests, a second scheduled
-		// executor
-		// is required which is what a monitor task will be executed with - this
-		// is probably a thread pool that can be shared with between all client
-		// bootstraps
-		this.monitorExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1, new ThreadFactory() {
-			private AtomicInteger sequence = new AtomicInteger(0);
-
-			@Override
-			public Thread newThread(Runnable r) {
-				Thread t = new Thread(r);
-				t.setName("SmppSessionWindowMonitorPool-" + sequence.getAndIncrement());
-				return t;
-			}
-		});
-
 		// Step 6 Start SMPP Server
 		this.smppServerManagement = new SmppServerManagement(this.name, this.esmeManagement,
-				this.smppSessionHandlerInterface, this.executor, this.monitorExecutor);
+				this.smppSessionHandlerInterface);
 		this.smppServerManagement.setPersistDir(this.persistDir);
 		this.smppServerManagement.start();
 
@@ -289,7 +255,7 @@ public class SmscManagement implements SmscManagementMBean {
 
 		// Ste 7 Start SMPP Clients
 		this.smppClientManagement = new SmppClientManagement(this.name, this.esmeManagement,
-				this.smppSessionHandlerInterface, this.executor, this.monitorExecutor);
+				this.smppSessionHandlerInterface);
 
 		this.esmeManagement.setSmppClient(this.smppClientManagement);
 		this.smppClientManagement.start();
@@ -298,15 +264,11 @@ public class SmscManagement implements SmscManagementMBean {
 				+ JMX_LAYER_SMPP_CLIENT_MANAGEMENT + ",name=" + this.getName());
 		this.registerMBean(this.smppClientManagement, SmppClientManagementMBean.class, true, smppClientManaObjName);
 
-
-		
-
 		this.isStarted = true;
 		logger.info("Started SmscManagement");
 	}
 
 	public void stopSmscManagement() throws Exception {
-		
 
 		this.esmeManagement.stop();
 		ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ESME_MANAGEMENT
@@ -322,9 +284,6 @@ public class SmscManagement implements SmscManagementMBean {
 		ObjectName smppClientManaObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
 				+ JMX_LAYER_SMPP_CLIENT_MANAGEMENT + ",name=" + this.getName());
 		this.unregisterMbean(smppClientManaObjName);
-
-		this.executor.shutdownNow();
-		this.monitorExecutor.shutdownNow();
 
 		this.isStarted = false;
 

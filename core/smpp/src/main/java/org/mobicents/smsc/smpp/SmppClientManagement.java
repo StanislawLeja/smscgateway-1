@@ -21,8 +21,11 @@
  */
 package org.mobicents.smsc.smpp;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javolution.util.FastList;
 
@@ -40,8 +43,8 @@ public class SmppClientManagement implements SmppClientManagementMBean {
 
 	private final String name;
 
-	private final ThreadPoolExecutor executor;
-	private final ScheduledThreadPoolExecutor monitorExecutor;
+	private ThreadPoolExecutor executor;
+	private ScheduledThreadPoolExecutor monitorExecutor;
 
 	private DefaultSmppClient clientBootstrap = null;
 
@@ -53,17 +56,36 @@ public class SmppClientManagement implements SmppClientManagementMBean {
 	 * 
 	 */
 	public SmppClientManagement(String name, EsmeManagement esmeManagement,
-			SmppSessionHandlerInterface smppSessionHandlerInterface, ThreadPoolExecutor executor,
-			ScheduledThreadPoolExecutor monitorExecutor) {
+			SmppSessionHandlerInterface smppSessionHandlerInterface) {
 		this.name = name;
 		this.esmeManagement = esmeManagement;
 		this.smppSessionHandlerInterface = smppSessionHandlerInterface;
-
-		this.monitorExecutor = monitorExecutor;
-		this.executor = executor;
 	}
 
 	public void start() throws Exception {
+
+		// for monitoring thread use, it's preferable to create your own
+		// instance of an executor and cast it to a ThreadPoolExecutor from
+		// Executors.newCachedThreadPool() this permits exposing thinks like
+		// executor.getActiveCount() via JMX possible no point renaming the
+		// threads in a factory since underlying Netty framework does not easily
+		// allow you to customize your thread names
+		this.executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+
+		// to enable automatic expiration of requests, a second scheduled
+		// executor is required which is what a monitor task will be executed
+		// with - this is probably a thread pool that can be shared with between
+		// all client bootstraps
+		this.monitorExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1, new ThreadFactory() {
+			private AtomicInteger sequence = new AtomicInteger(0);
+
+			@Override
+			public Thread newThread(Runnable r) {
+				Thread t = new Thread(r);
+				t.setName("SmppServer-SessionWindowMonitorPool-" + sequence.getAndIncrement());
+				return t;
+			}
+		});
 
 		// a single instance of a client bootstrap can technically be shared
 		// between any sessions that are created (a session can go to any
@@ -98,6 +120,9 @@ public class SmppClientManagement implements SmppClientManagementMBean {
 	public void stop() throws Exception {
 		this.smppClientOpsThread.setStarted(false);
 		this.clientBootstrap.destroy();
+		
+		this.executor.shutdownNow();
+		this.monitorExecutor.shutdownNow();
 	}
 
 	protected void startSmppClientSession(Esme esme) {
