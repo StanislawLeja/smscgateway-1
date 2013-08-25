@@ -30,6 +30,7 @@ import java.util.UUID;
 
 import javax.slee.facilities.Tracer;
 
+import org.apache.log4j.Logger;
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.smsc.cassandra.DBOperations;
@@ -42,221 +43,193 @@ import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
+import org.mobicents.smsc.smpp.PersistenceProxy;
 
-import me.prettyprint.cassandra.serializers.ByteBufferSerializer;
-import me.prettyprint.cassandra.serializers.CompositeSerializer;
-import me.prettyprint.cassandra.serializers.StringSerializer;
-import me.prettyprint.cassandra.serializers.UUIDSerializer;
-import me.prettyprint.cassandra.service.CassandraHostConfigurator;
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.beans.ColumnSlice;
-import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.HColumn;
-import me.prettyprint.hector.api.factory.HFactory;
-import me.prettyprint.hector.api.mutation.Mutator;
-import me.prettyprint.hector.api.query.ColumnQuery;
-import me.prettyprint.hector.api.query.QueryResult;
-import me.prettyprint.hector.api.query.SliceQuery;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Host;
+import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 
 /**
  * 
  * @author sergey vetyutnev
  * 
  */
-public class PersistenceRAInterfaceProxy implements PersistenceRAInterface {
+public class PersistenceRAInterfaceProxy extends DBOperations implements PersistenceRAInterface {
 
-	private DBOperations dbOperations = DBOperations.getInstance();
-
-	@Override
-	public boolean checkSmsSetExists(TargetAddress ta) throws PersistenceException {
-		return dbOperations.checkSmsSetExists(this.keyspace, ta);
-	}
-
-	@Override
-	public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException {
-		return dbOperations.obtainSmsSet(ta);
-	}
-
-	@Override
-	public void setNewMessageScheduled(SmsSet smsSet, Date newDueDate) throws PersistenceException {
-		dbOperations.setNewMessageScheduled(smsSet, newDueDate);
-	}
-
-	@Override
-	public void setDeliveringProcessScheduled(SmsSet smsSet, Date newDueDate, int newDueDelay)
-			throws PersistenceException {
-		dbOperations.setDeliveringProcessScheduled(smsSet, newDueDate, newDueDelay);
-	}
-
-	@Override
-	public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId,
-			SmType type) {
-		dbOperations.setDestination(smsSet, destClusterName, destSystemId, destEsmeId, type);
-	}
-
-	@Override
-	public void setRoutingInfo(SmsSet smsSet, IMSI imsi, LocationInfoWithLMSI locationInfoWithLMSI) {
-		dbOperations.setRoutingInfo(smsSet, imsi, locationInfoWithLMSI);
-	}
-
-	@Override
-	public void setDeliveryStart(SmsSet smsSet, Date inSystemDate) throws PersistenceException {
-		dbOperations.setDeliveryStart(smsSet, inSystemDate);
-	}
-
-	@Override
-	public void setDeliveryStart(Sms sms) throws PersistenceException {
-		dbOperations.setDeliveryStart(sms);
-	}
-
-	@Override
-	public void setDeliverySuccess(SmsSet smsSet, Date lastDelivery) throws PersistenceException {
-		dbOperations.setDeliverySuccess(smsSet, lastDelivery);
-	}
-
-	@Override
-	public void setDeliveryFailure(SmsSet smsSet, ErrorCode smStatus, Date lastDelivery) throws PersistenceException {
-		dbOperations.setDeliveryFailure(smsSet, smStatus, lastDelivery);
-	}
-
-	@Override
-	public void setAlertingSupported(String targetId, boolean alertingSupported) throws PersistenceException {
-		dbOperations.setAlertingSupported(targetId, alertingSupported);
-	}
-
-	@Override
-	public boolean deleteSmsSet(SmsSet smsSet) throws PersistenceException {
-		return dbOperations.deleteSmsSet(smsSet);
-	}
-
-	@Override
-	public void createLiveSms(Sms sms) throws PersistenceException {
-		dbOperations.createLiveSms(sms);
-	}
-
-	@Override
-	public Sms obtainLiveSms(UUID dbId) throws PersistenceException {
-		return dbOperations.obtainLiveSms(dbId);
-	}
-
-	@Override
-	public Sms obtainLiveSms(long messageId) throws PersistenceException {
-		return dbOperations.obtainLiveSms(messageId);
-	}
-
-	@Override
-	public void updateLiveSms(Sms sms) throws PersistenceException {
-		dbOperations.updateLiveSms(sms);
-	}
-
-	@Override
-	public void archiveDeliveredSms(Sms sms, Date deliveryDate) throws PersistenceException {
-		dbOperations.archiveDeliveredSms(sms, deliveryDate);
-	}
-
-	@Override
-	public void archiveFailuredSms(Sms sms) throws PersistenceException {
-		dbOperations.archiveFailuredSms(sms);
-	}
-
-	@Override
-	public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount, Tracer tracer) throws PersistenceException {
-		return dbOperations.fetchSchedulableSmsSets(maxRecordCount, tracer);
-	}
-
-	@Override
-	public TargetAddress obtainSynchroObject(TargetAddress ta) {
-		return SmsSetCashe.getInstance().addSmsSet(ta);
-	}
-
-	@Override
-	public void releaseSynchroObject(TargetAddress ta) {
-		SmsSetCashe.getInstance().removeSmsSet(ta);
-	}
-
-	@Override
-	public void fetchSchedulableSms(SmsSet smsSet, boolean excludeNonScheduleDeliveryTime) throws PersistenceException {
-		DBOperations.fetchSchedulableSms(this.keyspace, smsSet, excludeNonScheduleDeliveryTime);
-	}
+    private static final Logger logger = Logger.getLogger(PersistenceRAInterfaceProxy.class);
 
 	public boolean testCassandraAccess() {
-		try {
-			dbOperations.checkSmsSetExists(new TargetAddress(0, 0, "1111"));
 
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
+        String ip = "127.0.0.1";
+        String keyspace = "TelestaxSMSC";
+
+        try {
+            Cluster cluster = Cluster.builder().addContactPoint(ip).build();
+            Metadata metadata = cluster.getMetadata();
+
+            for (Host host : metadata.getAllHosts()) {
+                logger.info(String.format("Datacenter: %s; Host: %s; Rack: %s\n", host.getDatacenter(), host.getAddress(), host.getRack()));
+            }
+
+            Session session = cluster.connect();
+
+            session.execute("USE \"" + keyspace + "\"");
+
+            PreparedStatement ps = session.prepare("select * from \"" + Schema.FAMILY_LIVE + "\" limit 1;");
+            BoundStatement boundStatement = new BoundStatement(ps);
+            boundStatement.bind();
+            session.execute(boundStatement);
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
 	}
 
 	public void deleteLiveSms(UUID id) throws PersistenceException {
-		Sms sms = new Sms();
-		sms.setDbId(id);
-		dbOperations.doDeleteLiveSms(this.keyspace, sms);
+        Sms sms = new Sms();
+        sms.setDbId(id);
+        super.deleteLiveSms(sms);
 	}
 
 	public void deleteArchiveSms(UUID id) throws PersistenceException {
-		Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
+        PreparedStatement ps = session.prepare("delete from \"" + Schema.FAMILY_ARCHIVE + "\" where \"" + Schema.COLUMN_ID + "\"=?;");
+        BoundStatement boundStatement = new BoundStatement(ps);
+        boundStatement.bind(id);
+        session.execute(boundStatement);
 
-		mutator.addDeletion(id, Schema.FAMILY_ARCHIVE);
-		mutator.execute();
+//		Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
+//
+//		mutator.addDeletion(id, Schema.FAMILY_ARCHIVE);
+//		mutator.execute();
 	}
 
 	public SmsProxy obtainArchiveSms(UUID dbId) throws PersistenceException, IOException {
-		SliceQuery<UUID, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, UUIDSerializer.get(),
-				DBOperations.SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
-		query.setColumnFamily(Schema.FAMILY_ARCHIVE);
-		query.setRange(null, null, false, 100);
-		Composite cc = new Composite();
-		cc.addComponent(Schema.COLUMN_ID, DBOperations.SERIALIZER_STRING);
-		query.setKey(dbId);
+        // TODO: implement it
 
-		QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
-		ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
+        PreparedStatement ps = session.prepare("select * from \"" + Schema.FAMILY_ARCHIVE + "\" where \"" + Schema.COLUMN_ID + "\"=?;");
+        BoundStatement boundStatement = new BoundStatement(ps);
+        boundStatement.bind(dbId);
+        ResultSet result = session.execute(boundStatement);
 
-		Sms sms = DBOperationsProxy.doCreateSms(this.keyspace, cSlice, dbId, new SmsSet());
-		if (sms == null)
-			return null;
+        Row row = result.one();
+        Sms sms = createSms(row, new SmsSet(), dbId);
+        if (sms == null)
+            return null;
 
-		result = query.execute();
-		cSlice = result.get();
-		SmsProxy res = new SmsProxy();
-		res.sms = sms;
-		for (HColumn<Composite, ByteBuffer> col : cSlice.getColumns()) {
-			Composite nm = col.getName();
-			String name = nm.get(0, DBOperations.SERIALIZER_STRING);
+        SmsProxy res = new SmsProxy();
+        res.sms = sms;
 
-			if (name.equals(Schema.COLUMN_ADDR_DST_DIGITS)) {
-				res.addrDstDigits = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
-			} else if (name.equals(Schema.COLUMN_ADDR_DST_TON)) {
-				res.addrDstTon = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
-			} else if (name.equals(Schema.COLUMN_ADDR_DST_NPI)) {
-				res.addrDstNpi = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
+            
+        // TODO: ........................
+        // !!!!!! заполнить это !!!!!!!!!!!!
+//            Composite nm = col.getName();
+//            String name = nm.get(0, DBOperations.SERIALIZER_STRING);
+//
+//            if (name.equals(Schema.COLUMN_ADDR_DST_DIGITS)) {
+//                res.addrDstDigits = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+//            } else if (name.equals(Schema.COLUMN_ADDR_DST_TON)) {
+//                res.addrDstTon = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
+//            } else if (name.equals(Schema.COLUMN_ADDR_DST_NPI)) {
+//                res.addrDstNpi = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
+//
+//            } else if (name.equals(Schema.COLUMN_DEST_CLUSTER_NAME)) {
+//                res.destClusterName = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+//            } else if (name.equals(Schema.COLUMN_DEST_ESME_NAME)) {
+//                res.destEsmeName = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+//            } else if (name.equals(Schema.COLUMN_DEST_SYSTEM_ID)) {
+//                res.destSystemId = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+//
+//            } else if (name.equals(Schema.COLUMN_IMSI)) {
+//                res.imsi = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+//            } else if (name.equals(Schema.COLUMN_NNN_DIGITS)) {
+//                res.nnnDigits = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+//            } else if (name.equals(Schema.COLUMN_SM_STATUS)) {
+//                res.smStatus = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
+//            } else if (name.equals(Schema.COLUMN_SM_TYPE)) {
+//                res.smType = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
+//            } else if (name.equals(Schema.COLUMN_DELIVERY_COUNT)) {
+//                res.deliveryCount = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
+//            } else if (name.equals(Schema.COLUMN_DELIVERY_DATE)) {
+//                res.deliveryDate = DBOperations.SERIALIZER_DATE.fromByteBuffer(col.getValue());
+//            }
+        // !!!!!! заполнить это !!!!!!!!!!!!
+        // TODO: ........................
 
-			} else if (name.equals(Schema.COLUMN_DEST_CLUSTER_NAME)) {
-				res.destClusterName = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
-			} else if (name.equals(Schema.COLUMN_DEST_ESME_NAME)) {
-				res.destEsmeName = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
-			} else if (name.equals(Schema.COLUMN_DEST_SYSTEM_ID)) {
-				res.destSystemId = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+        return res;
 
-			} else if (name.equals(Schema.COLUMN_IMSI)) {
-				res.imsi = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
-			} else if (name.equals(Schema.COLUMN_NNN_DIGITS)) {
-				res.nnnDigits = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
-			} else if (name.equals(Schema.COLUMN_SM_STATUS)) {
-				res.smStatus = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
-			} else if (name.equals(Schema.COLUMN_SM_TYPE)) {
-				res.smType = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
-			} else if (name.equals(Schema.COLUMN_DELIVERY_COUNT)) {
-				res.deliveryCount = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
-			} else if (name.equals(Schema.COLUMN_DELIVERY_DATE)) {
-				res.deliveryDate = DBOperations.SERIALIZER_DATE.fromByteBuffer(col.getValue());
-			}
-		}
-
-		return res;
+        
+        
+        
+        
+        
+        
+//		SliceQuery<UUID, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, UUIDSerializer.get(),
+//				DBOperations.SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
+//		query.setColumnFamily(Schema.FAMILY_ARCHIVE);
+//		query.setRange(null, null, false, 100);
+//		Composite cc = new Composite();
+//		cc.addComponent(Schema.COLUMN_ID, DBOperations.SERIALIZER_STRING);
+//		query.setKey(dbId);
+//
+//		QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
+//		ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
+//
+//		Sms sms = DBOperationsProxy.doCreateSms(this.keyspace, cSlice, dbId, new SmsSet());
+//		if (sms == null)
+//			return null;
+//
+//		result = query.execute();
+//		cSlice = result.get();
+//		SmsProxy res = new SmsProxy();
+//		res.sms = sms;
+//		for (HColumn<Composite, ByteBuffer> col : cSlice.getColumns()) {
+//			Composite nm = col.getName();
+//			String name = nm.get(0, DBOperations.SERIALIZER_STRING);
+//
+//			if (name.equals(Schema.COLUMN_ADDR_DST_DIGITS)) {
+//				res.addrDstDigits = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+//			} else if (name.equals(Schema.COLUMN_ADDR_DST_TON)) {
+//				res.addrDstTon = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
+//			} else if (name.equals(Schema.COLUMN_ADDR_DST_NPI)) {
+//				res.addrDstNpi = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
+//
+//			} else if (name.equals(Schema.COLUMN_DEST_CLUSTER_NAME)) {
+//				res.destClusterName = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+//			} else if (name.equals(Schema.COLUMN_DEST_ESME_NAME)) {
+//				res.destEsmeName = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+//			} else if (name.equals(Schema.COLUMN_DEST_SYSTEM_ID)) {
+//				res.destSystemId = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+//
+//			} else if (name.equals(Schema.COLUMN_IMSI)) {
+//				res.imsi = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+//			} else if (name.equals(Schema.COLUMN_NNN_DIGITS)) {
+//				res.nnnDigits = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
+//			} else if (name.equals(Schema.COLUMN_SM_STATUS)) {
+//				res.smStatus = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
+//			} else if (name.equals(Schema.COLUMN_SM_TYPE)) {
+//				res.smType = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
+//			} else if (name.equals(Schema.COLUMN_DELIVERY_COUNT)) {
+//				res.deliveryCount = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
+//			} else if (name.equals(Schema.COLUMN_DELIVERY_DATE)) {
+//				res.deliveryDate = DBOperations.SERIALIZER_DATE.fromByteBuffer(col.getValue());
+//			}
+//		}
 	}
+
+    @Override
+    public TargetAddress obtainSynchroObject(TargetAddress ta) {
+        return SmsSetCashe.getInstance().addSmsSet(ta);
+    }
+
+    @Override
+    public void releaseSynchroObject(TargetAddress ta) {
+        SmsSetCashe.getInstance().removeSmsSet(ta);
+    }
 
 }

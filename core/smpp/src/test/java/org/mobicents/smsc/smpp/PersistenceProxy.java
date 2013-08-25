@@ -22,26 +22,20 @@
 
 package org.mobicents.smsc.smpp;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.mobicents.smsc.cassandra.DBOperations;
 import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Schema;
 
-import me.prettyprint.cassandra.serializers.ByteBufferSerializer;
-import me.prettyprint.cassandra.serializers.CompositeSerializer;
-import me.prettyprint.cassandra.serializers.IntegerSerializer;
-import me.prettyprint.cassandra.serializers.StringSerializer;
-import me.prettyprint.cassandra.service.CassandraHostConfigurator;
-import me.prettyprint.hector.api.Cluster;
-import me.prettyprint.hector.api.Keyspace;
-import me.prettyprint.hector.api.beans.Composite;
-import me.prettyprint.hector.api.beans.HColumn;
-import me.prettyprint.hector.api.factory.HFactory;
-import me.prettyprint.hector.api.query.ColumnQuery;
-import me.prettyprint.hector.api.query.QueryResult;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Host;
+import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Session;
 
 /**
  * 
@@ -50,32 +44,40 @@ import me.prettyprint.hector.api.query.QueryResult;
  */
 public class PersistenceProxy {
 
-    private Keyspace keyspace;
+    private DBOperations dbOperations;
+    private static final Logger logger = Logger.getLogger(PersistenceProxy.class);
 
-    public void setKeyspace(Keyspace val) {
-        this.keyspace = val;
-    }
-
-    public Keyspace getKeyspace() {
-        return this.keyspace;
-    }
+//    public void setKeyspace(Keyspace val) {
+//        this.keyspace = val;
+//    }
+//
+//    public Keyspace getKeyspace() {
+//        return this.keyspace;
+//    }
 
     public boolean testCassandraAccess() {
-        Cluster cluster = HFactory.getOrCreateCluster("TestCluster", new CassandraHostConfigurator("localhost:9160"));
-        Keyspace keyspace = HFactory.createKeyspace("TelestaxSMSC", cluster);
+
+        String ip = "127.0.0.1";
+        String keyspace = "TelestaxSMSC";
 
         try {
-            ColumnQuery<Integer, Composite, ByteBuffer> query = HFactory.createColumnQuery(keyspace, IntegerSerializer.get(), CompositeSerializer.get(), ByteBufferSerializer.get());
-            query.setColumnFamily(Schema.FAMILY_SMS_ROUTING_RULE);
-            Composite coKey3 = new Composite();
-//            coKey3.addComponent(Schema.COLUMN_ADDR_DST_TON, StringSerializer.get());
-            coKey3.addComponent(Schema.COLUMN_ADDRESS, StringSerializer.get());
-            query.setName(coKey3);
-            query.setKey(111);
+            dbOperations = DBOperations.getInstance();
 
-            QueryResult<HColumn<Composite,ByteBuffer>> result = query.execute();
+            Cluster cluster = Cluster.builder().addContactPoint(ip).build();
+            Metadata metadata = cluster.getMetadata();
 
-            this.setKeyspace(keyspace);
+            for (Host host : metadata.getAllHosts()) {
+                logger.info(String.format("Datacenter: %s; Host: %s; Rack: %s\n", host.getDatacenter(), host.getAddress(), host.getRack()));
+            }
+
+            Session session = cluster.connect();
+
+            session.execute("USE \"" + keyspace + "\"");
+
+            PreparedStatement ps = session.prepare("select * from \"" + Schema.FAMILY_SMS_ROUTING_RULE + "\" limit 1;");
+            BoundStatement boundStatement = new BoundStatement(ps);
+            boundStatement.bind();
+            session.execute(boundStatement);
 
             return true;
         } catch (Exception e) {
@@ -84,23 +86,23 @@ public class PersistenceProxy {
     }
 
     public void updateDbSmsRoutingRule(DbSmsRoutingRule dbSmsRoutingRule) throws PersistenceException {
-        DBOperations.updateDbSmsRoutingRule(keyspace, dbSmsRoutingRule);
+        dbOperations.updateDbSmsRoutingRule(dbSmsRoutingRule);
     }
 
     public void deleteDbSmsRoutingRule(String address) throws PersistenceException {
-        DBOperations.deleteDbSmsRoutingRule(keyspace, address);
+        dbOperations.deleteDbSmsRoutingRule(address);
     }
 
     public DbSmsRoutingRule getSmsRoutingRule(final String address) throws PersistenceException {
-        return DBOperations.getSmsRoutingRule(keyspace, address);
+        return dbOperations.getSmsRoutingRule(address);
     }
 
     public List<DbSmsRoutingRule> getSmsRoutingRulesRange() throws PersistenceException {
-        return DBOperations.getSmsRoutingRulesRange(keyspace);
+        return dbOperations.getSmsRoutingRulesRange();
     }
 
     public List<DbSmsRoutingRule> getSmsRoutingRulesRange(String lastAdress) throws PersistenceException {
-        return DBOperations.getSmsRoutingRulesRange(keyspace, lastAdress);
+        return dbOperations.getSmsRoutingRulesRange(lastAdress);
     }
 
 }

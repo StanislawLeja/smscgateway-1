@@ -530,17 +530,22 @@ public abstract class TxSmppServerSbb implements Sbb {
 			throw new SmscProcessingException("SourceAddress TON not supported: " + event.getSourceAddress().getTon(), SmppConstants.STATUS_INVSRCTON,
 					MAPErrorCode.systemFailure, null);
 		}
-		switch (event.getSourceAddress().getNpi()) {
-		case SmppConstants.NPI_UNKNOWN:
-			sms.setSourceAddrNpi(smscPropertiesManagement.getDefaultNpi());
-			break;
-		case SmppConstants.NPI_E164:
-			sms.setSourceAddrNpi(event.getSourceAddress().getNpi());
-			break;
-		default:
-			throw new SmscProcessingException("SourceAddress NPI not supported: " + event.getSourceAddress().getNpi(), SmppConstants.STATUS_INVSRCNPI,
-					MAPErrorCode.systemFailure, null);
-		}
+        if (event.getSourceAddress().getTon() == SmppConstants.TON_ALPHANUMERIC) {
+            // TODO: when alphanumerical orig address (TON_ALPHANUMERIC) - which should we NPI select
+            sms.setSourceAddrNpi(SmppConstants.NPI_UNKNOWN);
+        } else {
+            switch (event.getSourceAddress().getNpi()) {
+            case SmppConstants.NPI_UNKNOWN:
+                sms.setSourceAddrNpi(smscPropertiesManagement.getDefaultNpi());
+                break;
+            case SmppConstants.NPI_E164:
+                sms.setSourceAddrNpi(event.getSourceAddress().getNpi());
+                break;
+            default:
+                throw new SmscProcessingException("SourceAddress NPI not supported: " + event.getSourceAddress().getNpi(), SmppConstants.STATUS_INVSRCNPI,
+                        MAPErrorCode.systemFailure, null);
+            }
+        }
 
         int dcs = event.getDataCoding();
         String err = MessageUtil.chechDataCodingSchemeSupport(dcs);
