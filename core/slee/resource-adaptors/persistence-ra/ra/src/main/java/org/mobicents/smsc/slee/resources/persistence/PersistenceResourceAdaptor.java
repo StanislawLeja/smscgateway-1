@@ -261,6 +261,15 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
 	@Override
 	public void raActive() {
 		dbOperations = DBOperations.getInstance();
+
+		while (!dbOperations.isStarted()) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				tracer.severe("InterruptedException while trying to Activate Persistence Ra. Waiting on DBOperations",
+						e);
+			}
+		}
 	}
 
 	@Override

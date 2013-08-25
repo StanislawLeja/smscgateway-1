@@ -170,11 +170,22 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
-					tracer.severe("InterruptedException while trying to make ActicateRa slee for 1 sec", e);
+					tracer.severe(
+							"InterruptedException while trying to Activate Scheduler Ra. Waiting on SmscPropertiesManagement",
+							e);
 				}
 			}
 
 			dbOperations = DBOperations.getInstance();
+
+			while (!dbOperations.isStarted()) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					tracer.severe(
+							"InterruptedException while trying to Activate Scheduler Ra. Waiting on DBOperations", e);
+				}
+			}
 
 			scheduler = Executors.newScheduledThreadPool(1);
 			scheduler.scheduleAtFixedRate(new TickTimerTask(), 500, smscPropertiesManagement.getFetchPeriod(),

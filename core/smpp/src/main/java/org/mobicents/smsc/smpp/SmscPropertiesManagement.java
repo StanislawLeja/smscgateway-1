@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
  * 
  * @author Amit Bhayani
  * @author sergey vetyutnev
- *
+ * 
  */
 public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final Logger logger = Logger.getLogger(SmscPropertiesManagement.class);
@@ -58,22 +58,23 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String MAX_DUE_DELAY = "maxDueDelay";
 	private static final String DUE_DELAY_MULTIPLICATOR = "dueDelayMultiplicator";
 	private static final String MAX_MESSAGE_LENGTH_REDUCER = "maxMessageLengthReducer";
-    private static final String HOSTS = "hosts";
-    private static final String KEYSPACE_NAME = "keyspaceName";
-    private static final String CLUSTER_NAME = "clusterName";
-    private static final String FETCH_PERIOD = "fetchPeriod";
-    private static final String FETCH_MAX_ROWS = "fetchMaxRows";
-    private static final String MAX_ACTIVITY_COUNT = "maxActivityCount";
-//    private static final String CDR_DATABASE_EXPORT_DURATION = "cdrDatabaseExportDuration";
-    private static final String ESME_DEFAULT_CLUSTER_NAME = "esmeDefaultCluster";
-	
+	private static final String HOSTS = "hosts";
+	private static final String KEYSPACE_NAME = "keyspaceName";
+	private static final String CLUSTER_NAME = "clusterName";
+	private static final String FETCH_PERIOD = "fetchPeriod";
+	private static final String FETCH_MAX_ROWS = "fetchMaxRows";
+	private static final String MAX_ACTIVITY_COUNT = "maxActivityCount";
+	// private static final String CDR_DATABASE_EXPORT_DURATION =
+	// "cdrDatabaseExportDuration";
+	private static final String ESME_DEFAULT_CLUSTER_NAME = "esmeDefaultCluster";
+
 	private static final String TAB_INDENT = "\t";
 	private static final String CLASS_ATTRIBUTE = "type";
 	private static final XMLBinding binding = new XMLBinding();
 	private static final String PERSIST_FILE_NAME = "smscproperties.xml";
-	
+
 	private static SmscPropertiesManagement instance;
-	
+
 	private final String name;
 
 	private String persistDir = null;
@@ -92,52 +93,57 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private int defaultNpi = 1;
 	// delay after delivering failure with cause "subscriber busy" (sec)
 	private int subscriberBusyDueDelay = 60 * 2;
-	// delay before first a delivering try after incoming message receiving (sec) 
+	// delay before first a delivering try after incoming message receiving
+	// (sec)
 	private int firstDueDelay = 60;
 	// delay after first delivering failure (sec)
 	private int secondDueDelay = 60 * 5;
-	// max possible delay between  delivering failure (sec)
+	// max possible delay between delivering failure (sec)
 	private int maxDueDelay = 3600 * 24;
-	// next delay (after failure will be calculated as "prevDueDelay * dueDelayMultiplicator / 100")
+	// next delay (after failure will be calculated as
+	// "prevDueDelay * dueDelayMultiplicator / 100")
 	private int dueDelayMultiplicator = 200;
-	// Empty TC-BEGIN will be used if messageLength > maxPossibleMessageLength - maxMessageLengthReducer 
+	// Empty TC-BEGIN will be used if messageLength > maxPossibleMessageLength -
+	// maxMessageLengthReducer
 	// Recommended value = 6 Possible values from 0 to 12
 	private int maxMessageLengthReducer = 6;
 
 	// time duration of exporting CDR's to a log based on cassandra database
-	// possible values: 1, 2, 5, 10, 15, 20, 30, 60 (minutes) or 0 (export is turned off)
-//	private int cdrDatabaseExportDuration = 0;
+	// possible values: 1, 2, 5, 10, 15, 20, 30, 60 (minutes) or 0 (export is
+	// turned off)
+	// private int cdrDatabaseExportDuration = 0;
 
 	// parameters for cassandra database access
-    private String hosts = "127.0.0.1:9160";
-    private String keyspaceName = "TelestaxSMSC";
-    private String clusterName = "TelestaxSMSC";
+	private String hosts = "127.0.0.1:9042";
+	private String keyspaceName = "TelestaxSMSC";
+	private String clusterName = "TelestaxSMSC";
 
-    // period of fetching messages from a database for delivering
-    private long fetchPeriod = 5000;
-    // max message fetching count for one fetching step
-    private int fetchMaxRows = 100;
-    // max count of delivering Activities that are possible at the same time
-    private int maxActivityCount = 500;
+	// period of fetching messages from a database for delivering
+	private long fetchPeriod = 5000;
+	// max message fetching count for one fetching step
+	private int fetchMaxRows = 100;
+	// max count of delivering Activities that are possible at the same time
+	private int maxActivityCount = 500;
 
-    // if destinationAddress does not match to any esme (any ClusterName) or 
-    // a message will be routed to defaultClusterName (only for DatabaseSmsRoutingRule)
-    // (if it is specified)
-    private String esmeDefaultClusterName;
+	// if destinationAddress does not match to any esme (any ClusterName) or
+	// a message will be routed to defaultClusterName (only for
+	// DatabaseSmsRoutingRule)
+	// (if it is specified)
+	private String esmeDefaultClusterName;
 
 	private SmscPropertiesManagement(String name) {
 		this.name = name;
 		binding.setClassAttribute(CLASS_ATTRIBUTE);
 	}
-	
-	public static SmscPropertiesManagement getInstance(String name){
-		if(instance == null){
+
+	public static SmscPropertiesManagement getInstance(String name) {
+		if (instance == null) {
 			instance = new SmscPropertiesManagement(name);
 		}
 		return instance;
 	}
-	
-	public static SmscPropertiesManagement getInstance(){
+
+	public static SmscPropertiesManagement getInstance() {
 		return instance;
 	}
 
@@ -204,7 +210,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setDefaultValidityPeriodHours(int defaultValidityPeriodHours) {
 		this.defaultValidityPeriodHours = defaultValidityPeriodHours;
-        this.store();
+		this.store();
 	}
 
 	public int getMaxValidityPeriodHours() {
@@ -213,7 +219,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setMaxValidityPeriodHours(int maxValidityPeriodHours) {
 		this.maxValidityPeriodHours = maxValidityPeriodHours;
-        this.store();
+		this.store();
 	}
 
 	public int getDefaultTon() {
@@ -222,7 +228,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setDefaultTon(int defaultTon) {
 		this.defaultTon = defaultTon;
-        this.store();
+		this.store();
 	}
 
 	public int getDefaultNpi() {
@@ -231,7 +237,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setDefaultNpi(int defaultNpi) {
 		this.defaultNpi = defaultNpi;
-        this.store();
+		this.store();
 	}
 
 	public int getSubscriberBusyDueDelay() {
@@ -240,7 +246,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setSubscriberBusyDueDelay(int subscriberBusyDueDelay) {
 		this.subscriberBusyDueDelay = subscriberBusyDueDelay;
-        this.store();
+		this.store();
 	}
 
 	public int getFirstDueDelay() {
@@ -249,7 +255,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setFirstDueDelay(int firstDueDelay) {
 		this.firstDueDelay = firstDueDelay;
-        this.store();
+		this.store();
 	}
 
 	public int getSecondDueDelay() {
@@ -258,7 +264,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setSecondDueDelay(int secondDueDelay) {
 		this.secondDueDelay = secondDueDelay;
-        this.store();
+		this.store();
 	}
 
 	public int getMaxDueDelay() {
@@ -267,7 +273,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setMaxDueDelay(int maxDueDelay) {
 		this.maxDueDelay = maxDueDelay;
-        this.store();
+		this.store();
 	}
 
 	public int getDueDelayMultiplicator() {
@@ -276,7 +282,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	public void setDueDelayMultiplicator(int dueDelayMultiplicator) {
 		this.dueDelayMultiplicator = dueDelayMultiplicator;
-        this.store();
+		this.store();
 	}
 
 	@Override
@@ -287,102 +293,108 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	@Override
 	public void setMaxMessageLengthReducer(int maxMessageLengReducer) {
 		this.maxMessageLengthReducer = maxMessageLengReducer;
-        this.store();
+		this.store();
 	}
 
-    @Override
-    public String getHosts() {
-        return hosts;
-    }
+	// TODO : Let port be defined independently instead of ip:prt. Also when
+	// cluster will be used there will be more ip's. Hosts should be comma
+	// separated ip's
 
-    @Override
-    public void setHosts(String hosts) {
-        this.hosts = hosts;
-        this.store();
-    }
+	@Override
+	public String getHosts() {
+		return hosts;
+	}
 
-    @Override
-    public String getKeyspaceName() {
-        return keyspaceName;
-    }
+	@Override
+	public void setHosts(String hosts) {
+		this.hosts = hosts;
+		this.store();
+	}
 
-    @Override
-    public void setKeyspaceName(String keyspaceName) {
-        this.keyspaceName = keyspaceName;
-        this.store();
-    }
+	@Override
+	public String getKeyspaceName() {
+		return keyspaceName;
+	}
 
-    @Override
-    public String getClusterName() {
-        return clusterName;
-    }
+	@Override
+	public void setKeyspaceName(String keyspaceName) {
+		this.keyspaceName = keyspaceName;
+		this.store();
+	}
 
-    @Override
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
-        this.store();
-    }
+	@Override
+	public String getClusterName() {
+		return clusterName;
+	}
 
-    @Override
-    public long getFetchPeriod() {
-        return fetchPeriod;
-    }
+	@Override
+	public void setClusterName(String clusterName) {
+		this.clusterName = clusterName;
+		this.store();
+	}
 
-    @Override
-    public void setFetchPeriod(long fetchPeriod) {
-        this.fetchPeriod = fetchPeriod;
-        this.store();
-    }
+	@Override
+	public long getFetchPeriod() {
+		return fetchPeriod;
+	}
 
-    @Override
-    public int getFetchMaxRows() {
-        return fetchMaxRows;
-    }
+	@Override
+	public void setFetchPeriod(long fetchPeriod) {
+		this.fetchPeriod = fetchPeriod;
+		this.store();
+	}
 
-    @Override
-    public void setFetchMaxRows(int fetchMaxRows) {
-        this.fetchMaxRows = fetchMaxRows;
-        this.store();
-    }
+	@Override
+	public int getFetchMaxRows() {
+		return fetchMaxRows;
+	}
 
-    @Override
-    public int getMaxActivityCount() {
-        return maxActivityCount;
-    }
+	@Override
+	public void setFetchMaxRows(int fetchMaxRows) {
+		this.fetchMaxRows = fetchMaxRows;
+		this.store();
+	}
 
-    @Override
-    public void setMaxActivityCount(int maxActivityCount) {
-        this.maxActivityCount = maxActivityCount;
-        this.store();
-    }
+	@Override
+	public int getMaxActivityCount() {
+		return maxActivityCount;
+	}
 
-//    @Override
-//    public int getCdrDatabaseExportDuration() {
-//        return cdrDatabaseExportDuration;
-//    }
-//
-//    @Override
-//    public void setCdrDatabaseExportDuration(int cdrDatabaseExportDuration) {
-//        if (cdrDatabaseExportDuration != 0 && cdrDatabaseExportDuration != 1 && cdrDatabaseExportDuration != 2 && cdrDatabaseExportDuration != 5
-//                && cdrDatabaseExportDuration != 10 && cdrDatabaseExportDuration != 15 && cdrDatabaseExportDuration != 20 && cdrDatabaseExportDuration != 30
-//                && cdrDatabaseExportDuration != 60)
-//            throw new IllegalArgumentException("cdrDatabaseExportDuration value must be 1,2,5,10,15,20,30 or 60 minutes or 0 if CDR export is disabled");
-//
-//        this.cdrDatabaseExportDuration = cdrDatabaseExportDuration;
-//        this.store();
-//    }
+	@Override
+	public void setMaxActivityCount(int maxActivityCount) {
+		this.maxActivityCount = maxActivityCount;
+		this.store();
+	}
 
-    @Override
-    public String getEsmeDefaultClusterName() {
-        return esmeDefaultClusterName;
-    }
+	// @Override
+	// public int getCdrDatabaseExportDuration() {
+	// return cdrDatabaseExportDuration;
+	// }
+	//
+	// @Override
+	// public void setCdrDatabaseExportDuration(int cdrDatabaseExportDuration) {
+	// if (cdrDatabaseExportDuration != 0 && cdrDatabaseExportDuration != 1 &&
+	// cdrDatabaseExportDuration != 2 && cdrDatabaseExportDuration != 5
+	// && cdrDatabaseExportDuration != 10 && cdrDatabaseExportDuration != 15 &&
+	// cdrDatabaseExportDuration != 20 && cdrDatabaseExportDuration != 30
+	// && cdrDatabaseExportDuration != 60)
+	// throw new
+	// IllegalArgumentException("cdrDatabaseExportDuration value must be 1,2,5,10,15,20,30 or 60 minutes or 0 if CDR export is disabled");
+	//
+	// this.cdrDatabaseExportDuration = cdrDatabaseExportDuration;
+	// this.store();
+	// }
 
-    @Override
-    public void setEsmeDefaultClusterName(String val) {
-        esmeDefaultClusterName = val;
-        this.store();
-    }
+	@Override
+	public String getEsmeDefaultClusterName() {
+		return esmeDefaultClusterName;
+	}
 
+	@Override
+	public void setEsmeDefaultClusterName(String val) {
+		esmeDefaultClusterName = val;
+		this.store();
+	}
 
 	public void start() throws Exception {
 
@@ -428,7 +440,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 			writer.write(this.serviceCenterGt, SC_GT, String.class);
 			writer.write(this.serviceCenterSsn, SC_SSN, Integer.class);
-            writer.write(this.hlrSsn, HLR_SSN, Integer.class);
+			writer.write(this.hlrSsn, HLR_SSN, Integer.class);
 			writer.write(this.mscSsn, MSC_SSN, Integer.class);
 			writer.write(this.maxMapVersion, MAX_MAP_VERSION, Integer.class);
 			writer.write(this.defaultValidityPeriodHours, DEFAULT_VALIDITY_PERIOD_HOURS, Integer.class);
@@ -444,14 +456,15 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.maxMessageLengthReducer, MAX_MESSAGE_LENGTH_REDUCER, Integer.class);
 
 			writer.write(this.hosts, HOSTS, String.class);
-            writer.write(this.keyspaceName, KEYSPACE_NAME, String.class);
-            writer.write(this.clusterName, CLUSTER_NAME, String.class);
-            writer.write(this.fetchPeriod, FETCH_PERIOD, Long.class);
-            writer.write(this.fetchMaxRows, FETCH_MAX_ROWS, Integer.class);
-//            writer.write(this.cdrDatabaseExportDuration, CDR_DATABASE_EXPORT_DURATION, Integer.class);
+			writer.write(this.keyspaceName, KEYSPACE_NAME, String.class);
+			writer.write(this.clusterName, CLUSTER_NAME, String.class);
+			writer.write(this.fetchPeriod, FETCH_PERIOD, Long.class);
+			writer.write(this.fetchMaxRows, FETCH_MAX_ROWS, Integer.class);
+			// writer.write(this.cdrDatabaseExportDuration,
+			// CDR_DATABASE_EXPORT_DURATION, Integer.class);
 
-            writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
-            writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
+			writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
+			writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
 
 			writer.close();
 		} catch (Exception e) {
@@ -473,7 +486,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			reader.setBinding(binding);
 			this.serviceCenterGt = reader.read(SC_GT, String.class);
 			this.serviceCenterSsn = reader.read(SC_SSN, Integer.class);
-            this.hlrSsn = reader.read(HLR_SSN, Integer.class);
+			this.hlrSsn = reader.read(HLR_SSN, Integer.class);
 			this.mscSsn = reader.read(MSC_SSN, Integer.class);
 			this.maxMapVersion = reader.read(MAX_MAP_VERSION, Integer.class);
 			Integer dvp = reader.read(DEFAULT_VALIDITY_PERIOD_HOURS, Integer.class);
@@ -507,29 +520,29 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			if (val != null)
 				this.maxMessageLengthReducer = val;
 
-            this.hosts = reader.read(HOSTS, String.class);
-            this.keyspaceName = reader.read(KEYSPACE_NAME, String.class);
-            this.clusterName = reader.read(CLUSTER_NAME, String.class);
-            Long vall = reader.read(FETCH_PERIOD, Long.class);
-            if (vall != null)
-                this.fetchPeriod = vall;
-            val = reader.read(FETCH_MAX_ROWS, Integer.class);
-            if (val != null)
-                this.fetchMaxRows = val;
+			this.hosts = reader.read(HOSTS, String.class);
+			this.keyspaceName = reader.read(KEYSPACE_NAME, String.class);
+			this.clusterName = reader.read(CLUSTER_NAME, String.class);
+			Long vall = reader.read(FETCH_PERIOD, Long.class);
+			if (vall != null)
+				this.fetchPeriod = vall;
+			val = reader.read(FETCH_MAX_ROWS, Integer.class);
+			if (val != null)
+				this.fetchMaxRows = val;
 
-//            val = reader.read(CDR_DATABASE_EXPORT_DURATION, Integer.class);
-//            if (val != null)
-//                this.cdrDatabaseExportDuration = val;
+			// val = reader.read(CDR_DATABASE_EXPORT_DURATION, Integer.class);
+			// if (val != null)
+			// this.cdrDatabaseExportDuration = val;
 
-            this.esmeDefaultClusterName = reader.read(ESME_DEFAULT_CLUSTER_NAME, String.class);
+			this.esmeDefaultClusterName = reader.read(ESME_DEFAULT_CLUSTER_NAME, String.class);
 
-            val = reader.read(MAX_ACTIVITY_COUNT, Integer.class);
-            if (val != null)
-                this.maxActivityCount = val;
+			val = reader.read(MAX_ACTIVITY_COUNT, Integer.class);
+			if (val != null)
+				this.maxActivityCount = val;
 
 			reader.close();
 		} catch (XMLStreamException ex) {
-            logger.error("Error while loading the SMSC state from file", ex);
+			logger.error("Error while loading the SMSC state from file", ex);
 		}
 	}
 

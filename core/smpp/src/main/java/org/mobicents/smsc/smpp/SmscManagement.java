@@ -42,6 +42,7 @@ import javolution.xml.XMLBinding;
 
 import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
+import org.mobicents.smsc.cassandra.DBOperations;
 
 /**
  * @author Amit Bhayani
@@ -52,8 +53,8 @@ public class SmscManagement implements SmscManagementMBean {
 
 	public static final String JMX_DOMAIN = "com.telscale.smsc";
 	public static final String JMX_LAYER_SMSC_MANAGEMENT = "SmscManagement";
-    public static final String JMX_LAYER_ESME_MANAGEMENT = "EsmeManagement";
-    public static final String JMX_LAYER_ARCHIVE_SMS = "ArchiveSms";
+	public static final String JMX_LAYER_ESME_MANAGEMENT = "EsmeManagement";
+	public static final String JMX_LAYER_ARCHIVE_SMS = "ArchiveSms";
 	public static final String JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT = "SmscPropertiesManagement";
 	public static final String JMX_LAYER_SMPP_SERVER_MANAGEMENT = "SmppServerManagement";
 	public static final String JMX_LAYER_SMPP_CLIENT_MANAGEMENT = "SmppClientManagement";
@@ -130,13 +131,13 @@ public class SmscManagement implements SmscManagementMBean {
 		return smppServerManagement;
 	}
 
-    public EsmeManagement getEsmeManagement() {
-        return esmeManagement;
-    }
+	public EsmeManagement getEsmeManagement() {
+		return esmeManagement;
+	}
 
-    public ArchiveSms getArchiveSms() {
-        return archiveSms;
-    }
+	public ArchiveSms getArchiveSms() {
+		return archiveSms;
+	}
 
 	/**
 	 * @return the smsRoutingRuleClass
@@ -163,10 +164,10 @@ public class SmscManagement implements SmscManagementMBean {
 		this.esmeManagement.setPersistDir(this.persistDir);
 		this.esmeManagement.start();
 
-        // Step 3 Setup SMSC Properties
-        this.smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.name);
-        this.smscPropertiesManagement.setPersistDir(this.persistDir);
-        this.smscPropertiesManagement.start();
+		// Step 3 Setup SMSC Properties
+		this.smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.name);
+		this.smscPropertiesManagement.setPersistDir(this.persistDir);
+		this.smscPropertiesManagement.start();
 
 		// Step 4 Set Routing Rule class
 		SmsRoutingRule smsRoutingRule = null;
@@ -175,22 +176,25 @@ public class SmscManagement implements SmscManagementMBean {
 		} else {
 			smsRoutingRule = new DefaultSmsRoutingRule();
 		}
-        smsRoutingRule.setEsmeManagement(esmeManagement);
-        smsRoutingRule.setSmscPropertiesManagement(smscPropertiesManagement);
+		smsRoutingRule.setEsmeManagement(esmeManagement);
+		smsRoutingRule.setSmscPropertiesManagement(smscPropertiesManagement);
 		SmsRouteManagement.getInstance().setSmsRoutingRule(smsRoutingRule);
 
-        // Step 5 Setup ArchiveSms
-        this.archiveSms = ArchiveSms.getInstance(this.name);
-        this.archiveSms.start();
+		// Step 5 Setup ArchiveSms
+		this.archiveSms = ArchiveSms.getInstance(this.name);
+		this.archiveSms.start();
 
-        ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ESME_MANAGEMENT + ",name=" + this.getName());
-        this.registerMBean(this.esmeManagement, EsmeManagementMBean.class, false, esmeObjNname);
+		ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ESME_MANAGEMENT
+				+ ",name=" + this.getName());
+		this.registerMBean(this.esmeManagement, EsmeManagementMBean.class, false, esmeObjNname);
 
-        ObjectName smscObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT + ",name=" + this.getName());
-        this.registerMBean(this.smscPropertiesManagement, SmscPropertiesManagementMBean.class, true, smscObjNname);
+		ObjectName smscObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+				+ JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT + ",name=" + this.getName());
+		this.registerMBean(this.smscPropertiesManagement, SmscPropertiesManagementMBean.class, true, smscObjNname);
 
-        ObjectName arhiveObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ARCHIVE_SMS + ",name=" + this.getName());
-        this.registerMBean(this.archiveSms, ArchiveSmsMBean.class, false, arhiveObjNname);
+		ObjectName arhiveObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ARCHIVE_SMS
+				+ ",name=" + this.getName());
+		this.registerMBean(this.archiveSms, ArchiveSmsMBean.class, false, arhiveObjNname);
 
 		this.persistFile.clear();
 
@@ -257,16 +261,25 @@ public class SmscManagement implements SmscManagementMBean {
 				+ JMX_LAYER_SMPP_CLIENT_MANAGEMENT + ",name=" + this.getName());
 		this.registerMBean(this.smppClientManagement, SmppClientManagementMBean.class, true, smppClientManaObjName);
 
+		// Step 8 start DBOperations
+
+		String[] hostsArr = this.smscPropertiesManagement.getHosts().split(":");
+		String host = hostsArr[0];
+		int port = Integer.parseInt(hostsArr[1]);
+		DBOperations.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName());
+		
+
 		this.isStarted = true;
 		logger.info("Started SmscManagement");
 	}
 
 	public void stopSmscManagement() throws Exception {
-        this.archiveSms.stop();
-        ObjectName arhiveObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ARCHIVE_SMS + ",name=" + this.getName());
-        this.unregisterMbean(arhiveObjNname);
+		this.archiveSms.stop();
+		ObjectName arhiveObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ARCHIVE_SMS
+				+ ",name=" + this.getName());
+		this.unregisterMbean(arhiveObjNname);
 
-        this.esmeManagement.stop();
+		this.esmeManagement.stop();
 		ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ESME_MANAGEMENT
 				+ ",name=" + this.getName());
 		this.unregisterMbean(esmeObjNname);
@@ -290,7 +303,7 @@ public class SmscManagement implements SmscManagementMBean {
 		this.monitorExecutor.shutdownNow();
 
 		this.isStarted = false;
-		
+
 		this.store();
 	}
 
