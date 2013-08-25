@@ -46,11 +46,15 @@ public class DbSmsRoutingRuleTest {
         System.out.println("setUpClass");
 
         this.cassandraDbInited = this.sbb.testCassandraAccess();
+        if (!this.cassandraDbInited)
+            return;
+        this.sbb.start("127.0.0.1", "TelestaxSMSC");
     }
 
     @AfterClass
     public void tearDownClass() throws Exception {
         System.out.println("tearDownClass");
+        this.sbb.stop();
     }
 
 

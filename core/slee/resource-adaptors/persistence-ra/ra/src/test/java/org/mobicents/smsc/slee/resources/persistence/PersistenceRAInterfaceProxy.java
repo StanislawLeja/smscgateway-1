@@ -23,27 +23,17 @@
 package org.mobicents.smsc.slee.resources.persistence;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
-import javax.slee.facilities.Tracer;
-
 import org.apache.log4j.Logger;
-import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
-import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.smsc.cassandra.DBOperations;
-import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Schema;
-import org.mobicents.smsc.cassandra.SmType;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
-import org.mobicents.smsc.smpp.PersistenceProxy;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
@@ -63,6 +53,10 @@ public class PersistenceRAInterfaceProxy extends DBOperations implements Persist
 
     private static final Logger logger = Logger.getLogger(PersistenceRAInterfaceProxy.class);
 
+    public Session getSession() {
+        return session;
+    }
+
 	public boolean testCassandraAccess() {
 
         String ip = "127.0.0.1";
@@ -70,22 +64,26 @@ public class PersistenceRAInterfaceProxy extends DBOperations implements Persist
 
         try {
             Cluster cluster = Cluster.builder().addContactPoint(ip).build();
-            Metadata metadata = cluster.getMetadata();
+            try {
+                Metadata metadata = cluster.getMetadata();
 
-            for (Host host : metadata.getAllHosts()) {
-                logger.info(String.format("Datacenter: %s; Host: %s; Rack: %s\n", host.getDatacenter(), host.getAddress(), host.getRack()));
+                for (Host host : metadata.getAllHosts()) {
+                    logger.info(String.format("Datacenter: %s; Host: %s; Rack: %s\n", host.getDatacenter(), host.getAddress(), host.getRack()));
+                }
+
+                Session session = cluster.connect();
+
+                session.execute("USE \"" + keyspace + "\"");
+
+                PreparedStatement ps = session.prepare("select * from \"" + Schema.FAMILY_LIVE + "\" limit 1;");
+                BoundStatement boundStatement = new BoundStatement(ps);
+                boundStatement.bind();
+                session.execute(boundStatement);
+
+                return true;
+            } finally {
+                cluster.shutdown();
             }
-
-            Session session = cluster.connect();
-
-            session.execute("USE \"" + keyspace + "\"");
-
-            PreparedStatement ps = session.prepare("select * from \"" + Schema.FAMILY_LIVE + "\" limit 1;");
-            BoundStatement boundStatement = new BoundStatement(ps);
-            boundStatement.bind();
-            session.execute(boundStatement);
-
-            return true;
         } catch (Exception e) {
             return false;
         }
@@ -110,7 +108,6 @@ public class PersistenceRAInterfaceProxy extends DBOperations implements Persist
 	}
 
 	public SmsProxy obtainArchiveSms(UUID dbId) throws PersistenceException, IOException {
-        // TODO: implement it
 
         PreparedStatement ps = session.prepare("select * from \"" + Schema.FAMILY_ARCHIVE + "\" where \"" + Schema.COLUMN_ID + "\"=?;");
         BoundStatement boundStatement = new BoundStatement(ps);
@@ -125,44 +122,23 @@ public class PersistenceRAInterfaceProxy extends DBOperations implements Persist
         SmsProxy res = new SmsProxy();
         res.sms = sms;
 
-            
-        // TODO: ........................
-        // !!!!!! заполнить это !!!!!!!!!!!!
-//            Composite nm = col.getName();
-//            String name = nm.get(0, DBOperations.SERIALIZER_STRING);
-//
-//            if (name.equals(Schema.COLUMN_ADDR_DST_DIGITS)) {
-//                res.addrDstDigits = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
-//            } else if (name.equals(Schema.COLUMN_ADDR_DST_TON)) {
-//                res.addrDstTon = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
-//            } else if (name.equals(Schema.COLUMN_ADDR_DST_NPI)) {
-//                res.addrDstNpi = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
-//
-//            } else if (name.equals(Schema.COLUMN_DEST_CLUSTER_NAME)) {
-//                res.destClusterName = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
-//            } else if (name.equals(Schema.COLUMN_DEST_ESME_NAME)) {
-//                res.destEsmeName = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
-//            } else if (name.equals(Schema.COLUMN_DEST_SYSTEM_ID)) {
-//                res.destSystemId = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
-//
-//            } else if (name.equals(Schema.COLUMN_IMSI)) {
-//                res.imsi = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
-//            } else if (name.equals(Schema.COLUMN_NNN_DIGITS)) {
-//                res.nnnDigits = DBOperations.SERIALIZER_STRING.fromByteBuffer(col.getValue());
-//            } else if (name.equals(Schema.COLUMN_SM_STATUS)) {
-//                res.smStatus = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
-//            } else if (name.equals(Schema.COLUMN_SM_TYPE)) {
-//                res.smType = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
-//            } else if (name.equals(Schema.COLUMN_DELIVERY_COUNT)) {
-//                res.deliveryCount = DBOperations.SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
-//            } else if (name.equals(Schema.COLUMN_DELIVERY_DATE)) {
-//                res.deliveryDate = DBOperations.SERIALIZER_DATE.fromByteBuffer(col.getValue());
-//            }
-        // !!!!!! заполнить это !!!!!!!!!!!!
-        // TODO: ........................
+        res.addrDstDigits = row.getString(Schema.COLUMN_ADDR_DST_DIGITS);
+        res.addrDstTon = row.getInt(Schema.COLUMN_ADDR_DST_TON);
+        res.addrDstNpi = row.getInt(Schema.COLUMN_ADDR_DST_NPI);
+
+        res.destClusterName = row.getString(Schema.COLUMN_DEST_CLUSTER_NAME);
+        res.destEsmeName = row.getString(Schema.COLUMN_DEST_ESME_NAME);
+        res.destSystemId = row.getString(Schema.COLUMN_DEST_SYSTEM_ID);
+
+        res.imsi = row.getString(Schema.COLUMN_IMSI);
+        res.nnnDigits = row.getString(Schema.COLUMN_NNN_DIGITS);
+        res.smStatus = row.getInt(Schema.COLUMN_SM_STATUS);
+        res.smType = row.getInt(Schema.COLUMN_SM_TYPE);
+        res.deliveryCount = row.getInt(Schema.COLUMN_DELIVERY_COUNT);
+
+        res.deliveryDate = row.getDate(Schema.COLUMN_DELIVERY_DATE);
 
         return res;
-
         
         
         

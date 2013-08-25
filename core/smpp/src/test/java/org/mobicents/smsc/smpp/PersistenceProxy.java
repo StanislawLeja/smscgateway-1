@@ -22,12 +22,8 @@
 
 package org.mobicents.smsc.smpp;
 
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.mobicents.smsc.cassandra.DBOperations;
-import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
-import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Schema;
 
 import com.datastax.driver.core.BoundStatement;
@@ -42,9 +38,9 @@ import com.datastax.driver.core.Session;
  * @author sergey vetyutnev
  * 
  */
-public class PersistenceProxy {
+public class PersistenceProxy extends DBOperations {
 
-    private DBOperations dbOperations;
+//    private DBOperations dbOperations;
     private static final Logger logger = Logger.getLogger(PersistenceProxy.class);
 
 //    public void setKeyspace(Keyspace val) {
@@ -61,7 +57,7 @@ public class PersistenceProxy {
         String keyspace = "TelestaxSMSC";
 
         try {
-            dbOperations = DBOperations.getInstance();
+//            dbOperations = DBOperations.getInstance();
 
             Cluster cluster = Cluster.builder().addContactPoint(ip).build();
             Metadata metadata = cluster.getMetadata();
@@ -85,24 +81,24 @@ public class PersistenceProxy {
         }
     }
 
-    public void updateDbSmsRoutingRule(DbSmsRoutingRule dbSmsRoutingRule) throws PersistenceException {
-        dbOperations.updateDbSmsRoutingRule(dbSmsRoutingRule);
-    }
-
-    public void deleteDbSmsRoutingRule(String address) throws PersistenceException {
-        dbOperations.deleteDbSmsRoutingRule(address);
-    }
-
-    public DbSmsRoutingRule getSmsRoutingRule(final String address) throws PersistenceException {
-        return dbOperations.getSmsRoutingRule(address);
-    }
-
-    public List<DbSmsRoutingRule> getSmsRoutingRulesRange() throws PersistenceException {
-        return dbOperations.getSmsRoutingRulesRange();
-    }
-
-    public List<DbSmsRoutingRule> getSmsRoutingRulesRange(String lastAdress) throws PersistenceException {
-        return dbOperations.getSmsRoutingRulesRange(lastAdress);
-    }
+//    public void updateDbSmsRoutingRule(DbSmsRoutingRule dbSmsRoutingRule) throws PersistenceException {
+//        dbOperations.updateDbSmsRoutingRule(dbSmsRoutingRule);
+//    }
+//
+//    public void deleteDbSmsRoutingRule(String address) throws PersistenceException {
+//        dbOperations.deleteDbSmsRoutingRule(address);
+//    }
+//
+//    public DbSmsRoutingRule getSmsRoutingRule(final String address) throws PersistenceException {
+//        return dbOperations.getSmsRoutingRule(address);
+//    }
+//
+//    public List<DbSmsRoutingRule> getSmsRoutingRulesRange() throws PersistenceException {
+//        return dbOperations.getSmsRoutingRulesRange();
+//    }
+//
+//    public List<DbSmsRoutingRule> getSmsRoutingRulesRange(String lastAdress) throws PersistenceException {
+//        return dbOperations.getSmsRoutingRulesRange(lastAdress);
+//    }
 
 }

@@ -14,3 +14,5 @@ target
 ${env.JBOSS_HOME}
 
 /SmscPropertiesManagementTest_smscproperties.xml
+/hs_err_pid22360.log
+/hs_err_pid26888.log
