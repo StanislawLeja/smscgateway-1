@@ -83,7 +83,7 @@ public class CassandraTest {
         this.cassandraDbInited = this.sbb.testCassandraAccess();
         if (!this.cassandraDbInited)
             return;
-        this.sbb.start("127.0.0.1", "TelestaxSMSC");
+        this.sbb.start("127.0.0.1", 9042, "TelestaxSMSC");
 	}
 
 	@AfterClass

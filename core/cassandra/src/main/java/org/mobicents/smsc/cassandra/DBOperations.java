@@ -265,46 +265,6 @@ public class DBOperations {
                     }
 
                     return smsSet;                    
-
-//                    SliceQuery<String, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, SERIALIZER_STRING, SERIALIZER_COMPOSITE,
-//                            ByteBufferSerializer.get());
-//                    query.setColumnFamily(Schema.FAMILY_LIVE);
-//                    query.setKey(ta.getTargetId());
-//
-//                    query.setRange(null, null, false, 100);
-//
-//                    QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
-//                    ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
-//
-//                    SmsSet smsSet = createSmsSet(cSlice);
-//
-//                    if (smsSet.getDestAddr() == null) {
-//                        smsSet = new SmsSet();
-//
-//                        Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
-//
-//                        smsSet.setDestAddr(ta.getAddr());
-//                        smsSet.setDestAddrTon(ta.getAddrTon());
-//                        smsSet.setDestAddrNpi(ta.getAddrNpi());
-//                        smsSet.setInSystem(0);
-//
-//                        Composite cc = createLiveColumnComposite(ta, Schema.COLUMN_ADDR_DST_DIGITS);
-//                        mutator.addInsertion(ta.getTargetId(), Schema.FAMILY_LIVE,
-//                                HFactory.createColumn(cc, ta.getAddr(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//                        cc = createLiveColumnComposite(ta, Schema.COLUMN_ADDR_DST_TON);
-//                        mutator.addInsertion(ta.getTargetId(), Schema.FAMILY_LIVE,
-//                                HFactory.createColumn(cc, ta.getAddrTon(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//                        cc = createLiveColumnComposite(ta, Schema.COLUMN_ADDR_DST_NPI);
-//                        mutator.addInsertion(ta.getTargetId(), Schema.FAMILY_LIVE,
-//                                HFactory.createColumn(cc, ta.getAddrNpi(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//
-//                        cc = createLiveColumnComposite(ta, Schema.COLUMN_IN_SYSTEM);
-//                        mutator.addInsertion(ta.getTargetId(), Schema.FAMILY_LIVE, HFactory.createColumn(cc, 0, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//
-//                        mutator.execute();
-//                    }
-//
-//                    return smsSet;
                 } catch (Exception e) {
                     String msg = "Failed to obtainSmsSet SMS for '" + ta.getAddr() + ",Ton=" + ta.getAddrTon() + ",Npi=" + ta.getAddrNpi() + "'!";
                     throw new PersistenceException(msg, e);
@@ -332,20 +292,6 @@ public class DBOperations {
             BoundStatement boundStatement = new BoundStatement(setNewMessageScheduled);
             boundStatement.bind(smsSet.getTargetId(), newDueDate, 1, 0);
             session.execute(boundStatement);
-            
-//            Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
-//
-//            Composite cc = createLiveColumnComposite(smsSet, Schema.COLUMN_DUE_DATE);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, newDueDate, SERIALIZER_COMPOSITE, SERIALIZER_DATE));
-//            cc = createLiveColumnComposite(smsSet, Schema.COLUMN_IN_SYSTEM);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, 1, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//            cc = createLiveColumnComposite(smsSet, Schema.COLUMN_DUE_DELAY);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, 0, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//
-//            mutator.execute();
 
             smsSet.setInSystem(1);
             smsSet.setDueDate(newDueDate);
@@ -365,23 +311,6 @@ public class DBOperations {
             BoundStatement boundStatement = new BoundStatement(setDeliveringProcessScheduled);
             boundStatement.bind(smsSet.getTargetId(), newDueDate, 1, newDueDelay);
             session.execute(boundStatement);
-
-
-
-
-//            Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
-//
-//            Composite cc = createLiveColumnComposite(smsSet, Schema.COLUMN_DUE_DATE);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, newDueDate, SERIALIZER_COMPOSITE, SERIALIZER_DATE));
-//            cc = createLiveColumnComposite(smsSet, Schema.COLUMN_IN_SYSTEM);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, 1, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//            cc = createLiveColumnComposite(smsSet, Schema.COLUMN_DUE_DELAY);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, newDueDelay, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//
-//            mutator.execute();
 
             smsSet.setInSystem(1);
             smsSet.setDueDate(newDueDate);
@@ -414,19 +343,6 @@ public class DBOperations {
             BoundStatement boundStatement = new BoundStatement(setDeliveryStart);
             boundStatement.bind(smsSet.getTargetId(), 2, newInSystemDate);
             session.execute(boundStatement);            
-            
-            
-//            Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
-//
-//            Composite cc = createLiveColumnComposite(smsSet, Schema.COLUMN_IN_SYSTEM);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, 2, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//            cc = createLiveColumnComposite(smsSet, Schema.COLUMN_IN_SYSTEM_DATE);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, newInSystemDate, SERIALIZER_COMPOSITE, SERIALIZER_DATE));
-//
-//            mutator.execute();
-
 
             smsSet.setInSystem(2);
             smsSet.setInSystemDate(newInSystemDate);
@@ -444,15 +360,6 @@ public class DBOperations {
             boundStatement.bind(sms.getDbId(), sms.getDeliveryCount() + 1);
             session.execute(boundStatement);
 
-//            Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
-//
-//            Composite cc = new Composite();
-//            cc.addComponent(Schema.COLUMN_DELIVERY_COUNT, SERIALIZER_STRING);
-//            mutator.addInsertion(sms.getDbId(), Schema.FAMILY_LIVE_SMS,
-//                    HFactory.createColumn(cc, sms.getDeliveryCount() + 1, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//
-//            mutator.execute();
-
             sms.setDeliveryCount(sms.getDeliveryCount() + 1);
         } catch (Exception e) {
             String msg = "Failed to setDeliveryStart sms for '" + sms.getDbId() + "'!";
@@ -465,21 +372,6 @@ public class DBOperations {
             BoundStatement boundStatement = new BoundStatement(setDeliverySuccess);
             boundStatement.bind(smsSet.getTargetId(), 0, 0);
             session.execute(boundStatement);
-
-
-//            Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
-//
-//            Composite cc = createLiveColumnComposite(smsSet, Schema.COLUMN_IN_SYSTEM);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, 0, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//            cc = createLiveColumnComposite(smsSet, Schema.COLUMN_SM_STATUS);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, 0, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//            cc = createLiveColumnComposite(smsSet, Schema.COLUMN_LAST_DELIVERY);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, lastDelivery, SERIALIZER_COMPOSITE, SERIALIZER_DATE));
-//
-//            mutator.execute();
 
             smsSet.setInSystem(0);
             smsSet.setStatus(ErrorCode.SUCCESS);
@@ -499,23 +391,6 @@ public class DBOperations {
             boundStatement.bind(smsSet.getTargetId(), 0, smStatus.getCode(), false);
             session.execute(boundStatement);
 
-//            Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
-//
-//            Composite cc = createLiveColumnComposite(smsSet, Schema.COLUMN_IN_SYSTEM);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, 0, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//            cc = createLiveColumnComposite(smsSet, Schema.COLUMN_SM_STATUS);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, smStatus.getCode(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//            cc = createLiveColumnComposite(smsSet, Schema.COLUMN_LAST_DELIVERY);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, lastDelivery, SERIALIZER_COMPOSITE, SERIALIZER_DATE));
-//            cc = createLiveColumnComposite(smsSet, Schema.COLUMN_ALERTING_SUPPORTED);
-//            mutator.addInsertion(smsSet.getTargetId(), Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, false, SERIALIZER_COMPOSITE, SERIALIZER_BOOLEAN));
-//
-//            mutator.execute();
-
             smsSet.setInSystem(0);
             smsSet.setStatus(smStatus);
             smsSet.setLastDelivery(lastDelivery);
@@ -533,18 +408,6 @@ public class DBOperations {
             BoundStatement boundStatement = new BoundStatement(setAlertingSupported);
             boundStatement.bind(targetId, alertingSupported);
             session.execute(boundStatement);
-
-
-//            Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
-//
-//            Composite cc = new Composite();
-//            // cc.addComponent(ta.getAddrTon(), SERIALIZER_INTEGER);
-//            // cc.addComponent(ta.getAddrNpi(), SERIALIZER_INTEGER);
-//            cc.addComponent(Schema.COLUMN_ALERTING_SUPPORTED, SERIALIZER_STRING);
-//            mutator.addInsertion(targetId, Schema.FAMILY_LIVE,
-//                    HFactory.createColumn(cc, alertingSupported, SERIALIZER_COMPOSITE, SERIALIZER_BOOLEAN));
-//
-//            mutator.execute();
         } catch (Exception e) {
             String msg = "Failed to setAlertingSupported for '" + targetId + "'!";
             throw new PersistenceException(msg, e);
@@ -570,12 +433,6 @@ public class DBOperations {
                     BoundStatement boundStatement = new BoundStatement(deleteSmsSet);
                     boundStatement.bind(smsSet.getTargetId());
                     session.execute(boundStatement);
-
-
-//                    Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
-//
-//                    mutator.addDeletion(smsSet.getTargetId(), Schema.FAMILY_LIVE);
-//                    mutator.execute();
                 } catch (Exception e) {
                     String msg = "Failed to deleteSmsSet for '" + smsSet.getDestAddr() + ",Ton=" + smsSet.getDestAddrTon()
                             + ",Npi=" + smsSet.getDestAddrNpi() + "'!";
@@ -597,17 +454,6 @@ public class DBOperations {
             this.FillUpdateFields(sms, boundStatement, Schema.FAMILY_LIVE_SMS);
 
             session.execute(boundStatement);            
-
-//            Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
-//
-//            Composite cc = new Composite();
-//            cc.addComponent(Schema.COLUMN_TARGET_ID, SERIALIZER_STRING);
-//            mutator.addInsertion(sms.getDbId(), Schema.FAMILY_LIVE_SMS,
-//                    HFactory.createColumn(cc, sms.getSmsSet().getTargetId(), SERIALIZER_COMPOSITE, StringSerializer.get()));
-//
-//            FillUpdateFields(sms, mutator, Schema.FAMILY_LIVE_SMS);
-//
-//            mutator.execute();
         } catch (Exception e) {
             String msg = "Failed to createLiveSms SMS for '" + sms.getDbId() + "'!";
 
@@ -627,22 +473,6 @@ public class DBOperations {
             } catch (Exception e) {
                 throw new PersistenceException("Failed to deserialize SMS at key '" + dbId + "'!", e);
             }            
-
-//            SliceQuery<UUID, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, UUIDSerializer.get(),
-//                    SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
-//            query.setColumnFamily(Schema.FAMILY_LIVE_SMS);
-//            query.setRange(null, null, false, 100);
-//            Composite cc = new Composite();
-//            cc.addComponent(Schema.COLUMN_ID, SERIALIZER_STRING);
-//            query.setKey(dbId);
-//
-//            QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
-//            ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
-//            try {
-//                return createSms(keyspace,cSlice, dbId, null);
-//            } catch (Exception e) {
-//                throw new PersistenceException("Failed to deserialize SMS at key '" + dbId + "'!", e);
-//            }
         } catch (Exception e) {
             String msg = "Failed to obtainLiveSms SMS for '" + dbId + "'!";
 
@@ -664,27 +494,6 @@ public class DBOperations {
             } catch (Exception e) {
                 throw new PersistenceException("Failed to deserialize SMS at key '" + messageId + "'!", e);
             }            
-
-            
-            
-//            IndexedSlicesQuery<UUID, Composite, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace,
-//                    UUIDSerializer.get(), SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
-//            query.setColumnFamily(Schema.FAMILY_LIVE_SMS);
-//            query.setRange(null, null, false, 100);
-//            Composite cc = new Composite();
-//            cc.addComponent(Schema.COLUMN_MESSAGE_ID, SERIALIZER_STRING);
-//            query.addEqualsExpression(cc, LongSerializer.get().toByteBuffer(messageId));
-//
-//            final QueryResult<OrderedRows<UUID, Composite, ByteBuffer>> result = query.execute();
-//            final OrderedRows<UUID, Composite, ByteBuffer> rows = result.get();
-//            final List<Row<UUID, Composite, ByteBuffer>> rowsList = rows.getList();
-//            for (Row<UUID, Composite, ByteBuffer> row : rowsList) {
-//                try {
-//                    return createSms(keyspace,row.getColumnSlice(), row.getKey(), null);
-//                } catch (Exception e) {
-//                    throw new PersistenceException("Failed to deserialize SMS at key '" + row.getKey() + "'!", e);
-//                }
-//            }
         } catch (Exception e) {
             String msg = "Failed to obtainLiveSms SMS for '" + messageId + "'!";
 
@@ -763,42 +572,6 @@ public class DBOperations {
                 throw new PersistenceException("Failed to deserialize SMS at key '" + s + "!", e);
             }
         }
-
-//        IndexedSlicesQuery<String, Composite, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace, StringSerializer.get(), SERIALIZER_COMPOSITE,
-//                ByteBufferSerializer.get());
-//        query.setColumnFamily(Schema.FAMILY_LIVE);
-//        query.setRange(null, null, false, 100);
-//        Composite cc = new Composite();
-//        if (opt == 1) {
-//            cc.addComponent(Schema.COLUMN_IN_SYSTEM, SERIALIZER_STRING);
-//            query.addEqualsExpression(cc, IntegerSerializer.get().toByteBuffer(2));
-//            cc = new Composite();
-//            // we are using 30 min interval for badly processed messages with
-//            // in_system==2 after failure delivering
-//            Date date = new Date((new Date()).getTime() - 30 * 60 * 1000);
-//            cc.addComponent(Schema.COLUMN_IN_SYSTEM_DATE, SERIALIZER_STRING);
-//            query.addLteExpression(cc, DateSerializer.get().toByteBuffer(date));
-//        } else {
-//            cc.addComponent(Schema.COLUMN_IN_SYSTEM, SERIALIZER_STRING);
-//            query.addEqualsExpression(cc, IntegerSerializer.get().toByteBuffer(1));
-//            cc = new Composite();
-//            Date date = new Date();
-//            cc.addComponent(Schema.COLUMN_DUE_DATE, SERIALIZER_STRING);
-//            query.addLteExpression(cc, DateSerializer.get().toByteBuffer(date));
-//        }
-////        query.setRowCount(maxRecordCount);
-//
-//        final QueryResult<OrderedRows<String, Composite, ByteBuffer>> result = query.execute();
-//        final OrderedRows<String, Composite, ByteBuffer> rows = result.get();
-//        final List<Row<String, Composite, ByteBuffer>> rowsList = rows.getList();
-//        for (Row<String, Composite, ByteBuffer> row : rowsList) {
-//            try {
-//                SmsSet smsSet = createSmsSet(row.getColumnSlice());
-//                lst.add(smsSet);
-//            } catch (Exception e) {
-//                throw new PersistenceException("Failed to deserialize SMS at key '" + row.getKey() + "!", e);
-//            }
-//        }
 	}
 
 	public void fetchSchedulableSms(final SmsSet smsSet, boolean excludeNonScheduleDeliveryTime)
@@ -824,56 +597,12 @@ public class DBOperations {
                 }
             }
             smsSet.resortSms();
-
-
-
-
-//	        IndexedSlicesQuery<UUID, Composite, ByteBuffer> query = HFactory.createIndexedSlicesQuery(keyspace,
-//                    UUIDSerializer.get(), SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
-//            query.setColumnFamily(Schema.FAMILY_LIVE_SMS);
-//            query.setRange(null, null, false, 100);
-//            Composite cc = new Composite();
-//            cc.addComponent(Schema.COLUMN_TARGET_ID, SERIALIZER_STRING);
-//            query.addEqualsExpression(cc, StringSerializer.get().toByteBuffer(smsSet.getTargetId()));
-//
-//            final QueryResult<OrderedRows<UUID, Composite, ByteBuffer>> result = query.execute();
-//            final OrderedRows<UUID, Composite, ByteBuffer> rows = result.get();
-//            final List<Row<UUID, Composite, ByteBuffer>> rowsList = rows.getList();
-//            smsSet.clearSmsList();
-//            Date curDate = new Date();
-//            for (Row<UUID, Composite, ByteBuffer> row : rowsList) {
-//                try {
-//                    Sms sms = createSms(keyspace, row.getColumnSlice(), row.getKey(), smsSet);
-//                    if (excludeNonScheduleDeliveryTime == false || sms.getScheduleDeliveryTime() == null || sms.getScheduleDeliveryTime().before(curDate)) {
-//                        smsSet.addSms(sms);
-//                    }
-//                } catch (Exception e) {
-//                    String msg = "Failed to deserialize SMS at key '" + row.getKey() + "'!";
-//
-//                throw new PersistenceException(msg, e);
-//                }
-//            }
-//            smsSet.resortSms();
         } catch (Exception e) {
             String msg = "Failed to fetchSchedulableSms SMS for '" + smsSet.getTargetId() + "'!";
 
             throw new PersistenceException(msg, e);
         }
 	}
-
-//    private static Composite createLiveColumnComposite(TargetAddress ta, String colName) {
-//        Composite cc;
-//        cc = new Composite();
-//        cc.addComponent(colName, SERIALIZER_STRING);
-//        return cc;
-//    }
-//
-//    private static Composite createLiveColumnComposite(SmsSet smsSet, String colName) {
-//        Composite cc;
-//        cc = new Composite();
-//        cc.addComponent(colName, SERIALIZER_STRING);
-//        return cc;
-//    }
 
     private String getFillUpdateFields() {
         StringBuilder sb = new StringBuilder();
@@ -944,148 +673,6 @@ public class DBOperations {
     }
 
     private void FillUpdateFields(Sms sms, BoundStatement boundStatement, String columnFamilyName) throws PersistenceException {
-
-//        Composite cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_ID, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName, HFactory.createColumn(cc, sms.getDbId(), SERIALIZER_COMPOSITE, UUIDSerializer.get()));        
-//
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_ADDR_DST_DIGITS, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getSmsSet().getDestAddr(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_ADDR_DST_TON, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getSmsSet().getDestAddrTon(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_ADDR_DST_NPI, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getSmsSet().getDestAddrNpi(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-
-//      if (sms.getSourceAddr() != null) {
-//          cc = new Composite();
-//          cc.addComponent(Schema.COLUMN_ADDR_SRC_DIGITS, SERIALIZER_STRING);
-//          mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                  HFactory.createColumn(cc, sms.getSourceAddr(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//      }
-//
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_ADDR_SRC_TON, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getSourceAddrTon(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_ADDR_SRC_NPI, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getSourceAddrNpi(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_MESSAGE_ID, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getMessageId(), SERIALIZER_COMPOSITE, LongSerializer.get()));
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_MO_MESSAGE_REF, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getMoMessageRef(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//        
-//        if (sms.getOrigEsmeName() != null) {
-//            cc = new Composite();
-//            cc.addComponent(Schema.COLUMN_ORIG_ESME_NAME, SERIALIZER_STRING);
-//            mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                    HFactory.createColumn(cc, sms.getOrigEsmeName(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//        }
-//        if (sms.getOrigSystemId() != null) {
-//            cc = new Composite();
-//            cc.addComponent(Schema.COLUMN_ORIG_SYSTEM_ID, SERIALIZER_STRING);
-//            mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                    HFactory.createColumn(cc, sms.getOrigSystemId(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//        }
-//        if (sms.getSubmitDate() != null) {
-//            cc = new Composite();
-//            cc.addComponent(Schema.COLUMN_SUBMIT_DATE, SERIALIZER_STRING);
-//            mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                    HFactory.createColumn(cc, sms.getSubmitDate(), SERIALIZER_COMPOSITE, SERIALIZER_DATE));
-//        }
-//
-//        if (sms.getServiceType() != null) {
-//            cc = new Composite();
-//            cc.addComponent(Schema.COLUMN_SERVICE_TYPE, SERIALIZER_STRING);
-//            mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                    HFactory.createColumn(cc, sms.getServiceType(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//        }
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_ESM_CLASS, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getEsmClass(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_PROTOCOL_ID, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getProtocolId(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_PRIORITY, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getPriority(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_REGISTERED_DELIVERY, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getRegisteredDelivery(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_REPLACE, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getReplaceIfPresent(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_DATA_CODING, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getDataCoding(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//        cc = new Composite();
-//        cc.addComponent(Schema.COLUMN_DEFAULT_MSG_ID, SERIALIZER_STRING);
-//        mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                HFactory.createColumn(cc, sms.getDefaultMsgId(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//      if (sms.getShortMessage() != null) {
-//      cc = new Composite();
-//      cc.addComponent(Schema.COLUMN_MESSAGE, SERIALIZER_STRING);
-//      mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//              HFactory.createColumn(cc, sms.getShortMessage(), SERIALIZER_COMPOSITE, SERIALIZER_BYTE_ARRAY));
-//  }
-//  if (sms.getScheduleDeliveryTime() != null) {
-//      cc = new Composite();
-//      cc.addComponent(Schema.COLUMN_SCHEDULE_DELIVERY_TIME, SERIALIZER_STRING);
-//      mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//              HFactory.createColumn(cc, sms.getScheduleDeliveryTime(), SERIALIZER_COMPOSITE, SERIALIZER_DATE));
-//  }
-//  if (sms.getValidityPeriod() != null) {
-//      cc = new Composite();
-//      cc.addComponent(Schema.COLUMN_VALIDITY_PERIOD, SERIALIZER_STRING);
-//      mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//              HFactory.createColumn(cc, sms.getValidityPeriod(), SERIALIZER_COMPOSITE, SERIALIZER_DATE));
-//  }
-//      cc = new Composite();
-//      cc.addComponent(Schema.COLUMN_DELIVERY_COUNT, SERIALIZER_STRING);
-//      mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//              HFactory.createColumn(cc, sms.getDeliveryCount(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//
-//      if (sms.getTlvSet().getOptionalParameterCount() > 0) {
-//          cc = new Composite();
-//          cc.addComponent(Schema.COLUMN_OPTIONAL_PARAMETERS, SERIALIZER_STRING);
-//
-//          try {
-//              ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//              XMLObjectWriter writer = XMLObjectWriter.newInstance(baos);
-//              writer.setIndentation("\t");
-//              writer.write(sms.getTlvSet(), TLV_SET, TlvSet.class);
-//              writer.close();
-//              byte[] rawData = baos.toByteArray();
-//              String serializedEvent = new String(rawData);
-//
-//              mutator.addInsertion(sms.getDbId(), columnFamilyName,
-//                      HFactory.createColumn(cc, serializedEvent, SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//          } catch (XMLStreamException e) {
-//              String msg = "XMLStreamException when serializing optional parameters for '" + sms.getDbId() + "'!";
-//
-//              throw new PersistenceException(msg, e);
-//          }
-//      }
-
 
         boundStatement.setUUID(Schema.COLUMN_ID, sms.getDbId());
 
@@ -1159,85 +746,12 @@ public class DBOperations {
 
         if (row == null)
             return null;
-//      if (cSlice.getColumns().size() == 0)
-//      return null;
 
         Sms sms = new Sms();
         sms.setDbId(row.getUUID(Schema.COLUMN_ID));
         String destAddr = null;
         int destAddrTon = -1;
         int destAddrNpi = -1;
-
-//        if (name.equals(Schema.COLUMN_ADDR_DST_DIGITS)) {
-//            destAddr = SERIALIZER_STRING.fromByteBuffer(col.getValue());
-//        } else if (name.equals(Schema.COLUMN_ADDR_DST_TON)) {
-//            destAddrTon = SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
-//        } else if (name.equals(Schema.COLUMN_ADDR_DST_NPI)) {
-//            destAddrNpi = SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
-//    } else if (name.equals(Schema.COLUMN_MESSAGE_ID)) {
-//        long val = LongSerializer.get().fromByteBuffer(col.getValue());
-//        sms.setMessageId(val);
-//    } else if (name.equals(Schema.COLUMN_MO_MESSAGE_REF)) {
-//        int val = SERIALIZER_INTEGER.fromByteBuffer(col.getValue());
-//        sms.setMoMessageRef(val);
-//    } else if (name.equals(Schema.COLUMN_ORIG_ESME_NAME)) {
-//        String val = SERIALIZER_STRING.fromByteBuffer(col.getValue());
-//        sms.setOrigEsmeName(val);
-//    } else if (name.equals(Schema.COLUMN_ORIG_SYSTEM_ID)) {
-//        String val = SERIALIZER_STRING.fromByteBuffer(col.getValue());
-//        sms.setOrigSystemId(val);
-//    } else if (name.equals(Schema.COLUMN_SUBMIT_DATE)) {
-//        Date val = SERIALIZER_DATE.fromByteBuffer(col.getValue());
-//        sms.setSubmitDate(val);
-//    } else if (name.equals(Schema.COLUMN_ADDR_SRC_DIGITS)) {
-//        sms.setSourceAddr(SERIALIZER_STRING.fromByteBuffer(col.getValue()));
-//    } else if (name.equals(Schema.COLUMN_ADDR_SRC_TON)) {
-//        sms.setSourceAddrTon(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//    } else if (name.equals(Schema.COLUMN_ADDR_SRC_NPI)) {
-//        sms.setSourceAddrNpi(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//    } else if (name.equals(Schema.COLUMN_SERVICE_TYPE)) {
-//        String val = SERIALIZER_STRING.fromByteBuffer(col.getValue());
-//        sms.setServiceType(val);
-//    } else if (name.equals(Schema.COLUMN_ESM_CLASS)) {
-//        sms.setEsmClass(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//    } else if (name.equals(Schema.COLUMN_PROTOCOL_ID)) {
-//        sms.setProtocolId(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//    } else if (name.equals(Schema.COLUMN_PRIORITY)) {
-//        sms.setPriority(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//    } else if (name.equals(Schema.COLUMN_REGISTERED_DELIVERY)) {
-//        sms.setRegisteredDelivery(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//    } else if (name.equals(Schema.COLUMN_REPLACE)) {
-//        sms.setReplaceIfPresent(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//    } else if (name.equals(Schema.COLUMN_DATA_CODING)) {
-//        sms.setDataCoding(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//    } else if (name.equals(Schema.COLUMN_DEFAULT_MSG_ID)) {
-//        sms.setDefaultMsgId(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//    } else if (name.equals(Schema.COLUMN_MESSAGE)) {
-//        sms.setShortMessage(SERIALIZER_BYTE_ARRAY.fromByteBuffer(col.getValue()));
-//    } else if (name.equals(Schema.COLUMN_SCHEDULE_DELIVERY_TIME)) {
-//        Date val = SERIALIZER_DATE.fromByteBuffer(col.getValue());
-//        sms.setScheduleDeliveryTime(val);
-//    } else if (name.equals(Schema.COLUMN_VALIDITY_PERIOD)) {
-//        Date val = SERIALIZER_DATE.fromByteBuffer(col.getValue());
-//        sms.setValidityPeriod(val);
-//    } else if (name.equals(Schema.COLUMN_DELIVERY_COUNT)) {
-//        sms.setDeliveryCount(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-
-    //  } else if (name.equals(Schema.COLUMN_OPTIONAL_PARAMETERS)) {
-//          String s = SERIALIZER_STRING.fromByteBuffer(col.getValue());
-//          try {
-//              ByteArrayInputStream bais = new ByteArrayInputStream(s.getBytes());
-//              XMLObjectReader reader = XMLObjectReader.newInstance(bais);
-//              TlvSet copy = reader.read(TLV_SET, TlvSet.class);
-//              sms.getTlvSet().clearAllOptionalParameter();
-//              sms.getTlvSet().addAllOptionalParameter(copy.getOptionalParameters());
-//          } catch (XMLStreamException e) {
-//              String msg = "XMLStreamException when deserializing optional parameters for '" + sms.getDbId() + "'!";
-    //
-//              throw new PersistenceException(msg, e);
-//          }
-    //  }
-
  
         destAddr = row.getString(Schema.COLUMN_ADDR_DST_DIGITS);
         destAddrTon = row.getInt(Schema.COLUMN_ADDR_DST_TON);
@@ -1333,36 +847,8 @@ public class DBOperations {
             if (!row.isNull(Schema.COLUMN_SM_STATUS))
                 smsSet.setStatus(ErrorCode.fromInt(row.getInt(Schema.COLUMN_SM_STATUS)));
             smsSet.setDueDelay(row.getInt(Schema.COLUMN_DUE_DELAY));
-//            smsSet.setLastDelivery(row.getDate(Schema.COLUMN_LAST_DELIVERY));
             smsSet.setAlertingSupported(row.getBool(Schema.COLUMN_ALERTING_SUPPORTED));
         }
-
-//        for (HColumn<Composite, ByteBuffer> col : cSlice.getColumns()) {
-//            Composite nm = col.getName();
-//            String name = nm.get(0, SERIALIZER_STRING);
-//
-//            if (name.equals(Schema.COLUMN_ADDR_DST_DIGITS)) {
-//                smsSet.setDestAddr(SERIALIZER_STRING.fromByteBuffer(col.getValue()));
-//            } else if (name.equals(Schema.COLUMN_ADDR_DST_TON)) {
-//                smsSet.setDestAddrTon(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//            } else if (name.equals(Schema.COLUMN_ADDR_DST_NPI)) {
-//                smsSet.setDestAddrNpi(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//            } else if (name.equals(Schema.COLUMN_IN_SYSTEM)) {
-//                smsSet.setInSystem(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//            } else if (name.equals(Schema.COLUMN_IN_SYSTEM_DATE)) {
-//                smsSet.setInSystemDate(SERIALIZER_DATE.fromByteBuffer(col.getValue()));
-//            } else if (name.equals(Schema.COLUMN_DUE_DATE)) {
-//                smsSet.setDueDate(SERIALIZER_DATE.fromByteBuffer(col.getValue()));
-//            } else if (name.equals(Schema.COLUMN_SM_STATUS)) {
-//                smsSet.setStatus(ErrorCode.fromInt((SERIALIZER_INTEGER.fromByteBuffer(col.getValue()))));
-//            } else if (name.equals(Schema.COLUMN_DUE_DELAY)) {
-//                smsSet.setDueDelay(SERIALIZER_INTEGER.fromByteBuffer(col.getValue()));
-//            } else if (name.equals(Schema.COLUMN_LAST_DELIVERY)) {
-//                smsSet.setLastDelivery(SERIALIZER_DATE.fromByteBuffer(col.getValue()));
-//            } else if (name.equals(Schema.COLUMN_ALERTING_SUPPORTED)) {
-//                smsSet.setAlertingSupported(SERIALIZER_BOOLEAN.fromByteBuffer(col.getValue()));
-//            }
-//        }
         return smsSet;
     }
 
@@ -1383,31 +869,6 @@ public class DBOperations {
                 res.setClusterName(name);
                 return res;
             }
-
-
-
-//            SliceQuery<String, Composite, ByteBuffer> query = HFactory.createSliceQuery(keyspace, SERIALIZER_STRING, SERIALIZER_COMPOSITE,
-//                    ByteBufferSerializer.get());
-//            query.setColumnFamily(Schema.FAMILY_SMS_ROUTING_RULE);
-//            query.setKey(address);
-//
-//            query.setRange(null, null, false, 100);
-//
-//            QueryResult<ColumnSlice<Composite, ByteBuffer>> result = query.execute();
-//            ColumnSlice<Composite, ByteBuffer> cSlice = result.get();
-//            if (cSlice == null || cSlice.getColumns().size() == 0)
-//                return null;
-//
-//            DbSmsRoutingRule res = new DbSmsRoutingRule();
-//            for (HColumn<Composite, ByteBuffer> col : cSlice.getColumns()) {
-//                Composite nm = col.getName();
-//                String name = nm.get(0, SERIALIZER_STRING);
-//                res.setAddress(address);
-//
-//                if (name.equals(Schema.COLUMN_CLUSTER_NAME)) {
-//                    res.setClusterName(SERIALIZER_STRING.fromByteBuffer(col.getValue()));
-//                }
-//            }
         } catch (Exception e) {
             String msg = "Failed to getSmsRoutingRule DbSmsRoutingRule for id='" + address + "'!";
 
@@ -1420,20 +881,6 @@ public class DBOperations {
             BoundStatement boundStatement = new BoundStatement(updateDbSmsRoutingRule);
             boundStatement.bind(dbSmsRoutingRule.getAddress(), dbSmsRoutingRule.getClusterName());
             session.execute(boundStatement);
-
-
-
-//            Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
-//
-//            Composite cc;
-//            if (dbSmsRoutingRule.getClusterName() != null) {
-//                cc = new Composite();
-//                cc.addComponent(Schema.COLUMN_CLUSTER_NAME, SERIALIZER_STRING);
-//                mutator.addInsertion(dbSmsRoutingRule.getAddress(), Schema.FAMILY_SMS_ROUTING_RULE,
-//                        HFactory.createColumn(cc, dbSmsRoutingRule.getClusterName(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//            }
-//
-//            mutator.execute();
         } catch (Exception e) {
             String msg = "Failed to addDbSmsRoutingRule for '" + dbSmsRoutingRule.getAddress() + "'!";
 
@@ -1446,13 +893,6 @@ public class DBOperations {
             BoundStatement boundStatement = new BoundStatement(deleteDbSmsRoutingRule);
             boundStatement.bind(address);
             session.execute(boundStatement);
-
-
-
-//            Mutator<String> mutator = HFactory.createMutator(keyspace, SERIALIZER_STRING);
-//
-//            mutator.addDeletion(address, Schema.FAMILY_SMS_ROUTING_RULE);
-//            mutator.execute();
         } catch (Exception e) {
             String msg = "Failed to deleteDbSmsRoutingRule for '" + address + "'!";
             throw new PersistenceException(msg, e);
@@ -1492,47 +932,6 @@ public class DBOperations {
             }
 
             return ress;
-
-
-//            RangeSlicesQuery<String, Composite, ByteBuffer> rangeSlicesQuery = HFactory.createRangeSlicesQuery(keyspace, SERIALIZER_STRING,
-//                    SERIALIZER_COMPOSITE, ByteBufferSerializer.get());
-//            rangeSlicesQuery.setColumnFamily(Schema.FAMILY_SMS_ROUTING_RULE);
-//            rangeSlicesQuery.setRange(null, null, false, 10);
-//            rangeSlicesQuery.setRowCount(row_count);
-
-//            while (true) {
-//                rangeSlicesQuery.setKeys(lastAdress, null);
-//
-//                QueryResult<OrderedRows<String, Composite, ByteBuffer>> result = rangeSlicesQuery.execute();
-//                OrderedRows<String, Composite, ByteBuffer> rows = result.get();
-//                Iterator<Row<String, Composite, ByteBuffer>> rowsIterator = rows.iterator();
-//
-//                // we'll skip this first one, since it is the same as the last
-//                // one from previous time we executed
-//                if (lastAdress != null && rowsIterator != null)
-//                    rowsIterator.next();
-//
-//                while (rowsIterator.hasNext()) {
-//                    Row<String, Composite, ByteBuffer> row = rowsIterator.next();
-//                    lastAdress = row.getKey();
-//
-//                    DbSmsRoutingRule res = new DbSmsRoutingRule();
-//                    res.setAddress(row.getKey());
-//                    for (HColumn<Composite, ByteBuffer> col : row.getColumnSlice().getColumns()) {
-//                        Composite nm = col.getName();
-//                        String name = nm.get(0, SERIALIZER_STRING);
-//
-//                        if (name.equals(Schema.COLUMN_CLUSTER_NAME)) {
-//                            res.setClusterName(SERIALIZER_STRING.fromByteBuffer(col.getValue()));
-//                        }
-//                    }
-//                    if (res.getClusterName() != null)
-//                        ress.add(res);
-//                }
-//
-//                // now we support only one step - 100 records
-//                break;
-//            }
         } catch (Exception e) {
             String msg = "Failed to getSmsRoutingRule DbSmsRoutingRule for all records: " + e;
 
@@ -1588,85 +987,6 @@ public class DBOperations {
             }
 
             session.execute(boundStatement);            
-
-
-
-
-
-//            Mutator<UUID> mutator = HFactory.createMutator(keyspace, UUIDSerializer.get());
-//
-//            FillUpdateFields(sms, mutator, Schema.FAMILY_ARCHIVE);
-
-//            Composite cc = new Composite();
-//            cc.addComponent(Schema.COLUMN_IN_SYSTEM, SERIALIZER_STRING);
-//            mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE, HFactory.createColumn(cc, 0, SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//
-//            if (sms.getSmsSet().getDestClusterName() != null) {
-//                cc = new Composite();
-//                cc.addComponent(Schema.COLUMN_DEST_CLUSTER_NAME, SERIALIZER_STRING);
-//                mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE, HFactory.createColumn(cc, sms.getSmsSet()
-//                        .getDestClusterName(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//            }
-//            if (sms.getSmsSet().getDestEsmeName() != null) {
-//                cc = new Composite();
-//                cc.addComponent(Schema.COLUMN_DEST_ESME_NAME, SERIALIZER_STRING);
-//                mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
-//                        HFactory.createColumn(cc, sms.getSmsSet().getDestEsmeName(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//            }
-//            if (sms.getSmsSet().getDestSystemId() != null) {
-//                cc = new Composite();
-//                cc.addComponent(Schema.COLUMN_DEST_SYSTEM_ID, SERIALIZER_STRING);
-//                mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
-//                        HFactory.createColumn(cc, sms.getSmsSet().getDestSystemId(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//            }
-//            if (sms.getDeliverDate() != null) {
-//                cc = new Composite();
-//                cc.addComponent(Schema.COLUMN_DELIVERY_DATE, SERIALIZER_STRING);
-//                mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
-//                        HFactory.createColumn(cc, sms.getDeliverDate(), SERIALIZER_COMPOSITE, SERIALIZER_DATE));
-//            }
-//
-//            if (sms.getSmsSet().getImsi() != null) {
-//                cc = new Composite();
-//                cc.addComponent(Schema.COLUMN_IMSI, SERIALIZER_STRING);
-//                mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE,
-//                        HFactory.createColumn(cc, sms.getSmsSet().getImsi().getData(), SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//            }
-//            if (sms.getSmsSet().getLocationInfoWithLMSI() != null) {
-//                cc = new Composite();
-//                cc.addComponent(Schema.COLUMN_NNN_DIGITS, SERIALIZER_STRING);
-//                mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE, HFactory
-//                        .createColumn(cc, sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber().getAddress(),
-//                                SERIALIZER_COMPOSITE, SERIALIZER_STRING));
-//                cc = new Composite();
-//                cc.addComponent(Schema.COLUMN_NNN_AN, SERIALIZER_STRING);
-//                mutator.addInsertion(
-//                        sms.getDbId(),
-//                        Schema.FAMILY_ARCHIVE,
-//                        HFactory.createColumn(cc, sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber()
-//                                .getAddressNature().getIndicator(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//                cc = new Composite();
-//                cc.addComponent(Schema.COLUMN_NNN_NP, SERIALIZER_STRING);
-//                mutator.addInsertion(
-//                        sms.getDbId(),
-//                        Schema.FAMILY_ARCHIVE,
-//                        HFactory.createColumn(cc, sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber()
-//                                .getNumberingPlan().getIndicator(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//            }
-//            if (sms.getSmsSet().getStatus() != null) {
-//                cc = new Composite();
-//                cc.addComponent(Schema.COLUMN_SM_STATUS, SERIALIZER_STRING);
-//                mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE, HFactory.createColumn(cc, sms.getSmsSet()
-//                        .getStatus().getCode(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//            }
-//            if (sms.getSmsSet().getType() != null) {
-//                cc = new Composite();
-//                cc.addComponent(Schema.COLUMN_SM_TYPE, SERIALIZER_STRING);
-//                mutator.addInsertion(sms.getDbId(), Schema.FAMILY_ARCHIVE, HFactory.createColumn(cc, sms.getSmsSet().getType()
-//                        .getCode(), SERIALIZER_COMPOSITE, SERIALIZER_INTEGER));
-//            }
-//
-//            mutator.execute();
         } catch (Exception e) {
             String msg = "Failed to archiveDeliveredSms SMS for '" + sms.getDbId() + "'!";
 
