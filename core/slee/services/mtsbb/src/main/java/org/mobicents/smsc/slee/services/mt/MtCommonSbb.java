@@ -115,8 +115,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	private AddressString serviceCenterAddress;
 	private SccpAddress serviceCenterSCCPAddress = null;
 
-	protected MAPApplicationContextVersion maxMAPApplicationContextVersion = null;
-
     protected PersistenceRAInterface persistence;
     protected SchedulerRaSbbInterface scheduler;
 
@@ -335,8 +333,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 			this.logger = this.sbbContext.getTracer(this.className);
 
-			this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement
-					.getMaxMapVersion());
             this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, PERSISTENCE_LINK);
             this.scheduler = (SchedulerRaSbbInterface) this.sbbContext.getResourceAdaptorInterface(SCHEDULE_ID, SCHEDULE_LINK);
 		

@@ -148,6 +148,72 @@ public class MtTest {
 	public void tearDownMethod() throws Exception {
 		System.out.println("tearDownMethod");
 	}
+	
+	@Test(groups = { "Mt" })
+	public void NegotiatedMapVersionTest1() throws Exception {
+		//When new versions are passed, since these are not used, negotiated MAP version are same as passed
+		
+		MAPApplicationContextVersion supportedApplicationContextVersion = MAPApplicationContextVersion.version3;
+		
+		MAPApplicationContextVersion negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
+		
+		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
+		
+		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version2);
+		
+		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
+		
+		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
+		
+		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);
+		
+		//Now since all versions are used, what ever version is passed is returned back as it is
+		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
+		
+		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
+		
+		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version2);
+		
+		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
+		
+		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
+		
+		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);		
+		
+	}
+	
+	@Test(groups = { "Mt" })
+	public void NegotiatedMapVersionTest2() throws Exception {
+		//When same versions is passed, negotiations will return back unused versions
+		
+		MAPApplicationContextVersion supportedApplicationContextVersion = MAPApplicationContextVersion.version3;
+		
+		MAPApplicationContextVersion negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
+		
+		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
+		
+		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version3);
+		
+		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
+		
+		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version3);
+		
+		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);
+		
+		//Now since all versions are used, what ever version is passed is returned back as it is
+		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
+		
+		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
+		
+		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version2);
+		
+		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
+		
+		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
+		
+		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);		
+		
+	}	
 
 
 	/**
@@ -640,7 +706,7 @@ public class MtTest {
 		lst.add(sd1);
 		sd1.dataCodingScheme = 8;
 		sd1.esmClass = 3 + 0x40;
-		String msga1 = this.msgShort + "Я";
+		String msga1 = this.msgShort + "пїЅ";
 		Charset ucs2Charset = Charset.forName("UTF-16BE");
 		ByteBuffer bb = ucs2Charset.encode(msga1);
 		byte[] buf = new byte[udhTemp.length + bb.limit()];
@@ -971,7 +1037,7 @@ public class MtTest {
         lst.add(sd1);
         sd1.dataCodingScheme = 8;
         sd1.esmClass = 3 + 0x40;
-        String msga1 = this.msgShort + "Я";
+        String msga1 = this.msgShort + "пїЅ";
         Charset ucs2Charset = Charset.forName("UTF-16BE");
         ByteBuffer bb = ucs2Charset.encode(msga1);
         byte[] buf = new byte[udhTemp.length + bb.limit()];
@@ -1520,7 +1586,7 @@ public class MtTest {
 		lst.add(sd1);
 		StringBuilder sb = new StringBuilder();
 		for (int i1 = 0; i1 < 8; i1++) { // msg len = 80
-			sb.append("012345678Я");
+			sb.append("012345678пїЅ");
 		}
 		String totalMsg = sb.toString();
 		int segmlen = MessageUtil.getMaxSegmentedMessageBytesLength(new DataCodingSchemeImpl(8)) / 2;
@@ -2684,7 +2750,7 @@ public class MtTest {
     @Test(groups = { "Mt" })
     public void Ucs2Test() throws Exception {
         
-        String s1 = "Привет омлетЙ";
+        String s1 = "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ";
         Charset ucs2Charset = Charset.forName("UTF-16BE");
         Charset utf8 = Charset.forName("UTF-8");
 //        ByteBuffer bb = ByteBuffer.wrap(textPart);

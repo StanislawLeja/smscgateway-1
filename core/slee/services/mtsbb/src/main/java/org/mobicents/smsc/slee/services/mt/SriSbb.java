@@ -24,6 +24,7 @@ package org.mobicents.smsc.slee.services.mt;
 
 import javax.slee.ActivityContextInterface;
 import javax.slee.EventContext;
+import javax.slee.SbbContext;
 
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
@@ -68,11 +69,13 @@ import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
  * 
  * @author amit bhayani
  * @author sergey vetyutnev
- *
+ * 
  */
 public abstract class SriSbb extends MtCommonSbb {
 
 	private static final String className = "SriSbb";
+
+	protected MAPApplicationContextVersion maxMAPApplicationContextVersion = null;
 
 	public SriSbb() {
 		super(className);
@@ -92,7 +95,8 @@ public abstract class SriSbb extends MtCommonSbb {
 		int curMsg = 0;
 		Sms sms = smsSet.getSms(curMsg);
 		if (sms == null) {
-			// this means that no messages with good ScheduleDeliveryTime or no messages at all
+			// this means that no messages with good ScheduleDeliveryTime or no
+			// messages at all
 			// we have to reschedule
 			this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SUCCESS, "No messages for sending now");
 			return;
@@ -126,7 +130,8 @@ public abstract class SriSbb extends MtCommonSbb {
 			Boolean mwdSet = errAs.getMwdSet();
 			if (mwdSet != null && mwdSet) {
 				InformServiceCenterContainer informServiceCenterContainer = new InformServiceCenterContainer();
-				MWStatus mwStatus = event.getMAPDialog().getService().getMAPProvider().getMAPParameterFactory().createMWStatus(false, true, false, false);
+				MWStatus mwStatus = event.getMAPDialog().getService().getMAPProvider().getMAPParameterFactory()
+						.createMWStatus(false, true, false, false);
 				informServiceCenterContainer.setMwStatus(mwStatus);
 				this.doSetInformServiceCenterContainer(informServiceCenterContainer);
 			}
@@ -179,7 +184,8 @@ public abstract class SriSbb extends MtCommonSbb {
 
 			// Now send new SRI with supported ACN
 			ApplicationContextName tcapApplicationContextName = evt.getAlternativeApplicationContext();
-			MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext.getInstance(tcapApplicationContextName.getOid());
+			MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext
+					.getInstance(tcapApplicationContextName.getOid());
 
 			if (smsDeliveryData != null) {
 				SmsSet smsSet = smsDeliveryData.getSmsSet();
@@ -200,8 +206,11 @@ public abstract class SriSbb extends MtCommonSbb {
 
 		MAPAbortProviderReason abortProviderReason = evt.getAbortProviderReason();
 
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogProviderAbort after SRI Request: "
-				+ abortProviderReason != null ? abortProviderReason.toString() : "");
+		this.onDeliveryError(
+				ErrorAction.permanentFailure,
+				ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
+				"onDialogProviderAbort after SRI Request: " + abortProviderReason != null ? abortProviderReason
+						.toString() : "");
 	}
 
 	@Override
@@ -220,7 +229,8 @@ public abstract class SriSbb extends MtCommonSbb {
 
 		super.onDialogTimeout(evt, aci);
 
-		this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogTimeout after SRI Request");
+		this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
+				"onDialogTimeout after SRI Request");
 	}
 
 	/**
@@ -249,10 +259,11 @@ public abstract class SriSbb extends MtCommonSbb {
 			this.logger.info("\nReceived SEND_ROUTING_INFO_FOR_SM_RESPONSE = " + evt + " Dialog=" + evt.getMAPDialog());
 		}
 
-		if (evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() == MAPApplicationContextVersion.version1 && evt.getMwdSet() != null
-				&& evt.getMwdSet()) {
+		if (evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() == MAPApplicationContextVersion.version1
+				&& evt.getMwdSet() != null && evt.getMwdSet()) {
 			InformServiceCenterContainer informServiceCenterContainer = new InformServiceCenterContainer();
-			MWStatus mwStatus = evt.getMAPDialog().getService().getMAPProvider().getMAPParameterFactory().createMWStatus(false, true, false, false);
+			MWStatus mwStatus = evt.getMAPDialog().getService().getMAPProvider().getMAPParameterFactory()
+					.createMWStatus(false, true, false, false);
 			informServiceCenterContainer.setMwStatus(mwStatus);
 			this.doSetInformServiceCenterContainer(informServiceCenterContainer);
 		}
@@ -287,14 +298,17 @@ public abstract class SriSbb extends MtCommonSbb {
 	 * 
 	 */
 
-	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi, SMDeliveryOutcome sMDeliveryOutcome, String targetId) {
+	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi,
+			SMDeliveryOutcome sMDeliveryOutcome, String targetId) {
 		RsdsSbbLocalObject rsdsSbbLocalObject = this.getRsdsSbbObject();
 		if (rsdsSbbLocalObject != null) {
 			ISDNAddressString isdn = this.getCalledPartyISDNAddressString(destinationAddress, ton, npi);
 			AddressString serviceCentreAddress = getServiceCenterAddressString();
 			SccpAddress destAddress = this.convertAddressFieldToSCCPAddress(destinationAddress, ton, npi);
-			rsdsSbbLocalObject.setupReportSMDeliveryStatusRequest(isdn, serviceCentreAddress, sMDeliveryOutcome, destAddress,
-					this.getSRIMAPApplicationContext(MAPApplicationContextVersion.getInstance(this.getSriMapVersion())), targetId);
+			rsdsSbbLocalObject
+					.setupReportSMDeliveryStatusRequest(isdn, serviceCentreAddress, sMDeliveryOutcome, destAddress,
+							this.getSRIMAPApplicationContext(MAPApplicationContextVersion.getInstance(this
+									.getSriMapVersion())), targetId);
 		}
 	}
 
@@ -322,7 +336,7 @@ public abstract class SriSbb extends MtCommonSbb {
 
 	public abstract ChildRelationExt getRsdsSbb();
 
-	private MtForwardSmsInterface getMtSbbObject() { 
+	private MtForwardSmsInterface getMtSbbObject() {
 		ChildRelationExt relation = getMtSbb();
 
 		MtForwardSmsInterface ret = (MtSbbLocalObject) relation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
@@ -402,6 +416,13 @@ public abstract class SriSbb extends MtCommonSbb {
 		}
 	}
 
+	@Override
+	public void setSbbContext(SbbContext sbbContext) {
+		super.setSbbContext(sbbContext);
+
+		this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement
+				.getMaxMapVersion());
+	}
 
 	/**
 	 * Private methods
@@ -412,7 +433,8 @@ public abstract class SriSbb extends MtCommonSbb {
 		MAPDialogSms mapDialogSms = null;
 		try {
 			// 1. Create Dialog first and add the SRI request to it
-			mapDialogSms = this.setupRoutingInfoForSMRequestIndication(destinationAddress, ton, npi, mapApplicationContext);
+			mapDialogSms = this.setupRoutingInfoForSMRequestIndication(destinationAddress, ton, npi,
+					mapApplicationContext);
 
 			// 2. Create the ACI and attach this SBB
 			ActivityContextInterface sriDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);
@@ -432,22 +454,23 @@ public abstract class SriSbb extends MtCommonSbb {
 		}
 	}
 
-	private MAPDialogSms setupRoutingInfoForSMRequestIndication(String destinationAddress, int ton, int npi, MAPApplicationContext mapApplicationContext)
-			throws MAPException {
+	private MAPDialogSms setupRoutingInfoForSMRequestIndication(String destinationAddress, int ton, int npi,
+			MAPApplicationContext mapApplicationContext) throws MAPException {
 		// this.mapParameterFactory.creat
 
 		SccpAddress destinationAddr = this.convertAddressFieldToSCCPAddress(destinationAddress, ton, npi);
 
-		MAPDialogSms mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext, this.getServiceCenterSccpAddress(), null,
-				destinationAddr, null);
+		MAPDialogSms mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,
+				this.getServiceCenterSccpAddress(), null, destinationAddr, null);
 
 		ISDNAddressString isdn = this.getCalledPartyISDNAddressString(destinationAddress, ton, npi);
 		AddressString serviceCenterAddress = this.getServiceCenterAddressString();
 		boolean sm_RP_PRI = true;
-		mapDialogSms.addSendRoutingInfoForSMRequest(isdn, sm_RP_PRI, serviceCenterAddress, null, false, null, null, null);
+		mapDialogSms.addSendRoutingInfoForSMRequest(isdn, sm_RP_PRI, serviceCenterAddress, null, false, null, null,
+				null);
 		if (this.logger.isInfoEnabled())
-			this.logger.info("\nSending: SendRoutingInfoForSMRequest: isdn=" + isdn + ", serviceCenterAddress=" + serviceCenterAddress + ", sm_RP_PRI="
-					+ sm_RP_PRI);
+			this.logger.info("\nSending: SendRoutingInfoForSMRequest: isdn=" + isdn + ", serviceCenterAddress="
+					+ serviceCenterAddress + ", sm_RP_PRI=" + sm_RP_PRI);
 
 		return mapDialogSms;
 	}
@@ -458,7 +481,8 @@ public abstract class SriSbb extends MtCommonSbb {
 		MAPErrorMessage errorMessage = this.getErrorResponse();
 		if (sendRoutingInfoForSMResponse != null) {
 
-			// we have positive response to SRI request - we will try to send messages
+			// we have positive response to SRI request - we will try to send
+			// messages
 			SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
 			if (smsDeliveryData != null) {
 				SmsSet smsSet = smsDeliveryData.getSmsSet();
@@ -470,8 +494,9 @@ public abstract class SriSbb extends MtCommonSbb {
 
 			MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
 			if (mtSbbLocalObject != null) {
-				mtSbbLocalObject.setupMtForwardShortMessageRequest(sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getNetworkNodeNumber(),
-						sendRoutingInfoForSMResponse.getIMSI(), sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getLMSI());
+				mtSbbLocalObject.setupMtForwardShortMessageRequest(sendRoutingInfoForSMResponse
+						.getLocationInfoWithLMSI().getNetworkNodeNumber(), sendRoutingInfoForSMResponse.getIMSI(),
+						sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getLMSI());
 			}
 		} else if (errorMessage != null) {
 
@@ -483,7 +508,8 @@ public abstract class SriSbb extends MtCommonSbb {
 				this.onDeliveryError(ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
 						"AbsentSubscriber response from HLR: " + errorMessage.toString());
 			} else if (errorMessage.isEmCallBarred()) {
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.CALL_BARRED, "CallBarred response from HLR: " + errorMessage.toString());
+				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.CALL_BARRED,
+						"CallBarred response from HLR: " + errorMessage.toString());
 			} else if (errorMessage.isEmFacilityNotSup()) {
 				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
 						"CallBarred response from HLR: " + errorMessage.toString());
@@ -496,11 +522,14 @@ public abstract class SriSbb extends MtCommonSbb {
 						"UnknownSubscriber response from HLR: " + errorMessage.toString());
 			} else if (errorMessage.isEmExtensionContainer()) {
 				if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.dataMissing) {
-					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.DATA_MISSING, "DataMissing response from HLR");
+					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.DATA_MISSING,
+							"DataMissing response from HLR");
 				} else if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.unexpectedDataValue) {
-					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA, "UnexpectedDataValue response from HLR");
+					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA,
+							"UnexpectedDataValue response from HLR");
 				} else if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.teleserviceNotProvisioned) {
-					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.TELESERVICE_NOT_PROVISIONED, "TeleserviceNotProvisioned response from HLR");
+					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.TELESERVICE_NOT_PROVISIONED,
+							"TeleserviceNotProvisioned response from HLR");
 				} else {
 					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA_FROM_HLR,
 							"Error response from HLR: " + errorMessage.toString());
@@ -508,7 +537,8 @@ public abstract class SriSbb extends MtCommonSbb {
 			}
 		} else {
 			// we have no responses - this is an error behaviour
-			this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "Empty response after SRI Request");
+			this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
+					"Empty response after SRI Request");
 		}
 	}
 
@@ -516,12 +546,13 @@ public abstract class SriSbb extends MtCommonSbb {
 		NumberingPlan np = MessageUtil.getSccpNumberingPlan(npi);
 		NatureOfAddress na = MessageUtil.getSccpNatureOfAddress(ton);
 		GT0100 gt = new GT0100(0, np, na, address);
-		return new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt, smscPropertiesManagement.getHlrSsn());
+		return new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
+				smscPropertiesManagement.getHlrSsn());
 	}
 
 	private MAPApplicationContext getSRIMAPApplicationContext(MAPApplicationContextVersion applicationContextVersion) {
-		MAPApplicationContext mapApplicationContext = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgGatewayContext,
-				applicationContextVersion);
+		MAPApplicationContext mapApplicationContext = MAPApplicationContext.getInstance(
+				MAPApplicationContextName.shortMsgGatewayContext, applicationContextVersion);
 		this.setSriMapVersion(applicationContextVersion.getVersion());
 		return mapApplicationContext;
 	}

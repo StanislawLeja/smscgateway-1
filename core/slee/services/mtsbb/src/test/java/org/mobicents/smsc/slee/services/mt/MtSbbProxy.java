@@ -34,7 +34,6 @@ import javax.slee.TransactionRolledbackLocalException;
 
 import org.mobicents.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.mobicents.protocols.ss7.map.MAPSmsTpduParameterFactoryImpl;
-import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
@@ -65,7 +64,7 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 
 		this.mapProvider = new MAPProviderProxy();
 		this.mapParameterFactory = new MAPParameterFactoryImpl();
-		this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement.getMaxMapVersion());
+		
 		this.mapSmsTpduParameterFactory = new MAPSmsTpduParameterFactoryImpl();
 		this.mapAcif = new MAPContextInterfaceFactoryProxy();
 		this.sbbContext = new SbbContextExtProxy(this);
@@ -91,6 +90,7 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 	private int tcEmptySent;
 	private int responseReceived;
 	private SmsSignalInfo[] segments;
+	private int mapApplicationContextVersionsUsed = 0;
 
 
     protected SmsSignalInfo createSignalInfo(Sms sms, byte[] shortMessage, boolean moreMessagesToSend, int messageReferenceNumber, int messageSegmentCount,
@@ -334,6 +334,16 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 	public SbbLocalObjectExt get(String arg0) throws IllegalArgumentException, NullPointerException, TransactionRequiredLocalException, SLEEException {
 		// TODO Auto-generated method stub
 		return this;
+	}
+
+	@Override
+	public int getMapApplicationContextVersionsUsed() {
+		return mapApplicationContextVersionsUsed;
+	}
+
+	@Override
+	public void setMapApplicationContextVersionsUsed(int mapApplicationContextVersions) {
+		mapApplicationContextVersionsUsed = mapApplicationContextVersions;		
 	}
 
 }
