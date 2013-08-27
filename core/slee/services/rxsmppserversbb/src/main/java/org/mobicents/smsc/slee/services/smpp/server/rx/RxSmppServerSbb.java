@@ -52,6 +52,7 @@ import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerActivity;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
@@ -703,9 +704,25 @@ public abstract class RxSmppServerSbb implements Sbb {
 	}
 
     private void decrementDeliveryActivityCount() {
-        if (this.scheduler != null)
-            this.scheduler.decrementDeliveryActivityCount();
+        try {
+			this.getSchedulerActivity().endActivity();
+		} catch (Exception e) {
+			this.logger.severe("Error while decrementing DeliveryActivityCount", e);
+		}
     }
+    
+	protected SchedulerActivity getSchedulerActivity() {
+		ActivityContextInterface[] acis = this.sbbContext.getActivities();
+		for (int count = 0; count < acis.length; count++) {
+			ActivityContextInterface aci = acis[count];
+			Object activity = aci.getActivity();
+			if (activity instanceof SchedulerActivity) {
+				return (SchedulerActivity)activity;
+			}
+		}
+
+		return null;
+	}
 
 	public enum ErrorAction {
 		temporaryFailure,

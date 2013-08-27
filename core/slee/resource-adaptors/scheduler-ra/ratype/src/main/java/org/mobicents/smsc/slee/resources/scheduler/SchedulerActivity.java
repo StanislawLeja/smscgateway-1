@@ -1,5 +1,9 @@
 package org.mobicents.smsc.slee.resources.scheduler;
 
-public interface SchedulerActivity {
+import java.io.Serializable;
+
+public interface SchedulerActivity extends Serializable {
+
+	public void endActivity() throws Exception;
 
 }

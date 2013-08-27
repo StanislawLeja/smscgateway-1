@@ -38,7 +38,6 @@ import javax.slee.resource.ResourceAdaptorTypeID;
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
 import org.mobicents.protocols.ss7.indicator.RoutingIndicator;
-import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
 import org.mobicents.protocols.ss7.map.api.MAPSmsTpduParameterFactory;
@@ -76,10 +75,9 @@ import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerActivity;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
-
-import com.cloudhopper.smpp.util.SmppUtil;
 
 /**
  * 
@@ -89,11 +87,13 @@ import com.cloudhopper.smpp.util.SmppUtil;
  */
 public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterface2 {
 
-    private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
-    private static final ResourceAdaptorTypeID SCHEDULE_ID = new ResourceAdaptorTypeID("SchedulerResourceAdaptorType", "org.mobicents", "1.0");
-    private static final String PERSISTENCE_LINK = "PersistenceResourceAdaptor";
-    private static final String SCHEDULE_LINK = "SchedulerResourceAdaptor";
-    
+	private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID(
+			"PersistenceResourceAdaptorType", "org.mobicents", "1.0");
+	private static final ResourceAdaptorTypeID SCHEDULE_ID = new ResourceAdaptorTypeID("SchedulerResourceAdaptorType",
+			"org.mobicents", "1.0");
+	private static final String PERSISTENCE_LINK = "PersistenceResourceAdaptor";
+	private static final String SCHEDULE_LINK = "SchedulerResourceAdaptor";
+
 	protected static final String MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON = "userSpecificReason";
 	protected static final String MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION = "userResourceLimitation";
 	protected static final String MAP_USER_ABORT_CHOICE_UNKNOWN = "DialogUserAbort_Unknown";
@@ -115,20 +115,20 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	private AddressString serviceCenterAddress;
 	private SccpAddress serviceCenterSCCPAddress = null;
 
-    protected PersistenceRAInterface persistence;
-    protected SchedulerRaSbbInterface scheduler;
+	protected PersistenceRAInterface persistence;
+	protected SchedulerRaSbbInterface scheduler;
 
 	public MtCommonSbb(String className) {
 		this.className = className;
 	}
 
-    public PersistenceRAInterface getStore() {
-        return this.persistence;
-    }
+	public PersistenceRAInterface getStore() {
+		return this.persistence;
+	}
 
-    public SchedulerRaSbbInterface getScheduler() {
-        return this.scheduler;
-    }
+	public SchedulerRaSbbInterface getScheduler() {
+		return this.scheduler;
+	}
 
 	/**
 	 * MAP Components Events
@@ -333,9 +333,11 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 			this.logger = this.sbbContext.getTracer(this.className);
 
-            this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, PERSISTENCE_LINK);
-            this.scheduler = (SchedulerRaSbbInterface) this.sbbContext.getResourceAdaptorInterface(SCHEDULE_ID, SCHEDULE_LINK);
-		
+			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID,
+					PERSISTENCE_LINK);
+			this.scheduler = (SchedulerRaSbbInterface) this.sbbContext.getResourceAdaptorInterface(SCHEDULE_ID,
+					SCHEDULE_LINK);
+
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
@@ -350,7 +352,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	/**
 	 * Sbb ACI
 	 */
-//	public abstract MtActivityContextInterface asSbbActivityContextInterface(ActivityContextInterface aci);
+	// public abstract MtActivityContextInterface
+	// asSbbActivityContextInterface(ActivityContextInterface aci);
 
 	/**
 	 * TODO : This is repetitive in each Sbb. Find way to make it static
@@ -363,8 +366,10 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	protected AddressString getServiceCenterAddressString() {
 
 		if (this.serviceCenterAddress == null) {
-			this.serviceCenterAddress = this.mapParameterFactory.createAddressString(AddressNature.international_number,
-					org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, smscPropertiesManagement.getServiceCenterGt());
+			this.serviceCenterAddress = this.mapParameterFactory.createAddressString(
+					AddressNature.international_number,
+					org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN,
+					smscPropertiesManagement.getServiceCenterGt());
 		}
 		return this.serviceCenterAddress;
 	}
@@ -378,7 +383,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	 */
 	protected SccpAddress getServiceCenterSccpAddress() {
 		if (this.serviceCenterSCCPAddress == null) {
-			GT0100 gt = new GT0100(0, NumberingPlan.ISDN_TELEPHONY, NatureOfAddress.INTERNATIONAL, smscPropertiesManagement.getServiceCenterGt());
+			GT0100 gt = new GT0100(0, NumberingPlan.ISDN_TELEPHONY, NatureOfAddress.INTERNATIONAL,
+					smscPropertiesManagement.getServiceCenterGt());
 			this.serviceCenterSCCPAddress = new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
 					smscPropertiesManagement.getServiceCenterSsn());
 		}
@@ -430,7 +436,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 				Date curDate = new Date();
 				try {
 					pers.setDeliveryFailure(smsSet, smStatus, curDate);
-                    this.decrementDeliveryActivityCount();                  
+					this.decrementDeliveryActivityCount();
 
 					// first of all we are removing messages that delivery
 					// period is over
@@ -483,13 +489,13 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 						break;
 
 					case permanentFailure:
-	                    smsCnt = smsSet.getSmsCount();
-                        for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
-                            Sms sms = smsSet.getSms(currentMsgNum);
-                            if (sms != null) {
-                                lstFailured.add(sms);
-                            }
-                        }
+						smsCnt = smsSet.getSmsCount();
+						for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
+							Sms sms = smsSet.getSms(currentMsgNum);
+							if (sms != null) {
+								lstFailured.add(sms);
+							}
+						}
 						this.freeSmsSetFailured(smsSet, pers);
 						break;
 					}
@@ -503,33 +509,39 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 			}
 		}
 
-        for (Sms sms : lstFailured) {
-            // adding an error receipt if it is needed
-            int registeredDelivery = sms.getRegisteredDelivery();
-            if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
-                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
-                lock = SmsSetCashe.getInstance().addSmsSet(ta);
-                try {
-                    synchronized (lock) {
-                        try {
-                            Sms receipt = MessageUtil.createReceiptSms(sms, false);
-                            SmsSet backSmsSet = pers.obtainSmsSet(ta);
-                            receipt.setSmsSet(backSmsSet);
-                            pers.createLiveSms(receipt);
-                            pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
-                            this.logger.info("Adding an error receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
-                        } catch (PersistenceException e) {
-                            this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet) - adding delivery receipt" + e.getMessage(), e);
-                        }
-                    }
-                } finally {
-                    SmsSetCashe.getInstance().removeSmsSet(lock);
-                }
-            }
-        }
+		for (Sms sms : lstFailured) {
+			// adding an error receipt if it is needed
+			int registeredDelivery = sms.getRegisteredDelivery();
+			if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
+				TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(),
+						sms.getSourceAddr());
+				lock = SmsSetCashe.getInstance().addSmsSet(ta);
+				try {
+					synchronized (lock) {
+						try {
+							Sms receipt = MessageUtil.createReceiptSms(sms, false);
+							SmsSet backSmsSet = pers.obtainSmsSet(ta);
+							receipt.setSmsSet(backSmsSet);
+							pers.createLiveSms(receipt);
+							pers.setNewMessageScheduled(receipt.getSmsSet(),
+									MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+							this.logger.info("Adding an error receipt: source=" + receipt.getSourceAddr() + ", dest="
+									+ receipt.getSmsSet().getDestAddr());
+						} catch (PersistenceException e) {
+							this.logger.severe(
+									"PersistenceException when freeSmsSetFailured(SmsSet smsSet) - adding delivery receipt"
+											+ e.getMessage(), e);
+						}
+					}
+				} finally {
+					SmsSetCashe.getInstance().removeSmsSet(lock);
+				}
+			}
+		}
 
 		if (smDeliveryOutcome != null) {
-			this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(), smDeliveryOutcome, smsSet.getTargetId());
+			this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(),
+					smsSet.getDestAddrNpi(), smDeliveryOutcome, smsSet.getTargetId());
 		}
 	}
 
@@ -550,8 +562,9 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		sb.append(smsEvent.getSubmitDate()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddr())
 				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrTon())
 				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrNpi())
-				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddr()).append(CdrGenerator.CDR_SEPARATOR)
-				.append(smsEvent.getSmsSet().getDestAddrTon()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddrNpi())
+				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddr())
+				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddrTon())
+				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddrNpi())
 				.append(CdrGenerator.CDR_SEPARATOR).append(status).append(CdrGenerator.CDR_SEPARATOR)
 				.append(smsEvent.getOrigSystemId()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getMessageId())
 				.append(CdrGenerator.CDR_SEPARATOR).append(this.getFirst20CharOfSMS(smsEvent.getShortMessage()))
@@ -571,7 +584,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	public abstract void doSetInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer);
 
 	public abstract InformServiceCenterContainer doGetInformServiceCenterContainer();
-
 
 	/**
 	 * Mark a message that its delivery has been started
@@ -600,7 +612,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 				try {
 					Date lastDelivery = new Date();
 					pers.setDeliverySuccess(smsSet, lastDelivery);
-					this.decrementDeliveryActivityCount();					
+					this.decrementDeliveryActivityCount();
 
 					if (!pers.deleteSmsSet(smsSet)) {
 						Date newDueDate = MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay());
@@ -609,7 +621,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 						pers.setNewMessageScheduled(smsSet, newDueDate);
 					}
 				} catch (PersistenceException e) {
-					this.logger.severe("PersistenceException when freeSmsSetSucceded(SmsSet smsSet)" + e.getMessage(), e);
+					this.logger.severe("PersistenceException when freeSmsSetSucceded(SmsSet smsSet)" + e.getMessage(),
+							e);
 				}
 			}
 		} finally {
@@ -638,7 +651,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 					pers.deleteSmsSet(smsSet);
 				} catch (PersistenceException e) {
-					this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet)" + e.getMessage(), e);
+					this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet)" + e.getMessage(),
+							e);
 				}
 			}
 		} finally {
@@ -679,19 +693,40 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		}
 	}
 
-    private void decrementDeliveryActivityCount() {
-        if (this.scheduler != null)
-            this.scheduler.decrementDeliveryActivityCount();
-    }
+	/**
+	 * Get the Scheduler Activity
+	 * 
+	 * @return
+	 */
+	protected ActivityContextInterface getSchedulerActivityContextInterface() {
+		ActivityContextInterface[] acis = this.sbbContext.getActivities();
+		for (int count = 0; count < acis.length; count++) {
+			ActivityContextInterface aci = acis[count];
+			Object activity = aci.getActivity();
+			if (activity instanceof SchedulerActivity) {
+				return aci;
+			}
+		}
+
+		return null;
+	}
+
+	private void decrementDeliveryActivityCount() {
+		try {
+			ActivityContextInterface schedulerActivityContextInterface = this.getSchedulerActivityContextInterface();
+			SchedulerActivity schedulerActivity = (SchedulerActivity) schedulerActivityContextInterface.getActivity();
+
+			schedulerActivity.endActivity();
+		} catch (Exception e) {
+			this.logger.severe("Error while decrementing DeliveryActivityCount", e);
+		}
+	}
 
 	public enum ErrorAction {
-		subscriberBusy, 
-		memoryCapacityExceededFlag, // MNRF 
+		subscriberBusy, memoryCapacityExceededFlag, // MNRF
 		mobileNotReachableFlag, // MNRF
 		notReachableForGprs, // MNRG
-		permanentFailure,
-		temporaryFailure,
+		permanentFailure, temporaryFailure,
 	}
 
 }
-

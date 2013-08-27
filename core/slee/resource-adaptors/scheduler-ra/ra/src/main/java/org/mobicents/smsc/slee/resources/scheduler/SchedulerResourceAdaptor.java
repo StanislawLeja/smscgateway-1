@@ -37,7 +37,8 @@ import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	private static final int ACTIVITY_FLAGS = ActivityFlags
-			.setRequestEndedCallback(ActivityFlags.REQUEST_ACTIVITY_UNREFERENCED_CALLBACK);
+			.setRequestEndedCallback(ActivityFlags.REQUEST_ENDED_CALLBACK);
+
 	private static final int EVENT_FLAGS = EventFlags.setRequestProcessingSuccessfulCallback(EventFlags
 			.setRequestProcessingFailedCallback(EventFlags.REQUEST_EVENT_UNREFERENCED_CALLBACK));
 	private static final String EVENT_VENDOR = "org.mobicents";
@@ -61,10 +62,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	public SchedulerResourceAdaptor() {
 		this.schedulerRaSbbInterface = new SchedulerRaSbbInterface() {
-			@Override
-			public void decrementDeliveryActivityCount() {
-				decrementActivityCount();
-			}
+
 		};
 	}
 
@@ -125,11 +123,18 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	@Override
 	public Object getActivity(ActivityHandle activityHandle) {
-		return null;
+		return ((SchedulerActivityHandle) activityHandle).getActivity();
 	}
 
 	@Override
 	public ActivityHandle getActivityHandle(Object activity) {
+		if (activity instanceof SchedulerActivityImpl) {
+			final SchedulerActivityImpl wrapper = ((SchedulerActivityImpl) activity);
+			// if (wrapper.getRa() == this) {
+			return wrapper.getActivityHandle();
+			// }
+		}
+
 		return null;
 	}
 
@@ -193,7 +198,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	@Override
 	public void raStopping() {
 		if (tracer.isInfoEnabled()) {
-			tracer.info("Stopping RA Entity " + this.raContext.getEntityName());
+			tracer.info("Stopping Scheduler RA Entity " + this.raContext.getEntityName());
 		}
 
 		this.scheduler.shutdown();
@@ -201,6 +206,10 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			this.scheduler.awaitTermination(120, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			tracer.severe("InterruptedException while awaiting termination of tasks", e);
+		}
+
+		if (tracer.isInfoEnabled()) {
+			tracer.info("Stopped Scheduler RA Entity " + this.raContext.getEntityName());
 		}
 	}
 
@@ -267,15 +276,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	}
 
-	protected class SchedulerActivityImpl implements SchedulerActivity {
-		private final SchedulerActivityHandle handle = new SchedulerActivityHandle();
-
-		SchedulerActivityHandle getActivityHandle() {
-			return this.handle;
-		}
-
-	}
-
 	// /////////////////
 	// Helper methods //
 	// /////////////////
@@ -320,13 +320,18 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				}
 			}
 		} finally {
-			
+
 			if (this.tracer.isInfoEnabled()) {
 				String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.";
 				this.tracer.info(s2);
 			}
 
 		}
+	}
+
+	protected void endAcitivity(SchedulerActivityHandle activityHandle) throws Exception {
+		this.sleeEndpoint.endActivity(activityHandle);
+		this.decrementActivityCount();
 	}
 
 	protected boolean injectSms(SmsSet smsSet) throws Exception {
@@ -345,8 +350,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			SmsSetEvent event = new SmsSetEvent();
 			event.setSmsSet(smsSet);
 
-			SchedulerActivityImpl activity = new SchedulerActivityImpl();
-			this.sleeEndpoint.startActivityTransacted(activity.getActivityHandle(), activity);
+			SchedulerActivityImpl activity = new SchedulerActivityImpl(this);
+			this.sleeEndpoint.startActivityTransacted(activity.getActivityHandle(), activity, ACTIVITY_FLAGS);
 
 			try {
 				this.sleeEndpoint.fireEventTransacted(activity.getActivityHandle(), eventTypeId, event, null, null);

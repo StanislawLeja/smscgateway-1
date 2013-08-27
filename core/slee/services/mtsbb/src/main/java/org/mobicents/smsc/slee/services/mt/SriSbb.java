@@ -336,13 +336,13 @@ public abstract class SriSbb extends MtCommonSbb {
 
 	public abstract ChildRelationExt getRsdsSbb();
 
-	private MtForwardSmsInterface getMtSbbObject() {
+	private MtSbbLocalObject getMtSbbObject() {
 		ChildRelationExt relation = getMtSbb();
 
-		MtForwardSmsInterface ret = (MtSbbLocalObject) relation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
+		MtSbbLocalObject ret = (MtSbbLocalObject) relation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
 		if (ret == null) {
 			try {
-				ret = (MtForwardSmsInterface) relation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
+				ret = (MtSbbLocalObject) relation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
 			} catch (Exception e) {
 				if (this.logger.isSevereEnabled()) {
 					this.logger.severe("Exception while trying to creat MtSbb child", e);
@@ -369,14 +369,14 @@ public abstract class SriSbb extends MtCommonSbb {
 	}
 
 	public void doSetSmsSubmitData(SmsSubmitData smsDeliveryData) {
-		MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+		MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
 		if (mtSbbLocalObject != null) {
 			mtSbbLocalObject.doSetSmsSubmitData(smsDeliveryData);
 		}
 	}
 
 	public SmsSubmitData doGetSmsSubmitData() {
-		MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+		MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
 		if (mtSbbLocalObject != null) {
 			return mtSbbLocalObject.doGetSmsSubmitData();
 		} else {
@@ -385,14 +385,14 @@ public abstract class SriSbb extends MtCommonSbb {
 	}
 
 	public void doSetCurrentMsgNum(int currentMsgNum) {
-		MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+		MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
 		if (mtSbbLocalObject != null) {
 			mtSbbLocalObject.doSetCurrentMsgNum(currentMsgNum);
 		}
 	}
 
 	public int doGetCurrentMsgNum() {
-		MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+		MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
 		if (mtSbbLocalObject != null) {
 			return mtSbbLocalObject.doGetCurrentMsgNum();
 		} else {
@@ -401,14 +401,14 @@ public abstract class SriSbb extends MtCommonSbb {
 	}
 
 	public void doSetInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer) {
-		MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+		MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
 		if (mtSbbLocalObject != null) {
 			mtSbbLocalObject.doSetInformServiceCenterContainer(informServiceCenterContainer);
 		}
 	}
 
 	public InformServiceCenterContainer doGetInformServiceCenterContainer() {
-		MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+		MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
 		if (mtSbbLocalObject != null) {
 			return mtSbbLocalObject.doGetInformServiceCenterContainer();
 		} else {
@@ -492,8 +492,13 @@ public abstract class SriSbb extends MtCommonSbb {
 				}
 			}
 
-			MtForwardSmsInterface mtSbbLocalObject = this.getMtSbbObject();
+			MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
 			if (mtSbbLocalObject != null) {
+				// Attach MtSbb to Scheduler ActivityContextInterface
+				ActivityContextInterface schedulerActivityContextInterface = this
+						.getSchedulerActivityContextInterface();
+				schedulerActivityContextInterface.attach(mtSbbLocalObject);
+
 				mtSbbLocalObject.setupMtForwardShortMessageRequest(sendRoutingInfoForSMResponse
 						.getLocationInfoWithLMSI().getNetworkNodeNumber(), sendRoutingInfoForSMResponse.getIMSI(),
 						sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getLMSI());
