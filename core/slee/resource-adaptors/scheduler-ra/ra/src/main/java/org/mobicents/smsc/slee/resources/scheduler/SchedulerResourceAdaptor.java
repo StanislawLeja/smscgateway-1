@@ -320,23 +320,17 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				}
 			}
 		} finally {
-			String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.";
-			if (schedulableSms.size() > 0) {
-				if (this.tracer.isInfoEnabled()) {
-					this.tracer.info(s2);
-				}
-			} else {
-				if (this.tracer.isFineEnabled())
-					this.tracer.fine(s2);
+			
+			if (this.tracer.isInfoEnabled()) {
+				String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.";
+				this.tracer.info(s2);
 			}
+
 		}
 	}
 
 	protected boolean injectSms(SmsSet smsSet) throws Exception {
-		long currentTime = System.currentTimeMillis();
 		SleeTransaction sleeTx = this.sleeTransactionManager.beginSleeTransaction();
-
-		this.tracer.warning("beginSleeTransaction took " + (System.currentTimeMillis() - currentTime));
 
 		try {
 			SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
@@ -351,18 +345,11 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			SmsSetEvent event = new SmsSetEvent();
 			event.setSmsSet(smsSet);
 
-			currentTime = System.currentTimeMillis();
-
 			SchedulerActivityImpl activity = new SchedulerActivityImpl();
 			this.sleeEndpoint.startActivityTransacted(activity.getActivityHandle(), activity);
 
-			long currentTime1 = System.currentTimeMillis();
-			this.tracer.warning("startActivityTransacted took " + (currentTime1 - currentTime));
-
 			try {
 				this.sleeEndpoint.fireEventTransacted(activity.getActivityHandle(), eventTypeId, event, null, null);
-
-				this.tracer.warning("fireEventTransacted took " + (System.currentTimeMillis() - currentTime1));
 			} catch (Exception e) {
 				if (this.tracer.isSevereEnabled()) {
 					this.tracer.severe("Failed to fire SmsSet event Class=: " + eventTypeId.getEventClassName(), e);
@@ -372,21 +359,14 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				} catch (Exception ee) {
 				}
 			}
-			currentTime = System.currentTimeMillis();
 			markAsInSystem(smsSet);
-
-			currentTime1 = System.currentTimeMillis();
-			this.tracer.warning("markAsInSystem took " + (currentTime1 - currentTime));
-
 		} catch (Exception e) {
 			this.sleeTransactionManager.rollback();
 			throw e;
 		}
 
-		long currentTime1 = System.currentTimeMillis();
 		this.sleeTransactionManager.commit();
 
-		this.tracer.warning("commit took " + (System.currentTimeMillis() - currentTime1));
 		this.incrementActivityCount();
 		return true;
 	}
@@ -398,35 +378,18 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	protected void markAsInSystem(SmsSet smsSet) throws PersistenceException {
 
-		long currentTime = System.currentTimeMillis();
-
 		TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
 
-		long currentTime1 = System.currentTimeMillis();
-
-		this.tracer.warning("addSmsSet took " + (currentTime1 - currentTime));
 		synchronized (lock) {
 			try {
 				boolean b1 = dbOperations.checkSmsSetExists(new TargetAddress(smsSet));
-
-				currentTime = System.currentTimeMillis();
-
-				this.tracer.warning("checkSmsSetExists took " + (currentTime - currentTime1));
 
 				if (!b1)
 					throw new PersistenceException("SmsSet record is not found when markAsInSystem()");
 
 				dbOperations.fetchSchedulableSms(smsSet, smsSet.getType() == SmType.SMS_FOR_SS7);
 
-				currentTime1 = System.currentTimeMillis();
-
-				this.tracer.warning("fetchSchedulableSms took " + (currentTime1 - currentTime));
-
 				dbOperations.setDeliveryStart(smsSet, new Date());
-
-				currentTime = System.currentTimeMillis();
-
-				this.tracer.warning("setDeliveryStart took " + (currentTime - currentTime1));
 
 			} finally {
 				SmsSetCashe.getInstance().removeSmsSet(lock);
