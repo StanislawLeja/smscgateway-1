@@ -390,7 +390,7 @@ public class MessageUtil {
     private static final String DELIVERY_ACK_TEXT = " text:";
     private static final String DELIVERY_ACK_STATE_DELIVERED = "DELIVRD";
     private static final String DELIVERY_ACK_STATE_UNDELIVERABLE = "UNDELIV";
-    private static final byte ESME_DELIVERY_ACK = 0x04;
+    public static final byte ESME_DELIVERY_ACK = 0x04;
     private static final SimpleDateFormat DELIVERY_ACK_DATE_FORMAT = new SimpleDateFormat("yyMMddHHmm");
 
     public static boolean isReceiptOnSuccess(int registeredDelivery) {
@@ -419,6 +419,8 @@ public class MessageUtil {
         receipt.setSubmitDate(sms.getSubmitDate());
 
         receipt.setMessageId(sms.getMessageId());
+        Date validityPeriod = MessageUtil.addHours(new Date(), 24);
+        receipt.setValidityPeriod(validityPeriod);
 
         StringBuffer sb = new StringBuffer();
         DataCodingScheme dcs = new DataCodingSchemeImpl(sms.getDataCoding());

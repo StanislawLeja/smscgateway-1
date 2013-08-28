@@ -70,7 +70,6 @@ import com.cloudhopper.smpp.pdu.SubmitSm;
 import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.type.Address;
 import com.cloudhopper.smpp.type.RecoverablePduException;
-import com.cloudhopper.smpp.util.SmppUtil;
 
 /**
  * 
@@ -114,6 +113,15 @@ public abstract class RxSmppServerSbb implements Sbb {
 		}
 
 		SmsSet smsSet = event.getSmsSet();
+
+        try {
+            this.getStore().fetchSchedulableSms(smsSet, false);
+//          this.getStore().fetchSchedulableSms(smsSet, smsSet.getType() == SmType.SMS_FOR_SS7);
+        } catch (PersistenceException e) {
+            this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "PersistenceException when fetchSchedulableSms(): " + e.getMessage());
+            return;
+        }
+
 		int curMsg = 0;
 		Sms sms = smsSet.getSms(curMsg);
 		if (sms != null) {

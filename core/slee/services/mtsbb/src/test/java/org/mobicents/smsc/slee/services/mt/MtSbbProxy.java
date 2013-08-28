@@ -34,6 +34,7 @@ import javax.slee.TransactionRolledbackLocalException;
 
 import org.mobicents.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.mobicents.protocols.ss7.map.MAPSmsTpduParameterFactoryImpl;
+import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
@@ -346,4 +347,19 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 		mapApplicationContextVersionsUsed = mapApplicationContextVersions;		
 	}
 
+	protected boolean isNegotiatedMapVersionUsing() {
+	    return super.isNegotiatedMapVersionUsing();
+    }
+
+    protected void setNegotiatedMapVersionUsing(boolean val) {
+        super.setNegotiatedMapVersionUsing(val);
+    }
+
+    protected boolean isMAPVersionTested(MAPApplicationContextVersion vers) {
+        return super.isMAPVersionTested(vers);
+    }
+
+    protected void setMAPVersionTested(MAPApplicationContextVersion vers) {
+        super.setMAPVersionTested(vers);
+    }
 }

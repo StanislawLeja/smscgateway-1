@@ -33,6 +33,7 @@ import java.util.UUID;
 
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
+import org.mobicents.protocols.ss7.map.api.MAPDialog;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.errors.SMEnumeratedDeliveryFailureCause;
@@ -40,6 +41,7 @@ import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
+import org.mobicents.protocols.ss7.map.api.primitives.MAPExtensionContainer;
 import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
@@ -72,6 +74,7 @@ import org.mobicents.protocols.ss7.map.service.sms.SendRoutingInfoForSMResponseI
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
 import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextNameImpl;
+import org.mobicents.slee.resource.map.events.DialogAccept;
 import org.mobicents.slee.resource.map.events.DialogClose;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogReject;
@@ -89,6 +92,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmsProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPDialogSmsProxy.MAPTestEvent;
 import org.mobicents.smsc.slee.resources.persistence.MAPDialogSmsProxy.MAPTestEventType;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
+import org.mobicents.smsc.smpp.MapVersionCache;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -130,18 +134,19 @@ public class MtTest {
 		smscPropertiesManagement.setServiceCenterSsn(8);
 		smscPropertiesManagement.setHlrSsn(6);
 		smscPropertiesManagement.setMscSsn(8);
+		MapVersionCache mvc = MapVersionCache.getInstance("test");
+		mvc.forceClear();
 
 		this.pers = new PersistenceRAInterfaceProxy();
 		this.cassandraDbInited = this.pers.testCassandraAccess();
 		if (!this.cassandraDbInited)
 			return;
+        this.pers.start("127.0.0.1", 9042, "TelestaxSMSC");
 
 		this.mtSbb = new MtSbbProxy(this.pers);
 		this.rsdsSbb = new RsdsSbbProxy(this.pers);
 		this.sriSbb = new SriSbbProxy(this.pers, this.mtSbb, this.rsdsSbb);
 		this.mtSbb.setSriSbbProxy(this.sriSbb);
-
-		SmscPropertiesManagement.getInstance("Test");
 	}
 
 	@AfterMethod
@@ -151,69 +156,120 @@ public class MtTest {
 	
 	@Test(groups = { "Mt" })
 	public void NegotiatedMapVersionTest1() throws Exception {
-		//When new versions are passed, since these are not used, negotiated MAP version are same as passed
-		
-		MAPApplicationContextVersion supportedApplicationContextVersion = MAPApplicationContextVersion.version3;
-		
-		MAPApplicationContextVersion negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
-		
-		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
-		
-		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version2);
-		
-		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
-		
-		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
-		
-		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);
-		
-		//Now since all versions are used, what ever version is passed is returned back as it is
-		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
-		
-		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
-		
-		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version2);
-		
-		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
-		
-		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
-		
-		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);		
+
+        MAPApplicationContextVersion ver1 = MAPApplicationContextVersion.version1;
+        MAPApplicationContextVersion ver2 = MAPApplicationContextVersion.version2;
+        MAPApplicationContextVersion ver3 = MAPApplicationContextVersion.version3;
+	    
+        assertFalse(this.mtSbb.isNegotiatedMapVersionUsing());
+        assertFalse(this.mtSbb.isMAPVersionTested(ver1));
+        assertFalse(this.mtSbb.isMAPVersionTested(ver2));
+        assertFalse(this.mtSbb.isMAPVersionTested(ver3));
+
+        this.mtSbb.setNegotiatedMapVersionUsing(true);	    
+
+        assertTrue(this.mtSbb.isNegotiatedMapVersionUsing());
+        assertFalse(this.mtSbb.isMAPVersionTested(ver1));
+        assertFalse(this.mtSbb.isMAPVersionTested(ver2));
+        assertFalse(this.mtSbb.isMAPVersionTested(ver3));
+
+        this.mtSbb.setMAPVersionTested(ver1);      
+
+        assertTrue(this.mtSbb.isNegotiatedMapVersionUsing());
+        assertTrue(this.mtSbb.isMAPVersionTested(ver1));
+        assertFalse(this.mtSbb.isMAPVersionTested(ver2));
+        assertFalse(this.mtSbb.isMAPVersionTested(ver3));
+
+        this.mtSbb.setMAPVersionTested(ver3);      
+
+        assertTrue(this.mtSbb.isNegotiatedMapVersionUsing());
+        assertTrue(this.mtSbb.isMAPVersionTested(ver1));
+        assertFalse(this.mtSbb.isMAPVersionTested(ver2));
+        assertTrue(this.mtSbb.isMAPVersionTested(ver3));
+
+        this.mtSbb.setMAPVersionTested(ver2);      
+
+        assertTrue(this.mtSbb.isNegotiatedMapVersionUsing());
+        assertTrue(this.mtSbb.isMAPVersionTested(ver1));
+        assertTrue(this.mtSbb.isMAPVersionTested(ver2));
+        assertTrue(this.mtSbb.isMAPVersionTested(ver3));
+
+        this.mtSbb.setNegotiatedMapVersionUsing(false);      
+
+        assertFalse(this.mtSbb.isNegotiatedMapVersionUsing());
+        assertTrue(this.mtSbb.isMAPVersionTested(ver1));
+        assertTrue(this.mtSbb.isMAPVersionTested(ver2));
+        assertTrue(this.mtSbb.isMAPVersionTested(ver3));
+
+
+
+
+
+
+
+//	    //When new versions are passed, since these are not used, negotiated MAP version are same as passed
+//		
+//		MAPApplicationContextVersion supportedApplicationContextVersion = MAPApplicationContextVersion.version3;
+//		
+//		MAPApplicationContextVersion negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
+//		
+//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
+//		
+//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version2);
+//		
+//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
+//		
+//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
+//		
+//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);
+//		
+//		//Now since all versions are used, what ever version is passed is returned back as it is
+//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
+//		
+//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
+//		
+//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version2);
+//		
+//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
+//		
+//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
+//		
+//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);		
 		
 	}
 	
-	@Test(groups = { "Mt" })
-	public void NegotiatedMapVersionTest2() throws Exception {
-		//When same versions is passed, negotiations will return back unused versions
-		
-		MAPApplicationContextVersion supportedApplicationContextVersion = MAPApplicationContextVersion.version3;
-		
-		MAPApplicationContextVersion negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
-		
-		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
-		
-		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version3);
-		
-		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
-		
-		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version3);
-		
-		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);
-		
-		//Now since all versions are used, what ever version is passed is returned back as it is
-		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
-		
-		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
-		
-		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version2);
-		
-		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
-		
-		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
-		
-		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);		
-		
-	}	
+//	@Test(groups = { "Mt" })
+//	public void NegotiatedMapVersionTest2() throws Exception {
+//		//When same versions is passed, negotiations will return back unused versions
+//		
+//		MAPApplicationContextVersion supportedApplicationContextVersion = MAPApplicationContextVersion.version3;
+//		
+//		MAPApplicationContextVersion negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
+//		
+//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
+//		
+//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version3);
+//		
+//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
+//		
+//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version3);
+//		
+//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);
+//		
+//		//Now since all versions are used, what ever version is passed is returned back as it is
+//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
+//		
+//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
+//		
+//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version2);
+//		
+//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
+//		
+//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
+//		
+//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);		
+//		
+//	}	
 
 
 	/**
@@ -237,6 +293,7 @@ public class MtTest {
 		sd1.dataCodingScheme = 16;
 		lst.add(sd1);
 		SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
 
 		this.pers.setDeliveryStart(smsSet, curDate);
 
@@ -343,7 +400,9 @@ public class MtTest {
 		// Mt response
 		MtForwardShortMessageResponseImpl evt2 = new MtForwardShortMessageResponseImpl(null, null);
 		evt2.setMAPDialog(dlg);
-		this.mtSbb.onMtForwardShortMessageResponse(evt2, null);
+		DialogAccept daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
+        this.mtSbb.onMtForwardShortMessageResponse(evt2, null);
 		DialogClose dcl = new DialogClose(dlg);
 		this.mtSbb.onDialogClose(dcl, null);
 
@@ -388,6 +447,7 @@ public class MtTest {
         SmsDef sd1 = new SmsDef();
         lst.add(sd1);
         SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
 
         this.pers.setDeliveryStart(smsSet, curDate);
 
@@ -494,6 +554,8 @@ public class MtTest {
         // Mt response
         MtForwardShortMessageResponseImpl evt2 = new MtForwardShortMessageResponseImpl(null, null);
         evt2.setMAPDialog(dlg);
+        DialogAccept daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
         this.mtSbb.onMtForwardShortMessageResponse(evt2, null);
         DialogDelimiter dcl = new DialogDelimiter(dlg);
         this.mtSbb.onDialogDelimiter(dcl, null);
@@ -542,6 +604,7 @@ public class MtTest {
         sd1.receiptRequest = true;
         lst.add(sd1);
         SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
 
         this.pers.setDeliveryStart(smsSet, curDate);
 
@@ -648,6 +711,8 @@ public class MtTest {
         // Mt response
         MtForwardShortMessageResponseImpl evt2 = new MtForwardShortMessageResponseImpl(null, null);
         evt2.setMAPDialog(dlg);
+        DialogAccept daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
         this.mtSbb.onMtForwardShortMessageResponse(evt2, null);
         DialogClose dcl = new DialogClose(dlg);
         this.mtSbb.onDialogClose(dcl, null);
@@ -727,6 +792,7 @@ public class MtTest {
 		SmsSet smsSet = prepareDatabase(lst);
 		Sms sms1 = smsSet.getSms(0);
 		Sms sms2 = smsSet.getSms(1);
+        smsSet.clearSmsList();
 
 		this.pers.setDeliveryStart(smsSet, curDate);
 
@@ -886,6 +952,8 @@ public class MtTest {
 		// Mt response
 		ForwardShortMessageResponseImpl evt2 = new ForwardShortMessageResponseImpl();
 		evt2.setMAPDialog(dlg);
+        DialogAccept daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
 		this.mtSbb.onForwardShortMessageResponse(evt2, null);
         DialogClose dcl = new DialogClose(dlg);
 		this.mtSbb.onDialogClose(dcl, null);
@@ -971,6 +1039,8 @@ public class MtTest {
 		// Mt response 2
 		evt2 = new ForwardShortMessageResponseImpl();
 		evt2.setMAPDialog(dlg);
+        daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
 		this.mtSbb.onForwardShortMessageResponse(evt2, null);
         dcl = new DialogClose(dlg);
 		this.mtSbb.onDialogClose(dcl, null);
@@ -1058,6 +1128,7 @@ public class MtTest {
         SmsSet smsSet = prepareDatabase(lst);
         Sms sms1 = smsSet.getSms(0);
         Sms sms2 = smsSet.getSms(1);
+        smsSet.clearSmsList();
 
         this.pers.setDeliveryStart(smsSet, curDate);
 
@@ -1217,6 +1288,8 @@ public class MtTest {
         // Mt response
         ForwardShortMessageResponseImpl evt2 = new ForwardShortMessageResponseImpl();
         evt2.setMAPDialog(dlg);
+        DialogAccept daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
         this.mtSbb.onForwardShortMessageResponse(evt2, null);
         DialogDelimiter dcl = new DialogDelimiter(dlg);
         this.mtSbb.onDialogDelimiter(dcl, null);
@@ -1301,6 +1374,8 @@ public class MtTest {
         // Mt response 2
         evt2 = new ForwardShortMessageResponseImpl();
         evt2.setMAPDialog(dlg);
+        daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
         this.mtSbb.onForwardShortMessageResponse(evt2, null);
         dcl = new DialogDelimiter(dlg);
         this.mtSbb.onDialogDelimiter(dcl, null);
@@ -1375,6 +1450,7 @@ public class MtTest {
 		String msga2 = totalMsg.substring(segmlen);
 		sd1.msg = totalMsg.getBytes();
 		SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
 
 		this.pers.setDeliveryStart(smsSet, curDate);
 
@@ -1484,6 +1560,8 @@ public class MtTest {
 		// Mt response 1
 		ForwardShortMessageResponseImpl evt2 = new ForwardShortMessageResponseImpl();
 		evt2.setMAPDialog(dlg);
+        DialogAccept daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
 		this.mtSbb.onForwardShortMessageResponse(evt2, null);
         DialogClose dcl = new DialogClose(dlg);
 		this.mtSbb.onDialogClose(dcl, null);
@@ -1539,6 +1617,8 @@ public class MtTest {
 		// Mt response 2
 		evt2 = new ForwardShortMessageResponseImpl();
 		evt2.setMAPDialog(dlg);
+        daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
 		this.mtSbb.onForwardShortMessageResponse(evt2, null);
         dcl = new DialogClose(dlg);
 		this.mtSbb.onDialogClose(dcl, null);
@@ -1601,6 +1681,7 @@ public class MtTest {
 		sd1.dataCodingScheme = 8;
 		
 		SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
 
 		this.pers.setDeliveryStart(smsSet, curDate);
 
@@ -1708,6 +1789,8 @@ public class MtTest {
 		// Mt response 1
 		MtForwardShortMessageResponseImpl evt2 = new MtForwardShortMessageResponseImpl(null, null);
 		evt2.setMAPDialog(dlg);
+        DialogAccept daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
 		this.mtSbb.onMtForwardShortMessageResponse(evt2, null);
         DialogClose dcl = new DialogClose(dlg);
 		this.mtSbb.onDialogClose(dcl, null);
@@ -1763,6 +1846,8 @@ public class MtTest {
 		// Mt response 2
 		evt2 = new MtForwardShortMessageResponseImpl(null, null);
 		evt2.setMAPDialog(dlg);
+        daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
 		this.mtSbb.onMtForwardShortMessageResponse(evt2, null);
         dcl = new DialogClose(dlg);
 		this.mtSbb.onDialogClose(dcl, null);
@@ -1810,6 +1895,7 @@ public class MtTest {
 		sd1.segmentTlv = true;
 
 		SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
 
 		this.pers.setDeliveryStart(smsSet, curDate);
 
@@ -1900,6 +1986,8 @@ public class MtTest {
 		// Mt response
 		MtForwardShortMessageResponseImpl evt2 = new MtForwardShortMessageResponseImpl(null, null);
 		evt2.setMAPDialog(dlg);
+        DialogAccept daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
 		this.mtSbb.onMtForwardShortMessageResponse(evt2, null);
         DialogClose dcl = new DialogClose(dlg);
 		this.mtSbb.onDialogClose(dcl, null);
@@ -1947,6 +2035,7 @@ public class MtTest {
 		lst.add(sd1);
 
 		SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
 
 		this.pers.setDeliveryStart(smsSet, curDate);
 
@@ -2051,6 +2140,8 @@ public class MtTest {
 		assertNull(dlg2);
 		dlg2 = serviceMt.getLastMAPDialogSms();
 		assertNull(dlg2);
+        DialogAccept daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
 		this.mtSbb.onMtForwardShortMessageResponse(evt2, null);
         DialogClose dcl = new DialogClose(dlg);
 		this.mtSbb.onDialogClose(dcl, null);
@@ -2108,6 +2199,8 @@ public class MtTest {
 		serviceMt.setLastMAPDialogSms(null);
 		evt2 = new MtForwardShortMessageResponseImpl(null, null);
 		evt2.setMAPDialog(dlg);
+        daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
 		this.mtSbb.onMtForwardShortMessageResponse(evt2, null);
         dcl = new DialogClose(dlg);
 		this.mtSbb.onDialogClose(dcl, null);
@@ -2153,6 +2246,7 @@ public class MtTest {
 		lst.add(sd1);
 
 		SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
 
 		assertNull(smsSet.getStatus());
 		assertEquals(smsSet.getInSystem(), 0);
@@ -2296,6 +2390,7 @@ public class MtTest {
 		sd1.valididtyPeriodIsOver = true;
 
 		SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
 
 		assertNull(smsSet.getStatus());
 		assertEquals(smsSet.getInSystem(), 0);
@@ -2390,6 +2485,7 @@ public class MtTest {
         sd1.valididtyPeriodIsOver = true;
 
         SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
 
         assertNull(smsSet.getStatus());
         assertEquals(smsSet.getInSystem(), 0);
@@ -2480,6 +2576,7 @@ public class MtTest {
 		lst.add(sd1);
 
 		SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
 
 		assertNull(smsSet.getStatus());
 		assertEquals(smsSet.getInSystem(), 0);
@@ -2610,6 +2707,7 @@ public class MtTest {
 		lst.add(sd1);
 
 		SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
 
 		assertNull(smsSet.getStatus());
 		assertEquals(smsSet.getInSystem(), 0);
@@ -2806,7 +2904,7 @@ public class MtTest {
 	}
 
 	private SmsSet prepareDatabase(ArrayList<SmsDef> lst) throws PersistenceException {
-		SmsSet smsSet = this.pers.obtainSmsSet(ta1);
+	    SmsSet smsSet = this.pers.obtainSmsSet(ta1);
 
 		int i1 = 1;
 		for (SmsDef smsDef : lst) {
@@ -2816,6 +2914,7 @@ public class MtTest {
 		}
 
 		SmsSet res = this.pers.obtainSmsSet(ta1);
+		// !!!! we remove it because SMS has been moved to SBB 
 		this.pers.fetchSchedulableSms(res, false);
 		curDate = new Date();
 		this.pers.setDeliveryStart(smsSet, curDate);

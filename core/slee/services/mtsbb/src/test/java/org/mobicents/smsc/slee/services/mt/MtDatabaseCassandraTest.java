@@ -70,6 +70,7 @@ public class MtDatabaseCassandraTest {
 		this.cassandraDbInited = this.pers.testCassandraAccess();
 		if (!this.cassandraDbInited)
 			return;
+        this.pers.start("127.0.0.1", 9042, "TelestaxSMSC");
 
 		this.sbb = new MtSbbProxy(this.pers);
 

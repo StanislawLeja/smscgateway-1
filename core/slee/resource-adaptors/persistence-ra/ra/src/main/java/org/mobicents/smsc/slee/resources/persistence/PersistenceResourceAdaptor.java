@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import javax.management.RuntimeErrorException;
 import javax.slee.Address;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ActivityHandle;
@@ -181,10 +180,9 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
 			}
 
 			@Override
-			public void fetchSchedulableSms(SmsSet smsSet, boolean excludeNonScheduleDeliveryTime)
-					throws PersistenceException {
-				dbOperations.fetchSchedulableSms(smsSet, excludeNonScheduleDeliveryTime);
-			}
+            public void fetchSchedulableSms(SmsSet smsSet, boolean excludeNonScheduleDeliveryTime) throws PersistenceException {
+                dbOperations.fetchSchedulableSms(smsSet, excludeNonScheduleDeliveryTime);
+            }
 		};
 	}
 

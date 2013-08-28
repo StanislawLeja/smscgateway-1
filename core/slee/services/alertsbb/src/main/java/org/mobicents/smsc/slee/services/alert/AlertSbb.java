@@ -227,7 +227,7 @@ public abstract class AlertSbb implements Sbb {
 						return;
 					}
 
-					pers.fetchSchedulableSms(smsSet, false);
+					pers.fetchSchedulableSms(smsSet, true);
 					Date newDueDate = new Date();
 					newDueDate = MessageUtil.checkScheduleDeliveryTime(smsSet, newDueDate);
 					pers.setDeliveringProcessScheduled(smsSet, newDueDate, 0);

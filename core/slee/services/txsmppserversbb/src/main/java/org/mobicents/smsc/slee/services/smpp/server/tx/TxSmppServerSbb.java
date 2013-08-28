@@ -532,7 +532,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		}
         if (event.getSourceAddress().getTon() == SmppConstants.TON_ALPHANUMERIC) {
             // TODO: when alphanumerical orig address (TON_ALPHANUMERIC) - which should we NPI select
-            sms.setSourceAddrNpi(SmppConstants.NPI_UNKNOWN);
+//            sms.setSourceAddrNpi(SmppConstants.NPI_UNKNOWN);
         } else {
             switch (event.getSourceAddress().getNpi()) {
             case SmppConstants.NPI_UNKNOWN:
