@@ -59,6 +59,7 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.ErrorCode;
+import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
@@ -91,8 +92,19 @@ public abstract class SriSbb extends MtCommonSbb {
 			this.logger.info("\nReceived Submit SMS. event= " + event + "this=" + this);
 		}
 
-		SmsSet smsSet = event.getSmsSet();
-		int curMsg = 0;
+        SmsSet smsSet = event.getSmsSet();
+        try {
+            this.getStore().fetchSchedulableSms(smsSet, true);
+//          this.getStore().fetchSchedulableSms(smsSet, smsSet.getType() == SmType.SMS_FOR_SS7);
+        } catch (PersistenceException e) {
+            this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "PersistenceException when fetchSchedulableSms(): " + e.getMessage());
+            return;
+        }
+
+        // remove receipt messages if any: receipt messages must not be routed to SS7
+        // ....................
+
+        int curMsg = 0;
 		Sms sms = smsSet.getSms(curMsg);
 		if (sms == null) {
 			// this means that no messages with good ScheduleDeliveryTime or no

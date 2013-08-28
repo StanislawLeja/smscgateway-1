@@ -392,7 +392,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				if (!b1)
 					throw new PersistenceException("SmsSet record is not found when markAsInSystem()");
 
-				dbOperations.fetchSchedulableSms(smsSet, smsSet.getType() == SmType.SMS_FOR_SS7);
+//				dbOperations.fetchSchedulableSms(smsSet, smsSet.getType() == SmType.SMS_FOR_SS7);
 
 				dbOperations.setDeliveryStart(smsSet, new Date());
 

@@ -26,8 +26,10 @@ import javax.slee.ActivityContextInterface;
 import javax.slee.NotAttachedException;
 import javax.slee.SLEEException;
 import javax.slee.SbbID;
+import javax.slee.SbbLocalObject;
 import javax.slee.ServiceID;
 import javax.slee.TransactionRequiredLocalException;
+import javax.slee.TransactionRolledbackLocalException;
 import javax.slee.UnrecognizedEventException;
 import javax.slee.facilities.ActivityContextNamingFacility;
 import javax.slee.facilities.AlarmFacility;
@@ -43,6 +45,7 @@ import javax.slee.serviceactivity.ServiceActivityFactory;
 
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.slee.SbbLocalObjectExt;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerActivity;
 
 /**
  * 
@@ -59,8 +62,7 @@ public class SbbContextExtProxy implements SbbContextExt {
 
 	@Override
 	public ActivityContextInterface[] getActivities() throws TransactionRequiredLocalException, IllegalStateException, SLEEException {
-		// TODO Auto-generated method stub
-		return null;
+        return new ActivityContextInterface[] { new ActivityContextInterfaceProxy() };
 	}
 
 	@Override
@@ -179,4 +181,49 @@ public class SbbContextExtProxy implements SbbContextExt {
 		return null;
 	}
 
+	class ActivityContextInterfaceProxy implements ActivityContextInterface {
+
+        @Override
+        public void attach(SbbLocalObject arg0) throws NullPointerException, TransactionRequiredLocalException, TransactionRolledbackLocalException,
+                SLEEException {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void detach(SbbLocalObject arg0) throws NullPointerException, TransactionRequiredLocalException, TransactionRolledbackLocalException,
+                SLEEException {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public Object getActivity() throws TransactionRequiredLocalException, SLEEException {
+            return new SchedulerActivityProxy();
+        }
+
+        @Override
+        public boolean isAttached(SbbLocalObject arg0) throws NullPointerException, TransactionRequiredLocalException, TransactionRolledbackLocalException,
+                SLEEException {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        @Override
+        public boolean isEnding() throws TransactionRequiredLocalException, SLEEException {
+            // TODO Auto-generated method stub
+            return false;
+        }
+	    
+	}
+	
+	class SchedulerActivityProxy implements SchedulerActivity {
+
+        @Override
+        public void endActivity() throws Exception {
+            // TODO Auto-generated method stub
+            
+        }
+	    
+	}
 }

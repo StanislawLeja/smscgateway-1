@@ -79,6 +79,7 @@ public class AlertTest {
 		this.cassandraDbInited = this.pers.testCassandraAccess();
 		if (!this.cassandraDbInited)
 			return;
+        this.pers.start("127.0.0.1", 9042, "TelestaxSMSC");
 
 		this.sbb = new AlertSbbProxy(this.pers);
 
@@ -131,7 +132,7 @@ public class AlertTest {
 		// smsSet_x1.setDestAddrNpi(ta1.getAddrNpi());
 
 		SmsSet smsSet_x1 = this.pers.obtainSmsSet(ta1);
-		this.pers.fetchSchedulableSms(smsSet_x1,false);
+        this.pers.fetchSchedulableSms(smsSet_x1, false);
 
 		int cnt = smsSet_x1.getSmsCount();
 		for (int i1 = 0; i1 < cnt; i1++) {

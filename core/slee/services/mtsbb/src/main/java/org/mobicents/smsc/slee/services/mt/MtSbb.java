@@ -79,6 +79,7 @@ import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextName;
 import org.mobicents.slee.SbbLocalObjectExt;
+import org.mobicents.slee.resource.map.events.DialogAccept;
 import org.mobicents.slee.resource.map.events.DialogClose;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogProviderAbort;
@@ -120,8 +121,6 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	private static final int MASK_MAP_VERSION_2 = 0x02;
 	private static final int MASK_MAP_VERSION_3 = 0x04;
 
-	private static final int MASK_MAP_ALL_VERSION_USED = 0x07;
-
 	public MtSbb() {
 		super(className);
 	}
@@ -129,6 +128,16 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	/**
 	 * Components Events override from MtCommonSbb that we care
 	 */
+
+    @Override
+    public void onDialogAccept(DialogAccept event, ActivityContextInterface aci) {
+        super.onDialogAccept(event, aci);
+
+        if (!this.isNegotiatedMapVersionUsing()) {
+            mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(), event.getMAPDialog().getApplicationContext()
+                    .getApplicationContextVersion());
+        }
+    }
 
 	@Override
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
@@ -228,29 +237,33 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			if (logger.isWarningEnabled()) {
 				this.logger.warning("Rx : Mt onDialogReject / PotentialVersionIncompatibility=" + evt);
 			}
-			
-			String nodeDigits = this.getNetworkNode().getGlobalTitle().getDigits();
-			
-			if ((this.getMapApplicationContextVersionsUsed() & MASK_MAP_ALL_VERSION_USED) == MASK_MAP_ALL_VERSION_USED) {
-				// All versions tried and yet its saying ApplicationContextNotSupported. This is Error condition
-				String reason = "Error condition when invoking sendMtSms() from onDialogReject() for node "
-						+ nodeDigits + ". All versions tried and DialogReject again.";
+
+			MAPApplicationContextVersion newMAPApplicationContextVersion = MAPApplicationContextVersion.version1;
+            if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
+				// If version1 already tried this is error
+				String reason = "Error condition when invoking sendMtSms() from onDialogReject()."
+						+ newMAPApplicationContextVersion + " already tried and DialogReject again suggests Version1";
 				this.logger.severe(reason);
 
 				ErrorCode smStatus = ErrorCode.MAP_SERVER_VERSION_ERROR;
 				this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
 				return;
-			}
+            }
+            this.setNegotiatedMapVersionUsing(false);
+            this.setMAPVersionTested(newMAPApplicationContextVersion);
 
-			MAPApplicationContextVersion newMAPApplicationContextVersion = this.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
+			mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
+					newMAPApplicationContextVersion);
 
 			// possible a peer supports only MAP V1
 			// Now send new SRI with supported ACN (MAP V1)
 			try {
 				// Update cache
-				mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),	newMAPApplicationContextVersion);
+				mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
+						newMAPApplicationContextVersion);
 
-				this.sendMtSms(this.getMtFoSMSMAPApplicationContext(MAPApplicationContextVersion.version1),	MessageProcessingState.resendAfterMapProtocolNegotiation, null);
+				this.sendMtSms(this.getMtFoSMSMAPApplicationContext(MAPApplicationContextVersion.version1),
+						MessageProcessingState.resendAfterMapProtocolNegotiation, null);
 				return;
 			} catch (SmscProcessingException e) {
 				String reason = "SmscPocessingException when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: "
@@ -283,30 +296,41 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 						+ " Event=" + evt);
 			}
 
-			if ((this.getMapApplicationContextVersionsUsed() & MASK_MAP_ALL_VERSION_USED) == MASK_MAP_ALL_VERSION_USED) {
-				// All versions tried and yet its saying  ApplicationContextNotSupported. This is Error condition
-				String reason = "Error condition when invoking sendMtSms() from onDialogReject() for node "
-						+ nodeDigits + ". All versions tried and DialogReject again.";
-				this.logger.severe(reason);
-
-				ErrorCode smStatus = ErrorCode.MAP_SERVER_VERSION_ERROR;
-				this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
-				return;
-			}
-
 			// Now send new MtSMS with supported ACN
-			ApplicationContextName tcapApplicationContextName = evt.getAlternativeApplicationContext();
+            ApplicationContextName tcapApplicationContextName = evt.getAlternativeApplicationContext();
 
-			MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext.getInstance(tcapApplicationContextName.getOid());
-			
-			MAPApplicationContextVersion supportedMAPApplicationContextVersion = supportedMAPApplicationContext.getApplicationContextVersion();
+            MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext.getInstance(tcapApplicationContextName.getOid());
+            MAPApplicationContextVersion supportedMAPApplicationContextVersion = supportedMAPApplicationContext.getApplicationContextVersion();
 
-			MAPApplicationContextVersion newMAPApplicationContextVersion = this.getNegotiatedMapVersion(supportedMAPApplicationContextVersion);
+            MAPApplicationContextVersion newMAPApplicationContextVersion = supportedMAPApplicationContextVersion;
+            if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
+                newMAPApplicationContextVersion = MAPApplicationContextVersion.version3;
+                if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
+                    newMAPApplicationContextVersion = MAPApplicationContextVersion.version2;
+                    if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
+                        newMAPApplicationContextVersion = MAPApplicationContextVersion.version1;
+                        if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
+                            // If all versions are already tried this is error
+                            String reason = "Error condition when invoking sendMtSms() from onDialogReject()."
+                                    + " all MAP versions are already tried and DialogReject again suggests Version1";
+                            this.logger.severe(reason);
 
-			mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),	newMAPApplicationContextVersion);
+                            ErrorCode smStatus = ErrorCode.MAP_SERVER_VERSION_ERROR;
+                            this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
+                            return;
+                        }
+                    }
+                }
+            }
+            this.setNegotiatedMapVersionUsing(false);
+            this.setMAPVersionTested(newMAPApplicationContextVersion);
+
+			mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
+					newMAPApplicationContextVersion);
 
 			try {
-				this.sendMtSms(this.getMtFoSMSMAPApplicationContext(newMAPApplicationContextVersion),MessageProcessingState.resendAfterMapProtocolNegotiation, null);
+				this.sendMtSms(this.getMtFoSMSMAPApplicationContext(newMAPApplicationContextVersion),
+						MessageProcessingState.resendAfterMapProtocolNegotiation, null);
 				return;
 			} catch (SmscProcessingException e) {
 				String reason = "SmscPocessingException when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: "
@@ -513,20 +537,16 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		this.setSmRpOa(sm_RP_OA);
 
 		// Set cache with MAP version
-		MAPApplicationContextVersion maxMAPApplicationContextVersion = mapVersionCache
-				.getMAPApplicationContextVersion(networkNode.getAddress());
-
-		if (maxMAPApplicationContextVersion == null) {
-			maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement
-					.getMaxMapVersion());
-			mapVersionCache.setMAPApplicationContextVersion(networkNode.getAddress(), maxMAPApplicationContextVersion);
-		}
-
-		// setting 1st version
-		maxMAPApplicationContextVersion = this.getNegotiatedMapVersion(maxMAPApplicationContextVersion);
+        MAPApplicationContextVersion mapApplicationContextVersion = mapVersionCache.getMAPApplicationContextVersion(networkNode.getAddress());
+        if (mapApplicationContextVersion == null) {
+            mapApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement.getMaxMapVersion());
+        } else {
+            this.setNegotiatedMapVersionUsing(true);
+        }
+        this.setMAPVersionTested(mapApplicationContextVersion);
 
 		try {
-			this.sendMtSms(this.getMtFoSMSMAPApplicationContext(maxMAPApplicationContextVersion),
+			this.sendMtSms(this.getMtFoSMSMAPApplicationContext(mapApplicationContextVersion),
 					MessageProcessingState.firstMessageSending, null);
 		} catch (SmscProcessingException e) {
 			String reason = "SmscPocessingException when invoking sendMtSms() from setupMtForwardShortMessageRequest()-firstMessageSending: "
@@ -578,9 +598,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 	public abstract int getResponseReceived();
 
-	public abstract int getMapApplicationContextVersionsUsed();
+    public abstract int getMapApplicationContextVersionsUsed();
 
-	public abstract void setMapApplicationContextVersionsUsed(int mapApplicationContextVersions);
+    public abstract void setMapApplicationContextVersionsUsed(int mapApplicationContextVersions);
 
 	public void doSetSmsSubmitData(SmsSubmitData smsDeliveryData) {
 		this.setSmsSubmitData(smsDeliveryData);
@@ -1045,66 +1065,112 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				address);
 	}
 
-	/**
-	 * Since mask used is 000 we have to convert version3 to MASK_MAP_VERSION_3
-	 * and vice-a-versa
-	 * 
-	 * @param supported
-	 * @return
-	 */
-	protected MAPApplicationContextVersion getNegotiatedMapVersion(MAPApplicationContextVersion supported) {
-		int supportedVer;
-		if (supported == MAPApplicationContextVersion.version3) {
-			supportedVer = MASK_MAP_VERSION_3;
-		} else {
-			supportedVer = supported.getVersion();
-		}
-		supportedVer = this.negotiateMapVersion(supportedVer);
-		if (supportedVer == MASK_MAP_VERSION_3) {
-			return MAPApplicationContextVersion.version3;
-		}
+    protected boolean isNegotiatedMapVersionUsing() {
+        int existingVersionsTried = this.getMapApplicationContextVersionsUsed();
+        return (existingVersionsTried & 0x80) != 0;
+    }
 
-		return MAPApplicationContextVersion.getInstance(supportedVer);
-	}
+    protected void setNegotiatedMapVersionUsing(boolean val) {
+        int existingVersionsTried = this.getMapApplicationContextVersionsUsed();
+        if (val) {
+            existingVersionsTried |= 0x80;
+        } else {
+            existingVersionsTried &= 0x7F;
+        }
+        this.setMapApplicationContextVersionsUsed(existingVersionsTried);
+    }
 
-	/**
-	 * MapApplicationContextVersionsUsed keeps the flag 001 for Version1 used,
-	 * 010 for Version2 used and 100 for Version 3 used. Rest is OR operation,
-	 * for example if its 110 means Version3 and 2 already used. If its 111
-	 * means all versions already tried.
-	 * 
-	 * @param supported
-	 * @return
-	 */
-	private int negotiateMapVersion(int supported) {
-		int existingVersionsTried = this.getMapApplicationContextVersionsUsed();
+    protected boolean isMAPVersionTested(MAPApplicationContextVersion vers) {
+        if (vers == null)
+            return false;
+        int existingVersionsTried = this.getMapApplicationContextVersionsUsed();
+        switch (vers.getVersion()) {
+        case 1:
+            return (existingVersionsTried & MASK_MAP_VERSION_1) != 0;
+        case 2:
+            return (existingVersionsTried & MASK_MAP_VERSION_2) != 0;
+        case 3:
+            return (existingVersionsTried & MASK_MAP_VERSION_3) != 0;
+        }
+        return false;
+    }
 
-		if ((existingVersionsTried & supported) != supported) {
-			existingVersionsTried = (existingVersionsTried | supported);
-			this.setMapApplicationContextVersionsUsed(existingVersionsTried);
-			return supported;
-		}
+    protected void setMAPVersionTested(MAPApplicationContextVersion vers) {
+        int existingVersionsTried = this.getMapApplicationContextVersionsUsed();
+        switch (vers.getVersion()) {
+        case 1:
+            existingVersionsTried |= MASK_MAP_VERSION_1;
+            break;
+        case 2:
+            existingVersionsTried |= MASK_MAP_VERSION_2;
+            break;
+        case 3:
+            existingVersionsTried |= MASK_MAP_VERSION_3;
+            break;
+        }
+        this.setMapApplicationContextVersionsUsed(existingVersionsTried);
+    }
 
-		if ((existingVersionsTried & MASK_MAP_VERSION_3) != MASK_MAP_VERSION_3) {
-			existingVersionsTried = (existingVersionsTried | MASK_MAP_VERSION_3);
-			this.setMapApplicationContextVersionsUsed(existingVersionsTried);
-			return MASK_MAP_VERSION_3;
-		}
-
-		if ((existingVersionsTried & MASK_MAP_VERSION_2) != MASK_MAP_VERSION_2) {
-			existingVersionsTried = (existingVersionsTried | MASK_MAP_VERSION_2);
-			this.setMapApplicationContextVersionsUsed(existingVersionsTried);
-			return MASK_MAP_VERSION_2;
-		}
-
-		if ((existingVersionsTried & MASK_MAP_VERSION_1) != MASK_MAP_VERSION_1) {
-			existingVersionsTried = (existingVersionsTried | MASK_MAP_VERSION_1);
-			this.setMapApplicationContextVersionsUsed(existingVersionsTried);
-			return MASK_MAP_VERSION_1;
-		}
-
-		return supported;
-	}
+//	/**
+//	 * Since mask used is 000 we have to convert version3 to MASK_MAP_VERSION_3
+//	 * and vice-a-versa
+//	 * 
+//	 * @param supported
+//	 * @return
+//	 */
+//	protected MAPApplicationContextVersion getNegotiatedMapVersion(MAPApplicationContextVersion supported) {
+//		int supportedVer;
+//		if (supported == MAPApplicationContextVersion.version3) {
+//			supportedVer = MASK_MAP_VERSION_3;
+//		} else {
+//			supportedVer = supported.getVersion();
+//		}
+//		supportedVer = this.negotiateMapVersion(supportedVer);
+//		if (supportedVer == MASK_MAP_VERSION_3) {
+//			return MAPApplicationContextVersion.version3;
+//		}
+//
+//		return MAPApplicationContextVersion.getInstance(supportedVer);
+//	}
+//
+//	/**
+//	 * MapApplicationContextVersionsUsed keeps the flag 001 for Version1 used,
+//	 * 010 for Version2 used and 100 for Version 3 used. Rest is OR operation,
+//	 * for example if its 110 means Version3 and 2 already used. If its 111
+//	 * means all versions already tried.
+//	 * 
+//	 * @param supported
+//	 * @return
+//	 */
+//	private int negotiateMapVersion(int supported) {
+//		int existingVersionsTried = this.getMapApplicationContextVersionsUsed();
+//
+//		if ((existingVersionsTried & supported) != supported) {
+//			existingVersionsTried = (existingVersionsTried | supported);
+//			this.setMapApplicationContextVersionsUsed(existingVersionsTried);
+//			return supported;
+//		}
+//
+//		if ((existingVersionsTried & MASK_MAP_VERSION_3) != MASK_MAP_VERSION_3) {
+//			existingVersionsTried = (existingVersionsTried | MASK_MAP_VERSION_3);
+//			this.setMapApplicationContextVersionsUsed(existingVersionsTried);
+//			return MASK_MAP_VERSION_3;
+//		}
+//
+//		if ((existingVersionsTried & MASK_MAP_VERSION_2) != MASK_MAP_VERSION_2) {
+//			existingVersionsTried = (existingVersionsTried | MASK_MAP_VERSION_2);
+//			this.setMapApplicationContextVersionsUsed(existingVersionsTried);
+//			return MASK_MAP_VERSION_2;
+//		}
+//
+//		if ((existingVersionsTried & MASK_MAP_VERSION_1) != MASK_MAP_VERSION_1) {
+//			existingVersionsTried = (existingVersionsTried | MASK_MAP_VERSION_1);
+//			this.setMapApplicationContextVersionsUsed(existingVersionsTried);
+//			return MASK_MAP_VERSION_1;
+//		}
+//
+//		return supported;
+//	}
 
 	public enum MessageProcessingState {
 		firstMessageSending, nextSegmentSending, resendAfterMapProtocolNegotiation,

@@ -587,9 +587,11 @@ public class DBOperations {
                 try {
                     UUID key = row.getUUID(Schema.COLUMN_ID);
                     Sms sms = createSms(row, smsSet, key);
-                    if (excludeNonScheduleDeliveryTime == false || sms.getScheduleDeliveryTime() == null || sms.getScheduleDeliveryTime().before(curDate)) {
-                        smsSet.addSms(sms);
-                    }
+                    if (excludeNonScheduleDeliveryTime && sms.getScheduleDeliveryTime() != null && sms.getScheduleDeliveryTime().after(curDate))
+                        continue;
+//                    if (excludeReceiptMessages && (sms.getEsmClass() & MessageUtil.ESME_DELIVERY_ACK) != 0)
+//                        continue;
+                    smsSet.addSms(sms);
                 } catch (Exception e) {
                     String msg = "Failed to deserialize SMS at key '" + row.getUUID(0) + "'!";
 

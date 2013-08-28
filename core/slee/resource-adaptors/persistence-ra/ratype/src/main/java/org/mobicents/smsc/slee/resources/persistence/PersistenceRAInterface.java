@@ -231,12 +231,15 @@ public interface PersistenceRAInterface {
      */
     public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount, Tracer tracer) throws PersistenceException;
 
-	/**
-	 * Fill SmsSet with sms from LIVE_SMS
-	 * 
-	 * @param smsSet
-	 * @throws PersistenceException
-	 */
+	        /**
+     * Fill SmsSet with sms from LIVE_SMS
+     * 
+     * @param smsSet
+     * @param excludeNonScheduleDeliveryTime
+     *            Do not include into a result messages that are not ready to send (ScheduleDeliveryTime is in future yet)
+     *            sms.getScheduleDeliveryTime().after(curDate))
+     * @throws PersistenceException
+     */
 	public void fetchSchedulableSms(SmsSet smsSet, boolean excludeNonScheduleDeliveryTime) throws PersistenceException;
 
     /**
