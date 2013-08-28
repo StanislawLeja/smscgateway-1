@@ -120,6 +120,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	private static final int MASK_MAP_VERSION_2 = 0x02;
 	private static final int MASK_MAP_VERSION_3 = 0x04;
 
+	private static final int MASK_MAP_ALL_VERSION_USED = 0x07;
+
 	public MtSbb() {
 		super(className);
 	}
@@ -226,34 +228,29 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			if (logger.isWarningEnabled()) {
 				this.logger.warning("Rx : Mt onDialogReject / PotentialVersionIncompatibility=" + evt);
 			}
-
-			MAPApplicationContextVersion newMAPApplicationContextVersion = this
-					.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
-
-			if (newMAPApplicationContextVersion == MAPApplicationContextVersion.version1) {
-				// If version1 already tried this is error
-				String reason = "Error condition when invoking sendMtSms() from onDialogReject()."
-						+ newMAPApplicationContextVersion + " already tried and DialogReject again suggests Version1";
+			
+			String nodeDigits = this.getNetworkNode().getGlobalTitle().getDigits();
+			
+			if ((this.getMapApplicationContextVersionsUsed() & MASK_MAP_ALL_VERSION_USED) == MASK_MAP_ALL_VERSION_USED) {
+				// All versions tried and yet its saying ApplicationContextNotSupported. This is Error condition
+				String reason = "Error condition when invoking sendMtSms() from onDialogReject() for node "
+						+ nodeDigits + ". All versions tried and DialogReject again.";
 				this.logger.severe(reason);
 
 				ErrorCode smStatus = ErrorCode.MAP_SERVER_VERSION_ERROR;
 				this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
 				return;
-
 			}
 
-			mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
-					newMAPApplicationContextVersion);
+			MAPApplicationContextVersion newMAPApplicationContextVersion = this.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
 
 			// possible a peer supports only MAP V1
 			// Now send new SRI with supported ACN (MAP V1)
 			try {
 				// Update cache
-				mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
-						newMAPApplicationContextVersion);
+				mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),	newMAPApplicationContextVersion);
 
-				this.sendMtSms(this.getMtFoSMSMAPApplicationContext(MAPApplicationContextVersion.version1),
-						MessageProcessingState.resendAfterMapProtocolNegotiation, null);
+				this.sendMtSms(this.getMtFoSMSMAPApplicationContext(MAPApplicationContextVersion.version1),	MessageProcessingState.resendAfterMapProtocolNegotiation, null);
 				return;
 			} catch (SmscProcessingException e) {
 				String reason = "SmscPocessingException when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: "
@@ -286,36 +283,30 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 						+ " Event=" + evt);
 			}
 
-			// Now send new MtSMS with supported ACN
-			ApplicationContextName tcapApplicationContextName = evt.getAlternativeApplicationContext();
-
-			MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext
-					.getInstance(tcapApplicationContextName.getOid());
-			MAPApplicationContextVersion supportedMAPApplicationContextVersion = supportedMAPApplicationContext
-					.getApplicationContextVersion();
-
-			MAPApplicationContextVersion newMAPApplicationContextVersion = this
-					.getNegotiatedMapVersion(supportedMAPApplicationContextVersion);
-
-			if (newMAPApplicationContextVersion == supportedMAPApplicationContextVersion) {
-				// If version already tried this is error
-				String reason = "Error condition when invoking sendMtSms() from onDialogReject()."
-						+ supportedMAPApplicationContextVersion
-						+ " already tried and DialogReject again suggests Version1";
+			if ((this.getMapApplicationContextVersionsUsed() & MASK_MAP_ALL_VERSION_USED) == MASK_MAP_ALL_VERSION_USED) {
+				// All versions tried and yet its saying  ApplicationContextNotSupported. This is Error condition
+				String reason = "Error condition when invoking sendMtSms() from onDialogReject() for node "
+						+ nodeDigits + ". All versions tried and DialogReject again.";
 				this.logger.severe(reason);
 
 				ErrorCode smStatus = ErrorCode.MAP_SERVER_VERSION_ERROR;
 				this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
 				return;
-
 			}
 
-			mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
-					newMAPApplicationContextVersion);
+			// Now send new MtSMS with supported ACN
+			ApplicationContextName tcapApplicationContextName = evt.getAlternativeApplicationContext();
+
+			MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext.getInstance(tcapApplicationContextName.getOid());
+			
+			MAPApplicationContextVersion supportedMAPApplicationContextVersion = supportedMAPApplicationContext.getApplicationContextVersion();
+
+			MAPApplicationContextVersion newMAPApplicationContextVersion = this.getNegotiatedMapVersion(supportedMAPApplicationContextVersion);
+
+			mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),	newMAPApplicationContextVersion);
 
 			try {
-				this.sendMtSms(this.getMtFoSMSMAPApplicationContext(newMAPApplicationContextVersion),
-						MessageProcessingState.resendAfterMapProtocolNegotiation, null);
+				this.sendMtSms(this.getMtFoSMSMAPApplicationContext(newMAPApplicationContextVersion),MessageProcessingState.resendAfterMapProtocolNegotiation, null);
 				return;
 			} catch (SmscProcessingException e) {
 				String reason = "SmscPocessingException when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: "
