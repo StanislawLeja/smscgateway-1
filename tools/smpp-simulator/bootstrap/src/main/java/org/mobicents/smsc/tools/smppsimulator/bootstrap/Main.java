@@ -52,7 +52,7 @@ public class Main {
 	public static final String SIMULATOR_DATA = "simulator.data.dir";
 	private static int index = 0;
 
-	private static Logger logger = Logger.getLogger(Main.class);
+	private static Logger logger;
 
 	private String command = null;
 	private String appName = "main";
@@ -65,9 +65,10 @@ public class Main {
 		System.setProperty(SIMULATOR_DATA, homeDir + File.separator + "data" + File.separator);
 
 		if (!initLOG4JProperties(homeDir) && !initLOG4JXml(homeDir)) {
-			logger.error("Failed to initialize loggin, no configuration. Defaults are used.");
+			System.err.println("Failed to initialize loggin, no configuration. Defaults are used.");
 		}
 
+		logger = Logger.getLogger(Main.class);
 		logger.info("log4j configured");
 
 		Main main = new Main();
@@ -78,87 +79,92 @@ public class Main {
 
 	private void processCommandLine(String[] args) {
 
-//		String programName = System.getProperty("program.name", APP_NAME);
-//
-//		int c;
-//		String arg;
-//		LongOpt[] longopts = new LongOpt[5];
-//		longopts[0] = new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h');
-//		longopts[1] = new LongOpt("name", LongOpt.REQUIRED_ARGUMENT, null, 'n');
-//		longopts[2] = new LongOpt("http", LongOpt.REQUIRED_ARGUMENT, null, 't');
-//		longopts[3] = new LongOpt("rmi", LongOpt.REQUIRED_ARGUMENT, null, 'r');
-//		longopts[4] = new LongOpt("core", LongOpt.NO_ARGUMENT, null, 0);
-//
-//		Getopt g = new Getopt(APP_NAME, args, "-:n:t:r:h", longopts);
-//		g.setOpterr(false); // We'll do our own error handling
-//		//
-//		while ((c = g.getopt()) != -1) {
-//			switch (c) {
-//
-//			case 't':
-//				// http port
-//				arg = g.getOptarg();
-//				this.httpPort = Integer.parseInt(arg);
-//				if (this.httpPort < 0 || this.httpPort > 65000) {
-//					System.err.println("Http port should be in range 0 to 65000");
-//					System.exit(0);
-//				}
-//				break;
-//			case 'r':
-//				// rmi port
-//				arg = g.getOptarg();
-//				this.rmiPort = Integer.parseInt(arg);
-//				if (this.rmiPort < 0 || this.rmiPort > 65000) {
-//					System.err.println("RMI port should be in range 0 to 65000");
-//					System.exit(0);
-//				}
-//				break;
-//			case 'n':
-//				// name
-//				arg = g.getOptarg();
-//				this.appName = arg;
-//				break;
-//
-//			case 'h':
-//				this.genericHelp();
-//				break;
-//
-//			case ':':
-//				System.out.println("You need an argument for option " + (char) g.getOptopt());
-//				System.exit(0);
-//				break;
-//			case '?':
-//				System.out.println("The option '" + (char) g.getOptopt() + "' is not valid");
-//				System.exit(0);
-//				break;
-//			case 1:
-//				String optArg = g.getOptarg();
-//				if (optArg.equals("core")) {
-//					this.command = "core";
-//				} else if (optArg.equals("gui")) {
-//					this.command = "gui";
-//				} else if (optArg.equals("help")) {
-//					if (this.command == null) {
-//						this.genericHelp();
-//					} else if (this.command.equals("core")) {
-//						this.coreHelp();
-//					} else if (this.command.equals("gui")) {
-//						this.guiHelp();
-//					} else {
-//						System.out.println("Invalid command " + optArg);
-//						this.genericHelp();
-//					}
-//				} else {
-//					System.out.println("Invalid command " + optArg);
-//					this.genericHelp();
-//				}
-//				break;
-//
-//			default:
-//				this.genericHelp();
-//				break;
-//			}
-//		}
+		// String programName = System.getProperty("program.name", APP_NAME);
+		//
+		// int c;
+		// String arg;
+		// LongOpt[] longopts = new LongOpt[5];
+		// longopts[0] = new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h');
+		// longopts[1] = new LongOpt("name", LongOpt.REQUIRED_ARGUMENT, null,
+		// 'n');
+		// longopts[2] = new LongOpt("http", LongOpt.REQUIRED_ARGUMENT, null,
+		// 't');
+		// longopts[3] = new LongOpt("rmi", LongOpt.REQUIRED_ARGUMENT, null,
+		// 'r');
+		// longopts[4] = new LongOpt("core", LongOpt.NO_ARGUMENT, null, 0);
+		//
+		// Getopt g = new Getopt(APP_NAME, args, "-:n:t:r:h", longopts);
+		// g.setOpterr(false); // We'll do our own error handling
+		// //
+		// while ((c = g.getopt()) != -1) {
+		// switch (c) {
+		//
+		// case 't':
+		// // http port
+		// arg = g.getOptarg();
+		// this.httpPort = Integer.parseInt(arg);
+		// if (this.httpPort < 0 || this.httpPort > 65000) {
+		// System.err.println("Http port should be in range 0 to 65000");
+		// System.exit(0);
+		// }
+		// break;
+		// case 'r':
+		// // rmi port
+		// arg = g.getOptarg();
+		// this.rmiPort = Integer.parseInt(arg);
+		// if (this.rmiPort < 0 || this.rmiPort > 65000) {
+		// System.err.println("RMI port should be in range 0 to 65000");
+		// System.exit(0);
+		// }
+		// break;
+		// case 'n':
+		// // name
+		// arg = g.getOptarg();
+		// this.appName = arg;
+		// break;
+		//
+		// case 'h':
+		// this.genericHelp();
+		// break;
+		//
+		// case ':':
+		// System.out.println("You need an argument for option " + (char)
+		// g.getOptopt());
+		// System.exit(0);
+		// break;
+		// case '?':
+		// System.out.println("The option '" + (char) g.getOptopt() +
+		// "' is not valid");
+		// System.exit(0);
+		// break;
+		// case 1:
+		// String optArg = g.getOptarg();
+		// if (optArg.equals("core")) {
+		// this.command = "core";
+		// } else if (optArg.equals("gui")) {
+		// this.command = "gui";
+		// } else if (optArg.equals("help")) {
+		// if (this.command == null) {
+		// this.genericHelp();
+		// } else if (this.command.equals("core")) {
+		// this.coreHelp();
+		// } else if (this.command.equals("gui")) {
+		// this.guiHelp();
+		// } else {
+		// System.out.println("Invalid command " + optArg);
+		// this.genericHelp();
+		// }
+		// } else {
+		// System.out.println("Invalid command " + optArg);
+		// this.genericHelp();
+		// }
+		// break;
+		//
+		// default:
+		// this.genericHelp();
+		// break;
+		// }
+		// }
 
 	}
 
@@ -213,7 +219,7 @@ public class Main {
 			}
 		} catch (Exception e) {
 			// e.printStackTrace();
-			logger.info("Failed to initialize LOG4J with properties file.");
+			System.err.println("Failed to initialize LOG4J with properties file.");
 			return false;
 		}
 		return true;
@@ -227,7 +233,7 @@ public class Main {
 			DOMConfigurator.configure(log4jurl);
 		} catch (Exception e) {
 			// e.printStackTrace();
-			logger.info("Failed to initialize LOG4J with xml file.");
+			System.err.println("Failed to initialize LOG4J with xml file.");
 			return false;
 		}
 		return true;
@@ -253,20 +259,21 @@ public class Main {
 	}
 
 	protected void boot() throws Throwable {
-//		if (this.command == null) {
-//			System.out.println("No command passed");
-//			this.genericHelp();
-//		} else if (this.command.equals("gui")) {
-//			EventQueue.invokeLater(new MainGui(appName));
-//		} else if (this.command.equals("core")) {
-//			MainCore mainCore = new MainCore();
-//			mainCore.start(appName, httpPort, rmiPort);
-//		}
+		// if (this.command == null) {
+		// System.out.println("No command passed");
+		// this.genericHelp();
+		// } else if (this.command.equals("gui")) {
+		// EventQueue.invokeLater(new MainGui(appName));
+		// } else if (this.command.equals("core")) {
+		// MainCore mainCore = new MainCore();
+		// mainCore.start(appName, httpPort, rmiPort);
+		// }
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-//					SmppSimulatorForm window = new SmppSimulatorForm(initPar);
+					// SmppSimulatorForm window = new
+					// SmppSimulatorForm(initPar);
 					SmppSimulatorForm window = new SmppSimulatorForm();
 					window.getJFrame().setVisible(true);
 				} catch (Exception e) {
