@@ -61,6 +61,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.EsmeManagement;
+import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppSession.Type;
@@ -78,6 +79,7 @@ import com.cloudhopper.smpp.type.RecoverablePduException;
  * 
  */
 public abstract class RxSmppServerSbb implements Sbb {
+    protected static SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
     private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
     private static final ResourceAdaptorTypeID SCHEDULE_ID = new ResourceAdaptorTypeID("SchedulerResourceAdaptorType", "org.mobicents", "1.0");
@@ -400,7 +402,7 @@ public abstract class RxSmppServerSbb implements Sbb {
     protected byte[] recodeShortMessage(int esmeClass, int dataCoding, byte[] msg) {
         DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dataCoding);
         boolean udhPresent = (esmeClass & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
-        if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
+        if (smscPropertiesManagement.getSmppEncodingForUCS2() == 0 && dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
             byte[] textPart = msg;
             byte[] udhData = null;
             if (udhPresent && msg.length > 2) {

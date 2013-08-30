@@ -140,11 +140,12 @@ public class TxSmppServerSbbTest {
 		SubmitSm event = new SubmitSm();
 		Date curDate = new Date();
 		this.fillSm(event, curDate, true);
-		event.setShortMessage(msgUtf8);
+		event.setShortMessage(msgUcs2);
 
 		boolean b1 = this.pers.checkSmsSetExists(ta1);
 		assertFalse(b1);
 
+        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(1);
 		this.sbb.onSubmitSm(event, aci);
 
 		b1 = this.pers.checkSmsSetExists(ta1);
@@ -194,6 +195,7 @@ public class TxSmppServerSbbTest {
 		boolean b1 = this.pers.checkSmsSetExists(ta1);
 		assertFalse(b1);
 
+        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(0);
 		this.sbb.onDataSm(event, aci);
 
 		b1 = this.pers.checkSmsSetExists(ta1);
@@ -242,6 +244,7 @@ public class TxSmppServerSbbTest {
 		boolean b1 = this.pers.checkSmsSetExists(ta1);
 		assertFalse(b1);
 
+        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(0);
 		this.sbb.onSubmitSm(event, aci);
 
 		b1 = this.pers.checkSmsSetExists(ta1);
@@ -263,6 +266,8 @@ public class TxSmppServerSbbTest {
 
         if (!this.cassandraDbInited)
             return;
+
+        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(0);
 
         SmscPropertiesManagement spm = SmscPropertiesManagement.getInstance("Test");
         String sMsgA = "ПриветHel";
@@ -469,6 +474,7 @@ public class TxSmppServerSbbTest {
 		public TxSmppServerSbbProxy(PersistenceRAInterfaceProxy cassandraSbb) {
 			this.cassandraSbb = cassandraSbb;
 			this.logger = new TraceProxy();
+			TxSmppServerSbb.smscPropertiesManagement = SmscPropertiesManagement.getInstance("Test");
 		}
 
 		@Override

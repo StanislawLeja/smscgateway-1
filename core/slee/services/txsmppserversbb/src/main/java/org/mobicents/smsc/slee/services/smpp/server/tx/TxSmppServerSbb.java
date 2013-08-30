@@ -80,7 +80,7 @@ import com.cloudhopper.smpp.util.TlvUtil;
  * 
  */
 public abstract class TxSmppServerSbb implements Sbb {
-    private static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+    protected static SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
     private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
     private static final String LINK = "PersistenceResourceAdaptor";
@@ -591,7 +591,7 @@ public abstract class TxSmppServerSbb implements Sbb {
         Tlv sarSegmentSeqnum = event.getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
         boolean segmentTlvFlag = (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null);
 
-        if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
+        if (smscPropertiesManagement.getSmppEncodingForUCS2() == 0 && dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
             // for UCS2 encoding we have to recode UTF-8 -> UCS2 here
 
             byte[] udhData = null;

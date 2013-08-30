@@ -83,7 +83,13 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
                     // CharBuffer cb = ucs2Charset.decode(bb);
                     // s = cb.toString();
                     // } else {
-                    Charset utf8Charset = Charset.forName("UTF-8");
+
+                    Charset utf8Charset;
+                    if (this.testingForm.getSmppSimulatorParameters().getSmppEncodingForUCS2() == 0) {
+                        utf8Charset = Charset.forName("UTF-8");
+                    } else {
+                        utf8Charset = Charset.forName("UTF-16BE");
+                    }
                     ByteBuffer bb = ByteBuffer.wrap(msg);
                     CharBuffer cb = utf8Charset.decode(bb);
                     s = cb.toString();

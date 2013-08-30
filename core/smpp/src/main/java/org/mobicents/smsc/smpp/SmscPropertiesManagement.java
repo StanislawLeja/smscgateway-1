@@ -107,6 +107,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// maxMessageLengthReducer
 	// Recommended value = 6 Possible values from 0 to 12
 	private int maxMessageLengthReducer = 6;
+    // Encoding type at SMPP part for data coding schema==8 (UCS2)
+	// 0-UTF8, 1-UNICODE
+	private int smppEncodingForUCS2 = 0;
 
 	// time duration of exporting CDR's to a log based on cassandra database
 	// possible values: 1, 2, 5, 10, 15, 20, 30, 60 (minutes) or 0 (export is
@@ -295,6 +298,17 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.maxMessageLengthReducer = maxMessageLengReducer;
 		this.store();
 	}
+
+    @Override
+    public int getSmppEncodingForUCS2() {
+        return smppEncodingForUCS2;
+    }
+
+    @Override
+    public void setSmppEncodingForUCS2(int smppEncodingForUCS2) {
+        this.smppEncodingForUCS2 = smppEncodingForUCS2;
+        this.store();
+    }
 
 	// TODO : Let port be defined independently instead of ip:prt. Also when
 	// cluster will be used there will be more ip's. Hosts should be comma

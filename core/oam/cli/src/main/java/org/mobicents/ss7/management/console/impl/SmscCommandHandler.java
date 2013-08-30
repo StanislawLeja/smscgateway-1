@@ -61,6 +61,9 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("maxduedelay");
         set.addChild("duedelaymultiplicator");
         set.addChild("maxmessagelengthreducer");
+        Node smppencodingforucs2 = set.addChild("smppencodingforucs2");
+        smppencodingforucs2.addChild("utf8");
+        smppencodingforucs2.addChild("unicode");
         set.addChild("hosts");
         set.addChild("keyspacename");
         set.addChild("clustername");
@@ -86,6 +89,9 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("maxduedelay");
         get.addChild("duedelaymultiplicator");
         get.addChild("maxmessagelengthreducer");
+        smppencodingforucs2 = get.addChild("smppencodingforucs2");
+        smppencodingforucs2.addChild("utf8");
+        smppencodingforucs2.addChild("unicode");
         get.addChild("hosts");
         get.addChild("keyspacename");
         get.addChild("clustername");

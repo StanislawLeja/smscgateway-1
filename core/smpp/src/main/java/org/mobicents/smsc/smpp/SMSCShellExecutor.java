@@ -436,9 +436,18 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (parName.equals("duedelaymultiplicator")) {
 				int val = Integer.parseInt(options[3]);
 				smscPropertiesManagement.setDueDelayMultiplicator(val);
-			} else if (parName.equals("maxmessagelengthreducer")) {
-				int val = Integer.parseInt(options[3]);
-				smscPropertiesManagement.setMaxMessageLengthReducer(val);
+            } else if (parName.equals("maxmessagelengthreducer")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setMaxMessageLengthReducer(val);
+            } else if (parName.equals("smppencodingforucs2")) {
+                String s1 = options[3].toLowerCase();
+                if (s1.equals("utf8")) {
+                    smscPropertiesManagement.setSmppEncodingForUCS2(0);
+                } else if (s1.equals("unicode")) {
+                    smscPropertiesManagement.setSmppEncodingForUCS2(1);
+                } else {
+                    return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, "SmppEncodingForUCS2 value", "UTF8 or UNICODE are possible");
+                }
 			} else if (parName.equals("hosts")) {
 				String val = options[3];
 				smscPropertiesManagement.setHosts(val);
@@ -622,8 +631,21 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sb.append(smscPropertiesManagement.getMaxDueDelay());
 			} else if (parName.equals("duedelaymultiplicator")) {
 				sb.append(smscPropertiesManagement.getDueDelayMultiplicator());
-			} else if (parName.equals("maxmessagelengthreducer")) {
-				sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
+            } else if (parName.equals("maxmessagelengthreducer")) {
+                sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
+            } else if (parName.equals("smppencodingforucs2")) {
+                int i1 = smscPropertiesManagement.getSmppEncodingForUCS2();
+                switch (i1) {
+                case 0:
+                    sb.append("UTF8");
+                    break;
+                case 1:
+                    sb.append("UNICODE");
+                    break;
+                default:
+                    sb.append(i1);
+                    break;
+                }
 			} else if (parName.equals("hosts")) {
 				sb.append(smscPropertiesManagement.getHosts());
 			} else if (parName.equals("keyspacename")) {
@@ -704,9 +726,24 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getDueDelayMultiplicator());
 			sb.append("\n");
 
-			sb.append("maxMessageLengthReducer = ");
-			sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
-			sb.append("\n");
+            sb.append("maxMessageLengthReducer = ");
+            sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
+            sb.append("\n");
+
+            sb.append("smppEncodingForUCS2 = ");
+            int i1 = smscPropertiesManagement.getSmppEncodingForUCS2();
+            switch (i1) {
+            case 0:
+                sb.append("UTF8");
+                break;
+            case 1:
+                sb.append("UNICODE");
+                break;
+            default:
+                sb.append(i1);
+                break;
+            }
+            sb.append("\n");
 
 			sb.append("hosts = ");
 			sb.append(smscPropertiesManagement.getHosts());

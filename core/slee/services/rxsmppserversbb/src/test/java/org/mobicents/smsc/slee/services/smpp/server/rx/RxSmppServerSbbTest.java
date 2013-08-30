@@ -26,7 +26,7 @@ import static org.testng.Assert.*;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-
+import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.Test;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -54,12 +54,19 @@ public class RxSmppServerSbbTest {
         byte[] msgUcs2 = new byte[bf.limit()];
         bf.get(msgUcs2);
 
+        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(0);
         byte[] res = proxy.recodeShortMessage(0, 0, msgUcs2);
         assertEquals(res, msgUcs2);
 
+        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(0);
         res = proxy.recodeShortMessage(0, 8, msgUcs2);
         assertEquals(res, msgUtf8);
 
+        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(1);
+        res = proxy.recodeShortMessage(0, 8, msgUcs2);
+        assertEquals(res, msgUcs2);
+
+        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(0);
         byte[] udh = new byte[] { 0x05, 0x00, 0x03, 0x29, 0x02, 0x02 };
         byte[] aMsgB = new byte[msgUcs2.length + udh.length];
         System.arraycopy(udh, 0, aMsgB, 0, udh.length);
@@ -74,6 +81,10 @@ public class RxSmppServerSbbTest {
     }
 
     public class RxSmppServerSbbProxy extends RxSmppServerSbb {
+
+        public RxSmppServerSbbProxy() {
+            RxSmppServerSbb.smscPropertiesManagement = SmscPropertiesManagement.getInstance("Test");
+        }
 
         protected byte[] recodeShortMessage(int esmeClass, int dataCoding, byte[] msg) {
             return super.recodeShortMessage(esmeClass, dataCoding, msg);

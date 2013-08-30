@@ -59,6 +59,7 @@ public class SmppSimulatorParameters {
     private MCDeliveryReceipt mcDeliveryReceipt = MCDeliveryReceipt.No;
     private SendingMessageType sendingMessageType = SendingMessageType.SubmitSm;
     private SmppSession.Type smppSessionType = SmppSession.Type.CLIENT;
+    private int smppEncodingForUCS2 = 0;
 
 	private int bulkDestAddressRangeStart = 500000;
 	private int bulkDestAddressRangeEnd = 600000;
@@ -302,6 +303,14 @@ public class SmppSimulatorParameters {
      */
     public void setSmppSessionType(SmppSession.Type smppSessionType) {
         this.smppSessionType = smppSessionType;
+    }
+
+    public int getSmppEncodingForUCS2() {
+        return smppEncodingForUCS2;
+    }
+
+    public void setSmppEncodingForUCS2(int smppEncodingForUCS2) {
+        this.smppEncodingForUCS2 = smppEncodingForUCS2;
     }
 
 

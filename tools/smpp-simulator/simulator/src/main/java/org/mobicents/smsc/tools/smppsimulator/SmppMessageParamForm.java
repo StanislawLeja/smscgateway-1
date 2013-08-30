@@ -36,7 +36,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
-import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.ValidityType;
+import javax.swing.JRadioButton;
+import javax.swing.ButtonGroup;
 
 /**
  * 
@@ -65,6 +66,9 @@ public class SmppMessageParamForm extends JDialog {
 	private JCheckBox cbMessageClass;
 	private JComboBox<SmppSimulatorParameters.SendingMessageType> cbSendingMessageType;
 	private JComboBox<SmppSimulatorParameters.MCDeliveryReceipt> cbMcDeliveryReceipt;
+	private JRadioButton rbUtf8;
+	private JRadioButton rbUnicode;
+	private final ButtonGroup buttonGroup = new ButtonGroup();
 
 	public SmppMessageParamForm(JDialog owner) {
 		super(owner, true);
@@ -72,7 +76,7 @@ public class SmppMessageParamForm extends JDialog {
 		setTitle("SMPP message parameters");
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 620, 709);
+		setBounds(100, 100, 620, 755);
 
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.CENTER);
@@ -96,7 +100,7 @@ public class SmppMessageParamForm extends JDialog {
 				doOK();
 			}
 		});
-		button.setBounds(327, 640, 136, 23);
+		button.setBounds(327, 686, 136, 23);
 		panel.add(button);
 		
 		JButton button_1 = new JButton("Cancel");
@@ -105,7 +109,7 @@ public class SmppMessageParamForm extends JDialog {
 				doCancel();
 			}
 		});
-		button_1.setBounds(468, 640, 136, 23);
+		button_1.setBounds(468, 686, 136, 23);
 		panel.add(button_1);
 
 		cbSplittingType = new JComboBox<SmppSimulatorParameters.SplittingType>();
@@ -141,21 +145,21 @@ public class SmppMessageParamForm extends JDialog {
 						panel.add(cbSrcNPI);
 						
 						tbSourceAddress = new JTextField();
-						tbSourceAddress.setBounds(349, 312, 255, 20);
+						tbSourceAddress.setBounds(349, 344, 255, 20);
 						panel.add(tbSourceAddress);
 						tbSourceAddress.setColumns(10);
 						
 						JLabel lblSourceAddress = new JLabel("Source address");
-						lblSourceAddress.setBounds(10, 315, 329, 14);
+						lblSourceAddress.setBounds(10, 347, 329, 14);
 						panel.add(lblSourceAddress);
 						
 						tbDestAddress = new JTextField();
 						tbDestAddress.setColumns(10);
-						tbDestAddress.setBounds(349, 342, 255, 20);
+						tbDestAddress.setBounds(349, 374, 255, 20);
 						panel.add(tbDestAddress);
 						
 						JLabel lblDestinationAddress = new JLabel("Destination address");
-						lblDestinationAddress.setBounds(10, 345, 329, 14);
+						lblDestinationAddress.setBounds(10, 377, 329, 14);
 						panel.add(lblDestinationAddress);
 						
 						JLabel lblDestinationAddressType = new JLabel("Destination address: Type of number");
@@ -175,15 +179,15 @@ public class SmppMessageParamForm extends JDialog {
 						panel.add(cbDestNPI);
 						
 						JLabel lblValidityPeriod = new JLabel("Validity period / schedule delivery time");
-						lblValidityPeriod.setBounds(10, 377, 329, 14);
+						lblValidityPeriod.setBounds(10, 409, 329, 14);
 						panel.add(lblValidityPeriod);
 
 						cbValidityType = new JComboBox<SmppSimulatorParameters.ValidityType>();
-						cbValidityType.setBounds(349, 374, 255, 20);
+						cbValidityType.setBounds(349, 406, 255, 20);
 						panel.add(cbValidityType);
 						
 						JPanel panel_1 = new JPanel();
-						panel_1.setBounds(10, 475, 592, 152);
+						panel_1.setBounds(10, 521, 592, 152);
 						panel.add(panel_1);
 						panel_1.setLayout(null);
 						
@@ -223,20 +227,34 @@ public class SmppMessageParamForm extends JDialog {
 						panel.add(cbMessageClass);
 						
 						JLabel lblSendingMessageType = new JLabel("Sending message type");
-						lblSendingMessageType.setBounds(10, 407, 329, 14);
+						lblSendingMessageType.setBounds(10, 439, 329, 14);
 						panel.add(lblSendingMessageType);
 						
 						cbSendingMessageType = new JComboBox<SmppSimulatorParameters.SendingMessageType>();
-						cbSendingMessageType.setBounds(349, 404, 255, 20);
+						cbSendingMessageType.setBounds(349, 436, 255, 20);
 						panel.add(cbSendingMessageType);
 						
 						JLabel lblMcdeliveryreceiptRequestin = new JLabel("MCDeliveryReceipt request (in registered_delivery)");
-						lblMcdeliveryreceiptRequestin.setBounds(10, 437, 329, 14);
+						lblMcdeliveryreceiptRequestin.setBounds(10, 469, 329, 14);
 						panel.add(lblMcdeliveryreceiptRequestin);
 
 						cbMcDeliveryReceipt = new JComboBox<SmppSimulatorParameters.MCDeliveryReceipt>();
-						cbMcDeliveryReceipt.setBounds(349, 434, 255, 20);
+						cbMcDeliveryReceipt.setBounds(349, 466, 255, 20);
 						panel.add(cbMcDeliveryReceipt);
+						
+						JLabel lblEncodingTypeAt = new JLabel("Encoding type at SMPP part for data coding schema==8 (UCS2)");
+						lblEncodingTypeAt.setBounds(10, 312, 401, 14);
+						panel.add(lblEncodingTypeAt);
+						
+						rbUtf8 = new JRadioButton("Utf8");
+						buttonGroup.add(rbUtf8);
+						rbUtf8.setBounds(418, 307, 73, 25);
+						panel.add(rbUtf8);
+						
+						rbUnicode = new JRadioButton("Unicode");
+						buttonGroup.add(rbUnicode);
+						rbUnicode.setBounds(495, 307, 109, 25);
+						panel.add(rbUnicode);
 	}
 
 	public void setData(SmppSimulatorParameters data) {
@@ -351,6 +369,11 @@ public class SmppMessageParamForm extends JDialog {
 
 
         this.cbMessageClass.setSelected(data.isMessageClass());
+
+        if (data.getSmppEncodingForUCS2() == 0)
+            this.rbUtf8.setSelected(true);
+        else
+            this.rbUnicode.setSelected(true);
 	}
 
 	public SmppSimulatorParameters getData() {
@@ -403,6 +426,11 @@ public class SmppMessageParamForm extends JDialog {
         this.data.setMcDeliveryReceipt((SmppSimulatorParameters.MCDeliveryReceipt) cbMcDeliveryReceipt.getSelectedItem());
 
         this.data.setMessageClass(this.cbMessageClass.isSelected());
+
+        if (this.rbUtf8.isSelected())
+            this.data.setSmppEncodingForUCS2(0);
+        else
+            this.data.setSmppEncodingForUCS2(1);
 
 		this.dispose();
 	}

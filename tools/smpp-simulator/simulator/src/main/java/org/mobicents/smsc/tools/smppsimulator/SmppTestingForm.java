@@ -316,9 +316,10 @@ public class SmppTestingForm extends JDialog {
 		return msgRef;
 	}
 
-	private void submitMessage(EncodingType encodingType, boolean messageClass0, String messageText, SplittingType splittingType, ValidityType validityType, String destAddr) {
-		if (session0 == null)
-			return;
+    private void submitMessage(EncodingType encodingType, boolean messageClass0, String messageText, SplittingType splittingType, ValidityType validityType,
+            String destAddr) {
+        if (session0 == null)
+            return;
 
         try {
         	int dcs = 0;
@@ -339,14 +340,12 @@ public class SmppTestingForm extends JDialog {
     		case UCS2:
     			dcs = 8;
     			ByteBuffer bb;
-//                if (splittingType == SplittingType.DoNotSplit) {
-//                Charset utf8Charset = Charset.forName("UTF-8");
-//                bb = utf8Charset.encode(messageText);
+//                if (this.param.getSmppEncodingForUCS2() == 0) {
+//                    Charset utf8Charset = Charset.forName("UTF-8");
+//                    bb = utf8Charset.encode(messageText);
 //                } else {
-
-    			Charset ucs2Charset = Charset.forName("UTF-16BE");
+                Charset ucs2Charset = Charset.forName("UTF-16BE");
                 bb = ucs2Charset.encode(messageText);
-
 //                }
 
                 msgLenByte = messageText.length() * 2;
@@ -407,35 +406,38 @@ public class SmppTestingForm extends JDialog {
 				segmCnt = 1;
 			}
 
-            if (et == EncodingType.UCS2) {
-                for (int i1 = 0; i1 < msgLst.size(); i1++) {
-                    byte[] udhData = null;
-                    byte[] textPart = msgLst.get(i1);
-                    if (esmClass != 0 && textPart.length > 2) {
-                        // UDH exists
-                        int udhLen = (textPart[0] & 0xFF) + 1;
-                        if (udhLen <= textPart.length) {
-                            textPart = new byte[textPart.length - udhLen];
-                            udhData = new byte[udhLen];
-                            System.arraycopy(msgLst.get(i1), udhLen, textPart, 0, textPart.length);
-                            System.arraycopy(msgLst.get(i1), 0, udhData, 0, udhLen);
+            if (this.param.getSmppEncodingForUCS2() == 0) {
+                if (et == EncodingType.UCS2) {
+                    for (int i1 = 0; i1 < msgLst.size(); i1++) {
+                        byte[] udhData = null;
+                        byte[] textPart = msgLst.get(i1);
+                        if (esmClass != 0 && textPart.length > 2) {
+                            // UDH exists
+                            int udhLen = (textPart[0] & 0xFF) + 1;
+                            if (udhLen <= textPart.length) {
+                                textPart = new byte[textPart.length - udhLen];
+                                udhData = new byte[udhLen];
+                                System.arraycopy(msgLst.get(i1), udhLen, textPart, 0, textPart.length);
+                                System.arraycopy(msgLst.get(i1), 0, udhData, 0, udhLen);
+                            }
                         }
+                        Charset ucs2Charset = Charset.forName("UTF-16BE");
+                        ByteBuffer bb = ByteBuffer.wrap(textPart);
+                        CharBuffer cb = ucs2Charset.decode(bb);
+                        Charset utf8Charset = Charset.forName("UTF-8");
+                        ByteBuffer bf2 = utf8Charset.encode(cb);
+
+                        byte[] buf2;
+                        if (udhData != null) {
+                            buf2 = new byte[udhData.length + bf2.limit()];
+                            bf2.get(buf2, udhData.length, bf2.limit());
+                            System.arraycopy(udhData, 0, buf2, 0, udhData.length);
+                        } else {
+                            buf2 = new byte[bf2.limit()];
+                            bf2.get(buf2);
+                        }
+                        msgLst.set(i1, buf2);
                     }
-                    Charset ucs2Charset = Charset.forName("UTF-16BE");
-                    ByteBuffer bb = ByteBuffer.wrap(textPart);
-                    CharBuffer cb = ucs2Charset.decode(bb);
-                    Charset utf8Charset = Charset.forName("UTF-8");
-                    ByteBuffer bf2 = utf8Charset.encode(cb);
-                    byte[] buf2;
-                    if (udhData != null) {
-                        buf2 = new byte[udhData.length + bf2.limit()];
-                        bf2.get(buf2, udhData.length, bf2.limit());
-                        System.arraycopy(udhData, 0, buf2, 0, udhData.length);
-                    } else {
-                        buf2 = new byte[bf2.limit()];
-                        bf2.get(buf2);
-                    }
-                    msgLst.set(i1, buf2);
                 }
             }
 

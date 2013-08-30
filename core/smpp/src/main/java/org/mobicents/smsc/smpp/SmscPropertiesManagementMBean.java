@@ -85,9 +85,13 @@ public interface SmscPropertiesManagementMBean {
 
 	public void setDueDelayMultiplicator(int dueDelayMultiplicator);
 
-	public int getMaxMessageLengthReducer();
+    public int getMaxMessageLengthReducer();
 
-	public void setMaxMessageLengthReducer(int maxMessageLengReducer);
+    public void setMaxMessageLengthReducer(int maxMessageLengReducer);
+
+    public int getSmppEncodingForUCS2();
+
+    public void setSmppEncodingForUCS2(int smppEncodingForUCS2);
 
 
     public String getHosts();
