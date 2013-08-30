@@ -33,7 +33,6 @@ import java.util.UUID;
 
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
-import org.mobicents.protocols.ss7.map.api.MAPDialog;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.errors.SMEnumeratedDeliveryFailureCause;
@@ -41,7 +40,6 @@ import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
-import org.mobicents.protocols.ss7.map.api.primitives.MAPExtensionContainer;
 import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
@@ -91,6 +89,8 @@ import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy
 import org.mobicents.smsc.slee.resources.persistence.SmsProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPDialogSmsProxy.MAPTestEvent;
 import org.mobicents.smsc.slee.resources.persistence.MAPDialogSmsProxy.MAPTestEventType;
+import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
+import org.mobicents.smsc.slee.services.mt.MtCommonSbb.ErrorAction;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.MapVersionCache;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
@@ -2845,6 +2845,48 @@ public class MtTest {
         assertFalse(b1);
     }
 
+
+    /**
+     * onDeliveryError test
+     */
+    @Test(groups = { "Mt" })
+    public void onDeliveryErrorTest() throws Exception {
+
+        if (!this.cassandraDbInited)
+            return;
+
+        MAPServiceSmsProxy serviceSri = (MAPServiceSmsProxy) this.sriSbb.mapProvider.getMAPServiceSms();
+        MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy) this.mtSbb.mapProvider.getMAPServiceSms();
+        MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy) this.rsdsSbb.mapProvider.getMAPServiceSms();
+        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+
+        this.clearDatabase();
+
+        ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
+        SmsDef sd1 = new SmsDef();
+        sd1.valididtyPeriodIsOver = true;
+        sd1.msg = "a1".getBytes();
+        lst.add(sd1);
+        SmsDef sd2 = new SmsDef();
+        sd2.valididtyPeriodIsOver = true;
+        sd2.msg = "a2".getBytes();
+        lst.add(sd2);
+        SmsDef sd3 = new SmsDef();
+        sd3.msg = "b1".getBytes();
+        lst.add(sd3);
+
+        SmsSet smsSet = prepareDatabase(lst);
+
+        SmsSubmitData smsSubmitData = new SmsSubmitData();
+        smsSubmitData.setSmsSet(smsSet);
+        this.mtSbb.setSmsSubmitData(smsSubmitData);
+
+        this.sriSbb.onDeliveryError(ErrorAction.subscriberBusy, ErrorCode.ABSENT_SUBSCRIBER, "X error");
+
+        this.pers.fetchSchedulableSms(smsSet, false);
+        assertEquals(smsSet.getSmsCount(), 1);
+    }
+	
     @Test(groups = { "Mt" })
     public void Ucs2Test() throws Exception {
         

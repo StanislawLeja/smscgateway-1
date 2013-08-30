@@ -411,8 +411,9 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		}
 		int currentMsgNum = this.doGetCurrentMsgNum();
 		Sms smsa = smsSet.getSms(currentMsgNum);
-		if (smsa != null)
-			this.generateCdr(smsa, CdrGenerator.CDR_FAILED, reason);
+        if (smsa != null) {
+            this.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED, reason);
+        }
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("onDeliveryError: errorAction=");
@@ -421,8 +422,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		sb.append(smStatus);
 		sb.append(", smsSet=");
 		sb.append(smsSet);
-		sb.append(", reason=");
-		sb.append(", reason=");
+        sb.append(", reason=");
+        sb.append(reason);
 		if (this.logger.isInfoEnabled())
 			this.logger.info(sb.toString());
 
@@ -444,7 +445,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 					int goodMsgCnt = 0;
 					int removedMsgCnt = 0;
 					for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
-						Sms sms = smsSet.getSms(currentMsgNum);
+						Sms sms = smsSet.getSms(i1);
 						if (sms != null) {
 							if (sms.getValidityPeriod().before(curDate)) {
 								pers.archiveFailuredSms(sms);
@@ -510,7 +511,9 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		}
 
 		for (Sms sms : lstFailured) {
-			// adding an error receipt if it is needed
+            this.generateCdr(sms, CdrGenerator.CDR_FAILED, reason);
+
+            // adding an error receipt if it is needed
 			int registeredDelivery = sms.getRegisteredDelivery();
 			if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
 				TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(),

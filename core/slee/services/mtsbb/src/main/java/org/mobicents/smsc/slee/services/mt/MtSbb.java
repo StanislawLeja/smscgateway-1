@@ -63,6 +63,7 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AbsoluteTimeStamp;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AddressField;
+import org.mobicents.protocols.ss7.map.api.smstpdu.ConcatenatedShortMessagesIdentifier;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.api.smstpdu.NumberingPlanIdentification;
 import org.mobicents.protocols.ss7.map.api.smstpdu.TypeOfNumber;
@@ -673,11 +674,29 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 	private void handleSmsResponse(MAPDialogSms mapDialogSms, boolean continueDialog) {
 
+	    SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        if (smsDeliveryData == null) {
+            if (this.logger.isInfoEnabled())
+                this.logger.info("SmsDeliveryData CMP missed");
+
+            return;
+        }
+        SmsSet smsSet = smsDeliveryData.getSmsSet();
+        if (smsSet == null) {
+            this.logger.severe("In SmsDeliveryData CMP smsSet is missed");
+            return;
+        }
+        PersistenceRAInterface pers = this.getStore();
+        int currentMsgNum = this.doGetCurrentMsgNum();
+        Sms sms = smsSet.getSms(currentMsgNum);
+
 		// checking if there are yet message segments
 		int messageSegmentNumber = this.getMessageSegmentNumber();
 		SmsSignalInfo[] segments = this.getSegments();
 		if (segments != null && messageSegmentNumber < segments.length - 1) {
-			// we have more message parts to be sent yet
+            generateCdr(sms, CdrGenerator.CDR_PARTIAL, MtCommonSbb.CDR_SUCCESS_NO_REASON);
+
+            // we have more message parts to be sent yet
 			messageSegmentNumber++;
 			this.setMessageSegmentNumber(messageSegmentNumber);
 			try {
@@ -693,26 +712,45 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 		// current message is sent
 		// pushing current message into an archive
-		SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
-		if (smsDeliveryData == null) {
-			if (this.logger.isInfoEnabled())
-				this.logger.info("SmsDeliveryData CMP missed");
-
-			return;
-		}
-		SmsSet smsSet = smsDeliveryData.getSmsSet();
-		if (smsSet == null) {
-			this.logger.severe("In SmsDeliveryData CMP smsSet is missed");
-			return;
-		}
-		PersistenceRAInterface pers = this.getStore();
-
-		int currentMsgNum = this.doGetCurrentMsgNum();
-		Sms sms = smsSet.getSms(currentMsgNum);
 		Date deliveryDate = new Date();
 		try {
-			generateCdr(sms, CdrGenerator.CDR_SUCCESS, MtCommonSbb.CDR_SUCCESS_NO_REASON);
-			pers.archiveDeliveredSms(sms, deliveryDate);
+		    // we need to find if it is the last or single segment
+            boolean isPartial = false;
+            Tlv sarMsgRefNum = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
+            Tlv sarTotalSegments = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
+            Tlv sarSegmentSeqnum = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
+            if ((sms.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0) {
+                // message already contains UDH - checking for segment number
+                byte[] shortMessage = sms.getShortMessage();
+                if (shortMessage.length > 2) {
+                    // UDH exists
+                    int udhLen = (shortMessage[0] & 0xFF) + 1;
+                    if (udhLen <= shortMessage.length) {
+                        byte[] udhData = new byte[udhLen];
+                        System.arraycopy(shortMessage, 0, udhData, 0, udhLen);
+                        UserDataHeaderImpl userDataHeader = new UserDataHeaderImpl(udhData);
+                        ConcatenatedShortMessagesIdentifier csm = userDataHeader.getConcatenatedShortMessagesIdentifier();
+                        if(csm!=null){
+                            int mSCount = csm.getMesageSegmentCount();
+                            int mSNumber = csm.getMesageSegmentNumber();
+                            if (mSNumber < mSCount)
+                                isPartial = true;
+                        }
+                    }
+                }
+            } else if (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null) {
+                // we have tlv's that define message count/number/reference
+                try {
+                    int mSCount = sarTotalSegments.getValueAsUnsignedByte();
+                    int mSNumber = sarSegmentSeqnum.getValueAsUnsignedByte();
+                    if (mSNumber < mSCount)
+                        isPartial = true;
+                } catch (TlvConvertException e) {
+                }
+            }
+            generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL : CdrGenerator.CDR_SUCCESS, MtCommonSbb.CDR_SUCCESS_NO_REASON);
+
+            pers.archiveDeliveredSms(sms, deliveryDate);
 
 			// adding a success receipt if it is needed
 			int registeredDelivery = sms.getRegisteredDelivery();

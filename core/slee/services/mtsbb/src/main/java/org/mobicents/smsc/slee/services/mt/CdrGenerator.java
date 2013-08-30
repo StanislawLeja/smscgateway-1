@@ -32,8 +32,10 @@ public class CdrGenerator {
 	private static final Logger logger = Logger.getLogger(CdrGenerator.class);
 
 	public static final String CDR_SEPARATOR = ",";
-	public static final String CDR_SUCCESS = "success";
-	public static final String CDR_FAILED = "failed";
+    public static final String CDR_SUCCESS = "success";
+    public static final String CDR_PARTIAL = "partial";
+    public static final String CDR_FAILED = "failed";
+    public static final String CDR_TEMP_FAILED = "temp_failed";
 
 	public static void generateCdr(String message) {
 		logger.debug(message);
