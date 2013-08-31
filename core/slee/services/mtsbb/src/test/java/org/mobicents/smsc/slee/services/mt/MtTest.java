@@ -153,7 +153,7 @@ public class MtTest {
 	public void tearDownMethod() throws Exception {
 		System.out.println("tearDownMethod");
 	}
-	
+
 	@Test(groups = { "Mt" })
 	public void NegotiatedMapVersionTest1() throws Exception {
 
@@ -200,76 +200,7 @@ public class MtTest {
         assertTrue(this.mtSbb.isMAPVersionTested(ver1));
         assertTrue(this.mtSbb.isMAPVersionTested(ver2));
         assertTrue(this.mtSbb.isMAPVersionTested(ver3));
-
-
-
-
-
-
-
-//	    //When new versions are passed, since these are not used, negotiated MAP version are same as passed
-//		
-//		MAPApplicationContextVersion supportedApplicationContextVersion = MAPApplicationContextVersion.version3;
-//		
-//		MAPApplicationContextVersion negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
-//		
-//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
-//		
-//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version2);
-//		
-//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
-//		
-//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
-//		
-//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);
-//		
-//		//Now since all versions are used, what ever version is passed is returned back as it is
-//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
-//		
-//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
-//		
-//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version2);
-//		
-//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
-//		
-//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
-//		
-//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);		
-		
 	}
-	
-//	@Test(groups = { "Mt" })
-//	public void NegotiatedMapVersionTest2() throws Exception {
-//		//When same versions is passed, negotiations will return back unused versions
-//		
-//		MAPApplicationContextVersion supportedApplicationContextVersion = MAPApplicationContextVersion.version3;
-//		
-//		MAPApplicationContextVersion negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
-//		
-//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
-//		
-//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version3);
-//		
-//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
-//		
-//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version3);
-//		
-//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);
-//		
-//		//Now since all versions are used, what ever version is passed is returned back as it is
-//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(supportedApplicationContextVersion);
-//		
-//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version3);
-//		
-//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version2);
-//		
-//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version2);
-//		
-//		negotiatedVersion = this.mtSbb.getNegotiatedMapVersion(MAPApplicationContextVersion.version1);
-//		
-//		assertEquals(negotiatedVersion, MAPApplicationContextVersion.version1);		
-//		
-//	}	
 
 
 	/**
@@ -2843,6 +2774,237 @@ public class MtTest {
 
         b1 = this.pers.checkSmsSetExists(taR);
         assertFalse(b1);
+    }
+
+    /**
+     * MAP V3 -> MAP V3 -> MAP V1 (Reject - Alternative ANC)
+     */
+    @Test(groups = { "Mt" })
+    public void MapVersionNegotiationTest() throws Exception {
+
+        if (!this.cassandraDbInited)
+            return;
+
+        MAPServiceSmsProxy serviceSri = (MAPServiceSmsProxy)this.sriSbb.mapProvider.getMAPServiceSms();
+        MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
+        MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
+        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+
+        this.clearDatabase();
+
+        ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
+        SmsDef sd1 = new SmsDef();
+        lst.add(sd1);
+
+        SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
+
+        this.pers.setDeliveryStart(smsSet, curDate);
+
+        // initial onSms message
+        SmsSetEvent event = new SmsSetEvent();
+        event.setSmsSet(smsSet);
+        this.sriSbb.onSms(event, null, null);
+
+        MAPDialogSmsProxy dlg = serviceSri.getLastMAPDialogSms();
+
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version1));
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version2));
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version3));
+        assertFalse(this.mtSbb.isNegotiatedMapVersionUsing());
+
+        // SRI response
+        IMSI imsi = new IMSIImpl(imsiDig);
+        ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
+                org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, null);
+        evt1.setMAPDialog(dlg);
+        this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
+        this.sriSbb.onDialogDelimiter(null, null);
+
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version1));
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version2));
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version3));
+        assertFalse(this.mtSbb.isNegotiatedMapVersionUsing());
+
+        dlg = serviceMt.getLastMAPDialogSms();
+        MAPApplicationContextVersion vers = dlg.getApplicationContext().getApplicationContextVersion();
+        assertEquals(vers, MAPApplicationContextVersion.version3);
+
+        ApplicationContextNameImpl acn = new ApplicationContextNameImpl();
+        acn.setOid(new long[] { 0, 4, 0, 0, 1, 0, 25, 2 });
+        DialogReject evt5 = new DialogReject(dlg, MAPRefuseReason.ApplicationContextNotSupported, acn, null);
+        this.mtSbb.onDialogReject(evt5, null);
+
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version1));
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version2));
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version3));
+        assertFalse(this.mtSbb.isNegotiatedMapVersionUsing());
+
+        dlg = serviceMt.getLastMAPDialogSms();
+        vers = dlg.getApplicationContext().getApplicationContextVersion();
+        assertEquals(vers, MAPApplicationContextVersion.version2);
+
+        acn = new ApplicationContextNameImpl();
+        acn.setOid(new long[] { 0, 4, 0, 0, 1, 0, 25, 2 });
+        evt5 = new DialogReject(dlg, MAPRefuseReason.ApplicationContextNotSupported, acn, null);
+        this.mtSbb.onDialogReject(evt5, null);
+
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version1));
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version2));
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version3));
+        assertFalse(this.mtSbb.isNegotiatedMapVersionUsing());
+
+        dlg = serviceMt.getLastMAPDialogSms();
+        vers = dlg.getApplicationContext().getApplicationContextVersion();
+        assertEquals(vers, MAPApplicationContextVersion.version1);
+    }
+
+    /**
+     * MAP V3 -> MAP V2 (Reject - Alternative ANC) -> Success
+     * New Message
+     * MAP V2 -> MAP V1 (Possible Version negotiation)
+     */
+    @Test(groups = { "Mt" })
+    public void MapVersionNegotiationTest2() throws Exception {
+
+        if (!this.cassandraDbInited)
+            return;
+
+        MAPServiceSmsProxy serviceSri = (MAPServiceSmsProxy)this.sriSbb.mapProvider.getMAPServiceSms();
+        MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
+        MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
+        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+
+        this.clearDatabase();
+
+        ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
+        SmsDef sd1 = new SmsDef();
+        lst.add(sd1);
+
+        SmsSet smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
+
+        this.pers.setDeliveryStart(smsSet, curDate);
+
+        // initial onSms message
+        SmsSetEvent event = new SmsSetEvent();
+        event.setSmsSet(smsSet);
+        this.sriSbb.onSms(event, null, null);
+
+        MAPDialogSmsProxy dlg = serviceSri.getLastMAPDialogSms();
+
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version1));
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version2));
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version3));
+        assertFalse(this.mtSbb.isNegotiatedMapVersionUsing());
+
+        // SRI response
+        IMSI imsi = new IMSIImpl(imsiDig);
+        ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
+                org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, null);
+        evt1.setMAPDialog(dlg);
+        this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
+        this.sriSbb.onDialogDelimiter(null, null);
+
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version1));
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version2));
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version3));
+        assertFalse(this.mtSbb.isNegotiatedMapVersionUsing());
+
+        dlg = serviceMt.getLastMAPDialogSms();
+        MAPApplicationContextVersion vers = dlg.getApplicationContext().getApplicationContextVersion();
+        assertEquals(vers, MAPApplicationContextVersion.version3);
+
+        ApplicationContextNameImpl acn = new ApplicationContextNameImpl();
+        acn.setOid(new long[] { 0, 4, 0, 0, 1, 0, 25, 2 });
+        DialogReject evt5 = new DialogReject(dlg, MAPRefuseReason.ApplicationContextNotSupported, acn, null);
+        this.mtSbb.onDialogReject(evt5, null);
+
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version1));
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version2));
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version3));
+        assertFalse(this.mtSbb.isNegotiatedMapVersionUsing());
+
+        dlg = serviceMt.getLastMAPDialogSms();
+        vers = dlg.getApplicationContext().getApplicationContextVersion();
+        assertEquals(vers, MAPApplicationContextVersion.version2);
+
+        // Mt response
+        ForwardShortMessageResponseImpl evt2 = new ForwardShortMessageResponseImpl();
+        evt2.setMAPDialog(dlg);
+        DialogAccept daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
+        this.mtSbb.onForwardShortMessageResponse(evt2, null);
+        DialogClose dcl = new DialogClose(dlg);
+        this.mtSbb.onDialogClose(dcl, null);
+
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version1));
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version2));
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version3));
+        assertFalse(this.mtSbb.isNegotiatedMapVersionUsing());
+
+
+        // second message sending w\round
+        this.clearDatabase();
+
+        lst = new ArrayList<SmsDef>();
+        sd1 = new SmsDef();
+        lst.add(sd1);
+
+        smsSet = prepareDatabase(lst);
+        smsSet.clearSmsList();
+
+        this.pers.setDeliveryStart(smsSet, curDate);
+
+        // initial onSms message
+        event = new SmsSetEvent();
+        event.setSmsSet(smsSet);
+        this.sriSbb.onSms(event, null, null);
+
+        dlg = serviceSri.getLastMAPDialogSms();
+
+//        this.mtSbb.setMAPVersionTested(MAPApplicationContextVersion.version1);
+
+        this.mtSbb.setMapApplicationContextVersionsUsed(0);
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version1));
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version2));
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version3));
+        assertFalse(this.mtSbb.isNegotiatedMapVersionUsing());
+
+        // SRI response
+        imsi = new IMSIImpl(imsiDig);
+        networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number, org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN,
+                nnnDig);
+        locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, null);
+        evt1.setMAPDialog(dlg);
+        this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
+        this.sriSbb.onDialogDelimiter(null, null);
+
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version1));
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version2));
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version3));
+        assertTrue(this.mtSbb.isNegotiatedMapVersionUsing());
+
+        dlg = serviceMt.getLastMAPDialogSms();
+        vers = dlg.getApplicationContext().getApplicationContextVersion();
+        assertEquals(vers, MAPApplicationContextVersion.version2);
+
+        evt5 = new DialogReject(dlg, MAPRefuseReason.PotentialVersionIncompatibility, null, null);
+        this.mtSbb.onDialogReject(evt5, null);
+
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version1));
+        assertTrue(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version2));
+        assertFalse(this.mtSbb.isMAPVersionTested(MAPApplicationContextVersion.version3));
+        assertFalse(this.mtSbb.isNegotiatedMapVersionUsing());
+
+        dlg = serviceMt.getLastMAPDialogSms();
+        vers = dlg.getApplicationContext().getApplicationContextVersion();
+        assertEquals(vers, MAPApplicationContextVersion.version1);
     }
 
 
