@@ -63,7 +63,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String CLUSTER_NAME = "clusterName";
 	private static final String FETCH_PERIOD = "fetchPeriod";
 	private static final String FETCH_MAX_ROWS = "fetchMaxRows";
-	private static final String MAX_ACTIVITY_COUNT = "maxActivityCount";
+    private static final String MAX_ACTIVITY_COUNT = "maxActivityCount";
+    private static final String SMPP_ENCODING_FOR_UCS2 = "smppEncodingForUCS2";
 	// private static final String CDR_DATABASE_EXPORT_DURATION =
 	// "cdrDatabaseExportDuration";
 	private static final String ESME_DEFAULT_CLUSTER_NAME = "esmeDefaultCluster";
@@ -109,7 +110,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private int maxMessageLengthReducer = 6;
     // Encoding type at SMPP part for data coding schema==8 (UCS2)
 	// 0-UTF8, 1-UNICODE
-	private int smppEncodingForUCS2 = 0;
+	private SmppEncodingForUCS2 smppEncodingForUCS2 = SmppEncodingForUCS2.Utf8;
 
 	// time duration of exporting CDR's to a log based on cassandra database
 	// possible values: 1, 2, 5, 10, 15, 20, 30, 60 (minutes) or 0 (export is
@@ -300,12 +301,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	}
 
     @Override
-    public int getSmppEncodingForUCS2() {
+    public SmppEncodingForUCS2 getSmppEncodingForUCS2() {
         return smppEncodingForUCS2;
     }
 
     @Override
-    public void setSmppEncodingForUCS2(int smppEncodingForUCS2) {
+    public void setSmppEncodingForUCS2(SmppEncodingForUCS2 smppEncodingForUCS2) {
         this.smppEncodingForUCS2 = smppEncodingForUCS2;
         this.store();
     }
@@ -478,7 +479,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			// CDR_DATABASE_EXPORT_DURATION, Integer.class);
 
 			writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
-			writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
+            writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
+            writer.write(this.smppEncodingForUCS2.toString(), SMPP_ENCODING_FOR_UCS2, String.class);
 
 			writer.close();
 		} catch (Exception e) {
@@ -553,6 +555,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			val = reader.read(MAX_ACTIVITY_COUNT, Integer.class);
 			if (val != null)
 				this.maxActivityCount = val;
+
+            String vals = reader.read(SMPP_ENCODING_FOR_UCS2, String.class);
+            if (vals != null)
+                this.smppEncodingForUCS2 = Enum.valueOf(SmppEncodingForUCS2.class, vals);
 
 			reader.close();
 		} catch (XMLStreamException ex) {

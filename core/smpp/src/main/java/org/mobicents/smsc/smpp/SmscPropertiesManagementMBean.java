@@ -89,9 +89,9 @@ public interface SmscPropertiesManagementMBean {
 
     public void setMaxMessageLengthReducer(int maxMessageLengReducer);
 
-    public int getSmppEncodingForUCS2();
+    public SmppEncodingForUCS2 getSmppEncodingForUCS2();
 
-    public void setSmppEncodingForUCS2(int smppEncodingForUCS2);
+    public void setSmppEncodingForUCS2(SmppEncodingForUCS2 smppEncodingForUCS2);
 
 
     public String getHosts();
