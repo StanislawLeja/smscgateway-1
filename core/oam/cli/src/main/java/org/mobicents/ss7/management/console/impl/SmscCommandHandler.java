@@ -137,6 +137,11 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         databaseRule.addChild("delete");
         databaseRule.addChild("get");
         databaseRule.addChild("getrange");
+        
+        Node mapcache = parent.addChild("mapcache");
+        mapcache.addChild("get");
+        mapcache.addChild("set");
+        mapcache.addChild("clear");
 
 	};
 

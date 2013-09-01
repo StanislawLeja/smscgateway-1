@@ -98,6 +98,15 @@ public interface SMSCOAMMessages {
     public static final String PARAMETER_SUCCESSFULLY_REMOVED = "Parameter has been successfully removed";
 
 	public static final String SMPP_SERVER_PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set. The changed value will take effect after SmppServer is restarted";
+	
+	public static final String MAP_VERSION_CACHE_NOT_FOUND = "No map version found in the cache";
+	
+	public static final String MAP_VERSION_CACHE_INVALID_VERSION = "Invalid version passed, valid values are 1,2 or 3";
+	
+	public static final String MAP_VERSION_CACHE_SUCCESSFULLY_SET = "Successfully set map version cache";
+	
+	public static final String MAP_VERSION_CACHE_SUCCESSFULLY_CLEARED = "Successfully cleared version cache";
+	
 	/**
 	 * Generic constants
 	 */

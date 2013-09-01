@@ -27,7 +27,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import javolution.util.FastMap;
+
 import org.apache.log4j.Logger;
+import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.ss7.management.console.ShellExecutor;
 
 import com.cloudhopper.smpp.SmppBindType;
@@ -47,6 +50,11 @@ public class SMSCShellExecutor implements ShellExecutor {
 	private SmscManagement smscManagement;
 
 	private static SmscPropertiesManagement smscPropertiesManagement;
+
+	private static final MapVersionCache mapVersionCache = MapVersionCache.getInstance();
+
+	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+	private static final String MAP_CACHE_KEY_VALUE_SEPARATOR = " : ";
 
 	public SMSCShellExecutor() {
 
@@ -148,8 +156,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		String systemType = null;
 		SmppInterfaceVersionType smppVersionType = null;
-		byte esmeTonType = (byte)smscPropertiesManagement.getDefaultTon();
-		byte esmeNpiType = (byte)smscPropertiesManagement.getDefaultNpi();
+		byte esmeTonType = (byte) smscPropertiesManagement.getDefaultTon();
+		byte esmeNpiType = (byte) smscPropertiesManagement.getDefaultNpi();
 		String esmeAddrRange = null;
 		String clusterName = name;
 
@@ -325,6 +333,22 @@ public class SMSCShellExecutor implements ShellExecutor {
 				}
 
 				return SMSCOAMMessages.INVALID_COMMAND;
+			} else if (args[1].toLowerCase().equals("mapcache")) {
+				String rasCmd = args[2];
+
+				if (rasCmd == null) {
+					return SMSCOAMMessages.INVALID_COMMAND;
+				}
+
+				if (rasCmd.equals("get")) {
+					return this.getMapVersionCache(args);
+				} else if (rasCmd.equals("set")) {
+					return this.setMapVersionCache(args);
+				} else if (rasCmd.equals("clear")) {
+					return this.clearMapVersionCache(args);
+				}
+
+				return SMSCOAMMessages.INVALID_COMMAND;
 			}
 
 			return SMSCOAMMessages.INVALID_COMMAND;
@@ -332,6 +356,93 @@ public class SMSCShellExecutor implements ShellExecutor {
 			logger.error(String.format("Error while executing comand %s", Arrays.toString(args)), e);
 			return e.getMessage();
 		}
+	}
+
+	/**
+	 * smsc mapcache get <msisdn>
+	 * 
+	 * msisdn is optional
+	 * 
+	 * @param args
+	 * @return
+	 */
+	private String getMapVersionCache(String[] args) throws Exception {
+		if (args.length < 3 || args.length > 4) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		if (args.length == 4) {
+			String msisdn = args[3];
+
+			MAPApplicationContextVersion mapApplicationContextVersion = mapVersionCache
+					.getMAPApplicationContextVersion(msisdn);
+
+			if (mapApplicationContextVersion != null) {
+				return mapApplicationContextVersion.toString();
+			} else {
+				return SMSCOAMMessages.MAP_VERSION_CACHE_NOT_FOUND;
+			}
+		}
+
+		FastMap<String, MAPApplicationContextVersion> cache = mapVersionCache.getMAPApplicationContextVersionCache();
+		if (cache.size() == 0) {
+			return SMSCOAMMessages.MAP_VERSION_CACHE_NOT_FOUND;
+		}
+
+		StringBuffer sb = new StringBuffer();
+		for (FastMap.Entry<String, MAPApplicationContextVersion> e = cache.head(), end = cache.tail(); (e = e.getNext()) != end;) {
+			sb.append(e.getKey()).append(MAP_CACHE_KEY_VALUE_SEPARATOR).append(e.getValue()).append(LINE_SEPARATOR);
+		}
+
+		return sb.toString();
+	}
+
+	/**
+	 * smsc mapcache clear
+	 * 
+	 * msisdn is optional
+	 * 
+	 * @param args
+	 * @return
+	 */
+	private String clearMapVersionCache(String[] args) throws Exception {
+		if (args.length != 3) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		mapVersionCache.forceClear();
+
+		return SMSCOAMMessages.MAP_VERSION_CACHE_SUCCESSFULLY_CLEARED;
+	}
+
+	/**
+	 * smsc mapcache set <msisdn> <version>
+	 * 
+	 * msisdn is optional
+	 * 
+	 * @param args
+	 * @return
+	 */
+	private String setMapVersionCache(String[] args) throws Exception {
+		if (args.length != 5) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		String msisdn = args[3];
+		String version = args[4];
+
+		MAPApplicationContextVersion mapApplicationContextVersion = MAPApplicationContextVersion.getInstance(Long
+				.parseLong(version));
+
+		if (mapApplicationContextVersion == null
+				|| mapApplicationContextVersion == MAPApplicationContextVersion.version4) {
+			return SMSCOAMMessages.MAP_VERSION_CACHE_INVALID_VERSION;
+
+		}
+
+		mapVersionCache.setMAPApplicationContextVersion(msisdn, mapApplicationContextVersion);
+
+		return SMSCOAMMessages.MAP_VERSION_CACHE_SUCCESSFULLY_SET;
 	}
 
 	/**
@@ -436,18 +547,19 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (parName.equals("duedelaymultiplicator")) {
 				int val = Integer.parseInt(options[3]);
 				smscPropertiesManagement.setDueDelayMultiplicator(val);
-            } else if (parName.equals("maxmessagelengthreducer")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setMaxMessageLengthReducer(val);
-            } else if (parName.equals("smppencodingforucs2")) {
-                String s1 = options[3].toLowerCase();
-                if (s1.equals("utf8")) {
-                    smscPropertiesManagement.setSmppEncodingForUCS2(0);
-                } else if (s1.equals("unicode")) {
-                    smscPropertiesManagement.setSmppEncodingForUCS2(1);
-                } else {
-                    return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, "SmppEncodingForUCS2 value", "UTF8 or UNICODE are possible");
-                }
+			} else if (parName.equals("maxmessagelengthreducer")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setMaxMessageLengthReducer(val);
+			} else if (parName.equals("smppencodingforucs2")) {
+				String s1 = options[3].toLowerCase();
+				if (s1.equals("utf8")) {
+					smscPropertiesManagement.setSmppEncodingForUCS2(0);
+				} else if (s1.equals("unicode")) {
+					smscPropertiesManagement.setSmppEncodingForUCS2(1);
+				} else {
+					return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, "SmppEncodingForUCS2 value",
+							"UTF8 or UNICODE are possible");
+				}
 			} else if (parName.equals("hosts")) {
 				String val = options[3];
 				smscPropertiesManagement.setHosts(val);
@@ -631,21 +743,21 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sb.append(smscPropertiesManagement.getMaxDueDelay());
 			} else if (parName.equals("duedelaymultiplicator")) {
 				sb.append(smscPropertiesManagement.getDueDelayMultiplicator());
-            } else if (parName.equals("maxmessagelengthreducer")) {
-                sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
-            } else if (parName.equals("smppencodingforucs2")) {
-                int i1 = smscPropertiesManagement.getSmppEncodingForUCS2();
-                switch (i1) {
-                case 0:
-                    sb.append("UTF8");
-                    break;
-                case 1:
-                    sb.append("UNICODE");
-                    break;
-                default:
-                    sb.append(i1);
-                    break;
-                }
+			} else if (parName.equals("maxmessagelengthreducer")) {
+				sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
+			} else if (parName.equals("smppencodingforucs2")) {
+				int i1 = smscPropertiesManagement.getSmppEncodingForUCS2();
+				switch (i1) {
+				case 0:
+					sb.append("UTF8");
+					break;
+				case 1:
+					sb.append("UNICODE");
+					break;
+				default:
+					sb.append(i1);
+					break;
+				}
 			} else if (parName.equals("hosts")) {
 				sb.append(smscPropertiesManagement.getHosts());
 			} else if (parName.equals("keyspacename")) {
@@ -726,24 +838,24 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getDueDelayMultiplicator());
 			sb.append("\n");
 
-            sb.append("maxMessageLengthReducer = ");
-            sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
-            sb.append("\n");
+			sb.append("maxMessageLengthReducer = ");
+			sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
+			sb.append("\n");
 
-            sb.append("smppEncodingForUCS2 = ");
-            int i1 = smscPropertiesManagement.getSmppEncodingForUCS2();
-            switch (i1) {
-            case 0:
-                sb.append("UTF8");
-                break;
-            case 1:
-                sb.append("UNICODE");
-                break;
-            default:
-                sb.append(i1);
-                break;
-            }
-            sb.append("\n");
+			sb.append("smppEncodingForUCS2 = ");
+			int i1 = smscPropertiesManagement.getSmppEncodingForUCS2();
+			switch (i1) {
+			case 0:
+				sb.append("UTF8");
+				break;
+			case 1:
+				sb.append("UNICODE");
+				break;
+			default:
+				sb.append(i1);
+				break;
+			}
+			sb.append("\n");
 
 			sb.append("hosts = ");
 			sb.append(smscPropertiesManagement.getHosts());
@@ -974,6 +1086,12 @@ public class SMSCShellExecutor implements ShellExecutor {
 	@Override
 	public boolean handles(String command) {
 		return "smsc".equals(command);
+	}
+
+	public static void main(String[] args) throws Exception {
+		String command = "smsc mapcache get 1234567";
+		SMSCShellExecutor exec = new SMSCShellExecutor();
+		exec.getMapVersionCache(command.split(" "));
 	}
 
 }
