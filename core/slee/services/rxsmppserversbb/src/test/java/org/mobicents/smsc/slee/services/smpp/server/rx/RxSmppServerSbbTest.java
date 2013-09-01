@@ -26,6 +26,8 @@ import static org.testng.Assert.*;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+
+import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.Test;
 
@@ -54,19 +56,19 @@ public class RxSmppServerSbbTest {
         byte[] msgUcs2 = new byte[bf.limit()];
         bf.get(msgUcs2);
 
-        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(0);
+        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
         byte[] res = proxy.recodeShortMessage(0, 0, msgUcs2);
         assertEquals(res, msgUcs2);
 
-        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(0);
+        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
         res = proxy.recodeShortMessage(0, 8, msgUcs2);
         assertEquals(res, msgUtf8);
 
-        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(1);
+        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Unicode);
         res = proxy.recodeShortMessage(0, 8, msgUcs2);
         assertEquals(res, msgUcs2);
 
-        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(0);
+        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
         byte[] udh = new byte[] { 0x05, 0x00, 0x03, 0x29, 0x02, 0x02 };
         byte[] aMsgB = new byte[msgUcs2.length + udh.length];
         System.arraycopy(udh, 0, aMsgB, 0, udh.length);

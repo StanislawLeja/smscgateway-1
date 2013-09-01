@@ -61,6 +61,7 @@ import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmppExtraConstants;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.smpp.Esme;
+import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -591,7 +592,7 @@ public abstract class TxSmppServerSbb implements Sbb {
         Tlv sarSegmentSeqnum = event.getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
         boolean segmentTlvFlag = (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null);
 
-        if (smscPropertiesManagement.getSmppEncodingForUCS2() == 0 && dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
+        if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncodingForUCS2.Utf8 && dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
             // for UCS2 encoding we have to recode UTF-8 -> UCS2 here
 
             byte[] udhData = null;

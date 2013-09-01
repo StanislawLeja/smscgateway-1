@@ -53,6 +53,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 import org.mobicents.smsc.slee.services.smpp.server.tx.TxSmppServerSbb;
 import org.mobicents.smsc.smpp.Esme;
+import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
 import org.mobicents.smsc.smpp.SmppInterfaceVersionType;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.AfterClass;
@@ -145,7 +146,7 @@ public class TxSmppServerSbbTest {
 		boolean b1 = this.pers.checkSmsSetExists(ta1);
 		assertFalse(b1);
 
-        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(1);
+        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8.Unicode);
 		this.sbb.onSubmitSm(event, aci);
 
 		b1 = this.pers.checkSmsSetExists(ta1);
@@ -195,7 +196,7 @@ public class TxSmppServerSbbTest {
 		boolean b1 = this.pers.checkSmsSetExists(ta1);
 		assertFalse(b1);
 
-        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(0);
+        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
 		this.sbb.onDataSm(event, aci);
 
 		b1 = this.pers.checkSmsSetExists(ta1);
@@ -244,7 +245,7 @@ public class TxSmppServerSbbTest {
 		boolean b1 = this.pers.checkSmsSetExists(ta1);
 		assertFalse(b1);
 
-        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(0);
+        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
 		this.sbb.onSubmitSm(event, aci);
 
 		b1 = this.pers.checkSmsSetExists(ta1);
@@ -267,7 +268,7 @@ public class TxSmppServerSbbTest {
         if (!this.cassandraDbInited)
             return;
 
-        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(0);
+        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
 
         SmscPropertiesManagement spm = SmscPropertiesManagement.getInstance("Test");
         String sMsgA = "ПриветHel";
