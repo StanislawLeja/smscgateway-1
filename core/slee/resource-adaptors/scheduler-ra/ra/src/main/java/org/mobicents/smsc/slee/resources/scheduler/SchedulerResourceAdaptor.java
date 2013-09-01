@@ -296,10 +296,10 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			if (schedulableSms != null)
 				cnt = schedulableSms.size();
 
-			if (this.tracer.isInfoEnabled()) {
+			if (this.tracer.isFineEnabled()) {
 				String s1 = "Fetching: Fetched " + schedulableSms.size() + " messages (max requested messages="
 						+ maxCnt + ", fetched messages=" + cnt + ")";
-				this.tracer.info(s1);
+				this.tracer.fine(s1);
 			}
 		} catch (PersistenceException e1) {
 			this.tracer
