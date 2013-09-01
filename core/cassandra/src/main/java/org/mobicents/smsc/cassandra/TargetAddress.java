@@ -30,30 +30,41 @@ package org.mobicents.smsc.cassandra;
  */
 public class TargetAddress {
 
-	private int addrTon;
-	private int addrNpi;
-	private String addr;
+	private final int addrTon;
+	private final int addrNpi;
+	private final String addr;
+	
+	private final String targetId;
 
 	public TargetAddress(int addrTon, int addrNpi, String addr) {
 		this.addrTon = addrTon;
 		this.addrNpi = addrNpi;
 		this.addr = addr;
+		
+		this.targetId = formTargetId();
 	}
 
 	public TargetAddress(SmsSet smsSet) {
 		this.addrTon = smsSet.getDestAddrTon();
 		this.addrNpi = smsSet.getDestAddrNpi();
 		this.addr = smsSet.getDestAddr();
+		
+		this.targetId = formTargetId();		
 	}
-
-	public String getTargetId() {
+	
+	private String formTargetId(){
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.addr);
 		sb.append("_");
 		sb.append(this.addrTon);
 		sb.append("_");
 		sb.append(this.addrNpi);
+		
 		return sb.toString();
+	}
+
+	public String getTargetId() {
+		return this.targetId;
 	}
 
 	public int getAddrTon() {
