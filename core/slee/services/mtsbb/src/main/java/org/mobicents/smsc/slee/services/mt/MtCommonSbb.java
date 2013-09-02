@@ -66,6 +66,7 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.smsc.cassandra.CdrGenerator;
 import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
@@ -97,8 +98,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	protected static final String MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON = "userSpecificReason";
 	protected static final String MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION = "userResourceLimitation";
 	protected static final String MAP_USER_ABORT_CHOICE_UNKNOWN = "DialogUserAbort_Unknown";
-
-	protected static final String CDR_SUCCESS_NO_REASON = "";
 
 	protected static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
@@ -412,7 +411,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		int currentMsgNum = this.doGetCurrentMsgNum();
 		Sms smsa = smsSet.getSms(currentMsgNum);
         if (smsa != null) {
-            this.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED, reason);
+            CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED, reason);
         }
 
 		StringBuilder sb = new StringBuilder();
@@ -511,7 +510,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		}
 
 		for (Sms sms : lstFailured) {
-            this.generateCdr(sms, CdrGenerator.CDR_FAILED, reason);
+		    CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED, reason);
 
             // adding an error receipt if it is needed
 			int registeredDelivery = sms.getRegisteredDelivery();
@@ -546,34 +545,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 			this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(),
 					smsSet.getDestAddrNpi(), smDeliveryOutcome, smsSet.getTargetId());
 		}
-	}
-
-	private String getFirst20CharOfSMS(byte[] rawSms) {
-		String first20CharOfSms = new String(rawSms);
-		if (first20CharOfSms.length() > 20) {
-			first20CharOfSms = first20CharOfSms.substring(0, 20);
-		}
-		return first20CharOfSms;
-	}
-
-	protected void generateCdr(Sms smsEvent, String status, String reason) {
-		// Format is
-		// SUBMIT_DATE,SOURCE_ADDRESS,SOURCE_TON,SOURCE_NPI,DESTINATION_ADDRESS,DESTINATION_TON,DESTINATION_NPI,STATUS,SYSTEM-ID,MESSAGE-ID,First
-		// 20 char of SMS, REASON
-
-		StringBuffer sb = new StringBuffer();
-		sb.append(smsEvent.getSubmitDate()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddr())
-				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrTon())
-				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrNpi())
-				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddr())
-				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddrTon())
-				.append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddrNpi())
-				.append(CdrGenerator.CDR_SEPARATOR).append(status).append(CdrGenerator.CDR_SEPARATOR)
-				.append(smsEvent.getOrigSystemId()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getMessageId())
-				.append(CdrGenerator.CDR_SEPARATOR).append(this.getFirst20CharOfSMS(smsEvent.getShortMessage()))
-				.append(CdrGenerator.CDR_SEPARATOR).append(reason);
-
-		CdrGenerator.generateCdr(sb.toString());
 	}
 
 	public abstract void doSetSmsSubmitData(SmsSubmitData smsDeliveryData);

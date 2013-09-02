@@ -89,6 +89,7 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.smsc.cassandra.CdrGenerator;
 import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
@@ -694,7 +695,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		int messageSegmentNumber = this.getMessageSegmentNumber();
 		SmsSignalInfo[] segments = this.getSegments();
 		if (segments != null && messageSegmentNumber < segments.length - 1) {
-            generateCdr(sms, CdrGenerator.CDR_PARTIAL, MtCommonSbb.CDR_SUCCESS_NO_REASON);
+		    CdrGenerator.generateCdr(sms, CdrGenerator.CDR_PARTIAL, CdrGenerator.CDR_SUCCESS_NO_REASON);
 
             // we have more message parts to be sent yet
 			messageSegmentNumber++;
@@ -748,7 +749,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                 } catch (TlvConvertException e) {
                 }
             }
-            generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL : CdrGenerator.CDR_SUCCESS, MtCommonSbb.CDR_SUCCESS_NO_REASON);
+            CdrGenerator.generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL : CdrGenerator.CDR_SUCCESS, CdrGenerator.CDR_SUCCESS_NO_REASON);
 
             pers.archiveDeliveredSms(sms, deliveryDate);
 

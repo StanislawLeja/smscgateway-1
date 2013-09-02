@@ -40,9 +40,12 @@ import javax.slee.facilities.Tracer;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
+import org.mobicents.protocols.ss7.map.api.smstpdu.ConcatenatedShortMessagesIdentifier;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
+import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.slee.SbbContextExt;
+import org.mobicents.smsc.cassandra.CdrGenerator;
 import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
@@ -70,6 +73,7 @@ import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.pdu.DeliverSmResp;
 import com.cloudhopper.smpp.pdu.SubmitSm;
 import com.cloudhopper.smpp.tlv.Tlv;
+import com.cloudhopper.smpp.tlv.TlvConvertException;
 import com.cloudhopper.smpp.type.Address;
 import com.cloudhopper.smpp.type.RecoverablePduException;
 
@@ -176,8 +180,43 @@ public abstract class RxSmppServerSbb implements Sbb {
 			Date deliveryDate = new Date();
 			try {
 
-			    //				generateCdr(sms, CdrGenerator.CDR_SUCCESS, MtCommonSbb.CDR_SUCCESS_NO_REASON);
-				pers.archiveDeliveredSms(sms, deliveryDate);
+	            // we need to find if it is the last or single segment
+	            boolean isPartial = false;
+	            Tlv sarMsgRefNum = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
+	            Tlv sarTotalSegments = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
+	            Tlv sarSegmentSeqnum = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
+	            if ((sms.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0) {
+	                // message already contains UDH - checking for segment number
+	                byte[] shortMessage = sms.getShortMessage();
+	                if (shortMessage.length > 2) {
+	                    // UDH exists
+	                    int udhLen = (shortMessage[0] & 0xFF) + 1;
+	                    if (udhLen <= shortMessage.length) {
+	                        byte[] udhData = new byte[udhLen];
+	                        System.arraycopy(shortMessage, 0, udhData, 0, udhLen);
+	                        UserDataHeaderImpl userDataHeader = new UserDataHeaderImpl(udhData);
+	                        ConcatenatedShortMessagesIdentifier csm = userDataHeader.getConcatenatedShortMessagesIdentifier();
+	                        if(csm!=null){
+	                            int mSCount = csm.getMesageSegmentCount();
+	                            int mSNumber = csm.getMesageSegmentNumber();
+	                            if (mSNumber < mSCount)
+	                                isPartial = true;
+	                        }
+	                    }
+	                }
+	            } else if (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null) {
+	                // we have tlv's that define message count/number/reference
+	                try {
+	                    int mSCount = sarTotalSegments.getValueAsUnsignedByte();
+	                    int mSNumber = sarSegmentSeqnum.getValueAsUnsignedByte();
+	                    if (mSNumber < mSCount)
+	                        isPartial = true;
+	                } catch (TlvConvertException e) {
+	                }
+	            }
+	            CdrGenerator.generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL_ESME : CdrGenerator.CDR_SUCCESS_ESME, CdrGenerator.CDR_SUCCESS_NO_REASON);
+
+                pers.archiveDeliveredSms(sms, deliveryDate);
 
 	            // adding a success receipt if it is needed
 	            int registeredDelivery = sms.getRegisteredDelivery();
@@ -476,8 +515,10 @@ public abstract class RxSmppServerSbb implements Sbb {
 		}
 		int currentMsgNum = this.getCurrentMsgNum();
 		Sms smsa = smsSet.getSms(currentMsgNum);
-//		if (smsa != null)
-//			this.generateCdr(smsa, CdrGenerator.CDR_FAILED, reason);
+        if (smsa != null) {
+            String s1 = reason.replace("\n", "\t");
+            CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED_ESME, s1);
+        }
 
 		PersistenceRAInterface pers = this.getStore();
         ArrayList<Sms> lstFailured = new ArrayList<Sms>();
@@ -539,6 +580,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 		}
 
         for (Sms sms : lstFailured) {
+            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED_ESME, reason);
+
             // adding an error receipt if it is needed
             int registeredDelivery = sms.getRegisteredDelivery();
             if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {

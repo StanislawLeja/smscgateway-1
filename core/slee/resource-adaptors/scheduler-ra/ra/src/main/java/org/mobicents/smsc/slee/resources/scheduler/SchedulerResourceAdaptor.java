@@ -321,10 +321,17 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			}
 		} finally {
 
-			if (this.tracer.isInfoEnabled()) {
-				String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.";
-				this.tracer.info(s2);
-			}
+            if (count > 0) {
+                if (this.tracer.isInfoEnabled()) {
+                    String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.";
+                    this.tracer.info(s2);
+                }
+            } else {
+                if (this.tracer.isFineEnabled()) {
+                    String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.";
+                    this.tracer.fine(s2);
+                }
+            }
 
 		}
 	}
