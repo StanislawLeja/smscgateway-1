@@ -14,7 +14,7 @@
 <maxDueDelay value="86400"/>
 <dueDelayMultiplicator value="200"/>
 <maxMessageLengthReducer value="6"/>
-<hosts value="127.0.0.1:9160"/>
+<hosts value="127.0.0.1:9042"/>
 <keyspaceName value="TelestaxSMSC"/>
 <clusterName value="TelestaxSMSC"/>
 <fetchPeriod value="5000"/>
