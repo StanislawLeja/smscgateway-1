@@ -17,3 +17,4 @@ ${env.JBOSS_HOME}
 /hs_err_pid22360.log
 /hs_err_pid26888.log
 /hs_err_pid23380.log
+/hs_err_pid9000.log

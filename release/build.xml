@@ -291,8 +291,8 @@
 		        </fileset>
 		</copy>
 		<!-- jss7 config-->    	
-		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/main_simulator2.xml" todir="${release.dir}/tools/TelScale-jss7-simulator/bin" failonerror="true" />
-		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/win_simulator2.xml" todir="${release.dir}/tools/TelScale-jss7-simulator/bin" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/main_simulator2.xml" todir="${release.dir}/tools/TelScale-jss7-simulator/data" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/win_simulator2.xml" todir="${release.dir}/tools/TelScale-jss7-simulator/data" failonerror="true" />
     	
     	
     </target>
