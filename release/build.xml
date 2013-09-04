@@ -17,7 +17,7 @@
 	<!--GET Telscale-Slee & Telscale-jss7 - properties-->
 	<property name="telscale-slee.version" value="6.1.2.GA" />
 	<property name="telscale-slee.download.distro.file" value="telscale-slee-${telscale-slee.version}.zip" />
-	<property name="telscale-slee.download.url" value="ftp://ftp.box.com/TelScale%20JAIN-SLEE/${telscale-slee.download.distro.file}" />
+	<property name="telscale-slee.download.url" value="ftp://ftp.box.com/TelScale%20JAIN-SLEE/${telscale-slee.version}/${telscale-slee.download.distro.file}" />
 	<property name="telscale-slee.distro.zip.path" value="${checkout.dir}/${telscale-slee.download.distro.file}" />
 	
 	<property name="telscale-jss7.version" value="6.1.4.GA" />
