@@ -54,10 +54,20 @@
 							</div>
 							<div id="div-esmedefaultclustername" class="control-group">
 								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if destinationAddress does not match to any esme (any ClusterName) or a message will be routed to defaultClusterName (only for DatabaseSmsRoutingRule) if it is specified">
-									<span class="add-on">Cluster Name</span>
+									<span class="add-on">Default Cluster Name</span>
 									<input id="esmedefaultclustername" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
 								</span>                         
 							</div>
+							<div id="div-ucs2encoding" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="UCS2 encoding">
+									<span class="add-on">SMPP Encoding for UCS2</span>
+									<select id="smppencodingforucs2" >
+										<option>Utf8</option>
+										<option>Unicode</option>
+									</select>
+								</span>                         
+							</div>							
+							
 							&nbsp;
                         	<h5 style="border-bottom: 1px solid #DDD;">Delivery Delay Configuration</h5>
                         	<div id="div-propsubbusduedel" class="control-group"> 
@@ -207,6 +217,14 @@
 										
 										$("#esmedefaultclustername").val(response.value.EsmeDefaultClusterName);
 										
+										var smppEncodingForUCS2 = response.value.SmppEncodingForUCS2
+										
+										if(smppEncodingForUCS2 == "Utf8"){
+											smppencodingforucs2.options[0].selected = true;
+										} else {
+											smppencodingforucs2.options[1].selected = true;
+										}
+										
 										$("#propsubbusduedel").val(response.value.SubscriberBusyDueDelay);
 										$("#propfirduedel").val(response.value.FirstDueDelay);
 										$("#propsecduedel").val(response.value.SecondDueDelay);
@@ -284,6 +302,9 @@
 			    		}
 						
 						var propesmedefaultclustername = $("#esmedefaultclustername").val();
+						
+						var e = document.getElementById("smppencodingforucs2");
+						var smppencodingforucs2 = e.options[e.selectedIndex].text;
 						
 						var propsubbusduedel = $("#propsubbusduedel").val();
 						if(propsubbusduedel.trim() == "") {
@@ -444,6 +465,7 @@
 									{ type: "write", mbean: mbeanSearch, attribute: "DefaultTon", value: propdefaultton },
 									{ type: "write", mbean: mbeanSearch, attribute: "DefaultNpi", value: propdefaultnpi },
 									{ type: "write", mbean: mbeanSearch, attribute: "EsmeDefaultClusterName", value: propesmedefaultclustername },
+									{ type: "write", mbean: mbeanSearch, attribute: "SmppEncodingForUCS2", value: smppencodingforucs2 },
 									{ type: "write", mbean: mbeanSearch, attribute: "SubscriberBusyDueDelay", value: propsubbusduedel },
 									{ type: "write", mbean: mbeanSearch, attribute: "FirstDueDelay", value: propfirduedel },
 									{ type: "write", mbean: mbeanSearch, attribute: "SecondDueDelay", value: propsecduedel },
