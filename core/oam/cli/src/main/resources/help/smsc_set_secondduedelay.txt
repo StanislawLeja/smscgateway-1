@@ -10,7 +10,7 @@ DESCRIPTION
 	delivery attempt (i.e. if the first delivery attempt failed).
 
 EXAMPLES
-	smsc set secondduedelay 5
+	smsc set secondduedelay 300
 
 SEE ALSO
 	smsc esme_create, smsc get scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
