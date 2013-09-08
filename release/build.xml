@@ -226,7 +226,7 @@
         </copy>
         <copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${telscale.smsc.release.version}-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-${telscale-jss7.version}-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-*.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
     	<mkdir dir="${release.dir}/jboss-5.1.0.GA/server/default/data"/>
@@ -240,7 +240,7 @@
         </copy>
         <copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${telscale.smsc.release.version}-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-${telscale-jss7.version}-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-*.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
         <copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/data" failonerror="true">
                 <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/data">
