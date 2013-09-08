@@ -27,7 +27,11 @@ PARAMETERS
 	System Id		- This is used to identify an ESME or an SMSC at bind 
 				  time. An 'ESME system_id' identifies the ESME or ESME 
 				  agent to the SMSC. The 'SMSC system_id' provides an 
-				  identification of the SMSC to the ESME.
+				  identification of the SMSC to the ESME. You can define 
+				  multiple ESMEs, each with a unique name but the same 
+				  <literal>systemId<literal> to allow anonymous incoming
+				  binds and multiple binds from the same IP depending on
+				  the values specified for host-ip and port.
 
 	Password		- It is used by the SMSC to authenticate the identity of 
 				  the binding ESME. The Service Provider may require 
@@ -39,6 +43,18 @@ PARAMETERS
 				  requests from the specified IP and Port. 
 				  If the port is unknown, you must pass '-1' as wild 
 				  character.
+
+				  When you define multiple ESMEs with the same systemId,if
+				  host-ip and port values are -1 (for SMPP type Server), 
+				  the SMSC will accept multiple incoming BIND requests
+			          from any IP:port as long as the systemId and password
+				  match. 
+
+				  When you define multiple ESMEs with the same systemId,if
+				  host-ip is a real value (a specific IP) and port value 
+				  is -1, the SMSC will accept as many BINDS as ESMEs 
+				  defined from the specified IP but any port as long as 
+				  the systemId and password match. 
 
 	SmppBindType 		- Possible values: TRANSCEIVER, TRANSMITTER or RECEIVER. 
 				  If the SMSC is acting as an ESME, it will initiate 
