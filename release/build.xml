@@ -22,7 +22,7 @@
 	
 	<property name="telscale-jss7.version" value="6.1.5.GA" />
 	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}-1309081630.zip" />
-	<property name="telscale-jss7.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/6.1.4.GA/${telscale-jss7.download.distro.file}" />
+	<property name="telscale-jss7.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-jss7.version}/${telscale-jss7.download.distro.file}" />
 	<property name="telscale-jss7.distro.zip.path" value="${checkout.dir}/${telscale-jss7.download.distro.file}" />
 	
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
