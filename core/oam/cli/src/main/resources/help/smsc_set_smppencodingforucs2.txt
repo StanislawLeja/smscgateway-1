@@ -1,0 +1,17 @@
+Name
+	smsc set smppencodingforucs2
+
+SYNOPSIS
+	smsc set smppencodingforucs2 <UTF8|UNICODE>
+
+DESCRIPTION
+	This command is used to set the SMPP Encoding Scheme for UCS2. SMPP side messages 
+	with data coding == 8 [UCS2] accept two different encoding schemes [UTF8 and 
+	UNICODE] for both sending and receiving messages. SMSC can be configured to 
+	accept for one of them (the one that ESME supports). If this is not set, 
+	then the default encoding scheme is UTF8.
+
+EXAMPLES
+	smsc set smppencodingforucs2 utf8 
+	or
+	smsc set smppencodingforucs2 unicode
