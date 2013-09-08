@@ -7,7 +7,11 @@
 
 <chapter id="introduction">
 	<title>Introduction</title>
-   <para>&THIS.PLATFORM; &THIS.APPLICATION; is an Open Source Java based SMSC Gateway built on a modern extensible middleware platform. &THIS.PLATFORM; SMSC enables operators to provide core SMSC features like mobile subscriber to subscriber SMS messaging, broadcasting campaigns and group messaging between subscribers. In addition it also enables value added services through integration with OTT social networks and microblogs such as Facebook and Twitter.  
+   <para>&THIS.PLATFORM; &THIS.APPLICATION; is an Open Source Java based SMSC Gateway built on a modern extensible middleware platform. &THIS.PLATFORM; SMSC enables operators to provide core SMSC features like mobile subscriber to subscriber SMS messaging, broadcasting campaigns and group messaging<footnote id="fnrestcomm">
+<para>
+Group Messaging can be achieved using &THIS.PLATFORM; RestComm. For more details please contact info@telestax.com.
+</para>
+</footnote> between subscribers. In addition it also enables value added services through integration with OTT social networks and microblogs such as Facebook and Twitter.  
 	</para>
 	<para>&THIS.PLATFORM; &THIS.APPLICATION; is an easy-to-install and easy-to-deploy platform that can be set up and configured very quickly. Since it is built on a modern and extensible JSLEE platform it automatically provides out-of-the-box integration with various communication protocols such as SIP, Diameter, HTTP, XCAP, XMPP, MGCP and others in addition to the base SMPP protocol for connectivity to ESMEs. 
 	</para>
