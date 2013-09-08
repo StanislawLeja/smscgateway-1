@@ -552,13 +552,13 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 			this.esmeDefaultClusterName = reader.read(ESME_DEFAULT_CLUSTER_NAME, String.class);
 
-			val = reader.read(MAX_ACTIVITY_COUNT, Integer.class);
-			if (val != null)
-				this.maxActivityCount = val;
-
             String vals = reader.read(SMPP_ENCODING_FOR_UCS2, String.class);
             if (vals != null)
                 this.smppEncodingForUCS2 = Enum.valueOf(SmppEncodingForUCS2.class, vals);
+
+			val = reader.read(MAX_ACTIVITY_COUNT, Integer.class);
+			if (val != null)
+				this.maxActivityCount = val;
 
 			reader.close();
 		} catch (XMLStreamException ex) {
