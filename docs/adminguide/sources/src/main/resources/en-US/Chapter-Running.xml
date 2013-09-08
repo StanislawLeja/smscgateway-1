@@ -18,11 +18,12 @@
 						</step>	
 						<step><para>If you are using the SS7 board on server, you must ensure that the <literal>java.library.path</literal> variable is set to point to the directory containing the native component. Alternatively you can copy it to the JBoss native library path manually.</para></step>
 						<step><para>You must have Cassandra database running and configured as explained in the Installation Guide.</para></step>
+<step><para>You must have the Cassandra Keyspace created as explained in the Installation Guide.</para></step>
 					</substeps>
 				</step>
 				<step>
 					<para>All you have to do to start the Gateway is start the JBoss Application Server. To start the JBoss Server you must execute the <filename>run.sh</filename> (Unix) or <filename>run.bat</filename> (Microsoft Windows)
-					startup script in the <filename>telscale-smscgateway-6.1.1.GA/jboss-5.1.0.GA/bin</filename> folder (on Unix or Windows). Note that this will start the server in the default profile. The "default" profile is a clean profile where you will have to start from scratch and configure the entire SS7 Stack and SMSC Gateway.
+					startup script in the <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/bin</filename> folder (on Unix or Windows). Note that this will start the server in the default profile. The "default" profile is a clean profile where you will have to start from scratch and configure the entire SS7 Stack and SMSC Gateway.
 					</para>
 				</step>
 				<step><para>Result: If the service started properly you should see the following last few output lines in the Unix terminal or Command Prompt depending on your environment:
@@ -71,10 +72,22 @@
 </step>
 
 			</procedure>
+			<procedure id="smsc-Running-alter">
+				<title>Bind the SMSC Gateway to a specific IP </title>
+				<step><para>
+					Using <literal>run.sh</literal> without any arguments binds the SMSC Gateway to localhost <literal>127.0.0.1</literal>. 
+					To bind the Gateway to a different IP, pass the IP address as value to the <literal>-b</literal> command line option. 
+					For example to bind the SMSC to <literal>10.199.7.23</literal> you will use the command from the <filename>bin</filename> folder as below:
+<screen><![CDATA[
+[vsmsc bin]$ ./run.sh -b 10.199.7.23
+]]></screen>
+				</para></step>
+	
+			</procedure>
 			<procedure>
 				<title>Stop the Gateway</title>
 				<step><para>To stop the &THIS.PLATFORM; &THIS.APPLICATION;, you must shut down the JBoss Application Server. To shut down the server(s) you must execute the <command>shutdown.sh -s</command> (Unix) or 
-					<command>shutdown.bat -s</command> (Microsoft Windows) script in the <filename>telscale-smscgateway-6.1.1.GA/jboss-5.1.0.GA/bin</filename> 
+					<command>shutdown.bat -s</command> (Microsoft Windows) script in the <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/bin</filename> 
 					directory (on Unix or Windows).</para></step>
 				<step><para> If the server stopped properly, you will see the following three lines as the 
 					last output in the Unix terminal or Command Prompt:
@@ -92,7 +105,7 @@ Halting VM]]></screen></para></step>
 </screen>
 </para>	
 			<para>
-By default, the SMSC Simulator profile is configured for use in Linux systems. For using it under Micsrosoft Windows you need to open the file <filename>telscale-smscgateway-6.1.1.GA/jboss-5.1.0.GA/server/simulator/data/SCTPManagement_sctp.xml</filename> and replace (in two places) <literal>ipChannelType="0"</literal> to <literal>ipChannelType="1"</literal> for using a TCP connection instead of SCTP (SCTP is not supported under Windows). 
+By default, the SMSC Simulator profile is configured for use in Linux systems. For using it under Micsrosoft Windows you need to open the file <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/simulator/data/SCTPManagement_sctp.xml</filename> and replace (in two places) <literal>ipChannelType="0"</literal> to <literal>ipChannelType="1"</literal> for using a TCP connection instead of SCTP (SCTP is not supported under Windows). 
 			</para>
 		<section id="configuring_the_gateway_simulator_profile">
 			<title>Configuring the Gateway in Simulator Profile</title>
@@ -176,7 +189,7 @@ This will launch the Simulator GUI Application.
 
 			</step>
 			<step><para>
-The Low level part is configured to TCP (not SMSC) protocol and hence you can test SMSC under Windows OS. The SS7 Simulator will play both HLR and MSC roles and respond to <literal>SendRoutingInfo</literal> and <literal>ForwardSM</literal> requests from SMSC gateways. 
+The Low level part is configured to SCTP (not TCP) protocol and hence you can test the SMSC in a Linux environment. To test under Windows OS, you must change the SS7 simulator settings to TCP. The SS7 Simulator will play both HLR and MSC roles and respond to <literal>SendRoutingInfo</literal> and <literal>ForwardSM</literal> requests from SMSC gateways. 
 			</para></step>
 			<step><para>
  You can configure the <literal>SMS_TEST_CLIENT</literal> testing task to play with different modes including return error responses to SMSC and bulk mode without adding information for any event to an application form. You can also play with different data coding schemes and MAP protocol versions.
@@ -185,48 +198,6 @@ The Low level part is configured to TCP (not SMSC) protocol and hence you can te
 		</section>
 		<section id="running_the_simulator_smpp">
 			<title>Running the SMPP Simulator</title>
-
-		<procedure>
-			<title>Running TelScale jSS7 Simulator</title>
-			<step><para>
-			Change the working directory to the bin folder for the jSS7 Simulator.
-<screen><![CDATA[
-[vinu@vinu-neha ~]$ cd TelScale-smsc-<version>/tools/TelScale-ss7-simulator/bin
-]]>
-</screen>
-			</para></step>
-			<step>
-						<para>
-							 Ensure that the
-							<filename>run.sh</filename>
-							start script is executable.
-<screen><![CDATA[
-bin$ chmod +x run.sh
-]]>
-</screen>
-					
-						</para>
-			</step>
-			<step>
-						<para>
-							Execute the
-							<filename>run.sh</filename>
-							Bourne shell script with the command <literal>./run.sh gui</literal> or in the case of Windows <literal>./run.bat gui</literal>. 
-<screen><![CDATA[
-bin$ ./run.sh gui
-]]>
-</screen>
-This will launch the Simulator GUI Application.
-						</para>
-
-			</step>
-			<step>
-						<para>
-							When the GUI shows up, select "main" (default) as host name [or type "win" as host name under Windows] and press the 'Start' button. The Simulator is already pre-configured to connect to the SMSC Gateway (running in simulator profile). Press 'Run test' and again click on 'Start' in the next screen. The Simulator will connect to SMSC (via m3ua protocol).
-						</para>
-
-			</step>
-		</procedure>
 		<procedure>
 			<title>Running SMPP Simulator</title>
 			<step><para>
@@ -286,7 +257,7 @@ When the SMSC Gateway is running in a "simulator" profile it works with SMPP as 
 			<title>Running the Shell</title>	
 		<para>
 			You must start the Shell client and connect to the managed instance prior to executing commands to configure the Gateway. Shell can be started by issuing the following command from
-			<filename>telscale-smscgateway-6.1.1.GA/jboss-5.1.0.GA/bin</filename> directory:
+			<filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/bin</filename> directory:
 		</para>
 		<programlisting>[$] ./ss7-cli.sh</programlisting>
 		<para>Once console starts, it will print following information and await further commands:</para>
@@ -301,13 +272,13 @@ telscale>
 </section>
 <section id="using_GUI">
 		<title>Running the Graphical User Interface</title>
-<para> Open a Web Browser and navigate to http://localhost:8080/telscale-management/. This will launch the &THIS.PLATFORM; GUI Management Console which is horizontally segregated into multiple tabs, one tab for each product in the &THIS.PLATFORM; Suite. You will notice that only the tabs of products whose binaries are installed already will be shown enabled and active in the GUI. If you have successfully installed the &THIS.PLATFORM; &THIS.APPLICATION; you will find the tabs for JAIN-SLEE, JMX, SS7 and SMSC GW active and enabled. For more details on using the GUI for SS7 or JAIN-SLEE please refer to their respective user guides. This document only provides instructions for using the GUI to configure the SMSC Gateway.
+<para> Open a Web Browser and navigate to http://IP:8080/telscale-management/ (where IP is the IP Address to which the SMSC is bound to). This will launch the &THIS.PLATFORM; GUI Management Console which is horizontally segregated into multiple tabs, one tab for each product in the &THIS.PLATFORM; Suite. You will notice that only the tabs of products whose binaries are installed already will be shown enabled and active in the GUI. If you have successfully installed the &THIS.PLATFORM; &THIS.APPLICATION; you will find the tabs for JAIN-SLEE, JMX, SS7 and SMSC GW active and enabled. For more details on using the GUI for SS7 or JAIN-SLEE please refer to their respective user guides. This document only provides instructions for using the GUI to configure the SMSC Gateway.
 </para>
 
 <para>
 Switch to the SMSC GW tab and you will find that the window will look similar to the figure below. The GUI is divided into three sections:
 	<itemizedlist>
-	<listitem><para>A left panel listing the management and monitoring units (Server Settings, SMPP Server, ESMEs, DB Routing Rules, Metrics). You can click on any of these to select and navigate to the specific management unit.</para></listitem>
+	<listitem><para>A left panel listing the management and monitoring units (Server Settings, SMPP Server, ESMEs, MAP Version Cache, DB Routing Rules). You can click on any of these to select and navigate to the specific management unit.</para></listitem>
 	<listitem><para>A main panel displaying the currently selected management unit. <!-- At the top of this panel you will find a bread crumb trail providing links back to each previous page that you navigated through in order to get to the current page.--> The main view is categorized into multiple tabs to manage different aspects of the selected layer.</para></listitem>
 	<listitem><para>A bottom panel displaying the log data. You can clear the log anytime by clicking on the trash icon at the top right corner of this panel. You can also minimize or maximize this panel to suit your needs.</para></listitem>
 	</itemizedlist>
