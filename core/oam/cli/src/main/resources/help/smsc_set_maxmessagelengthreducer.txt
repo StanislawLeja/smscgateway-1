@@ -13,6 +13,16 @@ DESCRIPTION
 
 	(message-length > max-possible-message-length - max-message-length-reducer) 
 
+	Empty TC-BEGIN is used in MAP Version 2 and 3 for forwardSM and Mt-ForwardSM 
+	requests. In MAP Version 2 the dailog portion
+	(ApplicationContextName, MAPOpenInfo primitive) and the component portion 
+	(forwardSM and mt-ForwardSM requests) may both together be too long to fit within 
+	a MTP message. In Empty TC-BEGIN case, it first sends the dailog portion in 
+	TC-BEGIN followed by the component portion in the next TC-CONTINUE. 
+	Whether empty TC-BEGIN is used or not depends on the length of a message and the 
+	length of SCCP addresses. This option increases the guarantee of delivery of a 
+	message  to some network.
+
 EXAMPLES
 	smsc set maxmessagelengthreducer 6
 
