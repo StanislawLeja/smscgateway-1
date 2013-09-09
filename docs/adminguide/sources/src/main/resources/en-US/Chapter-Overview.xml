@@ -64,7 +64,7 @@
                     <term>Major Features:</term>
                     <listitem> <para>&THIS.PLATFORM; &THIS.APPLICATION; enables mobile operators to provide core SMSC features like subscriber to subscriber SMS messaging, broadcasting campaigns and group messaging <footnoteref linkend='fnrestcomm'/>between subscribers.
 			<itemizedlist> 
-				<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; can handle mobile originated SMS and deliver to the intended recipient. It also provides a flexible routing mechanism to route messages to ESME over SMPP protocol.</para></listitem> 
+				<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; can handle mobile originated SMS and deliver to the intended recipient (mobile or ESME). It also provides a flexible routing mechanism to route messages to/from ESME over SMPP protocol. It can also act as ESME initiating connection to third party SMSC.</para></listitem> 
 				<listitem><para>Additionally, when enabled with proper administrator privileges, &THIS.PLATFORM; &THIS.APPLICATION; allows convenient group messaging <footnoteref linkend='fnrestcomm'/>between subscribers (e.g. family, friends, colleagues) .</para></listitem> 
 				<!--<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; offers “SMS Broadcasting” which enables marketing campaigns. Via
 convenient Web UI, campaign administrators can prioritize, schedule and monitor a
