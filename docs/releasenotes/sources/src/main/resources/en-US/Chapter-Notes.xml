@@ -72,7 +72,7 @@
 	</section>
 	<section id="features_bug_fixes">
 		<title>Issues Fixed</title>
-		<para>For a full list of resolved issues please refer to <ulink url="https://bitbucket.org/telestax/telscale-smscgateway/issues/query?milestone=TelScale+SMSC+6.1.4.GA" />.</para>
+		<para>For a full list of resolved issues please refer to <ulink url="https://bitbucket.org/telestax/telscale-smscgateway/issues?milestone=TelScale SMSC 6.1.4.GA" />.</para>
 	</section>
 	<section id="Config_settings">
 		<title>Configuration Settings</title>
