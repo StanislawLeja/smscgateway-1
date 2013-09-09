@@ -47,9 +47,13 @@
 |- telscale-smscgateway-<version>
 		|- cassandra
 		|- docs
+				|+ container
 				|+ jss7
+				|+ management-hq
+				|+ resources
 				|+ slee
 				|+ smsc
+				|+ tools
 		|- jboss-5.1.0.GA
 				|+ bin    //contains start up and shutdown scripts for the Server and the start up script for Shell.
 				|+ client
@@ -65,9 +69,9 @@
 				|+ eclipslee
 				|+ jopr-plugin
 				|+ Telscale-jss7-simulator
-				|+ Telscale-smsc-simulator
+				|+ Telscale-smpp-simulator
 				|+ remote-slee-connection
-				|+ test-msc-simulator
+				|+ snmp
 				|+ twiddle
 ]]>
 </screen>
