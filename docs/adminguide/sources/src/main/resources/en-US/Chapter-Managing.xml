@@ -696,14 +696,14 @@ DESCRIPTION
 			<section id="mapcache_cli">
 			<title>Using CLI</title>
 <para>
-You can set the 'MAP Version Cache' value by issuing the command <command>smsc set mapcache</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get mapcache</command> which will display all the cached values. Alternatively you can retrieve the cached value for a specific node by issuing the command <command>smsc get mapcache &lt;node_digits&gt;</command>. You can clear the cache by issuing the command <command>smsc clear mapcache</command>.
+You can set the 'MAP Version Cache' value by issuing the command <command>smsc mapcache set</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc mapcache get</command> which will display all the cached values. Alternatively you can retrieve the cached value for a specific node by issuing the command <command>smsc mapcache get &lt;node_digits&gt;</command>. You can clear the cache by issuing the command <command>smsc mapcache clear</command>.
 </para>
 <screen><![CDATA[
 Name
-	smsc set mapcache
+	smsc mapcache set
 
 SYNOPSIS
-	smsc set mapcache <node_digits> <version>
+	smsc mapcache set <node_digits> <version>
 
 DESCRIPTION
 	This command is used to set the version for the specific node digits. SMSC Gateway
