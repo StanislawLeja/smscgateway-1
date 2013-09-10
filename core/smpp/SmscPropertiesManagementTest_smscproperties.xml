@@ -19,3 +19,4 @@
 <fetchPeriod value="5000"/>
 <fetchMaxRows value="100"/>
 <maxActivityCount value="500"/>
+<smppEncodingForUCS2 value="Utf8"/>
