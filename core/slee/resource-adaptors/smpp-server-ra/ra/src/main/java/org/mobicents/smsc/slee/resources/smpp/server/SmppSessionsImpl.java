@@ -113,19 +113,18 @@ public class SmppSessionsImpl implements SmppSessions {
 	public void sendResponsePdu(Esme esme, PduRequest request, PduResponse response) throws RecoverablePduException,
 			UnrecoverablePduException, SmppChannelException, InterruptedException {
 
-		DefaultSmppSession defaultSmppSession = esme.getSmppSession();
-
-		if (defaultSmppSession == null) {
-			throw new NullPointerException("Underlying SmppSession is Null!");
-		}
-
-		SmppTransactionImpl smppServerTransactionImpl = null;
+		SmppTransactionImpl smppServerTransactionImpl = (SmppTransactionImpl) request.getReferenceObject();
 
 		try {
+			DefaultSmppSession defaultSmppSession = esme.getSmppSession();
+
+			if (defaultSmppSession == null) {
+				throw new NullPointerException("Underlying SmppSession is Null!");
+			}
+
 			if (request.getSequenceNumber() != response.getSequenceNumber()) {
 				throw new UnrecoverablePduException("Sequence number of response is not same as request");
 			}
-			smppServerTransactionImpl = (SmppTransactionImpl) request.getReferenceObject();
 			defaultSmppSession.sendResponsePdu(response);
 		} finally {
 			if (smppServerTransactionImpl == null) {
@@ -135,6 +134,8 @@ public class SmppSessionsImpl implements SmppSessions {
 				this.smppServerResourceAdaptor.endActivity(smppServerTransactionImpl);
 			}
 		}
+		
+		//TODO Should it catch UnrecoverablePduException and SmppChannelException and close underlying SmppSession?
 	}
 
 	protected class SmppSessionHandlerInterfaceImpl implements SmppSessionHandlerInterface {
@@ -354,7 +355,7 @@ public class SmppSessionsImpl implements SmppSessions {
 
 	@Override
 	public long getNextMessageId() {
-//		return Long.toString(this.messageIdGenerator.incrementAndGet());
+		// return Long.toString(this.messageIdGenerator.incrementAndGet());
 		return this.messageIdGenerator.incrementAndGet();
 	}
 
