@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>persistence-ra</artifactId>
-	<name>Core : SLEE : Hector Client RA</name>
+	<name>Core : SLEE : Persistence RA</name>
 
 	<dependencies>
 		<dependency>
@@ -18,6 +18,16 @@
 			<version>${pom.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.map</groupId>
+			<artifactId>map-api</artifactId>
+			<version>${ss7.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.map</groupId>
+			<artifactId>map-impl</artifactId>
+			<version>${ss7.version}</version>
+		</dependency>
 		<dependency>
 			<artifactId>smpp-server-ra-ratype</artifactId>
 			<groupId>${pom.groupId}</groupId>
