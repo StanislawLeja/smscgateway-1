@@ -51,13 +51,6 @@ public class MAPServiceBaseProxy implements MAPServiceBase {
 	}
 
 	@Override
-	public MAPDialog createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
-			AddressString destReference) throws MAPException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public ServingCheckData isServingService(MAPApplicationContext dialogApplicationContext) {
 		// TODO Auto-generated method stub
 		return null;
@@ -80,4 +73,18 @@ public class MAPServiceBaseProxy implements MAPServiceBase {
 		// TODO Auto-generated method stub
 		
 	}
+
+    @Override
+    public MAPDialog createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
+            AddressString destReference) throws MAPException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public MAPDialog createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
+            AddressString destReference, Long localTrId) throws MAPException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

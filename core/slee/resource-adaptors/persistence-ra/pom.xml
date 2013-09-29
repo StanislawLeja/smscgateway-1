@@ -13,7 +13,7 @@
 	</parent>
 
 	<artifactId>persistence-ra-parent</artifactId>
-	<name>Core : SLEE : Hector Client RA Parent</name>
+	<name>Core : SLEE : Persistence RA Parent</name>
 
 	<modules>
 		<module>library</module>

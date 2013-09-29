@@ -39,6 +39,16 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.mobicents.protocols.ss7.map</groupId>
+			<artifactId>map-api</artifactId>
+			<version>${ss7.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.map</groupId>
+			<artifactId>map-impl</artifactId>
+			<version>${ss7.version}</version>
+		</dependency>
+		<dependency>
 			<artifactId>mobicents-slee-ra-map-library</artifactId>
 			<groupId>org.mobicents.resources</groupId>
 			<version>${mobicents.resources.map.version}</version>

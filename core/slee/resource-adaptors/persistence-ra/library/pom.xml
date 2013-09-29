@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>persistence-ra-library</artifactId>
-	<name>Core : SLEE : Hector Client RA Library</name>
+	<name>Core : SLEE : Persistence RA Library</name>
 
 	<dependencies>
 		<!-- temp -->
@@ -30,6 +30,16 @@
 			<groupId>org.mobicents.resources</groupId>
 			<version>${mobicents.resources.map.version}</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.map</groupId>
+			<artifactId>map-api</artifactId>
+			<version>${ss7.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.map</groupId>
+			<artifactId>map-impl</artifactId>
+			<version>${ss7.version}</version>
 		</dependency>
 		
 		<!-- Cassandra Driver and dep tree -->

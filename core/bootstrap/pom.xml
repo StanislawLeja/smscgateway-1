@@ -150,6 +150,13 @@
 			<version>${ss7.version}</version>
 		</dependency>
 
+		<!-- Statistics -->
+		<dependency>
+			<artifactId>statistics</artifactId>
+			<groupId>org.mobicents.protocols.ss7.statistics</groupId>
+			<version>${ss7.version}</version>
+		</dependency>
+
 		<!-- Management Shell -->
 		<dependency>
 			<artifactId>shell-server-api</artifactId>
@@ -276,6 +283,16 @@
 		</dependency>
 		<dependency>
 			<artifactId>sccp-oam</artifactId>
+			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
+			<version>${jss7.telscale.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>tcap-oam</artifactId>
+			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
+			<version>${jss7.telscale.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>linkset-oam</artifactId>
 			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
 			<version>${jss7.telscale.version}</version>
 		</dependency>
