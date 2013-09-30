@@ -49,10 +49,10 @@
 		
 		<!-- TelScale properties 6.1.4.GA-TelScale-->
 		<ss7.version>6.2.0-TelScale-SNAPSHOT</ss7.version>
-		<jss7.telscale.version>6.1.6-TelScale-SNAPSHOT</jss7.telscale.version>
+		<jss7.telscale.version>6.2.0-TelScale-SNAPSHOT</jss7.telscale.version>
 		<ts.slee.version>6.1.2.GA-TelScale</ts.slee.version>
 		<jslee.ext.version>${ts.slee.version}</jslee.ext.version>
-		<mobicents.resources.map.version>6.1.4.GA-TelScale</mobicents.resources.map.version>
+		<mobicents.resources.map.version>6.2.0-TelScale-SNAPSHOT</mobicents.resources.map.version>
 		<telscale.licensing.version>1.0.3.Final</telscale.licensing.version>
 		<project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
 	</properties>
