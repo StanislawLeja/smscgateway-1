@@ -192,7 +192,7 @@
 		</constructor>
 	</bean>			
 
-	<bean name="TelscaleStatisticManagement" class="com.telscale.protocols.ss7.oam.common.statistics.CounterProvider">
+	<bean name="TelscaleStatisticManagement" class="com.telscale.protocols.ss7.oam.common.statistics.CounterProviderManagement">
 		<constructor>
 			<parameter><inject bean="Ss7Management" /></parameter>
 		</constructor>

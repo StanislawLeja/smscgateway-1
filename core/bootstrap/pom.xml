@@ -297,7 +297,12 @@
 			<version>${jss7.telscale.version}</version>
 		</dependency>
 		<dependency>
-			<artifactId>statistics-oam</artifactId>
+			<artifactId>statistics-oam-api</artifactId>
+			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
+			<version>${jss7.telscale.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>statistics-oam-impl</artifactId>
 			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
 			<version>${jss7.telscale.version}</version>
 		</dependency>

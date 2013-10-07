@@ -157,6 +157,9 @@ public class MtTest {
 	@Test(groups = { "Mt" })
 	public void NegotiatedMapVersionTest1() throws Exception {
 
+        if (!this.cassandraDbInited)
+            return;
+
         MAPApplicationContextVersion ver1 = MAPApplicationContextVersion.version1;
         MAPApplicationContextVersion ver2 = MAPApplicationContextVersion.version2;
         MAPApplicationContextVersion ver3 = MAPApplicationContextVersion.version3;
