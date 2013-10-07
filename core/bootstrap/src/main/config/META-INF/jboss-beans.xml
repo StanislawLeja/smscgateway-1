@@ -196,6 +196,7 @@
 		<constructor>
 			<parameter><inject bean="Ss7Management" /></parameter>
 		</constructor>
+		<property name="persistDir">${jboss.server.data.dir}</property>
 	</bean>			
 
 	<bean name="TelScaleSctpManagement" class="com.telscale.protocols.ss7.oam.common.sctp.SctpManagementJmx">
