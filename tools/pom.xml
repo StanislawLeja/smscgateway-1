@@ -12,6 +12,7 @@
 
 	<modules>
 		<module>smpp-simulator</module>
+		<module>stresstool</module>
 	</modules>
 
 	<build>

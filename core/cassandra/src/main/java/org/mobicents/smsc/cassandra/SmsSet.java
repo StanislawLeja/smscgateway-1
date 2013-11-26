@@ -180,9 +180,14 @@ public class SmsSet implements Serializable {
 		return dueDelay;
 	}
 
-	public void setDueDelay(int dueDelay) {
-		this.dueDelay = dueDelay;
-	}
+    public void setDueDelay(int dueDelay) {
+        this.dueDelay = dueDelay;
+    }
+
+    public void updateDueDelay(int dueDelay) {
+        if (this.dueDelay > dueDelay)
+            this.dueDelay = dueDelay;
+    }
 
 	/**
 	 * time when next delivery attempts must be done

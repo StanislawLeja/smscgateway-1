@@ -38,6 +38,7 @@ public class Schema {
     //SmS tables columns and names
     public static final String COLUMN_ID = "ID";
     public static final String COLUMN_TARGET_ID = "TARGET_ID";
+    public static final String COLUMN_SENT = "SENT";
     public static final String COLUMN_MESSAGE_ID = "MESSAGE_ID";
     public static final String COLUMN_MO_MESSAGE_REF = "MO_MESSAGE_REF";
     public static final String COLUMN_ADDR_SRC_TON = "ADDR_SRC_TON";
@@ -72,6 +73,8 @@ public class Schema {
     //indicate if AlertSC is supported and can be used
     public static final String COLUMN_ALERTING_SUPPORTED = "ALERTING_SUPPORTED";
     public static final String COLUMN_LAST_DELIVERY = "LAST_DELIVERY";
+    public static final String COLUMN_DUE_SLOT = "DUE_SLOT";
+    public static final String COLUMN_IN_SYSTEM_SLOT = "IN_SYSTEM_SLOT";
     public static final String COLUMN_DUE_DATE = "DUE_DATE";
     public static final String COLUMN_DUE_DELAY = "DUE_DELAY";
 
@@ -92,6 +95,9 @@ public class Schema {
     public static final String FAMILY_ARCHIVE = "ARCHIVE";
     public static final String FAMILY_LIVE = "LIVE";
     public static final String FAMILY_SMS_ROUTING_RULE = "SMS_ROUTING_RULE";
+    public static final String FAMILY_DATA = "DATA";
+    public static final String FAMILY_SLOTS = "SLOTS";
+    public static final String FAMILY_DESTS = "DESTS";
 
     public static final List<String> COLUMNS_LIVE;
     public static final List<String> COLUMNS_LIVE_SMS;
