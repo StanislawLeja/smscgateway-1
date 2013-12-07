@@ -225,6 +225,12 @@ public class StressTool {
             }
         }
 
+        @Override
+        public void terminate() {
+            // TODO Auto-generated method stub
+            
+        }
+
     }
 
     class TB implements ProcessTask, Runnable {
@@ -305,6 +311,12 @@ public class StressTool {
             }
         }
 
+        @Override
+        public void terminate() {
+            // TODO Auto-generated method stub
+            
+        }
+
     }
 
     class TX implements ProcessTask, Runnable {
@@ -364,6 +376,12 @@ public class StressTool {
 
         @Override
         public void run() {
+        }
+
+        @Override
+        public void terminate() {
+            // TODO Auto-generated method stub
+            
         }
     }
 
@@ -431,6 +449,12 @@ public class StressTool {
                 ready = true;
             }
         }
+
+        @Override
+        public void terminate() {
+            // TODO Auto-generated method stub
+            
+        }
     }
 
     private Queue<SmsSet> queue = new ConcurrentLinkedQueue<SmsSet>();
@@ -493,6 +517,12 @@ public class StressTool {
             }
         }
 
+        @Override
+        public void terminate() {
+            // TODO Auto-generated method stub
+            
+        }
+
     }
 
     class TX3 implements ProcessTask, Runnable {
@@ -535,6 +565,12 @@ public class StressTool {
                     }
                 }
             }
+        }
+
+        @Override
+        public void terminate() {
+            // TODO Auto-generated method stub
+            
         }
 
     }

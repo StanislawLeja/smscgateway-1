@@ -68,6 +68,8 @@ public class SmsSet implements Serializable {
     private Date lastDelivery;
     private boolean alertingSupported;
 
+    private boolean processingStarted = false;
+
 	private List<Sms> smsList = new ArrayList<Sms>();
 
 //	private int messageIndex = 0;
@@ -294,6 +296,14 @@ public class SmsSet implements Serializable {
 	public List<Sms> getRawList(){
 	    return new ArrayList<Sms>(this.smsList);
 	}
+
+    public boolean isProcessingStarted() {
+        return processingStarted;
+    }
+
+    public void setProcessingStarted() {
+        processingStarted = true;
+    }
 
 	@Override
 	public String toString() {

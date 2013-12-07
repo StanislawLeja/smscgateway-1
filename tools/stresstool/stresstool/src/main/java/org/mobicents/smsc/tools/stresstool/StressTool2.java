@@ -11,10 +11,15 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.log4j.Logger;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.Schema;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 
 import com.cloudhopper.smpp.tlv.Tlv;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 
 /**
  * host, port, keyspace
@@ -34,7 +39,7 @@ public class StressTool2 {
     private int recordCount = 500000;
     private int threadCountW = 0;
     private int threadCountR = 10;
-    private CTask task = CTask.Live_Sms_Cycle;
+    private CTask task = CTask.Live_Sms_Special;
 
     private static final Logger logger = Logger.getLogger(StressTool2.class);
     private String persistFile = "stresstool.xml";
@@ -83,7 +88,10 @@ public class StressTool2 {
         } else if (this.task == CTask.Live_Sms_Cycle) {
             ta = new TX();
         } else if (this.task == CTask.Live_Sms_Special) {
-            ta = new TY1();
+            TY1 ty1 = new TY1();
+            ta = ty1;
+            Thread t = new Thread(ty1);
+            t.start();
         }
         if (ta != null) {
             while (!ta.isReady()) {
@@ -236,6 +244,12 @@ public class StressTool2 {
             }
         }
 
+        @Override
+        public void terminate() {
+            // TODO Auto-generated method stub
+            
+        }
+
     }
 
     class TX implements ProcessTask, Runnable {
@@ -298,6 +312,12 @@ public class StressTool2 {
 
         @Override
         public void run() {
+        }
+
+        @Override
+        public void terminate() {
+            // TODO Auto-generated method stub
+            
         }
     }
 
@@ -392,6 +412,12 @@ public class StressTool2 {
                 ready = true;
             }
         }
+
+        @Override
+        public void terminate() {
+            // TODO Auto-generated method stub
+            
+        }
     }
 
     private Queue<LoadedTargetId> queue = new ConcurrentLinkedQueue<LoadedTargetId>();
@@ -454,6 +480,12 @@ public class StressTool2 {
             }
         }
 
+        @Override
+        public void terminate() {
+            // TODO Auto-generated method stub
+            
+        }
+
     }
 
     class TX3 implements ProcessTask, Runnable {
@@ -500,6 +532,12 @@ public class StressTool2 {
             }
         }
 
+        @Override
+        public void terminate() {
+            // TODO Auto-generated method stub
+            
+        }
+
     }
 
     class TY1 implements ProcessTask, Runnable {
@@ -516,45 +554,124 @@ public class StressTool2 {
 
         @Override
         public String getResults() {
-            return "";
+            String s1;
+            if (startD2 != null) {
+                long tm = (new Date()).getTime() - startD2.getTime();
+                s1 = "" + (tm / 1000);
+            } else {
+                s1 = "";
+            }
+            return step + ": " + a1 + " out of " + a2 + ", dur = " + s1;
+        }
+
+        long a1, a2;
+        String step = "";
+        Date startD2;
+        
+        @Override
+        public void run() {
+            try {
+                int first_slot_cnt = 1;
+                int due_slot_cnt = 1000;
+                int inner_cnt = 1000;
+                int sol = 2; // 1-deleting, 2-extra field
+                int load_count = 1000;
+
+                dbOperations.getStatementCollection(new Date());
+
+                // filling SLOTS table
+                step = "Filling";
+                String sa = "INSERT INTO \"SLOTS_2013_12_01\" (\"DUE_SLOT\", \"TARGET_ID\", \"PROCESSED\") VALUES (?, ?, ?) USING TTL 300;";
+                String sa2 = "INSERT INTO \"SLOTS_2013_12_01\" (\"DUE_SLOT\", \"TARGET_ID\", \"PROCESSED\") VALUES (?, ?, ?);";
+                PreparedStatement ps = dbOperations.getSession().prepare(sa);
+                PreparedStatement psa = dbOperations.getSession().prepare(sa2);
+                a1 = 0;
+                a2 = due_slot_cnt * inner_cnt;
+                for (long i1 = first_slot_cnt; i1 < first_slot_cnt + due_slot_cnt; i1++) {
+                    for (int i2 = 0; i2 < inner_cnt; i2++) {
+                        BoundStatement boundStatement;
+                        if (i1 < first_slot_cnt + due_slot_cnt - 10) {
+                            boundStatement = new BoundStatement(ps);
+                        } else {
+                            boundStatement = new BoundStatement(psa);
+                        }
+                        Long I1 = i1 * 1000000L + 1000000000000L + i2;
+                        boundStatement.bind((long) i1, I1.toString(), false);
+                        ResultSet res = dbOperations.getSession().execute(boundStatement);
+                        a1++;
+                    }
+                }
+
+                // loading data
+                step = "Loading";
+                startD2 = new Date();
+                a1 = 0;
+                a2 = due_slot_cnt * inner_cnt;
+                long i2 = first_slot_cnt;
+                PreparedStatement ps2;
+                if (sol == 1) {
+                    String sb = "SELECT \"TARGET_ID\" from \"SLOTS_2013_11_03\" where \"DUE_SLOT\"=? limit " + load_count + ";";
+                    ps = dbOperations.getSession().prepare(sb);
+                    String sb2 = "DELETE from \"SLOTS_2013_11_03\" where \"DUE_SLOT\"=? and \"TARGET_ID\"=?;";
+                    ps2 = dbOperations.getSession().prepare(sb2);
+                } else {
+                    String sb = "SELECT \"TARGET_ID\", \"PROCESSED\" from \"SLOTS_2013_11_03\" where \"DUE_SLOT\"=?;";
+                    ps = dbOperations.getSession().prepare(sb);
+                    String sb2 = "UPDATE \"SLOTS_2013_11_03\" SET \"PROCESSED\"=true where \"DUE_SLOT\"=? and \"TARGET_ID\"=?;";
+                    ps2 = dbOperations.getSession().prepare(sb2);
+                }
+                while (true) {
+                    int cnt_read = 0;
+                    if (sol == 1) {
+                        BoundStatement boundStatement = new BoundStatement(ps);
+                        boundStatement.bind(i2);
+                        ResultSet res = dbOperations.getSession().execute(boundStatement);
+                        for (Row row : res) {
+                            String s = row.getString(0);
+                            cnt_read++;
+
+                            // deleting
+                            a1++;
+                            boundStatement = new BoundStatement(ps2);
+                            boundStatement.bind(i2, s);
+                            res = dbOperations.getSession().execute(boundStatement);
+                        }
+                    } else {
+                        BoundStatement boundStatement = new BoundStatement(ps);
+                        boundStatement.bind(i2);
+                        ResultSet res = dbOperations.getSession().execute(boundStatement);
+                        for (Row row : res) {
+                            String s = row.getString(0);
+                            boolean processed = row.getBool(1);
+                            if (!processed) {
+                                a1++;
+                                cnt_read++;
+
+                                // updating
+                                boundStatement = new BoundStatement(ps2);
+                                boundStatement.bind(i2, s);
+                                res = dbOperations.getSession().execute(boundStatement);
+                            }
+                        }
+                    }
+
+                    if (cnt_read == 0) {
+                        i2++;
+                        if (i2 >= first_slot_cnt + due_slot_cnt) {
+                            break;
+                        }
+                    }
+                }
+            } catch (Throwable e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
         @Override
-        public void run() {
-            while (true) {
-
-
-
-
-                // ........................
-
-
-
-
-                LoadedTargetId ti = queue.poll();
-                if (ti != null) {
-                    try {
-                        SmsSet smsSet = dbOperations.getSmsSetForTargetId(new Date[] { new Date() }, ti);
-                        if (smsSet != null) {
-                            int ii = smsSet.getSmsCount();
-
-                            for (int i1 = 0; i1 < ii; i1++) {
-                                Sms sms = smsSet.getSms(i1);
-                                dbOperations.deleteIdFromDests(sms);
-                            }
-                        }
-                    } catch (PersistenceException e) {
-                        logger.error("Exception in task X3: " + e.toString(), e);
-                    }
-                } else {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-            }
+        public void terminate() {
+            // TODO Auto-generated method stub
+            
         }
 
     }

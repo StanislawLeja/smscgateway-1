@@ -9,6 +9,8 @@ import org.mobicents.smsc.cassandra.SmsSet;
 
 public interface DBOperInterface {
 
+    // 1 *********************
+
     long calculateSlot(Date dt);
 
     void createRecord(long dueSlot, Sms sms) throws PersistenceException;
@@ -18,5 +20,11 @@ public interface DBOperInterface {
     SmsSet getSmsSetForTargetId(Date[] dtt, LoadedTargetId targetId) throws PersistenceException;
 
     void deleteIdFromDests(Sms sms, long dueSlot) throws PersistenceException;
+
+    // 2 *********************
+
+    long getCurrentDueSlot();
+
+    void createRecord_sch2(Sms sms) throws PersistenceException;
 
 }

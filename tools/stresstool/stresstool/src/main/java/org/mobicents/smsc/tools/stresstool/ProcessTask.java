@@ -6,4 +6,6 @@ public interface ProcessTask {
 
     String getResults();
 
+    void terminate();
+
 }

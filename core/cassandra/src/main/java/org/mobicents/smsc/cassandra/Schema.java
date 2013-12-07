@@ -91,6 +91,8 @@ public class Schema {
     public static final String COLUMN_ADDRESS = "ADDRESS";
     public static final String COLUMN_CLUSTER_NAME = "CLUSTER_NAME";
 
+    public static final String COLUMN_NEXT_SLOT = "NEXT_SLOT";
+
     public static final String FAMILY_LIVE_SMS = "LIVE_SMS";
     public static final String FAMILY_ARCHIVE = "ARCHIVE";
     public static final String FAMILY_LIVE = "LIVE";
@@ -98,6 +100,11 @@ public class Schema {
     public static final String FAMILY_DATA = "DATA";
     public static final String FAMILY_SLOTS = "SLOTS";
     public static final String FAMILY_DESTS = "DESTS";
+
+    public static final String FAMILY_CURRENT_SLOT_TABLE = "CURRENT_SLOT_TABLE";
+    public static final String FAMILY_DST_SLOT_TABLE = "DST_SLOT_TABLE";
+    public static final String FAMILY_SLOT_MESSAGES_TABLE = "SLOT_MESSAGES_TABLE";
+    public static final String FAMILY_MESSAGES = "MESSAGES";
 
     public static final List<String> COLUMNS_LIVE;
     public static final List<String> COLUMNS_LIVE_SMS;
