@@ -14,21 +14,35 @@ public class PreparedStatementCollection {
     protected PreparedStatement createRecordCurrent;
     protected PreparedStatement getRecordData;
     protected PreparedStatement getRecordData2;
+    protected PreparedStatement updateInSystem;
+    protected PreparedStatement createRecordArchive;
 
-    public PreparedStatementCollection(DBOper2 dbOperation, String tName) {
+    public PreparedStatementCollection(DBOper2 dbOperation, String tName, int ttlCurrent, int ttlArchive) {
         this.dbOperation = dbOperation;
         this.tName = tName;
 
         try {
             String s1 = getFillUpdateFields();
             String s2 = getFillUpdateFields2();
+            String s3a, s3b;
+            if (ttlCurrent > 0) {
+                s3a = "USING TTL " + ttlCurrent;
+            } else {
+                s3a = "";
+            }
+            if (ttlArchive > 0) {
+                s3b = "USING TTL " + ttlArchive;
+            } else {
+                s3b = "";
+            }
+
             String sa = "INSERT INTO \"" + Schema.FAMILY_DST_SLOT_TABLE + tName + "\" (\"" + Schema.COLUMN_TARGET_ID + "\", \"" + Schema.COLUMN_DUE_SLOT
-                    + "\") VALUES (?, ?);";
+                    + "\") VALUES (?, ?) " + s3a + ";";
             createDueSlotForTargetId = dbOperation.session.prepare(sa);
             sa = "SELECT \"" + Schema.COLUMN_DUE_SLOT + "\" FROM \"" + Schema.FAMILY_DST_SLOT_TABLE + tName + "\" where \"" + Schema.COLUMN_TARGET_ID
                     + "\"=?;";
             getDueSlotForTargetId = dbOperation.session.prepare(sa);
-            sa = "INSERT INTO \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\" (" + s1 + ") VALUES (" + s2 + ");";
+            sa = "INSERT INTO \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\" (" + s1 + ") VALUES (" + s2 + ") " + s3a + ";";
             createRecordCurrent = dbOperation.session.prepare(sa);
             sa = "SELECT * FROM \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\" where \"" + Schema.COLUMN_DUE_SLOT
                     + "\"=?;";
@@ -36,12 +50,17 @@ public class PreparedStatementCollection {
             sa = "SELECT * FROM \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\" where \"" + Schema.COLUMN_DUE_SLOT + "\"=? and \""
                     + Schema.COLUMN_TARGET_ID + "\"=?;";
             getRecordData2 = dbOperation.session.prepare(sa);
-
+            sa = "UPDATE \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\" " + s3a + " SET \"" + Schema.COLUMN_IN_SYSTEM + "\"=?, \""
+                    + Schema.COLUMN_SMSC_UUID + "\"=? where \"" + Schema.COLUMN_DUE_SLOT + "\"=? and \"" + Schema.COLUMN_TARGET_ID + "\"=? and \""
+                    + Schema.COLUMN_ID + "\"=?;";
+            updateInSystem = dbOperation.session.prepare(sa);
+            sa = "INSERT INTO \"" + Schema.FAMILY_MESSAGES + tName + "\" (" + s1 + ", \"" + Schema.COLUMN_IMSI + "\", \"" + Schema.COLUMN_NNN_DIGITS + "\", \""
+                    + Schema.COLUMN_NNN_AN + "\", \"" + Schema.COLUMN_NNN_NP + "\", \"" + Schema.COLUMN_SM_TYPE + "\") VALUES (" + s2 + ", ?, ?, ?, ?, ?) "
+                    + s3b + ";";
+            createRecordArchive = dbOperation.session.prepare(sa);
 
 //            sa = "DELETE FROM \"" + Schema.FAMILY_SLOTS + tName + "\" where \"" + Schema.COLUMN_DUE_SLOT + "\"=? and \"" + Schema.COLUMN_TARGET_ID
 //                    + "\"=?;";
-//            sa = "UPDATE \"" + Schema.FAMILY_DESTS + tName + "\" SET \"" + Schema.COLUMN_SENT + "\"=true where \"" + Schema.COLUMN_TARGET_ID
-//                    + "\"=? and \"" + Schema.COLUMN_ID + "\"=?;";
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -58,6 +77,8 @@ public class PreparedStatementCollection {
         sb.append(Schema.COLUMN_DUE_SLOT);
         sb.append("\", \"");
         sb.append(Schema.COLUMN_IN_SYSTEM);
+        sb.append("\", \"");
+        sb.append(Schema.COLUMN_SMSC_UUID);
         sb.append("\", \"");
 
         sb.append(Schema.COLUMN_ADDR_DST_DIGITS);
@@ -124,7 +145,7 @@ public class PreparedStatementCollection {
     }
 
     private String getFillUpdateFields2() {
-        int cnt = 31;
+        int cnt = 32;
         StringBuilder sb = new StringBuilder();
         int i2 = 0;
         for (int i1 = 0; i1 < cnt; i1++) {

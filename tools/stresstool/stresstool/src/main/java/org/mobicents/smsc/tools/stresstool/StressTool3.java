@@ -3,14 +3,21 @@ package org.mobicents.smsc.tools.stresstool;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.log4j.Logger;
+import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
+import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
+import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
+import org.mobicents.protocols.ss7.map.primitives.IMSIImpl;
+import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
+import org.mobicents.protocols.ss7.map.service.sms.LocationInfoWithLMSIImpl;
+import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.SmType;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.cassandra.SmsSetCashe;
@@ -34,9 +41,9 @@ public class StressTool3 {
     private int dataTableDaysTimeArea = 10;
     private int smsSetRange = 10;
     private int recordCount = 500000;
-    private int threadCountW = 0;
-    private int threadCountR = 1;
-    private int threadCountA = 1; // Alert
+    private int threadCountW = 8; // saving
+    private int threadCountR = 10; // reading
+    private int threadCountA = 10; // Alert
     private CTask task = CTask.Live_Sms_Cycle;
 
     private static final Logger logger = Logger.getLogger(StressTool3.class);
@@ -152,8 +159,6 @@ public class StressTool3 {
         Live_Sms_Cycle,
     };
 
-    private long startingDueSlot;
-
     class TX implements ProcessTask, Runnable {
         private ArrayList<TX1> tx1 = new ArrayList<TX1>();
         private ArrayList<TX2> tx2 = new ArrayList<TX2>();
@@ -189,12 +194,12 @@ public class StressTool3 {
                 }
             }
 
-//            for (int i1 = 0; i1 < threadCountR; i1++) {
-//                TX3 ta = new TX3();
-//                tx3.add(ta);
-//                Thread t = new Thread(ta);
-//                t.start();
-//            }
+            for (int i1 = 0; i1 < threadCountR; i1++) {
+                TX4 ta = new TX4();
+                tx4.add(ta);
+                Thread t = new Thread(ta);
+                t.start();
+            }
         }
 
         @Override
@@ -219,7 +224,7 @@ public class StressTool3 {
             int i2 = recordCount;
             int i3 = 0;
             for (TX2 el : tx2) {
-                i1 += el.numProcessed;
+                i3 += el.numProcessed;
             }
             String s1 = "Processed TX1 " + i1 + " out of " + i2 + ", processed TX3 " + (tx3 != null ? (tx3.curNum) : "") + " out of "
                     + (tx3 != null ? (tx3.endNum - tx3.startNum) : "") + ", queue=" + queue.size() + ", T2-numProcessed=" + i3;
@@ -273,6 +278,7 @@ public class StressTool3 {
                     String s1 = ii1.toString();
                     int messageId = 0;
 
+                    int cnt = 3;
                     try {
                         PreparedStatementCollection psc = dbOperations.getStatementCollection(new Date());
 
@@ -291,7 +297,7 @@ public class StressTool3 {
                         bb.add(bf1);
                         bb.add(bf2);
                         bb.add(bf3);
-                        for (int i1 = 0; i1 < 3; i1++) {
+                        for (int i1 = 0; i1 < cnt; i1++) {
                             Sms sms = new Sms();
                             sms.setSmsSet(smsSet);
                             sms.setMessageId(this.curNum);
@@ -346,7 +352,7 @@ public class StressTool3 {
                         logger.error("Exception in task X1: " + e.toString(), e);
                     }
 
-                    this.curNum++;
+                    this.curNum += cnt;
                     if (this.curNum >= this.endNum)
                         break;
                 }
@@ -415,8 +421,10 @@ public class StressTool3 {
                                                 lstS.add(smsSet);
                                                 ArrayList<SmsSet> lst = dbOperations.sortRecordList(lstS);
 
-                                                // TODO: marking as loaded
-                                                // ..........................
+                                                for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
+                                                    Sms sms = smsSet.getSms(i1);
+                                                    dbOperations.updateInSystem(sms, DBOper2.IN_SYSTEM_INPROCESS);
+                                                }
 
                                                 this.numProcessed += smsSet.getSmsCount();
                                                 for (SmsSet t1 : lst) {
@@ -485,29 +493,28 @@ public class StressTool3 {
                     try {
                         long processedDueSlot = dbOperations.getProcessingDueSlot();
                         long possibleDueSlot = dbOperations.getIntimeDueSlot();
-                        while (processedDueSlot >= possibleDueSlot || queue.size() > 10000) {
+                        if (processedDueSlot >= possibleDueSlot || queue.size() > 10000) {
                             Thread.sleep(10);
-                            continue;
-                        }
-
-                        processedDueSlot++;
-                        if (!dbOperations.checkDueSlotNotWriting(processedDueSlot)) {
-                            Thread.sleep(10);
-                            continue;
-                        }
-
-                        ArrayList<SmsSet> lstS = dbOperations.getRecordList(processedDueSlot);
-                        ArrayList<SmsSet> lst = dbOperations.sortRecordList(lstS);
-                        this.curNum += lstS.size();
-                        for (SmsSet ti : lst) {
-                            if (!ti.isProcessingStarted()) {
-                                ti.setProcessingStarted();
-                                queue.add(ti);
+                        } else {
+                            processedDueSlot++;
+                            if (!dbOperations.checkDueSlotNotWriting(processedDueSlot)) {
+                                Thread.sleep(10);
+                                continue;
                             }
-                        }
 
-                        dbOperations.setProcessingDueSlot(processedDueSlot);
-                    } catch (PersistenceException e) {
+                            ArrayList<SmsSet> lstS = dbOperations.getRecordList(processedDueSlot);
+                            ArrayList<SmsSet> lst = dbOperations.sortRecordList(lstS);
+                            this.curNum += lstS.size();
+                            for (SmsSet ti : lst) {
+                                if (!ti.isProcessingStarted()) {
+                                    ti.setProcessingStarted();
+                                    queue.add(ti);
+                                }
+                            }
+
+                            dbOperations.setProcessingDueSlot(processedDueSlot);
+                        }
+                    } catch (Throwable e) {
                         logger.error("Exception in task X3: " + e.toString(), e);
                     }
 
@@ -515,7 +522,7 @@ public class StressTool3 {
                         break;
 
                 }
-            } catch (InterruptedException e) {
+            } catch (Throwable e) {
                 e.printStackTrace();
             } finally {
                 ready = true;
@@ -546,30 +553,68 @@ public class StressTool3 {
 
         @Override
         public void run() {
+            int j1 = 0;
             while (true) {
-//                LoadedTargetId ti = queue.poll();
-//                if (ti != null) {
-//                    try {
-//                        SmsSet smsSet = dbOperations.getSmsSetForTargetId(new Date[] { new Date() }, ti);
-//                        if (smsSet != null) {
-//                            int ii = smsSet.getSmsCount();
-//
-//                            for (int i1 = 0; i1 < ii; i1++) {
-//                                Sms sms = smsSet.getSms(i1);
-//                                dbOperations.deleteIdFromDests(sms);
-//                            }
-//                        }
-//                    } catch (PersistenceException e) {
-//                        logger.error("Exception in task X3: " + e.toString(), e);
-//                    }
-//                } else {
-//                    try {
-//                        Thread.sleep(100);
-//                    } catch (InterruptedException e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
+                SmsSet smsSet = queue.poll();
+
+                if (smsSet != null) {
+                    j1++;
+                    try {
+                        TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
+                        try {
+                            synchronized (lock) {
+                                int j2 = j1 % 3;
+                                int ii = smsSet.getSmsCount();
+
+                                if (j2 == 0) {
+                                    // postpone of delivering
+                                    Date dt = new Date(new Date().getTime() + 1000 * 60 * 10);
+                                    for (int i1 = 0; i1 < ii; i1++) {
+                                        Sms sms = smsSet.getSms(i1);
+                                        sms.setDeliveryDate(new Date());
+
+                                        dbOperations.updateInSystem(sms, DBOper2.IN_SYSTEM_SENT);
+
+                                        // + 10 min
+                                        sms.setDueSlot(dbOperations.getDueSlotForTime(dt));
+                                        dbOperations.createRecordCurrent(sms);
+                                    }
+                                } else {
+                                    smsSet.setType(SmType.SMS_FOR_SS7);
+                                    if (j1 % 3 == 1) {
+                                        smsSet.setStatus(ErrorCode.ABSENT_SUBSCRIBER);
+                                    } else {
+                                        smsSet.setStatus(ErrorCode.SUCCESS);
+                                        smsSet.setImsi(new IMSIImpl("123456789012324"));
+                                        ISDNAddressStringImpl networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
+                                                NumberingPlan.ISDN, "1231223123");
+                                        LocationInfoWithLMSIImpl locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+                                        smsSet.setLocationInfoWithLMSI(locationInfoWithLMSI);
+                                    }
+
+                                    for (int i1 = 0; i1 < ii; i1++) {
+                                        Sms sms = smsSet.getSms(i1);
+                                        sms.setDeliveryDate(new Date());
+
+                                        dbOperations.updateInSystem(sms, DBOper2.IN_SYSTEM_SENT);
+                                        dbOperations.createRecordArchive(sms);
+                                    }
+                                }
+                            }
+                        } finally {
+                            SmsSetCashe.getInstance().removeSmsSet(lock);
+                        }
+                    } catch (PersistenceException e) {
+                        logger.error("Exception in task X3: " + e.toString(), e);
+                    }
+                } else {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
             }
         }
 

@@ -33,16 +33,18 @@ import com.datastax.driver.core.Cluster.Builder;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 
 /**
- * 
+ *
  * @author sergey vetyutnev
- * 
+ *
  */
 public class DBOper2 {
     private static final Logger logger = Logger.getLogger(DBOper2.class);
 
     public static final String TLV_SET = "tlvSet";
     public static final UUID emptyUuid = UUID.nameUUIDFromBytes(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
-    public static final UUID processedUuid = UUID.nameUUIDFromBytes(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 });
+    public static final int IN_SYSTEM_UNSENT = 0;
+    public static final int IN_SYSTEM_INPROCESS = 1;
+    public static final int IN_SYSTEM_SENT = 2;
 
     private static final DBOper2 instance = new DBOper2();
 
@@ -368,83 +370,123 @@ public class DBOper2 {
             PreparedStatement ps = psc.createRecordCurrent;
             BoundStatement boundStatement = new BoundStatement(ps);
 
-            boundStatement.setUUID(Schema.COLUMN_ID, sms.getDbId());
-            boundStatement.setString(Schema.COLUMN_TARGET_ID, sms.getSmsSet().getTargetId());
-            boundStatement.setLong(Schema.COLUMN_DUE_SLOT, dueSlot);
-            boundStatement.setUUID(Schema.COLUMN_IN_SYSTEM, emptyUuid);
-
-            boundStatement.setString(Schema.COLUMN_ADDR_DST_DIGITS, sms.getSmsSet().getDestAddr());
-            boundStatement.setInt(Schema.COLUMN_ADDR_DST_TON, sms.getSmsSet().getDestAddrTon());
-            boundStatement.setInt(Schema.COLUMN_ADDR_DST_NPI, sms.getSmsSet().getDestAddrNpi());
-            if (sms.getSourceAddr() != null) {
-                boundStatement.setString(Schema.COLUMN_ADDR_SRC_DIGITS, sms.getSourceAddr());
-            }
-            boundStatement.setInt(Schema.COLUMN_ADDR_SRC_TON, sms.getSourceAddrTon());
-            boundStatement.setInt(Schema.COLUMN_ADDR_SRC_NPI, sms.getSourceAddrNpi());
-
-            boundStatement.setInt(Schema.COLUMN_DUE_DELAY, sms.getSmsSet().getDueDelay());
-            if (sms.getSmsSet().getStatus() != null)
-                boundStatement.setInt(Schema.COLUMN_SM_STATUS, sms.getSmsSet().getStatus().getCode());
-            boundStatement.setBool(Schema.COLUMN_ALERTING_SUPPORTED, sms.getSmsSet().isAlertingSupported());
-
-            boundStatement.setLong(Schema.COLUMN_MESSAGE_ID, sms.getMessageId());
-            boundStatement.setInt(Schema.COLUMN_MO_MESSAGE_REF, sms.getMoMessageRef());
-            if (sms.getOrigEsmeName() != null) {
-                boundStatement.setString(Schema.COLUMN_ORIG_ESME_NAME, sms.getOrigEsmeName());
-            }
-            if (sms.getOrigSystemId() != null) {
-                boundStatement.setString(Schema.COLUMN_ORIG_SYSTEM_ID, sms.getOrigSystemId());
-            }
-            if (sms.getSubmitDate() != null) {
-                boundStatement.setDate(Schema.COLUMN_SUBMIT_DATE, sms.getSubmitDate());
-            }
-            if (sms.getServiceType() != null) {
-                boundStatement.setString(Schema.COLUMN_SERVICE_TYPE, sms.getServiceType());
-            }
-            boundStatement.setInt(Schema.COLUMN_ESM_CLASS, sms.getEsmClass());
-            boundStatement.setInt(Schema.COLUMN_PROTOCOL_ID, sms.getProtocolId());
-            boundStatement.setInt(Schema.COLUMN_PRIORITY, sms.getPriority());
-
-            boundStatement.setInt(Schema.COLUMN_REGISTERED_DELIVERY, sms.getRegisteredDelivery());
-            boundStatement.setInt(Schema.COLUMN_REPLACE, sms.getReplaceIfPresent());
-            boundStatement.setInt(Schema.COLUMN_DATA_CODING, sms.getDataCoding());
-            boundStatement.setInt(Schema.COLUMN_DEFAULT_MSG_ID, sms.getDefaultMsgId());
-
-            if (sms.getShortMessage() != null) {
-                boundStatement.setBytes(Schema.COLUMN_MESSAGE, ByteBuffer.wrap(sms.getShortMessage()));
-            }
-            if (sms.getScheduleDeliveryTime() != null) {
-                boundStatement.setDate(Schema.COLUMN_SCHEDULE_DELIVERY_TIME, sms.getScheduleDeliveryTime());
-            }
-            if (sms.getValidityPeriod() != null) {
-                boundStatement.setDate(Schema.COLUMN_VALIDITY_PERIOD, sms.getValidityPeriod());
-            }
-
-            boundStatement.setInt(Schema.COLUMN_DELIVERY_COUNT, sms.getDeliveryCount());
-
-            if (sms.getTlvSet().getOptionalParameterCount() > 0) {
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    XMLObjectWriter writer = XMLObjectWriter.newInstance(baos);
-                    writer.setIndentation("\t");
-                    writer.write(sms.getTlvSet(), TLV_SET, TlvSet.class);
-                    writer.close();
-                    byte[] rawData = baos.toByteArray();
-                    String serializedEvent = new String(rawData);
-
-                    boundStatement.setString(Schema.COLUMN_OPTIONAL_PARAMETERS, serializedEvent);
-                } catch (XMLStreamException e) {
-                    String msg = "XMLStreamException when serializing optional parameters for '" + sms.getDbId() + "'!";
-
-                    throw new PersistenceException(msg, e);
-                }
-            }
+            setSmsFields(sms, dueSlot, boundStatement, false);
 
             ResultSet res = session.execute(boundStatement);
         } catch (Exception e1) {
-            String msg = "Failed createRecord !" + e1.getMessage();
+            String msg = "Failed createRecordCurrent !" + e1.getMessage();
 
             throw new PersistenceException(msg, e1);
+        }
+    }
+
+    public void createRecordArchive(Sms sms) throws PersistenceException {
+        Date deliveryDate = sms.getDeliverDate();
+        if (deliveryDate == null)
+            deliveryDate = new Date();
+        long dueSlot = this.getDueSlotForTime(deliveryDate);
+        PreparedStatementCollection psc = getStatementCollection(deliveryDate);
+
+        try {
+            PreparedStatement ps = psc.createRecordArchive;
+            BoundStatement boundStatement = new BoundStatement(ps);
+
+            setSmsFields(sms, dueSlot, boundStatement, true);
+
+            ResultSet res = session.execute(boundStatement);
+        } catch (Exception e1) {
+            String msg = "Failed createRecordArchive !" + e1.getMessage();
+
+            throw new PersistenceException(msg, e1);
+        }
+    }
+
+    private void setSmsFields(Sms sms, long dueSlot, BoundStatement boundStatement, boolean archive) throws PersistenceException {
+        boundStatement.setUUID(Schema.COLUMN_ID, sms.getDbId());
+        boundStatement.setString(Schema.COLUMN_TARGET_ID, sms.getSmsSet().getTargetId());
+        boundStatement.setLong(Schema.COLUMN_DUE_SLOT, dueSlot);
+        boundStatement.setInt(Schema.COLUMN_IN_SYSTEM, IN_SYSTEM_UNSENT);
+        boundStatement.setUUID(Schema.COLUMN_SMSC_UUID, emptyUuid);
+
+        boundStatement.setString(Schema.COLUMN_ADDR_DST_DIGITS, sms.getSmsSet().getDestAddr());
+        boundStatement.setInt(Schema.COLUMN_ADDR_DST_TON, sms.getSmsSet().getDestAddrTon());
+        boundStatement.setInt(Schema.COLUMN_ADDR_DST_NPI, sms.getSmsSet().getDestAddrNpi());
+        if (sms.getSourceAddr() != null) {
+            boundStatement.setString(Schema.COLUMN_ADDR_SRC_DIGITS, sms.getSourceAddr());
+        }
+        boundStatement.setInt(Schema.COLUMN_ADDR_SRC_TON, sms.getSourceAddrTon());
+        boundStatement.setInt(Schema.COLUMN_ADDR_SRC_NPI, sms.getSourceAddrNpi());
+
+        boundStatement.setInt(Schema.COLUMN_DUE_DELAY, sms.getSmsSet().getDueDelay());
+        if (sms.getSmsSet().getStatus() != null)
+            boundStatement.setInt(Schema.COLUMN_SM_STATUS, sms.getSmsSet().getStatus().getCode());
+        boundStatement.setBool(Schema.COLUMN_ALERTING_SUPPORTED, sms.getSmsSet().isAlertingSupported());
+
+        boundStatement.setLong(Schema.COLUMN_MESSAGE_ID, sms.getMessageId());
+        boundStatement.setInt(Schema.COLUMN_MO_MESSAGE_REF, sms.getMoMessageRef());
+        if (sms.getOrigEsmeName() != null) {
+            boundStatement.setString(Schema.COLUMN_ORIG_ESME_NAME, sms.getOrigEsmeName());
+        }
+        if (sms.getOrigSystemId() != null) {
+            boundStatement.setString(Schema.COLUMN_ORIG_SYSTEM_ID, sms.getOrigSystemId());
+        }
+        if (sms.getSubmitDate() != null) {
+            boundStatement.setDate(Schema.COLUMN_SUBMIT_DATE, sms.getSubmitDate());
+        }
+        if (sms.getServiceType() != null) {
+            boundStatement.setString(Schema.COLUMN_SERVICE_TYPE, sms.getServiceType());
+        }
+        boundStatement.setInt(Schema.COLUMN_ESM_CLASS, sms.getEsmClass());
+        boundStatement.setInt(Schema.COLUMN_PROTOCOL_ID, sms.getProtocolId());
+        boundStatement.setInt(Schema.COLUMN_PRIORITY, sms.getPriority());
+
+        boundStatement.setInt(Schema.COLUMN_REGISTERED_DELIVERY, sms.getRegisteredDelivery());
+        boundStatement.setInt(Schema.COLUMN_REPLACE, sms.getReplaceIfPresent());
+        boundStatement.setInt(Schema.COLUMN_DATA_CODING, sms.getDataCoding());
+        boundStatement.setInt(Schema.COLUMN_DEFAULT_MSG_ID, sms.getDefaultMsgId());
+
+        if (sms.getShortMessage() != null) {
+            boundStatement.setBytes(Schema.COLUMN_MESSAGE, ByteBuffer.wrap(sms.getShortMessage()));
+        }
+        if (sms.getScheduleDeliveryTime() != null) {
+            boundStatement.setDate(Schema.COLUMN_SCHEDULE_DELIVERY_TIME, sms.getScheduleDeliveryTime());
+        }
+        if (sms.getValidityPeriod() != null) {
+            boundStatement.setDate(Schema.COLUMN_VALIDITY_PERIOD, sms.getValidityPeriod());
+        }
+
+        boundStatement.setInt(Schema.COLUMN_DELIVERY_COUNT, sms.getDeliveryCount());
+
+        if (sms.getTlvSet().getOptionalParameterCount() > 0) {
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                XMLObjectWriter writer = XMLObjectWriter.newInstance(baos);
+                writer.setIndentation("\t");
+                writer.write(sms.getTlvSet(), TLV_SET, TlvSet.class);
+                writer.close();
+                byte[] rawData = baos.toByteArray();
+                String serializedEvent = new String(rawData);
+
+                boundStatement.setString(Schema.COLUMN_OPTIONAL_PARAMETERS, serializedEvent);
+            } catch (XMLStreamException e) {
+                String msg = "XMLStreamException when serializing optional parameters for '" + sms.getDbId() + "'!";
+
+                throw new PersistenceException(msg, e);
+            }
+        }
+
+        if (archive) {
+            if (sms.getSmsSet().getImsi() != null) {
+                boundStatement.setString(Schema.COLUMN_IMSI, sms.getSmsSet().getImsi().getData());
+            }
+            if (sms.getSmsSet().getLocationInfoWithLMSI() != null && sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber() != null) {
+                boundStatement.setString(Schema.COLUMN_NNN_DIGITS, sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber().getAddress());
+                boundStatement.setInt(Schema.COLUMN_NNN_AN, sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber().getAddressNature().getIndicator());
+                boundStatement.setInt(Schema.COLUMN_NNN_NP, sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber().getNumberingPlan().getIndicator());
+            }
+            if (sms.getSmsSet() != null) {
+                boundStatement.setInt(Schema.COLUMN_SM_TYPE, sms.getSmsSet().getType().getCode());
+            }
         }
     }
 
@@ -460,7 +502,8 @@ public class DBOper2 {
 
             for (Row row : res) {
                 SmsSet smsSet = this.createSms(row, null);
-                result.add(smsSet);
+                if (smsSet != null)
+                    result.add(smsSet);
             }
         } catch (Exception e1) {
             String msg = "Failed getRecordList()";
@@ -497,8 +540,9 @@ public class DBOper2 {
         if (row == null)
             return null;
 
-        UUID inSystem = row.getUUID(Schema.COLUMN_IN_SYSTEM);
-        if (inSystem.equals(currentSessionUUID) || inSystem.equals(processedUuid)) {
+        int inSystem = row.getInt(Schema.COLUMN_IN_SYSTEM);
+        UUID smscUuid = row.getUUID(Schema.COLUMN_SMSC_UUID);
+        if (inSystem == IN_SYSTEM_SENT || inSystem == IN_SYSTEM_INPROCESS && smscUuid.equals(currentSessionUUID)) {
             // inSystem it is in processing or processed - skip this
             return null;
         }
@@ -579,14 +623,19 @@ public class DBOper2 {
 
         // aggregating messages for one targetId
         for (SmsSet smsSet : sourceLst) {
-            SmsSet smsSet2 = res.get(smsSet.getTargetId());
+            SmsSet smsSet2 = null;
+            try {
+                smsSet2 = res.get(smsSet.getTargetId());
+            } catch (Throwable e) {
+                int dd = 0;
+            }
             if (smsSet2 != null) {
                 smsSet2.addSms(smsSet.getSms(0));
             } else {
                 res.put(smsSet.getTargetId(), smsSet);
             }
         }
-
+ 
         // adding into SmsSetCashe
         ArrayList<SmsSet> res2 = new ArrayList<SmsSet>();
         for (SmsSet smsSet : res.values()) {
@@ -615,7 +664,24 @@ public class DBOper2 {
         return res2;
     }
 
-    //.....................................
+    public void updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException {
+        PreparedStatementCollection psc = this.getStatementCollection(sms.getDueSlot());
+
+        try {
+            PreparedStatement ps = psc.updateInSystem;
+            BoundStatement boundStatement = new BoundStatement(ps);
+            boundStatement.bind(isSystemStatus, currentSessionUUID, sms.getDueSlot(), sms.getSmsSet().getTargetId(), sms.getDbId());
+            ResultSet res = session.execute(boundStatement);
+        } catch (Exception e1) {
+            String msg = "Failed to execute updateInSystem() !";
+            throw new PersistenceException(msg, e1);
+        }
+    }
+
+    public void createArchiveMessage(Sms sms) throws PersistenceException {
+        // TODO: ......................
+        // .....................................
+    }
 
     protected PreparedStatementCollection getStatementCollection(Date dt) throws PersistenceException {
         String tName = this.getTableName(dt);
@@ -666,59 +732,14 @@ public class DBOper2 {
                 PreparedStatement ps = session.prepare(s2);
                 BoundStatement boundStatement = new BoundStatement(ps);
                 ResultSet res = session.execute(boundStatement);
+
                 // SLOT_MESSAGES_TABLE
                 sb = new StringBuilder();
                 sb.append("CREATE TABLE \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE);
                 sb.append(tName);
                 sb.append("\" (");
 
-                appendField(sb, Schema.COLUMN_ID, "uuid");
-                appendField(sb, Schema.COLUMN_TARGET_ID, "ascii");
-                appendField(sb, Schema.COLUMN_DUE_SLOT, "bigint");
-                appendField(sb, Schema.COLUMN_IN_SYSTEM, "uuid");
-
-                appendField(sb, Schema.COLUMN_ADDR_DST_DIGITS, "ascii");
-                appendField(sb, Schema.COLUMN_ADDR_DST_TON, "int");
-                appendField(sb, Schema.COLUMN_ADDR_DST_NPI, "int");
-
-                appendField(sb, Schema.COLUMN_ADDR_SRC_DIGITS, "ascii");
-                appendField(sb, Schema.COLUMN_ADDR_SRC_TON, "int");
-                appendField(sb, Schema.COLUMN_ADDR_SRC_NPI, "int");
-
-                appendField(sb, Schema.COLUMN_DUE_DELAY, "int");
-                appendField(sb, Schema.COLUMN_ALERTING_SUPPORTED, "boolean");
-
-                appendField(sb, Schema.COLUMN_MESSAGE_ID, "bigint");
-                appendField(sb, Schema.COLUMN_MO_MESSAGE_REF, "int");
-                appendField(sb, Schema.COLUMN_ORIG_ESME_NAME, "text");
-                appendField(sb, Schema.COLUMN_ORIG_SYSTEM_ID, "text");
-                appendField(sb, Schema.COLUMN_DEST_CLUSTER_NAME, "text");
-                appendField(sb, Schema.COLUMN_DEST_ESME_NAME, "text");
-                appendField(sb, Schema.COLUMN_DEST_SYSTEM_ID, "text");
-                appendField(sb, Schema.COLUMN_SUBMIT_DATE, "timestamp");
-                appendField(sb, Schema.COLUMN_DELIVERY_DATE, "timestamp");
-
-                appendField(sb, Schema.COLUMN_SERVICE_TYPE, "text");
-                appendField(sb, Schema.COLUMN_ESM_CLASS, "int");
-                appendField(sb, Schema.COLUMN_PROTOCOL_ID, "int");
-                appendField(sb, Schema.COLUMN_PRIORITY, "int");
-                appendField(sb, Schema.COLUMN_REGISTERED_DELIVERY, "int");
-                appendField(sb, Schema.COLUMN_REPLACE, "int");
-                appendField(sb, Schema.COLUMN_DATA_CODING, "int");
-                appendField(sb, Schema.COLUMN_DEFAULT_MSG_ID, "int");
-
-                appendField(sb, Schema.COLUMN_MESSAGE, "blob");
-                appendField(sb, Schema.COLUMN_OPTIONAL_PARAMETERS, "text");
-                appendField(sb, Schema.COLUMN_SCHEDULE_DELIVERY_TIME, "timestamp");
-                appendField(sb, Schema.COLUMN_VALIDITY_PERIOD, "timestamp");
-
-                appendField(sb, Schema.COLUMN_IMSI, "ascii");
-                appendField(sb, Schema.COLUMN_NNN_DIGITS, "ascii");
-                appendField(sb, Schema.COLUMN_NNN_AN, "int");
-                appendField(sb, Schema.COLUMN_NNN_NP, "int");
-                appendField(sb, Schema.COLUMN_SM_STATUS, "int");
-                appendField(sb, Schema.COLUMN_SM_TYPE, "int");
-                appendField(sb, Schema.COLUMN_DELIVERY_COUNT, "int");
+                addSmsFields(sb);
 
                 sb.append("PRIMARY KEY ((\"");
                 sb.append(Schema.COLUMN_DUE_SLOT);
@@ -734,39 +755,85 @@ public class DBOper2 {
                 boundStatement = new BoundStatement(ps);
                 res = session.execute(boundStatement);
 
-//              // MESSAGES
-//              sb = new StringBuilder();
-//              sb.append("CREATE TABLE \"" + Schema.FAMILY_SLOTS);
-//              sb.append(tName);
-//              sb.append("\" (");
-//
-//              appendField(sb, Schema.COLUMN_DUE_SLOT, "bigint");
-//              appendField(sb, Schema.COLUMN_TARGET_ID, "ascii");
-//
-//              // !!!!- temproary - delete it
-//              appendField(sb, "PROCESSED", "boolean");
-//              // !!!!- temproary - delete it
-//
-//              sb.append("PRIMARY KEY (\"");
-//              sb.append(Schema.COLUMN_DUE_SLOT);
-//              sb.append("\", \"");
-//              sb.append(Schema.COLUMN_TARGET_ID);
-//              sb.append("\"");
-//              sb.append("));");
-//
-//              s2 = sb.toString();
-//              ps = session.prepare(s2);
-//              boundStatement = new BoundStatement(ps);
-//              res = session.execute(boundStatement);
+                // MESSAGES
+                sb = new StringBuilder();
+                sb.append("CREATE TABLE \"" + Schema.FAMILY_MESSAGES);
+                sb.append(tName);
+                sb.append("\" (");
+
+                addSmsFields(sb);
+
+                sb.append("PRIMARY KEY ((\"");
+                sb.append(Schema.COLUMN_ADDR_DST_DIGITS);
+                sb.append("\"), \"");
+                sb.append(Schema.COLUMN_ID);
+                sb.append("\"");
+                sb.append("));");
+
+                s2 = sb.toString();
+                ps = session.prepare(s2);
+                boundStatement = new BoundStatement(ps);
+                res = session.execute(boundStatement);
             }
         } catch (Exception e1) {
             String msg = "Failed to access or create table " + tName + "!";
             throw new PersistenceException(msg, e1);
         }
 
-        psc = new PreparedStatementCollection(this, tName);
+        psc = new PreparedStatementCollection(this, tName, ttlCurrent, ttlArchive);
         dataTableRead.putEntry(tName, psc);
         return psc;
+    }
+
+    private void addSmsFields(StringBuilder sb) {
+        appendField(sb, Schema.COLUMN_ID, "uuid");
+        appendField(sb, Schema.COLUMN_TARGET_ID, "ascii");
+        appendField(sb, Schema.COLUMN_DUE_SLOT, "bigint");
+        appendField(sb, Schema.COLUMN_IN_SYSTEM, "int");
+        appendField(sb, Schema.COLUMN_SMSC_UUID, "uuid");
+
+        appendField(sb, Schema.COLUMN_ADDR_DST_DIGITS, "ascii");
+        appendField(sb, Schema.COLUMN_ADDR_DST_TON, "int");
+        appendField(sb, Schema.COLUMN_ADDR_DST_NPI, "int");
+
+        appendField(sb, Schema.COLUMN_ADDR_SRC_DIGITS, "ascii");
+        appendField(sb, Schema.COLUMN_ADDR_SRC_TON, "int");
+        appendField(sb, Schema.COLUMN_ADDR_SRC_NPI, "int");
+
+        appendField(sb, Schema.COLUMN_DUE_DELAY, "int");
+        appendField(sb, Schema.COLUMN_ALERTING_SUPPORTED, "boolean");
+
+        appendField(sb, Schema.COLUMN_MESSAGE_ID, "bigint");
+        appendField(sb, Schema.COLUMN_MO_MESSAGE_REF, "int");
+        appendField(sb, Schema.COLUMN_ORIG_ESME_NAME, "text");
+        appendField(sb, Schema.COLUMN_ORIG_SYSTEM_ID, "text");
+        appendField(sb, Schema.COLUMN_DEST_CLUSTER_NAME, "text");
+        appendField(sb, Schema.COLUMN_DEST_ESME_NAME, "text");
+        appendField(sb, Schema.COLUMN_DEST_SYSTEM_ID, "text");
+        appendField(sb, Schema.COLUMN_SUBMIT_DATE, "timestamp");
+        appendField(sb, Schema.COLUMN_DELIVERY_DATE, "timestamp");
+
+        appendField(sb, Schema.COLUMN_SERVICE_TYPE, "text");
+        appendField(sb, Schema.COLUMN_ESM_CLASS, "int");
+        appendField(sb, Schema.COLUMN_PROTOCOL_ID, "int");
+        appendField(sb, Schema.COLUMN_PRIORITY, "int");
+        appendField(sb, Schema.COLUMN_REGISTERED_DELIVERY, "int");
+        appendField(sb, Schema.COLUMN_REPLACE, "int");
+        appendField(sb, Schema.COLUMN_DATA_CODING, "int");
+        appendField(sb, Schema.COLUMN_DEFAULT_MSG_ID, "int");
+
+        appendField(sb, Schema.COLUMN_MESSAGE, "blob");
+        appendField(sb, Schema.COLUMN_OPTIONAL_PARAMETERS, "text");
+        appendField(sb, Schema.COLUMN_SCHEDULE_DELIVERY_TIME, "timestamp");
+        appendField(sb, Schema.COLUMN_VALIDITY_PERIOD, "timestamp");
+
+        appendField(sb, Schema.COLUMN_IMSI, "ascii");
+        appendField(sb, Schema.COLUMN_NNN_DIGITS, "ascii");
+        appendField(sb, Schema.COLUMN_NNN_AN, "int");
+        appendField(sb, Schema.COLUMN_NNN_NP, "int");
+        appendField(sb, Schema.COLUMN_SM_STATUS, "int");
+        appendField(sb, Schema.COLUMN_SM_TYPE, "int");
+        appendField(sb, Schema.COLUMN_DELIVERY_COUNT, "int");
     }
 
     private synchronized void checkCurrentSlotTableExists() throws PersistenceException {

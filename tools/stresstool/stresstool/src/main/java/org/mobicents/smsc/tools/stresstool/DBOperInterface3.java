@@ -59,6 +59,10 @@ public interface DBOperInterface3 {
 
     void updateDueSlotForTargetId(String targetId, long newDueSlot) throws PersistenceException;
 
+    void createRecordCurrent(Sms sms) throws PersistenceException;
+
+    void createRecordArchive(Sms sms) throws PersistenceException;
+
     void getRecordList(Sms sms) throws PersistenceException;
 
     SmsSet getRecordListForTargeId(long dueSlot, String targetId) throws PersistenceException;
@@ -66,5 +70,7 @@ public interface DBOperInterface3 {
     ArrayList<SmsSet> getRecordList(long dueSlot) throws PersistenceException;
 
     ArrayList<SmsSet> sortRecordList(ArrayList<SmsSet> sourceLst);
+
+    void updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException;
 
 }

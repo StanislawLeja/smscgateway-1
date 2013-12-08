@@ -62,13 +62,14 @@ public class Schema {
     public static final String COLUMN_ORIG_ESME_NAME = "ORIG_ESME_NAME";
     public static final String COLUMN_ORIG_SYSTEM_ID = "ORIG_SYSTEM_ID";
     public static final String COLUMN_SERVICE_TYPE = "SERVICE_TYPE";
-    
-    
+
+
     public static final String COLUMN_SM_TYPE = "SM_TYPE";
     public static final String COLUMN_DELIVERY_COUNT = "DELIVERY_COUNT";
     public static final String COLUMN_SM_STATUS = "SM_STATUS";
     //indicates if sms is in system, so it wont be pulled more than once
     public static final String COLUMN_IN_SYSTEM = "IN_SYSTEM";
+    public static final String COLUMN_SMSC_UUID = "SMSC_UUID";
     public static final String COLUMN_IN_SYSTEM_DATE = "IN_SYSTEM_DATE";
     //indicate if AlertSC is supported and can be used
     public static final String COLUMN_ALERTING_SUPPORTED = "ALERTING_SUPPORTED";
