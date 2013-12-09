@@ -582,7 +582,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 				// smscPropertiesManagement.setCdrDatabaseExportDuration(val);
 			} else if (parName.equals("esmedefaultcluster")) {
 				smscPropertiesManagement.setEsmeDefaultClusterName(options[3]);
-
+			} else if (parName.equals("smshomerouting")) {
+				smscPropertiesManagement.setSMSHomeRouting(Boolean.parseBoolean(options[3]));
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -762,7 +763,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 				// sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
 			} else if (parName.equals("esmedefaultcluster")) {
 				sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
-
+			} else if (parName.equals("smshomerouting")) {
+				sb.append(smscPropertiesManagement.getSMSHomeRouting());
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -865,6 +867,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append("esmedefaultcluster = ");
 			sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
 			sb.append("\n");
+			
+			sb.append("smshomerouting = ");
+			sb.append(smscPropertiesManagement.getSMSHomeRouting());
+			sb.append("\n");			
 
 			// private int defaultValidityPeriodHours = 3 * 24;
 			// private int maxValidityPeriodHours = 10 * 24;

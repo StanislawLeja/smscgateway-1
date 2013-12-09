@@ -65,6 +65,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String FETCH_MAX_ROWS = "fetchMaxRows";
     private static final String MAX_ACTIVITY_COUNT = "maxActivityCount";
     private static final String SMPP_ENCODING_FOR_UCS2 = "smppEncodingForUCS2";
+    private static final String SMS_HOME_ROUTING = "smsHomeRouting";
 	// private static final String CDR_DATABASE_EXPORT_DURATION =
 	// "cdrDatabaseExportDuration";
 	private static final String ESME_DEFAULT_CLUSTER_NAME = "esmeDefaultCluster";
@@ -134,6 +135,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// DatabaseSmsRoutingRule)
 	// (if it is specified)
 	private String esmeDefaultClusterName;
+	
+	// if SMSHomeRouting is enabled, SMSC will accept MtForwardSMS and forwardSm like mobile station
+	private boolean isSMSHomeRouting = false;
 
 	private SmscPropertiesManagement(String name) {
 		this.name = name;
@@ -410,6 +414,18 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		esmeDefaultClusterName = val;
 		this.store();
 	}
+	
+	@Override
+	public boolean getSMSHomeRouting() {
+		return this.isSMSHomeRouting;
+	}
+
+	@Override
+	public void setSMSHomeRouting(boolean isSMSHomeRouting) {
+		this.isSMSHomeRouting = isSMSHomeRouting;
+		this.store();
+	}
+
 
 	public void start() throws Exception {
 
@@ -481,6 +497,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
             writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
             writer.write(this.smppEncodingForUCS2.toString(), SMPP_ENCODING_FOR_UCS2, String.class);
+            
+            writer.write(this.isSMSHomeRouting, SMS_HOME_ROUTING, Boolean.class);
 
 			writer.close();
 		} catch (Exception e) {
@@ -559,11 +577,17 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			val = reader.read(MAX_ACTIVITY_COUNT, Integer.class);
 			if (val != null)
 				this.maxActivityCount = val;
+			
+			Boolean isSMSHomeRoutingObj = reader.read(SMS_HOME_ROUTING, Boolean.class);
+			if(isSMSHomeRoutingObj != null){
+				this.isSMSHomeRouting = isSMSHomeRoutingObj.booleanValue();
+			} else {
+				this.isSMSHomeRouting = false;
+			}
 
 			reader.close();
 		} catch (XMLStreamException ex) {
 			logger.error("Error while loading the SMSC state from file", ex);
 		}
 	}
-
 }

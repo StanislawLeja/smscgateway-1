@@ -61,6 +61,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("maxduedelay");
         set.addChild("duedelaymultiplicator");
         set.addChild("maxmessagelengthreducer");
+        set.addChild("smshomerouting");
+        
         Node smppencodingforucs2 = set.addChild("smppencodingforucs2");
         smppencodingforucs2.addChild("utf8");
         smppencodingforucs2.addChild("unicode");
@@ -89,6 +91,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("maxduedelay");
         get.addChild("duedelaymultiplicator");
         get.addChild("maxmessagelengthreducer");
+        get.addChild("smshomerouting");
+        
         smppencodingforucs2 = get.addChild("smppencodingforucs2");
         smppencodingforucs2.addChild("utf8");
         smppencodingforucs2.addChild("unicode");

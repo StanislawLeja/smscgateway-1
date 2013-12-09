@@ -126,5 +126,9 @@ public interface SmscPropertiesManagementMBean {
     public String getEsmeDefaultClusterName();
 
     public void setEsmeDefaultClusterName(String val);
+    
+    public boolean getSMSHomeRouting();
+    
+    public void setSMSHomeRouting(boolean isSMSHomeRouting);
 
 }
