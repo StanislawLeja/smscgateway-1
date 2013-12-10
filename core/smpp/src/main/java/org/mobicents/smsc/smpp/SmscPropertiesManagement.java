@@ -496,9 +496,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 			writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
             writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
-            writer.write(this.smppEncodingForUCS2.toString(), SMPP_ENCODING_FOR_UCS2, String.class);
-            
             writer.write(this.isSMSHomeRouting, SMS_HOME_ROUTING, Boolean.class);
+            writer.write(this.smppEncodingForUCS2.toString(), SMPP_ENCODING_FOR_UCS2, String.class);
 
 			writer.close();
 		} catch (Exception e) {
@@ -519,6 +518,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 			reader.setBinding(binding);
 			this.serviceCenterGt = reader.read(SC_GT, String.class);
+			
 			this.serviceCenterSsn = reader.read(SC_SSN, Integer.class);
 			this.hlrSsn = reader.read(HLR_SSN, Integer.class);
 			this.mscSsn = reader.read(MSC_SSN, Integer.class);
@@ -567,23 +567,22 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			// val = reader.read(CDR_DATABASE_EXPORT_DURATION, Integer.class);
 			// if (val != null)
 			// this.cdrDatabaseExportDuration = val;
-
+			
 			this.esmeDefaultClusterName = reader.read(ESME_DEFAULT_CLUSTER_NAME, String.class);
-
-            String vals = reader.read(SMPP_ENCODING_FOR_UCS2, String.class);
-            if (vals != null)
-                this.smppEncodingForUCS2 = Enum.valueOf(SmppEncodingForUCS2.class, vals);
 
 			val = reader.read(MAX_ACTIVITY_COUNT, Integer.class);
 			if (val != null)
 				this.maxActivityCount = val;
 			
 			Boolean isSMSHomeRoutingObj = reader.read(SMS_HOME_ROUTING, Boolean.class);
+			
 			if(isSMSHomeRoutingObj != null){
 				this.isSMSHomeRouting = isSMSHomeRoutingObj.booleanValue();
-			} else {
-				this.isSMSHomeRouting = false;
 			}
+			
+			String vals = reader.read(SMPP_ENCODING_FOR_UCS2, String.class);
+            if (vals != null)
+                this.smppEncodingForUCS2 = Enum.valueOf(SmppEncodingForUCS2.class, vals);
 
 			reader.close();
 		} catch (XMLStreamException ex) {

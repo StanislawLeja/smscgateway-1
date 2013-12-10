@@ -1,5 +1,6 @@
 package org.mobicents.smsc.smpp;
 
+import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
 public class SmscPropertiesManagementTest {
@@ -8,8 +9,15 @@ public class SmscPropertiesManagementTest {
     public void testPropertiesLoad() throws Exception {
         SmscPropertiesManagement man = SmscPropertiesManagement.getInstance("SmscPropertiesManagementTest");
         man.start();
-        man.store();
         
-        man.load();
+        man.setSMSHomeRouting(true);
+        
+        man.stop();
+        
+        man.start();
+        
+        assertTrue(man.getSMSHomeRouting());
+        
+        
     }
 }
