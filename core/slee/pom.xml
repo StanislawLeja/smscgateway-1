@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>core</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.1.5-TelScale-SNAPSHOT</version>
+		<version>6.2.0-TelScale-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>slee</artifactId>

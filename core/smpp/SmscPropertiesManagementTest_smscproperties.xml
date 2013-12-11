@@ -20,3 +20,4 @@
 <fetchMaxRows value="100"/>
 <maxActivityCount value="500"/>
 <smppEncodingForUCS2 value="Utf8"/>
+<smsHomeRouting value="false"/>
