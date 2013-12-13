@@ -19,5 +19,5 @@
 <fetchPeriod value="5000"/>
 <fetchMaxRows value="100"/>
 <maxActivityCount value="500"/>
+<smsHomeRouting value="true"/>
 <smppEncodingForUCS2 value="Utf8"/>
-<smsHomeRouting value="false"/>

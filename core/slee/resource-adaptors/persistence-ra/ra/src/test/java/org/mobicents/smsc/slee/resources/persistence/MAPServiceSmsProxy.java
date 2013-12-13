@@ -51,11 +51,11 @@ public class MAPServiceSmsProxy extends MAPServiceBaseProxy implements MAPServic
 		lastMAPDialogSms = dlg;
 	}
 
-    @Override
-    public MAPDialogSms createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
-            AddressString destReference, Long localTrId) throws MAPException {
-        return null;
-    }
+//    @Override
+//    public MAPDialogSms createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
+//            AddressString destReference, Long localTrId) throws MAPException {
+//        return null;
+//    }
 
     @Override
     public MAPDialogSms createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,

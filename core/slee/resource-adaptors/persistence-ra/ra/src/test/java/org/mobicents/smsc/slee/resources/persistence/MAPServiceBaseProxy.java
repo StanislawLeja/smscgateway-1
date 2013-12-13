@@ -81,10 +81,10 @@ public class MAPServiceBaseProxy implements MAPServiceBase {
         return null;
     }
 
-    @Override
-    public MAPDialog createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
-            AddressString destReference, Long localTrId) throws MAPException {
-        // TODO Auto-generated method stub
-        return null;
-    }
+//    @Override
+//    public MAPDialog createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
+//            AddressString destReference, Long localTrId) throws MAPException {
+//        // TODO Auto-generated method stub
+//        return null;
+//    }
 }
