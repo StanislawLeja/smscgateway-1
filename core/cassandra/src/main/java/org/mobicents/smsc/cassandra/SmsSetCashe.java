@@ -37,6 +37,8 @@ public class SmsSetCashe {
 
 	private AtomicInteger activityCount = new AtomicInteger(0);
 
+	private FastMap<String, SmsSet> lstSmsSetInProcessing = new FastMap<String, SmsSet>();
+
 	private static SmsSetCashe singeltone;
 
 	static {
@@ -89,4 +91,17 @@ public class SmsSetCashe {
 	public int getActivityCount() {
 		return activityCount.get();
 	}
+
+    public SmsSet getProcessingSmsSet(String targetId) {
+        return lstSmsSetInProcessing.get(targetId);
+    }
+
+    public SmsSet addProcessingSmsSet(String targetId, SmsSet smsSet) {
+        return lstSmsSetInProcessing.put(targetId, smsSet);
+    }
+
+    public SmsSet removeProcessingSmsSet(String targetId) {
+        return lstSmsSetInProcessing.remove(targetId);
+    }
+
 }

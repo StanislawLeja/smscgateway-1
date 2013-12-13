@@ -79,8 +79,8 @@ public class DBOperations {
 	private PreparedStatement createLiveSms;
 	private PreparedStatement obtainLiveSms;
 	private PreparedStatement obtainLiveSms2;
-    private PreparedStatement doFetchSchedulableSmsSets;
-    private PreparedStatement doFetchSchedulableSmsSets2;
+//    private PreparedStatement doFetchSchedulableSmsSets;
+//    private PreparedStatement doFetchSchedulableSmsSets2;
     private PreparedStatement fetchSchedulableSms;
     private PreparedStatement getSmsRoutingRule;
     private PreparedStatement updateDbSmsRoutingRule;
@@ -159,10 +159,10 @@ public class DBOperations {
                 + ");");
         obtainLiveSms = session.prepare("select * from \"" + Schema.FAMILY_LIVE_SMS + "\" where \"" + Schema.COLUMN_ID + "\"=?;");
         obtainLiveSms2 = session.prepare("select * from \"" + Schema.FAMILY_LIVE_SMS + "\" where \"" + Schema.COLUMN_MESSAGE_ID + "\"=?;");
-        doFetchSchedulableSmsSets = session.prepare("select * from \"" + Schema.FAMILY_LIVE + "\" where \"" + Schema.COLUMN_IN_SYSTEM + "\"=? and \""
-                + Schema.COLUMN_IN_SYSTEM_DATE + "\"<=?  ALLOW FILTERING;");
-        doFetchSchedulableSmsSets2 = session.prepare("select * from \"" + Schema.FAMILY_LIVE + "\" where \"" + Schema.COLUMN_IN_SYSTEM + "\"=? and \""
-                + Schema.COLUMN_DUE_DATE + "\"<=?  ALLOW FILTERING;");
+//        doFetchSchedulableSmsSets = session.prepare("select * from \"" + Schema.FAMILY_LIVE + "\" where \"" + Schema.COLUMN_IN_SYSTEM + "\"=? and \""
+//                + Schema.COLUMN_IN_SYSTEM_DATE + "\"<=?  LIMIT ?  ALLOW FILTERING;");
+//        doFetchSchedulableSmsSets2 = session.prepare("select * from \"" + Schema.FAMILY_LIVE + "\" where \"" + Schema.COLUMN_IN_SYSTEM + "\"=? and \""
+//                + Schema.COLUMN_DUE_DATE + "\"<=?  LIMIT ?  ALLOW FILTERING;");
         fetchSchedulableSms = session.prepare("select * from \"" + Schema.FAMILY_LIVE_SMS + "\" where \"" + Schema.COLUMN_TARGET_ID + "\"=?;");
         getSmsRoutingRule = session.prepare("select * from \"" + Schema.FAMILY_SMS_ROUTING_RULE + "\" where \"" + Schema.COLUMN_ADDRESS + "\"=?;");
         updateDbSmsRoutingRule = session.prepare("INSERT INTO \"" + Schema.FAMILY_SMS_ROUTING_RULE + "\" (\"" + Schema.COLUMN_ADDRESS + "\", \""
@@ -549,14 +549,26 @@ public class DBOperations {
         PreparedStatement ps;
         Date date;
         int inSyst;
+//        doFetchSchedulableSmsSets = session.prepare("select * from \"" + Schema.FAMILY_LIVE + "\" where \"" + Schema.COLUMN_IN_SYSTEM + "\"=? and \""
+//                + Schema.COLUMN_IN_SYSTEM_DATE + "\"<=?  LIMIT " + maxRecordCount + "  ALLOW FILTERING;");
+//        doFetchSchedulableSmsSets2 = session.prepare("select * from \"" + Schema.FAMILY_LIVE + "\" where \"" + Schema.COLUMN_IN_SYSTEM + "\"=? and \""
+//                + Schema.COLUMN_DUE_DATE + "\"<=?  LIMIT " + maxRecordCount + "  ALLOW FILTERING;");
         if (opt == 1) {
-            ps = doFetchSchedulableSmsSets;
+            ps = session.prepare("select * from \"" + Schema.FAMILY_LIVE + "\" where \"" + Schema.COLUMN_IN_SYSTEM + "\"=? and \""
+                    + Schema.COLUMN_IN_SYSTEM_DATE + "\"<=?  LIMIT " + maxRecordCount + "  ALLOW FILTERING;");
             inSyst = 2;
             date = new Date((new Date()).getTime() - 30 * 60 * 1000);
         } else {
-            ps = doFetchSchedulableSmsSets2;
             inSyst = 1;
             date = new Date();
+            String s1 = "select * from \"" + Schema.FAMILY_LIVE + "\" where \"" + Schema.COLUMN_IN_SYSTEM + "\"=? and \"" + Schema.COLUMN_DUE_DATE
+                    + "\"<=?  LIMIT " + maxRecordCount + "  ALLOW FILTERING;";
+
+//            ps = session.prepare("select * from \"" + Schema.FAMILY_LIVE + "\" where \"" + Schema.COLUMN_IN_SYSTEM + "\"=? and \"" + Schema.COLUMN_DUE_DATE
+//                    + "\"<=?  ALLOW FILTERING;");
+//            String s1 = "select * from \"" + Schema.FAMILY_LIVE + "\" where \"" + Schema.COLUMN_IN_SYSTEM + "\"=" + inSyst + " and \"" + Schema.COLUMN_DUE_DATE
+//                    + "\"<='" + date + "'  LIMIT " + maxRecordCount + "  ALLOW FILTERING;";
+            ps = session.prepare(s1);
         }
         BoundStatement boundStatement = new BoundStatement(ps);
         boundStatement.bind(inSyst, date);

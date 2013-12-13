@@ -38,6 +38,7 @@ public class Schema {
     //SmS tables columns and names
     public static final String COLUMN_ID = "ID";
     public static final String COLUMN_TARGET_ID = "TARGET_ID";
+    public static final String COLUMN_SENT = "SENT";
     public static final String COLUMN_MESSAGE_ID = "MESSAGE_ID";
     public static final String COLUMN_MO_MESSAGE_REF = "MO_MESSAGE_REF";
     public static final String COLUMN_ADDR_SRC_TON = "ADDR_SRC_TON";
@@ -61,17 +62,20 @@ public class Schema {
     public static final String COLUMN_ORIG_ESME_NAME = "ORIG_ESME_NAME";
     public static final String COLUMN_ORIG_SYSTEM_ID = "ORIG_SYSTEM_ID";
     public static final String COLUMN_SERVICE_TYPE = "SERVICE_TYPE";
-    
-    
+
+
     public static final String COLUMN_SM_TYPE = "SM_TYPE";
     public static final String COLUMN_DELIVERY_COUNT = "DELIVERY_COUNT";
     public static final String COLUMN_SM_STATUS = "SM_STATUS";
     //indicates if sms is in system, so it wont be pulled more than once
     public static final String COLUMN_IN_SYSTEM = "IN_SYSTEM";
+    public static final String COLUMN_SMSC_UUID = "SMSC_UUID";
     public static final String COLUMN_IN_SYSTEM_DATE = "IN_SYSTEM_DATE";
     //indicate if AlertSC is supported and can be used
     public static final String COLUMN_ALERTING_SUPPORTED = "ALERTING_SUPPORTED";
     public static final String COLUMN_LAST_DELIVERY = "LAST_DELIVERY";
+    public static final String COLUMN_DUE_SLOT = "DUE_SLOT";
+    public static final String COLUMN_IN_SYSTEM_SLOT = "IN_SYSTEM_SLOT";
     public static final String COLUMN_DUE_DATE = "DUE_DATE";
     public static final String COLUMN_DUE_DELAY = "DUE_DELAY";
 
@@ -88,10 +92,20 @@ public class Schema {
     public static final String COLUMN_ADDRESS = "ADDRESS";
     public static final String COLUMN_CLUSTER_NAME = "CLUSTER_NAME";
 
+    public static final String COLUMN_NEXT_SLOT = "NEXT_SLOT";
+
     public static final String FAMILY_LIVE_SMS = "LIVE_SMS";
     public static final String FAMILY_ARCHIVE = "ARCHIVE";
     public static final String FAMILY_LIVE = "LIVE";
     public static final String FAMILY_SMS_ROUTING_RULE = "SMS_ROUTING_RULE";
+    public static final String FAMILY_DATA = "DATA";
+    public static final String FAMILY_SLOTS = "SLOTS";
+    public static final String FAMILY_DESTS = "DESTS";
+
+    public static final String FAMILY_CURRENT_SLOT_TABLE = "CURRENT_SLOT_TABLE";
+    public static final String FAMILY_DST_SLOT_TABLE = "DST_SLOT_TABLE";
+    public static final String FAMILY_SLOT_MESSAGES_TABLE = "SLOT_MESSAGES_TABLE";
+    public static final String FAMILY_MESSAGES = "MESSAGES";
 
     public static final List<String> COLUMNS_LIVE;
     public static final List<String> COLUMNS_LIVE_SMS;

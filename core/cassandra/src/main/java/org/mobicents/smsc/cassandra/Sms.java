@@ -39,7 +39,8 @@ public class Sms implements Serializable {
 
 	private SmsSet smsSet;
 
-	private UUID dbId;
+    private UUID dbId;
+    private long dueSlot;
 
 	private int sourceAddrTon;
 	private int sourceAddrNpi;
@@ -89,6 +90,18 @@ public class Sms implements Serializable {
 	public void setDbId(UUID dbId) {
 		this.dbId = dbId;
 	}
+
+    /**
+     * In which dueSlot belongs to this record
+     */
+    public long getDueSlot() {
+        return dueSlot;
+    }
+
+    public void setDueSlot(long dueSlot) {
+        this.dueSlot = dueSlot;
+    }
+
 
 	/**
 	 * DeliveringActivity link
