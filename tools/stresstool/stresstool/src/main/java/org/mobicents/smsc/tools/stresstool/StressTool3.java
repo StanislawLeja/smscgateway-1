@@ -50,7 +50,7 @@ public class StressTool3 {
     private String persistFile = "stresstool.xml";
     private static final String TAB_INDENT = "\t";
 
-    private DBOperationsProxy3 dbOperations;
+    private TT_DBOperationsProxy3 dbOperations;
 
     public static void main(final String[] args) {
 
@@ -82,7 +82,7 @@ public class StressTool3 {
         logInfo("task         : " + task);
         // -dDataTableDaysTimeArea
 
-        this.dbOperations = new DBOperationsProxy3();
+        this.dbOperations = new TT_DBOperationsProxy3();
         this.dbOperations.start(host, port, keyspace);
 
         
@@ -423,7 +423,7 @@ public class StressTool3 {
 
                                                 for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
                                                     Sms sms = smsSet.getSms(i1);
-                                                    dbOperations.updateInSystem(sms, DBOper2.IN_SYSTEM_INPROCESS);
+                                                    dbOperations.updateInSystem(sms, NN_DBOperations.IN_SYSTEM_INPROCESS);
                                                 }
 
                                                 this.numProcessed += smsSet.getSmsCount();
@@ -573,7 +573,7 @@ public class StressTool3 {
                                         Sms sms = smsSet.getSms(i1);
                                         sms.setDeliveryDate(new Date());
 
-                                        dbOperations.updateInSystem(sms, DBOper2.IN_SYSTEM_SENT);
+                                        dbOperations.updateInSystem(sms, NN_DBOperations.IN_SYSTEM_SENT);
 
                                         // + 10 min
                                         sms.setDueSlot(dbOperations.getDueSlotForTime(dt));
@@ -596,10 +596,12 @@ public class StressTool3 {
                                         Sms sms = smsSet.getSms(i1);
                                         sms.setDeliveryDate(new Date());
 
-                                        dbOperations.updateInSystem(sms, DBOper2.IN_SYSTEM_SENT);
+                                        dbOperations.updateInSystem(sms, NN_DBOperations.IN_SYSTEM_SENT);
                                         dbOperations.createRecordArchive(sms);
                                     }
                                 }
+
+                                SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
                             }
                         } finally {
                             SmsSetCashe.getInstance().removeSmsSet(lock);

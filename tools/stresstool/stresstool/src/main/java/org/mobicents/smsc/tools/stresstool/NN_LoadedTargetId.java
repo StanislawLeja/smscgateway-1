@@ -2,7 +2,7 @@ package org.mobicents.smsc.tools.stresstool;
 
 import java.util.Date;
 
-public class LoadedTargetId {
+public class NN_LoadedTargetId {
 
     private String targetId;
     private Date dtx;
@@ -20,7 +20,7 @@ public class LoadedTargetId {
         return dueSlot;
     }
 
-    public LoadedTargetId(String targetId, Date dtx, long dueSlot) {
+    public NN_LoadedTargetId(String targetId, Date dtx, long dueSlot) {
         this.targetId = targetId;
         this.dtx = dtx;
         this.dueSlot = dueSlot;

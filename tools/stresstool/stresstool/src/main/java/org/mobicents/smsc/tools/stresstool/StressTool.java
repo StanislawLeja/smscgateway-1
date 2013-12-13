@@ -46,7 +46,7 @@ public class StressTool {
     private String persistFile = "stresstool.xml";
     private static final String TAB_INDENT = "\t";
 
-    private DBOperationsProxy dbOperations;
+    private TT_DBOperationsProxy dbOperations;
 
     public static void main(final String[] args) {
 
@@ -76,7 +76,7 @@ public class StressTool {
         logInfo("threadCountR : " + threadCountR);
         logInfo("task        : " + task);
 
-        this.dbOperations = new DBOperationsProxy();
+        this.dbOperations = new TT_DBOperationsProxy();
         this.dbOperations.start(host, port, keyspace);
 
         ProcessTask ta = null;

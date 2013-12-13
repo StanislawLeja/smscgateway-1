@@ -1,3 +1,25 @@
+/*
+ * TeleStax, Open Source Cloud Communications  Copyright 2012. 
+ * and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.mobicents.smsc.tools.stresstool;
 
 import java.io.ByteArrayInputStream;
@@ -37,8 +59,8 @@ import com.datastax.driver.core.exceptions.InvalidQueryException;
  * @author sergey vetyutnev
  *
  */
-public class DBOper2 {
-    private static final Logger logger = Logger.getLogger(DBOper2.class);
+public class NN_DBOperations {
+    private static final Logger logger = Logger.getLogger(NN_DBOperations.class);
 
     public static final String TLV_SET = "tlvSet";
     public static final UUID emptyUuid = UUID.nameUUIDFromBytes(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
@@ -46,7 +68,7 @@ public class DBOper2 {
     public static final int IN_SYSTEM_INPROCESS = 1;
     public static final int IN_SYSTEM_SENT = 2;
 
-    private static final DBOper2 instance = new DBOper2();
+    private static final NN_DBOperations instance = new NN_DBOperations();
 
     // cassandra access
     private Cluster cluster;
@@ -66,8 +88,8 @@ public class DBOper2 {
     private int dueSlotReviseAfterRestart = 360;
     // due_slot count for forward storing after current processing due_slot (30 sec)
     private int dueSlotForwardStoring = 60;
-    // timeout of finishing of writing on new income messages (in dueSlotWritingArray) (1 sec)
-    private int millisecDueSlotWritingTimeout = 1000;
+    // timeout of finishing of writing on new income messages (in dueSlotWritingArray) (5 sec)
+    private int millisecDueSlotWritingTimeout = 5000;
 
     // TTL for DST_SLOT_TABLE and SLOT_MESSAGES_TABLE tables (0 - no TTL)
     private int ttlCurrent = 0;
@@ -89,11 +111,11 @@ public class DBOper2 {
 
     private volatile boolean started = false;
 
-    protected DBOper2() {
+    protected NN_DBOperations() {
         super();
     }
 
-    public static DBOper2 getInstance() {
+    public static NN_DBOperations getInstance() {
         return instance;
     }
 
@@ -343,6 +365,9 @@ public class DBOper2 {
             }
             return l;
         } catch (Exception e1) {
+            // TODO: remove it
+            e1.printStackTrace();
+
             String msg = "Failed to execute getDueSlotForTargetId() !";
             throw new PersistenceException(msg, e1);
         }

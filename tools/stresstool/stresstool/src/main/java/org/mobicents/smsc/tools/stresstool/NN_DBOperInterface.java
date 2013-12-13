@@ -7,7 +7,7 @@ import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 
-public interface DBOperInterface {
+public interface NN_DBOperInterface {
 
     // 1 *********************
 
@@ -15,9 +15,9 @@ public interface DBOperInterface {
 
     void createRecord(long dueSlot, Sms sms) throws PersistenceException;
 
-    List<LoadedTargetId> getTargetIdListForDueSlot(Date[] dt, long dueSlot, long newDueSlot, int maxRecordCount) throws PersistenceException;
+    List<NN_LoadedTargetId> getTargetIdListForDueSlot(Date[] dt, long dueSlot, long newDueSlot, int maxRecordCount) throws PersistenceException;
 
-    SmsSet getSmsSetForTargetId(Date[] dtt, LoadedTargetId targetId) throws PersistenceException;
+    SmsSet getSmsSetForTargetId(Date[] dtt, NN_LoadedTargetId targetId) throws PersistenceException;
 
     void deleteIdFromDests(Sms sms, long dueSlot) throws PersistenceException;
 

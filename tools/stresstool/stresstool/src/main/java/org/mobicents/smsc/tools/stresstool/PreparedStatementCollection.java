@@ -6,7 +6,7 @@ import com.datastax.driver.core.PreparedStatement;
 
 public class PreparedStatementCollection {
 
-    private DBOper2 dbOperation;
+    private NN_DBOperations dbOperation;
     private String tName;
 
     protected PreparedStatement createDueSlotForTargetId;
@@ -17,7 +17,7 @@ public class PreparedStatementCollection {
     protected PreparedStatement updateInSystem;
     protected PreparedStatement createRecordArchive;
 
-    public PreparedStatementCollection(DBOper2 dbOperation, String tName, int ttlCurrent, int ttlArchive) {
+    public PreparedStatementCollection(NN_DBOperations dbOperation, String tName, int ttlCurrent, int ttlArchive) {
         this.dbOperation = dbOperation;
         this.tName = tName;
 

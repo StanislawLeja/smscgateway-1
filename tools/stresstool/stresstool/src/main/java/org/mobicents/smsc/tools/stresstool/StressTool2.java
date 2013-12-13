@@ -45,7 +45,7 @@ public class StressTool2 {
     private String persistFile = "stresstool.xml";
     private static final String TAB_INDENT = "\t";
 
-    private DBOperationsProxy2 dbOperations;
+    private TT_DBOperationsProxy2 dbOperations;
 
     public static void main(final String[] args) {
 
@@ -77,7 +77,7 @@ public class StressTool2 {
         logInfo("task         : " + task);
         // -dDataTableDaysTimeArea
 
-        this.dbOperations = new DBOperationsProxy2();
+        this.dbOperations = new TT_DBOperationsProxy2();
         this.dbOperations.start(host, port, keyspace, dataTableDaysTimeArea, 30);
 
         ProcessTask ta = null;
@@ -420,7 +420,7 @@ public class StressTool2 {
         }
     }
 
-    private Queue<LoadedTargetId> queue = new ConcurrentLinkedQueue<LoadedTargetId>();
+    private Queue<NN_LoadedTargetId> queue = new ConcurrentLinkedQueue<NN_LoadedTargetId>();
 
     class TX2 implements ProcessTask, Runnable {
         private int startNum;
@@ -454,11 +454,11 @@ public class StressTool2 {
                 while (true) {
                     try {
                         int cnt = 1000;
-                        List<LoadedTargetId> lst = dbOperations.getTargetIdListForDueSlot(new Date[] { new Date() }, curDueSlot, curDueSlot + 2, cnt);
+                        List<NN_LoadedTargetId> lst = dbOperations.getTargetIdListForDueSlot(new Date[] { new Date() }, curDueSlot, curDueSlot + 2, cnt);
                         if (lst.size() == 0)
                             curDueSlot++;
                         this.curNum += lst.size();
-                        for (LoadedTargetId ti : lst) {
+                        for (NN_LoadedTargetId ti : lst) {
                             queue.add(ti);
                         }
                     } catch (PersistenceException e) {
@@ -506,7 +506,7 @@ public class StressTool2 {
         @Override
         public void run() {
             while (true) {
-                LoadedTargetId ti = queue.poll();
+                NN_LoadedTargetId ti = queue.poll();
                 if (ti != null) {
                     try {
                         SmsSet smsSet = dbOperations.getSmsSetForTargetId(new Date[] { new Date() }, ti);

@@ -1,10 +1,8 @@
 package org.mobicents.smsc.tools.stresstool;
 
-import org.mobicents.smsc.cassandra.DBOperations;
-
 import com.datastax.driver.core.Session;
 
-public class DBOperationsProxy extends DBOperations {
+public class TT_DBOperationsProxy2 extends NN_DBOper {
 
     public Session getSession() {
         return this.session;

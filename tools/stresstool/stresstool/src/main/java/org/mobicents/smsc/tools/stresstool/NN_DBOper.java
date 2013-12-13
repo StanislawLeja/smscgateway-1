@@ -36,8 +36,8 @@ import com.datastax.driver.core.exceptions.InvalidQueryException;
  * @author sergey vetyutnev
  * 
  */
-public class DBOper {
-    private static final Logger logger = Logger.getLogger(DBOper.class);
+public class NN_DBOper {
+    private static final Logger logger = Logger.getLogger(NN_DBOper.class);
 
     public static final String TLV_SET = "tlvSet";
 
@@ -47,18 +47,18 @@ public class DBOper {
 
     private FastMap<String, PreparedStatementCollection2> dataTableRead = new FastMap<String, PreparedStatementCollection2>();
 
-    private static final DBOper instance = new DBOper();
+    private static final NN_DBOper instance = new NN_DBOper();
 
     private PreparedStatement selectCurrentSlotTable;
     private PreparedStatement updateCurrentSlotTable;
 
     private volatile boolean started = false;
 
-    protected DBOper() {
+    protected NN_DBOper() {
         super();
     }
 
-    public static DBOper getInstance() {
+    public static NN_DBOper getInstance() {
         return instance;
     }
 
@@ -233,8 +233,8 @@ public class DBOper {
         }
     }
 
-    public List<LoadedTargetId> getTargetIdListForDueSlot(Date[] dtt, long dueSlot, long newDueSlot, int maxRecordCount) throws PersistenceException {
-        List<LoadedTargetId> lst = new ArrayList<LoadedTargetId>();
+    public List<NN_LoadedTargetId> getTargetIdListForDueSlot(Date[] dtt, long dueSlot, long newDueSlot, int maxRecordCount) throws PersistenceException {
+        List<NN_LoadedTargetId> lst = new ArrayList<NN_LoadedTargetId>();
         for (Date dt : dtt) {
             PreparedStatementCollection2 psc = getStatementCollection(dt);
 
@@ -249,7 +249,7 @@ public class DBOper {
 
                 for (Row row : res) {
                     String s = row.getString(0);
-                    lst.add(new LoadedTargetId(s, dt, newDueSlot));
+                    lst.add(new NN_LoadedTargetId(s, dt, newDueSlot));
                 }
             } catch (Exception e1) {
                 String msg = "Failed reading a set of TARGET_ID from SLOTS for dueSlot " + dueSlot + " !";
@@ -260,7 +260,7 @@ public class DBOper {
             // deleting TARGET_ID form SLOTS table and adding new one for later time
             String s1 = null;
             try {
-                for (LoadedTargetId ti : lst) {
+                for (NN_LoadedTargetId ti : lst) {
                     s1 = ti.getTargetId();
                     PreparedStatement ps = psc.deleteRecordSlots;
                     BoundStatement boundStatement = new BoundStatement(ps);
@@ -283,7 +283,7 @@ public class DBOper {
         return lst;
     }
 
-    public SmsSet getSmsSetForTargetId(Date[] dtt, LoadedTargetId ti) throws PersistenceException {
+    public SmsSet getSmsSetForTargetId(Date[] dtt, NN_LoadedTargetId ti) throws PersistenceException {
         SmsSet smsSet = null;
         for (Date dt : dtt) {
             PreparedStatementCollection2 psc = getStatementCollection(dt);

@@ -2,7 +2,7 @@ package org.mobicents.smsc.tools.stresstool;
 
 import com.datastax.driver.core.Session;
 
-public class DBOperationsProxy3 extends DBOper2 {
+public class TT_DBOperationsProxy3 extends NN_DBOperations {
 
     public Session getSession() {
         return this.session;
