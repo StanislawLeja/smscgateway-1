@@ -10,13 +10,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.log4j.Logger;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
-import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
 import org.mobicents.protocols.ss7.map.primitives.IMSIImpl;
 import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.mobicents.protocols.ss7.map.service.sms.LocationInfoWithLMSIImpl;
 import org.mobicents.smsc.cassandra.ErrorCode;
+import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.SmType;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
@@ -280,7 +281,7 @@ public class StressTool3 {
 
                     int cnt = 3;
                     try {
-                        PreparedStatementCollection psc = dbOperations.getStatementCollection(new Date());
+                        PreparedStatementCollection_C3 psc = dbOperations.getStatementCollection(new Date());
 
                         SmsSet smsSet = new SmsSet();
                         smsSet.setDestAddr(s1);
@@ -330,10 +331,10 @@ public class StressTool3 {
                             TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
                             try {
                                 synchronized (lock) {
-                                    dueSlot = dbOperations.getDueSlotForTargetId(psc, sms.getSmsSet().getTargetId());
-                                    if (dueSlot == 0 || dueSlot <= dbOperations.getProcessingDueSlot()) {
-                                        dueSlot = dbOperations.getStoringDueSlot();
-                                        dbOperations.updateDueSlotForTargetId(sms.getSmsSet().getTargetId(), dueSlot);
+                                    dueSlot = dbOperations.c2_getDueSlotForTargetId(psc, sms.getSmsSet().getTargetId());
+                                    if (dueSlot == 0 || dueSlot <= dbOperations.c2_getProcessingDueSlot()) {
+                                        dueSlot = dbOperations.c2_getStoringDueSlot();
+                                        dbOperations.c2_updateDueSlotForTargetId(sms.getSmsSet().getTargetId(), dueSlot);
                                     }
                                     sms.setDueSlot(dueSlot);
                                 }
@@ -341,11 +342,11 @@ public class StressTool3 {
                                 SmsSetCashe.getInstance().removeSmsSet(lock);
                             }
 
-                            dbOperations.registerDueSlotWriting(dueSlot);
+                            dbOperations.c2_registerDueSlotWriting(dueSlot);
                             try {
-                                dbOperations.createRecordCurrent(sms);
+                                dbOperations.c2_createRecordCurrent(sms);
                             } finally {
-                                dbOperations.unregisterDueSlotWriting(dueSlot);
+                                dbOperations.c2_unregisterDueSlotWriting(dueSlot);
                             }
                         }
                     } catch (PersistenceException e) {
@@ -397,7 +398,7 @@ public class StressTool3 {
                     int num = rnd.nextInt(endNum - startNum) + startNum;
 
                     try {
-                        PreparedStatementCollection psc = dbOperations.getStatementCollection(new Date());
+                        PreparedStatementCollection_C3 psc = dbOperations.getStatementCollection(new Date());
 
                         long dueSlot;
                         Integer ii1 = num;
@@ -410,20 +411,20 @@ public class StressTool3 {
                         TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet0));
                         try {
                             synchronized (lock) {
-                                dueSlot = dbOperations.getDueSlotForTargetId(psc, smsSet0.getTargetId());
-                                if (dueSlot != 0 && dueSlot > dbOperations.getProcessingDueSlot()) {
-                                    dbOperations.registerDueSlotWriting(dueSlot);
+                                dueSlot = dbOperations.c2_getDueSlotForTargetId(psc, smsSet0.getTargetId());
+                                if (dueSlot != 0 && dueSlot > dbOperations.c2_getProcessingDueSlot()) {
+                                    dbOperations.c2_registerDueSlotWriting(dueSlot);
                                     try {
-                                        if (dueSlot != 0 && dueSlot > dbOperations.getProcessingDueSlot()) {
-                                            SmsSet smsSet = dbOperations.getRecordListForTargeId(dueSlot, smsSet0.getTargetId());
+                                        if (dueSlot != 0 && dueSlot > dbOperations.c2_getProcessingDueSlot()) {
+                                            SmsSet smsSet = dbOperations.c2_getRecordListForTargeId(dueSlot, smsSet0.getTargetId());
                                             if (smsSet != null) {
                                                 ArrayList<SmsSet> lstS = new ArrayList<SmsSet>();
                                                 lstS.add(smsSet);
-                                                ArrayList<SmsSet> lst = dbOperations.sortRecordList(lstS);
+                                                ArrayList<SmsSet> lst = dbOperations.c2_sortRecordList(lstS);
 
                                                 for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
                                                     Sms sms = smsSet.getSms(i1);
-                                                    dbOperations.updateInSystem(sms, NN_DBOperations.IN_SYSTEM_INPROCESS);
+                                                    dbOperations.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS);
                                                 }
 
                                                 this.numProcessed += smsSet.getSmsCount();
@@ -436,7 +437,7 @@ public class StressTool3 {
                                             }
                                         }
                                     } finally {
-                                        dbOperations.unregisterDueSlotWriting(dueSlot);
+                                        dbOperations.c2_unregisterDueSlotWriting(dueSlot);
                                     }
                                 }
                             }
@@ -491,19 +492,19 @@ public class StressTool3 {
             try {
                 while (!toTernminate) {
                     try {
-                        long processedDueSlot = dbOperations.getProcessingDueSlot();
-                        long possibleDueSlot = dbOperations.getIntimeDueSlot();
+                        long processedDueSlot = dbOperations.c2_getProcessingDueSlot();
+                        long possibleDueSlot = dbOperations.c2_getIntimeDueSlot();
                         if (processedDueSlot >= possibleDueSlot || queue.size() > 10000) {
                             Thread.sleep(10);
                         } else {
                             processedDueSlot++;
-                            if (!dbOperations.checkDueSlotNotWriting(processedDueSlot)) {
+                            if (!dbOperations.c2_checkDueSlotNotWriting(processedDueSlot)) {
                                 Thread.sleep(10);
                                 continue;
                             }
 
-                            ArrayList<SmsSet> lstS = dbOperations.getRecordList(processedDueSlot);
-                            ArrayList<SmsSet> lst = dbOperations.sortRecordList(lstS);
+                            ArrayList<SmsSet> lstS = dbOperations.c2_getRecordList(processedDueSlot);
+                            ArrayList<SmsSet> lst = dbOperations.c2_sortRecordList(lstS);
                             this.curNum += lstS.size();
                             for (SmsSet ti : lst) {
                                 if (!ti.isProcessingStarted()) {
@@ -512,7 +513,7 @@ public class StressTool3 {
                                 }
                             }
 
-                            dbOperations.setProcessingDueSlot(processedDueSlot);
+                            dbOperations.c2_setProcessingDueSlot(processedDueSlot);
                         }
                     } catch (Throwable e) {
                         logger.error("Exception in task X3: " + e.toString(), e);
@@ -573,11 +574,11 @@ public class StressTool3 {
                                         Sms sms = smsSet.getSms(i1);
                                         sms.setDeliveryDate(new Date());
 
-                                        dbOperations.updateInSystem(sms, NN_DBOperations.IN_SYSTEM_SENT);
+                                        dbOperations.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
 
                                         // + 10 min
-                                        sms.setDueSlot(dbOperations.getDueSlotForTime(dt));
-                                        dbOperations.createRecordCurrent(sms);
+                                        sms.setDueSlot(dbOperations.c2_getDueSlotForTime(dt));
+                                        dbOperations.c2_createRecordCurrent(sms);
                                     }
                                 } else {
                                     smsSet.setType(SmType.SMS_FOR_SS7);
@@ -596,8 +597,8 @@ public class StressTool3 {
                                         Sms sms = smsSet.getSms(i1);
                                         sms.setDeliveryDate(new Date());
 
-                                        dbOperations.updateInSystem(sms, NN_DBOperations.IN_SYSTEM_SENT);
-                                        dbOperations.createRecordArchive(sms);
+                                        dbOperations.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                                        dbOperations.c2_createRecordArchive(sms);
                                     }
                                 }
 

@@ -33,14 +33,14 @@ import org.mobicents.smsc.cassandra.SmsSet;
  */
 public class SmsDeliveryData implements Serializable {
 
-	private SmsSet smsSet;
+	private String targetId;
 
-	public SmsSet getSmsSet() {
-		return smsSet;
+	public String getTargetId() {
+		return targetId;
 	}
 
-	public void setSmsSet(SmsSet smsSet) {
-		this.smsSet = smsSet;
+	public void setTargetId(String targetId) {
+		this.targetId = targetId;
 	}
 
 }

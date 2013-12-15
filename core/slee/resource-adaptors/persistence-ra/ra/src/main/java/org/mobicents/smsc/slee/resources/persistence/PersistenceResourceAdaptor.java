@@ -22,9 +22,15 @@
 
 package org.mobicents.smsc.slee.resources.persistence;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
+import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
+import org.mobicents.smsc.cassandra.SmType;
+import org.mobicents.smsc.cassandra.ErrorCode;
 
 import javax.slee.Address;
 import javax.slee.facilities.Tracer;
@@ -38,12 +44,10 @@ import javax.slee.resource.ReceivableService;
 import javax.slee.resource.ResourceAdaptor;
 import javax.slee.resource.ResourceAdaptorContext;
 
-import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
-import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
-import org.mobicents.smsc.cassandra.DBOperations;
-import org.mobicents.smsc.cassandra.ErrorCode;
+import org.mobicents.smsc.cassandra.DBOperations_C1;
+import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.SmType;
+import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.cassandra.SmsSetCashe;
@@ -58,7 +62,8 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
 	private Tracer tracer = null;
 	private ResourceAdaptorContext raContext = null;
 
-	private DBOperations dbOperations = null;
+    private DBOperations_C1 dbOperations_C1 = null;
+    private DBOperations_C2 dbOperations_C2 = null;
 
 	// this is to avoid wicked SLEE spec - it mandates this.raSbbInterface to be
 	// available before RA starts...
@@ -71,118 +76,223 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
 	public PersistenceResourceAdaptor() {
 		this.raSbbInterface = new PersistenceRAInterface() {
 
+            @Override
+            public TargetAddress obtainSynchroObject(TargetAddress ta) {
+                return SmsSetCashe.getInstance().addSmsSet(ta);
+            }
+
+            @Override
+            public void releaseSynchroObject(TargetAddress ta) {
+                SmsSetCashe.getInstance().removeSmsSet(ta);
+            }
+
+		    // C1
+
 			@Override
 			public boolean checkSmsSetExists(TargetAddress ta) throws PersistenceException {
-				return dbOperations.checkSmsSetExists(ta);
+				return dbOperations_C1.checkSmsSetExists(ta);
 			}
 
 			@Override
 			public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException {
-				return dbOperations.obtainSmsSet(ta);
+				return dbOperations_C1.obtainSmsSet(ta);
 			}
 
 			@Override
 			public void setNewMessageScheduled(SmsSet smsSet, Date newDueDate) throws PersistenceException {
-				dbOperations.setNewMessageScheduled(smsSet, newDueDate);
+				dbOperations_C1.setNewMessageScheduled(smsSet, newDueDate);
 			}
 
 			@Override
 			public void setDeliveringProcessScheduled(SmsSet smsSet, Date newDueDate, int newDueDelay)
 					throws PersistenceException {
-				dbOperations.setDeliveringProcessScheduled(smsSet, newDueDate, newDueDelay);
+				dbOperations_C1.setDeliveringProcessScheduled(smsSet, newDueDate, newDueDelay);
 			}
 
 			@Override
 			public void setDestination(SmsSet smsSet, String destClusterName, String destSystemId, String destEsmeId,
 					SmType type) {
-				dbOperations.setDestination(smsSet, destClusterName, destSystemId, destEsmeId, type);
+				dbOperations_C1.setDestination(smsSet, destClusterName, destSystemId, destEsmeId, type);
 			}
 
 			@Override
 			public void setRoutingInfo(SmsSet smsSet, IMSI imsi, LocationInfoWithLMSI locationInfoWithLMSI) {
-				dbOperations.setRoutingInfo(smsSet, imsi, locationInfoWithLMSI);
+				dbOperations_C1.setRoutingInfo(smsSet, imsi, locationInfoWithLMSI);
 			}
 
 			@Override
 			public void setDeliveryStart(SmsSet smsSet, Date inSystemDate) throws PersistenceException {
-				dbOperations.setDeliveryStart(smsSet, inSystemDate);
+				dbOperations_C1.setDeliveryStart(smsSet, inSystemDate);
 			}
 
 			@Override
 			public void setDeliveryStart(Sms sms) throws PersistenceException {
-				dbOperations.setDeliveryStart(sms);
+				dbOperations_C1.setDeliveryStart(sms);
 			}
 
 			@Override
 			public void setDeliverySuccess(SmsSet smsSet, Date lastDelivery) throws PersistenceException {
-				dbOperations.setDeliverySuccess(smsSet, lastDelivery);
+				dbOperations_C1.setDeliverySuccess(smsSet, lastDelivery);
 			}
 
 			@Override
 			public void setDeliveryFailure(SmsSet smsSet, ErrorCode smStatus, Date lastDelivery)
 					throws PersistenceException {
-				dbOperations.setDeliveryFailure(smsSet, smStatus, lastDelivery);
+				dbOperations_C1.setDeliveryFailure(smsSet, smStatus, lastDelivery);
 			}
 
 			@Override
 			public void setAlertingSupported(String targetId, boolean alertingSupported) throws PersistenceException {
-				dbOperations.setAlertingSupported(targetId, alertingSupported);
+				dbOperations_C1.setAlertingSupported(targetId, alertingSupported);
 			}
 
 			@Override
 			public boolean deleteSmsSet(SmsSet smsSet) throws PersistenceException {
-				return dbOperations.deleteSmsSet(smsSet);
+				return dbOperations_C1.deleteSmsSet(smsSet);
 			}
 
 			@Override
 			public void createLiveSms(Sms sms) throws PersistenceException {
-				dbOperations.createLiveSms(sms);
+				dbOperations_C1.createLiveSms(sms);
 			}
 
 			@Override
 			public Sms obtainLiveSms(UUID dbId) throws PersistenceException {
-				return dbOperations.obtainLiveSms(dbId);
+				return dbOperations_C1.obtainLiveSms(dbId);
 			}
 
 			@Override
 			public Sms obtainLiveSms(long messageId) throws PersistenceException {
-				return dbOperations.obtainLiveSms(messageId);
+				return dbOperations_C1.obtainLiveSms(messageId);
 			}
 
 			@Override
 			public void updateLiveSms(Sms sms) throws PersistenceException {
-				dbOperations.updateLiveSms(sms);
+				dbOperations_C1.updateLiveSms(sms);
 			}
 
 			@Override
 			public void archiveDeliveredSms(Sms sms, Date deliveryDate) throws PersistenceException {
-				dbOperations.archiveDeliveredSms(sms, deliveryDate);
+				dbOperations_C1.archiveDeliveredSms(sms, deliveryDate);
 			}
 
 			@Override
 			public void archiveFailuredSms(Sms sms) throws PersistenceException {
-				dbOperations.archiveFailuredSms(sms);
+				dbOperations_C1.archiveFailuredSms(sms);
 			}
 
 			@Override
 			public List<SmsSet> fetchSchedulableSmsSets(int maxRecordCount, Tracer tracer) throws PersistenceException {
-				return dbOperations.fetchSchedulableSmsSets(maxRecordCount, tracer);
-			}
-
-			@Override
-			public TargetAddress obtainSynchroObject(TargetAddress ta) {
-				return SmsSetCashe.getInstance().addSmsSet(ta);
-			}
-
-			@Override
-			public void releaseSynchroObject(TargetAddress ta) {
-				SmsSetCashe.getInstance().removeSmsSet(ta);
+				return dbOperations_C1.fetchSchedulableSmsSets(maxRecordCount, tracer);
 			}
 
 			@Override
             public void fetchSchedulableSms(SmsSet smsSet, boolean excludeNonScheduleDeliveryTime) throws PersistenceException {
-                dbOperations.fetchSchedulableSms(smsSet, excludeNonScheduleDeliveryTime);
+                dbOperations_C1.fetchSchedulableSms(smsSet, excludeNonScheduleDeliveryTime);
             }
+
+		    // C2
+
+		    @Override
+            public long c2_getDueSlotForTime(Date time) {
+                return dbOperations_C2.c2_getDueSlotForTime(time);
+            }
+
+            @Override
+            public Date c2_getTimeForDueSlot(long dueSlot) {
+                return dbOperations_C2.c2_getTimeForDueSlot(dueSlot);
+            }
+
+            @Override
+            public long c2_getProcessingDueSlot() {
+                return dbOperations_C2.c2_getProcessingDueSlot();
+            }
+
+            @Override
+            public void c2_setProcessingDueSlot(long newDueSlot) throws PersistenceException {
+                dbOperations_C2.c2_setProcessingDueSlot(newDueSlot);
+            }
+
+            @Override
+            public long c2_getIntimeDueSlot() {
+                return dbOperations_C2.c2_getIntimeDueSlot();
+            }
+
+            @Override
+            public long c2_getStoringDueSlot() {
+                return dbOperations_C2.c2_getStoringDueSlot();
+            }
+
+            @Override
+            public void c2_registerDueSlotWriting(long dueSlot) {
+                dbOperations_C2.c2_registerDueSlotWriting(dueSlot);
+            }
+
+            @Override
+            public void c2_unregisterDueSlotWriting(long dueSlot) {
+                dbOperations_C2.c2_unregisterDueSlotWriting(dueSlot);
+            }
+
+            @Override
+            public boolean c2_checkDueSlotNotWriting(long dueSlot) {
+                return dbOperations_C2.c2_checkDueSlotNotWriting(dueSlot);
+            }
+
+            @Override
+            public long c2_getDueSlotForTargetId(PreparedStatementCollection_C3 psc, String targetId) throws PersistenceException {
+                return dbOperations_C2.c2_getDueSlotForTargetId(psc, targetId);
+            }
+
+            @Override
+            public void c2_updateDueSlotForTargetId(String targetId, long newDueSlot) throws PersistenceException {
+                dbOperations_C2.c2_updateDueSlotForTargetId(targetId, newDueSlot);
+            }
+
+            @Override
+            public void c2_createRecordCurrent(Sms sms) throws PersistenceException {
+                dbOperations_C2.c2_createRecordCurrent(sms);
+            }
+
+            @Override
+            public void c2_createRecordArchive(Sms sms) throws PersistenceException {
+                dbOperations_C2.c2_createRecordArchive(sms);
+            }
+
+            @Override
+            public ArrayList<SmsSet> c2_getRecordList(long dueSlot) throws PersistenceException {
+                return dbOperations_C2.c2_getRecordList(dueSlot);
+            }
+
+            @Override
+            public SmsSet c2_getRecordListForTargeId(long dueSlot, String targetId) throws PersistenceException {
+                return dbOperations_C2.c2_getRecordListForTargeId(dueSlot, targetId);
+            }
+
+            @Override
+            public ArrayList<SmsSet> c2_sortRecordList(ArrayList<SmsSet> sourceLst) {
+                return dbOperations_C2.c2_sortRecordList(sourceLst);
+            }
+
+            @Override
+            public void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException {
+                dbOperations_C2.c2_updateInSystem(sms, isSystemStatus);
+            }
+
+            @Override
+            public PreparedStatementCollection_C3[] getPscList() throws PersistenceException {
+                return dbOperations_C2.getPscList();
+            }
+
+            @Override
+            public void c2_scheduleMessage(Sms sms) throws PersistenceException {
+                dbOperations_C2.c2_scheduleMessage(sms);
+            }
+
+            @Override
+            public boolean c2_scheduleMessage(Sms sms, long dueSlot) throws PersistenceException {
+                return dbOperations_C2.c2_scheduleMessage(sms, dueSlot);
+            }
+
 		};
 	}
 
@@ -260,11 +370,15 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
 	@Override
 	public void raActive() {
 
-		dbOperations = DBOperations.getInstance();
-
-		if (!this.dbOperations.isStarted()) {
-			throw new RuntimeException("DBOperations not started yet!");
+        dbOperations_C1 = DBOperations_C1.getInstance();
+		if (!this.dbOperations_C1.isStarted()) {
+			throw new RuntimeException("DBOperations_1 not started yet!");
 		}
+
+		dbOperations_C2 = DBOperations_C2.getInstance();
+        if (!this.dbOperations_C2.isStarted()) {
+            throw new RuntimeException("DBOperations_2 not started yet!");
+        }
 
 		if (tracer.isInfoEnabled()) {
 			tracer.info("PersistenceResourceAdaptor " + this.raContext.getEntityName() + " Activated");

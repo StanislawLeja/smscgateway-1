@@ -33,6 +33,7 @@ import javolution.xml.XMLObjectWriter;
 import javolution.xml.stream.XMLStreamException;
 
 import org.apache.log4j.Logger;
+import org.mobicents.smsc.cassandra.DatabaseType;
 
 /**
  * 
@@ -83,6 +84,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	private final TextBuilder persistFile = TextBuilder.newInstance();
 
+	private DatabaseType databaseType = DatabaseType.Cassandra_2;
+
 	private String serviceCenterGt = null;
 	private int serviceCenterSsn = -1;
 	private int hlrSsn = -1;
@@ -124,7 +127,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private String clusterName = "TelestaxSMSC";
 
 	// period of fetching messages from a database for delivering
-	private long fetchPeriod = 5000;
+//    private long fetchPeriod = 5000; // that was C1
+    private long fetchPeriod = 200;
 	// max message fetching count for one fetching step
 	private int fetchMaxRows = 100;
 	// max count of delivering Activities that are possible at the same time
@@ -166,6 +170,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	public void setPersistDir(String persistDir) {
 		this.persistDir = persistDir;
 	}
+
+    public DatabaseType getDatabaseType() {
+        return this.databaseType;
+    }
 
 	public String getServiceCenterGt() {
 		return serviceCenterGt;

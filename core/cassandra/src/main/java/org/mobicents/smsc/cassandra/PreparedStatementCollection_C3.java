@@ -1,12 +1,11 @@
-package org.mobicents.smsc.tools.stresstool;
+package org.mobicents.smsc.cassandra;
 
-import org.mobicents.smsc.cassandra.Schema;
 
 import com.datastax.driver.core.PreparedStatement;
 
-public class PreparedStatementCollection {
+public class PreparedStatementCollection_C3 {
 
-    private NN_DBOperations dbOperation;
+    private DBOperations_C2 dbOperation;
     private String tName;
 
     protected PreparedStatement createDueSlotForTargetId;
@@ -17,7 +16,7 @@ public class PreparedStatementCollection {
     protected PreparedStatement updateInSystem;
     protected PreparedStatement createRecordArchive;
 
-    public PreparedStatementCollection(NN_DBOperations dbOperation, String tName, int ttlCurrent, int ttlArchive) {
+    public PreparedStatementCollection_C3(DBOperations_C2 dbOperation, String tName, int ttlCurrent, int ttlArchive) {
         this.dbOperation = dbOperation;
         this.tName = tName;
 

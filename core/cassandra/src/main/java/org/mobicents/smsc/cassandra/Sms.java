@@ -41,6 +41,7 @@ public class Sms implements Serializable {
 
     private UUID dbId;
     private long dueSlot;
+    private boolean stored;
 
 	private int sourceAddrTon;
 	private int sourceAddrNpi;
@@ -102,6 +103,16 @@ public class Sms implements Serializable {
         this.dueSlot = dueSlot;
     }
 
+    /**
+     * If this message is in the database stored
+     */
+    public boolean getStored() {
+        return stored;
+    }
+
+    public void setStored(boolean stored) {
+        this.stored = stored;
+    }
 
 	/**
 	 * DeliveringActivity link

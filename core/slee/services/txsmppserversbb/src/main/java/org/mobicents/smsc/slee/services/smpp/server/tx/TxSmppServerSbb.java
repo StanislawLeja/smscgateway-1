@@ -47,9 +47,12 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.SbbContextExt;
+import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
@@ -681,20 +684,27 @@ public abstract class TxSmppServerSbb implements Sbb {
 			}
 		}
 
-		SmsSet smsSet;
-		try {
-			smsSet = store.obtainSmsSet(ta);
-		} catch (PersistenceException e1) {
-			throw new SmscProcessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
-					SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e1);
-		}
-		sms.setSmsSet(smsSet);
+        SmsSet smsSet;
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            try {
+                smsSet = store.obtainSmsSet(ta);
+            } catch (PersistenceException e1) {
+                throw new SmscProcessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
+                        SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e1);
+            }
+        } else {
+            smsSet = new SmsSet();
+            smsSet.setDestAddr(ta.getAddr());
+            smsSet.setDestAddrNpi(ta.getAddrNpi());
+            smsSet.setDestAddrTon(ta.getAddrTon());
+        }
+        sms.setSmsSet(smsSet);
 
 		long messageId = this.smppServerSessions.getNextMessageId();
 		sms.setMessageId(messageId);
 
 		// TODO: process case when event.getReplaceIfPresent()==true: we need remove old message with same MessageId ?
-
+		
 		return sms;
 	}
 
@@ -702,11 +712,15 @@ public abstract class TxSmppServerSbb implements Sbb {
 		try {
 			// TODO: we can make this some check will we send this message or not
 
-			store.createLiveSms(sms);
-			if (sms.getScheduleDeliveryTime() == null)
-				store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
-			else
-				store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                store.createLiveSms(sms);
+                if (sms.getScheduleDeliveryTime() == null)
+                    store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                else
+                    store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
+            } else {
+                store.c2_scheduleMessage(sms);
+            }
 		} catch (PersistenceException e) {
 			throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
 					MAPErrorCode.systemFailure, null, e);

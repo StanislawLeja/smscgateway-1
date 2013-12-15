@@ -27,7 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.mobicents.smsc.cassandra.DBOperations;
+import org.mobicents.smsc.cassandra.DBOperations_C1;
 import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
 import org.mobicents.smsc.cassandra.PersistenceException;
 
@@ -48,7 +48,7 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 
 	private static final String USA_COUNTRY_CODE = "1";
 
-	private DBOperations dbOperations = null;
+	private DBOperations_C1 dbOperations = null;
 
 	/**
 	 * 
@@ -69,7 +69,7 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 
 	private void init() {
 		try {
-			dbOperations = DBOperations.getInstance();
+			dbOperations = DBOperations_C1.getInstance();
 		} catch (Exception e) {
 			logger.error("Error initializing cassandra database for DatabaseSmsRoutingRule", e);
 		}

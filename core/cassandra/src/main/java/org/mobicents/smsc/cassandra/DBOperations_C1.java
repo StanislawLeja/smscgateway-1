@@ -57,8 +57,8 @@ import com.datastax.driver.core.Session;
  * @author sergey vetyutnev
  * 
  */
-public class DBOperations {
-	private static final Logger logger = Logger.getLogger(DBOperations.class);
+public class DBOperations_C1 {
+	private static final Logger logger = Logger.getLogger(DBOperations_C1.class);
 
 	public static final String TLV_SET = "tlvSet";
 
@@ -90,15 +90,15 @@ public class DBOperations {
     private PreparedStatement deleteLiveSms;
     private PreparedStatement doArchiveDeliveredSms;
 
-	private static final DBOperations instance = new DBOperations();
+	private static final DBOperations_C1 instance = new DBOperations_C1();
 
 	private volatile boolean started = false;
 
-	protected DBOperations() {
+	protected DBOperations_C1() {
 		super();
 	}
 
-	public static DBOperations getInstance() {
+	public static DBOperations_C1 getInstance() {
 		return instance;
 	}
 	

@@ -1,5 +1,6 @@
 package org.mobicents.smsc.slee.resources.scheduler;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -23,7 +24,9 @@ import javax.slee.resource.SleeEndpoint;
 import javax.slee.transaction.SleeTransaction;
 import javax.slee.transaction.SleeTransactionManager;
 
-import org.mobicents.smsc.cassandra.DBOperations;
+import org.mobicents.smsc.cassandra.DBOperations_C1;
+import org.mobicents.smsc.cassandra.DBOperations_C2;
+import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.SmType;
 import org.mobicents.smsc.cassandra.SmsSet;
@@ -58,7 +61,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	private SchedulerRaSbbInterface schedulerRaSbbInterface = null;
 	private SchedulerRaUsageParameters usageParameters;
 
-	private DBOperations dbOperations = null;
+    private DBOperations_C1 dbOperations_C1 = null;
+    private DBOperations_C2 dbOperations_C2 = null;
 
 	public SchedulerResourceAdaptor() {
 		this.schedulerRaSbbInterface = new SchedulerRaSbbInterface() {
@@ -158,11 +162,21 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		clearActivityCount();
 
 		SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-		this.dbOperations = DBOperations.getInstance();
 
-		if (!this.dbOperations.isStarted()) {
-			throw new RuntimeException("DBOperations not started yet!");
-		}
+        this.dbOperations_C1 = DBOperations_C1.getInstance();
+        if (!this.dbOperations_C1.isStarted()) {
+            throw new RuntimeException("DBOperations_1 not started yet!");
+        }
+
+        this.dbOperations_C2 = DBOperations_C2.getInstance();
+        if (!this.dbOperations_C2.isStarted()) {
+            throw new RuntimeException("DBOperations_2 not started yet!");
+        }
+
+//        this.dbOperations = DBOperations_C1.getInstance();
+//        if (!this.dbOperations.isStarted()) {
+//            throw new RuntimeException("DBOperations_1 not started yet!");
+//        }
 
 		scheduler = Executors.newScheduledThreadPool(1);
 
@@ -288,7 +302,13 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 			SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 			int fetchMaxRows = smscPropertiesManagement.getFetchMaxRows();
-			int fetchAvailRows = smscPropertiesManagement.getMaxActivityCount() - (int) this.getActivityCount();
+			int fetchAvailRows;
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                fetchAvailRows = smscPropertiesManagement.getMaxActivityCount() - (int) this.getActivityCount();
+            } else {
+                fetchAvailRows = smscPropertiesManagement.getMaxActivityCount() - SmsSetCashe.getInstance().getProcessingSmsSetSize();
+            }
+
 			int maxCnt = Math.min(fetchMaxRows, fetchAvailRows);
 			schedulableSms = this.fetchSchedulable(maxCnt);
 
@@ -311,10 +331,14 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		try {
 			for (SmsSet sms : schedulableSms) {
 				try {
-					if (!injectSms(sms)) {
-						return;
-					}
-					count++;
+                    if (!sms.isProcessingStarted()) {
+                        sms.setProcessingStarted();
+
+                        if (!injectSms(sms)) {
+                            return;
+                        }
+                    }
+                    count++;
 				} catch (Exception e) {
 					this.tracer.severe("Exception when injectSms: " + e.getMessage(), e);
 				}
@@ -384,29 +408,52 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	}
 
 	protected List<SmsSet> fetchSchedulable(int maxRecordCount) throws PersistenceException {
-		List<SmsSet> res = dbOperations.fetchSchedulableSmsSets(maxRecordCount, this.tracer);
-		return res;
+
+	    SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            List<SmsSet> res = dbOperations_C1.fetchSchedulableSmsSets(maxRecordCount, this.tracer);
+            return res;
+        } else {
+            long processedDueSlot = dbOperations_C2.c2_getProcessingDueSlot();
+            long possibleDueSlot = dbOperations_C2.c2_getIntimeDueSlot();
+            if (processedDueSlot >= possibleDueSlot || maxRecordCount < smscPropertiesManagement.getFetchMaxRows()) {
+                return new ArrayList<SmsSet>();
+            }
+            processedDueSlot++;
+            if (!dbOperations_C2.c2_checkDueSlotNotWriting(processedDueSlot)) {
+                return new ArrayList<SmsSet>();
+            }
+
+            ArrayList<SmsSet> lstS = dbOperations_C2.c2_getRecordList(processedDueSlot);
+            ArrayList<SmsSet> lst = dbOperations_C2.c2_sortRecordList(lstS);
+
+            dbOperations_C2.c2_setProcessingDueSlot(processedDueSlot);
+            return lst;
+        }
 	}
 
 	protected void markAsInSystem(SmsSet smsSet) throws PersistenceException {
 
-		TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
+        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
 
-		synchronized (lock) {
-			try {
-				boolean b1 = dbOperations.checkSmsSetExists(new TargetAddress(smsSet));
+            synchronized (lock) {
+                try {
+                    boolean b1 = dbOperations_C1.checkSmsSetExists(new TargetAddress(smsSet));
 
-				if (!b1)
-					throw new PersistenceException("SmsSet record is not found when markAsInSystem()");
+                    if (!b1)
+                        throw new PersistenceException("SmsSet record is not found when markAsInSystem()");
 
-//				dbOperations.fetchSchedulableSms(smsSet, smsSet.getType() == SmType.SMS_FOR_SS7);
+                    dbOperations_C1.setDeliveryStart(smsSet, new Date());
 
-				dbOperations.setDeliveryStart(smsSet, new Date());
-
-			} finally {
-				SmsSetCashe.getInstance().removeSmsSet(lock);
-			}
-		}
+                } finally {
+                    SmsSetCashe.getInstance().removeSmsSet(lock);
+                }
+            }
+        } else {
+            // we do not mark IN_SYSTEM when C2
+        }
 	}
 
 	private void clearActivityCount() {

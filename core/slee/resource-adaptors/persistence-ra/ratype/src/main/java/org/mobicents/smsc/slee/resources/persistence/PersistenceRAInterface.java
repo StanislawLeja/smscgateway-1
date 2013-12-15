@@ -19,9 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.slee.resources.persistence;
 
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +34,7 @@ import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.SmType;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
@@ -42,6 +45,8 @@ import org.mobicents.smsc.cassandra.TargetAddress;
  * 
  */
 public interface PersistenceRAInterface {
+
+    // C1
 
 	/**
 	 * Checks if SmsSet exists in LIVE table
@@ -242,17 +247,85 @@ public interface PersistenceRAInterface {
      */
 	public void fetchSchedulableSms(SmsSet smsSet, boolean excludeNonScheduleDeliveryTime) throws PersistenceException;
 
+
+    // C2
+    /**
+     * Return due_slot for the given time
+     */
+    long c2_getDueSlotForTime(Date time);
+
+    /**
+     * Return time for the given due_slot
+     */
+    Date c2_getTimeForDueSlot(long dueSlot);
+
+    /**
+     * Return due_slop that SMSC is processing now
+     */
+    long c2_getProcessingDueSlot();
+
+    /**
+     * Set a new due_slop that SMSC is processing now and store it to the database
+     */
+    void c2_setProcessingDueSlot(long newDueSlot) throws PersistenceException;
+
+    /**
+     * Return due_slop for current time
+     */
+    long c2_getIntimeDueSlot();
+
+    /**
+     * Return due_slop for storing next incoming to SMSC message
+     */
+    long c2_getStoringDueSlot();
+
+    /**
+     * Registering that thread starts writing to this due_slot
+     */
+    void c2_registerDueSlotWriting(long dueSlot);
+
+    /**
+     * Registering that thread finishes writing to this due_slot
+     */
+    void c2_unregisterDueSlotWriting(long dueSlot);
+
+    /**
+     * Checking if due_slot is not in writing state now
+     * Returns true if due_slot is not in writing now
+     */
+    boolean c2_checkDueSlotNotWriting(long dueSlot);
+
     /**
      * Obtaining synchronizing object for a TargetAddress
-     * @param ta
-     * @return
      */
-    public TargetAddress obtainSynchroObject(TargetAddress ta);
+    TargetAddress obtainSynchroObject(TargetAddress ta);
 
     /**
      * Releasing synchronizing object for a TargetAddress
-     * @param ta
      */
-    public void releaseSynchroObject(TargetAddress ta);
+    void releaseSynchroObject(TargetAddress ta);
+
+    PreparedStatementCollection_C3[] getPscList() throws PersistenceException;
+
+
+    long c2_getDueSlotForTargetId(PreparedStatementCollection_C3 psc, String targetId) throws PersistenceException;
+
+    void c2_updateDueSlotForTargetId(String targetId, long newDueSlot) throws PersistenceException;
+
+    void c2_createRecordCurrent(Sms sms) throws PersistenceException;
+
+    void c2_createRecordArchive(Sms sms) throws PersistenceException;
+
+    void c2_scheduleMessage(Sms sms) throws PersistenceException;
+
+    boolean c2_scheduleMessage(Sms sms, long dueSlot) throws PersistenceException;
+
+    ArrayList<SmsSet> c2_getRecordList(long dueSlot) throws PersistenceException;
+
+    SmsSet c2_getRecordListForTargeId(long dueSlot, String targetId) throws PersistenceException;
+
+    ArrayList<SmsSet> c2_sortRecordList(ArrayList<SmsSet> sourceLst);
+
+    void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException;
 
 }

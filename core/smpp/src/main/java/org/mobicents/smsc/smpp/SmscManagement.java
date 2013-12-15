@@ -42,7 +42,8 @@ import javolution.xml.XMLBinding;
 
 import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
-import org.mobicents.smsc.cassandra.DBOperations;
+import org.mobicents.smsc.cassandra.DBOperations_C1;
+import org.mobicents.smsc.cassandra.DBOperations_C2;
 
 /**
  * @author Amit Bhayani
@@ -172,7 +173,8 @@ public class SmscManagement implements SmscManagementMBean {
 		String[] hostsArr = this.smscPropertiesManagement.getHosts().split(":");
 		String host = hostsArr[0];
 		int port = Integer.parseInt(hostsArr[1]);
-		DBOperations.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName());
+        DBOperations_C1.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName());
+        DBOperations_C2.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName());
 
 		// Step 4 Setup ArchiveSms
 		this.archiveSms = ArchiveSms.getInstance(this.name);
@@ -200,7 +202,8 @@ public class SmscManagement implements SmscManagementMBean {
 				+ JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT + ",name=" + this.getName());
 		this.unregisterMbean(smscObjNname);
 
-		DBOperations.getInstance().stop();
+        DBOperations_C1.getInstance().stop();
+        DBOperations_C2.getInstance().stop();
 
 		this.archiveSms.stop();
 		ObjectName arhiveObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ARCHIVE_SMS

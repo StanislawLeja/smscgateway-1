@@ -20,41 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.resources.persistence;
-
-import java.io.Serializable;
-
+package org.mobicents.smsc.cassandra;
 
 /**
- * 
- * @author sergey vetyutnev
- * 
- */
-public class SmsSubmitData implements Serializable {
+*
+* @author sergey vetyutnev
+*
+*/
+public enum DatabaseType {
 
-//    private SmsSet smsSet;
-    private String targetId;
-
-	public String getTargetId() {
-		return targetId;
-	}
-
-	public void setTargetId(String targetId) {
-		this.targetId = targetId;
-	}
-
-//    @Override
-//	public String toString() {
-//		StringBuilder sb = new StringBuilder();
-//		sb.append("SmsSubmitData [");
-//
-//		if (this.smsSet != null) {
-//			sb.append(this.smsSet.toString());
-//		}
-//
-//		sb.append("]");
-//		return sb.toString();
-//	}
+    Cassandra_1,
+    Cassandra_2,
 
 }
-

@@ -35,6 +35,7 @@ import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.protocols.ss7.map.api.service.sms.ReportSMDeliveryStatusResponse;
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
+import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 
@@ -71,7 +72,10 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
         if (this.getSmDeliveryOutcome() != SMDeliveryOutcome.successfulTransfer) {
             try {
                 PersistenceRAInterface pers = this.getStore();
-                pers.setAlertingSupported(this.getTargetId(), true);
+                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                    pers.setAlertingSupported(this.getTargetId(), true);
+                } else {
+                }
             } catch (PersistenceException e1) {
                 this.logger.severe("\nPersistenceException when setAlertingSupported() in onSendRoutingInfoForSMResponse(): "
                         + e1.getMessage(), e1);

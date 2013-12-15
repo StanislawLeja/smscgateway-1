@@ -23,7 +23,7 @@
 package org.mobicents.smsc.smpp;
 
 import org.apache.log4j.Logger;
-import org.mobicents.smsc.cassandra.DBOperations;
+import org.mobicents.smsc.cassandra.DBOperations_C1;
 import org.mobicents.smsc.cassandra.Schema;
 
 import com.datastax.driver.core.BoundStatement;
@@ -38,7 +38,7 @@ import com.datastax.driver.core.Session;
  * @author sergey vetyutnev
  * 
  */
-public class PersistenceProxy extends DBOperations {
+public class PersistenceProxy extends DBOperations_C1 {
 
 //    private DBOperations dbOperations;
     private static final Logger logger = Logger.getLogger(PersistenceProxy.class);

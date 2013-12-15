@@ -104,4 +104,8 @@ public class SmsSetCashe {
         return lstSmsSetInProcessing.remove(targetId);
     }
 
+    public int getProcessingSmsSetSize() {
+        return lstSmsSetInProcessing.size();
+    }
+
 }

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.tools.stresstool;
+package org.mobicents.smsc.slee.resources.persistence;
 
 import static org.testng.Assert.*;
 
@@ -29,6 +29,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
+import org.mobicents.smsc.cassandra.DBOperations_C2;
+import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.cassandra.TargetAddress;
@@ -81,10 +83,10 @@ public class TT_CassandraTest {
             return;
 
         Date dt = new Date();
-        long dueSlot = sbb.getDueSlotForTime(dt);
-        Date dt2 = sbb.getTimeForDueSlot(dueSlot);
-        long dueSlot2 = sbb.getDueSlotForTime(dt2);
-        Date dt3 = sbb.getTimeForDueSlot(dueSlot);
+        long dueSlot = sbb.c2_getDueSlotForTime(dt);
+        Date dt2 = sbb.c2_getTimeForDueSlot(dueSlot);
+        long dueSlot2 = sbb.c2_getDueSlotForTime(dt2);
+        Date dt3 = sbb.c2_getTimeForDueSlot(dueSlot);
 
         assertEquals(dueSlot, dueSlot2);
         assertTrue(dt2.equals(dt3));
@@ -97,12 +99,12 @@ public class TT_CassandraTest {
             return;
 
         Date dt = new Date();
-        long l0 = sbb.getDueSlotForTime(dt);
+        long l0 = sbb.c2_getDueSlotForTime(dt);
 
-        long l1 = sbb.getProcessingDueSlot();
+        long l1 = sbb.c2_getProcessingDueSlot();
         long l2 = 222999;
-        sbb.setProcessingDueSlot(l2);
-        long l3 = sbb.getProcessingDueSlot();
+        sbb.c2_setProcessingDueSlot(l2);
+        long l3 = sbb.c2_getProcessingDueSlot();
 
         if (l1 > l0 || l1 < l0 - 100)
             fail("l1 value is bad");
@@ -111,7 +113,7 @@ public class TT_CassandraTest {
         sbb.stop();
         sbb.start();
 
-        long l4 = sbb.getProcessingDueSlot();
+        long l4 = sbb.c2_getProcessingDueSlot();
         assertEquals(l2, l4);
     }
 
@@ -123,50 +125,50 @@ public class TT_CassandraTest {
 
         long dueSlot = 101;
         long dueSlot2 = 102;
-        boolean b1 = sbb.checkDueSlotNotWriting(dueSlot);
-        boolean b2 = sbb.checkDueSlotNotWriting(dueSlot2);
+        boolean b1 = sbb.c2_checkDueSlotNotWriting(dueSlot);
+        boolean b2 = sbb.c2_checkDueSlotNotWriting(dueSlot2);
         assertTrue(b1);
         assertTrue(b2);
 
-        sbb.registerDueSlotWriting(dueSlot);
-        b1 = sbb.checkDueSlotNotWriting(dueSlot);
-        b2 = sbb.checkDueSlotNotWriting(dueSlot2);
+        sbb.c2_registerDueSlotWriting(dueSlot);
+        b1 = sbb.c2_checkDueSlotNotWriting(dueSlot);
+        b2 = sbb.c2_checkDueSlotNotWriting(dueSlot2);
         assertFalse(b1);
         assertTrue(b2);
 
-        sbb.registerDueSlotWriting(dueSlot);
-        b1 = sbb.checkDueSlotNotWriting(dueSlot);
-        b2 = sbb.checkDueSlotNotWriting(dueSlot2);
+        sbb.c2_registerDueSlotWriting(dueSlot);
+        b1 = sbb.c2_checkDueSlotNotWriting(dueSlot);
+        b2 = sbb.c2_checkDueSlotNotWriting(dueSlot2);
         assertFalse(b1);
         assertTrue(b2);
 
-        sbb.registerDueSlotWriting(dueSlot2);
-        b1 = sbb.checkDueSlotNotWriting(dueSlot);
-        b2 = sbb.checkDueSlotNotWriting(dueSlot2);
+        sbb.c2_registerDueSlotWriting(dueSlot2);
+        b1 = sbb.c2_checkDueSlotNotWriting(dueSlot);
+        b2 = sbb.c2_checkDueSlotNotWriting(dueSlot2);
         assertFalse(b1);
         assertFalse(b2);
 
-        sbb.unregisterDueSlotWriting(dueSlot);
-        b1 = sbb.checkDueSlotNotWriting(dueSlot);
-        b2 = sbb.checkDueSlotNotWriting(dueSlot2);
+        sbb.c2_unregisterDueSlotWriting(dueSlot);
+        b1 = sbb.c2_checkDueSlotNotWriting(dueSlot);
+        b2 = sbb.c2_checkDueSlotNotWriting(dueSlot2);
         assertFalse(b1);
         assertFalse(b2);
 
-        sbb.unregisterDueSlotWriting(dueSlot);
-        b1 = sbb.checkDueSlotNotWriting(dueSlot);
-        b2 = sbb.checkDueSlotNotWriting(dueSlot2);
+        sbb.c2_unregisterDueSlotWriting(dueSlot);
+        b1 = sbb.c2_checkDueSlotNotWriting(dueSlot);
+        b2 = sbb.c2_checkDueSlotNotWriting(dueSlot2);
         assertTrue(b1);
         assertFalse(b2);
 
-        sbb.unregisterDueSlotWriting(dueSlot);
-        b1 = sbb.checkDueSlotNotWriting(dueSlot);
-        b2 = sbb.checkDueSlotNotWriting(dueSlot2);
+        sbb.c2_unregisterDueSlotWriting(dueSlot);
+        b1 = sbb.c2_checkDueSlotNotWriting(dueSlot);
+        b2 = sbb.c2_checkDueSlotNotWriting(dueSlot2);
         assertTrue(b1);
         assertFalse(b2);
 
-        sbb.unregisterDueSlotWriting(dueSlot2);
-        b1 = sbb.checkDueSlotNotWriting(dueSlot);
-        b2 = sbb.checkDueSlotNotWriting(dueSlot2);
+        sbb.c2_unregisterDueSlotWriting(dueSlot2);
+        b1 = sbb.c2_checkDueSlotNotWriting(dueSlot);
+        b2 = sbb.c2_checkDueSlotNotWriting(dueSlot2);
         assertTrue(b1);
         assertTrue(b2);
     }
@@ -180,18 +182,18 @@ public class TT_CassandraTest {
         Date dt = new Date();
         String targetId = "111333";
         String targetId2 = "111444";
-        PreparedStatementCollection psc = sbb.getStatementCollection(dt);
+        PreparedStatementCollection_C3 psc = sbb.getStatementCollection(dt);
 
-        long l1 = sbb.getDueSlotForTargetId(psc, targetId);
-        long l2 = sbb.getDueSlotForTargetId(psc, targetId2);
+        long l1 = sbb.c2_getDueSlotForTargetId(psc, targetId);
+        long l2 = sbb.c2_getDueSlotForTargetId(psc, targetId2);
         assertEquals(l1, 0);
         assertEquals(l2, 0);
 
-        long newDueSlot = sbb.getStoringDueSlot();
-        sbb.updateDueSlotForTargetId(targetId, newDueSlot);
+        long newDueSlot = sbb.c2_getStoringDueSlot();
+        sbb.c2_updateDueSlotForTargetId(targetId, newDueSlot);
 
-        l1 = sbb.getDueSlotForTargetId(psc, targetId);
-        l2 = sbb.getDueSlotForTargetId(psc, targetId2);
+        l1 = sbb.c2_getDueSlotForTargetId(psc, targetId);
+        l2 = sbb.c2_getDueSlotForTargetId(psc, targetId2);
         assertEquals(l1, newDueSlot);
         assertEquals(l2, 0);
     }
@@ -214,7 +216,7 @@ public class TT_CassandraTest {
 
     public long addingNewMessages() throws Exception {
         Date dt = new Date();
-        PreparedStatementCollection psc = sbb.getStatementCollection(dt);
+        PreparedStatementCollection_C3 psc = sbb.getStatementCollection(dt);
 
         // adding two messages for "1111"
         TargetAddress lock = this.sbb.obtainSynchroObject(ta1);
@@ -225,22 +227,22 @@ public class TT_CassandraTest {
                 Sms sms_a2 = this.createTestSms(2, ta1.getAddr(), id2);
                 Sms sms_a3 = this.createTestSms(3, ta1.getAddr(), id3);
 
-                dueSlot = this.sbb.getDueSlotForTargetId(psc, ta1.getTargetId());
-                if (dueSlot == 0 || dueSlot <= sbb.getProcessingDueSlot()) {
-                    dueSlot = sbb.getStoringDueSlot();
-                    sbb.updateDueSlotForTargetId(ta1.getTargetId(), dueSlot);
+                dueSlot = this.sbb.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
+                if (dueSlot == 0 || dueSlot <= sbb.c2_getProcessingDueSlot()) {
+                    dueSlot = sbb.c2_getStoringDueSlot();
+                    sbb.c2_updateDueSlotForTargetId(ta1.getTargetId(), dueSlot);
                 }
                 sms_a1.setDueSlot(dueSlot);
                 sms_a2.setDueSlot(dueSlot);
                 sms_a3.setDueSlot(dueSlot);
 
-                sbb.registerDueSlotWriting(dueSlot);
+                sbb.c2_registerDueSlotWriting(dueSlot);
                 try {
-                    sbb.createRecordCurrent(sms_a1);
-                    sbb.createRecordCurrent(sms_a2);
-                    sbb.createRecordCurrent(sms_a3);
+                    sbb.c2_createRecordCurrent(sms_a1);
+                    sbb.c2_createRecordCurrent(sms_a2);
+                    sbb.c2_createRecordCurrent(sms_a3);
                 } finally {
-                    sbb.unregisterDueSlotWriting(dueSlot);
+                    sbb.c2_unregisterDueSlotWriting(dueSlot);
                 }
             }
         } finally {
@@ -253,14 +255,14 @@ public class TT_CassandraTest {
             synchronized (lock) {
                 Sms sms_a1 = this.createTestSms(4, ta2.getAddr(), id4);
 
-                sbb.updateDueSlotForTargetId(ta2.getTargetId(), dueSlot);
+                sbb.c2_updateDueSlotForTargetId(ta2.getTargetId(), dueSlot);
                 sms_a1.setDueSlot(dueSlot);
 
-                sbb.registerDueSlotWriting(dueSlot);
+                sbb.c2_registerDueSlotWriting(dueSlot);
                 try {
-                    sbb.createRecordCurrent(sms_a1);
+                    sbb.c2_createRecordCurrent(sms_a1);
                 } finally {
-                    sbb.unregisterDueSlotWriting(dueSlot);
+                    sbb.c2_unregisterDueSlotWriting(dueSlot);
                 }
             }
         } finally {
@@ -272,30 +274,30 @@ public class TT_CassandraTest {
 
     public void readAlertMessage() throws Exception {
         Date dt = new Date();
-        PreparedStatementCollection psc = sbb.getStatementCollection(dt);
+        PreparedStatementCollection_C3 psc = sbb.getStatementCollection(dt);
 
         // reading "1112" for Alert
         TargetAddress lock = this.sbb.obtainSynchroObject(ta2);
         try {
             synchronized (lock) {
-                long dueSlot = this.sbb.getDueSlotForTargetId(psc, ta2.getTargetId());
+                long dueSlot = this.sbb.c2_getDueSlotForTargetId(psc, ta2.getTargetId());
                 if (dueSlot == 0) {
                     fail("Bad dueSlot for reading of ta2");
                 }
 
-                sbb.registerDueSlotWriting(dueSlot);
+                sbb.c2_registerDueSlotWriting(dueSlot);
                 SmsSet smsSet;
                 try {
-                    smsSet = sbb.getRecordListForTargeId(dueSlot, ta2.getTargetId());
+                    smsSet = sbb.c2_getRecordListForTargeId(dueSlot, ta2.getTargetId());
                 } finally {
-                    sbb.unregisterDueSlotWriting(dueSlot);
+                    sbb.c2_unregisterDueSlotWriting(dueSlot);
                 }
                 assertEquals(smsSet.getSmsCount(), 1);
                 Sms sms = smsSet.getSms(0);
                 assertEquals(sms.getDueSlot(), dueSlot);
                 this.checkTestSms(4, sms, id4, false);
 
-                sbb.updateInSystem(sms, NN_DBOperations.IN_SYSTEM_INPROCESS);
+                sbb.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS);
             }
         } finally {
             this.sbb.obtainSynchroObject(lock);
@@ -307,13 +309,13 @@ public class TT_CassandraTest {
         TargetAddress lock = this.sbb.obtainSynchroObject(ta2);
         try {
             synchronized (lock) {
-                sbb.registerDueSlotWriting(dueSlot);
+                sbb.c2_registerDueSlotWriting(dueSlot);
                 ArrayList<SmsSet> lst0, lst;
                 try {
-                    lst0 = sbb.getRecordList(dueSlot);
-                    lst = sbb.sortRecordList(lst0);
+                    lst0 = sbb.c2_getRecordList(dueSlot);
+                    lst = sbb.c2_sortRecordList(lst0);
                 } finally {
-                    sbb.unregisterDueSlotWriting(dueSlot);
+                    sbb.c2_unregisterDueSlotWriting(dueSlot);
                 }
 
                 assertEquals(lst.size(), 1);
@@ -340,12 +342,12 @@ public class TT_CassandraTest {
         // ............................
         for (int i1 = 0; i1 < 3; i1++) {
             Sms sms = smsSet.getSms(i1);
-            sbb.createRecordArchive(sms);
+            sbb.c2_createRecordArchive(sms);
         }
     }
 
     private Sms createTestSms(int num, String number, UUID id) throws Exception {
-        PreparedStatementCollection psc = sbb.getStatementCollection(new Date());
+        PreparedStatementCollection_C3 psc = sbb.getStatementCollection(new Date());
 
         SmsSet smsSet = new SmsSet();
         smsSet.setDestAddr(number);

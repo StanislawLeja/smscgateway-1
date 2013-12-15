@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.tools.stresstool;
+package org.mobicents.smsc.cassandra;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,13 +35,6 @@ import javolution.xml.XMLObjectWriter;
 import javolution.xml.stream.XMLStreamException;
 
 import org.apache.log4j.Logger;
-import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.Schema;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.SmsSetCashe;
-import org.mobicents.smsc.cassandra.TargetAddress;
-import org.mobicents.smsc.cassandra.TlvSet;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
@@ -59,8 +52,8 @@ import com.datastax.driver.core.exceptions.InvalidQueryException;
  * @author sergey vetyutnev
  *
  */
-public class NN_DBOperations {
-    private static final Logger logger = Logger.getLogger(NN_DBOperations.class);
+public class DBOperations_C2 {
+    private static final Logger logger = Logger.getLogger(DBOperations_C2.class);
 
     public static final String TLV_SET = "tlvSet";
     public static final UUID emptyUuid = UUID.nameUUIDFromBytes(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
@@ -68,7 +61,7 @@ public class NN_DBOperations {
     public static final int IN_SYSTEM_INPROCESS = 1;
     public static final int IN_SYSTEM_SENT = 2;
 
-    private static final NN_DBOperations instance = new NN_DBOperations();
+    private static final DBOperations_C2 instance = new DBOperations_C2();
 
     // cassandra access
     private Cluster cluster;
@@ -78,8 +71,8 @@ public class NN_DBOperations {
 
     // multiTableModel: splitting database tables depending on dates
     private boolean multiTableModel = true;
-    // how many days one table carries (if value is <1 or >30 this means one month)
-    private int slotMSecondsTimeArea = 500;
+    // length of the due_slot in milliseconds
+    private int slotMSecondsTimeArea = 1000;
     // how many days one table carries (if value is <1 or >30 this means one month)
     private int dataTableDaysTimeArea = 10;
     // the date from which due_slots are calculated (01.01.2000) 
@@ -102,20 +95,23 @@ public class NN_DBOperations {
     private long currentDueSlot = 0;
     private UUID currentSessionUUID;
 
-    private FastMap<String, PreparedStatementCollection> dataTableRead = new FastMap<String, PreparedStatementCollection>();
+    private FastMap<String, PreparedStatementCollection_C3> dataTableRead = new FastMap<String, PreparedStatementCollection_C3>();
     private FastMap<Long, DueSlotWritingElement> dueSlotWritingArray = new FastMap<Long, DueSlotWritingElement>();
 
     // prepared general statements
     private PreparedStatement selectCurrentSlotTable;
     private PreparedStatement updateCurrentSlotTable;
 
+    private Date pcsDate;
+    private PreparedStatementCollection_C3[] savedPsc;
+
     private volatile boolean started = false;
 
-    protected NN_DBOperations() {
+    protected DBOperations_C2() {
         super();
     }
 
-    public static NN_DBOperations getInstance() {
+    public static DBOperations_C2 getInstance() {
         return instance;
     }
 
@@ -131,6 +127,7 @@ public class NN_DBOperations {
         if (this.started) {
             throw new Exception("DBOperations already started");
         }
+        this.pcsDate = null;
         currentSessionUUID = UUID.randomUUID();
 
         Builder builder = Cluster.builder();
@@ -169,8 +166,8 @@ public class NN_DBOperations {
             }
             if (currentDueSlot == 0) {
                 // not yet set
-                long l1 = this.getDueSlotForTime(new Date());
-                this.setProcessingDueSlot(l1);
+                long l1 = this.c2_getDueSlotForTime(new Date());
+                this.c2_setProcessingDueSlot(l1);
             }
         } catch (Exception e1) {
             String msg = "Failed reading a currentDueSlot !";
@@ -195,7 +192,7 @@ public class NN_DBOperations {
     /**
      * Return due_slot for the given time
      */
-    public long getDueSlotForTime(Date time) {
+    public long c2_getDueSlotForTime(Date time) {
         long a2 = time.getTime();
         long a1 = this.slotOrigDate.getTime();
         long diff = a2 - a1;
@@ -206,7 +203,7 @@ public class NN_DBOperations {
     /**
      * Return time for the given due_slot
      */
-    public Date getTimeForDueSlot(long dueSlot) {
+    public Date c2_getTimeForDueSlot(long dueSlot) {
         long a1 = this.slotOrigDate.getTime() + dueSlot * this.slotMSecondsTimeArea;
         Date date = new Date(a1);
         return date;
@@ -215,14 +212,14 @@ public class NN_DBOperations {
     /**
      * Return due_slop that SMSC is processing now
      */
-    public long getProcessingDueSlot() {
+    public long c2_getProcessingDueSlot() {
         return currentDueSlot;
     }
 
     /**
      * Set a new due_slop that SMSC is processing now and store it to the database
      */
-    public void setProcessingDueSlot(long newDueSlot) throws PersistenceException {
+    public void c2_setProcessingDueSlot(long newDueSlot) throws PersistenceException {
         currentDueSlot = newDueSlot;
 
         try {
@@ -239,15 +236,15 @@ public class NN_DBOperations {
     /**
      * Return due_slop for current time
      */
-    public long getIntimeDueSlot() {
-        return this.getDueSlotForTime(new Date());
+    public long c2_getIntimeDueSlot() {
+        return this.c2_getDueSlotForTime(new Date());
     }
 
     /**
      * Return due_slop for storing next incoming to SMSC message
      */
-    public long getStoringDueSlot() {
-        return getIntimeDueSlot() + dueSlotForwardStoring;
+    public long c2_getStoringDueSlot() {
+        return c2_getIntimeDueSlot() + dueSlotForwardStoring;
         // TODO: we can add here code incrementing of due_slot if current
         // due_slot is overloaded
     }
@@ -255,7 +252,7 @@ public class NN_DBOperations {
     /**
      * Registering that thread starts writing to this due_slot
      */
-    public void registerDueSlotWriting(long dueSlot) {
+    public void c2_registerDueSlotWriting(long dueSlot) {
         synchronized (dueSlotWritingArray) {
             Long ll = dueSlot;
             DueSlotWritingElement el = dueSlotWritingArray.get(ll);
@@ -273,7 +270,7 @@ public class NN_DBOperations {
     /**
      * Registering that thread finishes writing to this due_slot
      */
-    public void unregisterDueSlotWriting(long dueSlot) {
+    public void c2_unregisterDueSlotWriting(long dueSlot) {
         synchronized (dueSlotWritingArray) {
             Long ll = dueSlot;
             DueSlotWritingElement el = dueSlotWritingArray.get(ll);
@@ -290,7 +287,7 @@ public class NN_DBOperations {
      * Checking if due_slot is not in writing state now
      * Returns true if due_slot is not in writing now
      */
-    public boolean checkDueSlotNotWriting(long dueSlot) {
+    public boolean c2_checkDueSlotNotWriting(long dueSlot) {
         synchronized (dueSlotWritingArray) {
             Long ll = dueSlot;
             DueSlotWritingElement el = dueSlotWritingArray.get(ll);
@@ -314,7 +311,7 @@ public class NN_DBOperations {
      * Generate a table name depending on long dueSlot
      */
     protected String getTableName(long dueSlot) {
-        Date dt = this.getTimeForDueSlot(dueSlot);
+        Date dt = this.c2_getTimeForDueSlot(dueSlot);
         return getTableName(dt);
     }
 
@@ -351,7 +348,38 @@ public class NN_DBOperations {
             return "";
     }
 
-    public long getDueSlotForTargetId(PreparedStatementCollection psc, String targetId) throws PersistenceException {
+    public PreparedStatementCollection_C3[] getPscList() throws PersistenceException {
+        Date dt = new Date();
+        if (!this.isStarted())
+            return new PreparedStatementCollection_C3[0];
+        if (pcsDate != null && dt.getDate() == pcsDate.getDate()) {
+            return savedPsc;
+        } else {
+            createPscList();
+            return savedPsc;
+        }
+    }
+
+    private void createPscList() throws PersistenceException {
+        Date dt = new Date();
+        Date dtt = new Date(dt.getTime() + 1000 * 60 * 60 * 24);
+        String s1 = this.getTableName(dt);
+        String s2 = this.getTableName(dtt);
+        PreparedStatementCollection_C3[] res;
+        if (s2.equals(s1)) {
+            res = new PreparedStatementCollection_C3[1];
+            res[0] = this.getStatementCollection(dtt);
+            res[1] = this.getStatementCollection(dt);
+        } else {
+            res = new PreparedStatementCollection_C3[2];
+            res[0] = this.getStatementCollection(dt);
+        }
+        savedPsc = res;
+
+        pcsDate = dt;
+    }
+
+    public long c2_getDueSlotForTargetId(PreparedStatementCollection_C3 psc, String targetId) throws PersistenceException {
         try {
             PreparedStatement ps = psc.getDueSlotForTargetId;
             BoundStatement boundStatement = new BoundStatement(ps);
@@ -373,8 +401,8 @@ public class NN_DBOperations {
         }
     }
 
-    public void updateDueSlotForTargetId(String targetId, long newDueSlot) throws PersistenceException {
-        PreparedStatementCollection psc = this.getStatementCollection(newDueSlot);
+    public void c2_updateDueSlotForTargetId(String targetId, long newDueSlot) throws PersistenceException {
+        PreparedStatementCollection_C3 psc = this.getStatementCollection(newDueSlot);
 
         try {
             PreparedStatement ps = psc.createDueSlotForTargetId;
@@ -387,9 +415,74 @@ public class NN_DBOperations {
         }
     }
 
-    public void createRecordCurrent(Sms sms) throws PersistenceException {
+    public void c2_scheduleMessage(Sms sms) throws PersistenceException {
+        long dueSlot = 0;;
+        PreparedStatementCollection_C3[] lstPsc = this.getPscList();
+        boolean done = false;
+        while (!done) {
+            TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(sms.getSmsSet()));
+            try {
+                synchronized (lock) {
+                    for (PreparedStatementCollection_C3 psc : lstPsc) {
+                        dueSlot = this.c2_getDueSlotForTargetId(psc, sms.getSmsSet().getTargetId());
+                        if (dueSlot != 0)
+                            break;
+                    }
+
+                    if (dueSlot == 0 || dueSlot <= this.c2_getProcessingDueSlot()) {
+                        dueSlot = this.c2_getStoringDueSlot();
+                        this.c2_updateDueSlotForTargetId(sms.getSmsSet().getTargetId(), dueSlot);
+                    }
+                    sms.setDueSlot(dueSlot);
+                }
+            } finally {
+                SmsSetCashe.getInstance().removeSmsSet(lock);
+            }
+
+            done = this.c2_scheduleMessage(sms, dueSlot);
+        }
+    }
+
+    /**
+     * @param smsSet
+     * @param dueSlot
+     * @return
+     * return false if dueSlot is out <= ProcessingDueSlot
+     * @throws PersistenceException 
+     */
+    public boolean c2_scheduleMessage(Sms sms, long dueSlot) throws PersistenceException {
+
+        if (!sms.getStored())
+            return true;
+
+        Date dt = this.c2_getTimeForDueSlot(dueSlot);
+
+        // special case for ScheduleDeliveryTime
+        Date schedTime = sms.getScheduleDeliveryTime();
+        if (schedTime != null && schedTime.after(dt)) {
+            dueSlot = this.c2_getDueSlotForTime(schedTime);
+        }
+
+        // checking validity date
+        if (sms.getValidityPeriod() != null || sms.getValidityPeriod().before(dt))
+            return true;
+
+        this.c2_registerDueSlotWriting(dueSlot);
+        try {
+            if (dueSlot <= this.c2_getProcessingDueSlot()) {
+                return false;
+            } else {
+                this.c2_createRecordCurrent(sms);
+                return true;
+            }
+        } finally {
+            this.c2_unregisterDueSlotWriting(dueSlot);
+        }
+    }
+
+    public void c2_createRecordCurrent(Sms sms) throws PersistenceException {
         long dueSlot = sms.getDueSlot();
-        PreparedStatementCollection psc = getStatementCollection(dueSlot);
+        PreparedStatementCollection_C3 psc = getStatementCollection(dueSlot);
 
         try {
             PreparedStatement ps = psc.createRecordCurrent;
@@ -405,12 +498,12 @@ public class NN_DBOperations {
         }
     }
 
-    public void createRecordArchive(Sms sms) throws PersistenceException {
+    public void c2_createRecordArchive(Sms sms) throws PersistenceException {
         Date deliveryDate = sms.getDeliverDate();
         if (deliveryDate == null)
             deliveryDate = new Date();
-        long dueSlot = this.getDueSlotForTime(deliveryDate);
-        PreparedStatementCollection psc = getStatementCollection(deliveryDate);
+        long dueSlot = this.c2_getDueSlotForTime(deliveryDate);
+        PreparedStatementCollection_C3 psc = getStatementCollection(deliveryDate);
 
         try {
             PreparedStatement ps = psc.createRecordArchive;
@@ -515,8 +608,8 @@ public class NN_DBOperations {
         }
     }
 
-    public ArrayList<SmsSet> getRecordList(long dueSlot) throws PersistenceException {
-        PreparedStatementCollection psc = getStatementCollection(dueSlot);
+    public ArrayList<SmsSet> c2_getRecordList(long dueSlot) throws PersistenceException {
+        PreparedStatementCollection_C3 psc = getStatementCollection(dueSlot);
 
         ArrayList<SmsSet> result = new ArrayList<SmsSet>();
         try {
@@ -539,8 +632,8 @@ public class NN_DBOperations {
         return result;
     }
 
-    public SmsSet getRecordListForTargeId(long dueSlot, String targetId) throws PersistenceException {
-        PreparedStatementCollection psc = getStatementCollection(dueSlot);
+    public SmsSet c2_getRecordListForTargeId(long dueSlot, String targetId) throws PersistenceException {
+        PreparedStatementCollection_C3 psc = getStatementCollection(dueSlot);
 
         SmsSet result = null;
         try {
@@ -573,6 +666,7 @@ public class NN_DBOperations {
         }
 
         Sms sms = new Sms();
+        sms.setStored(true);
         sms.setDbId(row.getUUID(Schema.COLUMN_ID));
         sms.setDueSlot(row.getLong(Schema.COLUMN_DUE_SLOT));
 
@@ -643,7 +737,7 @@ public class NN_DBOperations {
         return smsSet;
     }
 
-    public ArrayList<SmsSet> sortRecordList(ArrayList<SmsSet> sourceLst) {
+    public ArrayList<SmsSet> c2_sortRecordList(ArrayList<SmsSet> sourceLst) {
         FastMap<String, SmsSet> res = new FastMap<String, SmsSet>();
 
         // aggregating messages for one targetId
@@ -689,8 +783,8 @@ public class NN_DBOperations {
         return res2;
     }
 
-    public void updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException {
-        PreparedStatementCollection psc = this.getStatementCollection(sms.getDueSlot());
+    public void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException {
+        PreparedStatementCollection_C3 psc = this.getStatementCollection(sms.getDueSlot());
 
         try {
             PreparedStatement ps = psc.updateInSystem;
@@ -708,26 +802,26 @@ public class NN_DBOperations {
         // .....................................
     }
 
-    protected PreparedStatementCollection getStatementCollection(Date dt) throws PersistenceException {
+    protected PreparedStatementCollection_C3 getStatementCollection(Date dt) throws PersistenceException {
         String tName = this.getTableName(dt);
-        PreparedStatementCollection psc = dataTableRead.get(tName);
+        PreparedStatementCollection_C3 psc = dataTableRead.get(tName);
         if (psc != null)
             return psc;
 
         return doGetStatementCollection(tName);
     }
 
-    protected PreparedStatementCollection getStatementCollection(long deuSlot) throws PersistenceException {
+    protected PreparedStatementCollection_C3 getStatementCollection(long deuSlot) throws PersistenceException {
         String tName = this.getTableName(deuSlot);
-        PreparedStatementCollection psc = dataTableRead.get(tName);
+        PreparedStatementCollection_C3 psc = dataTableRead.get(tName);
         if (psc != null)
             return psc;
 
         return doGetStatementCollection(tName);
     }
 
-    private synchronized PreparedStatementCollection doGetStatementCollection(String tName) throws PersistenceException {
-        PreparedStatementCollection psc = dataTableRead.get(tName);
+    private synchronized PreparedStatementCollection_C3 doGetStatementCollection(String tName) throws PersistenceException {
+        PreparedStatementCollection_C3 psc = dataTableRead.get(tName);
         if (psc != null)
             return psc;
 
@@ -805,7 +899,7 @@ public class NN_DBOperations {
             throw new PersistenceException(msg, e1);
         }
 
-        psc = new PreparedStatementCollection(this, tName, ttlCurrent, ttlArchive);
+        psc = new PreparedStatementCollection_C3(this, tName, ttlCurrent, ttlArchive);
         dataTableRead.putEntry(tName, psc);
         return psc;
     }

@@ -22,6 +22,7 @@
 
 package org.mobicents.smsc.slee.services.alert;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import javax.naming.Context;
@@ -60,11 +61,16 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.smsc.cassandra.DBOperations_C2;
+import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
+import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
+import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 /**
  * 
@@ -194,6 +200,7 @@ public abstract class AlertSbb implements Sbb {
 
 	private void setupAlert(ISDNAddressString msisdn, AddressString serviceCentreAddress) {
 		PersistenceRAInterface pers = this.getStore();
+		SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
 		int addrTon = msisdn.getAddressNature().getIndicator();
 		int addrNpi = msisdn.getNumberingPlan().getIndicator();
@@ -203,34 +210,72 @@ public abstract class AlertSbb implements Sbb {
 			synchronized (lock) {
 
 				try {
-					boolean b1 = pers.checkSmsSetExists(lock);
-					if (!b1) {
-						if (this.logger.isInfoEnabled()) {
-							this.logger.info("AlertServiceCentre received but no SmsSet is present: addr=" + addr + ", ton=" + addrTon + ", npi=" + addrNpi);
-						}
-						return;
-					}
+                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                        boolean b1 = pers.checkSmsSetExists(lock);
+                        if (!b1) {
+                            if (this.logger.isInfoEnabled()) {
+                                this.logger
+                                        .info("AlertServiceCentre received but no SmsSet is present: addr=" + addr + ", ton=" + addrTon + ", npi=" + addrNpi);
+                            }
+                            return;
+                        }
 
-					SmsSet smsSet = pers.obtainSmsSet(lock);
-					if (smsSet.getInSystem() == 2) {
-						if (this.logger.isInfoEnabled()) {
-							this.logger.info("AlertServiceCentre received but no SmsSet is already in active state (InSystem==2): addr=" + addr + ", ton="
-									+ addrTon + ", npi=" + addrNpi);
-						}
-						return;
-					}
-					if (smsSet.getInSystem() == 0) {
-						if (this.logger.isInfoEnabled()) {
-							this.logger.info("AlertServiceCentre received but no SmsSet is already in passive state (InSystem==0): addr=" + addr + ", ton="
-									+ addrTon + ", npi=" + addrNpi);
-						}
-						return;
-					}
+                        SmsSet smsSet = pers.obtainSmsSet(lock);
+                        if (smsSet.getInSystem() == 2) {
+                            if (this.logger.isInfoEnabled()) {
+                                this.logger.info("AlertServiceCentre received but no SmsSet is already in active state (InSystem==2): addr=" + addr + ", ton="
+                                        + addrTon + ", npi=" + addrNpi);
+                            }
+                            return;
+                        }
+                        if (smsSet.getInSystem() == 0) {
+                            if (this.logger.isInfoEnabled()) {
+                                this.logger.info("AlertServiceCentre received but no SmsSet is already in passive state (InSystem==0): addr=" + addr + ", ton="
+                                        + addrTon + ", npi=" + addrNpi);
+                            }
+                            return;
+                        }
 
-					pers.fetchSchedulableSms(smsSet, true);
-					Date newDueDate = new Date();
-					newDueDate = MessageUtil.checkScheduleDeliveryTime(smsSet, newDueDate);
-					pers.setDeliveringProcessScheduled(smsSet, newDueDate, 0);
+                        pers.fetchSchedulableSms(smsSet, true);
+                        Date newDueDate = new Date();
+                        newDueDate = MessageUtil.checkScheduleDeliveryTime(smsSet, newDueDate);
+                        pers.setDeliveringProcessScheduled(smsSet, newDueDate, 0);
+                    } else {
+                        long dueSlot = 0;
+                        SmsSet smsSet0 = new SmsSet();
+                        smsSet0.setDestAddr(addr);
+                        smsSet0.setDestAddrNpi(addrNpi);
+                        smsSet0.setDestAddrTon(addrTon);
+                        PreparedStatementCollection_C3[] lstPsc = pers.getPscList();
+
+                        for (PreparedStatementCollection_C3 psc : lstPsc) {
+                            dueSlot = pers.c2_getDueSlotForTargetId(psc, smsSet0.getTargetId());
+                            if (dueSlot != 0)
+                                break;
+                        }
+
+                        if (dueSlot != 0 && dueSlot > pers.c2_getProcessingDueSlot()) {
+                            pers.c2_registerDueSlotWriting(dueSlot);
+                            try {
+                                if (dueSlot != 0 && dueSlot > pers.c2_getProcessingDueSlot()) {
+                                    SmsSet smsSet = pers.c2_getRecordListForTargeId(dueSlot, smsSet0.getTargetId());
+                                    if (smsSet != null) {
+                                        ArrayList<SmsSet> lstS = new ArrayList<SmsSet>();
+                                        lstS.add(smsSet);
+                                        ArrayList<SmsSet> lst = pers.c2_sortRecordList(lstS);
+
+                                        for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
+                                            Sms sms = smsSet.getSms(i1);
+                                            pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS);
+                                            pers.c2_scheduleMessage(sms);
+                                        }
+                                    }
+                                }
+                            } finally {
+                                pers.c2_unregisterDueSlotWriting(dueSlot);
+                            }
+                        }
+                    }
 				} catch (PersistenceException e) {
 					this.logger.severe("PersistenceException when setupAlert()" + e.getMessage(), e);
 				}

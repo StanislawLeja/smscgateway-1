@@ -25,6 +25,7 @@ package org.mobicents.smsc.tools.stresstool;
 import java.util.ArrayList;
 import java.util.Date;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.cassandra.TargetAddress;
@@ -39,48 +40,48 @@ public interface NN_PersistenceRAInterface {
     /**
      * Return due_slot for the given time
      */
-    long getDueSlotForTime(Date time);
+    long c2_getDueSlotForTime(Date time);
 
     /**
      * Return time for the given due_slot
      */
-    Date getTimeForDueSlot(long dueSlot);
+    Date c2_getTimeForDueSlot(long dueSlot);
 
     /**
      * Return due_slop that SMSC is processing now
      */
-    long getProcessingDueSlot();
+    long c2_getProcessingDueSlot();
 
     /**
      * Set a new due_slop that SMSC is processing now and store it to the database
      */
-    void setProcessingDueSlot(long newDueSlot) throws PersistenceException;
+    void c2_setProcessingDueSlot(long newDueSlot) throws PersistenceException;
 
     /**
      * Return due_slop for current time
      */
-    long getIntimeDueSlot();
+    long c2_getIntimeDueSlot();
 
     /**
      * Return due_slop for storing next incoming to SMSC message
      */
-    long getStoringDueSlot();
+    long c2_getStoringDueSlot();
 
     /**
      * Registering that thread starts writing to this due_slot
      */
-    void registerDueSlotWriting(long dueSlot);
+    void c2_registerDueSlotWriting(long dueSlot);
 
     /**
      * Registering that thread finishes writing to this due_slot
      */
-    void unregisterDueSlotWriting(long dueSlot);
+    void c2_unregisterDueSlotWriting(long dueSlot);
 
     /**
      * Checking if due_slot is not in writing state now
      * Returns true if due_slot is not in writing now
      */
-    boolean checkDueSlotNotWriting(long dueSlot);
+    boolean c2_checkDueSlotNotWriting(long dueSlot);
 
     /**
      * Obtaining synchronizing object for a TargetAddress
@@ -93,20 +94,20 @@ public interface NN_PersistenceRAInterface {
     void releaseSynchroObject(TargetAddress ta);
 
 
-    long getDueSlotForTargetId(PreparedStatementCollection psc, String targetId) throws PersistenceException;
+    long c2_getDueSlotForTargetId(PreparedStatementCollection_C3 psc, String targetId) throws PersistenceException;
 
-    void updateDueSlotForTargetId(String targetId, long newDueSlot) throws PersistenceException;
+    void c2_updateDueSlotForTargetId(String targetId, long newDueSlot) throws PersistenceException;
 
-    void createRecordCurrent(Sms sms) throws PersistenceException;
+    void c2_createRecordCurrent(Sms sms) throws PersistenceException;
 
-    void createRecordArchive(Sms sms) throws PersistenceException;
+    void c2_createRecordArchive(Sms sms) throws PersistenceException;
 
-    ArrayList<SmsSet> getRecordList(long dueSlot) throws PersistenceException;
+    ArrayList<SmsSet> c2_getRecordList(long dueSlot) throws PersistenceException;
 
-    SmsSet getRecordListForTargeId(long dueSlot, String targetId) throws PersistenceException;
+    SmsSet c2_getRecordListForTargeId(long dueSlot, String targetId) throws PersistenceException;
 
-    ArrayList<SmsSet> sortRecordList(ArrayList<SmsSet> sourceLst);
+    ArrayList<SmsSet> c2_sortRecordList(ArrayList<SmsSet> sourceLst);
 
-    void updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException;
+    void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException;
 
 }

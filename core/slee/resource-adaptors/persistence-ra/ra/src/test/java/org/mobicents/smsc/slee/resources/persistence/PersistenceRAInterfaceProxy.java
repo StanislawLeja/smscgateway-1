@@ -23,11 +23,14 @@
 package org.mobicents.smsc.slee.resources.persistence;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
-import org.mobicents.smsc.cassandra.DBOperations;
+import org.mobicents.smsc.cassandra.DBOperations_C1;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Schema;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
@@ -49,7 +52,7 @@ import com.datastax.driver.core.Session;
  * @author sergey vetyutnev
  * 
  */
-public class PersistenceRAInterfaceProxy extends DBOperations implements PersistenceRAInterface {
+public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements PersistenceRAInterface {
 
     private static final Logger logger = Logger.getLogger(PersistenceRAInterfaceProxy.class);
 
@@ -206,6 +209,126 @@ public class PersistenceRAInterfaceProxy extends DBOperations implements Persist
     @Override
     public void releaseSynchroObject(TargetAddress ta) {
         SmsSetCashe.getInstance().removeSmsSet(ta);
+    }
+
+    @Override
+    public long c2_getDueSlotForTime(Date time) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public Date c2_getTimeForDueSlot(long dueSlot) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public long c2_getProcessingDueSlot() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void c2_setProcessingDueSlot(long newDueSlot) throws PersistenceException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public long c2_getIntimeDueSlot() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public long c2_getStoringDueSlot() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void c2_registerDueSlotWriting(long dueSlot) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void c2_unregisterDueSlotWriting(long dueSlot) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public boolean c2_checkDueSlotNotWriting(long dueSlot) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public PreparedStatementCollection_C3[] getPscList() throws PersistenceException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public long c2_getDueSlotForTargetId(PreparedStatementCollection_C3 psc, String targetId) throws PersistenceException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void c2_updateDueSlotForTargetId(String targetId, long newDueSlot) throws PersistenceException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void c2_createRecordCurrent(Sms sms) throws PersistenceException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void c2_createRecordArchive(Sms sms) throws PersistenceException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void c2_scheduleMessage(Sms sms) throws PersistenceException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public boolean c2_scheduleMessage(Sms sms, long dueSlot) throws PersistenceException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public ArrayList<SmsSet> c2_getRecordList(long dueSlot) throws PersistenceException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public SmsSet c2_getRecordListForTargeId(long dueSlot, String targetId) throws PersistenceException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ArrayList<SmsSet> c2_sortRecordList(ArrayList<SmsSet> sourceLst) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException {
+        // TODO Auto-generated method stub
+        
     }
 
 }

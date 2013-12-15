@@ -69,9 +69,12 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
@@ -774,14 +777,20 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 		MessageUtil.applyValidityPeriod(sms, validityPeriod, false);
 
-		SmsSet smsSet;
-		try {
-			smsSet = store.obtainSmsSet(ta);
-		} catch (PersistenceException e1) {
-			throw new SmscProcessingException("PersistenceException when reading SmsSet from a database: "
-					+ ta.toString() + "\n" + e1.getMessage(), SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure,
-					null, e1);
-		}
+        SmsSet smsSet;
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            try {
+                smsSet = store.obtainSmsSet(ta);
+            } catch (PersistenceException e1) {
+                throw new SmscProcessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
+                        SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
+            }
+        } else {
+            smsSet = new SmsSet();
+            smsSet.setDestAddr(ta.getAddr());
+            smsSet.setDestAddrNpi(ta.getAddrNpi());
+            smsSet.setDestAddrTon(ta.getAddrTon());
+        }
 		sms.setSmsSet(smsSet);
 
 		long messageId = this.smppServerSessions.getNextMessageId();
@@ -903,14 +912,20 @@ public abstract class MoSbb extends MoCommonSbb {
 		// ValidityPeriod processing
 		MessageUtil.applyValidityPeriod(sms, null, false);
 
-		SmsSet smsSet;
-		try {
-			smsSet = store.obtainSmsSet(ta);
-		} catch (PersistenceException e1) {
-			throw new SmscProcessingException("PersistenceException when reading SmsSet from a database: "
-					+ ta.toString() + "\n" + e1.getMessage(), SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure,
-					null, e1);
-		}
+        SmsSet smsSet;
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            try {
+                smsSet = store.obtainSmsSet(ta);
+            } catch (PersistenceException e1) {
+                throw new SmscProcessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
+                        SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
+            }
+        } else {
+            smsSet = new SmsSet();
+            smsSet.setDestAddr(ta.getAddr());
+            smsSet.setDestAddrNpi(ta.getAddrNpi());
+            smsSet.setDestAddrTon(ta.getAddrTon());
+        }
 		sms.setSmsSet(smsSet);
 
 		long messageId = this.smppServerSessions.getNextMessageId();
@@ -929,9 +944,12 @@ public abstract class MoSbb extends MoCommonSbb {
 			// TODO: we can make this some check will we send this message or
 			// not
 
-			store.createLiveSms(sms);
-			store.setNewMessageScheduled(sms.getSmsSet(),
-					MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                store.createLiveSms(sms);
+                store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+            } else {
+                store.c2_scheduleMessage(sms);
+            }
 		} catch (PersistenceException e) {
 			throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(),
 					SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);

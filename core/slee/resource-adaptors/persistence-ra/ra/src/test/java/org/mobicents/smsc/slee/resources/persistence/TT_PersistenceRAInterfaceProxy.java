@@ -20,28 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.tools.stresstool;
+package org.mobicents.smsc.slee.resources.persistence;
 
-import java.io.IOException;
 import java.util.Date;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Schema;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
-import org.mobicents.smsc.slee.resources.persistence.SmsProxy;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
 /**
@@ -49,7 +44,7 @@ import com.datastax.driver.core.Session;
  * @author sergey vetyutnev
  * 
  */
-public class TT_PersistenceRAInterfaceProxy extends NN_DBOperations implements NN_PersistenceRAInterface {
+public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 {
 
     private static final Logger logger = Logger.getLogger(TT_PersistenceRAInterfaceProxy.class);
 
@@ -182,12 +177,14 @@ public class TT_PersistenceRAInterfaceProxy extends NN_DBOperations implements N
 //        return res;
 //    }
 
-    @Override
+    public PreparedStatementCollection_C3 getStatementCollection(Date dt) throws PersistenceException {
+        return super.getStatementCollection(dt);
+    }
+
     public TargetAddress obtainSynchroObject(TargetAddress ta) {
         return SmsSetCashe.getInstance().addSmsSet(ta);
     }
 
-    @Override
     public void releaseSynchroObject(TargetAddress ta) {
         SmsSetCashe.getInstance().removeSmsSet(ta);
     }

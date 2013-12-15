@@ -58,10 +58,12 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
@@ -93,12 +95,17 @@ public abstract class SriSbb extends MtCommonSbb {
 		}
 
         SmsSet smsSet = event.getSmsSet();
-        try {
-            this.getStore().fetchSchedulableSms(smsSet, true);
-//          this.getStore().fetchSchedulableSms(smsSet, smsSet.getType() == SmType.SMS_FOR_SS7);
-        } catch (PersistenceException e) {
-            this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "PersistenceException when fetchSchedulableSms(): " + e.getMessage());
-            return;
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            try {
+                this.getStore().fetchSchedulableSms(smsSet, true);
+                // this.getStore().fetchSchedulableSms(smsSet, smsSet.getType()
+                // == SmType.SMS_FOR_SS7);
+            } catch (PersistenceException e) {
+                this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR,
+                        "PersistenceException when fetchSchedulableSms(): " + e.getMessage());
+                return;
+            }
+        } else {
         }
 
         // remove receipt messages if any: receipt messages must not be routed to SS7
@@ -114,11 +121,15 @@ public abstract class SriSbb extends MtCommonSbb {
 			return;
 		}
 
-		this.startMessageDelivery(sms);
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            this.startMessageDelivery(sms);
+        } else {
+        }
 
 		this.doSetCurrentMsgNum(curMsg);
 		SmsSubmitData smsDeliveryData = new SmsSubmitData();
-		smsDeliveryData.setSmsSet(smsSet);
+//        smsDeliveryData.setSmsSet(smsSet);
+        smsDeliveryData.setTargetId(smsSet.getTargetId());
 		this.doSetSmsSubmitData(smsDeliveryData);
 
 		this.sendSRI(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
@@ -181,7 +192,8 @@ public abstract class SriSbb extends MtCommonSbb {
 			// possible a peer supports only MAP V1
 			// Now send new SRI with supported ACN (MAP V1)
 			if (smsDeliveryData != null) {
-				SmsSet smsSet = smsDeliveryData.getSmsSet();
+                String targetId = smsDeliveryData.getTargetId();
+                SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
 				this.sendSRI(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
 						this.getSRIMAPApplicationContext(MAPApplicationContextVersion.version1));
 				return;
@@ -200,7 +212,8 @@ public abstract class SriSbb extends MtCommonSbb {
 					.getInstance(tcapApplicationContextName.getOid());
 
 			if (smsDeliveryData != null) {
-				SmsSet smsSet = smsDeliveryData.getSmsSet();
+                String targetId = smsDeliveryData.getTargetId();
+                SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
 				this.sendSRI(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
 						this.getSRIMAPApplicationContext(supportedMAPApplicationContext.getApplicationContextVersion()));
 				return;
@@ -497,7 +510,8 @@ public abstract class SriSbb extends MtCommonSbb {
 			// messages
 			SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
 			if (smsDeliveryData != null) {
-				SmsSet smsSet = smsDeliveryData.getSmsSet();
+                String targetId = smsDeliveryData.getTargetId();
+                SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
 				if (smsSet != null) {
 					smsSet.setImsi(sendRoutingInfoForSMResponse.getIMSI());
 					smsSet.setLocationInfoWithLMSI(sendRoutingInfoForSMResponse.getLocationInfoWithLMSI());

@@ -57,7 +57,7 @@ public class TimeProcessingTest {
 
 	@Test(groups = { "timeProcessing" })
 	public void testDateDecoding() throws Exception {
-		Date curDate = new Date();
+		Date curDate = new Date(2013, 7, 1); // summer time
 		int i1 = curDate.getTimezoneOffset();
 
 		Date d1 = MessageUtil.parseSmppDate(getTimeA1());
@@ -75,6 +75,7 @@ public class TimeProcessingTest {
 		d222 = new Date(d22.getTime() - 3 * 3600 * 1000 - i1 * 60 * 1000 + 5 * 100);
 		assertTrue(d2.equals(d222));
 
+        curDate = new Date(); // current time
 		Date d3 = MessageUtil.parseSmppDate(getTimeRel());
 		Date d333 = new Date(curDate.getTime() + 90 * 60 * 1000);
 		this.testDateEq(d3, d333);

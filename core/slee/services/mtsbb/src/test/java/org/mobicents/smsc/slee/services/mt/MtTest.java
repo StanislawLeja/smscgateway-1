@@ -3043,7 +3043,8 @@ public class MtTest {
         SmsSet smsSet = prepareDatabase(lst);
 
         SmsSubmitData smsSubmitData = new SmsSubmitData();
-        smsSubmitData.setSmsSet(smsSet);
+//        smsSubmitData.setSmsSet(smsSet);
+        smsSubmitData.setTargetId(smsSet.getTargetId());
         this.mtSbb.setSmsSubmitData(smsSubmitData);
 
         this.sriSbb.onDeliveryError(ErrorAction.subscriberBusy, ErrorCode.ABSENT_SUBSCRIBER, "X error");
