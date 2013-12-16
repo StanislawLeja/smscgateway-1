@@ -108,4 +108,8 @@ public class SmsSetCashe {
         return lstSmsSetInProcessing.size();
     }
 
+    public void clearProcessingSmsSet() {
+        lstSmsSetInProcessing.clear();
+    }
+
 }

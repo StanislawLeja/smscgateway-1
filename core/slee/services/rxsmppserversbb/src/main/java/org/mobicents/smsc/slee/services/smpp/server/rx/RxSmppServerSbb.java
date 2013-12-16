@@ -140,6 +140,7 @@ public abstract class RxSmppServerSbb implements Sbb {
             if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                 this.startMessageDelivery(sms);
             } else {
+                sms.setDeliveryCount(sms.getDeliveryCount() + 1);
             }
 		}
 
@@ -282,6 +283,7 @@ public abstract class RxSmppServerSbb implements Sbb {
                             if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                                 this.startMessageDelivery(sms);
                             } else {
+                                sms.setDeliveryCount(sms.getDeliveryCount() + 1);
                             }
                         }
 
@@ -534,6 +536,7 @@ public abstract class RxSmppServerSbb implements Sbb {
                     pers.setNewMessageScheduled(smsSet, MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
                 }
             } else {
+                smsSet.setStatus(ErrorCode.SUCCESS);
                 SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
             }
         } catch (PersistenceException e) {

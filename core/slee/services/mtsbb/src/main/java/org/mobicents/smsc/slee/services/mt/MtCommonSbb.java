@@ -623,6 +623,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                     pers.setNewMessageScheduled(smsSet, newDueDate);
                 }
             } else {
+                smsSet.setStatus(ErrorCode.SUCCESS);
                 SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
             }
         } catch (PersistenceException e) {

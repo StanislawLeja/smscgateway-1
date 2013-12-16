@@ -944,6 +944,7 @@ public abstract class MoSbb extends MoCommonSbb {
 			// TODO: we can make this some check will we send this message or
 			// not
 
+            sms.setStored(true);
             if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                 store.createLiveSms(sms);
                 store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));

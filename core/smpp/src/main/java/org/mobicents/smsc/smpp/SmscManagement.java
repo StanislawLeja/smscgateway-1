@@ -24,11 +24,6 @@ package org.mobicents.smsc.smpp;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -44,6 +39,7 @@ import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.mobicents.smsc.cassandra.DBOperations_C1;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
+import org.mobicents.smsc.cassandra.SmsSetCashe;
 
 /**
  * @author Amit Bhayani
@@ -157,8 +153,11 @@ public class SmscManagement implements SmscManagementMBean {
 	public void start() throws Exception {
 		logger.info("Starting SmscManagemet " + name);
 
-		// Step 1 Get the MBeanServer
-		this.mbeanServer = MBeanServerLocator.locateJBoss();
+        // Step 0 clear SmsSetCashe
+		SmsSetCashe.getInstance().clearProcessingSmsSet();
+
+        // Step 1 Get the MBeanServer
+        this.mbeanServer = MBeanServerLocator.locateJBoss();
 
 		// Step 2 Setup SMSC Properties
 		this.smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.name);

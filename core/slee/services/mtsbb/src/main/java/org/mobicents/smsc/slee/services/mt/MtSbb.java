@@ -822,6 +822,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                         if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                             this.startMessageDelivery(sms);
                         } else {
+                            sms.setDeliveryCount(sms.getDeliveryCount() + 1);
                         }
                     }
 

@@ -37,11 +37,10 @@ import org.mobicents.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMResponse;
-import org.mobicents.protocols.ss7.map.service.sms.SendRoutingInfoForSMResponseImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbLocalObjectExt;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
-import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
+import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 
 /**
@@ -51,11 +50,11 @@ import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
  */
 public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObjectExt, SriSbbLocalObject {
 
-	private PersistenceRAInterfaceProxy cassandraSbb;
+	private TT_PersistenceRAInterfaceProxy cassandraSbb;
 	private MtSbbProxy mtSbb;
 	private RsdsSbbProxy rsdsSbb;
 
-	public SriSbbProxy(PersistenceRAInterfaceProxy pers, MtSbbProxy mtSbb, RsdsSbbProxy rsdsSbb) {
+	public SriSbbProxy(TT_PersistenceRAInterfaceProxy pers, MtSbbProxy mtSbb, RsdsSbbProxy rsdsSbb) {
 		this.cassandraSbb = pers;
 		this.mtSbb = mtSbb;
 		this.rsdsSbb = rsdsSbb;
@@ -69,7 +68,7 @@ public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObject
 	}
 
 	@Override
-	public PersistenceRAInterfaceProxy getStore() {
+	public TT_PersistenceRAInterfaceProxy getStore() {
 		return cassandraSbb;
 	}
 

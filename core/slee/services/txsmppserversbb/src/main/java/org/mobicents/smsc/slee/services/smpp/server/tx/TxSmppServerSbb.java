@@ -709,22 +709,35 @@ public abstract class TxSmppServerSbb implements Sbb {
 	}
 
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
-		try {
-			// TODO: we can make this some check will we send this message or not
 
-            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                store.createLiveSms(sms);
-                if (sms.getScheduleDeliveryTime() == null)
-                    store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
-                else
-                    store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
-            } else {
-                store.c2_scheduleMessage(sms);
+        boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
+
+        // TODO ...................... direct launch
+        storeAndForwMode = true;
+        // TODO ...................... direct launch
+        if (!storeAndForwMode) {
+            // TODO ...................... direct launch
+        } else {
+            // store and forward
+            try {
+                // TODO: we can make this some check will we send this message
+                // or not
+
+                sms.setStored(true);
+                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                    store.createLiveSms(sms);
+                    if (sms.getScheduleDeliveryTime() == null)
+                        store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                    else
+                        store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
+                } else {
+                    store.c2_scheduleMessage(sms);
+                }
+            } catch (PersistenceException e) {
+                throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
+                        MAPErrorCode.systemFailure, null, e);
             }
-		} catch (PersistenceException e) {
-			throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
-					MAPErrorCode.systemFailure, null, e);
-		}
+        }
 	}
 }
 

@@ -111,6 +111,8 @@ public class PreparedStatementCollection_C3 {
         sb.append("\", \"");
         sb.append(Schema.COLUMN_SUBMIT_DATE);
         sb.append("\", \"");
+        sb.append(Schema.COLUMN_DELIVERY_DATE);
+        sb.append("\", \"");
 
         sb.append(Schema.COLUMN_SERVICE_TYPE);
         sb.append("\", \"");
@@ -144,7 +146,7 @@ public class PreparedStatementCollection_C3 {
     }
 
     private String getFillUpdateFields2() {
-        int cnt = 32;
+        int cnt = 33;
         StringBuilder sb = new StringBuilder();
         int i2 = 0;
         for (int i1 = 0; i1 < cnt; i1++) {

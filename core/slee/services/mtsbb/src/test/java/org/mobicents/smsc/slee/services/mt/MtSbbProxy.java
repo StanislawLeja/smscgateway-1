@@ -47,6 +47,7 @@ import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
+import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 
 /**
@@ -56,10 +57,10 @@ import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
  */
 public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObject, SbbLocalObjectExt {
 
-	private PersistenceRAInterfaceProxy cassandraSbb;
+	private TT_PersistenceRAInterfaceProxy cassandraSbb;
 	private SriSbbProxy sriSbb;
 
-	public MtSbbProxy(PersistenceRAInterfaceProxy pers) {
+	public MtSbbProxy(TT_PersistenceRAInterfaceProxy pers) {
 		this.cassandraSbb = pers;
 		this.logger = new TraceProxy();
 
@@ -76,7 +77,7 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 	}
 
 	@Override
-	public PersistenceRAInterfaceProxy getStore() {
+	public TT_PersistenceRAInterfaceProxy getStore() {
 		return cassandraSbb;
 	}
 

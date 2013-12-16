@@ -25,6 +25,7 @@ package org.mobicents.smsc.slee.services.alert;
 import static org.testng.Assert.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
@@ -41,8 +42,10 @@ import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.mobicents.protocols.ss7.map.service.sms.AlertServiceCentreRequestImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.cassandra.SmType;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MAPDialogSmsProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
@@ -50,10 +53,13 @@ import org.mobicents.smsc.slee.resources.persistence.MAPServiceSmsProxy;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
+import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
@@ -64,29 +70,33 @@ import org.testng.annotations.Test;
 public class AlertTest {
 
 	private AlertSbbProxy sbb;
-	private PersistenceRAInterfaceProxy pers;
+	private TT_PersistenceRAInterfaceProxy pers;
 	private boolean cassandraDbInited;
 
 	private TargetAddress ta1 = new TargetAddress(1, 1, "5555");
 
 	private Date farDate = new Date(2099, 1, 1);
 
-	@BeforeClass
+	private long procDueSlot;
+    private String procTargetId;
+    private UUID procId;
+
+    @BeforeMethod
 	public void setUpClass() throws Exception {
 		System.out.println("setUpClass");
 
-		this.pers = new PersistenceRAInterfaceProxy();
+		this.pers = new TT_PersistenceRAInterfaceProxy();
 		this.cassandraDbInited = this.pers.testCassandraAccess();
 		if (!this.cassandraDbInited)
 			return;
-        this.pers.start("127.0.0.1", 9042, "TelestaxSMSC");
+        this.pers.start();
 
 		this.sbb = new AlertSbbProxy(this.pers);
 
 		SmscPropertiesManagement.getInstance("Test");
 	}
 
-	@AfterClass
+    @AfterMethod
 	public void tearDownClass() throws Exception {
 		System.out.println("tearDownClass");
 	}
@@ -97,14 +107,17 @@ public class AlertTest {
 		if (!this.cassandraDbInited)
 			return;
 
-		this.clearDatabase();
 		this.prepareDatabase();
 
-		boolean b1 = this.pers.checkSmsSetExists(ta1);
-		assertTrue(b1);
-		SmsSet smsSet = this.pers.obtainSmsSet(ta1);
-		assertEquals(smsSet.getInSystem(), 1);
-		assertEquals(smsSet.getDueDate(), farDate);
+        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        assertNull(smsSetX);
+        Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId);
+        assertEquals(smsX.getSmsSet().getInSystem(), 0);
+//        boolean b1 = this.pers.checkSmsSetExists(ta1);
+//		assertTrue(b1);
+//		SmsSet smsSet = this.pers.obtainSmsSet(ta1);
+//		assertEquals(smsSet.getInSystem(), 1);
+//		assertEquals(smsSet.getDueDate(), farDate);
 
 		Date curDate = new Date();
 		ISDNAddressString msisdn = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "5555");
@@ -117,38 +130,44 @@ public class AlertTest {
 		evt.setMAPDialog(dialog);
 		this.sbb.onAlertServiceCentreRequest(evt, null);
 
-		b1 = this.pers.checkSmsSetExists(ta1);
-		assertTrue(b1);
-		smsSet = this.pers.obtainSmsSet(ta1);
-		assertEquals(smsSet.getInSystem(), 1);
-		this.testDateEq(smsSet.getDueDate(), curDate);
-	}
-
-	private void clearDatabase() throws PersistenceException, IOException {
-
-		// SmsSet smsSet_x1 = new SmsSet();
-		// smsSet_x1.setDestAddr(ta1.getAddr());
-		// smsSet_x1.setDestAddrTon(ta1.getAddrTon());
-		// smsSet_x1.setDestAddrNpi(ta1.getAddrNpi());
-
-		SmsSet smsSet_x1 = this.pers.obtainSmsSet(ta1);
-        this.pers.fetchSchedulableSms(smsSet_x1, false);
-
-		int cnt = smsSet_x1.getSmsCount();
-		for (int i1 = 0; i1 < cnt; i1++) {
-			Sms sms = smsSet_x1.getSms(i1);
-			this.pers.deleteLiveSms(sms.getDbId());
-		}
-		this.pers.deleteSmsSet(smsSet_x1);
+        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        assertNotNull(smsSetX);
+        smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId);
+        assertNull(smsX);
+//		b1 = this.pers.checkSmsSetExists(ta1);
+//		assertTrue(b1);
+//		smsSet = this.pers.obtainSmsSet(ta1);
+//		assertEquals(smsSet.getInSystem(), 1);
+//		this.testDateEq(smsSet.getDueDate(), curDate);
 	}
 
 	private void prepareDatabase() throws PersistenceException {
+        SmsSet smsSet = createEmptySmsSet(ta1);
 
-		SmsSet smsSet_x1 = this.pers.obtainSmsSet(ta1);
-		Sms sms = this.prepareSms(smsSet_x1);
-		this.pers.createLiveSms(sms);
-		this.pers.setNewMessageScheduled(smsSet_x1, farDate);
+        Sms sms = this.prepareSms(smsSet);
+        this.pers.c2_scheduleMessage(sms);
+        procDueSlot = sms.getDueSlot();
+
+        procTargetId = ta1.getTargetId();
+        procId = sms.getDbId();
+
+        
+        
+        
+//		SmsSet smsSet_x1 = this.pers.obtainSmsSet(ta1);
+//		Sms sms = this.prepareSms(smsSet_x1);
+//		this.pers.createLiveSms(sms);
+//		this.pers.setNewMessageScheduled(smsSet_x1, farDate);
 	}
+
+    private SmsSet createEmptySmsSet(TargetAddress ta) {
+        SmsSet smsSet = new SmsSet();
+        smsSet.setDestAddr(ta1.getAddr());
+        smsSet.setDestAddrNpi(ta1.getAddrNpi());
+        smsSet.setDestAddrTon(ta1.getAddrTon());
+        smsSet.setType(SmType.SMS_FOR_SS7);
+        return smsSet;
+    }
 
 	private void testDateEq(Date d1, Date d2) {
 		// creating d3 = d1 + 2 min
@@ -168,6 +187,7 @@ public class AlertTest {
 	private Sms prepareSms(SmsSet smsSet) {
 
 		Sms sms = new Sms();
+		sms.setStored(true);
 		sms.setSmsSet(smsSet);
 
 		sms.setDbId(UUID.randomUUID());
@@ -205,9 +225,9 @@ public class AlertTest {
 
 	private class AlertSbbProxy extends AlertSbb {
 
-		private PersistenceRAInterfaceProxy cassandraSbb;
+		private TT_PersistenceRAInterfaceProxy cassandraSbb;
 
-		public AlertSbbProxy(PersistenceRAInterfaceProxy cassandraSbb) {
+		public AlertSbbProxy(TT_PersistenceRAInterfaceProxy cassandraSbb) {
 			this.cassandraSbb = cassandraSbb;
 			this.logger = new TraceProxy();
 		}

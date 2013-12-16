@@ -24,13 +24,22 @@ package org.mobicents.smsc.slee.resources.persistence;
 
 import static org.testng.Assert.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
+import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
+import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
+import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
+import org.mobicents.protocols.ss7.map.primitives.IMSIImpl;
+import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
+import org.mobicents.protocols.ss7.map.service.sms.LocationInfoWithLMSIImpl;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
+import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
+import org.mobicents.smsc.cassandra.SmType;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.cassandra.TargetAddress;
@@ -339,11 +348,23 @@ public class TT_CassandraTest {
     }
 
     public void archiveMessage(SmsSet smsSet) throws Exception {
-        // ............................
         for (int i1 = 0; i1 < 3; i1++) {
             Sms sms = smsSet.getSms(i1);
+            
+            sms.getSmsSet().setType(SmType.SMS_FOR_SS7);
+            IMSIImpl imsi = new IMSIImpl("12345678900000");
+            sms.getSmsSet().setImsi(imsi);
+            ISDNAddressStringImpl networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "2223334444");
+            LocationInfoWithLMSIImpl locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+            sms.getSmsSet().setLocationInfoWithLMSI(locationInfoWithLMSI);
+            
             sbb.c2_createRecordArchive(sms);
         }
+
+        Sms sms = smsSet.getSms(0);
+        SmsProxy smsx = sbb.obtainArchiveSms(sms.getDueSlot(), sms.getSmsSet().getDestAddr(), sms.getDbId());
+
+        this.checkTestSms(1, smsx.sms, sms.getDbId(), true);
     }
 
     private Sms createTestSms(int num, String number, UUID id) throws Exception {

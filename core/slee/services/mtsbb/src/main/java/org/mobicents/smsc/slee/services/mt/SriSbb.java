@@ -124,6 +124,7 @@ public abstract class SriSbb extends MtCommonSbb {
         if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
             this.startMessageDelivery(sms);
         } else {
+            sms.setDeliveryCount(sms.getDeliveryCount() + 1);
         }
 
 		this.doSetCurrentMsgNum(curMsg);

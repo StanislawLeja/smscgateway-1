@@ -64,17 +64,17 @@ public class MtDatabaseCassandraTest {
 
 	@BeforeClass
 	public void setUpClass() throws Exception {
-		System.out.println("setUpClass");
-
-		this.pers = new PersistenceRAInterfaceProxy();
-		this.cassandraDbInited = this.pers.testCassandraAccess();
-		if (!this.cassandraDbInited)
-			return;
-        this.pers.start("127.0.0.1", 9042, "TelestaxSMSC");
-
-		this.sbb = new MtSbbProxy(this.pers);
-
-		SmscPropertiesManagement.getInstance("Test");
+//		System.out.println("setUpClass");
+//
+//		this.pers = new PersistenceRAInterfaceProxy();
+//		this.cassandraDbInited = this.pers.testCassandraAccess();
+//		if (!this.cassandraDbInited)
+//			return;
+//        this.pers.start("127.0.0.1", 9042, "TelestaxSMSC");
+//
+//		this.sbb = new MtSbbProxy(this.pers);
+//
+//		SmscPropertiesManagement.getInstance("Test");
 	}
 
 	@AfterClass

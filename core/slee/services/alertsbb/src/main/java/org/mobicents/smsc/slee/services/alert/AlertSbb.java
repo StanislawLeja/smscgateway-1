@@ -263,11 +263,17 @@ public abstract class AlertSbb implements Sbb {
                                         ArrayList<SmsSet> lstS = new ArrayList<SmsSet>();
                                         lstS.add(smsSet);
                                         ArrayList<SmsSet> lst = pers.c2_sortRecordList(lstS);
+                                        if (lst.size() > 0) {
+                                            smsSet = lst.get(0);
+                                            for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
+                                                Sms sms = smsSet.getSms(i1);
 
-                                        for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
-                                            Sms sms = smsSet.getSms(i1);
-                                            pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS);
-                                            pers.c2_scheduleMessage(sms);
+                                                // TODO: issuing direct Activity here !!!
+//                                                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS);
+                                                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                                                pers.c2_scheduleMessage(sms, pers.c2_getStoringDueSlot());
+                                                // TODO: issuing direct Activity here !!!
+                                            }
                                         }
                                     }
                                 }

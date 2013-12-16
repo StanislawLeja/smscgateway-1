@@ -74,13 +74,13 @@ public class DBOperations_C2 {
     // length of the due_slot in milliseconds
     private int slotMSecondsTimeArea = 1000;
     // how many days one table carries (if value is <1 or >30 this means one month)
-    private int dataTableDaysTimeArea = 10;
+    private int dataTableDaysTimeArea = 1;
     // the date from which due_slots are calculated (01.01.2000) 
     private Date slotOrigDate = new Date(100, 1, 1);
     // due_slot count for rerevising after SMSC restart (3 min default)
     private int dueSlotReviseAfterRestart = 360;
-    // due_slot count for forward storing after current processing due_slot (30 sec)
-    private int dueSlotForwardStoring = 60;
+    // due_slot count for forward storing after current processing due_slot (30 sec if dataTableDaysTimeArea==1 sec)
+    private int dueSlotForwardStoring = 30;
     // timeout of finishing of writing on new income messages (in dueSlotWritingArray) (5 sec)
     private int millisecDueSlotWritingTimeout = 5000;
 
@@ -334,7 +334,11 @@ public class DBOperations_C2 {
             if (this.dataTableDaysTimeArea < 1 || this.dataTableDaysTimeArea >= 30) {
             } else {
                 int dy = dt.getDate();
-                int fNum = dy / this.dataTableDaysTimeArea + 1;
+                int fNum;
+                if (this.dataTableDaysTimeArea == 1)
+                    fNum = dy / this.dataTableDaysTimeArea;
+                else
+                    fNum = dy / this.dataTableDaysTimeArea + 1;
                 sb.append("_");
                 if (fNum >= 10)
                     sb.append(fNum);
@@ -366,12 +370,12 @@ public class DBOperations_C2 {
         String s1 = this.getTableName(dt);
         String s2 = this.getTableName(dtt);
         PreparedStatementCollection_C3[] res;
-        if (s2.equals(s1)) {
-            res = new PreparedStatementCollection_C3[1];
+        if (!s2.equals(s1)) {
+            res = new PreparedStatementCollection_C3[2];
             res[0] = this.getStatementCollection(dtt);
             res[1] = this.getStatementCollection(dt);
         } else {
-            res = new PreparedStatementCollection_C3[2];
+            res = new PreparedStatementCollection_C3[1];
             res[0] = this.getStatementCollection(dt);
         }
         savedPsc = res;
@@ -416,28 +420,21 @@ public class DBOperations_C2 {
     }
 
     public void c2_scheduleMessage(Sms sms) throws PersistenceException {
-        long dueSlot = 0;;
+        long dueSlot = 0;
         PreparedStatementCollection_C3[] lstPsc = this.getPscList();
         boolean done = false;
         while (!done) {
-            TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(sms.getSmsSet()));
-            try {
-                synchronized (lock) {
-                    for (PreparedStatementCollection_C3 psc : lstPsc) {
-                        dueSlot = this.c2_getDueSlotForTargetId(psc, sms.getSmsSet().getTargetId());
-                        if (dueSlot != 0)
-                            break;
-                    }
-
-                    if (dueSlot == 0 || dueSlot <= this.c2_getProcessingDueSlot()) {
-                        dueSlot = this.c2_getStoringDueSlot();
-                        this.c2_updateDueSlotForTargetId(sms.getSmsSet().getTargetId(), dueSlot);
-                    }
-                    sms.setDueSlot(dueSlot);
-                }
-            } finally {
-                SmsSetCashe.getInstance().removeSmsSet(lock);
+            for (PreparedStatementCollection_C3 psc : lstPsc) {
+                dueSlot = this.c2_getDueSlotForTargetId(psc, sms.getSmsSet().getTargetId());
+                if (dueSlot != 0)
+                    break;
             }
+
+            if (dueSlot == 0 || dueSlot <= this.c2_getProcessingDueSlot()) {
+                dueSlot = this.c2_getStoringDueSlot();
+                this.c2_updateDueSlotForTargetId(sms.getSmsSet().getTargetId(), dueSlot);
+            }
+            sms.setDueSlot(dueSlot);
 
             done = this.c2_scheduleMessage(sms, dueSlot);
         }
@@ -455,6 +452,7 @@ public class DBOperations_C2 {
         if (!sms.getStored())
             return true;
 
+        sms.setDueSlot(dueSlot);
         Date dt = this.c2_getTimeForDueSlot(dueSlot);
 
         // special case for ScheduleDeliveryTime
@@ -464,7 +462,7 @@ public class DBOperations_C2 {
         }
 
         // checking validity date
-        if (sms.getValidityPeriod() != null || sms.getValidityPeriod().before(dt))
+        if (sms.getValidityPeriod() != null && sms.getValidityPeriod().before(dt))
             return true;
 
         this.c2_registerDueSlotWriting(dueSlot);
@@ -551,6 +549,9 @@ public class DBOperations_C2 {
         if (sms.getSubmitDate() != null) {
             boundStatement.setDate(Schema.COLUMN_SUBMIT_DATE, sms.getSubmitDate());
         }
+        if (sms.getDeliverDate() != null) {
+            boundStatement.setDate(Schema.COLUMN_DELIVERY_DATE, sms.getDeliverDate());
+        }
         if (sms.getServiceType() != null) {
             boundStatement.setString(Schema.COLUMN_SERVICE_TYPE, sms.getServiceType());
         }
@@ -602,7 +603,7 @@ public class DBOperations_C2 {
                 boundStatement.setInt(Schema.COLUMN_NNN_AN, sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber().getAddressNature().getIndicator());
                 boundStatement.setInt(Schema.COLUMN_NNN_NP, sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber().getNumberingPlan().getIndicator());
             }
-            if (sms.getSmsSet() != null) {
+            if (sms.getSmsSet().getType() != null) {
                 boundStatement.setInt(Schema.COLUMN_SM_TYPE, sms.getSmsSet().getType().getCode());
             }
         }
