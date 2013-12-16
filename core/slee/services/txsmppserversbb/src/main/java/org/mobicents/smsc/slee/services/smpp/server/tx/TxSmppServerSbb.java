@@ -126,7 +126,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			try {
 				synchronized (lock) {
 					sms = this.createSmsEvent(event, esme, ta, store);
-					this.processSms(sms, store);
+                    this.processSms(sms, store);
 				}
 			} finally {
 				store.releaseSynchroObject(lock);
@@ -717,6 +717,7 @@ public abstract class TxSmppServerSbb implements Sbb {
         // TODO ...................... direct launch
         if (!storeAndForwMode) {
             // TODO ...................... direct launch
+
         } else {
             // store and forward
             try {
@@ -731,6 +732,7 @@ public abstract class TxSmppServerSbb implements Sbb {
                     else
                         store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
                 } else {
+                    sms.setStored(true);
                     store.c2_scheduleMessage(sms);
                 }
             } catch (PersistenceException e) {

@@ -370,10 +370,10 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
 	@Override
 	public void raActive() {
 
-        dbOperations_C1 = DBOperations_C1.getInstance();
-		if (!this.dbOperations_C1.isStarted()) {
-			throw new RuntimeException("DBOperations_1 not started yet!");
-		}
+//        dbOperations_C1 = DBOperations_C1.getInstance();
+//		if (!this.dbOperations_C1.isStarted()) {
+//			throw new RuntimeException("DBOperations_1 not started yet!");
+//		}
 
 		dbOperations_C2 = DBOperations_C2.getInstance();
         if (!this.dbOperations_C2.isStarted()) {

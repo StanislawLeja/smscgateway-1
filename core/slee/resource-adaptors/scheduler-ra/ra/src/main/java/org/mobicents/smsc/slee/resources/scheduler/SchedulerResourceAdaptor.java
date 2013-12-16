@@ -163,10 +163,10 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 		SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
-        this.dbOperations_C1 = DBOperations_C1.getInstance();
-        if (!this.dbOperations_C1.isStarted()) {
-            throw new RuntimeException("DBOperations_1 not started yet!");
-        }
+//        this.dbOperations_C1 = DBOperations_C1.getInstance();
+//        if (!this.dbOperations_C1.isStarted()) {
+//            throw new RuntimeException("DBOperations_1 not started yet!");
+//        }
 
         this.dbOperations_C2 = DBOperations_C2.getInstance();
         if (!this.dbOperations_C2.isStarted()) {
