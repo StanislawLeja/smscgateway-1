@@ -254,10 +254,10 @@ public abstract class AlertSbb implements Sbb {
                                 break;
                         }
 
-                        if (dueSlot != 0 && dueSlot > pers.c2_getProcessingDueSlot()) {
+                        if (dueSlot != 0 && dueSlot > pers.c2_getCurrentDueSlot()) {
                             pers.c2_registerDueSlotWriting(dueSlot);
                             try {
-                                if (dueSlot != 0 && dueSlot > pers.c2_getProcessingDueSlot()) {
+                                if (dueSlot != 0 && dueSlot > pers.c2_getCurrentDueSlot()) {
                                     SmsSet smsSet = pers.c2_getRecordListForTargeId(dueSlot, smsSet0.getTargetId());
                                     if (smsSet != null) {
                                         ArrayList<SmsSet> lstS = new ArrayList<SmsSet>();
@@ -271,7 +271,7 @@ public abstract class AlertSbb implements Sbb {
                                                 // TODO: issuing direct Activity here !!!
 //                                                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS);
                                                 pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-                                                pers.c2_scheduleMessage(sms, pers.c2_getStoringDueSlot());
+                                                pers.c2_scheduleMessage(sms, pers.c2_getDueSlotForNewSms());
                                                 // TODO: issuing direct Activity here !!!
                                             }
                                         }

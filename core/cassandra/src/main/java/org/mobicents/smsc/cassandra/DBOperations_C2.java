@@ -167,7 +167,7 @@ public class DBOperations_C2 {
             if (currentDueSlot == 0) {
                 // not yet set
                 long l1 = this.c2_getDueSlotForTime(new Date());
-                this.c2_setProcessingDueSlot(l1);
+                this.c2_setCurrentDueSlot(l1);
             }
         } catch (Exception e1) {
             String msg = "Failed reading a currentDueSlot !";
@@ -212,14 +212,14 @@ public class DBOperations_C2 {
     /**
      * Return due_slop that SMSC is processing now
      */
-    public long c2_getProcessingDueSlot() {
+    public long c2_getCurrentDueSlot() {
         return currentDueSlot;
     }
 
     /**
      * Set a new due_slop that SMSC is processing now and store it to the database
      */
-    public void c2_setProcessingDueSlot(long newDueSlot) throws PersistenceException {
+    public void c2_setCurrentDueSlot(long newDueSlot) throws PersistenceException {
         currentDueSlot = newDueSlot;
 
         try {
@@ -243,7 +243,7 @@ public class DBOperations_C2 {
     /**
      * Return due_slop for storing next incoming to SMSC message
      */
-    public long c2_getStoringDueSlot() {
+    public long c2_getDueSlotForNewSms() {
         return c2_getIntimeDueSlot() + dueSlotForwardStoring;
         // TODO: we can add here code incrementing of due_slot if current
         // due_slot is overloaded
@@ -430,8 +430,8 @@ public class DBOperations_C2 {
                     break;
             }
 
-            if (dueSlot == 0 || dueSlot <= this.c2_getProcessingDueSlot()) {
-                dueSlot = this.c2_getStoringDueSlot();
+            if (dueSlot == 0 || dueSlot <= this.c2_getCurrentDueSlot()) {
+                dueSlot = this.c2_getDueSlotForNewSms();
                 this.c2_updateDueSlotForTargetId(sms.getSmsSet().getTargetId(), dueSlot);
             }
             sms.setDueSlot(dueSlot);
@@ -467,7 +467,7 @@ public class DBOperations_C2 {
 
         this.c2_registerDueSlotWriting(dueSlot);
         try {
-            if (dueSlot <= this.c2_getProcessingDueSlot()) {
+            if (dueSlot <= this.c2_getCurrentDueSlot()) {
                 return false;
             } else {
                 this.c2_createRecordCurrent(sms);

@@ -332,8 +332,8 @@ public class StressTool3 {
                             try {
                                 synchronized (lock) {
                                     dueSlot = dbOperations.c2_getDueSlotForTargetId(psc, sms.getSmsSet().getTargetId());
-                                    if (dueSlot == 0 || dueSlot <= dbOperations.c2_getProcessingDueSlot()) {
-                                        dueSlot = dbOperations.c2_getStoringDueSlot();
+                                    if (dueSlot == 0 || dueSlot <= dbOperations.c2_getCurrentDueSlot()) {
+                                        dueSlot = dbOperations.c2_getDueSlotForNewSms();
                                         dbOperations.c2_updateDueSlotForTargetId(sms.getSmsSet().getTargetId(), dueSlot);
                                     }
                                     sms.setDueSlot(dueSlot);
@@ -412,10 +412,10 @@ public class StressTool3 {
                         try {
                             synchronized (lock) {
                                 dueSlot = dbOperations.c2_getDueSlotForTargetId(psc, smsSet0.getTargetId());
-                                if (dueSlot != 0 && dueSlot > dbOperations.c2_getProcessingDueSlot()) {
+                                if (dueSlot != 0 && dueSlot > dbOperations.c2_getCurrentDueSlot()) {
                                     dbOperations.c2_registerDueSlotWriting(dueSlot);
                                     try {
-                                        if (dueSlot != 0 && dueSlot > dbOperations.c2_getProcessingDueSlot()) {
+                                        if (dueSlot != 0 && dueSlot > dbOperations.c2_getCurrentDueSlot()) {
                                             SmsSet smsSet = dbOperations.c2_getRecordListForTargeId(dueSlot, smsSet0.getTargetId());
                                             if (smsSet != null) {
                                                 ArrayList<SmsSet> lstS = new ArrayList<SmsSet>();
@@ -492,7 +492,7 @@ public class StressTool3 {
             try {
                 while (!toTernminate) {
                     try {
-                        long processedDueSlot = dbOperations.c2_getProcessingDueSlot();
+                        long processedDueSlot = dbOperations.c2_getCurrentDueSlot();
                         long possibleDueSlot = dbOperations.c2_getIntimeDueSlot();
                         if (processedDueSlot >= possibleDueSlot || queue.size() > 10000) {
                             Thread.sleep(10);
@@ -513,7 +513,7 @@ public class StressTool3 {
                                 }
                             }
 
-                            dbOperations.c2_setProcessingDueSlot(processedDueSlot);
+                            dbOperations.c2_setCurrentDueSlot(processedDueSlot);
                         }
                     } catch (Throwable e) {
                         logger.error("Exception in task X3: " + e.toString(), e);

@@ -15,3 +15,10 @@ This readme is about setting up DB for persistence mechanism.
     Execute:
         cd $CASSANDRA_HOME
         ./bin/cqlsh -f  $SMSC_DIR/cassandra/cassadra.cql
+
+
+
+
+Query Analysis
+
+

@@ -224,13 +224,13 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
     }
 
     @Override
-    public long c2_getProcessingDueSlot() {
+    public long c2_getCurrentDueSlot() {
         // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
-    public void c2_setProcessingDueSlot(long newDueSlot) throws PersistenceException {
+    public void c2_setCurrentDueSlot(long newDueSlot) throws PersistenceException {
         // TODO Auto-generated method stub
         
     }
@@ -242,7 +242,7 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
     }
 
     @Override
-    public long c2_getStoringDueSlot() {
+    public long c2_getDueSlotForNewSms() {
         // TODO Auto-generated method stub
         return 0;
     }

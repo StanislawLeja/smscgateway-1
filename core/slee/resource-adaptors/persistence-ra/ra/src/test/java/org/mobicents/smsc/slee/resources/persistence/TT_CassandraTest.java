@@ -110,10 +110,10 @@ public class TT_CassandraTest {
         Date dt = new Date();
         long l0 = sbb.c2_getDueSlotForTime(dt);
 
-        long l1 = sbb.c2_getProcessingDueSlot();
+        long l1 = sbb.c2_getCurrentDueSlot();
         long l2 = 222999;
-        sbb.c2_setProcessingDueSlot(l2);
-        long l3 = sbb.c2_getProcessingDueSlot();
+        sbb.c2_setCurrentDueSlot(l2);
+        long l3 = sbb.c2_getCurrentDueSlot();
 
         if (l1 > l0 || l1 < l0 - 100)
             fail("l1 value is bad");
@@ -122,7 +122,7 @@ public class TT_CassandraTest {
         sbb.stop();
         sbb.start();
 
-        long l4 = sbb.c2_getProcessingDueSlot();
+        long l4 = sbb.c2_getCurrentDueSlot();
         assertEquals(l2, l4);
     }
 
@@ -198,7 +198,7 @@ public class TT_CassandraTest {
         assertEquals(l1, 0);
         assertEquals(l2, 0);
 
-        long newDueSlot = sbb.c2_getStoringDueSlot();
+        long newDueSlot = sbb.c2_getDueSlotForNewSms();
         sbb.c2_updateDueSlotForTargetId(targetId, newDueSlot);
 
         l1 = sbb.c2_getDueSlotForTargetId(psc, targetId);
@@ -237,8 +237,8 @@ public class TT_CassandraTest {
                 Sms sms_a3 = this.createTestSms(3, ta1.getAddr(), id3);
 
                 dueSlot = this.sbb.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
-                if (dueSlot == 0 || dueSlot <= sbb.c2_getProcessingDueSlot()) {
-                    dueSlot = sbb.c2_getStoringDueSlot();
+                if (dueSlot == 0 || dueSlot <= sbb.c2_getCurrentDueSlot()) {
+                    dueSlot = sbb.c2_getDueSlotForNewSms();
                     sbb.c2_updateDueSlotForTargetId(ta1.getTargetId(), dueSlot);
                 }
                 sms_a1.setDueSlot(dueSlot);

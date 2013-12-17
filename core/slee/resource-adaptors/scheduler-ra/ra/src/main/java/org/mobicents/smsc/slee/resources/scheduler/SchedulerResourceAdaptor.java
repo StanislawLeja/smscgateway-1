@@ -414,7 +414,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
             List<SmsSet> res = dbOperations_C1.fetchSchedulableSmsSets(maxRecordCount, this.tracer);
             return res;
         } else {
-            long processedDueSlot = dbOperations_C2.c2_getProcessingDueSlot();
+            long processedDueSlot = dbOperations_C2.c2_getCurrentDueSlot();
             long possibleDueSlot = dbOperations_C2.c2_getIntimeDueSlot();
             if (processedDueSlot >= possibleDueSlot || maxRecordCount < smscPropertiesManagement.getFetchMaxRows()) {
                 return new ArrayList<SmsSet>();
@@ -427,7 +427,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
             ArrayList<SmsSet> lstS = dbOperations_C2.c2_getRecordList(processedDueSlot);
             ArrayList<SmsSet> lst = dbOperations_C2.c2_sortRecordList(lstS);
 
-            dbOperations_C2.c2_setProcessingDueSlot(processedDueSlot);
+            dbOperations_C2.c2_setCurrentDueSlot(processedDueSlot);
             return lst;
         }
 	}

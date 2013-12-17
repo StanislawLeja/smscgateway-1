@@ -204,13 +204,13 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             }
 
             @Override
-            public long c2_getProcessingDueSlot() {
-                return dbOperations_C2.c2_getProcessingDueSlot();
+            public long c2_getCurrentDueSlot() {
+                return dbOperations_C2.c2_getCurrentDueSlot();
             }
 
             @Override
-            public void c2_setProcessingDueSlot(long newDueSlot) throws PersistenceException {
-                dbOperations_C2.c2_setProcessingDueSlot(newDueSlot);
+            public void c2_setCurrentDueSlot(long newDueSlot) throws PersistenceException {
+                dbOperations_C2.c2_setCurrentDueSlot(newDueSlot);
             }
 
             @Override
@@ -219,8 +219,8 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             }
 
             @Override
-            public long c2_getStoringDueSlot() {
-                return dbOperations_C2.c2_getStoringDueSlot();
+            public long c2_getDueSlotForNewSms() {
+                return dbOperations_C2.c2_getDueSlotForNewSms();
             }
 
             @Override

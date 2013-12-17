@@ -262,12 +262,12 @@ public interface PersistenceRAInterface {
     /**
      * Return due_slop that SMSC is processing now
      */
-    long c2_getProcessingDueSlot();
+    long c2_getCurrentDueSlot();
 
     /**
      * Set a new due_slop that SMSC is processing now and store it to the database
      */
-    void c2_setProcessingDueSlot(long newDueSlot) throws PersistenceException;
+    void c2_setCurrentDueSlot(long newDueSlot) throws PersistenceException;
 
     /**
      * Return due_slop for current time
@@ -277,7 +277,7 @@ public interface PersistenceRAInterface {
     /**
      * Return due_slop for storing next incoming to SMSC message
      */
-    long c2_getStoringDueSlot();
+    long c2_getDueSlotForNewSms();
 
     /**
      * Registering that thread starts writing to this due_slot

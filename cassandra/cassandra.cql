@@ -1,7 +1,7 @@
-CREATE KEYSPACE "saturn"
+CREATE KEYSPACE "TelestaxSMSC"
          WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1};
 
-USE "saturn";
+USE "TelestaxSMSC";
 
 CREATE TABLE "LIVE" (
 	"TARGET_ID" ascii PRIMARY KEY,
