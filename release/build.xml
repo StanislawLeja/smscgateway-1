@@ -9,6 +9,8 @@
 	<property name="checkout.telscale-slee.dir" value="${checkout.dir}/telscale-slee" />
 	<property name="checkout.telscale-jss7.dir" value="${checkout.dir}/telscale-jss7" />
 	<property name="checkout.telscale-smsc.dir" value="${checkout.dir}/telscale-smsc" />
+	<property name="checkout.telscale-jss7-build.dir" value="${checkout.dir}/telscale-jss7-build" />
+	<property name="checkout.telscale-slee.jss7-build.dir" value="${checkout.dir}/telscale-slee.jss7-build" />
     <property name="checkout.map.dir" value="${base.dir}/checkout/map" />
     <property name="release.map.dir" value="${base.dir}/checkout/map-release" />
 	<!--property name="telscale.smsc.dir" value="${base.dir}/.." /-->
@@ -47,14 +49,57 @@
 		</classpath>
 	</taskdef>
 	
-	<target name="release" depends="clean,get-deps,extract-deps,clean-up-telscale-slee,build-map-ra,checkout-smsc-persistence,build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip,bundle-documentation" />
-	<target name="release-no-clean" depends="get-deps,extract-deps,clean-up-telscale-slee, build-map-ra,checkout-smsc-persistence,build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip,bundle-documentation" />
+	<target name="clean">
+	    <delete dir="${release.dir}"/>
+	    <delete dir="${base.dir}/checkout"/>
+	</target>
 	
+	
+	<target name="release" depends="get-deps,extract-deps,clean-up-telscale-slee,build-map-ra,checkout-smsc-persistence,build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip,bundle-documentation" />
+
+	<target name="release-with-jss7-and-ras" depends="build-with-jss7-and-ras.ss7, build-with-jss7-and-ras.ras, release"/>
+	
+	<target name="build-with-jss7-and-ras.ss7">
+        <echo>Clone TelScale jss7</echo>
+        <exec failonerror="true" executable="git">
+            <arg value="clone" />
+            <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jss7.git" />
+            <arg value="-b" />
+            <arg value="master" />
+            <arg value="${checkout.telscale-jss7-build.dir}" />
+        </exec>
+		
+        <echo>Building TelScale jss7 from sources</echo>
+		
+		<ant antfile="${checkout.telscale-jss7-build.dir}/release/build.xml" target="build-asn"/>
+		<ant antfile="${checkout.telscale-jss7-build.dir}/release/build.xml" target="build-sctp"/>
+		<ant antfile="${checkout.telscale-jss7-build.dir}/release/build.xml" target="build-upstream-jss7"/>
+		<ant antfile="${checkout.telscale-jss7-build.dir}/release/build.xml" target="build-jss7-addon"/>
+	</target>
+	
+	<target name="build-with-jss7-and-ras.ras">		
+        <echo>Clone TelScale JainSlee.jss7 (JSS7 RA's)</echo>
+        <exec failonerror="true" executable="git">
+            <arg value="clone" />
+            <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jain-slee.ss7.git" />
+            <arg value="-b" />
+            <arg value="ts1" />
+            <arg value="${checkout.telscale-slee.jss7-build.dir}" />
+        </exec>
+		
+        <echo>Building JainSlee.jss7 (JSS7 RA's) from sources</echo>
+		
+        <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.telscale-slee.jss7-build.dir}">
+                <arg line="clean install -Prelease -Dmaven.test.skip=true" />
+        </exec>
+	</target>
+		
     <target name="deploy">
     	<ant antfile="${ant.file.telscale.smscgw.release}" target="release">
     		<property name="release.build.goals" value="${release.ts.deploy.goals}" />
     	</ant>
     </target>
+	
 	
 	
 	<!--GET Map & Telscale-Slee & Telscale-jss7 - downloads-->
@@ -403,9 +448,5 @@
     </target>
 	
 	
-	<target name="clean">
-	    <delete dir="${release.dir}"/>
-	    <delete dir="${base.dir}/checkout"/>
-	</target>
 	
 </project>
