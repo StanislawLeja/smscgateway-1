@@ -65,6 +65,10 @@ public class PreparedStatementCollection_C3 {
         }
     }
 
+    public String getTName() {
+        return tName;
+    }
+
     private String getFillUpdateFields() {
         StringBuilder sb = new StringBuilder();
 

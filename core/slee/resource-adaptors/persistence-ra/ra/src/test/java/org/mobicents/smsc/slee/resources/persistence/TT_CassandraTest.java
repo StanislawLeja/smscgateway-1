@@ -24,20 +24,17 @@ package org.mobicents.smsc.slee.resources.persistence;
 
 import static org.testng.Assert.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
-import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
 import org.mobicents.protocols.ss7.map.primitives.IMSIImpl;
 import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.mobicents.protocols.ss7.map.service.sms.LocationInfoWithLMSIImpl;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
-import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.SmType;
 import org.mobicents.smsc.cassandra.Sms;
@@ -63,6 +60,7 @@ public class TT_CassandraTest {
     private UUID id2 = UUID.fromString("be26d2e9-1ba0-490c-bd5b-f04848127220");
     private UUID id3 = UUID.fromString("8bf7279f-3d4a-4494-8acd-cb9572c7ab33");
     private UUID id4 = UUID.fromString("c3bd98c2-355d-4572-8915-c6d0c767cae1");
+    private UUID id5 = UUID.fromString("59e815dc-49ad-4539-8cff-beb710a7de04");
 
     private TargetAddress ta1 = new TargetAddress(5, 1, "1111");
     private TargetAddress ta2 = new TargetAddress(5, 1, "1112");
@@ -123,7 +121,7 @@ public class TT_CassandraTest {
         sbb.start();
 
         long l4 = sbb.c2_getCurrentDueSlot();
-        assertEquals(l2, l4);
+        assertEquals(l2, l4 + 60);
     }
 
     @Test(groups = { "cassandra" })
@@ -208,6 +206,79 @@ public class TT_CassandraTest {
     }
 
     @Test(groups = { "cassandra" })
+    public void testingDueSlotForTargetId2() throws Exception {
+
+        long dueSlotLen = sbb.getSlotMSecondsTimeArea();
+        
+        if (!this.cassandraDbInited)
+            return;
+
+        Date dt = new Date();
+        String targetId = ta1.getTargetId();
+        Sms sms = this.createTestSms(1, ta1.getAddr(), id1);
+        sms.setStored(true);
+        sms.setValidityPeriod(null);
+
+        long l1 = sbb.c2_getDueSlotForTargetId(targetId);
+        assertEquals(l1, 0);
+
+        // 1 - create with good date
+        sbb.c2_scheduleMessage(sms);
+        long newDueSlot = sms.getDueSlot();
+        boolean b1 = sbb.c2_scheduleMessage(sms, newDueSlot);
+        assertTrue(b1);
+
+        l1 = sbb.c2_getDueSlotForTargetId(targetId);
+        assertEquals(l1, newDueSlot);
+        assertEquals(sms.getDueSlot(), newDueSlot);
+
+        // 2 - update this good date
+        sbb.c2_scheduleMessage(sms);
+        assertEquals(sms.getDueSlot(), newDueSlot);
+        b1 = sbb.c2_scheduleMessage(sms, newDueSlot);
+        assertTrue(b1);
+        assertEquals(sms.getDueSlot(), newDueSlot);
+
+        l1 = sbb.c2_getDueSlotForTargetId(targetId);
+        assertEquals(l1, newDueSlot);
+
+        // 3 - date is obsolete
+        long newCurSlot = newDueSlot + 10;
+        sbb.c2_setCurrentDueSlot(newCurSlot);
+
+        l1 = sbb.c2_getDueSlotForTargetId(targetId);
+        assertEquals(l1, newDueSlot);
+
+        b1 = sbb.c2_scheduleMessage(sms, newDueSlot);
+        assertFalse(b1);
+        sbb.c2_scheduleMessage(sms);
+        long newDueSlot2 = sms.getDueSlot();
+        b1 = sbb.c2_scheduleMessage(sms, newDueSlot2);
+//        assertTrue(b1);
+
+        l1 = sbb.c2_getDueSlotForTargetId(targetId);
+        assertEquals(l1, newDueSlot2);
+
+        // 4 - new date is in a new table
+        long newCurSlot2 = newCurSlot + 60 * 60 * 24 * 1000 / dueSlotLen;
+        sbb.c2_setCurrentDueSlot(newCurSlot2);
+
+        l1 = sbb.c2_getDueSlotForTargetId(targetId);
+        assertEquals(l1, newDueSlot2);
+
+        b1 = sbb.c2_scheduleMessage(sms, newDueSlot2);
+        assertFalse(b1);
+        long newDueSlot3 = newCurSlot2 + 10;
+        b1 = sbb.c2_scheduleMessage(sms, newDueSlot3);
+//        assertTrue(b1);
+
+        sbb.c2_updateDueSlotForTargetId_WithTableCleaning(targetId, newDueSlot3);
+        
+        l1 = sbb.c2_getDueSlotForTargetId(targetId);
+        assertEquals(l1, newDueSlot3);
+    }
+
+    @Test(groups = { "cassandra" })
     public void testingLifeCycle() throws Exception {
 
         if (!this.cassandraDbInited)
@@ -217,9 +288,13 @@ public class TT_CassandraTest {
 
         this.readAlertMessage();
 
-        SmsSet smsSet = this.readDueSlotMessage(dueSlot);
+        SmsSet smsSet = this.readDueSlotMessage(dueSlot, 1);
 
         archiveMessage(smsSet);
+
+        this.addingNewMessages2(dueSlot + 1);
+
+        smsSet = this.readDueSlotMessage(dueSlot + 1, 2);
 
     }
 
@@ -227,7 +302,7 @@ public class TT_CassandraTest {
         Date dt = new Date();
         PreparedStatementCollection_C3 psc = sbb.getStatementCollection(dt);
 
-        // adding two messages for "1111"
+        // adding 3 messages for "1111"
         TargetAddress lock = this.sbb.obtainSynchroObject(ta1);
         long dueSlot;
         try {
@@ -281,6 +356,30 @@ public class TT_CassandraTest {
         return dueSlot;
     }
 
+    public void addingNewMessages2(long dueSlot) throws Exception {
+        Date dt = new Date();
+        PreparedStatementCollection_C3 psc = sbb.getStatementCollection(dt);
+
+        // adding an extra messages for "1111"
+        TargetAddress lock = this.sbb.obtainSynchroObject(ta1);
+        try {
+            synchronized (lock) {
+                Sms sms_a5 = this.createTestSms(5, ta1.getAddr(), id5);
+
+                sms_a5.setDueSlot(dueSlot);
+
+                sbb.c2_registerDueSlotWriting(dueSlot);
+                try {
+                    sbb.c2_createRecordCurrent(sms_a5);
+                } finally {
+                    sbb.c2_unregisterDueSlotWriting(dueSlot);
+                }
+            }
+        } finally {
+            this.sbb.obtainSynchroObject(lock);
+        }
+    }
+
     public void readAlertMessage() throws Exception {
         Date dt = new Date();
         PreparedStatementCollection_C3 psc = sbb.getStatementCollection(dt);
@@ -298,6 +397,9 @@ public class TT_CassandraTest {
                 SmsSet smsSet;
                 try {
                     smsSet = sbb.c2_getRecordListForTargeId(dueSlot, ta2.getTargetId());
+                    ArrayList<SmsSet> lst0 = new ArrayList<SmsSet>();
+                    lst0.add(smsSet);
+                    ArrayList<SmsSet> lst = sbb.c2_sortRecordList(lst0);
                 } finally {
                     sbb.c2_unregisterDueSlotWriting(dueSlot);
                 }
@@ -313,7 +415,7 @@ public class TT_CassandraTest {
         }
     }
 
-    public SmsSet readDueSlotMessage(long dueSlot) throws Exception {
+    public SmsSet readDueSlotMessage(long dueSlot, int opt) throws Exception {
         // reading dueSlot
         TargetAddress lock = this.sbb.obtainSynchroObject(ta2);
         try {
@@ -329,16 +431,34 @@ public class TT_CassandraTest {
 
                 assertEquals(lst.size(), 1);
                 SmsSet smsSet = lst.get(0);
-                assertEquals(smsSet.getSmsCount(), 3);
-                Sms sms1 = smsSet.getSms(0);
-                Sms sms2 = smsSet.getSms(1);
-                Sms sms3 = smsSet.getSms(2);
-                assertEquals(sms1.getDueSlot(), dueSlot);
-                assertEquals(sms2.getDueSlot(), dueSlot);
-                assertEquals(sms3.getDueSlot(), dueSlot);
-                this.checkTestSms(1, sms1, id1, false);
-                this.checkTestSms(2, sms2, id2, false);
-                this.checkTestSms(3, sms3, id3, false);
+                if (opt == 1) {
+                    assertEquals(smsSet.getSmsCount(), 3);
+
+                    Sms sms1 = smsSet.getSms(0);
+                    Sms sms2 = smsSet.getSms(1);
+                    Sms sms3 = smsSet.getSms(2);
+                    assertEquals(sms1.getDueSlot(), dueSlot);
+                    assertEquals(sms2.getDueSlot(), dueSlot);
+                    assertEquals(sms3.getDueSlot(), dueSlot);
+                    this.checkTestSms(1, sms1, id1, false);
+                    this.checkTestSms(2, sms2, id2, false);
+                    this.checkTestSms(3, sms3, id3, false);
+                } else {
+                    assertEquals(smsSet.getSmsCount(), 4);
+
+                    Sms sms1 = smsSet.getSms(0);
+                    Sms sms2 = smsSet.getSms(1);
+                    Sms sms3 = smsSet.getSms(2);
+                    assertEquals(sms1.getDueSlot(), dueSlot - 1);
+                    assertEquals(sms2.getDueSlot(), dueSlot - 1);
+                    assertEquals(sms3.getDueSlot(), dueSlot - 1);
+                    this.checkTestSms(1, sms1, id1, false);
+                    this.checkTestSms(2, sms2, id2, false);
+                    this.checkTestSms(3, sms3, id3, false);
+                    Sms sms5 = smsSet.getSms(3);
+                    assertEquals(sms5.getDueSlot(), dueSlot);
+                    this.checkTestSms(5, sms5, id5, false);
+                }
 
                 return smsSet;
             }
@@ -412,12 +532,18 @@ public class TT_CassandraTest {
         tlv = new Tlv((short) 6, new byte[] { (byte) (6 + num), 7, 8 });
         sms.getTlvSet().addOptionalParameter(tlv);
 
+        smsSet.setDueDelay(510);
+        sms.setDeliveryCount(9);
+
         return sms;
     }
 
     private void checkTestSms(int num, Sms sms, UUID id, boolean isArchive) {
 
         assertTrue(sms.getDbId().equals(id));
+
+        assertEquals(sms.getSmsSet().getDueDelay(), 510);
+        assertEquals(sms.getDeliveryCount(), 9);
 
         assertEquals(sms.getSourceAddr(), "11112_" + num);
         assertEquals(sms.getSourceAddrTon(), 14 + num);

@@ -64,9 +64,9 @@ import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
@@ -246,13 +246,14 @@ public abstract class AlertSbb implements Sbb {
                         smsSet0.setDestAddr(addr);
                         smsSet0.setDestAddrNpi(addrNpi);
                         smsSet0.setDestAddrTon(addrTon);
-                        PreparedStatementCollection_C3[] lstPsc = pers.getPscList();
 
-                        for (PreparedStatementCollection_C3 psc : lstPsc) {
-                            dueSlot = pers.c2_getDueSlotForTargetId(psc, smsSet0.getTargetId());
-                            if (dueSlot != 0)
-                                break;
+                        SmsSet smsSet1 = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet0.getTargetId());
+                        if (smsSet1 != null) {
+                            // message is already in process
+                            return;
                         }
+
+                        dueSlot = pers.c2_getDueSlotForTargetId(smsSet0.getTargetId());
 
                         if (dueSlot != 0 && dueSlot > pers.c2_getCurrentDueSlot()) {
                             pers.c2_registerDueSlotWriting(dueSlot);
@@ -271,7 +272,10 @@ public abstract class AlertSbb implements Sbb {
                                                 // TODO: issuing direct Activity here !!!
 //                                                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS);
                                                 pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-                                                pers.c2_scheduleMessage(sms, pers.c2_getDueSlotForNewSms());
+                                                SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet0.getTargetId());
+                                                long newDueSlot = pers.c2_getDueSlotForNewSms();
+                                                pers.c2_updateDueSlotForTargetId_WithTableCleaning(smsSet0.getTargetId(), newDueSlot);
+                                                pers.c2_scheduleMessage(sms, newDueSlot);
                                                 // TODO: issuing direct Activity here !!!
                                             }
                                         }

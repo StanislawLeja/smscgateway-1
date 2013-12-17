@@ -72,7 +72,7 @@ public class SmsSet implements Serializable {
 
 	private List<Sms> smsList = new ArrayList<Sms>();
 
-//	private int messageIndex = 0;
+    private Date creationTime = new Date();
 
     public SmsSet() {
 	}
@@ -303,6 +303,10 @@ public class SmsSet implements Serializable {
 
     public void setProcessingStarted() {
         processingStarted = true;
+    }
+
+    public Date getCreationTime() {
+        return creationTime;
     }
 
 	@Override

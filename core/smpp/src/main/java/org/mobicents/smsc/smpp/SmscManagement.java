@@ -173,7 +173,8 @@ public class SmscManagement implements SmscManagementMBean {
 		String host = hostsArr[0];
 		int port = Integer.parseInt(hostsArr[1]);
 //        DBOperations_C1.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName());
-        DBOperations_C2.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName());
+        DBOperations_C2.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName(), this.smscPropertiesManagement.getFirstDueDelay(),
+                this.smscPropertiesManagement.getReviseSecondsOnSmscStart());
 
 		// Step 4 Setup ArchiveSms
 		this.archiveSms = ArchiveSms.getInstance(this.name);

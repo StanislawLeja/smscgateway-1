@@ -143,6 +143,11 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// if SMSHomeRouting is enabled, SMSC will accept MtForwardSMS and forwardSm like mobile station
 	private boolean isSMSHomeRouting = false;
 
+    // TODO: new **************************
+	// After SMSC restart it will revise previous reviseSecondsOnSmscStart seconds dueSlot's for unsent messages 
+	private int reviseSecondsOnSmscStart = 60;
+    // TODO: new **************************
+	
 	private SmscPropertiesManagement(String name) {
 		this.name = name;
 		binding.setClassAttribute(CLASS_ATTRIBUTE);
@@ -433,6 +438,15 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.isSMSHomeRouting = isSMSHomeRouting;
 		this.store();
 	}
+
+    public int getReviseSecondsOnSmscStart() {
+        return this.reviseSecondsOnSmscStart;
+    }
+
+    public void setReviseSecondsOnSmscStart(int reviseSecondsOnSmscStart) {
+        this.reviseSecondsOnSmscStart = reviseSecondsOnSmscStart;
+        this.store();
+    }
 
 
 	public void start() throws Exception {

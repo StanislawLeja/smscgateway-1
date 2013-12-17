@@ -752,6 +752,7 @@ public abstract class RxSmppServerSbb implements Sbb {
                             Sms sms = smsSet.getSms(i1);
                             if (sms.getStored()) {
                                 pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                                pers.c2_updateDueSlotForTargetId_WithTableCleaning(smsSet.getTargetId(), dueSlot);
                                 pers.c2_scheduleMessage(sms, dueSlot);
                             }
                         }
