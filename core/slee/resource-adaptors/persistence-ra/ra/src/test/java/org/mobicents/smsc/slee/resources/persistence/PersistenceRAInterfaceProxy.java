@@ -331,4 +331,16 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
         
     }
 
+    @Override
+    public long c2_getDueSlotForTargetId(String targetId) throws PersistenceException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void c2_updateDueSlotForTargetId_WithTableCleaning(String targetId, long newDueSlot) throws PersistenceException {
+        // TODO Auto-generated method stub
+        
+    }
+
 }

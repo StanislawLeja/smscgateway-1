@@ -180,8 +180,11 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 		scheduler = Executors.newScheduledThreadPool(1);
 
-		scheduler.scheduleAtFixedRate(new TickTimerTask(), 500, smscPropertiesManagement.getFetchPeriod(),
-				TimeUnit.MILLISECONDS);
+		long timerDur = smscPropertiesManagement.getFetchPeriod();
+		long maxTimerDur = this.dbOperations_C2.getSlotMSecondsTimeArea() * 2 / 3;
+        if (timerDur > maxTimerDur)
+            timerDur = maxTimerDur;
+        scheduler.scheduleAtFixedRate(new TickTimerTask(), 500, timerDur, TimeUnit.MILLISECONDS);
 
 		if (tracer.isInfoEnabled()) {
 			tracer.info("SchedulerResourceAdaptor " + raContext.getEntityName() + " Activated");
@@ -297,30 +300,40 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 		List<SmsSet> schedulableSms;
 		try {
-			if (this.tracer.isFineEnabled())
-				this.tracer.fine("Fetching: Starting fetching messages from database");
+            if (this.tracer.isFineEnabled())
+                this.tracer.fine("Fetching: Starting fetching messages from database");
 
-			SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-			int fetchMaxRows = smscPropertiesManagement.getFetchMaxRows();
-			int fetchAvailRows;
+            SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+            int fetchMaxRows = smscPropertiesManagement.getFetchMaxRows();
+            int fetchAvailRows;
             if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                 fetchAvailRows = smscPropertiesManagement.getMaxActivityCount() - (int) this.getActivityCount();
             } else {
                 fetchAvailRows = smscPropertiesManagement.getMaxActivityCount() - SmsSetCashe.getInstance().getProcessingSmsSetSize();
             }
+            int maxCnt = Math.min(fetchMaxRows, fetchAvailRows);
 
-			int maxCnt = Math.min(fetchMaxRows, fetchAvailRows);
-			schedulableSms = this.fetchSchedulable(maxCnt);
+            int readTryCount = 0;
+            while (true) {
+                schedulableSms = this.fetchSchedulable(maxCnt);
 
-			int cnt = 0;
-			if (schedulableSms != null)
-				cnt = schedulableSms.size();
+                int cnt = 0;
+                if (schedulableSms != null)
+                    cnt = schedulableSms.size();
 
-			if (this.tracer.isFineEnabled()) {
-				String s1 = "Fetching: Fetched " + schedulableSms.size() + " messages (max requested messages="
-						+ maxCnt + ", fetched messages=" + cnt + ")";
-				this.tracer.fine(s1);
-			}
+                readTryCount++;
+                if (cnt == 0 && readTryCount < 100)
+                    // we will 100 times reread new empty due_Slot
+                    continue;
+
+                if (this.tracer.isFineEnabled()) {
+                    String s1 = "Fetching: Fetched " + schedulableSms.size() + " messages (max requested messages=" + maxCnt + ", fetched messages=" + cnt
+                            + ")";
+                    this.tracer.fine(s1);
+                }
+
+                break;
+            }
 		} catch (PersistenceException e1) {
 			this.tracer
 					.severe("PersistenceException when fetching SmsSet list from a database: " + e1.getMessage(), e1);
@@ -356,7 +369,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                     this.tracer.fine(s2);
                 }
             }
-
 		}
 	}
 

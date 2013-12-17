@@ -308,9 +308,13 @@ public interface PersistenceRAInterface {
     PreparedStatementCollection_C3[] getPscList() throws PersistenceException;
 
 
+    long c2_getDueSlotForTargetId(String targetId) throws PersistenceException;
+
     long c2_getDueSlotForTargetId(PreparedStatementCollection_C3 psc, String targetId) throws PersistenceException;
 
     void c2_updateDueSlotForTargetId(String targetId, long newDueSlot) throws PersistenceException;
+
+    void c2_updateDueSlotForTargetId_WithTableCleaning(String targetId, long newDueSlot) throws PersistenceException;
 
     void c2_createRecordCurrent(Sms sms) throws PersistenceException;
 

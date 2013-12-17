@@ -239,6 +239,11 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             }
 
             @Override
+            public long c2_getDueSlotForTargetId(String targetId) throws PersistenceException {
+                return dbOperations_C2.c2_getDueSlotForTargetId(targetId);
+            }
+
+            @Override
             public long c2_getDueSlotForTargetId(PreparedStatementCollection_C3 psc, String targetId) throws PersistenceException {
                 return dbOperations_C2.c2_getDueSlotForTargetId(psc, targetId);
             }
@@ -246,6 +251,11 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             @Override
             public void c2_updateDueSlotForTargetId(String targetId, long newDueSlot) throws PersistenceException {
                 dbOperations_C2.c2_updateDueSlotForTargetId(targetId, newDueSlot);
+            }
+
+            @Override
+            public void c2_updateDueSlotForTargetId_WithTableCleaning(String targetId, long newDueSlot) throws PersistenceException {
+                dbOperations_C2.c2_updateDueSlotForTargetId_WithTableCleaning(targetId, newDueSlot);
             }
 
             @Override

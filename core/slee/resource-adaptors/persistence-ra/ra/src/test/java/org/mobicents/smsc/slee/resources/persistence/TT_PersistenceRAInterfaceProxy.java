@@ -69,9 +69,9 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
     }
 
     public void start() throws Exception {
-        super.start(ip, 9042, keyspace);
+        super.start(ip, 9042, keyspace, 60, 60);
     }
-
+    
     public boolean testCassandraAccess() {
 
         try {
@@ -114,10 +114,11 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
                     g1++;
                 }                
 
+                // 1
                 Date dt = new Date();
                 String tName = this.getTableName(dt);
 
-                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_DST_SLOT_TABLE +tName+ "\";");
+                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_DST_SLOT_TABLE + tName + "\";");
                 boundStatement = new BoundStatement(ps);
                 boundStatement.bind();
                 try {
@@ -127,7 +128,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
                     g1++;
                 }
 
-                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE +tName+ "\";");
+                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\";");
                 boundStatement = new BoundStatement(ps);
                 boundStatement.bind();
                 try {
@@ -137,7 +138,41 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
                     g1++;
                 }
 
-                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_MESSAGES +tName+ "\";");
+                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_MESSAGES + tName + "\";");
+                boundStatement = new BoundStatement(ps);
+                boundStatement.bind();
+                try {
+                    session.execute(boundStatement);
+                } catch (Exception e) {
+                    int g1 = 0;
+                    g1++;
+                }
+
+                // 2
+                dt = new Date(new Date().getTime() + 1000 * 60 * 60 * 24);
+                tName = this.getTableName(dt);
+
+                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_DST_SLOT_TABLE + tName + "\";");
+                boundStatement = new BoundStatement(ps);
+                boundStatement.bind();
+                try {
+                    session.execute(boundStatement);
+                } catch (Exception e) {
+                    int g1 = 0;
+                    g1++;
+                }
+
+                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\";");
+                boundStatement = new BoundStatement(ps);
+                boundStatement.bind();
+                try {
+                    session.execute(boundStatement);
+                } catch (Exception e) {
+                    int g1 = 0;
+                    g1++;
+                }
+
+                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_MESSAGES + tName + "\";");
                 boundStatement = new BoundStatement(ps);
                 boundStatement.bind();
                 try {

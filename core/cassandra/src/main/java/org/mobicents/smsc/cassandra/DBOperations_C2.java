@@ -77,10 +77,8 @@ public class DBOperations_C2 {
     private int dataTableDaysTimeArea = 1;
     // the date from which due_slots are calculated (01.01.2000) 
     private Date slotOrigDate = new Date(100, 1, 1);
-    // due_slot count for rerevising after SMSC restart (3 min default)
-    private int dueSlotReviseAfterRestart = 360;
-    // due_slot count for forward storing after current processing due_slot (30 sec if dataTableDaysTimeArea==1 sec)
-    private int dueSlotForwardStoring = 30;
+//    // due_slot count for revising after SMSC restart (3 min default)
+//    private int dueSlotReviseAfterRestart = 360;
     // timeout of finishing of writing on new income messages (in dueSlotWritingArray) (5 sec)
     private int millisecDueSlotWritingTimeout = 5000;
 
@@ -89,6 +87,11 @@ public class DBOperations_C2 {
     // TTL for MESSAGES table (0 - no TTL)
     private int ttlArchive = 0;
 
+    // due_slot count for forward storing after current processing due_slot (30 sec if dataTableDaysTimeArea==1 sec)
+    private int dueSlotForwardStoring;
+    // due_slot count for which previous loaded records were revised
+    private int dueSlotReviseOnSmscStart;
+    
     // data for processing
 
     // due_slot that is now processing
@@ -122,11 +125,15 @@ public class DBOperations_C2 {
     protected Session getSession() {
         return this.session;
     }
-
-    public void start(String ip, int port, String keyspace) throws Exception {
+    
+    public void start(String ip, int port, String keyspace, int secondsForwardStoring, int reviseSecondsOnSmscStart) throws Exception {
         if (this.started) {
             throw new Exception("DBOperations already started");
         }
+
+        this.dueSlotForwardStoring = secondsForwardStoring * 1000 / slotMSecondsTimeArea;
+        this.dueSlotReviseOnSmscStart = reviseSecondsOnSmscStart * 1000 / slotMSecondsTimeArea;
+
         this.pcsDate = null;
         currentSessionUUID = UUID.randomUUID();
 
@@ -168,6 +175,8 @@ public class DBOperations_C2 {
                 // not yet set
                 long l1 = this.c2_getDueSlotForTime(new Date());
                 this.c2_setCurrentDueSlot(l1);
+            } else {
+                this.c2_setCurrentDueSlot(currentDueSlot - dueSlotReviseOnSmscStart);
             }
         } catch (Exception e1) {
             String msg = "Failed reading a currentDueSlot !";
@@ -188,6 +197,9 @@ public class DBOperations_C2 {
         this.started = false;
     }
 
+    public long getSlotMSecondsTimeArea() {
+        return slotMSecondsTimeArea;
+    }
 
     /**
      * Return due_slot for the given time
@@ -244,7 +256,9 @@ public class DBOperations_C2 {
      * Return due_slop for storing next incoming to SMSC message
      */
     public long c2_getDueSlotForNewSms() {
-        return c2_getIntimeDueSlot() + dueSlotForwardStoring;
+        long res = c2_getIntimeDueSlot() + dueSlotForwardStoring;
+        return res;
+
         // TODO: we can add here code incrementing of due_slot if current
         // due_slot is overloaded
     }
@@ -383,6 +397,17 @@ public class DBOperations_C2 {
         pcsDate = dt;
     }
 
+    public long c2_getDueSlotForTargetId(String targetId) throws PersistenceException {
+        PreparedStatementCollection_C3[] lstPsc = this.getPscList();
+
+        for (PreparedStatementCollection_C3 psc : lstPsc) {
+            long dueSlot = this.c2_getDueSlotForTargetId(psc, targetId);
+            if (dueSlot != 0)
+                return dueSlot;
+        }
+        return 0;
+    }
+
     public long c2_getDueSlotForTargetId(PreparedStatementCollection_C3 psc, String targetId) throws PersistenceException {
         try {
             PreparedStatement ps = psc.getDueSlotForTargetId;
@@ -419,11 +444,46 @@ public class DBOperations_C2 {
         }
     }
 
+    private void c2_clearDueSlotForTargetId(String targetId, long newDueSlot) throws PersistenceException {
+        PreparedStatementCollection_C3 psc = this.getStatementCollection(newDueSlot);
+
+        try {
+            PreparedStatement ps = psc.createDueSlotForTargetId;
+            BoundStatement boundStatement = new BoundStatement(ps);
+            boundStatement.bind(targetId, 0L);
+            ResultSet res = session.execute(boundStatement);
+        } catch (Exception e1) {
+            String msg = "Failed to execute clearDueSlotForTargetId() !";
+            throw new PersistenceException(msg, e1);
+        }
+    }
+
+    public void c2_updateDueSlotForTargetId_WithTableCleaning(String targetId, long newDueSlot) throws PersistenceException {
+        // removing dueSlot for other time tables is any
+        PreparedStatementCollection_C3[] lstPsc = this.getPscList();
+        if (lstPsc.length >= 2) {
+            String s1 = this.getTableName(newDueSlot);
+            for (int i1 = 0; i1 < lstPsc.length; i1++) {
+                PreparedStatementCollection_C3 psc = lstPsc[i1];
+                if (!psc.getTName().equals(s1)) {
+                    long dueSlot = this.c2_getDueSlotForTargetId(psc, targetId);
+                    if (dueSlot != 0) {
+                        c2_clearDueSlotForTargetId(targetId, dueSlot);
+                    }
+                }
+            }
+        }
+
+        c2_updateDueSlotForTargetId(targetId, newDueSlot);
+    }
+
     public void c2_scheduleMessage(Sms sms) throws PersistenceException {
         long dueSlot = 0;
         PreparedStatementCollection_C3[] lstPsc = this.getPscList();
         boolean done = false;
-        while (!done) {
+        int cnt = 0;
+        while (!done && cnt < 5) {
+            cnt++;
             for (PreparedStatementCollection_C3 psc : lstPsc) {
                 dueSlot = this.c2_getDueSlotForTargetId(psc, sms.getSmsSet().getTargetId());
                 if (dueSlot != 0)
@@ -432,7 +492,7 @@ public class DBOperations_C2 {
 
             if (dueSlot == 0 || dueSlot <= this.c2_getCurrentDueSlot()) {
                 dueSlot = this.c2_getDueSlotForNewSms();
-                this.c2_updateDueSlotForTargetId(sms.getSmsSet().getTargetId(), dueSlot);
+                this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
             }
             sms.setDueSlot(dueSlot);
 
@@ -453,6 +513,7 @@ public class DBOperations_C2 {
             return true;
 
         sms.setDueSlot(dueSlot);
+
         Date dt = this.c2_getTimeForDueSlot(dueSlot);
 
         // special case for ScheduleDeliveryTime
@@ -730,9 +791,11 @@ public class DBOperations_C2 {
             smsSet.setDestAddr(destAddr);
             smsSet.setDestAddrTon(destAddrTon);
             smsSet.setDestAddrNpi(destAddrNpi);
-
-            smsSet.updateDueDelay(row.getInt(Schema.COLUMN_DUE_DELAY));
         }
+        int dueDelay = row.getInt(Schema.COLUMN_DUE_DELAY);
+        if (dueDelay > smsSet.getDueDelay())
+            smsSet.setDueDelay(dueDelay);
+
         smsSet.addSms(sms);
 
         return smsSet;
@@ -758,6 +821,8 @@ public class DBOperations_C2 {
  
         // adding into SmsSetCashe
         ArrayList<SmsSet> res2 = new ArrayList<SmsSet>();
+        // 60 min timeout
+        Date timeOutDate = new Date(new Date().getTime() - 1000 * 60 * 30); 
         for (SmsSet smsSet : res.values()) {
             smsSet.resortSms();
 
@@ -767,13 +832,27 @@ public class DBOperations_C2 {
                 synchronized (lock) {
                     smsSet2 = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
                     if (smsSet2 != null) {
-                        for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
-                            smsSet2.addSms(smsSet.getSms(i1));
+                        if (smsSet2.getCreationTime().after(timeOutDate)) {
+                            for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
+                                smsSet2.addSms(smsSet.getSms(i1));
+                            }
+                        } else {
+                            logger.warn("Timeout of SmsSet in ProcessingSmsSet: targetId=" + smsSet2.getTargetId() + ", messageCount=" + smsSet2.getSmsCount());
+                            smsSet2 = smsSet;
+                            SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2);
                         }
                     } else {
                         smsSet2 = smsSet;
                         SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2);
                     }
+//                    if (smsSet2 != null && smsSet2.getCreationTime().after(timeOutDate)) {
+//                        for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
+//                            smsSet2.addSms(smsSet.getSms(i1));
+//                        }
+//                    } else {
+//                        smsSet2 = smsSet;
+//                        SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2);
+//                    }
                 }
                 res2.add(smsSet2);
             } finally {

@@ -35,7 +35,6 @@ import javax.slee.SbbContext;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
-import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
 import org.mobicents.protocols.ss7.indicator.RoutingIndicator;
@@ -414,6 +413,10 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
         PersistenceRAInterface pers = this.getStore();
         SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        if (smsDeliveryData == null) {
+            this.logger.severe("smsDeliveryData CMP is missed");
+            return;
+        }
         String targetId = smsDeliveryData.getTargetId();
         SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
         if (smsSet == null) {
@@ -705,6 +708,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                             Sms sms = smsSet.getSms(i1);
                             if (sms.getStored()) {
                                 pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                                pers.c2_updateDueSlotForTargetId_WithTableCleaning(smsSet.getTargetId(), dueSlot);
                                 pers.c2_scheduleMessage(sms, dueSlot);
                             }
                         }
