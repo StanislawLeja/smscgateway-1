@@ -136,13 +136,25 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	 */
 
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("\nRx :  onErrorComponent " + event + " Dialog=" + event.getMAPDialog());
-		}
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        String targetId = null;
+        if (smsDeliveryData != null) {
+            targetId = smsDeliveryData.getTargetId();
+        }
+
+        if (this.logger.isInfoEnabled()) {
+            this.logger.info("\nRx :  onErrorComponent " + event + " targetId=" + targetId + ", Dialog=" + event.getMAPDialog());
+        }
 	}
 
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
-		this.logger.severe("\nRx :  onRejectComponent" + event);
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        String targetId = null;
+        if (smsDeliveryData != null) {
+            targetId = smsDeliveryData.getTargetId();
+        }
+
+		this.logger.severe("\nRx :  onRejectComponent targetId=" + targetId + ", " + event);
 	}
 
 	protected String getRejectComponentReason(RejectComponent event) {
@@ -175,8 +187,14 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	}
 
 	public void onInvokeTimeout(InvokeTimeout evt, ActivityContextInterface aci) {
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        String targetId = null;
+        if (smsDeliveryData != null) {
+            targetId = smsDeliveryData.getTargetId();
+        }
+
 		if (logger.isWarningEnabled()) {
-			this.logger.warning("\nRx : onInvokeTimeout=" + evt);
+			this.logger.warning("\nRx : onInvokeTimeout targetId=" + targetId + ", " + evt);
 		}
 	}
 
@@ -185,20 +203,38 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	 */
 
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        String targetId = null;
+        if (smsDeliveryData != null) {
+            targetId = smsDeliveryData.getTargetId();
+        }
+
 		if (logger.isWarningEnabled()) {
-			this.logger.warning("\nRx : onDialogReject=" + evt);
+			this.logger.warning("\nRx : onDialogReject targetId=" + targetId + ", " + evt);
 		}
 	}
 
 	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        String targetId = null;
+        if (smsDeliveryData != null) {
+            targetId = smsDeliveryData.getTargetId();
+        }
+
 		if (logger.isWarningEnabled()) {
-			this.logger.warning("\nRx :  onDialogProviderAbort=" + evt);
+			this.logger.warning("\nRx :  onDialogProviderAbort targetId=" + targetId + ", " + evt);
 		}
 	}
 
 	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        String targetId = null;
+        if (smsDeliveryData != null) {
+            targetId = smsDeliveryData.getTargetId();
+        }
+
 		if (logger.isWarningEnabled()) {
-			this.logger.warning("\nRx :  onDialogUserAbort=" + evt);
+			this.logger.warning("\nRx :  onDialogUserAbort targetId=" + targetId + ", " + evt);
 		}
 	}
 
@@ -222,14 +258,20 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	}
 
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        String targetId = null;
+        if (smsDeliveryData != null) {
+            targetId = smsDeliveryData.getTargetId();
+        }
+
 		if (logger.isWarningEnabled()) {
-			this.logger.warning("\nRx :  onDialogTimeout=" + evt);
+			this.logger.warning("\nRx :  onDialogTimeout targetId=" + targetId + ", " + evt);
 		}
 	}
 
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
 		if (logger.isFineEnabled()) {
-			this.logger.fine("\nRx :  onDialogDelimiter=" + evt);
+			this.logger.fine("\nRx :  onDialogDelimiter " + evt);
 		}
 	}
 
@@ -246,8 +288,14 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	}
 
 	public void onDialogNotice(DialogNotice evt, ActivityContextInterface aci) {
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        String targetId = null;
+        if (smsDeliveryData != null) {
+            targetId = smsDeliveryData.getTargetId();
+        }
+
 		if (logger.isWarningEnabled()) {
-			this.logger.warning("\nRx :  onDialogNotice" + evt);
+			this.logger.warning("\nRx :  onDialogNotice targetId=" + targetId + ", " + evt);
 		}
 	}
 
@@ -397,34 +445,10 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 				org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.getInstance(npi), destinationAddress);
 	}
 
-	protected void onDeliveryError(ErrorAction errorAction, ErrorCode smStatus, String reason) {
-
-//		SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
-//		if (smsDeliveryData == null) {
-//			if (this.logger.isInfoEnabled())
-//				this.logger.info("SmsDeliveryData CMP missed");
-//			return;
-//		}
-//		SmsSet smsSet = smsDeliveryData.getSmsSet();
-//		if (smsSet == null) {
-//			this.logger.severe("In SmsDeliveryData CMP smsSet is missed");
-//			return;
-//		}
-
+    protected void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason, boolean removeSmsSet) {
         PersistenceRAInterface pers = this.getStore();
-        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
-        if (smsDeliveryData == null) {
-            this.logger.severe("smsDeliveryData CMP is missed");
-            return;
-        }
-        String targetId = smsDeliveryData.getTargetId();
-        SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
-        if (smsSet == null) {
-            this.logger.severe("In SmsDeliveryData CMP smsSet is missed");
-            return;
-        }
 
-		int currentMsgNum = this.doGetCurrentMsgNum();
+        int currentMsgNum = this.doGetCurrentMsgNum();
 		Sms smsa = smsSet.getSms(currentMsgNum);
         if (smsa != null) {
             CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED, reason);
@@ -432,9 +456,11 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("onDeliveryError: errorAction=");
-		sb.append(errorAction);
-		sb.append(", smStatus=");
-		sb.append(smStatus);
+        sb.append(errorAction);
+        sb.append(", smStatus=");
+        sb.append(smStatus);
+        sb.append(", targetId=");
+        sb.append(smsSet.getTargetId());
 		sb.append(", smsSet=");
 		sb.append(smsSet);
         sb.append(", reason=");
@@ -454,7 +480,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                         pers.setDeliveryFailure(smsSet, smStatus, curDate);
                     } else {
                         smsSet.setStatus(smStatus);
-                        SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
+                        if (removeSmsSet)
+                            SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
                     }
 					this.decrementDeliveryActivityCount();
 
@@ -614,10 +641,10 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	 */
 	protected void freeSmsSetSucceded(SmsSet smsSet, PersistenceRAInterface pers) {
         try {
+            this.decrementDeliveryActivityCount();
             if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                 Date lastDelivery = new Date();
                 pers.setDeliverySuccess(smsSet, lastDelivery);
-                this.decrementDeliveryActivityCount();
 
                 if (!pers.deleteSmsSet(smsSet)) {
                     Date newDueDate = MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay());
@@ -752,10 +779,12 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	}
 
 	public enum ErrorAction {
-		subscriberBusy, memoryCapacityExceededFlag, // MNRF
+		subscriberBusy,
+		memoryCapacityExceededFlag, // MNRF
 		mobileNotReachableFlag, // MNRF
 		notReachableForGprs, // MNRG
-		permanentFailure, temporaryFailure,
+		permanentFailure,
+		temporaryFailure,
 	}
 
 }

@@ -67,7 +67,7 @@ public class DBOperations_C2 {
     private Cluster cluster;
     protected Session session;
 
-    // configuring data
+    // hardcored configuring data - for table structures
 
     // multiTableModel: splitting database tables depending on dates
     private boolean multiTableModel = true;
@@ -76,25 +76,25 @@ public class DBOperations_C2 {
     // how many days one table carries (if value is <1 or >30 this means one month)
     private int dataTableDaysTimeArea = 1;
     // the date from which due_slots are calculated (01.01.2000) 
-    private Date slotOrigDate = new Date(100, 1, 1);
-//    // due_slot count for revising after SMSC restart (3 min default)
-//    private int dueSlotReviseAfterRestart = 360;
-    // timeout of finishing of writing on new income messages (in dueSlotWritingArray) (5 sec)
-    private int millisecDueSlotWritingTimeout = 5000;
+    private Date slotOrigDate = new Date(100, 0, 1);
+
+    // configurable configuring data - for table structures
 
     // TTL for DST_SLOT_TABLE and SLOT_MESSAGES_TABLE tables (0 - no TTL)
     private int ttlCurrent = 0;
     // TTL for MESSAGES table (0 - no TTL)
     private int ttlArchive = 0;
-
-    // due_slot count for forward storing after current processing due_slot (30 sec if dataTableDaysTimeArea==1 sec)
+    // timeout of finishing of writing on new income messages (in dueSlotWritingArray) (5 sec)
+    private int millisecDueSlotWritingTimeout = 5000;
+    // due_slot count for forward storing after current processing due_slot
     private int dueSlotForwardStoring;
     // due_slot count for which previous loaded records were revised
     private int dueSlotReviseOnSmscStart;
+    // Timeout of life cycle of SmsSet in SmsSetCashe.ProcessingSmsSet in seconds
+    private int processingSmsSetTimeout;
     
     // data for processing
 
-    // due_slot that is now processing
     private long currentDueSlot = 0;
     private UUID currentSessionUUID;
 
@@ -126,13 +126,17 @@ public class DBOperations_C2 {
         return this.session;
     }
     
-    public void start(String ip, int port, String keyspace, int secondsForwardStoring, int reviseSecondsOnSmscStart) throws Exception {
+    public void start(String ip, int port, String keyspace, int secondsForwardStoring, int reviseSecondsOnSmscStart, int processingSmsSetTimeout)
+            throws Exception {
         if (this.started) {
             throw new Exception("DBOperations already started");
         }
 
+        if (secondsForwardStoring < 10)
+            secondsForwardStoring = 10;
         this.dueSlotForwardStoring = secondsForwardStoring * 1000 / slotMSecondsTimeArea;
         this.dueSlotReviseOnSmscStart = reviseSecondsOnSmscStart * 1000 / slotMSecondsTimeArea;
+        this.processingSmsSetTimeout = processingSmsSetTimeout;
 
         this.pcsDate = null;
         currentSessionUUID = UUID.randomUUID();
@@ -498,6 +502,10 @@ public class DBOperations_C2 {
 
             done = this.c2_scheduleMessage(sms, dueSlot);
         }
+
+        if (!done) {
+            logger.warn("5 retries of c2_scheduleMessage fails for targetId=" + sms.getSmsSet().getTargetId());
+        }
     }
 
     /**
@@ -839,11 +847,11 @@ public class DBOperations_C2 {
                         } else {
                             logger.warn("Timeout of SmsSet in ProcessingSmsSet: targetId=" + smsSet2.getTargetId() + ", messageCount=" + smsSet2.getSmsCount());
                             smsSet2 = smsSet;
-                            SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2);
+                            SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2, processingSmsSetTimeout);
                         }
                     } else {
                         smsSet2 = smsSet;
-                        SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2);
+                        SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2, processingSmsSetTimeout);
                     }
 //                    if (smsSet2 != null && smsSet2.getCreationTime().after(timeOutDate)) {
 //                        for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {

@@ -65,6 +65,12 @@ public class CdrGenerator {
                 .append(CdrGenerator.CDR_SEPARATOR).append(getFirst20CharOfSMS(smsEvent.getShortMessage()))
                 .append(CdrGenerator.CDR_SEPARATOR).append(reason);
 
+        // TODO : remove this !!!!!!!
+//        logger.error(sb.toString());
+//        Logger logger2 = Logger.getLogger(DBOperations_C2.class);
+//        logger2.error(sb.toString());
+        // TODO : remove this !!!!!!!
+
         CdrGenerator.generateCdr(sb.toString());
     }
 

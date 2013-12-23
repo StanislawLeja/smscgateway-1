@@ -151,7 +151,7 @@ public class SmscManagement implements SmscManagementMBean {
 	}
 
 	public void start() throws Exception {
-		logger.info("Starting SmscManagemet " + name);
+		logger.warn("Starting SmscManagemet " + name);
 
         // Step 0 clear SmsSetCashe
 		SmsSetCashe.getInstance().clearProcessingSmsSet();
@@ -174,7 +174,7 @@ public class SmscManagement implements SmscManagementMBean {
 		int port = Integer.parseInt(hostsArr[1]);
 //        DBOperations_C1.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName());
         DBOperations_C2.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName(), this.smscPropertiesManagement.getFirstDueDelay(),
-                this.smscPropertiesManagement.getReviseSecondsOnSmscStart());
+                this.smscPropertiesManagement.getReviseSecondsOnSmscStart(), this.smscPropertiesManagement.getProcessingSmsSetTimeout());
 
 		// Step 4 Setup ArchiveSms
 		this.archiveSms = ArchiveSms.getInstance(this.name);
@@ -190,7 +190,7 @@ public class SmscManagement implements SmscManagementMBean {
 				+ ",name=" + this.getName());
 		this.registerMBean(this.mapVersionCache, MapVersionCacheMBean.class, false, mapVersionCacheObjNname);		
 
-		logger.info("Started SmscManagemet " + name);
+		logger.warn("Started SmscManagemet " + name);
 
 	}
 

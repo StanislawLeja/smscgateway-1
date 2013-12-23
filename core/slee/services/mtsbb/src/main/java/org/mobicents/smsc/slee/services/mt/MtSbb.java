@@ -145,86 +145,116 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 	@Override
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
-		super.onErrorComponent(event, aci);
+        try {
+            super.onErrorComponent(event, aci);
 
-		MAPErrorMessage mapErrorMessage = event.getMAPErrorMessage();
-		if (mapErrorMessage.isEmSubscriberBusyForMtSms()) {
-			MAPErrorMessageSubscriberBusyForMtSms subscriberBusyForMtSms = mapErrorMessage
-					.getEmSubscriberBusyForMtSms();
-			this.onDeliveryError(ErrorAction.subscriberBusy, ErrorCode.USER_BUSY,
-					"Error subscriberBusyForMtSms after MtForwardSM Request: " + subscriberBusyForMtSms.toString());
-		} else if (mapErrorMessage.isEmAbsentSubscriber()) {
-			MAPErrorMessageAbsentSubscriber absentSubscriber = mapErrorMessage.getEmAbsentSubscriber();
-			this.onDeliveryError(ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
-					"Error absentSubscriber after MtForwardSM Request: " + absentSubscriber.toString());
-		} else if (mapErrorMessage.isEmAbsentSubscriberSM()) {
-			MAPErrorMessageAbsentSubscriberSM absentSubscriber = mapErrorMessage.getEmAbsentSubscriberSM();
-			this.onDeliveryError(ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
-					"Error absentSubscriberSM after MtForwardSM Request: " + absentSubscriber.toString());
-		} else if (mapErrorMessage.isEmSMDeliveryFailure()) {
-			MAPErrorMessageSMDeliveryFailure smDeliveryFailure = mapErrorMessage.getEmSMDeliveryFailure();
-			if (smDeliveryFailure.getSMEnumeratedDeliveryFailureCause() == SMEnumeratedDeliveryFailureCause.memoryCapacityExceeded) {
-				this.onDeliveryError(ErrorAction.memoryCapacityExceededFlag, ErrorCode.MESSAGE_QUEUE_FULL,
-						"Error smDeliveryFailure after MtForwardSM Request: " + smDeliveryFailure.toString());
-			} else {
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.SENDING_SM_FAILED,
-						"Error smDeliveryFailure after MtForwardSM Request: " + smDeliveryFailure.toString());
-			}
-		} else if (mapErrorMessage.isEmSystemFailure()) {
-			// TODO: may be it is not a permanent case ???
-			MAPErrorMessageSystemFailure systemFailure = mapErrorMessage.getEmSystemFailure();
-			this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
-					"Error systemFailure after MtForwardSM Request: " + systemFailure.toString());
-		} else if (mapErrorMessage.isEmFacilityNotSup()) {
-			MAPErrorMessageFacilityNotSup facilityNotSup = mapErrorMessage.getEmFacilityNotSup();
-			this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
-					"Error facilityNotSup after MtForwardSM Request: " + facilityNotSup.toString());
-		} else if (mapErrorMessage.isEmExtensionContainer()) {
-			MAPErrorMessageExtensionContainer extensionContainer = mapErrorMessage.getEmExtensionContainer();
-			switch ((int) (long) extensionContainer.getErrorCode()) {
-			case MAPErrorCode.dataMissing:
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.DATA_MISSING,
-						"Error after MtForwardSM Request: " + extensionContainer.toString());
-				break;
-			case MAPErrorCode.unexpectedDataValue:
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA,
-						"Error after MtForwardSM Request: " + extensionContainer.toString());
-				break;
-			case MAPErrorCode.facilityNotSupported:
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
-						"Error after MtForwardSM Request: " + extensionContainer.toString());
-				break;
-			case MAPErrorCode.unidentifiedSubscriber:
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNDEFINED_SUBSCRIBER,
-						"Error after MtForwardSM Request: " + extensionContainer.toString());
-				break;
-			case MAPErrorCode.illegalSubscriber:
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.ILLEGAL_SUBSCRIBER,
-						"Error after MtForwardSM Request: " + extensionContainer.toString());
-				break;
-			case MAPErrorCode.illegalEquipment:
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.ILLEGAL_EQUIPMENT,
-						"Error after MtForwardSM Request: " + extensionContainer.toString());
-				break;
-			default:
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
-						"Error after MtForwardSM Request: " + extensionContainer.toString());
-				break;
-			}
-		} else {
-			this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
-					"Error after MtForwardSM Request");
-		}
+            SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+            if (smsDeliveryData == null) {
+                this.logger.severe("smsDeliveryData CMP is missed - MtSbb.onErrorComponent()");
+                return;
+            }
+            String targetId = smsDeliveryData.getTargetId();
+            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            if (smsSet == null) {
+                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onErrorComponent(), targetId=" + targetId);
+                return;
+            }
+
+            MAPErrorMessage mapErrorMessage = event.getMAPErrorMessage();
+            if (mapErrorMessage.isEmSubscriberBusyForMtSms()) {
+                MAPErrorMessageSubscriberBusyForMtSms subscriberBusyForMtSms = mapErrorMessage.getEmSubscriberBusyForMtSms();
+                this.onDeliveryError(smsSet, ErrorAction.subscriberBusy, ErrorCode.USER_BUSY, "Error subscriberBusyForMtSms after MtForwardSM Request: "
+                        + subscriberBusyForMtSms.toString(), true);
+            } else if (mapErrorMessage.isEmAbsentSubscriber()) {
+                MAPErrorMessageAbsentSubscriber absentSubscriber = mapErrorMessage.getEmAbsentSubscriber();
+                this.onDeliveryError(smsSet, ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER, "Error absentSubscriber after MtForwardSM Request: "
+                        + absentSubscriber.toString(), true);
+            } else if (mapErrorMessage.isEmAbsentSubscriberSM()) {
+                MAPErrorMessageAbsentSubscriberSM absentSubscriber = mapErrorMessage.getEmAbsentSubscriberSM();
+                this.onDeliveryError(smsSet, ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER, "Error absentSubscriberSM after MtForwardSM Request: "
+                        + absentSubscriber.toString(), true);
+            } else if (mapErrorMessage.isEmSMDeliveryFailure()) {
+                MAPErrorMessageSMDeliveryFailure smDeliveryFailure = mapErrorMessage.getEmSMDeliveryFailure();
+                if (smDeliveryFailure.getSMEnumeratedDeliveryFailureCause() == SMEnumeratedDeliveryFailureCause.memoryCapacityExceeded) {
+                    this.onDeliveryError(smsSet, ErrorAction.memoryCapacityExceededFlag, ErrorCode.MESSAGE_QUEUE_FULL,
+                            "Error smDeliveryFailure after MtForwardSM Request: " + smDeliveryFailure.toString(), true);
+                } else {
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SENDING_SM_FAILED, "Error smDeliveryFailure after MtForwardSM Request: "
+                            + smDeliveryFailure.toString(), true);
+                }
+            } else if (mapErrorMessage.isEmSystemFailure()) {
+                // TODO: may be it is not a permanent case ???
+                MAPErrorMessageSystemFailure systemFailure = mapErrorMessage.getEmSystemFailure();
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
+                        "Error systemFailure after MtForwardSM Request: " + systemFailure.toString(), true);
+            } else if (mapErrorMessage.isEmFacilityNotSup()) {
+                MAPErrorMessageFacilityNotSup facilityNotSup = mapErrorMessage.getEmFacilityNotSup();
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE, "Error facilityNotSup after MtForwardSM Request: "
+                        + facilityNotSup.toString(), true);
+            } else if (mapErrorMessage.isEmExtensionContainer()) {
+                MAPErrorMessageExtensionContainer extensionContainer = mapErrorMessage.getEmExtensionContainer();
+                switch ((int) (long) extensionContainer.getErrorCode()) {
+                case MAPErrorCode.dataMissing:
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.DATA_MISSING,
+                            "Error after MtForwardSM Request: " + extensionContainer.toString(), true);
+                    break;
+                case MAPErrorCode.unexpectedDataValue:
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA,
+                            "Error after MtForwardSM Request: " + extensionContainer.toString(), true);
+                    break;
+                case MAPErrorCode.facilityNotSupported:
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED, "Error after MtForwardSM Request: "
+                            + extensionContainer.toString(), true);
+                    break;
+                case MAPErrorCode.unidentifiedSubscriber:
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNDEFINED_SUBSCRIBER,
+                            "Error after MtForwardSM Request: " + extensionContainer.toString(), true);
+                    break;
+                case MAPErrorCode.illegalSubscriber:
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.ILLEGAL_SUBSCRIBER,
+                            "Error after MtForwardSM Request: " + extensionContainer.toString(), true);
+                    break;
+                case MAPErrorCode.illegalEquipment:
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.ILLEGAL_EQUIPMENT,
+                            "Error after MtForwardSM Request: " + extensionContainer.toString(), true);
+                    break;
+                default:
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
+                            "Error after MtForwardSM Request: " + extensionContainer.toString(), true);
+                    break;
+                }
+            } else {
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE, "Error after MtForwardSM Request", true);
+            }
+        } catch (Throwable e1) {
+            logger.severe("Exception in MtSbb.onErrorComponent() when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	@Override
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
-		super.onRejectComponent(event, aci);
+        try {
+            super.onRejectComponent(event, aci);
 
-		String reason = this.getRejectComponentReason(event);
+            String reason = this.getRejectComponentReason(event);
 
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
-				"onRejectComponent after MtForwardSM Request: " + reason != null ? reason.toString() : "");
+            SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+            if (smsDeliveryData == null) {
+                this.logger.severe("smsDeliveryData CMP is missed - MtSbb.onRejectComponent()");
+                return;
+            }
+            String targetId = smsDeliveryData.getTargetId();
+            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            if (smsSet == null) {
+                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onRejectComponent(), targetId=" + targetId);
+                return;
+            }
+
+            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onRejectComponent after MtForwardSM Request: "
+                    + reason != null ? reason.toString() : "", true);
+        } catch (Throwable e1) {
+            logger.severe("Exception in MtSbb.onDialogProviderAbort() when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	/**
@@ -234,246 +264,325 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	@Override
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
 
-		MAPRefuseReason mapRefuseReason = evt.getRefuseReason();
-
-		if (mapRefuseReason == MAPRefuseReason.PotentialVersionIncompatibility
-				&& evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1) {
-			if (logger.isWarningEnabled()) {
-				this.logger.warning("Rx : Mt onDialogReject / PotentialVersionIncompatibility=" + evt);
-			}
-
-			MAPApplicationContextVersion newMAPApplicationContextVersion = MAPApplicationContextVersion.version1;
-            if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
-				// If version1 already tried this is error
-				String reason = "Error condition when invoking sendMtSms() from onDialogReject()."
-						+ newMAPApplicationContextVersion + " already tried and DialogReject again suggests Version1";
-				this.logger.severe(reason);
-
-				ErrorCode smStatus = ErrorCode.MAP_SERVER_VERSION_ERROR;
-				this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
-				return;
+        try {
+            SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+            if (smsDeliveryData == null) {
+                this.logger.severe("smsDeliveryData CMP is missed - MtSbb.onDialogReject()");
+                return;
             }
-            this.setNegotiatedMapVersionUsing(false);
-            this.setMAPVersionTested(newMAPApplicationContextVersion);
+            String targetId = smsDeliveryData.getTargetId();
+            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            if (smsSet == null) {
+                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogReject(), targetId=" + targetId);
+                return;
+            }
 
-			mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
-					newMAPApplicationContextVersion);
+            MAPRefuseReason mapRefuseReason = evt.getRefuseReason();
 
-			// possible a peer supports only MAP V1
-			// Now send new SRI with supported ACN (MAP V1)
-			try {
-				// Update cache
-				mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
-						newMAPApplicationContextVersion);
+            if (mapRefuseReason == MAPRefuseReason.PotentialVersionIncompatibility
+                    && evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1) {
+                if (logger.isWarningEnabled()) {
+                    this.logger.warning("Rx : Mt onDialogReject / PotentialVersionIncompatibility=" + evt);
+                }
 
-				this.sendMtSms(this.getMtFoSMSMAPApplicationContext(MAPApplicationContextVersion.version1),
-						MessageProcessingState.resendAfterMapProtocolNegotiation, null);
-				return;
-			} catch (SmscProcessingException e) {
-				String reason = "SmscPocessingException when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: "
-						+ e.toString();
-				this.logger.severe(reason, e);
-				ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
-				try {
-					smStatus = ErrorCode.fromInt(e.getSmppErrorCode());
-				} catch (IllegalArgumentException e1) {
-				}
-				this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
-				return;
-			} catch (Throwable e) {
-				String reason = "Exception when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: "
-						+ e.toString();
-				this.logger.severe(reason, e);
-				ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
-				this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
-				return;
-			}
-		}
-
-		// If ACN not supported, lets use the new one suggested
-		if (mapRefuseReason == MAPRefuseReason.ApplicationContextNotSupported) {
-
-			String nodeDigits = this.getNetworkNode().getGlobalTitle().getDigits();
-
-			if (logger.isWarningEnabled()) {
-				this.logger.warning("Rx : Mt onDialogReject / ApplicationContextNotSupported for node " + nodeDigits
-						+ " Event=" + evt);
-			}
-
-			// Now send new MtSMS with supported ACN
-            ApplicationContextName tcapApplicationContextName = evt.getAlternativeApplicationContext();
-
-            MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext.getInstance(tcapApplicationContextName.getOid());
-            MAPApplicationContextVersion supportedMAPApplicationContextVersion = supportedMAPApplicationContext.getApplicationContextVersion();
-
-            MAPApplicationContextVersion newMAPApplicationContextVersion = supportedMAPApplicationContextVersion;
-            if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
-                newMAPApplicationContextVersion = MAPApplicationContextVersion.version3;
+                MAPApplicationContextVersion newMAPApplicationContextVersion = MAPApplicationContextVersion.version1;
                 if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
-                    newMAPApplicationContextVersion = MAPApplicationContextVersion.version2;
-                    if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
-                        newMAPApplicationContextVersion = MAPApplicationContextVersion.version1;
-                        if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
-                            // If all versions are already tried this is error
-                            String reason = "Error condition when invoking sendMtSms() from onDialogReject()."
-                                    + " all MAP versions are already tried and DialogReject again suggests Version1";
-                            this.logger.severe(reason);
+                    // If version1 already tried this is error
+                    String reason = "Error condition when invoking sendMtSms() from onDialogReject()." + newMAPApplicationContextVersion
+                            + " already tried and DialogReject again suggests Version1";
+                    this.logger.severe(reason);
 
-                            ErrorCode smStatus = ErrorCode.MAP_SERVER_VERSION_ERROR;
-                            this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
-                            return;
+                    ErrorCode smStatus = ErrorCode.MAP_SERVER_VERSION_ERROR;
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true);
+                    return;
+                }
+                this.setNegotiatedMapVersionUsing(false);
+                this.setMAPVersionTested(newMAPApplicationContextVersion);
+
+                mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(), newMAPApplicationContextVersion);
+
+                // possible a peer supports only MAP V1
+                // Now send new SRI with supported ACN (MAP V1)
+                try {
+                    // Update cache
+                    mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(), newMAPApplicationContextVersion);
+
+                    this.sendMtSms(this.getMtFoSMSMAPApplicationContext(MAPApplicationContextVersion.version1),
+                            MessageProcessingState.resendAfterMapProtocolNegotiation, null);
+                    return;
+                } catch (SmscProcessingException e) {
+                    String reason = "SmscPocessingException when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: " + e.toString();
+                    this.logger.severe(reason, e);
+                    ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
+                    try {
+                        smStatus = ErrorCode.fromInt(e.getSmppErrorCode());
+                    } catch (IllegalArgumentException e1) {
+                    }
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true);
+                    return;
+                } catch (Throwable e) {
+                    String reason = "Exception when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: " + e.toString();
+                    this.logger.severe(reason, e);
+                    ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true);
+                    return;
+                }
+            }
+
+            // If ACN not supported, lets use the new one suggested
+            if (mapRefuseReason == MAPRefuseReason.ApplicationContextNotSupported) {
+
+                String nodeDigits = this.getNetworkNode().getGlobalTitle().getDigits();
+
+                if (logger.isWarningEnabled()) {
+                    this.logger.warning("Rx : Mt onDialogReject / ApplicationContextNotSupported for node " + nodeDigits + " Event=" + evt);
+                }
+
+                // Now send new MtSMS with supported ACN
+                ApplicationContextName tcapApplicationContextName = evt.getAlternativeApplicationContext();
+
+                MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext.getInstance(tcapApplicationContextName.getOid());
+                MAPApplicationContextVersion supportedMAPApplicationContextVersion = supportedMAPApplicationContext.getApplicationContextVersion();
+
+                MAPApplicationContextVersion newMAPApplicationContextVersion = supportedMAPApplicationContextVersion;
+                if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
+                    newMAPApplicationContextVersion = MAPApplicationContextVersion.version3;
+                    if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
+                        newMAPApplicationContextVersion = MAPApplicationContextVersion.version2;
+                        if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
+                            newMAPApplicationContextVersion = MAPApplicationContextVersion.version1;
+                            if (this.isMAPVersionTested(newMAPApplicationContextVersion)) {
+                                // If all versions are already tried this is
+                                // error
+                                String reason = "Error condition when invoking sendMtSms() from onDialogReject()."
+                                        + " all MAP versions are already tried and DialogReject again suggests Version1";
+                                this.logger.severe(reason);
+
+                                ErrorCode smStatus = ErrorCode.MAP_SERVER_VERSION_ERROR;
+                                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true);
+                                return;
+                            }
                         }
                     }
                 }
+                this.setNegotiatedMapVersionUsing(false);
+                this.setMAPVersionTested(newMAPApplicationContextVersion);
+
+                mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(), newMAPApplicationContextVersion);
+
+                try {
+                    this.sendMtSms(this.getMtFoSMSMAPApplicationContext(newMAPApplicationContextVersion),
+                            MessageProcessingState.resendAfterMapProtocolNegotiation, null);
+                    return;
+                } catch (SmscProcessingException e) {
+                    String reason = "SmscPocessingException when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: " + e.toString();
+                    this.logger.severe(reason, e);
+                    ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
+                    try {
+                        smStatus = ErrorCode.fromInt(e.getSmppErrorCode());
+                    } catch (IllegalArgumentException e1) {
+                    }
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true);
+                    return;
+                } catch (Throwable e) {
+                    String reason = "Exception when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: " + e.toString();
+                    this.logger.severe(reason, e);
+                    ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true);
+                    return;
+                }
             }
-            this.setNegotiatedMapVersionUsing(false);
-            this.setMAPVersionTested(newMAPApplicationContextVersion);
 
-			mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
-					newMAPApplicationContextVersion);
+            super.onDialogReject(evt, aci);
 
-			try {
-				this.sendMtSms(this.getMtFoSMSMAPApplicationContext(newMAPApplicationContextVersion),
-						MessageProcessingState.resendAfterMapProtocolNegotiation, null);
-				return;
-			} catch (SmscProcessingException e) {
-				String reason = "SmscPocessingException when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: "
-						+ e.toString();
-				this.logger.severe(reason, e);
-				ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
-				try {
-					smStatus = ErrorCode.fromInt(e.getSmppErrorCode());
-				} catch (IllegalArgumentException e1) {
-				}
-				this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
-				return;
-			} catch (Throwable e) {
-				String reason = "Exception when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: "
-						+ e.toString();
-				this.logger.severe(reason, e);
-				ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
-				this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
-				return;
-			}
-		}
+            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM,
+                    "onDialogReject after MT Request: " + mapRefuseReason != null ? mapRefuseReason.toString() : "", true);
 
-		super.onDialogReject(evt, aci);
-
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM,
-				"onDialogReject after MT Request: " + mapRefuseReason != null ? mapRefuseReason.toString() : "");
-
+        } catch (Throwable e1) {
+            logger.severe("Exception in MtSbb.onDialogReject() when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	@Override
 	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
-		super.onDialogProviderAbort(evt, aci);
+        try {
+            super.onDialogProviderAbort(evt, aci);
 
-		MAPAbortProviderReason abortProviderReason = evt.getAbortProviderReason();
+            MAPAbortProviderReason abortProviderReason = evt.getAbortProviderReason();
 
-		this.onDeliveryError(
-				ErrorAction.permanentFailure,
-				ErrorCode.MSC_REFUSES_SM,
-				"onDialogProviderAbort after MtForwardSM Request: " + abortProviderReason != null ? abortProviderReason
-						.toString() : "");
+            SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+            if (smsDeliveryData == null) {
+                this.logger.severe("smsDeliveryData CMP is missed - MtSbb.onDialogProviderAbort()");
+                return;
+            }
+            String targetId = smsDeliveryData.getTargetId();
+            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            if (smsSet == null) {
+                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogProviderAbort(), targetId=" + targetId);
+                return;
+            }
+
+            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM, "onDialogProviderAbort after MtForwardSM Request: "
+                    + abortProviderReason != null ? abortProviderReason.toString() : "", true);
+        } catch (Throwable e1) {
+            logger.severe("Exception in MtSbb.onDialogProviderAbort() when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	@Override
 	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
-		super.onDialogUserAbort(evt, aci);
+        try {
+            super.onDialogUserAbort(evt, aci);
 
-		String reason = getUserAbortReason(evt);
+            String reason = getUserAbortReason(evt);
 
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM,
-				"onDialogUserAbort after MtForwardSM Request: " + reason != null ? reason.toString() : "");
+            SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+            if (smsDeliveryData == null) {
+                this.logger.severe("smsDeliveryData CMP is missed - MtSbb.onDialogUserAbort()");
+                return;
+            }
+            String targetId = smsDeliveryData.getTargetId();
+            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            if (smsSet == null) {
+                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogUserAbort(), targetId=" + targetId);
+                return;
+            }
+
+            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.MSC_REFUSES_SM,
+                    "onDialogUserAbort after MtForwardSM Request: " + reason != null ? reason.toString() : "", true);
+        } catch (Throwable e1) {
+            logger.severe("Exception in MtSbb.onDialogUserAbort() when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	@Override
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
 		// TODO: may be it is not a permanent failure case ???
 
-		super.onDialogTimeout(evt, aci);
+        try {
+            super.onDialogTimeout(evt, aci);
 
-		this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.MSC_REFUSES_SM,
-				"onDialogTimeout after MtForwardSM Request");
+            SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+            if (smsDeliveryData == null) {
+                this.logger.severe("smsDeliveryData CMP is missed - MtSbb.onDialogTimeout()");
+                return;
+            }
+            String targetId = smsDeliveryData.getTargetId();
+            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            if (smsSet == null) {
+                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogTimeout(), targetId=" + targetId);
+                return;
+            }
+
+            this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.MSC_REFUSES_SM, "onDialogTimeout after MtForwardSM Request", true);
+        } catch (Throwable e1) {
+            logger.severe("Exception in MtSbb.onDialogTimeout() when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	@Override
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
-		super.onDialogDelimiter(evt, aci);
+        try {
+            super.onDialogDelimiter(evt, aci);
 
-		if (this.getTcEmptySent() != 0) {
-			// Empty TC-BEGIN has been sent
-			// We are sending MtForwardSM
-			this.setTcEmptySent(0);
+            SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+            if (smsDeliveryData == null) {
+                this.logger.severe("smsDeliveryData CMP is missed - MtSbb.onDialogDelimiter()");
+                return;
+            }
+            String targetId = smsDeliveryData.getTargetId();
+            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            if (smsSet == null) {
+                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogDelimiter(), targetId=" + targetId);
+                return;
+            }
 
-			SmsSignalInfo[] segments = this.getSegments();
-			int messageSegmentNumber = this.getMessageSegmentNumber();
-			if (messageSegmentNumber >= 0 && segments != null && messageSegmentNumber < segments.length) {
-				SmsSignalInfo si = segments[messageSegmentNumber];
-				if (si != null) {
-					try {
-						MAPDialogSms mapDialogSms = (MAPDialogSms) evt.getMAPDialog();
-						SM_RP_DA sm_RP_DA = this.getSmRpDa();
-						SM_RP_OA sm_RP_OA = this.getSmRpOa();
+            if (this.getTcEmptySent() != 0) {
+                // Empty TC-BEGIN has been sent
+                // We are sending MtForwardSM
+                this.setTcEmptySent(0);
 
-						boolean moreMessagesToSend = false;
-						if (messageSegmentNumber < segments.length - 1) {
-							moreMessagesToSend = true;
-						}
-                        SmsSubmitData smsSubmitData = this.doGetSmsSubmitData();
-                        if (smsSubmitData != null) {
-                            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(smsSubmitData.getTargetId());
-                            if (smsSet != null) {
-                                if (this.doGetCurrentMsgNum() < smsSet.getSmsCount() - 1) {
-                                    moreMessagesToSend = true;
-                                }
+                SmsSignalInfo[] segments = this.getSegments();
+                int messageSegmentNumber = this.getMessageSegmentNumber();
+                if (messageSegmentNumber >= 0 && segments != null && messageSegmentNumber < segments.length) {
+                    SmsSignalInfo si = segments[messageSegmentNumber];
+                    if (si != null) {
+                        try {
+                            MAPDialogSms mapDialogSms = (MAPDialogSms) evt.getMAPDialog();
+                            SM_RP_DA sm_RP_DA = this.getSmRpDa();
+                            SM_RP_OA sm_RP_OA = this.getSmRpOa();
+
+                            boolean moreMessagesToSend = false;
+                            if (messageSegmentNumber < segments.length - 1) {
+                                moreMessagesToSend = true;
                             }
+                            if (this.doGetCurrentMsgNum() < smsSet.getSmsCount() - 1) {
+                                moreMessagesToSend = true;
+                            }
+
+                            switch (mapDialogSms.getApplicationContext().getApplicationContextVersion()) {
+                            case version3:
+                                mapDialogSms.addMtForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, si, moreMessagesToSend, null);
+                                if (this.logger.isInfoEnabled()) {
+                                    this.logger.info("\nSending: MtForwardShortMessageRequest: sm_RP_DA=" + sm_RP_DA + ", sm_RP_OA=" + sm_RP_OA + ", si=" + si
+                                            + ", moreMessagesToSend=" + moreMessagesToSend);
+                                }
+                                break;
+                            case version2:
+                            case version1:
+                                mapDialogSms.addForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, si, moreMessagesToSend);
+                                if (this.logger.isInfoEnabled()) {
+                                    this.logger.info("\nSending: ForwardShortMessageRequest: sm_RP_DA=" + sm_RP_DA + ", sm_RP_OA=" + sm_RP_OA + ", si=" + si
+                                            + ", moreMessagesToSend=" + moreMessagesToSend);
+                                }
+                                break;
+                            default:
+                                break;
+                            }
+
+                            mapDialogSms.send();
+                        } catch (MAPException e) {
+                            logger.severe("Error while trying to send MtForwardShortMessageRequest", e);
                         }
-
-						switch (mapDialogSms.getApplicationContext().getApplicationContextVersion()) {
-						case version3:
-							mapDialogSms.addMtForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, si, moreMessagesToSend,
-									null);
-							if (this.logger.isInfoEnabled()) {
-								this.logger.info("\nSending: MtForwardShortMessageRequest: sm_RP_DA=" + sm_RP_DA
-										+ ", sm_RP_OA=" + sm_RP_OA + ", si=" + si + ", moreMessagesToSend="
-										+ moreMessagesToSend);
-							}
-							break;
-						case version2:
-						case version1:
-							mapDialogSms.addForwardShortMessageRequest(sm_RP_DA, sm_RP_OA, si, moreMessagesToSend);
-							if (this.logger.isInfoEnabled()) {
-								this.logger.info("\nSending: ForwardShortMessageRequest: sm_RP_DA=" + sm_RP_DA
-										+ ", sm_RP_OA=" + sm_RP_OA + ", si=" + si + ", moreMessagesToSend="
-										+ moreMessagesToSend);
-							}
-							break;
-						default:
-							break;
-						}
-
-						mapDialogSms.send();
-					} catch (MAPException e) {
-						logger.severe("Error while trying to send MtForwardShortMessageRequest", e);
-					}
-				}
-			}
-		} else if (this.getResponseReceived() == 1) {
-			this.setResponseReceived(0);
-			this.handleSmsResponse((MAPDialogSms) evt.getMAPDialog(), true);
-		}
+                    }
+                }
+            } else if (this.getResponseReceived() == 1) {
+                this.setResponseReceived(0);
+                this.handleSmsResponse((MAPDialogSms) evt.getMAPDialog(), true);
+            }
+        } catch (Throwable e1) {
+            logger.severe("Exception in MtSbb.onDialogDelimiter() when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	public void onDialogClose(DialogClose evt, ActivityContextInterface aci) {
-		super.onDialogClose(evt, aci);
+        try {
+            super.onDialogClose(evt, aci);
 
-		if (this.getResponseReceived() == 1) {
-			this.setResponseReceived(0);
-			this.handleSmsResponse((MAPDialogSms) evt.getMAPDialog(), false);
-		}
+            if (this.getResponseReceived() == 1) {
+                this.setResponseReceived(0);
+                this.handleSmsResponse((MAPDialogSms) evt.getMAPDialog(), false);
+            } else {
+
+                SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+                if (smsDeliveryData == null) {
+                    this.logger.severe("smsDeliveryData CMP is missed - MtSbb.onDialogClose()");
+                    return;
+                }
+                String targetId = smsDeliveryData.getTargetId();
+                SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+                if (smsSet == null) {
+                    this.logger.info("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogClose(), targetId=" + targetId);
+                    return;
+                }
+
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "DialogClose after Mt Request", false);
+            }
+        } catch (Throwable e1) {
+            logger.severe("Exception in MtSbb.onDialogClose() when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
-
+	
 	/**
 	 * SMS Event Handlers
 	 */
@@ -536,6 +645,18 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			this.logger.info("\nmperforming setupMtForwardShortMessageRequest ISDNAddressString= " + networkNode);
 		}
 
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        if (smsDeliveryData == null) {
+            this.logger.severe("smsDeliveryData CMP is missed - MtSbb.setupMtForwardShortMessageRequest()");
+            return;
+        }
+        String targetId = smsDeliveryData.getTargetId();
+        SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+        if (smsSet == null) {
+            this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.setupMtForwardShortMessageRequest(), targetId=" + targetId);
+            return;
+        }
+
 		SccpAddress networkNodeSccpAddress = this.getMSCSccpAddress(networkNode);
 
 		SM_RP_DA sm_RP_DA = this.mapParameterFactory.createSM_RP_DA(imsi);
@@ -567,13 +688,13 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				smStatus = ErrorCode.fromInt(e.getSmppErrorCode());
 			} catch (IllegalArgumentException e1) {
 			}
-			this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
+			this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true);
 		} catch (Throwable e) {
 			String reason = "Exception when invoking sendMtSms() from setupMtForwardShortMessageRequest()-firstMessageSending: "
 					+ e.toString();
 			this.logger.severe(reason, e);
 			ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
-			this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
+			this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true);
 		}
 	}
 
@@ -683,17 +804,19 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 	private void handleSmsResponse(MAPDialogSms mapDialogSms, boolean continueDialog) {
 
-	    SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
         if (smsDeliveryData == null) {
             if (this.logger.isInfoEnabled())
                 this.logger.info("SmsDeliveryData CMP missed");
             return;
         }
-        SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(smsDeliveryData.getTargetId());
+        String targetId = smsDeliveryData.getTargetId();
+        SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
         if (smsSet == null) {
-            this.logger.severe("smsSet is missed in ProcessingSmsSet map");
+            this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.handleSmsResponse(), targetId=" + targetId);
             return;
         }
+
         PersistenceRAInterface pers = this.getStore();
         int currentMsgNum = this.doGetCurrentMsgNum();
         Sms sms = smsSet.getSms(currentMsgNum);
@@ -715,6 +838,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				this.logger.severe(
 						"SmscPocessingException when invoking sendMtSms() from handleSmsResponse()-nextSegmentSending: "
 								+ e.toString(), e);
+                this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SYSTEM_FAILURE, "Error sendMtSms in handleSmsResponse(): ", true);
+                return;
 			}
 		}
 
@@ -1183,67 +1308,6 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
         }
         this.setMapApplicationContextVersionsUsed(existingVersionsTried);
     }
-
-//	/**
-//	 * Since mask used is 000 we have to convert version3 to MASK_MAP_VERSION_3
-//	 * and vice-a-versa
-//	 * 
-//	 * @param supported
-//	 * @return
-//	 */
-//	protected MAPApplicationContextVersion getNegotiatedMapVersion(MAPApplicationContextVersion supported) {
-//		int supportedVer;
-//		if (supported == MAPApplicationContextVersion.version3) {
-//			supportedVer = MASK_MAP_VERSION_3;
-//		} else {
-//			supportedVer = supported.getVersion();
-//		}
-//		supportedVer = this.negotiateMapVersion(supportedVer);
-//		if (supportedVer == MASK_MAP_VERSION_3) {
-//			return MAPApplicationContextVersion.version3;
-//		}
-//
-//		return MAPApplicationContextVersion.getInstance(supportedVer);
-//	}
-//
-//	/**
-//	 * MapApplicationContextVersionsUsed keeps the flag 001 for Version1 used,
-//	 * 010 for Version2 used and 100 for Version 3 used. Rest is OR operation,
-//	 * for example if its 110 means Version3 and 2 already used. If its 111
-//	 * means all versions already tried.
-//	 * 
-//	 * @param supported
-//	 * @return
-//	 */
-//	private int negotiateMapVersion(int supported) {
-//		int existingVersionsTried = this.getMapApplicationContextVersionsUsed();
-//
-//		if ((existingVersionsTried & supported) != supported) {
-//			existingVersionsTried = (existingVersionsTried | supported);
-//			this.setMapApplicationContextVersionsUsed(existingVersionsTried);
-//			return supported;
-//		}
-//
-//		if ((existingVersionsTried & MASK_MAP_VERSION_3) != MASK_MAP_VERSION_3) {
-//			existingVersionsTried = (existingVersionsTried | MASK_MAP_VERSION_3);
-//			this.setMapApplicationContextVersionsUsed(existingVersionsTried);
-//			return MASK_MAP_VERSION_3;
-//		}
-//
-//		if ((existingVersionsTried & MASK_MAP_VERSION_2) != MASK_MAP_VERSION_2) {
-//			existingVersionsTried = (existingVersionsTried | MASK_MAP_VERSION_2);
-//			this.setMapApplicationContextVersionsUsed(existingVersionsTried);
-//			return MASK_MAP_VERSION_2;
-//		}
-//
-//		if ((existingVersionsTried & MASK_MAP_VERSION_1) != MASK_MAP_VERSION_1) {
-//			existingVersionsTried = (existingVersionsTried | MASK_MAP_VERSION_1);
-//			this.setMapApplicationContextVersionsUsed(existingVersionsTried);
-//			return MASK_MAP_VERSION_1;
-//		}
-//
-//		return supported;
-//	}
 
 	public enum MessageProcessingState {
 		firstMessageSending, nextSegmentSending, resendAfterMapProtocolNegotiation,

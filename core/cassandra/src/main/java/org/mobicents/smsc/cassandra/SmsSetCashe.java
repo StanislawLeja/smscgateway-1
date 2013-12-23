@@ -22,6 +22,9 @@
 
 package org.mobicents.smsc.cassandra;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javolution.util.FastMap;
@@ -33,6 +36,8 @@ import javolution.util.FastMap;
  */
 public class SmsSetCashe {
 
+    private int processingSmsSetTimeout;
+    
 	private FastMap<TargetAddress, TargetAddressContainer> lstSmsSetUnderAtomicOper = new FastMap<TargetAddress, TargetAddressContainer>();
 
 	private AtomicInteger activityCount = new AtomicInteger(0);
@@ -96,20 +101,44 @@ public class SmsSetCashe {
         return lstSmsSetInProcessing.get(targetId);
     }
 
-    public SmsSet addProcessingSmsSet(String targetId, SmsSet smsSet) {
-        return lstSmsSetInProcessing.put(targetId, smsSet);
+    public SmsSet addProcessingSmsSet(String targetId, SmsSet smsSet, int processingSmsSetTimeout) {
+        this.processingSmsSetTimeout = processingSmsSetTimeout;
+
+        synchronized (lstSmsSetInProcessing) {
+            return lstSmsSetInProcessing.put(targetId, smsSet);
+        }
     }
 
     public SmsSet removeProcessingSmsSet(String targetId) {
-        return lstSmsSetInProcessing.remove(targetId);
+        synchronized (lstSmsSetInProcessing) {
+            SmsSet smsSet = lstSmsSetInProcessing.remove(targetId);
+            return smsSet;
+        }
     }
 
     public int getProcessingSmsSetSize() {
         return lstSmsSetInProcessing.size();
     }
 
+    public void garbadeCollectProcessingSmsSet() {
+        synchronized (lstSmsSetInProcessing) {
+            Date limit = new Date(new Date().getTime() - processingSmsSetTimeout * 1000);
+            ArrayList<String> toDel = new ArrayList<String>();
+            for (Map.Entry<String, SmsSet> entry : lstSmsSetInProcessing.entrySet()) {
+                if (entry.getValue().getCreationTime().before(limit)) {
+                    toDel.add(entry.getKey());
+                }
+            }
+            for (String key : toDel) {
+                lstSmsSetInProcessing.remove(key);
+            }
+        }
+    }
+
     public void clearProcessingSmsSet() {
-        lstSmsSetInProcessing.clear();
+        synchronized (lstSmsSetInProcessing) {
+            lstSmsSetInProcessing.clear();
+        }
     }
 
 }

@@ -36,6 +36,7 @@ import org.mobicents.smsc.slee.common.ra.EventIDCache;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.SmsRouteManagement;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+import org.mobicents.smsc.smpp.SmscStatProvider;
 
 public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
@@ -50,7 +51,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	private static final String EVENT_DELIVER_SM = "org.mobicents.smsc.slee.services.smpp.server.events.DELIVER_SM";
 	private static final String EVENT_SUBMIT_SM = "org.mobicents.smsc.slee.services.smpp.server.events.SUBMIT_SM";
 
-	private Tracer tracer = null;
+	protected Tracer tracer = null;
 	private ResourceAdaptorContext raContext = null;
 	private SleeTransactionManager sleeTransactionManager = null;
 	private SleeEndpoint sleeEndpoint = null;
@@ -62,7 +63,9 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	private SchedulerRaUsageParameters usageParameters;
 
     private DBOperations_C1 dbOperations_C1 = null;
-    private DBOperations_C2 dbOperations_C2 = null;
+    protected DBOperations_C2 dbOperations_C2 = null;
+    
+    private Date garbageCollectionTime = new Date();
 
 	public SchedulerResourceAdaptor() {
 		this.schedulerRaSbbInterface = new SchedulerRaSbbInterface() {
@@ -293,83 +296,112 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	}
 
+    private OneWaySmsSetCollection savedOneWaySmsSetCollection = null;
+
 	// /////////////////
 	// Helper methods //
 	// /////////////////
 	protected void onTimerTick() {
 
-		List<SmsSet> schedulableSms;
-		try {
-            if (this.tracer.isFineEnabled())
-                this.tracer.fine("Fetching: Starting fetching messages from database");
+        try {
+            // garbageCollectionTime 
+            Date current = new Date(new Date().getTime() - 1000 * 60);
+            if (garbageCollectionTime.before(current)) {
+                garbageCollectionTime = new Date();
+                SmsSetCashe.getInstance().garbadeCollectProcessingSmsSet();
+            }
 
+            OneWaySmsSetCollection schedulableSms;
+            int maxCnt;
             SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
             int fetchMaxRows = smscPropertiesManagement.getFetchMaxRows();
-            int fetchAvailRows;
-            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                fetchAvailRows = smscPropertiesManagement.getMaxActivityCount() - (int) this.getActivityCount();
+            int activityCount = SmsSetCashe.getInstance().getProcessingSmsSetSize();
+            int fetchAvailRows = smscPropertiesManagement.getMaxActivityCount() - activityCount;
+            maxCnt = Math.min(fetchMaxRows, fetchAvailRows);
+
+            if (savedOneWaySmsSetCollection != null && savedOneWaySmsSetCollection.size() > 0) {
+                schedulableSms = savedOneWaySmsSetCollection;
             } else {
-                fetchAvailRows = smscPropertiesManagement.getMaxActivityCount() - SmsSetCashe.getInstance().getProcessingSmsSetSize();
-            }
-            int maxCnt = Math.min(fetchMaxRows, fetchAvailRows);
+                try {
+                    if (this.tracer.isFineEnabled())
+                        this.tracer.fine("Fetching: Starting fetching messages from database: fetchMaxRows=" + fetchMaxRows + ", activityCount="
+                                + activityCount + ", fetchAvailRows=" + fetchAvailRows);
 
-            int readTryCount = 0;
-            while (true) {
-                schedulableSms = this.fetchSchedulable(maxCnt);
+                    if (maxCnt <= 0)
+                        return;
 
-                int cnt = 0;
-                if (schedulableSms != null)
-                    cnt = schedulableSms.size();
+                    int readTryCount = 0;
+                    while (true) {
+                        schedulableSms = this.fetchSchedulable(maxCnt);
 
-                readTryCount++;
-                if (cnt == 0 && readTryCount < 100)
-                    // we will 100 times reread new empty due_Slot
-                    continue;
+                        int cnt = 0;
+                        if (schedulableSms != null)
+                            cnt = schedulableSms.size();
 
-                if (this.tracer.isFineEnabled()) {
-                    String s1 = "Fetching: Fetched " + schedulableSms.size() + " messages (max requested messages=" + maxCnt + ", fetched messages=" + cnt
-                            + ")";
-                    this.tracer.fine(s1);
-                }
+                        readTryCount++;
+                        if (cnt == 0 && readTryCount < 100)
+                            // we will 100 times reread new empty due_Slot
+                            continue;
 
-                break;
-            }
-		} catch (PersistenceException e1) {
-			this.tracer
-					.severe("PersistenceException when fetching SmsSet list from a database: " + e1.getMessage(), e1);
-			return;
-		}
-
-		int count = 0;
-		try {
-			for (SmsSet sms : schedulableSms) {
-				try {
-                    if (!sms.isProcessingStarted()) {
-                        sms.setProcessingStarted();
-
-                        if (!injectSms(sms)) {
-                            return;
+                        if (this.tracer.isFineEnabled()) {
+                            String s1 = "Fetching: Fetched " + cnt + " messages (max requested messages=" + maxCnt + ", fetched messages=" + cnt + ")";
+                            this.tracer.fine(s1);
                         }
+
+                        break;
+                    }
+                } catch (PersistenceException e1) {
+                    this.tracer.severe("PersistenceException when fetching SmsSet list from a database: " + e1.getMessage(), e1);
+                    return;
+                }
+            }
+
+            int count = 0;
+            try {
+                while(true){
+                    SmsSet smsSet = schedulableSms.next();
+                    if (smsSet == null)
+                        break;
+
+                    try {
+                        if (!smsSet.isProcessingStarted()) {
+                            smsSet.setProcessingStarted();
+
+                            if (!injectSms(smsSet)) {
+                                return;
+                            }
+                        }
+                    } catch (Exception e) {
+                        this.tracer.severe("Exception when injectSms: " + e.getMessage(), e);
                     }
                     count++;
-				} catch (Exception e) {
-					this.tracer.severe("Exception when injectSms: " + e.getMessage(), e);
-				}
-			}
-		} finally {
 
-            if (count > 0) {
-                if (this.tracer.isInfoEnabled()) {
-                    String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.";
-                    this.tracer.info(s2);
+                    if (count >= maxCnt) {
+                        savedOneWaySmsSetCollection = schedulableSms;
+                        break;
+                    }
                 }
-            } else {
-                if (this.tracer.isFineEnabled()) {
-                    String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + "'.";
-                    this.tracer.fine(s2);
+            } finally {
+
+                if (count > 0) {
+                    SmscStatProvider smscStatProvider = SmscStatProvider.getInstance();
+                    smscStatProvider.setMessageScheduledTotal(smscStatProvider.getMessageScheduledTotal() + count);
+                    if (this.tracer.isInfoEnabled()) {
+                        String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + ", fetchMaxRows=" + fetchMaxRows
+                                + ", activityCount=" + activityCount + ", fetchAvailRows=" + fetchAvailRows + "'.";
+                        this.tracer.info(s2);
+                    }
+                } else {
+                    if (this.tracer.isFineEnabled()) {
+                        String s2 = "Fetching: Scheduled '" + count + "' out of '" + schedulableSms.size() + ", fetchMaxRows=" + fetchMaxRows
+                                + ", activityCount=" + activityCount + ", fetchAvailRows=" + fetchAvailRows + "'.";
+                        this.tracer.fine(s2);
+                    }
                 }
             }
-		}
+        } catch (Throwable e1) {
+            this.tracer.severe("Exception in SchedulerResourceAdaptor when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	protected void endAcitivity(SchedulerActivityHandle activityHandle) throws Exception {
@@ -419,28 +451,32 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		return true;
 	}
 
-	protected List<SmsSet> fetchSchedulable(int maxRecordCount) throws PersistenceException {
-
+    protected OneWaySmsSetCollection fetchSchedulable(int maxRecordCount) throws PersistenceException {
 	    SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
         if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-            List<SmsSet> res = dbOperations_C1.fetchSchedulableSmsSets(maxRecordCount, this.tracer);
+            List<SmsSet> res0 = dbOperations_C1.fetchSchedulableSmsSets(maxRecordCount, this.tracer);
+            OneWaySmsSetCollection res = new OneWaySmsSetCollection();
+            res.setListSmsSet(res0);
             return res;
         } else {
             long processedDueSlot = dbOperations_C2.c2_getCurrentDueSlot();
             long possibleDueSlot = dbOperations_C2.c2_getIntimeDueSlot();
-            if (processedDueSlot >= possibleDueSlot || maxRecordCount < smscPropertiesManagement.getFetchMaxRows()) {
-                return new ArrayList<SmsSet>();
+//            if (processedDueSlot >= possibleDueSlot || maxRecordCount < smscPropertiesManagement.getFetchMaxRows()) {
+            if (processedDueSlot >= possibleDueSlot) {
+                return new OneWaySmsSetCollection();
             }
             processedDueSlot++;
             if (!dbOperations_C2.c2_checkDueSlotNotWriting(processedDueSlot)) {
-                return new ArrayList<SmsSet>();
+                return new OneWaySmsSetCollection();
             }
 
             ArrayList<SmsSet> lstS = dbOperations_C2.c2_getRecordList(processedDueSlot);
             ArrayList<SmsSet> lst = dbOperations_C2.c2_sortRecordList(lstS);
+            OneWaySmsSetCollection res = new OneWaySmsSetCollection();
+            res.setListSmsSet(lst);
 
             dbOperations_C2.c2_setCurrentDueSlot(processedDueSlot);
-            return lst;
+            return res;
         }
 	}
 
@@ -484,5 +520,31 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	private long getActivityCount() {
 		return this.usageParameters.getActivityCount();
+	}
+
+	private class OneWaySmsSetCollection {
+        private List<SmsSet> lst = new ArrayList<SmsSet>();
+        private int uploadedCount;
+
+        public void setListSmsSet(List<SmsSet> val) {
+            this.lst = val;
+            uploadedCount = 0;
+        }
+
+        public void add(SmsSet smsSet) {
+            lst.add(smsSet);
+        }
+
+        public SmsSet next() {
+            if (uploadedCount >= lst.size())
+                return null;
+            else {
+                return lst.get(uploadedCount++);
+            }
+        }
+
+        public int size() {
+            return lst.size() - uploadedCount;
+        }
 	}
 }

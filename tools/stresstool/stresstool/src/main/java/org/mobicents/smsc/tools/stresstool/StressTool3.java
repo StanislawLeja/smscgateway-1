@@ -84,7 +84,7 @@ public class StressTool3 {
         // -dDataTableDaysTimeArea
 
         this.dbOperations = new TT_DBOperationsProxy3();
-        this.dbOperations.start(host, port, keyspace, 60, 60);
+        this.dbOperations.start(host, port, keyspace, 60, 60, 60 * 10);
 
         
         

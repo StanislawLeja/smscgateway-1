@@ -49,10 +49,8 @@ import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
@@ -66,6 +64,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+import org.mobicents.smsc.smpp.SmscStatProvider;
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.pdu.BaseSm;
@@ -109,7 +108,14 @@ public abstract class TxSmppServerSbb implements Sbb {
 	 */
 
 	public void onSubmitSm(com.cloudhopper.smpp.pdu.SubmitSm event, ActivityContextInterface aci) {
-		SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
+        // TODO remove it ...........................
+//        long l2 = Date.parse(event.getServiceType());
+//        Date dt0 = new Date(l2);
+        Date dt0 = new Date();
+        Date dt1 = new Date();
+        // TODO remove it ...........................
+
+        SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
 		Esme esme = smppServerTransaction.getEsme();
 		String esmeName = esme.getName();
 
@@ -125,8 +131,8 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 			try {
 				synchronized (lock) {
-					sms = this.createSmsEvent(event, esme, ta, store);
-                    this.processSms(sms, store);
+                    sms = this.createSmsEvent(event, esme, ta, store);
+					this.processSms(sms, store);
 				}
 			} finally {
 				store.releaseSynchroObject(lock);
@@ -192,6 +198,13 @@ public abstract class TxSmppServerSbb implements Sbb {
 		} catch (Throwable e) {
 			this.logger.severe("Error while trying to send SubmitSmResponse=" + response, e);
 		}
+
+        // TODO remove it ...........................
+        Date dt3 = new Date();
+        SmscStatProvider.getInstance().setParam1((int) (dt3.getTime() - dt0.getTime()));
+        SmscStatProvider.getInstance().setParam2((int) (dt3.getTime() - dt1.getTime()));
+        // TODO remove it ...........................
+
 	}
 
 	public void onDataSm(com.cloudhopper.smpp.pdu.DataSm event, ActivityContextInterface aci) {
