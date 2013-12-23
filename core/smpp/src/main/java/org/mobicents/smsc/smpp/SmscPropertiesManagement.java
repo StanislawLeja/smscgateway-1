@@ -146,8 +146,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // TODO: new **************************
 	// After SMSC restart it will revise previous reviseSecondsOnSmscStart seconds dueSlot's for unsent messages 
 	private int reviseSecondsOnSmscStart = 60;
+	// Timeout of life cycle of SmsSet in SmsSetCashe.ProcessingSmsSet in seconds
+	private int processingSmsSetTimeout = 10 * 60;
     // TODO: new **************************
-	
+
 	private SmscPropertiesManagement(String name) {
 		this.name = name;
 		binding.setClassAttribute(CLASS_ATTRIBUTE);
@@ -445,6 +447,15 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     public void setReviseSecondsOnSmscStart(int reviseSecondsOnSmscStart) {
         this.reviseSecondsOnSmscStart = reviseSecondsOnSmscStart;
+        this.store();
+    }
+
+    public int getProcessingSmsSetTimeout() {
+        return this.processingSmsSetTimeout;
+    }
+
+    public void setProcessingSmsSetTimeout(int processingSmsSetTimeout) {
+        this.processingSmsSetTimeout = processingSmsSetTimeout;
         this.store();
     }
 

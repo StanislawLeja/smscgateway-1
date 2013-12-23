@@ -90,51 +90,53 @@ public abstract class SriSbb extends MtCommonSbb {
 
 	public void onSms(SmsSetEvent event, ActivityContextInterface aci, EventContext eventContext) {
 
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("\nReceived Submit SMS. event= " + event + "this=" + this);
-		}
+        try {
+            if (this.logger.isInfoEnabled()) {
+                this.logger.info("\nReceived Submit SMS. event= " + event + "this=" + this);
+            }
 
-        SmsSet smsSet = event.getSmsSet();
-        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-            try {
-                this.getStore().fetchSchedulableSms(smsSet, true);
-                // this.getStore().fetchSchedulableSms(smsSet, smsSet.getType()
-                // == SmType.SMS_FOR_SS7);
-            } catch (PersistenceException e) {
-                this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR,
-                        "PersistenceException when fetchSchedulableSms(): " + e.getMessage());
+            SmsSet smsSet = event.getSmsSet();
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                try {
+                    this.getStore().fetchSchedulableSms(smsSet, true);
+                } catch (PersistenceException e) {
+                    this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "PersistenceException when fetchSchedulableSms(): "
+                            + e.getMessage(), true);
+                    return;
+                }
+            } else {
+            }
+
+            // remove receipt messages if any: receipt messages must not be
+            // routed to SS7
+            // TODO: ????
+            // ....................
+
+            int curMsg = 0;
+            Sms sms = smsSet.getSms(curMsg);
+            if (sms == null) {
+                // this means that no messages with good ScheduleDeliveryTime or
+                // no messages at all we have to reschedule
+                this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SUCCESS, "No messages for sending now", true);
                 return;
             }
-        } else {
+
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                this.startMessageDelivery(sms);
+            } else {
+                sms.setDeliveryCount(sms.getDeliveryCount() + 1);
+            }
+
+            this.doSetCurrentMsgNum(curMsg);
+            SmsSubmitData smsDeliveryData = new SmsSubmitData();
+            smsDeliveryData.setTargetId(smsSet.getTargetId());
+            this.doSetSmsSubmitData(smsDeliveryData);
+
+            this.sendSRI(smsSet, smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
+                    this.getSRIMAPApplicationContext(this.maxMAPApplicationContextVersion));
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onSms when fetching records and issuing events: " + e1.getMessage(), e1);
         }
-
-        // remove receipt messages if any: receipt messages must not be routed to SS7
-        // ....................
-
-        int curMsg = 0;
-		Sms sms = smsSet.getSms(curMsg);
-		if (sms == null) {
-			// this means that no messages with good ScheduleDeliveryTime or no
-			// messages at all
-			// we have to reschedule
-			this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.SUCCESS, "No messages for sending now");
-			return;
-		}
-
-        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-            this.startMessageDelivery(sms);
-        } else {
-            sms.setDeliveryCount(sms.getDeliveryCount() + 1);
-        }
-
-		this.doSetCurrentMsgNum(curMsg);
-		SmsSubmitData smsDeliveryData = new SmsSubmitData();
-//        smsDeliveryData.setSmsSet(smsSet);
-        smsDeliveryData.setTargetId(smsSet.getTargetId());
-		this.doSetSmsSubmitData(smsDeliveryData);
-
-		this.sendSRI(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
-				this.getSRIMAPApplicationContext(this.maxMAPApplicationContextVersion));
 	}
 
 	/**
@@ -145,21 +147,24 @@ public abstract class SriSbb extends MtCommonSbb {
 	public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
 		super.onErrorComponent(event, aci);
 
-		// we store error into CMP
-		MAPErrorMessage mapErrorMessage = event.getMAPErrorMessage();
-		this.setErrorResponse(mapErrorMessage);
+        try {
+            // we store error into CMP
+            MAPErrorMessage mapErrorMessage = event.getMAPErrorMessage();
+            this.setErrorResponse(mapErrorMessage);
 
-		if (mapErrorMessage.isEmAbsentSubscriber()) {
-			MAPErrorMessageAbsentSubscriber errAs = mapErrorMessage.getEmAbsentSubscriber();
-			Boolean mwdSet = errAs.getMwdSet();
-			if (mwdSet != null && mwdSet) {
-				InformServiceCenterContainer informServiceCenterContainer = new InformServiceCenterContainer();
-				MWStatus mwStatus = event.getMAPDialog().getService().getMAPProvider().getMAPParameterFactory()
-						.createMWStatus(false, true, false, false);
-				informServiceCenterContainer.setMwStatus(mwStatus);
-				this.doSetInformServiceCenterContainer(informServiceCenterContainer);
-			}
-		}
+            if (mapErrorMessage.isEmAbsentSubscriber()) {
+                MAPErrorMessageAbsentSubscriber errAs = mapErrorMessage.getEmAbsentSubscriber();
+                Boolean mwdSet = errAs.getMwdSet();
+                if (mwdSet != null && mwdSet) {
+                    InformServiceCenterContainer informServiceCenterContainer = new InformServiceCenterContainer();
+                    MWStatus mwStatus = event.getMAPDialog().getService().getMAPProvider().getMAPParameterFactory().createMWStatus(false, true, false, false);
+                    informServiceCenterContainer.setMwStatus(mwStatus);
+                    this.doSetInformServiceCenterContainer(informServiceCenterContainer);
+                }
+            }
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onErrorComponent when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	public void onRejectComponent(RejectComponent event, ActivityContextInterface aci) {
@@ -167,8 +172,20 @@ public abstract class SriSbb extends MtCommonSbb {
 
 		String reason = this.getRejectComponentReason(event);
 
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
-				"onRejectComponent after SRI Request: " + reason != null ? reason.toString() : "");
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        if (smsDeliveryData == null) {
+            this.logger.severe("SmsDeliveryData CMP missed");
+            return;
+        }
+        String targetId = smsDeliveryData.getTargetId();
+        SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+        if (smsSet == null) {
+            this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onRejectComponent(), targetId=" + targetId);
+            return;
+        }
+
+		this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
+				"onRejectComponent after SRI Request: " + reason != null ? reason.toString() : "", true);
 	}
 
 	/**
@@ -178,85 +195,130 @@ public abstract class SriSbb extends MtCommonSbb {
 	@Override
 	public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
 
-		MAPRefuseReason mapRefuseReason = evt.getRefuseReason();
-		SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
-		if (smsDeliveryData == null) {
-			this.logger.severe("SmsDeliveryData CMP missed");
-			return;
-		}
+        try {
+            MAPRefuseReason mapRefuseReason = evt.getRefuseReason();
+            SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+            if (smsDeliveryData == null) {
+                this.logger.severe("SmsDeliveryData CMP missed");
+                return;
+            }
+            String targetId = smsDeliveryData.getTargetId();
+            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            if (smsSet == null) {
+                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onDialogReject(), targetId=" + targetId);
+                return;
+            }
 
-		if (mapRefuseReason == MAPRefuseReason.PotentialVersionIncompatibility
-				&& evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1) {
-			if (logger.isWarningEnabled()) {
-				this.logger.warning("Rx : Sri onDialogReject / PotentialVersionIncompatibility=" + evt);
-			}
-			// possible a peer supports only MAP V1
-			// Now send new SRI with supported ACN (MAP V1)
-			if (smsDeliveryData != null) {
-                String targetId = smsDeliveryData.getTargetId();
-                SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
-				this.sendSRI(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
-						this.getSRIMAPApplicationContext(MAPApplicationContextVersion.version1));
-				return;
-			}
-		}
+            if (mapRefuseReason == MAPRefuseReason.PotentialVersionIncompatibility
+                    && evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1) {
+                if (logger.isWarningEnabled()) {
+                    this.logger.warning("Rx : Sri onDialogReject / PotentialVersionIncompatibility=" + evt);
+                }
+                // possible a peer supports only MAP V1
+                // Now send new SRI with supported ACN (MAP V1)
+                this.sendSRI(smsSet, smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
+                        this.getSRIMAPApplicationContext(MAPApplicationContextVersion.version1));
+                return;
+            }
 
-		// If ACN not supported, lets use the new one suggested
-		if (mapRefuseReason == MAPRefuseReason.ApplicationContextNotSupported) {
-			if (logger.isWarningEnabled()) {
-				this.logger.warning("Rx : Sri onDialogReject / ApplicationContextNotSupported=" + evt);
-			}
+            // If ACN not supported, lets use the new one suggested
+            if (mapRefuseReason == MAPRefuseReason.ApplicationContextNotSupported) {
+                if (logger.isWarningEnabled()) {
+                    this.logger.warning("Rx : Sri onDialogReject / ApplicationContextNotSupported=" + evt);
+                }
 
-			// Now send new SRI with supported ACN
-			ApplicationContextName tcapApplicationContextName = evt.getAlternativeApplicationContext();
-			MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext
-					.getInstance(tcapApplicationContextName.getOid());
+                // Now send new SRI with supported ACN
+                ApplicationContextName tcapApplicationContextName = evt.getAlternativeApplicationContext();
+                MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext.getInstance(tcapApplicationContextName.getOid());
 
-			if (smsDeliveryData != null) {
-                String targetId = smsDeliveryData.getTargetId();
-                SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
-				this.sendSRI(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
-						this.getSRIMAPApplicationContext(supportedMAPApplicationContext.getApplicationContextVersion()));
-				return;
-			}
-		}
+                this.sendSRI(smsSet, smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
+                        this.getSRIMAPApplicationContext(supportedMAPApplicationContext.getApplicationContextVersion()));
+                return;
+            }
 
-		super.onDialogReject(evt, aci);
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
-				"onDialogReject after SRI Request: " + mapRefuseReason != null ? mapRefuseReason.toString() : "");
+            super.onDialogReject(evt, aci);
+            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogReject after SRI Request: "
+                    + mapRefuseReason != null ? mapRefuseReason.toString() : "", true);
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onDialogReject() when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	@Override
 	public void onDialogProviderAbort(DialogProviderAbort evt, ActivityContextInterface aci) {
-		super.onDialogProviderAbort(evt, aci);
+        try {
+            super.onDialogProviderAbort(evt, aci);
 
-		MAPAbortProviderReason abortProviderReason = evt.getAbortProviderReason();
+            MAPAbortProviderReason abortProviderReason = evt.getAbortProviderReason();
 
-		this.onDeliveryError(
-				ErrorAction.permanentFailure,
-				ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
-				"onDialogProviderAbort after SRI Request: " + abortProviderReason != null ? abortProviderReason
-						.toString() : "");
+            SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+            if (smsDeliveryData == null) {
+                this.logger.severe("SmsDeliveryData CMP missed");
+                return;
+            }
+            String targetId = smsDeliveryData.getTargetId();
+            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            if (smsSet == null) {
+                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onDialogProviderAbort(), targetId=" + targetId);
+                return;
+            }
+
+            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogProviderAbort after SRI Request: "
+                    + abortProviderReason != null ? abortProviderReason.toString() : "", true);
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onDialogProviderAbort() when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	@Override
 	public void onDialogUserAbort(DialogUserAbort evt, ActivityContextInterface aci) {
-		super.onDialogUserAbort(evt, aci);
+        try {
+            super.onDialogUserAbort(evt, aci);
 
-		String reason = getUserAbortReason(evt);
+            String reason = getUserAbortReason(evt);
 
-		this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
-				"onDialogUserAbort after SRI Request: " + reason != null ? reason.toString() : "");
+            SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+            if (smsDeliveryData == null) {
+                this.logger.severe("SmsDeliveryData CMP missed");
+                return;
+            }
+            String targetId = smsDeliveryData.getTargetId();
+            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            if (smsSet == null) {
+                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onDialogUserAbort(), targetId=" + targetId);
+                return;
+            }
+
+            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogUserAbort after SRI Request: "
+                    + reason != null ? reason.toString() : "", true);
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onDialogUserAbort() when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	@Override
 	public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
 		// TODO: may be it is not a permanent failure case ???
 
-		super.onDialogTimeout(evt, aci);
+        try {
+            super.onDialogTimeout(evt, aci);
 
-		this.onDeliveryError(ErrorAction.temporaryFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
-				"onDialogTimeout after SRI Request");
+            SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+            if (smsDeliveryData == null) {
+                this.logger.severe("SmsDeliveryData CMP missed");
+                return;
+            }
+            String targetId = smsDeliveryData.getTargetId();
+            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            if (smsSet == null) {
+                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onDialogTimeout(), targetId=" + targetId);
+                return;
+            }
+
+            this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogTimeout after SRI Request", true);
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onDialogTimeout() when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	/**
@@ -308,15 +370,23 @@ public abstract class SriSbb extends MtCommonSbb {
 	}
 
 	public void onDialogDelimiter(DialogDelimiter evt, ActivityContextInterface aci) {
-		super.onDialogDelimiter(evt, aci);
+        super.onDialogDelimiter(evt, aci);
 
-		this.onSriFullResponse();
+        try {
+            this.onSriFullResponse();
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onDialogDelimiter when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	public void onDialogClose(DialogClose evt, ActivityContextInterface aci) {
-		super.onDialogClose(evt, aci);
+        try {
+            super.onDialogClose(evt, aci);
 
-		this.onSriFullResponse();
+            this.onSriFullResponse();
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onDialogClose when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
 	}
 
 	/**
@@ -454,7 +524,7 @@ public abstract class SriSbb extends MtCommonSbb {
 	 * Private methods
 	 */
 
-	private void sendSRI(String destinationAddress, int ton, int npi, MAPApplicationContext mapApplicationContext) {
+    private void sendSRI(SmsSet smsSet, String destinationAddress, int ton, int npi, MAPApplicationContext mapApplicationContext) {
 		// Send out SRI
 		MAPDialogSms mapDialogSms = null;
 		try {
@@ -476,7 +546,7 @@ public abstract class SriSbb extends MtCommonSbb {
 			String reason = "MAPException when sending SRI from sendSRI(): " + e.toString();
 			this.logger.severe(reason, e);
 			ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
-			this.onDeliveryError(ErrorAction.permanentFailure, smStatus, reason);
+			this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true);
 		}
 	}
 
@@ -505,19 +575,28 @@ public abstract class SriSbb extends MtCommonSbb {
 
 		SendRoutingInfoForSMResponse sendRoutingInfoForSMResponse = this.getSendRoutingInfoForSMResponse();
 		MAPErrorMessage errorMessage = this.getErrorResponse();
-		if (sendRoutingInfoForSMResponse != null) {
 
-			// we have positive response to SRI request - we will try to send
-			// messages
-			SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
-			if (smsDeliveryData != null) {
-                String targetId = smsDeliveryData.getTargetId();
-                SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
-				if (smsSet != null) {
-					smsSet.setImsi(sendRoutingInfoForSMResponse.getIMSI());
-					smsSet.setLocationInfoWithLMSI(sendRoutingInfoForSMResponse.getLocationInfoWithLMSI());
-				}
-			}
+        SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
+        if (smsDeliveryData == null) {
+            this.logger.severe("smsDeliveryData CMP is missed - SriSbb.onSriFullResponse()");
+            return;
+        }
+        String targetId = smsDeliveryData.getTargetId();
+        SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+        if (smsSet == null) {
+            if (sendRoutingInfoForSMResponse != null || errorMessage != null) {
+                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onSriFullResponse(), targetId=" + targetId);
+            } else {
+                this.logger.info("In SmsDeliveryData CMP smsSet is missed - SriSbb.onSriFullResponse(), targetId=" + targetId);
+            }
+            return;
+        }
+
+        if (sendRoutingInfoForSMResponse != null) {
+            // we have positive response to SRI request -
+            // we will try to send messages
+            smsSet.setImsi(sendRoutingInfoForSMResponse.getIMSI());
+            smsSet.setLocationInfoWithLMSI(sendRoutingInfoForSMResponse.getLocationInfoWithLMSI());
 
 			MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
 			if (mtSbbLocalObject != null) {
@@ -529,48 +608,53 @@ public abstract class SriSbb extends MtCommonSbb {
 				mtSbbLocalObject.setupMtForwardShortMessageRequest(sendRoutingInfoForSMResponse
 						.getLocationInfoWithLMSI().getNetworkNodeNumber(), sendRoutingInfoForSMResponse.getIMSI(),
 						sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getLMSI());
-			}
-		} else if (errorMessage != null) {
+            }
+            return;
+        }
 
+		if (errorMessage != null) {
 			// we have a negative response
 			if (errorMessage.isEmAbsentSubscriber()) {
-				this.onDeliveryError(ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
-						"AbsentSubscriber response from HLR: " + errorMessage.toString());
+				this.onDeliveryError(smsSet, ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
+						"AbsentSubscriber response from HLR: " + errorMessage.toString(), true);
 			} else if (errorMessage.isEmAbsentSubscriberSM()) {
-				this.onDeliveryError(ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
-						"AbsentSubscriber response from HLR: " + errorMessage.toString());
+				this.onDeliveryError(smsSet, ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
+						"AbsentSubscriber response from HLR: " + errorMessage.toString(), true);
 			} else if (errorMessage.isEmCallBarred()) {
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.CALL_BARRED,
-						"CallBarred response from HLR: " + errorMessage.toString());
+				this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.CALL_BARRED,
+						"CallBarred response from HLR: " + errorMessage.toString(), true);
 			} else if (errorMessage.isEmFacilityNotSup()) {
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
-						"CallBarred response from HLR: " + errorMessage.toString());
+				this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
+						"CallBarred response from HLR: " + errorMessage.toString(), true);
 			} else if (errorMessage.isEmSystemFailure()) {
 				// TODO: may be systemFailure is not a permanent error case ?
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
-						"SystemFailure response from HLR: " + errorMessage.toString());
+				this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
+						"SystemFailure response from HLR: " + errorMessage.toString(), true);
 			} else if (errorMessage.isEmUnknownSubscriber()) {
-				this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNKNOWN_SUBSCRIBER,
-						"UnknownSubscriber response from HLR: " + errorMessage.toString());
+				this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNKNOWN_SUBSCRIBER,
+						"UnknownSubscriber response from HLR: " + errorMessage.toString(), true);
 			} else if (errorMessage.isEmExtensionContainer()) {
 				if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.dataMissing) {
-					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.DATA_MISSING,
-							"DataMissing response from HLR");
+					this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.DATA_MISSING,
+							"DataMissing response from HLR", true);
 				} else if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.unexpectedDataValue) {
-					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA,
-							"UnexpectedDataValue response from HLR");
+					this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA,
+							"UnexpectedDataValue response from HLR", true);
 				} else if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.teleserviceNotProvisioned) {
-					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.TELESERVICE_NOT_PROVISIONED,
-							"TeleserviceNotProvisioned response from HLR");
+					this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.TELESERVICE_NOT_PROVISIONED,
+							"TeleserviceNotProvisioned response from HLR", true);
 				} else {
-					this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA_FROM_HLR,
-							"Error response from HLR: " + errorMessage.toString());
+					this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA_FROM_HLR,
+							"Error response from HLR: " + errorMessage.toString(), true);
 				}
+			} else {
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA_FROM_HLR,
+                        "Error response from HLR: " + errorMessage.toString(), true);
 			}
 		} else {
 			// we have no responses - this is an error behaviour
-			this.onDeliveryError(ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
-					"Empty response after SRI Request");
+			this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
+					"Empty response after SRI Request", false);
 		}
 	}
 

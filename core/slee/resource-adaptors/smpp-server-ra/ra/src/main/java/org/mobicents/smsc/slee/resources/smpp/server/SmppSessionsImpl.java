@@ -1,5 +1,6 @@
 package org.mobicents.smsc.slee.resources.smpp.server;
 
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.slee.SLEEException;
@@ -170,7 +171,14 @@ public class SmppSessionsImpl implements SmppSessions {
 				case SmppConstants.CMD_ID_UNBIND:
 					break;
 				case SmppConstants.CMD_ID_SUBMIT_SM:
-					smppServerTransactionHandle = new SmppTransactionHandle(this.esme.getName(),
+//                    // TODO remove it ...........................
+//				    SubmitSm submitSm = (SubmitSm) pduRequest;
+//				    Date dt = new Date();
+//				    submitSm.setServiceType(dt.toGMTString());
+//                    // TODO remove it ...........................
+
+                    
+                    smppServerTransactionHandle = new SmppTransactionHandle(this.esme.getName(),
 							pduRequest.getSequenceNumber(), SmppTransactionType.INCOMING);
 					smppServerTransaction = new SmppTransactionImpl(pduRequest, this.esme, smppServerTransactionHandle,
 							smppServerResourceAdaptor);

@@ -117,7 +117,7 @@ public class SmppTestingForm extends JDialog {
 	private SmppSession session0;
 	private DefaultSmppServer defaultSmppServer;
 
-	protected Timer timer;
+	protected Timer[] timer;
 	protected AtomicInteger messagesSent = new AtomicInteger();
 	protected AtomicInteger segmentsSent = new AtomicInteger();
 	protected AtomicInteger responsesRcvd = new AtomicInteger();
@@ -728,22 +728,29 @@ public class SmppTestingForm extends JDialog {
 	}
 
 	private void doStopTimer() {
-		if (this.timer != null) {
-			this.timer.cancel();
-			this.timer = null;
-		}
+        if (this.timer != null) {
+            for (Timer tm : this.timer) {
+                tm.cancel();
+            }
+            this.timer = null;
+        }
 	}
+
+	private int threadCount = 10;
 	
 	private void startBulkSending() {
 		this.doStopTimer();
 
-		this.timer = new Timer();
-		this.timer.scheduleAtFixedRate(new TimerTask() {
-			@Override
-			public void run() {
-				doSendSmppMessages();
-			}
-		}, 1 * 1000, 1 * 1000);
+        this.timer = new Timer[threadCount];
+        for (int i1 = 0; i1 < threadCount; i1++) {
+            this.timer[i1] = new Timer();
+            this.timer[i1].scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    doSendSmppMessages();
+                }
+            }, 1 * 1000, 1 * 1000);
+        }
 
 		this.btStartBulk.setEnabled(false);
 		this.btStopBulk.setEnabled(true);
@@ -760,39 +767,39 @@ public class SmppTestingForm extends JDialog {
 	
 	private void doSendSmppMessages() {
 
-		Random rand = new Random();
-		
-		for (int i1 = 0; i1 < this.param.getBulkMessagePerSecond(); i1++) {
-			int n = this.param.getBulkDestAddressRangeEnd() - this.param.getBulkDestAddressRangeStart() + 1;
-			if (n < 1)
-				n = 1;
-			int j1 = rand.nextInt(n);
-			Integer destAddr = this.param.getBulkDestAddressRangeStart() + j1;
-			String destAddrS = destAddr.toString();
+        Random rand = new Random();
 
-			int j2 = rand.nextInt(2);
-			int j3 = rand.nextInt(3);
-			EncodingType encodingType;
-			if (j2 == 0)
-				encodingType = EncodingType.GSM7;
-			else
-				encodingType = EncodingType.UCS2;
-			SplittingType splittingType;
-			switch (j3) {
-			case 0:
-				splittingType = SplittingType.DoNotSplit;
-				break;
-			case 1:
-				splittingType = SplittingType.SplitWithParameters;
-				break;
-			default:
-				splittingType = SplittingType.SplitWithUdh;
-				break;
-			}
-			
-			int j4 = rand.nextInt(5);
-			String msg = this.param.getMessageText();
-			if (j4 == 0)
+        for (int i1 = 0; i1 < this.param.getBulkMessagePerSecond() / threadCount; i1++) {
+            int n = this.param.getBulkDestAddressRangeEnd() - this.param.getBulkDestAddressRangeStart() + 1;
+            if (n < 1)
+                n = 1;
+            int j1 = rand.nextInt(n);
+            Integer destAddr = this.param.getBulkDestAddressRangeStart() + j1;
+            String destAddrS = destAddr.toString();
+
+            int j2 = rand.nextInt(2);
+            int j3 = rand.nextInt(3);
+            EncodingType encodingType;
+            if (j2 == 0)
+                encodingType = EncodingType.GSM7;
+            else
+                encodingType = EncodingType.UCS2;
+            SplittingType splittingType;
+            switch (j3) {
+            case 0:
+                splittingType = SplittingType.DoNotSplit;
+                break;
+            case 1:
+                splittingType = SplittingType.SplitWithParameters;
+                break;
+            default:
+                splittingType = SplittingType.SplitWithUdh;
+                break;
+            }
+
+            int j4 = rand.nextInt(5);
+            String msg = this.param.getMessageText();
+            if (j4 == 0)
 				msg = bigMessage;
 
 			

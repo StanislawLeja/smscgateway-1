@@ -349,6 +349,18 @@ public class SMSCShellExecutor implements ShellExecutor {
 				}
 
 				return SMSCOAMMessages.INVALID_COMMAND;
+            } else if (args[1].toLowerCase().equals("stat")) {
+                String rasCmd = args[2];
+
+                if (rasCmd == null) {
+                    return SMSCOAMMessages.INVALID_COMMAND;
+                }
+
+                if (rasCmd.equals("get")) {
+                    return this.getStat(args);
+                }
+
+                return SMSCOAMMessages.INVALID_COMMAND;
 			}
 
 			return SMSCOAMMessages.INVALID_COMMAND;
@@ -1058,6 +1070,25 @@ public class SMSCShellExecutor implements ShellExecutor {
 		ArchiveSms.getInstance().makeCdrDatabaseManualExport(timeFrom, timeTo);
 		return SMSCOAMMessages.ACCEPTED_ARCHIVE_GENERATE_CDR_SUCCESSFULL;
 	}
+
+    public String getStat(String[] args) {
+        StringBuilder sb = new StringBuilder();
+
+        SmscStatProvider smscStatProvider = SmscStatProvider.getInstance();
+        sb.append("Stat: ");
+        sb.append("MessageInProcess: ");
+        sb.append(smscStatProvider.getMessageInProcess());
+        sb.append(", MessageScheduledTotal: ");
+        sb.append(smscStatProvider.getMessageScheduledTotal());
+        sb.append(", DueSlotProcessingLag: ");
+        sb.append(smscStatProvider.getDueSlotProcessingLag());
+        sb.append(", Param1: ");
+        sb.append(smscStatProvider.getParam1());
+        sb.append(", Param2: ");
+        sb.append(smscStatProvider.getParam2());
+
+        return sb.toString();
+    }
 
 	public String execute(String[] args) {
 		if (args[0].equals("smsc")) {
