@@ -2428,7 +2428,7 @@ public class MtTest {
 //        assertNull(smsSet.getDueDate());
 //        assertFalse(smsSet.isAlertingSupported());
 //
-//        this.pers.setDeliveryStart(smsSet, curDate);
+//        this.pers.setDeliveryStart(smsSet, curDate);this.pers.setDeliveryStart(smsSet, curDate);
 //
 //        assertNull(smsSet.getStatus());
 //        assertEquals(smsSet.getInSystem(), 2);

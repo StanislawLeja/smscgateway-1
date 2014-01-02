@@ -275,7 +275,7 @@ public abstract class AlertSbb implements Sbb {
                                                 SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet0.getTargetId());
                                                 long newDueSlot = pers.c2_getDueSlotForNewSms();
                                                 pers.c2_updateDueSlotForTargetId_WithTableCleaning(smsSet0.getTargetId(), newDueSlot);
-                                                pers.c2_scheduleMessage(sms, newDueSlot);
+                                                pers.c2_scheduleMessage(sms, newDueSlot, null);
                                                 // TODO: issuing direct Activity here !!!
                                             }
                                         }

@@ -196,27 +196,27 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                 switch ((int) (long) extensionContainer.getErrorCode()) {
                 case MAPErrorCode.dataMissing:
                     this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.DATA_MISSING,
-                            "Error after MtForwardSM Request: " + extensionContainer.toString(), true);
+                            "Error dataMissing after MtForwardSM Request: " + extensionContainer.toString(), true);
                     break;
                 case MAPErrorCode.unexpectedDataValue:
                     this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA,
-                            "Error after MtForwardSM Request: " + extensionContainer.toString(), true);
+                            "Error unexpectedDataValue after MtForwardSM Request: " + extensionContainer.toString(), true);
                     break;
                 case MAPErrorCode.facilityNotSupported:
-                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED, "Error after MtForwardSM Request: "
-                            + extensionContainer.toString(), true);
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
+                            "Error facilityNotSupported after MtForwardSM Request: " + extensionContainer.toString(), true);
                     break;
                 case MAPErrorCode.unidentifiedSubscriber:
                     this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNDEFINED_SUBSCRIBER,
-                            "Error after MtForwardSM Request: " + extensionContainer.toString(), true);
+                            "Error unidentifiedSubscriber after MtForwardSM Request: " + extensionContainer.toString(), true);
                     break;
                 case MAPErrorCode.illegalSubscriber:
                     this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.ILLEGAL_SUBSCRIBER,
-                            "Error after MtForwardSM Request: " + extensionContainer.toString(), true);
+                            "Error illegalSubscriber after MtForwardSM Request: " + extensionContainer.toString(), true);
                     break;
                 case MAPErrorCode.illegalEquipment:
                     this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.ILLEGAL_EQUIPMENT,
-                            "Error after MtForwardSM Request: " + extensionContainer.toString(), true);
+                            "Error illegalEquipment after MtForwardSM Request: " + extensionContainer.toString(), true);
                     break;
                 default:
                     this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
@@ -224,7 +224,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                     break;
                 }
             } else {
-                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE, "Error after MtForwardSM Request", true);
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE, "Error after MtForwardSM Request: " + mapErrorMessage,
+                        true);
             }
         } catch (Throwable e1) {
             logger.severe("Exception in MtSbb.onErrorComponent() when fetching records and issuing events: " + e1.getMessage(), e1);
@@ -493,7 +494,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
             String targetId = smsDeliveryData.getTargetId();
             SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
             if (smsSet == null) {
-                this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogDelimiter(), targetId=" + targetId);
+                this.logger.info("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogDelimiter(), targetId=" + targetId);
                 return;
             }
 
@@ -916,7 +917,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                                 backSmsSet.setDestAddrNpi(ta.getAddrNpi());
                                 backSmsSet.setDestAddrTon(ta.getAddrTon());
                                 receipt.setSmsSet(backSmsSet);
-                                pers.c2_createRecordCurrent(receipt);
+                                receipt.setStored(true);
+                                pers.c2_scheduleMessage(receipt);
                             }
                             this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
                         }

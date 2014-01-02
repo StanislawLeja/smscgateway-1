@@ -305,7 +305,7 @@ public interface PersistenceRAInterface {
      */
     void releaseSynchroObject(TargetAddress ta);
 
-    PreparedStatementCollection_C3[] getPscList() throws PersistenceException;
+    PreparedStatementCollection_C3[] c2_getPscList() throws PersistenceException;
 
 
     long c2_getDueSlotForTargetId(String targetId) throws PersistenceException;
@@ -322,7 +322,7 @@ public interface PersistenceRAInterface {
 
     void c2_scheduleMessage(Sms sms) throws PersistenceException;
 
-    boolean c2_scheduleMessage(Sms sms, long dueSlot) throws PersistenceException;
+    boolean c2_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured) throws PersistenceException;
 
     ArrayList<SmsSet> c2_getRecordList(long dueSlot) throws PersistenceException;
 

@@ -24,6 +24,7 @@ package org.mobicents.smsc.slee.services.mt;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -517,26 +518,26 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 					switch (errorAction) {
 					case subscriberBusy:
-						this.rescheduleSmsSet(smsSet, true, pers, currentMsgNum);
+						this.rescheduleSmsSet(smsSet, true, pers, currentMsgNum, lstFailured);
 						break;
 
 					case memoryCapacityExceededFlag:
 						smDeliveryOutcome = SMDeliveryOutcome.memoryCapacityExceeded;
-						this.rescheduleSmsSet(smsSet, false, pers, currentMsgNum);
+						this.rescheduleSmsSet(smsSet, false, pers, currentMsgNum, lstFailured);
 						break;
 
 					case mobileNotReachableFlag:
 						smDeliveryOutcome = SMDeliveryOutcome.absentSubscriber;
-						this.rescheduleSmsSet(smsSet, false, pers, currentMsgNum);
+						this.rescheduleSmsSet(smsSet, false, pers, currentMsgNum, lstFailured);
 						break;
 
 					case notReachableForGprs:
 						smDeliveryOutcome = SMDeliveryOutcome.absentSubscriber;
-						this.rescheduleSmsSet(smsSet, false, pers, currentMsgNum);
+						this.rescheduleSmsSet(smsSet, false, pers, currentMsgNum, lstFailured);
 						break;
 
 					case temporaryFailure:
-						this.rescheduleSmsSet(smsSet, false, pers, currentMsgNum);
+						this.rescheduleSmsSet(smsSet, false, pers, currentMsgNum, lstFailured);
 						break;
 
 					case permanentFailure:
@@ -560,49 +561,58 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 			}
 		}
 
-		for (Sms sms : lstFailured) {
-		    CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED, reason);
+        for (Sms sms : lstFailured) {
+            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED, reason);
 
             // adding an error receipt if it is needed
-			int registeredDelivery = sms.getRegisteredDelivery();
-			if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
-				TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(),
-						sms.getSourceAddr());
-				lock = SmsSetCashe.getInstance().addSmsSet(ta);
-				try {
-					synchronized (lock) {
-						try {
-						    Sms receipt;
-                            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                                receipt = MessageUtil.createReceiptSms(sms, false);
-                                SmsSet backSmsSet = pers.obtainSmsSet(ta);
-                                receipt.setSmsSet(backSmsSet);
-                                pers.createLiveSms(receipt);
-                                pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
-                            } else {
-                                receipt = MessageUtil.createReceiptSms(sms, false);
-                                SmsSet backSmsSet = new SmsSet();
-                                backSmsSet.setDestAddr(ta.getAddr());
-                                backSmsSet.setDestAddrNpi(ta.getAddrNpi());
-                                backSmsSet.setDestAddrTon(ta.getAddrTon());
-                                receipt.setSmsSet(backSmsSet);
-                                pers.c2_createRecordCurrent(receipt);
+            if (sms.getStored()) {
+                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                } else {
+                    sms.setDeliveryDate(new Date());
+                    try {
+                        pers.c2_createRecordArchive(sms);
+                    } catch (PersistenceException e) {
+                        this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet) - c2_createRecordArchive(sms)" + e.getMessage(), e);
+                    }
+                }
+
+                int registeredDelivery = sms.getRegisteredDelivery();
+                if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
+                    TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
+                    lock = SmsSetCashe.getInstance().addSmsSet(ta);
+                    try {
+                        synchronized (lock) {
+                            try {
+                                Sms receipt;
+                                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                                    receipt = MessageUtil.createReceiptSms(sms, false);
+                                    SmsSet backSmsSet = pers.obtainSmsSet(ta);
+                                    receipt.setSmsSet(backSmsSet);
+                                    pers.createLiveSms(receipt);
+                                    pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                                } else {
+                                    receipt = MessageUtil.createReceiptSms(sms, false);
+                                    SmsSet backSmsSet = new SmsSet();
+                                    backSmsSet.setDestAddr(ta.getAddr());
+                                    backSmsSet.setDestAddrNpi(ta.getAddrNpi());
+                                    backSmsSet.setDestAddrTon(ta.getAddrTon());
+                                    receipt.setSmsSet(backSmsSet);
+                                    receipt.setStored(true);
+                                    pers.c2_scheduleMessage(receipt);
+                                }
+                                this.logger.info("Adding an error receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
+                            } catch (PersistenceException e) {
+                                this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet) - adding delivery receipt" + e.getMessage(), e);
                             }
-							this.logger.info("Adding an error receipt: source=" + receipt.getSourceAddr() + ", dest="
-									+ receipt.getSmsSet().getDestAddr());
-						} catch (PersistenceException e) {
-							this.logger.severe(
-									"PersistenceException when freeSmsSetFailured(SmsSet smsSet) - adding delivery receipt"
-											+ e.getMessage(), e);
-						}
-					}
-				} finally {
-					SmsSetCashe.getInstance().removeSmsSet(lock);
-				}
-			}
+                        }
+                    } finally {
+                        SmsSetCashe.getInstance().removeSmsSet(lock);
+                    }
+                }
+            }
 		}
 
-		if (smDeliveryOutcome != null) {
+		if (smDeliveryOutcome != null && smsSet.getSmsCount() > lstFailured.size()) {
 			this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(),
 					smsSet.getDestAddrNpi(), smDeliveryOutcome, smsSet.getTargetId());
 		}
@@ -707,7 +717,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	 * 
 	 * @param smsSet
 	 */
-	protected void rescheduleSmsSet(SmsSet smsSet, boolean busySuscriber, PersistenceRAInterface pers, int currentMsgNum) {
+	protected void rescheduleSmsSet(SmsSet smsSet, boolean busySuscriber, PersistenceRAInterface pers, int currentMsgNum, ArrayList<Sms> lstFailured) {
 
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
 		try {
@@ -736,7 +746,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                             if (sms.getStored()) {
                                 pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
                                 pers.c2_updateDueSlotForTargetId_WithTableCleaning(smsSet.getTargetId(), dueSlot);
-                                pers.c2_scheduleMessage(sms, dueSlot);
+                                pers.c2_scheduleMessage(sms, dueSlot, lstFailured);
                             }
                         }
                     }

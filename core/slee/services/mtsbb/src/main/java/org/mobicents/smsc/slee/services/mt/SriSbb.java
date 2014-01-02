@@ -619,13 +619,13 @@ public abstract class SriSbb extends MtCommonSbb {
 						"AbsentSubscriber response from HLR: " + errorMessage.toString(), true);
 			} else if (errorMessage.isEmAbsentSubscriberSM()) {
 				this.onDeliveryError(smsSet, ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
-						"AbsentSubscriber response from HLR: " + errorMessage.toString(), true);
+						"AbsentSubscriberSM response from HLR: " + errorMessage.toString(), true);
 			} else if (errorMessage.isEmCallBarred()) {
 				this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.CALL_BARRED,
 						"CallBarred response from HLR: " + errorMessage.toString(), true);
 			} else if (errorMessage.isEmFacilityNotSup()) {
 				this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
-						"CallBarred response from HLR: " + errorMessage.toString(), true);
+						"FacilityNotSuppored response from HLR: " + errorMessage.toString(), true);
 			} else if (errorMessage.isEmSystemFailure()) {
 				// TODO: may be systemFailure is not a permanent error case ?
 				this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
