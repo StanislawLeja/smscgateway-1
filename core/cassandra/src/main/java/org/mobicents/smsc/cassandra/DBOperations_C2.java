@@ -370,7 +370,7 @@ public class DBOperations_C2 {
             return "";
     }
 
-    public PreparedStatementCollection_C3[] getPscList() throws PersistenceException {
+    public PreparedStatementCollection_C3[] c2_getPscList() throws PersistenceException {
         Date dt = new Date();
         if (!this.isStarted())
             return new PreparedStatementCollection_C3[0];
@@ -402,7 +402,7 @@ public class DBOperations_C2 {
     }
 
     public long c2_getDueSlotForTargetId(String targetId) throws PersistenceException {
-        PreparedStatementCollection_C3[] lstPsc = this.getPscList();
+        PreparedStatementCollection_C3[] lstPsc = this.c2_getPscList();
 
         for (PreparedStatementCollection_C3 psc : lstPsc) {
             long dueSlot = this.c2_getDueSlotForTargetId(psc, targetId);
@@ -464,7 +464,7 @@ public class DBOperations_C2 {
 
     public void c2_updateDueSlotForTargetId_WithTableCleaning(String targetId, long newDueSlot) throws PersistenceException {
         // removing dueSlot for other time tables is any
-        PreparedStatementCollection_C3[] lstPsc = this.getPscList();
+        PreparedStatementCollection_C3[] lstPsc = this.c2_getPscList();
         if (lstPsc.length >= 2) {
             String s1 = this.getTableName(newDueSlot);
             for (int i1 = 0; i1 < lstPsc.length; i1++) {
@@ -483,7 +483,7 @@ public class DBOperations_C2 {
 
     public void c2_scheduleMessage(Sms sms) throws PersistenceException {
         long dueSlot = 0;
-        PreparedStatementCollection_C3[] lstPsc = this.getPscList();
+        PreparedStatementCollection_C3[] lstPsc = this.c2_getPscList();
         boolean done = false;
         int cnt = 0;
         while (!done && cnt < 5) {
@@ -500,7 +500,7 @@ public class DBOperations_C2 {
             }
             sms.setDueSlot(dueSlot);
 
-            done = this.c2_scheduleMessage(sms, dueSlot);
+            done = this.c2_scheduleMessage(sms, dueSlot, null);
         }
 
         if (!done) {
@@ -515,7 +515,7 @@ public class DBOperations_C2 {
      * return false if dueSlot is out <= ProcessingDueSlot
      * @throws PersistenceException 
      */
-    public boolean c2_scheduleMessage(Sms sms, long dueSlot) throws PersistenceException {
+    public boolean c2_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured) throws PersistenceException {
 
         if (!sms.getStored())
             return true;
@@ -531,8 +531,11 @@ public class DBOperations_C2 {
         }
 
         // checking validity date
-        if (sms.getValidityPeriod() != null && sms.getValidityPeriod().before(dt))
+        if (sms.getValidityPeriod() != null && sms.getValidityPeriod().before(dt)) {
+            if (lstFailured != null)
+                lstFailured.add(sms);
             return true;
+        }
 
         this.c2_registerDueSlotWriting(dueSlot);
         try {

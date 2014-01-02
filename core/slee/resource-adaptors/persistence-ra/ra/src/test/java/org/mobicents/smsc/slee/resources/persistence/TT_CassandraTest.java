@@ -225,7 +225,7 @@ public class TT_CassandraTest {
         // 1 - create with good date
         sbb.c2_scheduleMessage(sms);
         long newDueSlot = sms.getDueSlot();
-        boolean b1 = sbb.c2_scheduleMessage(sms, newDueSlot);
+        boolean b1 = sbb.c2_scheduleMessage(sms, newDueSlot, null);
         assertTrue(b1);
 
         l1 = sbb.c2_getDueSlotForTargetId(targetId);
@@ -235,7 +235,7 @@ public class TT_CassandraTest {
         // 2 - update this good date
         sbb.c2_scheduleMessage(sms);
         assertEquals(sms.getDueSlot(), newDueSlot);
-        b1 = sbb.c2_scheduleMessage(sms, newDueSlot);
+        b1 = sbb.c2_scheduleMessage(sms, newDueSlot, null);
         assertTrue(b1);
         assertEquals(sms.getDueSlot(), newDueSlot);
 
@@ -249,11 +249,11 @@ public class TT_CassandraTest {
         l1 = sbb.c2_getDueSlotForTargetId(targetId);
         assertEquals(l1, newDueSlot);
 
-        b1 = sbb.c2_scheduleMessage(sms, newDueSlot);
+        b1 = sbb.c2_scheduleMessage(sms, newDueSlot, null);
         assertFalse(b1);
         sbb.c2_scheduleMessage(sms);
         long newDueSlot2 = sms.getDueSlot();
-        b1 = sbb.c2_scheduleMessage(sms, newDueSlot2);
+        b1 = sbb.c2_scheduleMessage(sms, newDueSlot2, null);
 //        assertTrue(b1);
 
         l1 = sbb.c2_getDueSlotForTargetId(targetId);
@@ -266,10 +266,10 @@ public class TT_CassandraTest {
         l1 = sbb.c2_getDueSlotForTargetId(targetId);
         assertEquals(l1, newDueSlot2);
 
-        b1 = sbb.c2_scheduleMessage(sms, newDueSlot2);
+        b1 = sbb.c2_scheduleMessage(sms, newDueSlot2, null);
         assertFalse(b1);
         long newDueSlot3 = newCurSlot2 + 10;
-        b1 = sbb.c2_scheduleMessage(sms, newDueSlot3);
+        b1 = sbb.c2_scheduleMessage(sms, newDueSlot3, null);
 //        assertTrue(b1);
 
         sbb.c2_updateDueSlotForTargetId_WithTableCleaning(targetId, newDueSlot3);

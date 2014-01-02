@@ -266,7 +266,7 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
     }
 
     @Override
-    public PreparedStatementCollection_C3[] getPscList() throws PersistenceException {
+    public PreparedStatementCollection_C3[] c2_getPscList() throws PersistenceException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -302,7 +302,7 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
     }
 
     @Override
-    public boolean c2_scheduleMessage(Sms sms, long dueSlot) throws PersistenceException {
+    public boolean c2_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured) throws PersistenceException {
         // TODO Auto-generated method stub
         return false;
     }

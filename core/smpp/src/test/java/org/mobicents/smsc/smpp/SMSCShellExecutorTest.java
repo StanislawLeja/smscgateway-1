@@ -6,7 +6,6 @@ import javax.slee.facilities.FacilityException;
 import javax.slee.facilities.TraceLevel;
 
 import org.mobicents.smsc.cassandra.DBOperations_C2;
-import org.mobicents.smsc.slee.resources.scheduler.SchedulerResourceAdaptor;
 import org.testng.annotations.Test;
 
 public class SMSCShellExecutorTest {
@@ -26,35 +25,35 @@ public class SMSCShellExecutorTest {
         exec.execute(args);
     }
 
-    @Test(groups = { "ShellExecutor" })
-    public void testSchedulerRA() throws Exception {
-        SchedulerResourceAdaptorProxy ra = new SchedulerResourceAdaptorProxy();
-
-        SmscPropertiesManagement.getInstance().setFetchMaxRows(4);
-
-        while (true) {
+//    @Test(groups = { "ShellExecutor" })
+//    public void testSchedulerRA() throws Exception {
+//        SchedulerResourceAdaptorProxy ra = new SchedulerResourceAdaptorProxy();
+//
+//        SmscPropertiesManagement.getInstance().setFetchMaxRows(4);
+//
+//        while (true) {
 //            ra.onTimerTick();
-        }
-    }
+//        }
+//    }
 
-    class SchedulerResourceAdaptorProxy extends SchedulerResourceAdaptor {
-
-        public SchedulerResourceAdaptorProxy() throws Exception {
-            this.tracer = new TracerProxy();
-            SmscPropertiesManagement prop = SmscPropertiesManagement.getInstance("Test");
-            String[] hostsArr = prop.getHosts().split(":");
-            String host = hostsArr[0];
-            int port = Integer.parseInt(hostsArr[1]);
-
-            this.dbOperations_C2 = DBOperations_C2.getInstance();
-            this.dbOperations_C2.start(host, port, prop.getKeyspaceName(), prop.getFirstDueDelay(), prop.getReviseSecondsOnSmscStart(),
-                    prop.getProcessingSmsSetTimeout());
-        }
-
-        public void onTimerTick() {
-            super.onTimerTick();
-        }
-    }
+//    class SchedulerResourceAdaptorProxy extends SchedulerResourceAdaptor {
+//
+//        public SchedulerResourceAdaptorProxy() throws Exception {
+//            this.tracer = new TracerProxy();
+//            SmscPropertiesManagement prop = SmscPropertiesManagement.getInstance("Test");
+//            String[] hostsArr = prop.getHosts().split(":");
+//            String host = hostsArr[0];
+//            int port = Integer.parseInt(hostsArr[1]);
+//
+//            this.dbOperations_C2 = DBOperations_C2.getInstance();
+//            this.dbOperations_C2.start(host, port, prop.getKeyspaceName(), prop.getFirstDueDelay(), prop.getReviseSecondsOnSmscStart(),
+//                    prop.getProcessingSmsSetTimeout());
+//        }
+//
+//        public void onTimerTick() {
+//            super.onTimerTick();
+//        }
+//    }
     
     class TracerProxy implements javax.slee.facilities.Tracer {
 

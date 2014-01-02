@@ -289,8 +289,8 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             }
 
             @Override
-            public PreparedStatementCollection_C3[] getPscList() throws PersistenceException {
-                return dbOperations_C2.getPscList();
+            public PreparedStatementCollection_C3[] c2_getPscList() throws PersistenceException {
+                return dbOperations_C2.c2_getPscList();
             }
 
             @Override
@@ -299,8 +299,8 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             }
 
             @Override
-            public boolean c2_scheduleMessage(Sms sms, long dueSlot) throws PersistenceException {
-                return dbOperations_C2.c2_scheduleMessage(sms, dueSlot);
+            public boolean c2_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured) throws PersistenceException {
+                return dbOperations_C2.c2_scheduleMessage(sms, dueSlot, lstFailured);
             }
 
 		};

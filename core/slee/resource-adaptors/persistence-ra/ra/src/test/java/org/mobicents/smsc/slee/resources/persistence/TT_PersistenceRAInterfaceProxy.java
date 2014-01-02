@@ -263,13 +263,19 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
             ResultSet rs = session.execute(boundStatement);
 
             SmsSet smsSet = null;
+            Row row2 = null;
             for (Row row : rs) {
                 smsSet = this.createSms(row, null);
+                row2 = row;
+                break;
             }
             if (smsSet == null || smsSet.getSmsCount() == 0)
                 return null;
-            else
+            else {
+                smsSet.setAlertingSupported(row2.getBool(Schema.COLUMN_ALERTING_SUPPORTED));
+                smsSet.setStatus(ErrorCode.fromInt(row2.getInt(Schema.COLUMN_SM_STATUS)));
                 return smsSet.getSms(0);
+            }
 
         } catch (Exception e) {
             int ggg = 0;
