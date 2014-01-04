@@ -452,7 +452,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
         int currentMsgNum = this.doGetCurrentMsgNum();
 		Sms smsa = smsSet.getSms(currentMsgNum);
         if (smsa != null) {
-            CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED, reason);
+            CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED, reason, smscPropertiesManagement.getGenerateReceiptCdr());
         }
 
 		StringBuilder sb = new StringBuilder();
@@ -562,7 +562,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		}
 
         for (Sms sms : lstFailured) {
-            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED, reason);
+            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED, reason, smscPropertiesManagement.getGenerateReceiptCdr());
 
             // adding an error receipt if it is needed
             if (sms.getStored()) {

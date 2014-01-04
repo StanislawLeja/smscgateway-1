@@ -214,6 +214,11 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             }
 
             @Override
+            public long c2_getNextMessageId() {
+                return dbOperations_C2.c2_getNextMessageId();
+            }
+
+            @Override
             public long c2_getIntimeDueSlot() {
                 return dbOperations_C2.c2_getIntimeDueSlot();
             }
@@ -286,6 +291,11 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             @Override
             public void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException {
                 dbOperations_C2.c2_updateInSystem(sms, isSystemStatus);
+            }
+
+            @Override
+            public void c2_updateAlertingSupport(long dueSlot, String targetId, UUID dbId) throws PersistenceException {
+                dbOperations_C2.c2_updateAlertingSupport(dueSlot, targetId, dbId);
             }
 
             @Override

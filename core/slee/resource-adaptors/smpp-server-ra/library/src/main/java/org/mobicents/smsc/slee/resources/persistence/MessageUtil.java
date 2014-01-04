@@ -409,7 +409,7 @@ public class MessageUtil {
             return false;
     }
 
-    public static Sms createReceiptSms(Sms sms, boolean devivered) {
+    public static Sms createReceiptSms(Sms sms, boolean delivered) {
         Sms receipt = new Sms();
         receipt.setDbId(UUID.randomUUID());
         receipt.setSourceAddr(sms.getSmsSet().getDestAddr());
@@ -424,7 +424,7 @@ public class MessageUtil {
 
         StringBuffer sb = new StringBuffer();
         DataCodingScheme dcs = new DataCodingSchemeImpl(sms.getDataCoding());
-        if (devivered) {
+        if (delivered) {
             sb.append(DELIVERY_ACK_ID).append(sms.getMessageIdText()).append(DELIVERY_ACK_SUB).append("001").append(DELIVERY_ACK_DLVRD).append("001")
                     .append(DELIVERY_ACK_SUBMIT_DATE).append(DELIVERY_ACK_DATE_FORMAT.format(sms.getSubmitDate())).append(DELIVERY_ACK_DONE_DATE)
                     .append(DELIVERY_ACK_DATE_FORMAT.format(new Timestamp(System.currentTimeMillis()))).append(DELIVERY_ACK_STAT)
@@ -439,13 +439,17 @@ public class MessageUtil {
         }
 
         byte[] textBytes;
-        if (dcs.getCharacterSet() == CharacterSet.UCS2) {
-            receipt.setDataCoding(8);
-            textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_UCS_2);
-        } else {
-            receipt.setDataCoding(0);
-            textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_GSM);
-        }
+        // TODO: now we are sending all in GSM7 encoding
+        receipt.setDataCoding(0);
+        textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_GSM);
+        // TODO: here is the code for both GSM7-USC2 encoding
+//        if (dcs.getCharacterSet() == CharacterSet.UCS2) {
+//            receipt.setDataCoding(8);
+//            textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_UCS_2);
+//        } else {
+//            receipt.setDataCoding(0);
+//            textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_GSM);
+//        }
 
         receipt.setShortMessage(textBytes);
         receipt.setEsmClass(ESME_DELIVERY_ACK);

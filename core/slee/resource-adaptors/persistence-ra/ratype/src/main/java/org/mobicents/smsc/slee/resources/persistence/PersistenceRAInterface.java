@@ -270,6 +270,11 @@ public interface PersistenceRAInterface {
     void c2_setCurrentDueSlot(long newDueSlot) throws PersistenceException;
 
     /**
+     * Return next messageId for a new incoming message
+     */
+    long c2_getNextMessageId();
+
+    /**
      * Return due_slop for current time
      */
     long c2_getIntimeDueSlot();
@@ -331,5 +336,7 @@ public interface PersistenceRAInterface {
     ArrayList<SmsSet> c2_sortRecordList(ArrayList<SmsSet> sourceLst);
 
     void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException;
+
+    void c2_updateAlertingSupport(long dueSlot, String targetId, UUID dbId) throws PersistenceException;
 
 }

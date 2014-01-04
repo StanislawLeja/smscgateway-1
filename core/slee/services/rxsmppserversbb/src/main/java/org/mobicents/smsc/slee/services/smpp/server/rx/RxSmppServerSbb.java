@@ -227,8 +227,8 @@ public abstract class RxSmppServerSbb implements Sbb {
                         } catch (TlvConvertException e) {
                         }
                     }
-                    CdrGenerator
-                            .generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL_ESME : CdrGenerator.CDR_SUCCESS_ESME, CdrGenerator.CDR_SUCCESS_NO_REASON);
+                    CdrGenerator.generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL_ESME : CdrGenerator.CDR_SUCCESS_ESME,
+                            CdrGenerator.CDR_SUCCESS_NO_REASON, smscPropertiesManagement.getGenerateReceiptCdr());
 
                     if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                         pers.archiveDeliveredSms(sms, deliveryDate);
@@ -585,7 +585,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 		Sms smsa = smsSet.getSms(currentMsgNum);
         if (smsa != null) {
             String s1 = reason.replace("\n", "\t");
-            CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED_ESME, s1);
+            CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED_ESME, s1, smscPropertiesManagement.getGenerateReceiptCdr());
         }
 
 		PersistenceRAInterface pers = this.getStore();
@@ -657,7 +657,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 		}
 
         for (Sms sms : lstFailured) {
-            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED_ESME, reason);
+            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED_ESME, reason, smscPropertiesManagement.getGenerateReceiptCdr());
 
             // adding an error receipt if it is needed
             if (sms.getStored()) {

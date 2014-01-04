@@ -48,10 +48,14 @@ public class CdrGenerator {
 		logger.debug(message);
 	}
 
-	public static void generateCdr(Sms smsEvent, String status, String reason) {
+	public static void generateCdr(Sms smsEvent, String status, String reason, boolean generateReceiptCdr) {
         // Format is
         // SUBMIT_DATE,SOURCE_ADDRESS,SOURCE_TON,SOURCE_NPI,DESTINATION_ADDRESS,DESTINATION_TON,DESTINATION_NPI,STATUS,SYSTEM-ID,MESSAGE-ID,First
         // 20 char of SMS, REASON
+
+        if (!generateReceiptCdr && smsEvent.isMcDeliveryReceipt())
+            // we do not generate CDR's for receipt if generateReceiptCdr option is off
+            return;
 
         StringBuffer sb = new StringBuffer();
         sb.append(smsEvent.getSubmitDate()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddr())
@@ -64,12 +68,6 @@ public class CdrGenerator {
                 .append(smsEvent.getOrigSystemId()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getMessageId())
                 .append(CdrGenerator.CDR_SEPARATOR).append(getFirst20CharOfSMS(smsEvent.getShortMessage()))
                 .append(CdrGenerator.CDR_SEPARATOR).append(reason);
-
-        // TODO : remove this !!!!!!!
-//        logger.error(sb.toString());
-//        Logger logger2 = Logger.getLogger(DBOperations_C2.class);
-//        logger2.error(sb.toString());
-        // TODO : remove this !!!!!!!
 
         CdrGenerator.generateCdr(sb.toString());
     }

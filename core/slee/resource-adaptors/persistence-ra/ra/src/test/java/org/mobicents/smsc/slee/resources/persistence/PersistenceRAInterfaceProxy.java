@@ -343,4 +343,16 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
         
     }
 
+    @Override
+    public long c2_getNextMessageId() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void c2_updateAlertingSupport(long dueSlot, String targetId, UUID dbId) throws PersistenceException {
+        // TODO Auto-generated method stub
+        
+    }
+
 }

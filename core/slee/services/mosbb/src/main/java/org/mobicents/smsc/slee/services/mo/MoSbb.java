@@ -79,6 +79,7 @@ import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
+import org.mobicents.smsc.smpp.SmscStatProvider;
 
 import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.SmppConstants;
@@ -793,7 +794,9 @@ public abstract class MoSbb extends MoCommonSbb {
         }
 		sms.setSmsSet(smsSet);
 
-		long messageId = this.smppServerSessions.getNextMessageId();
+//        long messageId = this.smppServerSessions.getNextMessageId();
+        long messageId = store.c2_getNextMessageId();
+        SmscStatProvider.getInstance().setCurrentMessageId(messageId);
 		sms.setMessageId(messageId);
 		sms.setMoMessageRef(smsSubmitTpdu.getMessageReference());
 
@@ -928,7 +931,9 @@ public abstract class MoSbb extends MoCommonSbb {
         }
 		sms.setSmsSet(smsSet);
 
-		long messageId = this.smppServerSessions.getNextMessageId();
+//		long messageId = this.smppServerSessions.getNextMessageId();
+        long messageId = store.c2_getNextMessageId();
+        SmscStatProvider.getInstance().setCurrentMessageId(messageId);
 		sms.setMessageId(messageId);
 		// sms.setMoMessageRef(smsDeliverTpdu.getMessageReference());
 

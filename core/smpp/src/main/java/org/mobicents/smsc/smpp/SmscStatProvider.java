@@ -34,6 +34,8 @@ public class SmscStatProvider {
     private int messageScheduledTotal = 0;
     private int param1 = 0;
     private int param2 = 0;
+    private long currentMessageId = 0;
+    private Date smscStartTime = new Date();
 
     private static SmscStatProvider instance = new SmscStatProvider();
 
@@ -73,6 +75,22 @@ public class SmscStatProvider {
 
     public void setParam2(int param2) {
         this.param2 = param2;
+    }
+
+    public long getCurrentMessageId() {
+        return currentMessageId;
+    }
+
+    public void setCurrentMessageId(long currentMessageId) {
+        this.currentMessageId = currentMessageId;
+    }
+
+    public Date getSmscStartTime() {
+        return smscStartTime;
+    }
+
+    public void setSmscStartTime(Date smscStartTime) {
+        this.smscStartTime = smscStartTime;
     }
 
 }

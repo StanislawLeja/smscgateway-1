@@ -596,6 +596,15 @@ public class SMSCShellExecutor implements ShellExecutor {
 				smscPropertiesManagement.setEsmeDefaultClusterName(options[3]);
 			} else if (parName.equals("smshomerouting")) {
 				smscPropertiesManagement.setSMSHomeRouting(Boolean.parseBoolean(options[3]));
+            } else if (parName.equals("revisesecondsonsmscstart")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setReviseSecondsOnSmscStart(val);
+            } else if (parName.equals("processingsmssettimeout")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setProcessingSmsSetTimeout(val);
+            } else if (parName.equals("generatereceiptcdr")) {
+                smscPropertiesManagement.setGenerateReceiptCdr(Boolean.parseBoolean(options[3]));
+
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -775,8 +784,15 @@ public class SMSCShellExecutor implements ShellExecutor {
 				// sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
 			} else if (parName.equals("esmedefaultcluster")) {
 				sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
-			} else if (parName.equals("smshomerouting")) {
-				sb.append(smscPropertiesManagement.getSMSHomeRouting());
+            } else if (parName.equals("smshomerouting")) {
+                sb.append(smscPropertiesManagement.getSMSHomeRouting());
+            } else if (parName.equals("revisesecondsonsmscstart")) {
+                sb.append(smscPropertiesManagement.getReviseSecondsOnSmscStart());
+            } else if (parName.equals("processingsmssettimeout")) {
+                sb.append(smscPropertiesManagement.getProcessingSmsSetTimeout());
+            } else if (parName.equals("generatereceiptcdr")) {
+                sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
+
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -879,10 +895,22 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append("esmedefaultcluster = ");
 			sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
 			sb.append("\n");
-			
-			sb.append("smshomerouting = ");
-			sb.append(smscPropertiesManagement.getSMSHomeRouting());
-			sb.append("\n");			
+            
+            sb.append("smshomerouting = ");
+            sb.append(smscPropertiesManagement.getSMSHomeRouting());
+            sb.append("\n");
+
+            sb.append("revisesecondsonsmscstart = ");
+            sb.append(smscPropertiesManagement.getReviseSecondsOnSmscStart());
+            sb.append("\n");
+
+            sb.append("processingsmssettimeout = ");
+            sb.append(smscPropertiesManagement.getProcessingSmsSetTimeout());
+            sb.append("\n");
+
+            sb.append("generatereceiptcdr = ");
+            sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
+            sb.append("\n");
 
 			// private int defaultValidityPeriodHours = 3 * 24;
 			// private int maxValidityPeriodHours = 10 * 24;
@@ -1076,8 +1104,12 @@ public class SMSCShellExecutor implements ShellExecutor {
 
         SmscStatProvider smscStatProvider = SmscStatProvider.getInstance();
         sb.append("Stat: ");
-        sb.append("MessageInProcess: ");
+        sb.append("Time: ");
+        sb.append(new Date());
+        sb.append(", MessageInProcess: ");
         sb.append(smscStatProvider.getMessageInProcess());
+        sb.append(", MessageId: ");
+        sb.append(smscStatProvider.getCurrentMessageId());
         sb.append(", MessageScheduledTotal: ");
         sb.append(smscStatProvider.getMessageScheduledTotal());
         sb.append(", DueSlotProcessingLag: ");
@@ -1086,6 +1118,8 @@ public class SMSCShellExecutor implements ShellExecutor {
         sb.append(smscStatProvider.getParam1());
         sb.append(", Param2: ");
         sb.append(smscStatProvider.getParam2());
+        sb.append(", SmscStartTime: ");
+        sb.append(smscStatProvider.getSmscStartTime());
 
         return sb.toString();
     }

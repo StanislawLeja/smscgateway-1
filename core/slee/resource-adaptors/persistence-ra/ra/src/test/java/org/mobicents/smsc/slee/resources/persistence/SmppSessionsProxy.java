@@ -48,8 +48,6 @@ public class SmppSessionsProxy implements SmppSessions {
 
 	ArrayList<PduRequest> lstReq = new ArrayList<PduRequest>();
 	ArrayList<PduResponse> lstResp = new ArrayList<PduResponse>();
-	
-	int mId = 1;
 
 	public ArrayList<PduRequest> getReqList() {
 		return lstReq;
@@ -57,11 +55,6 @@ public class SmppSessionsProxy implements SmppSessions {
 
 	public ArrayList<PduResponse> getRespList() {
 		return lstResp;
-	}
-	
-	@Override
-	public long getNextMessageId() {
-		return mId++;
 	}
 
 	@Override

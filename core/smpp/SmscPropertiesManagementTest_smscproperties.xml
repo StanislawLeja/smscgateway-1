@@ -21,3 +21,6 @@
 <maxActivityCount value="500"/>
 <smsHomeRouting value="true"/>
 <smppEncodingForUCS2 value="Utf8"/>
+<reviseSecondsOnSmscStart value="60"/>
+<processingSmsSetTimeout value="600"/>
+<generateReceiptCdr value="false"/>

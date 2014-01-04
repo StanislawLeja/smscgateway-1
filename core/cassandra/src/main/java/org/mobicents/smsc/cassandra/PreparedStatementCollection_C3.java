@@ -1,5 +1,26 @@
-package org.mobicents.smsc.cassandra;
+/*
+ * TeleStax, Open Source Cloud Communications  Copyright 2012. 
+ * and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 
+package org.mobicents.smsc.cassandra;
 
 import com.datastax.driver.core.PreparedStatement;
 
@@ -14,6 +35,7 @@ public class PreparedStatementCollection_C3 {
     protected PreparedStatement getRecordData;
     protected PreparedStatement getRecordData2;
     protected PreparedStatement updateInSystem;
+    protected PreparedStatement updateAlertingSupport;
     protected PreparedStatement createRecordArchive;
 
     public PreparedStatementCollection_C3(DBOperations_C2 dbOperation, String tName, int ttlCurrent, int ttlArchive) {
@@ -53,6 +75,9 @@ public class PreparedStatementCollection_C3 {
                     + Schema.COLUMN_SMSC_UUID + "\"=? where \"" + Schema.COLUMN_DUE_SLOT + "\"=? and \"" + Schema.COLUMN_TARGET_ID + "\"=? and \""
                     + Schema.COLUMN_ID + "\"=?;";
             updateInSystem = dbOperation.session.prepare(sa);
+            sa = "UPDATE \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\" " + s3a + " SET \"" + Schema.COLUMN_ALERTING_SUPPORTED + "\"=? where \""
+                    + Schema.COLUMN_DUE_SLOT + "\"=? and \"" + Schema.COLUMN_TARGET_ID + "\"=? and \"" + Schema.COLUMN_ID + "\"=?;";
+            updateAlertingSupport = dbOperation.session.prepare(sa);
             sa = "INSERT INTO \"" + Schema.FAMILY_MESSAGES + tName + "\" (" + s1 + ", \"" + Schema.COLUMN_IMSI + "\", \"" + Schema.COLUMN_NNN_DIGITS + "\", \""
                     + Schema.COLUMN_NNN_AN + "\", \"" + Schema.COLUMN_NNN_NP + "\", \"" + Schema.COLUMN_SM_TYPE + "\") VALUES (" + s2 + ", ?, ?, ?, ?, ?) "
                     + s3b + ";";
