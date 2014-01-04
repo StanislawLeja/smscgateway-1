@@ -713,11 +713,13 @@ public abstract class TxSmppServerSbb implements Sbb {
         }
         sms.setSmsSet(smsSet);
 
-		long messageId = this.smppServerSessions.getNextMessageId();
+//		long messageId = this.smppServerSessions.getNextMessageId();
+        long messageId = store.c2_getNextMessageId();
+        SmscStatProvider.getInstance().setCurrentMessageId(messageId);
 		sms.setMessageId(messageId);
 
 		// TODO: process case when event.getReplaceIfPresent()==true: we need remove old message with same MessageId ?
-		
+
 		return sms;
 	}
 

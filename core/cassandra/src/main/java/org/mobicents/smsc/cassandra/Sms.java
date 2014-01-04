@@ -37,6 +37,8 @@ public class Sms implements Serializable {
 
 	private static final long serialVersionUID = 6893251312588274520L;
 
+	public static final byte ESME_DELIVERY_ACK = 0x04;
+
 	private SmsSet smsSet;
 
     private UUID dbId;
@@ -372,6 +374,13 @@ public class Sms implements Serializable {
 	public void setTlvSet(TlvSet tlvSet) {
 		this.tlvSet = tlvSet;
 	}
+
+    public boolean isMcDeliveryReceipt() {
+        if ((this.esmClass & ESME_DELIVERY_ACK) != 0)
+            return true;
+        else
+            return false;
+    }
 
 	@Override
 	public String toString() {

@@ -69,7 +69,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private static final String SMS_HOME_ROUTING = "smsHomeRouting";
 	// private static final String CDR_DATABASE_EXPORT_DURATION =
 	// "cdrDatabaseExportDuration";
-	private static final String ESME_DEFAULT_CLUSTER_NAME = "esmeDefaultCluster";
+    private static final String ESME_DEFAULT_CLUSTER_NAME = "esmeDefaultCluster";
+    private static final String REVISE_SECONDS_ON_SMSC_START = "reviseSecondsOnSmscStart";
+    private static final String PROCESSING_SMS_SET_TIMEOUT = "processingSmsSetTimeout";
+    private static final String GENERATE_RECEIPT_CDR = "generateReceiptCdr";
 
 	private static final String TAB_INDENT = "\t";
 	private static final String CLASS_ATTRIBUTE = "type";
@@ -148,6 +151,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private int reviseSecondsOnSmscStart = 60;
 	// Timeout of life cycle of SmsSet in SmsSetCashe.ProcessingSmsSet in seconds
 	private int processingSmsSetTimeout = 10 * 60;
+    // true: we generate CDR for both receipt and regular messages
+    // false: we generate CDR only for regular messages
+	private boolean generateReceiptCdr = false;
     // TODO: new **************************
 
 	private SmscPropertiesManagement(String name) {
@@ -459,6 +465,15 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         this.store();
     }
 
+    public boolean getGenerateReceiptCdr() {
+        return this.generateReceiptCdr;
+    }
+
+    public void setGenerateReceiptCdr(boolean generateReceiptCdr) {
+        this.generateReceiptCdr = generateReceiptCdr;
+        this.store();
+    }
+
 
 	public void start() throws Exception {
 
@@ -531,6 +546,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
             writer.write(this.isSMSHomeRouting, SMS_HOME_ROUTING, Boolean.class);
             writer.write(this.smppEncodingForUCS2.toString(), SMPP_ENCODING_FOR_UCS2, String.class);
+
+            writer.write(this.reviseSecondsOnSmscStart, REVISE_SECONDS_ON_SMSC_START, Integer.class);
+            writer.write(this.processingSmsSetTimeout, PROCESSING_SMS_SET_TIMEOUT, Integer.class);
+            writer.write(this.generateReceiptCdr, GENERATE_RECEIPT_CDR, Boolean.class);
 
 			writer.close();
 		} catch (Exception e) {
@@ -607,15 +626,26 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			if (val != null)
 				this.maxActivityCount = val;
 			
-			Boolean isSMSHomeRoutingObj = reader.read(SMS_HOME_ROUTING, Boolean.class);
-			
-			if(isSMSHomeRoutingObj != null){
-				this.isSMSHomeRouting = isSMSHomeRoutingObj.booleanValue();
+			Boolean valB = reader.read(SMS_HOME_ROUTING, Boolean.class);
+			if(valB != null){
+				this.isSMSHomeRouting = valB.booleanValue();
 			}
 			
 			String vals = reader.read(SMPP_ENCODING_FOR_UCS2, String.class);
             if (vals != null)
                 this.smppEncodingForUCS2 = Enum.valueOf(SmppEncodingForUCS2.class, vals);
+
+            val = reader.read(REVISE_SECONDS_ON_SMSC_START, Integer.class);
+            if (val != null)
+                this.reviseSecondsOnSmscStart = val;
+            val = reader.read(PROCESSING_SMS_SET_TIMEOUT, Integer.class);
+            if (val != null)
+                this.processingSmsSetTimeout = val;
+
+            valB = reader.read(GENERATE_RECEIPT_CDR, Boolean.class);
+            if (valB != null) {
+                this.generateReceiptCdr = valB.booleanValue();
+            }
 
 			reader.close();
 		} catch (XMLStreamException ex) {

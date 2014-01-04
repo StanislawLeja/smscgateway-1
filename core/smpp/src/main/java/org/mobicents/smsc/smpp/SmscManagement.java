@@ -24,6 +24,7 @@ package org.mobicents.smsc.smpp;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Date;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -152,6 +153,8 @@ public class SmscManagement implements SmscManagementMBean {
 
 	public void start() throws Exception {
 		logger.warn("Starting SmscManagemet " + name);
+
+        SmscStatProvider.getInstance().setSmscStartTime(new Date());
 
         // Step 0 clear SmsSetCashe
 		SmsSetCashe.getInstance().clearProcessingSmsSet();

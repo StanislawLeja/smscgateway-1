@@ -826,7 +826,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		int messageSegmentNumber = this.getMessageSegmentNumber();
 		SmsSignalInfo[] segments = this.getSegments();
 		if (segments != null && messageSegmentNumber < segments.length - 1) {
-		    CdrGenerator.generateCdr(sms, CdrGenerator.CDR_PARTIAL, CdrGenerator.CDR_SUCCESS_NO_REASON);
+            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_PARTIAL, CdrGenerator.CDR_SUCCESS_NO_REASON, smscPropertiesManagement.getGenerateReceiptCdr());
 
             // we have more message parts to be sent yet
 			messageSegmentNumber++;
@@ -882,7 +882,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                 } catch (TlvConvertException e) {
                 }
             }
-            CdrGenerator.generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL : CdrGenerator.CDR_SUCCESS, CdrGenerator.CDR_SUCCESS_NO_REASON);
+            CdrGenerator.generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL : CdrGenerator.CDR_SUCCESS, CdrGenerator.CDR_SUCCESS_NO_REASON,
+                    smscPropertiesManagement.getGenerateReceiptCdr());
 
             if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                 pers.archiveDeliveredSms(sms, deliveryDate);

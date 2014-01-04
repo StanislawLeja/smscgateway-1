@@ -15,8 +15,6 @@ import com.cloudhopper.smpp.type.UnrecoverablePduException;
 
 public interface SmppSessions {
 
-	public long getNextMessageId();
-
 	/**
 	 * Main underlying method for sending a request PDU to the remote endpoint.
 	 * If no sequence number was assigned to the PDU, this method will assign

@@ -42,6 +42,7 @@ import javax.slee.TransactionRolledbackLocalException;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingGroup;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
+import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Sms;
@@ -90,6 +91,7 @@ public class C2_TxSmppServerSbbTest {
     private static byte[] msgUtf8;
     private static byte[] msgUcs2;
     private byte[] msg_ref_num = { 0, 10 };
+    private Date scheduleDeliveryTime;
 
     static {
         String s1 = "ПриветHel";
@@ -144,8 +146,8 @@ public class C2_TxSmppServerSbbTest {
         this.fillSm(event, curDate, true);
         event.setShortMessage(msgUcs2);
 
-        long dueSlot = this.pers.c2_getDueSlotForTime(new Date());
-        PreparedStatementCollection_C3 psc = this.pers.getStatementCollection(new Date());
+        long dueSlot = this.pers.c2_getDueSlotForTime(scheduleDeliveryTime);
+        PreparedStatementCollection_C3 psc = this.pers.getStatementCollection(scheduleDeliveryTime);
         int b1 = this.pers.checkSmsExists(dueSlot, ta1.getTargetId());
         long b2 = this.pers.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
         assertEquals(b1, 0);
@@ -154,11 +156,8 @@ public class C2_TxSmppServerSbbTest {
         TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8.Unicode);
         this.sbb.onSubmitSm(event, aci);
 
-        b2 = this.pers.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
-        dueSlot = b2;
         b1 = this.pers.checkSmsExists(dueSlot, ta1.getTargetId());
         assertEquals(b1, 1);
-        assertEquals(b2, dueSlot);
 
         SmsSet smsSet = this.pers.c2_getRecordListForTargeId(dueSlot, ta1.getTargetId());
         this.checkSmsSet(smsSet, curDate, true);
@@ -255,8 +254,8 @@ public class C2_TxSmppServerSbbTest {
 
         event.setDataCoding((byte) 4);
 
-        long dueSlot = this.pers.c2_getDueSlotForTime(new Date());
-        PreparedStatementCollection_C3 psc = this.pers.getStatementCollection(new Date());
+        long dueSlot = this.pers.c2_getDueSlotForTime(scheduleDeliveryTime);
+        PreparedStatementCollection_C3 psc = this.pers.getStatementCollection(scheduleDeliveryTime);
         int b1 = this.pers.checkSmsExists(dueSlot, ta1.getTargetId());
         long b2 = this.pers.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
         assertEquals(b1, 0);
@@ -358,6 +357,18 @@ public class C2_TxSmppServerSbbTest {
 
     }
 
+    private long getStoredRecord() throws PersistenceException {
+        long dueSlot;
+        if (scheduleDeliveryTime != null) {
+            dueSlot = this.pers.c2_getDueSlotForTime(scheduleDeliveryTime);
+        } else {
+            dueSlot = this.pers.c2_getDueSlotForTime(new Date());
+        }
+        PreparedStatementCollection_C3 psc = this.pers.getStatementCollection(new Date());
+        dueSlot = this.pers.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
+        return dueSlot;
+    }
+
     private void fillSm(BaseSm event, Date curDate, boolean isSubmitMsg) {
         Address destAddr = new Address();
         destAddr.setAddress("5555");
@@ -384,7 +395,8 @@ public class C2_TxSmppServerSbbTest {
             event.setReplaceIfPresent((byte) 0);
             event.setDefaultMsgId((byte) 200);
 
-            event.setScheduleDeliveryTime(MessageUtil.printSmppAbsoluteDate(MessageUtil.addHours(curDate, 24), -(new Date()).getTimezoneOffset()));
+            scheduleDeliveryTime = MessageUtil.addHours(curDate, 24);
+            event.setScheduleDeliveryTime(MessageUtil.printSmppAbsoluteDate(scheduleDeliveryTime, -(new Date()).getTimezoneOffset()));
             event.setValidityPeriod(MessageUtil.printSmppRelativeDate(0, 0, 2, 0, 0, 0));
         }
     }
@@ -406,7 +418,7 @@ public class C2_TxSmppServerSbbTest {
         assertEquals(sms.getSourceAddr(), "4444");
         assertEquals(sms.getSourceAddrTon(), SmppConstants.TON_INTERNATIONAL);
         assertEquals(sms.getSourceAddrNpi(), SmppConstants.NPI_E164);
-        assertEquals(sms.getMessageId(), 1);
+        assertEquals(sms.getMessageId(), DBOperations_C2.MESSAGE_ID_LAG + 1);
 
         assertEquals(sms.getDataCoding(), 8);
         assertEquals(sms.getOrigEsmeName(), "Esme_1");
@@ -447,7 +459,7 @@ public class C2_TxSmppServerSbbTest {
 
         assertEquals(sms.getDeliveryCount(), 0);
 
-//        if (!isSubmitMsg)
+//        if (isSubmitMsg)
 //            assertDateEq(smsSet.getDueDate(), new Date(curDate.getTime() + 1 * 60 * 1000));
 //        else
 //            assertDateEq(smsSet.getDueDate(), sms.getScheduleDeliveryTime());

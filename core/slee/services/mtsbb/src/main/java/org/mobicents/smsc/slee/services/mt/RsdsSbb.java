@@ -23,9 +23,6 @@
 package org.mobicents.smsc.slee.services.mt;
 
 import javax.slee.ActivityContextInterface;
-import javax.slee.CreateException;
-import javax.slee.SLEEException;
-import javax.slee.TransactionRequiredLocalException;
 
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPException;
@@ -75,6 +72,8 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
                 if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                     pers.setAlertingSupported(this.getTargetId(), true);
                 } else {
+                    // TODO: if we want to support alertingSupport database fields
+                    // we need to update (to true) alertingSupport field in current table
                 }
             } catch (PersistenceException e1) {
                 this.logger.severe("\nPersistenceException when setAlertingSupported() in onSendRoutingInfoForSMResponse(): "

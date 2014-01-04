@@ -71,6 +71,7 @@ import org.mobicents.protocols.ss7.map.smstpdu.SmsSubmitTpduImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.ValidityPeriodImpl;
+import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
@@ -205,7 +206,7 @@ public class C2_MoSbbTest {
         assertEquals(sms.getSourceAddr(), "4444");
         assertEquals(sms.getSourceAddrTon(), SmppConstants.TON_INTERNATIONAL);
         assertEquals(sms.getSourceAddrNpi(), SmppConstants.NPI_E164);
-        assertEquals(sms.getMessageId(), 1);
+        assertEquals(sms.getMessageId(), DBOperations_C2.MESSAGE_ID_LAG + 1);
         assertEquals(sms.getMoMessageRef(), 150);
 
         assertEquals(sms.getDataCoding(), 0);
@@ -314,7 +315,7 @@ public class C2_MoSbbTest {
         assertEquals(sms.getSourceAddr(), "4444");
         assertEquals(sms.getSourceAddrTon(), SmppConstants.TON_INTERNATIONAL);
         assertEquals(sms.getSourceAddrNpi(), SmppConstants.NPI_E164);
-        assertEquals(sms.getMessageId(), 1);
+        assertEquals(sms.getMessageId(), DBOperations_C2.MESSAGE_ID_LAG + 1);
         assertEquals(sms.getMoMessageRef(), 150);
 
         assertEquals(sms.getDataCoding(), 0);
@@ -414,7 +415,7 @@ public class C2_MoSbbTest {
         assertEquals(sms.getSourceAddr(), "4444");
         assertEquals(sms.getSourceAddrTon(), SmppConstants.TON_INTERNATIONAL);
         assertEquals(sms.getSourceAddrNpi(), SmppConstants.NPI_E164);
-        assertEquals(sms.getMessageId(), 1);
+        assertEquals(sms.getMessageId(), DBOperations_C2.MESSAGE_ID_LAG + 1);
         assertEquals(sms.getMoMessageRef(), 150);
 
         assertEquals(sms.getDataCoding(), 8);

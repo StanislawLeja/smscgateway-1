@@ -284,6 +284,10 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
         }
     }
 
+    protected long c2_getCurrenrSlotTable(int key) throws PersistenceException {
+        return super.c2_getCurrenrSlotTable(key);
+    }
+
 //    @Override
 //    public boolean checkSmsSetExists(TargetAddress ta) throws PersistenceException {
 //

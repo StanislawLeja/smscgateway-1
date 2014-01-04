@@ -126,9 +126,21 @@ public interface SmscPropertiesManagementMBean {
     public String getEsmeDefaultClusterName();
 
     public void setEsmeDefaultClusterName(String val);
-    
+
     public boolean getSMSHomeRouting();
-    
+
     public void setSMSHomeRouting(boolean isSMSHomeRouting);
+
+    public int getReviseSecondsOnSmscStart();
+
+    public void setReviseSecondsOnSmscStart(int reviseSecondsOnSmscStart);
+
+    public int getProcessingSmsSetTimeout();
+
+    public void setProcessingSmsSetTimeout(int processingSmsSetTimeout);
+
+    public boolean getGenerateReceiptCdr();
+
+    public void setGenerateReceiptCdr(boolean generateReceiptCdr);
 
 }

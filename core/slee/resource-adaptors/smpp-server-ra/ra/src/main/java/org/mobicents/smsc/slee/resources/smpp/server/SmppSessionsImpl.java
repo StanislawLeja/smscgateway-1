@@ -1,6 +1,5 @@
 package org.mobicents.smsc.slee.resources.smpp.server;
 
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.slee.SLEEException;
@@ -12,7 +11,6 @@ import org.mobicents.smsc.slee.resources.smpp.server.events.EventsType;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmppSessionHandlerInterface;
-import org.mobicents.smsc.smpp.SmsRouteManagement;
 
 import com.cloudhopper.commons.util.windowing.WindowFuture;
 import com.cloudhopper.smpp.PduAsyncResponse;
@@ -45,8 +43,6 @@ public class SmppSessionsImpl implements SmppSessions {
 	private SmppServerResourceAdaptor smppServerResourceAdaptor = null;
 
 	protected SmppSessionHandlerInterfaceImpl smppSessionHandlerInterfaceImpl = null;
-
-	private final AtomicLong messageIdGenerator = new AtomicLong(0);
 
 	public SmppSessionsImpl(SmppServerResourceAdaptor smppServerResourceAdaptor) {
 		this.smppServerResourceAdaptor = smppServerResourceAdaptor;
@@ -359,12 +355,6 @@ public class SmppSessionsImpl implements SmppSessions {
 			// TODO what here?
 		}
 
-	}
-
-	@Override
-	public long getNextMessageId() {
-		// return Long.toString(this.messageIdGenerator.incrementAndGet());
-		return this.messageIdGenerator.incrementAndGet();
 	}
 
 }

@@ -39,6 +39,7 @@ import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.SmType;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -97,6 +98,9 @@ public class TT_CassandraTest {
 
         assertEquals(dueSlot, dueSlot2);
         assertTrue(dt2.equals(dt3));
+        
+        long l1 = sbb.c2_getNextMessageId();
+        assertEquals(l1, DBOperations_C2.MESSAGE_ID_LAG + 1);
     }
 
     @Test(groups = { "cassandra" })
@@ -117,11 +121,23 @@ public class TT_CassandraTest {
             fail("l1 value is bad");
         assertEquals(l2, l3);
 
+        int len = (int) (DBOperations_C2.MESSAGE_ID_LAG + DBOperations_C2.MESSAGE_ID_LAG / 2);
+        long lx = 0;
+        for (int i1 = 0; i1 < len; i1++) {
+            lx = sbb.c2_getNextMessageId();
+        }
+        assertEquals(lx, DBOperations_C2.MESSAGE_ID_LAG + len);
+        long ly = sbb.c2_getCurrenrSlotTable(DBOperations_C2.NEXT_MESSAGE_ID);
+        assertEquals(ly, DBOperations_C2.MESSAGE_ID_LAG * 2);
+
         sbb.stop();
         sbb.start();
 
         long l4 = sbb.c2_getCurrentDueSlot();
         assertEquals(l2, l4 + 60);
+
+        lx = sbb.c2_getNextMessageId();
+        assertEquals(lx, DBOperations_C2.MESSAGE_ID_LAG * 3 + 1);
     }
 
     @Test(groups = { "cassandra" })
@@ -295,6 +311,16 @@ public class TT_CassandraTest {
         this.addingNewMessages2(dueSlot + 1);
 
         smsSet = this.readDueSlotMessage(dueSlot + 1, 2);
+
+        SmsSetCashe.getInstance().clearProcessingSmsSet();
+        smsSet = this.readDueSlotMessage(dueSlot, 1);
+        Sms sms = smsSet.getSms(0);
+        assertFalse(smsSet.isAlertingSupported());
+        sbb.c2_updateAlertingSupport(sms.getDueSlot(), sms.getSmsSet().getTargetId(), sms.getDbId());
+
+        SmsSetCashe.getInstance().clearProcessingSmsSet();
+        smsSet = this.readDueSlotMessage(dueSlot, 1);
+        assertTrue(smsSet.isAlertingSupported());
 
     }
 

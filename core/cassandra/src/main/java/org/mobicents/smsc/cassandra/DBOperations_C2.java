@@ -61,6 +61,11 @@ public class DBOperations_C2 {
     public static final int IN_SYSTEM_INPROCESS = 1;
     public static final int IN_SYSTEM_SENT = 2;
 
+    public static final int CURRENT_DUE_SLOT = 0;
+    public static final int NEXT_MESSAGE_ID = 1;
+    public static final long MAX_MESSAGE_ID = 10000000000L;
+    public static final long MESSAGE_ID_LAG = 100;
+
     private static final DBOperations_C2 instance = new DBOperations_C2();
 
     // cassandra access
@@ -92,10 +97,11 @@ public class DBOperations_C2 {
     private int dueSlotReviseOnSmscStart;
     // Timeout of life cycle of SmsSet in SmsSetCashe.ProcessingSmsSet in seconds
     private int processingSmsSetTimeout;
-    
+
     // data for processing
 
     private long currentDueSlot = 0;
+    private long messageId = 0;
     private UUID currentSessionUUID;
 
     private FastMap<String, PreparedStatementCollection_C3> dataTableRead = new FastMap<String, PreparedStatementCollection_C3>();
@@ -160,21 +166,24 @@ public class DBOperations_C2 {
         session.execute("USE \"" + keyspace + "\"");
 
         this.checkCurrentSlotTableExists();
-        
-        String sa = "SELECT \"" + Schema.COLUMN_NEXT_SLOT + "\" FROM \"" + Schema.FAMILY_CURRENT_SLOT_TABLE + "\" where \"" + Schema.COLUMN_ID + "\"=0;";
+
+        String sa = "SELECT \"" + Schema.COLUMN_NEXT_SLOT + "\" FROM \"" + Schema.FAMILY_CURRENT_SLOT_TABLE + "\" where \"" + Schema.COLUMN_ID + "\"=?;";
         selectCurrentSlotTable = session.prepare(sa);
-        sa = "INSERT INTO \"" + Schema.FAMILY_CURRENT_SLOT_TABLE + "\" (\"" + Schema.COLUMN_ID + "\", \"" + Schema.COLUMN_NEXT_SLOT + "\") VALUES (0, ?);";
+        sa = "INSERT INTO \"" + Schema.FAMILY_CURRENT_SLOT_TABLE + "\" (\"" + Schema.COLUMN_ID + "\", \"" + Schema.COLUMN_NEXT_SLOT + "\") VALUES (?, ?);";
         updateCurrentSlotTable = session.prepare(sa);
 
         try {
-            PreparedStatement ps = selectCurrentSlotTable;
-            BoundStatement boundStatement = new BoundStatement(ps);
-            ResultSet res = session.execute(boundStatement);
+//            PreparedStatement ps = selectCurrentSlotTable;
+//            BoundStatement boundStatement = new BoundStatement(ps);
+//            boundStatement.bind(0);
+//            ResultSet res = session.execute(boundStatement);
+//
+//            for (Row row : res) {
+//                currentDueSlot = row.getLong(0);
+//                break;
+//            }
 
-            for (Row row : res) {
-                currentDueSlot = row.getLong(0);
-                break;
-            }
+            currentDueSlot = c2_getCurrenrSlotTable(CURRENT_DUE_SLOT);
             if (currentDueSlot == 0) {
                 // not yet set
                 long l1 = this.c2_getDueSlotForTime(new Date());
@@ -182,6 +191,10 @@ public class DBOperations_C2 {
             } else {
                 this.c2_setCurrentDueSlot(currentDueSlot - dueSlotReviseOnSmscStart);
             }
+
+            messageId = c2_getCurrenrSlotTable(NEXT_MESSAGE_ID);
+            messageId += MESSAGE_ID_LAG;
+            c2_setCurrenrSlotTable(NEXT_MESSAGE_ID, messageId);
         } catch (Exception e1) {
             String msg = "Failed reading a currentDueSlot !";
             throw new PersistenceException(msg, e1);
@@ -238,13 +251,46 @@ public class DBOperations_C2 {
     public void c2_setCurrentDueSlot(long newDueSlot) throws PersistenceException {
         currentDueSlot = newDueSlot;
 
+        c2_setCurrenrSlotTable(CURRENT_DUE_SLOT, newDueSlot);
+    }
+
+    public synchronized long c2_getNextMessageId() {
+        messageId++;
+        if (messageId >= MAX_MESSAGE_ID)
+            messageId = 1;
+        if (messageId % MESSAGE_ID_LAG == 0) {
+            try {
+                c2_setCurrenrSlotTable(NEXT_MESSAGE_ID, messageId);
+            } catch (PersistenceException e) {
+                logger.error("Exception when storing next messageId to the database: " + e.getMessage(), e);
+            }
+        }
+
+        return messageId;
+    }
+
+    protected long c2_getCurrenrSlotTable(int key) throws PersistenceException {
+        PreparedStatement ps = selectCurrentSlotTable;
+        BoundStatement boundStatement = new BoundStatement(ps);
+        boundStatement.bind(key);
+        ResultSet res = session.execute(boundStatement);
+
+        long res2 = 0;
+        for (Row row : res) {
+            res2 = row.getLong(0);
+            break;
+        }
+        return res2;
+    }
+
+    private void c2_setCurrenrSlotTable(int key, long newVal) throws PersistenceException {
         try {
             PreparedStatement ps = updateCurrentSlotTable;
             BoundStatement boundStatement = new BoundStatement(ps);
-            boundStatement.bind(newDueSlot);
+            boundStatement.bind(key, newVal);
             ResultSet res = session.execute(boundStatement);
         } catch (Exception e1) {
-            String msg = "Failed writing a currentDueSlot !";
+            String msg = "Failed writing a c2_setCurrenrSlotTable !";
             throw new PersistenceException(msg, e1);
         }
     }
@@ -528,6 +574,7 @@ public class DBOperations_C2 {
         Date schedTime = sms.getScheduleDeliveryTime();
         if (schedTime != null && schedTime.after(dt)) {
             dueSlot = this.c2_getDueSlotForTime(schedTime);
+            sms.setDueSlot(dueSlot);
         }
 
         // checking validity date
@@ -807,6 +854,10 @@ public class DBOperations_C2 {
         if (dueDelay > smsSet.getDueDelay())
             smsSet.setDueDelay(dueDelay);
 
+        boolean alertingSupported = row.getBool(Schema.COLUMN_ALERTING_SUPPORTED);
+        if (alertingSupported)
+            smsSet.setAlertingSupported(true);
+
         smsSet.addSms(sms);
 
         return smsSet;
@@ -884,6 +935,20 @@ public class DBOperations_C2 {
             ResultSet res = session.execute(boundStatement);
         } catch (Exception e1) {
             String msg = "Failed to execute updateInSystem() !";
+            throw new PersistenceException(msg, e1);
+        }
+    }
+
+    public void c2_updateAlertingSupport(long dueSlot, String targetId, UUID dbId) throws PersistenceException {
+        PreparedStatementCollection_C3 psc = this.getStatementCollection(dueSlot);
+
+        try {
+            PreparedStatement ps = psc.updateAlertingSupport;
+            BoundStatement boundStatement = new BoundStatement(ps);
+            boundStatement.bind(true, dueSlot, targetId, dbId);
+            ResultSet res = session.execute(boundStatement);
+        } catch (Exception e1) {
+            String msg = "Failed to execute c2_updateAlertingSupport() !";
             throw new PersistenceException(msg, e1);
         }
     }

@@ -62,6 +62,9 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("duedelaymultiplicator");
         set.addChild("maxmessagelengthreducer");
         set.addChild("smshomerouting");
+        set.addChild("revisesecondsonsmscstart");
+        set.addChild("processingsmssettimeout");
+        set.addChild("generatereceiptcdr");
         
         Node smppencodingforucs2 = set.addChild("smppencodingforucs2");
         smppencodingforucs2.addChild("utf8");
@@ -92,7 +95,10 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("duedelaymultiplicator");
         get.addChild("maxmessagelengthreducer");
         get.addChild("smshomerouting");
-        
+        get.addChild("revisesecondsonsmscstart");
+        get.addChild("processingsmssettimeout");
+        get.addChild("generatereceiptcdr");
+
         smppencodingforucs2 = get.addChild("smppencodingforucs2");
         smppencodingforucs2.addChild("utf8");
         smppencodingforucs2.addChild("unicode");
@@ -146,6 +152,9 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         mapcache.addChild("get");
         mapcache.addChild("set");
         mapcache.addChild("clear");
+
+        Node stat = parent.addChild("stat");
+        stat.addChild("get");
 
 	};
 
