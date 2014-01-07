@@ -99,7 +99,32 @@
 									<span class="add-on">Due delay multiplicator</span>
 									<input id="duedelaymultiplicator" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span>												
-							</div>		
+							</div>	
+							
+							&nbsp;
+                        	<h5 style="border-bottom: 1px solid #DDD;">CDR Configuration</h5>
+							<div id="div-generateReceiptCdr" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="should SMSC generate CDR for SMS receipt too">
+									<span class="add-on">Generate receipt CDR</span>
+									<select id="generateReceiptCdr" >
+										<option>true</option>
+										<option>false</option>
+									</select>
+								</span>                         
+							</div>	
+
+							&nbsp;
+                        	<h5 style="border-bottom: 1px solid #DDD;">SMS Home Routing Configuration</h5>
+							<div id="div-smsHomeRouting" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="should SMSC follow the home routing functionality. If this is set to true, it will accept MT SMS too">
+									<span class="add-on">Home routing</span>
+									<select id="smsHomeRouting" >
+										<option>true</option>
+										<option>false</option>
+									</select>
+								</span>                         
+							</div>																			
+								
                         </div>  				 	
                         <div class="tab-pane" id="ss7settings">
                         	<h5 style="border-bottom: 1px solid #DDD;">Global Title Configuration</h5>
@@ -192,7 +217,19 @@
 								<span class="add-on">Max Activity Count</span>
 								<input id="schedulerfetchmaxactivity" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 							</span> 
+							</div>							
+							<div id="div-reviseSecondsOnSmscStart" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="after every restart, SMSC will revise last 'x' seconds before shutdown to make sure all arrived messages are processed">
+									<span class="add-on">Revise period after SMSC restart (sec)</span>
+									<input id="reviseSecondsOnSmscStart" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span> 
 							</div>
+							<div id="div-processingSmsSetTimeout" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMS's are cahched in SMSC till processing is on going. For any reason if delivery of SMS is failed and cached not cleared, SMSC will force cleaning after configured timeout">
+									<span class="add-on">Processing Sms set cache timeout (sec)</span>
+									<input id="processingSmsSetTimeout" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span> 
+							</div>							
                         </div>                        
 					</div>	
 					</span>					 
@@ -232,6 +269,20 @@
 										
 										$("#duedelaymultiplicator").val(response.value.DueDelayMultiplicator);
 										
+										var generateReceiptCdrTmp = response.value.GenerateReceiptCdr
+										if(generateReceiptCdrTmp){
+											generateReceiptCdr.options[0].selected = true;
+										} else {
+											generateReceiptCdr.options[1].selected = true;
+										}
+										
+										var smsHomeRoutingTmp = response.value.SMSHomeRouting
+										if(smsHomeRoutingTmp){
+											smsHomeRouting.options[0].selected = true;
+										} else {
+											smsHomeRouting.options[1].selected = true;
+										}
+										
 										$("#ussdgt").val(response.value.ServiceCenterGt);
 										$("#ussdssn").val(response.value.ServiceCenterSsn);
 										$("#hlrssn").val(response.value.HlrSsn);
@@ -253,7 +304,10 @@
 										
 										$("#schedulerfetchperiod").val(response.value.FetchPeriod);
 										$("#schedulerfetchmaxrows").val(response.value.FetchMaxRows);
-										$("#schedulerfetchmaxactivity").val(response.value.MaxActivityCount);										
+										$("#schedulerfetchmaxactivity").val(response.value.MaxActivityCount);
+										
+										$("#reviseSecondsOnSmscStart").val(response.value.ReviseSecondsOnSmscStart);
+										$("#processingSmsSetTimeout").val(response.value.ProcessingSmsSetTimeout);
 										
 									}],
 									error: function(value) {
@@ -346,6 +400,11 @@
 			    			$("#div-duedelaymultiplicator").removeClass("error");		
 			    		}
 						
+						var e1 = document.getElementById("generateReceiptCdr");
+						var generateReceiptCdr = e1.options[e1.selectedIndex].text;
+
+						var e2 = document.getElementById("smsHomeRouting");
+						var smsHomeRouting = e2.options[e2.selectedIndex].text;
 						
 						var cassandrahost = $("#cassandrahost").val();
 						if(cassandrahost.trim() == "") {
@@ -448,6 +507,22 @@
 			    			$("#div-schedulerfetchmaxactivity").removeClass("error");		
 			    		}
 						
+						var reviseSecondsOnSmscStart = $("#reviseSecondsOnSmscStart").val();
+						if(reviseSecondsOnSmscStart.trim() == "") {
+			    			$("#div-reviseSecondsOnSmscStart").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-reviseSecondsOnSmscStart").hasClass("error")) {
+			    			$("#div-reviseSecondsOnSmscStart").removeClass("error");		
+			    		}		
+						
+						var processingSmsSetTimeout = $("#processingSmsSetTimeout").val();
+						if(processingSmsSetTimeout.trim() == "") {
+			    			$("#div-processingSmsSetTimeout").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-processingSmsSetTimeout").hasClass("error")) {
+			    			$("#div-processingSmsSetTimeout").removeClass("error");		
+			    		}							
+						
 						if(formInvalid) {
 							$("#login-settings-error").show();
 							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
@@ -483,6 +558,10 @@
 									{ type: "write", mbean: mbeanSearch, attribute: "FetchPeriod", value: schedulerfetchperiod },
 									{ type: "write", mbean: mbeanSearch, attribute: "FetchMaxRows", value: schedulerfetchmaxrows },
 									{ type: "write", mbean: mbeanSearch, attribute: "MaxActivityCount", value: schedulerfetchmaxactivity },
+									{ type: "write", mbean: mbeanSearch, attribute: "ReviseSecondsOnSmscStart", value: reviseSecondsOnSmscStart },
+									{ type: "write", mbean: mbeanSearch, attribute: "ProcessingSmsSetTimeout", value: processingSmsSetTimeout },
+									{ type: "write", mbean: mbeanSearch, attribute: "GenerateReceiptCdr", value: generateReceiptCdr },
+									{ type: "write", mbean: mbeanSearch, attribute: "SMSHomeRouting", value: smsHomeRouting },
 								],
 								{
 									success: function(response) {
