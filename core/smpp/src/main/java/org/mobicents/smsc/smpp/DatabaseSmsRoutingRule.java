@@ -28,6 +28,8 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.mobicents.smsc.cassandra.DBOperations_C1;
+import org.mobicents.smsc.cassandra.DBOperations_C2;
+import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
 import org.mobicents.smsc.cassandra.PersistenceException;
 
@@ -48,7 +50,8 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 
 	private static final String USA_COUNTRY_CODE = "1";
 
-	private DBOperations_C1 dbOperations = null;
+    private DBOperations_C1 dbOperations_C1 = null;
+    private DBOperations_C2 dbOperations_C2 = null;
 
 	/**
 	 * 
@@ -69,7 +72,11 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 
 	private void init() {
 		try {
-			dbOperations = DBOperations_C1.getInstance();
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                dbOperations_C1 = DBOperations_C1.getInstance();
+            } else {
+                dbOperations_C2 = DBOperations_C2.getInstance();
+            }
 		} catch (Exception e) {
 			logger.error("Error initializing cassandra database for DatabaseSmsRoutingRule", e);
 		}
@@ -99,7 +106,12 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 		String clusterName = null;
 
 		try {
-			DbSmsRoutingRule rr = dbOperations.getSmsRoutingRule(address);
+		    DbSmsRoutingRule rr;
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                rr = dbOperations_C1.getSmsRoutingRule(address);
+            } else {
+                rr = dbOperations_C2.c2_getSmsRoutingRule(address);
+            }
 			if (rr != null) {
 				clusterName = rr.getClusterName();
 			} else {
@@ -126,23 +138,43 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 		dbSmsRoutingRule.setAddress(address);
 		dbSmsRoutingRule.setClusterName(clusterName);
 
-		dbOperations.updateDbSmsRoutingRule(dbSmsRoutingRule);
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            dbOperations_C1.updateDbSmsRoutingRule(dbSmsRoutingRule);
+        } else {
+            dbOperations_C2.c2_updateDbSmsRoutingRule(dbSmsRoutingRule);
+        }
 	}
 
 	public void deleteDbSmsRoutingRule(String address) throws PersistenceException {
-		dbOperations.deleteDbSmsRoutingRule(address);
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            dbOperations_C1.deleteDbSmsRoutingRule(address);
+        } else {
+            dbOperations_C2.c2_deleteDbSmsRoutingRule(address);
+        }
 	}
 
 	public DbSmsRoutingRule getSmsRoutingRule(String address) throws PersistenceException {
-		return dbOperations.getSmsRoutingRule(address);
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            return dbOperations_C1.getSmsRoutingRule(address);
+        } else {
+            return dbOperations_C2.c2_getSmsRoutingRule(address);
+        }
 	}
 
 	public List<DbSmsRoutingRule> getSmsRoutingRulesRange() throws PersistenceException {
-		return dbOperations.getSmsRoutingRulesRange();
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            return dbOperations_C1.getSmsRoutingRulesRange();
+        } else {
+            return dbOperations_C2.c2_getSmsRoutingRulesRange();
+        }
 	}
 
 	public List<DbSmsRoutingRule> getSmsRoutingRulesRange(String lastAdress) throws PersistenceException {
-		return dbOperations.getSmsRoutingRulesRange(lastAdress);
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            return dbOperations_C1.getSmsRoutingRulesRange(lastAdress);
+        } else {
+            return dbOperations_C2.c2_getSmsRoutingRulesRange(lastAdress);
+        }
 	}
 
 }

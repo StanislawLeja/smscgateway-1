@@ -12,9 +12,10 @@ This readme is about setting up DB for persistence mechanism.
     This will start DB with console in current terminal
 
 3. Create DB.
-    Execute:
-        cd $CASSANDRA_HOME
-        ./bin/cqlsh -f  $SMSC_DIR/cassandra/cassadra.cql
+    Execute in CQL3:
+CREATE KEYSPACE "saturn"
+         WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1};
+USE "saturn";
 
 
 

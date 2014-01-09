@@ -27,8 +27,10 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
+import javolution.util.FastList;
 import javolution.util.FastMap;
 import javolution.xml.XMLObjectReader;
 import javolution.xml.XMLObjectWriter;
@@ -110,6 +112,11 @@ public class DBOperations_C2 {
     // prepared general statements
     private PreparedStatement selectCurrentSlotTable;
     private PreparedStatement updateCurrentSlotTable;
+    private PreparedStatement getSmsRoutingRule;
+    private PreparedStatement updateDbSmsRoutingRule;
+    private PreparedStatement deleteDbSmsRoutingRule;
+    private PreparedStatement getSmsRoutingRulesRange;
+    private PreparedStatement getSmsRoutingRulesRange2;
 
     private Date pcsDate;
     private PreparedStatementCollection_C3[] savedPsc;
@@ -172,6 +179,15 @@ public class DBOperations_C2 {
         sa = "INSERT INTO \"" + Schema.FAMILY_CURRENT_SLOT_TABLE + "\" (\"" + Schema.COLUMN_ID + "\", \"" + Schema.COLUMN_NEXT_SLOT + "\") VALUES (?, ?);";
         updateCurrentSlotTable = session.prepare(sa);
 
+        getSmsRoutingRule = session.prepare("select * from \"" + Schema.FAMILY_SMS_ROUTING_RULE + "\" where \"" + Schema.COLUMN_ADDRESS + "\"=?;");
+        updateDbSmsRoutingRule = session.prepare("INSERT INTO \"" + Schema.FAMILY_SMS_ROUTING_RULE + "\" (\"" + Schema.COLUMN_ADDRESS + "\", \""
+                + Schema.COLUMN_CLUSTER_NAME + "\") VALUES (?, ?);");
+        deleteDbSmsRoutingRule = session.prepare("delete from \"" + Schema.FAMILY_SMS_ROUTING_RULE + "\" where \"" + Schema.COLUMN_ADDRESS + "\"=?;");
+        int row_count = 100;
+        getSmsRoutingRulesRange = session.prepare("select * from \"" + Schema.FAMILY_SMS_ROUTING_RULE + "\" where token(\"" + Schema.COLUMN_ADDRESS
+                + "\") >= token(?) LIMIT " + row_count + ";");
+        getSmsRoutingRulesRange2 = session.prepare("select * from \"" + Schema.FAMILY_SMS_ROUTING_RULE + "\"  LIMIT " + row_count + ";");
+        
         try {
 //            PreparedStatement ps = selectCurrentSlotTable;
 //            BoundStatement boundStatement = new BoundStatement(ps);
@@ -1141,6 +1157,36 @@ public class DBOperations_C2 {
             String msg = "Failed to access or create table " + Schema.FAMILY_CURRENT_SLOT_TABLE + "!";
             throw new PersistenceException(msg, e1);
         }
+
+        try {
+            try {
+                // checking of SMS_ROUTING_RULE existence
+                String sa = "SELECT \"" + Schema.COLUMN_ADDRESS + "\" FROM \"" + Schema.FAMILY_SMS_ROUTING_RULE + "\" where \"" + Schema.COLUMN_ADDRESS
+                        + "\"='';";
+                PreparedStatement ps = session.prepare(sa);
+            } catch (InvalidQueryException e) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("CREATE TABLE \"");
+                sb.append(Schema.FAMILY_SMS_ROUTING_RULE);
+                sb.append("\" (");
+
+                appendField(sb, Schema.COLUMN_ADDRESS, "text");
+                appendField(sb, Schema.COLUMN_CLUSTER_NAME, "text");
+
+                sb.append("PRIMARY KEY (\"");
+                sb.append(Schema.COLUMN_ADDRESS);
+                sb.append("\"");
+                sb.append("));");
+
+                String s2 = sb.toString();
+                PreparedStatement ps = session.prepare(s2);
+                BoundStatement boundStatement = new BoundStatement(ps);
+                ResultSet res = session.execute(boundStatement);
+            }
+        } catch (Exception e1) {
+            String msg = "Failed to access or create table " + Schema.FAMILY_SMS_ROUTING_RULE + "!";
+            throw new PersistenceException(msg, e1);
+        }
     }
 
     private void appendField(StringBuilder sb, String name, String type) {
@@ -1163,6 +1209,93 @@ public class DBOperations_C2 {
         PreparedStatement ps = session.prepare(s2);
         BoundStatement boundStatement = new BoundStatement(ps);
         ResultSet res = session.execute(boundStatement);
+    }
+
+    public DbSmsRoutingRule c2_getSmsRoutingRule(final String address) throws PersistenceException {
+
+        try {
+            BoundStatement boundStatement = new BoundStatement(getSmsRoutingRule);
+            boundStatement.bind(address);
+            ResultSet result = session.execute(boundStatement);
+
+            Row row = result.one();
+            if (row == null) {
+                return null;
+            } else {
+                DbSmsRoutingRule res = new DbSmsRoutingRule();
+                res.setAddress(address);
+                String name = row.getString(Schema.COLUMN_CLUSTER_NAME);
+                res.setClusterName(name);
+                return res;
+            }
+        } catch (Exception e) {
+            String msg = "Failed to getSmsRoutingRule DbSmsRoutingRule for id='" + address + "'!";
+
+            throw new PersistenceException(msg, e);
+        }
+    }
+
+    public void c2_updateDbSmsRoutingRule(DbSmsRoutingRule dbSmsRoutingRule) throws PersistenceException {
+        try {
+            BoundStatement boundStatement = new BoundStatement(updateDbSmsRoutingRule);
+            boundStatement.bind(dbSmsRoutingRule.getAddress(), dbSmsRoutingRule.getClusterName());
+            session.execute(boundStatement);
+        } catch (Exception e) {
+            String msg = "Failed to addDbSmsRoutingRule for '" + dbSmsRoutingRule.getAddress() + "'!";
+
+            throw new PersistenceException(msg, e);
+        }
+    }
+
+    public void c2_deleteDbSmsRoutingRule(final String address) throws PersistenceException {
+        try {
+            BoundStatement boundStatement = new BoundStatement(deleteDbSmsRoutingRule);
+            boundStatement.bind(address);
+            session.execute(boundStatement);
+        } catch (Exception e) {
+            String msg = "Failed to deleteDbSmsRoutingRule for '" + address + "'!";
+            throw new PersistenceException(msg, e);
+        }
+    }
+
+    public List<DbSmsRoutingRule> c2_getSmsRoutingRulesRange() throws PersistenceException {
+        return c2_getSmsRoutingRulesRange(null);
+    }
+    
+    public List<DbSmsRoutingRule> c2_getSmsRoutingRulesRange(String lastAdress) throws PersistenceException {
+
+        List<DbSmsRoutingRule> ress = new FastList<DbSmsRoutingRule>();
+        try {
+            PreparedStatement ps = lastAdress != null ? getSmsRoutingRulesRange : getSmsRoutingRulesRange2;
+            BoundStatement boundStatement = new BoundStatement(ps);
+            if (lastAdress != null) {
+                boundStatement.bind(lastAdress);
+            }
+            ResultSet result = session.execute(boundStatement);
+
+            int i1 = 0;
+            for (Row row : result) {
+                DbSmsRoutingRule res = new DbSmsRoutingRule();
+                String address = row.getString(Schema.COLUMN_ADDRESS);
+                res.setAddress(address);
+                String name = row.getString(Schema.COLUMN_CLUSTER_NAME);
+                res.setClusterName(name);
+
+                if (i1 == 0) {
+                    i1 = 1;
+                    if (lastAdress == null)
+                        ress.add(res);
+                } else {
+                    ress.add(res);
+                }
+            }
+
+            return ress;
+        } catch (Exception e) {
+            String msg = "Failed to getSmsRoutingRule DbSmsRoutingRule for all records: " + e;
+
+            throw new PersistenceException(msg, e);
+        }
     }
 
     private class DueSlotWritingElement {
