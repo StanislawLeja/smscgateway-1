@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<scgt value="222202222000"/>
-<scssn value="8"/>
-<hlrssn value="8"/>
-<mscssn value="8"/>
-<maxmapv value="3"/>
+<scgt value="0"/>
+<scssn value="0"/>
+<hlrssn value="0"/>
+<mscssn value="0"/>
+<maxmapv value="0"/>
 <defaultValidityPeriodHours value="72"/>
 <maxValidityPeriodHours value="240"/>
 <defaultTon value="1"/>
@@ -17,6 +17,11 @@
 <hosts value="127.0.0.1:9042"/>
 <keyspaceName value="TelestaxSMSC"/>
 <clusterName value="TelestaxSMSC"/>
-<fetchPeriod value="5000"/>
-<fetchMaxRows value="100"/>
-<maxActivityCount value="500"/>
+<fetchPeriod value="200"/>
+<fetchMaxRows value="500"/>
+<maxActivityCount value="2000"/>
+<smsHomeRouting value="false"/>
+<smppEncodingForUCS2 value="Utf8"/>
+<reviseSecondsOnSmscStart value="70"/>
+<processingSmsSetTimeout value="600"/>
+<generateReceiptCdr value="false"/>
