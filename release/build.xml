@@ -257,7 +257,7 @@
     <target name="copy-smsc">
         <echo>Copy Telscale Map RA</echo>
         <copy todir="${release.dir}/resources/map" failonerror="true">
-                <fileset dir="${base.dir}/map-ra/target/map-ts-ra.dir">
+                <fileset dir="${base.dir}/map-ra/target/map-ts-ra">
                         <include name="**" />
                 </fileset>
         </copy>
