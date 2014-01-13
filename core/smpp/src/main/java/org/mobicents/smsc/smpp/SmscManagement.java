@@ -54,6 +54,7 @@ public class SmscManagement implements SmscManagementMBean {
 	public static final String JMX_LAYER_ESME_MANAGEMENT = "EsmeManagement";
 	public static final String JMX_LAYER_ARCHIVE_SMS = "ArchiveSms";
 	public static final String JMX_LAYER_MAP_VERSION_CACHE = "MapVersionCache";
+	public static final String JMX_LAYER_SMSC_STATS = "SmscStats";
 	public static final String JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT = "SmscPropertiesManagement";
 	public static final String JMX_LAYER_SMPP_SERVER_MANAGEMENT = "SmppServerManagement";
 	public static final String JMX_LAYER_SMPP_CLIENT_MANAGEMENT = "SmppClientManagement";
@@ -90,6 +91,8 @@ public class SmscManagement implements SmscManagementMBean {
 	private boolean isStarted = false;
 
 	private static SmscManagement instance = null;
+	
+	private static SmscStatProvider smscStatProvider = null;
 
 	private SmscManagement(String name) {
 		this.name = name;
@@ -191,7 +194,12 @@ public class SmscManagement implements SmscManagementMBean {
 		this.mapVersionCache = MapVersionCache.getInstance(this.name);
 		ObjectName mapVersionCacheObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_MAP_VERSION_CACHE
 				+ ",name=" + this.getName());
-		this.registerMBean(this.mapVersionCache, MapVersionCacheMBean.class, false, mapVersionCacheObjNname);		
+		this.registerMBean(this.mapVersionCache, MapVersionCacheMBean.class, false, mapVersionCacheObjNname);
+		
+		this.smscStatProvider = SmscStatProvider.getInstance();
+		ObjectName smscStatProviderObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_SMSC_STATS
+				+ ",name=" + this.getName());
+		this.registerMBean(this.smscStatProvider, SmscStatProviderMBean.class, false, smscStatProviderObjNname);
 
 		logger.warn("Started SmscManagemet " + name);
 
@@ -216,6 +224,10 @@ public class SmscManagement implements SmscManagementMBean {
 		ObjectName mapVersionCacheObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_MAP_VERSION_CACHE
 				+ ",name=" + this.getName());
 		this.unregisterMbean(mapVersionCacheObjNname);
+		
+		ObjectName smscStatProviderObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_SMSC_STATS
+				+ ",name=" + this.getName());
+		this.unregisterMbean(smscStatProviderObjNname);
 		
 
 		logger.info("Stopped SmscManagemet " + name);
