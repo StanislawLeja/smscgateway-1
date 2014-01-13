@@ -9,6 +9,19 @@
 	<simpara>
 		<revhistory>	
 			<revision>
+				<revnumber>3.0</revnumber>
+				<date>January 13, 2014</date>
+				<author>
+					<firstname>Vinu S</firstname>
+					<surname>Renish</surname>
+				</author>
+				<revdescription>
+					<simplelist>
+						<member>Document edited to incorporate changes for 6.1.5.GA release. </member>
+					</simplelist>
+				</revdescription>
+			</revision>	
+			<revision>
 				<revnumber>2.0</revnumber>
 				<date>August 12, 2013</date>
 				<author>

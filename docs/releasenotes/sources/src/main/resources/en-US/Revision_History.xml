@@ -8,6 +8,7 @@
 	<title>Revision History</title>
 	<simpara>
 		<revhistory>		
+
 			<revision>
 				<revnumber>1.0</revnumber>
 				<date>October 18 2012</date>
@@ -24,6 +25,19 @@
 			<revision>
 				<revnumber>2.0</revnumber>
 				<date>September 8 2013</date>
+				<author>
+					<firstname>Vinu S</firstname>
+					<surname>Renish</surname>
+				</author>
+				<revdescription>
+					<simplelist>
+						<member>Added Release Notes for &THIS.VERSION;</member>
+					</simplelist>
+				</revdescription>
+			</revision>
+			<revision>
+				<revnumber>3.0</revnumber>
+				<date>January 13 2014</date>
 				<author>
 					<firstname>Vinu S</firstname>
 					<surname>Renish</surname>

@@ -34,6 +34,19 @@
 					</simplelist>
 				</revdescription>
 			</revision>
+			<revision>
+				<revnumber>3.0</revnumber>
+				<date>January 13 2014</date>
+				<author>
+					<firstname>Vinu S</firstname>
+					<surname>Renish</surname>
+				</author>
+				<revdescription>
+					<simplelist>
+						<member>Document updated to reflect new features and fixes in version 6.1.5.GA.</member>
+					</simplelist>
+				</revdescription>
+			</revision>
 		</revhistory>
 	</simpara>
 </appendix>
