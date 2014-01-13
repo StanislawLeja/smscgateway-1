@@ -31,12 +31,25 @@
 		<para>Logging is controlled from a central configuration file located at <filename>telscale-smscgateway-&tl;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/conf/jboss-log4j.xml</filename>, one for each JBoss AS configuration profile. This file defines a set of appenders specifying the log files, what categories of messages should go there, the message format and the level of filtering. For more details, please refer to Section 9.6.3, "Logging Service" in the JBoss AS Getting Started Guide available <ulink url="https://community.jboss.org/wiki/JBossAS5InstallationAndGettingStartedGuide">here</ulink>. </para>
 		<para> You must make sure <literal>log4j</literal> is fine tuned for optimal performance in production. We recommend that you set logging threshold to <literal>WARN</literal> and let the CDR appender be <literal>DEBUG</literal>.</para>
 	</section>
+	<section id="sms_home_routing">
+		<title>SMS Home Routing</title>
+		<para>According to traditional GSM specifications, all outbound messages pass through an SMSC in the sending network. This allows the SMSC to convert the Mobile Originated (MO) messages into Mobile Terminated (MT) messages and deliver them directly to the destination devices, regardless of what network they are on. As a result, inbound messages generated on other networks will be sent directly to the destination devices under the control of the SMSC in the sending network, not the home network. In this traditional setup, operators can add value to the MO messages but not to the MT messages that the customer may receive from other networks, since they do not pass through an SMSC in the home network.
+		</para>
+		<para>
+		SMS Home Routing is a modification to the original GSM specifications, adopted by the 3GPP in 2007, that changed the way inbound messages are treated by the mobile networks. Home Routing uses the recipient network's Home Location Register (HLR) to change the flow of inbound messages, directing them to an MT Services Platform, rather than straight to the destination devices. The MT Services platform can add value to the MT messages and apply advanced services such as anti-spam, protection, divert, archiving, etc. to the messages prior to delivery.
+		</para>
+		<para>
+		Home Routing enables operators to offer a full range of value-added services to both inbound and outbound SMS thereby enhancing customer experience while generating additional revenue for the operators.
+		</para>
+		<para>
+		&THIS.PLATFORM; &THIS.APPLICATION; supports SMS Home Routing that enables you to handle Mobile Terminated messages in the network that owns the customer so you can offer a full range of advanced and value added services on both inbound and outbound SMS. You may switch on/off SMS Home Routing according to your requirements. You can configure this by setting the parameter <literal>smshomerouting</literal> to true/false using the CLI or the GUI. For more details refer to <xref linkend="smshomerouting" />.</para>
+	</section>
 	<section id="CDR_logging_settings">
 		<title>CDR Logging Settings</title>
 		<para>
 			&THIS.PLATFORM; &THIS.APPLICATION; is configured to generate CDR in a plain text file located at <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/log/cdr.log</filename>. 
 		</para>
-		<para>&THIS.PLATFORM; &THIS.APPLICATION; can be configured to generate CDR for both receipt and regular messages or generate CDR only for regular messages. This is configurable by setting the parameter 'generateReceiptCdr' to true/false using the CLI or the GUI. For more details refer to <xref linkend="generateReceiptCdr" />.
+		<para>&THIS.PLATFORM; &THIS.APPLICATION; can be configured to generate CDR for both receipt and regular messages or generate CDR only for regular messages. This is configurable by setting the parameter <literal>generateReceiptCdr</literal> to true/false using the CLI or the GUI. For more details refer to <xref linkend="generateReceiptCdr" />.
 		</para>
 		<para>
 The CDR generated in a text file is of the below format:
