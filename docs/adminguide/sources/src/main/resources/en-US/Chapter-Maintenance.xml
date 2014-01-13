@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "${ent.filename}">
+%BOOK_ENTITIES;
+]>
+<chapter id="maintenance">
+
+	<title>Maintenance</title>
+	<section id="db_maint">
+		<title>Database</title>
+		<para>
+The &THIS.PLATFORM; &THIS.APPLICATION; creates three tables for every new day to store data relevant to the messages scheduled for delivery on that day, as explained in <xref linkend="Database_Table_Structure" />. These tables are not deleted by the SMSC. Over a period of time, the tables may end up occupying huge disk space and they need to be removed manually.
+		</para>
+		<para>
+		You must decide on how much data you would like to retain in the Database and accordingly delete the tables. However you must take precaution to not delete the tables for today or a future date. All tables that store data for dates less than the current date may be safely deleted from the database without stopping the SMSC.
+		</para> 
+		<para>To delete the tables you must run the required commands via Cassandra CQL3 as in the examples below:
+<screen><![CDATA[
+DROP TABLE DST_SLOT_TABLE_2014_01_05; 
+DROP TABLE SLOT_MESSAGES_TABLE_2014_01_05; 
+DROP TABLE MESSAGES_2014_01_05;
+]]></screen>
+		</para>
+	</section>
+
+
+</chapter>
