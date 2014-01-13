@@ -37,26 +37,15 @@
 </screen>    
 			</para></step>
 			<step><para>
-			When you have the database running successfully, you can proceed to creating the keyspace by launching the <literal>telscale-smscgateway-&lt;version&gt;/cassandra/cassandra.cql</literal> script available in the &THIS.PLATFORM; &THIS.APPLICATION; distributive. If you are using Linux, then change your working directory to the Cassandra Database installation directory and at the command prompt enter the following command:
+			When you have the database running successfully, you can proceed to creating the keyspace by making use of the cql command as below:
 <screen><![CDATA[
-[vinu@vinu-neha]$ cd $CASSANDRA_HOME
-[vinu@vinu-neha cassandra]$ ./bin/cqlsh -f  $SMSC_DIR/cassandra/cassadra.cql
-
-where $SMSC_DIR is the installation directory of TelScale SMSC Gateway.
+[vinu@vinu-neha]$ CREATE KEYSPACE "saturn" WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1};
 ]]>
-</screen>
-
-If you are using Microsoft Windows, you must run the <literal>telscale-smscgateway-&lt;version&gt;/cassandra/cassandra.cql</literal> script at the command prompt by entering the following command:
-<screen><![CDATA[
-C:\cassandra> python cqlsh -f $SMSC_DIR/cassandra/cassandra.cql
-
-where $SMSC_DIR is the installation directory of TelScale SMSC Gateway.
-]]>
-</screen>
-You may have to resolve folder paths by specifying appropriate folder path in the commands.
+</screen>    
+You should setup the keyspace strategy and the replication factor as required. If the above command is executed successfully, it must not return any error message.  
 			</para></step>
 			<step><para>
-			If the above step is executed successfully, the script must not return any error message.
+			It is not required for you to create any tables in the keyspace; SMSC will create the tables when started. If the keyspace contains old tables you should remove them prior to starting the SMSC.
 			</para></step>
 			<step><para>
 A new database (keyspace) will be created locally (a single working Cassandra node). It is a Cassandra cluster which has only one node. By adding more nodes, you can make it a multi node cluster.  

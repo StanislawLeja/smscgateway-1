@@ -63,6 +63,13 @@
 									<entry> </entry>	
 									
 								</row>
+								<row>
+									<entry>Firewall Access</entry>
+									<entry>You must ensure that you have appropriate firewall permissions to allow access to IP:8080. This is required to access the management consoles.</entry>
+									<entry> </entry>	
+									
+								</row>
+
 					<!--			
 								<row>
 									<entry>SCTP libraries</entry>
