@@ -39,7 +39,7 @@
 			<step><para>
 			When you have the database running successfully, you can proceed to creating the keyspace by making use of the cql command as below:
 <screen><![CDATA[
-[vinu@vinu-neha]$ CREATE KEYSPACE "saturn" WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1};
+[vinu@vinu-neha]$ CREATE KEYSPACE "TelestaxSMSC" WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1};
 ]]>
 </screen>    
 You should setup the keyspace strategy and the replication factor as required. If the above command is executed successfully, it must not return any error message.  
