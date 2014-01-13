@@ -28,69 +28,77 @@ import org.apache.log4j.Logger;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.SmsSetCashe;
 
-public class SmscStatProvider {
-    private static final Logger logger = Logger.getLogger(SmscStatProvider.class);
+/**
+ * 
+ * @author Amit Bhayani
+ * 
+ */
+public class SmscStatProvider implements SmscStatProviderMBean {
+	private static final Logger logger = Logger.getLogger(SmscStatProvider.class);
 
-    private int messageScheduledTotal = 0;
-    private int param1 = 0;
-    private int param2 = 0;
-    private long currentMessageId = 0;
-    private Date smscStartTime = new Date();
+	private long messageScheduledTotal = 0;
+	private int param1 = 0;
+	private int param2 = 0;
+	private long currentMessageId = 0;
+	private Date smscStartTime = new Date();
 
-    private static SmscStatProvider instance = new SmscStatProvider();
+	private static SmscStatProvider instance = new SmscStatProvider();
 
-    public static SmscStatProvider getInstance() {
-        return instance;
-    }
+	private static final SmsSetCashe smsSetCashe = SmsSetCashe.getInstance();
+	private static final DBOperations_C2 dbOperations_C2 = DBOperations_C2.getInstance();
 
-    public int getMessageInProcess() {
-        return SmsSetCashe.getInstance().getProcessingSmsSetSize();
-    }
+	public static SmscStatProvider getInstance() {
+		return instance;
+	}
 
-    public int getDueSlotProcessingLag() {
-        long current = DBOperations_C2.getInstance().c2_getCurrentDueSlot();
-        long inTime = DBOperations_C2.getInstance().c2_getDueSlotForTime(new Date());
-        return (int)(inTime - current);
-    }
+	public int getMessageInProcess() {
+		return smsSetCashe.getProcessingSmsSetSize();
+	}
 
-    public int getMessageScheduledTotal() {
-        return messageScheduledTotal;
-    }
+	public int getDueSlotProcessingLag() {
+		long current = dbOperations_C2.c2_getCurrentDueSlot();
+		long inTime = dbOperations_C2.c2_getDueSlotForTime(new Date());
+		return (int) (inTime - current);
+	}
 
-    public void setMessageScheduledTotal(int messageScheduledTotal) {
-        this.messageScheduledTotal = messageScheduledTotal;
-    }
+	public long getMessageScheduledTotal() {
+		return messageScheduledTotal;
+	}
 
-    public int getParam1() {
-        return param1;
-    }
+	public void setMessageScheduledTotal(long messageScheduledTotal) {
+		this.messageScheduledTotal = messageScheduledTotal;
+	}
 
-    public void setParam1(int param1) {
-        this.param1 = param1;
-    }
+	public int getParam1() {
+		return param1;
+	}
 
-    public int getParam2() {
-        return param2;
-    }
+	public void setParam1(int param1) {
+		this.param1 = param1;
+	}
 
-    public void setParam2(int param2) {
-        this.param2 = param2;
-    }
+	public int getParam2() {
+		return param2;
+	}
 
-    public long getCurrentMessageId() {
-        return currentMessageId;
-    }
+	public void setParam2(int param2) {
+		this.param2 = param2;
+	}
 
-    public void setCurrentMessageId(long currentMessageId) {
-        this.currentMessageId = currentMessageId;
-    }
+	public long getCurrentMessageId() {
+		return currentMessageId;
+	}
 
-    public Date getSmscStartTime() {
-        return smscStartTime;
-    }
+	public void setCurrentMessageId(long currentMessageId) {
+		this.currentMessageId = currentMessageId;
+	}
 
-    public void setSmscStartTime(Date smscStartTime) {
-        this.smscStartTime = smscStartTime;
-    }
+	public Date getSmscStartTime() {
+		return smscStartTime;
+	}
+
+	public void setSmscStartTime(Date smscStartTime) {
+		this.smscStartTime = smscStartTime;
+	}
 
 }
