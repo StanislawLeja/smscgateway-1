@@ -72,11 +72,12 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 
 	private void init() {
 		try {
-            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                dbOperations_C1 = DBOperations_C1.getInstance();
-            } else {
-                dbOperations_C2 = DBOperations_C2.getInstance();
-            }
+//            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+//                dbOperations_C1 = DBOperations_C1.getInstance();
+//            } else {
+//                dbOperations_C2 = DBOperations_C2.getInstance();
+//            }
+            dbOperations_C2 = DBOperations_C2.getInstance();
 		} catch (Exception e) {
 			logger.error("Error initializing cassandra database for DatabaseSmsRoutingRule", e);
 		}
