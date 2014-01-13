@@ -33,7 +33,7 @@
 	<section id="dir_structure">
 		<title>Directory Structure</title>
 	<para>
-		When you download the binary release, you will notice that the top level directory is named <literal>telscale-smscgateway-&lt;version&gt;</literal> and immediately below this are four sub-directories as explained below:
+		When you download the binary release, you will notice that the top level directory is named <literal>telscale-smscgateway-&lt;version&gt;</literal> and immediately below this are five sub-directories as explained below:
 </para>
 <itemizedlist>
 			<listitem><para>cassandra: Contains the script for creating the Cassandra Keyspace.</para></listitem>
@@ -44,7 +44,7 @@
 		</itemizedlist>
 
 <screen><![CDATA[
-|- telscale-smscgateway-<version>
+|- telscale-smsc-<version>
 		|- cassandra
 		|- docs
 				|+ container
@@ -55,7 +55,7 @@
 				|+ smsc
 				|+ tools
 		|- jboss-5.1.0.GA
-				|+ bin    //contains start up and shutdown scripts for the Server and the start up script for Shell.
+				|+ bin    //contains start up and shutdown scripts for the Server.
 				|+ client
 				|+ common
 				|+ docs
@@ -68,10 +68,10 @@
 		|- tools
 				|+ eclipslee
 				|+ jopr-plugin
-				|+ Telscale-jss7-simulator
-				|+ Telscale-smpp-simulator
 				|+ remote-slee-connection
 				|+ snmp
+				|+ Telscale-jss7-simulator
+				|+ Telscale-smpp-simulator
 				|+ twiddle
 ]]>
 </screen>
