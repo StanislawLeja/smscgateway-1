@@ -54,7 +54,10 @@
 		<para>
 The CDR generated in a text file is of the below format:
 <screen><![CDATA[
-SUBMIT_DATE,ADDR_SRC_DIGITS,ADDR_SRC_TON,ADDR_SRC_NPI,ADDR_DST_DIGITS,ADDR_DST_TON,ADDR_DST_NPI,SM_STATUS,ORIG_SYSTEM_ID,MESSAGE_ID,First 20 chars of SMS,If failed the reason for failure (empty string if delivery is successfull).
+SUBMIT_DATE,ADDR_SRC_DIGITS,ADDR_SRC_TON,ADDR_SRC_NPI,ADDR_DST_DIGITS,
+ADDR_DST_TON,ADDR_DST_NPI,SM_STATUS,ORIG_SYSTEM_ID,MESSAGE_ID,
+First 20 chars of SMS,
+If failed the reason for failure (empty string if delivery is successfull).
 ]]></screen>
 		</para>
 		<para>For more details on these parameters, please refer to their explanation in <xref linkend="SLOT_MESSAGES_TABLE_yyyy_mm_dd" />. If you would like to know more details of the SMS, you must dig the table in the Cassandra database.
