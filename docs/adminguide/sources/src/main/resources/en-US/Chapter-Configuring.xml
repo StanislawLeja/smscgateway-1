@@ -34,12 +34,17 @@
 	<section id="CDR_logging_settings">
 		<title>CDR Logging Settings</title>
 		<para>
-			&THIS.PLATFORM; &THIS.APPLICATION; is configured to generate CDR in a plain text file located at <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/log/cdr.log</filename>. The CDR generated in a text file is of the below format:
+			&THIS.PLATFORM; &THIS.APPLICATION; is configured to generate CDR in a plain text file located at <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/log/cdr.log</filename>. 
+		</para>
+		<para>&THIS.PLATFORM; &THIS.APPLICATION; can be configured to generate CDR for both receipt and regular messages or generate CDR only for regular messages. This is configurable by setting the parameter 'generateReceiptCdr' to true/false using the CLI or the GUI. For more details refer to <xref linkend="generateReceiptCdr" />.
+		</para>
+		<para>
+The CDR generated in a text file is of the below format:
 <screen><![CDATA[
-SUBMIT_DATE,ADDR_SRC_DIGITS,ADDR_SRC_TON,ADDR_SRC_NPI,ADDR_DST_DIGITS,ADDR_DST_TON,ADDR_DST_NPI,SM_STATUS,ORIG_SYSTEM_ID,MESSAGE_ID,First 20 chars of SMS,If failed the reason for failure
+SUBMIT_DATE,ADDR_SRC_DIGITS,ADDR_SRC_TON,ADDR_SRC_NPI,ADDR_DST_DIGITS,ADDR_DST_TON,ADDR_DST_NPI,SM_STATUS,ORIG_SYSTEM_ID,MESSAGE_ID,First 20 chars of SMS,If failed the reason for failure (empty string if delivery is successfull).
 ]]></screen>
 		</para>
-		<para>For more details on these parameters, please refer to their explanation in <xref linkend="db_ARCHIVE" />. If you would like to know more details of the SMS, you must dig the <literal>ARCHIVE</literal> table in the Cassandra database.
+		<para>For more details on these parameters, please refer to their explanation in <xref linkend="SLOT_MESSAGES_TABLE_yyyy_mm_dd" />. If you would like to know more details of the SMS, you must dig the table in the Cassandra database.
 		</para>
 <para>
 The CDR text file contains a special field (<literal>SM_STATUS</literal>) that specifies the message delivery status. This field can have any of the following values: 
@@ -57,12 +62,12 @@ The CDR text file contains a special field (<literal>SM_STATUS</literal>) that s
 	</varlistentry>
 	<varlistentry>
 	<term>temp_failed</term>
-	<listitem><para>Failed delivering a part of a multi-part message or a single message.
+	<listitem><para>Failed delivering a part of a multi-part message or a single message. It does not indicate if a resend will be attempted or not.
 	</para></listitem>
 	</varlistentry>
 	<varlistentry>
 	<term>failed</term>
-	<listitem><para>A message has been removed from the <literal>LIVE_SMS</literal> database table because of permanent failure or because the validity period is over. This means that no more delivery attempts will be made for this message.
+	<listitem><para>Failed delivering a message and the SMSC will now attempt to resend the message or part of the message.
 	</para></listitem>
 	</varlistentry>
 	</variablelist>
@@ -85,7 +90,7 @@ The CDR text file contains a special field (<literal>SM_STATUS</literal>) that s
 	</varlistentry>
 	<varlistentry>
 	<term>failed_esme</term>
-	<listitem><para>A message has been removed from the <literal>LIVE_SMS</literal> database table because of permanent failure or because the validity period is over. This means that no more delivery attempts will be made for this message.
+	<listitem><para>Failed delivering a message and the SMSC will now attempt to resend the message or part of the message.
 	</para></listitem>
 	</varlistentry>
 	</variablelist>

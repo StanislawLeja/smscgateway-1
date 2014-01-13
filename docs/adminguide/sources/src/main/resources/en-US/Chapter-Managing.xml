@@ -27,7 +27,6 @@
 	<formalpara>
 		<title>Configuring the Gateway</title>
 		<para>
-			Once you have configured the SS7 Stack you can continue with SMSC configuration using the CLI tool or the GUI. In order to use the CLI you must follow the instructions specified in <xref linkend="running_shell" /> to run the shell and connect to the managed instance. Alternatively you can use the GUI to configure the SMSC Gateway through simple GUI operations. The GUI will allow you to manage your SMSC Gateway efficiently using an user-friendly interface. To launch the GUI, open a Web Browser, navigate to http://localhost:8080/telscale-management/ and switch to the 'SMSC GW' tab. 
 </para>
 	</formalpara>
 	<section id="SMSC_Gateway_Server_Settings">
@@ -502,6 +501,41 @@ EXAMPLES
 				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Due delay multiplicator by entering the value in the text field 'Due delay multiplicator'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+			<section id="generateReceiptCdr">
+			<title>Generate CDR for Receipt Messages</title>
+			<section id="generateReceiptCdr_CLI">
+			<title>Using CLI</title>
+<para>You can set the 'generateReceiptCdr' value to true/false by issuing the command <command>smsc set generateReceiptCdr</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get generateReceiptCdr</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set generateReceiptCdr
+
+SYNOPSIS
+	smsc set generateReceiptCdr <true | false>
+
+DESCRIPTION
+	The SMSC can be configured to generate CDR for both receipt and regular messages 
+	or generate CDR only for regular messages. By default the SMSC will generate CDR
+	for regular messages only. However if you require the SMSC to generate CDR for
+	receipt messages as well, you must set the parameter 'generateReceiptCdr' to true.
+]]></screen>
+			</section>
+			<section id="generateReceiptCdr_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set 'generate CDR for receipt messages'  using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				</para></step>
+				<step><para>You can specify if the SMSC should generate CDR for receipt messages by choosing the value true for the field 'Generate receipt CDR'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
 				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
 				</para></step>
@@ -1011,6 +1045,83 @@ EXAMPLES
 				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Scheduler' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Max Activity Count by entering the value in the text field 'Max Activity Count'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+			<section id="reviseSecondsOnSmscStart">
+			<title>Revise period after SMSC restart</title>
+			<section id="reviseSecondsOnSmscStart_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'Revise period (in seconds) after SMSC restart' value by issuing the command <command>smsc set reviseSecondsOnSmscStart</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get reviseSecondsOnSmscStart</command> which will display the value set for this property. If unspecified, the default value for this parameter is 60 seconds.
+</para>
+<screen><![CDATA[
+Name
+	smsc set reviseSecondsOnSmscStart <seconds>
+
+SYNOPSIS
+	smsc set reviseSecondsOnSmscStart <seconds>
+
+DESCRIPTION
+	This command is used to set the revise period (in seconds). After every restart,
+	the SMSC Gateway will revise the last 'x' seconds before shutdown to ensure that
+	all the arrived messages are processed; where 'x' is the value set in seconds
+	for the parameter 'reviseSecondsOnSmscStart' using this command.
+EXAMPLES
+	smsc set reviseSecondsOnSmscStart 30
+]]></screen>
+			</section>
+			<section id="reviseSecondsOnSmscStart_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set Revise Period using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Scheduler' tab in the GUI.
+				</para></step>
+				<step><para>You can specify the revise period in seconds by entering the value in the text field 'Revise period after SMSC restart (sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+			<section id="processingSmsSetTimeout">
+			<title>Cache timeout period</title>
+			<section id="processingSmsSetTimeout_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'Cache timeout period' value by issuing the command <command>smsc set processingSmsSetTimeout</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get processingSmsSetTimeout</command> which will display the value set for this property. If unspecified, the default value for this parameter is 600 seconds. Generally, you may not have to modify this value.
+</para>
+<screen><![CDATA[
+Name
+	smsc set processingSmsSetTimeout <seconds>
+
+SYNOPSIS
+	smsc set processingSmsSetTimeout <seconds>
+
+DESCRIPTION
+	This command is used to set the Cache timeout period (in seconds). 
+	Messages are cached in the SMSC until the processing is completed. In case of a 
+	delivery failure, these cached messages are force cleaned by the SMSC after 
+	waiting for the timeout period set for the parameter 'processingSmsSetTimeout' 
+	using this command.
+EXAMPLES
+	smsc set processingSmsSetTimeout 45
+]]></screen>
+			</section>
+			<section id="processingSmsSetTimeout_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set Cache timeout Period using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Scheduler' tab in the GUI.
+				</para></step>
+				<step><para>You can specify the Cache timeout period in seconds by entering the value in the text field 'Processing Sms set cache timeout (sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
 				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
 				</para></step>
