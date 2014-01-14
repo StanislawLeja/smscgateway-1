@@ -511,20 +511,20 @@ EXAMPLES
 			<title>Generate CDR for Receipt Messages</title>
 			<section id="generateReceiptCdr_CLI">
 			<title>Using CLI</title>
-<para>You can set the 'generateReceiptCdr' value to true/false by issuing the command <command>smsc set generateReceiptCdr</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get generateReceiptCdr</command> which will display the value set for this property.
+<para>You can set the 'generatereceiptcdr' value to true/false by issuing the command <command>smsc set generatereceiptcdr</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get generatereceiptcdr</command> which will display the value set for this property.
 </para>
 <screen><![CDATA[
 Name
-	smsc set generateReceiptCdr
+	smsc set generatereceiptcdr
 
 SYNOPSIS
-	smsc set generateReceiptCdr <true | false>
+	smsc set generatereceiptcdr <true | false>
 
 DESCRIPTION
 	The SMSC can be configured to generate CDR for both receipt and regular messages 
 	or generate CDR only for regular messages. By default the SMSC will generate CDR
 	for regular messages only. However if you require the SMSC to generate CDR for
-	receipt messages as well, you must set the parameter 'generateReceiptCdr' to true.
+	receipt messages as well, you must set the parameter 'generatereceiptcdr' to true.
 ]]></screen>
 			</section>
 			<section id="generateReceiptCdr_GUI">
@@ -754,43 +754,6 @@ DESCRIPTION
 				</para></step>
 				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
 				</para></step>
-			</procedure>
-			</section>
-		</section>
-		<section id="mapcache">
-			<title>MAP Version Cache</title>
-			<para>&THIS.PLATFORM; &THIS.APPLICATION; caches the negotiated MAP Version for each network node. Cache stores the Global Title of SCCP address of the network node. Every MT SMS sent to this node will use the cached Version. This will help in reducing the MAP Version negotiation duration everytime and hence improve the performance.</para>
-
-			<section id="mapcache_cli">
-			<title>Using CLI</title>
-<para>
-You can set the 'MAP Version Cache' value by issuing the command <command>smsc mapcache set</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc mapcache get</command> which will display all the cached values. Alternatively you can retrieve the cached value for a specific node by issuing the command <command>smsc mapcache get &lt;node_digits&gt;</command>. You can clear the cache by issuing the command <command>smsc mapcache clear</command>.
-</para>
-<screen><![CDATA[
-Name
-	smsc mapcache set
-
-SYNOPSIS
-	smsc mapcache set <node_digits> <version>
-
-DESCRIPTION
-	This command is used to set the version for the specific node digits. SMSC Gateway
-	caches the negotiated MAP Version for each network node. Every MT SMS sent to this
-	node will use the cached Version.
-]]></screen>
-			</section>
-			<section id="mapcache_gui">
-			<title>Using GUI</title>
-			<procedure>
-				<title>Managing MAP Version Cache value using the GUI</title>
-				<step><para>In the GUI Management Console for SMSC Gateway, click on 'MAP Version Cache' in the left panel.
-				</para></step>
-				<step><para>You can specify the MAP Application Context version for every node by entering the value for Node Digits and choosing the Version for MAP MtForwardSm operation.
-				</para></step>
-				<step><para>You must click on the button 'Update' to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
-				</para></step>
-				<step><para>To view the cached version value for a specific node, enter the node digits (under View Cache) and click on the "View" button. The cached value will be displayed in the log.</para></step>
-				<step><para>To clear all the cached values, click on the "Clear Cache" button.</para></step>
 			</procedure>
 			</section>
 		</section>
@@ -1085,30 +1048,30 @@ EXAMPLES
 			</procedure>
 			</section>
 			</section>
-			<section id="reviseSecondsOnSmscStart">
+			<section id="revisesecondsonsmscstart">
 			<title>Revise period after SMSC restart</title>
-			<section id="reviseSecondsOnSmscStart_CLI">
+			<section id="revisesecondsonsmscstart_CLI">
 			<title>Using CLI</title>
 <para>
-You can set the 'Revise period (in seconds) after SMSC restart' value by issuing the command <command>smsc set reviseSecondsOnSmscStart</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get reviseSecondsOnSmscStart</command> which will display the value set for this property. If unspecified, the default value for this parameter is 60 seconds.
+You can set the 'Revise period (in seconds) after SMSC restart' value by issuing the command <command>smsc set revisesecondsonsmscstart</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get revisesecondsonsmscstart</command> which will display the value set for this property. If unspecified, the default value for this parameter is 60 seconds.
 </para>
 <screen><![CDATA[
 Name
-	smsc set reviseSecondsOnSmscStart <seconds>
+	smsc set revisesecondsonsmscstart <seconds>
 
 SYNOPSIS
-	smsc set reviseSecondsOnSmscStart <seconds>
+	smsc set revisesecondsonsmscstart <seconds>
 
 DESCRIPTION
 	This command is used to set the revise period (in seconds). After every restart,
 	the SMSC Gateway will revise the last 'x' seconds before shutdown to ensure that
 	all the arrived messages are processed; where 'x' is the value set in seconds
-	for the parameter 'reviseSecondsOnSmscStart' using this command.
+	for the parameter 'revisesecondsonsmscstart' using this command.
 EXAMPLES
-	smsc set reviseSecondsOnSmscStart 30
+	smsc set revisesecondsonsmscstart 30
 ]]></screen>
 			</section>
-			<section id="reviseSecondsOnSmscStart_GUI">
+			<section id="revisesecondsonsmscstart_GUI">
 			<title>Using GUI</title>
 			<procedure>
 				<title>Set Revise Period using the GUI</title>
@@ -1123,31 +1086,31 @@ EXAMPLES
 			</procedure>
 			</section>
 			</section>
-			<section id="processingSmsSetTimeout">
+			<section id="processingsmssettimeout">
 			<title>Cache timeout period</title>
-			<section id="processingSmsSetTimeout_CLI">
+			<section id="processingsmssettimeout_CLI">
 			<title>Using CLI</title>
 <para>
-You can set the 'Cache timeout period' value by issuing the command <command>smsc set processingSmsSetTimeout</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get processingSmsSetTimeout</command> which will display the value set for this property. If unspecified, the default value for this parameter is 600 seconds. Generally, you may not have to modify this value.
+You can set the 'Cache timeout period' value by issuing the command <command>smsc set processingsmssettimeout</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get processingsmssettimeout</command> which will display the value set for this property. If unspecified, the default value for this parameter is 600 seconds. Generally, you may not have to modify this value.
 </para>
 <screen><![CDATA[
 Name
-	smsc set processingSmsSetTimeout <seconds>
+	smsc set processingsmssettimeout <seconds>
 
 SYNOPSIS
-	smsc set processingSmsSetTimeout <seconds>
+	smsc set processingsmssettimeout <seconds>
 
 DESCRIPTION
 	This command is used to set the Cache timeout period (in seconds). 
 	Messages are cached in the SMSC until the processing is completed. In case of a 
 	delivery failure, these cached messages are force cleaned by the SMSC after 
-	waiting for the timeout period set for the parameter 'processingSmsSetTimeout' 
+	waiting for the timeout period set for the parameter 'processingsmssettimeout' 
 	using this command.
 EXAMPLES
-	smsc set processingSmsSetTimeout 45
+	smsc set processingsmssettimeout 45
 ]]></screen>
 			</section>
-			<section id="processingSmsSetTimeout_GUI">
+			<section id="processingsmssettimeout_GUI">
 			<title>Using GUI</title>
 			<procedure>
 				<title>Set Cache timeout Period using the GUI</title>
@@ -1857,6 +1820,43 @@ PARAMETERS
 		</section>
 		</section>
 	</section>
+<section id="mapcache">
+			<title>MAP Version Cache</title>
+			<para>&THIS.PLATFORM; &THIS.APPLICATION; caches the negotiated MAP Version for each network node. Cache stores the Global Title of SCCP address of the network node. Every MT SMS sent to this node will use the cached Version. This will help in reducing the MAP Version negotiation duration everytime and hence improve the performance.</para>
+
+			<section id="mapcache_cli">
+			<title>Using CLI</title>
+<para>
+You can set the 'MAP Version Cache' value by issuing the command <command>smsc mapcache set</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc mapcache get</command> which will display all the cached values. Alternatively you can retrieve the cached value for a specific node by issuing the command <command>smsc mapcache get &lt;node_digits&gt;</command>. You can clear the cache by issuing the command <command>smsc mapcache clear</command>.
+</para>
+<screen><![CDATA[
+Name
+	smsc mapcache set
+
+SYNOPSIS
+	smsc mapcache set <node_digits> <version>
+
+DESCRIPTION
+	This command is used to set the version for the specific node digits. SMSC Gateway
+	caches the negotiated MAP Version for each network node. Every MT SMS sent to this
+	node will use the cached Version.
+]]></screen>
+			</section>
+			<section id="mapcache_gui">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Managing MAP Version Cache value using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'MAP Version Cache' in the left panel.
+				</para></step>
+				<step><para>You can specify the MAP Application Context version for every node by entering the value for Node Digits and choosing the Version for MAP MtForwardSm operation.
+				</para></step>
+				<step><para>You must click on the button 'Update' to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+				<step><para>To view the cached version value for a specific node, enter the node digits (under View Cache) and click on the "View" button. The cached value will be displayed in the log.</para></step>
+				<step><para>To clear all the cached values, click on the "Clear Cache" button.</para></step>
+			</procedure>
+			</section>
+		</section>
 	<section id="db_routing_rule_settings">
 	<title>Routing Rules</title>
 	<para>

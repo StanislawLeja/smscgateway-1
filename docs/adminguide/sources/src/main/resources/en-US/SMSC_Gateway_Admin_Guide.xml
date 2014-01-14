@@ -12,6 +12,7 @@
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Chapter-Configuring.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Chapter-Managing.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Chapter-Maintenance.xml" />
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Chapter-Monitoring.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Appendix-SMSC-ErrorCodes.xml"/>
 	<xi:include href="Revision_History.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
 </book>
