@@ -1,13 +1,13 @@
 Name
-	smsc get generateReceiptCdr
+	smsc get generatereceiptcdr
 
 SYNOPSIS
-	smsc get generateReceiptCdr
+	smsc get generatereceiptcdr
 
 DESCRIPTION
 	The SMSC can be configured to generate CDR for both receipt and regular messages 
 	or generate CDR only for regular messages by configuring the parameter 
-	'generateReceiptCdr' to true or false. This command is used to retrieve the
+	'generatereceiptcdr' to true or false. This command is used to retrieve the
 	current settings.
 SEE ALSO
 	smsc esme_create, smsc get scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
