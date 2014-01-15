@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.telscale.smsc.docs</groupId>
 		<artifactId>telscale-smsc-docs</artifactId>
-		<version>6.2.0-TelScale-SNAPSHOT</version>
+		<version>6.1.5.GA-TelScale</version>
 	</parent>
 
 	<artifactId>telscale-smsc-installguide</artifactId>

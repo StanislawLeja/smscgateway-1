@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>telscale-smsc-parent</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.2.0-TelScale-SNAPSHOT</version>
+		<version>6.1.5.GA-TelScale</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -38,7 +38,7 @@
 										<echo>
 											${jboss.home}server/default/deploy
 										</echo>
-										<copy file="${project.build.directory}/smsc-management.war" todir="${jboss.home}/server/${node}/deploy"/>
+										<copy file="${project.build.directory}/smsc-management.war" todir="${jboss.home}/server/${node}/deploy" />
 									</tasks>
 								</configuration>
 							</execution>
