@@ -52,67 +52,7 @@
 		<para>&THIS.PLATFORM; &THIS.APPLICATION; can be configured to generate CDR for both receipt and regular messages or generate CDR only for regular messages. This is configurable by setting the parameter <literal>generateReceiptCdr</literal> to true/false using the CLI or the GUI. For more details refer to <xref linkend="generateReceiptCdr" />.
 		</para>
 		<para>
-The CDR generated in a text file is of the below format:
-<screen><![CDATA[
-DELIVER_DATE,ADDR_SRC_DIGITS,ADDR_SRC_TON,ADDR_SRC_NPI,ADDR_DST_DIGITS,
-ADDR_DST_TON,ADDR_DST_NPI,SM_STATUS,ORIG_SYSTEM_ID,MESSAGE_ID,
-First 20 characters of SMS, Reason for failure (empty string if delivery is successful).
-]]></screen>
+The CDR generated in a text file is of a specific format. The details of the format and the possible values for the fields recorded in the CDR log file are explained in <xref linkend="monitoring-SMSC-CDR-log" />.
 		</para>
-		<para>The last field in the CDR is "Reason for failure", which records the reason for delivery failure and is empty if the delivery is successful. The possible delivery failure cases are explained in <xref linkend="appendix-SMSC-delivery-failure-reasons" />.
-		</para>
-		
-<para>
-The CDR text file contains a special field (<literal>SM_STATUS</literal>) that specifies the message delivery status. This field can have any of the following values: 
-	<variablelist>
-	<title>If delivering to GSM network:</title>
-	<varlistentry>
-	<term>partial</term>
-	<listitem><para>Delivered a part of a multi-part message but not the last part.
-	</para></listitem>
-	</varlistentry>
-	<varlistentry>
-	<term>success</term>
-	<listitem><para>Delivered the last part of a multi-part message or a single message.
-	</para></listitem>
-	</varlistentry>
-	<varlistentry>
-	<term>temp_failed</term>
-	<listitem><para>Failed delivering a part of a multi-part message or a single message. It does not indicate if a resend will be attempted or not.
-	</para></listitem>
-	</varlistentry>
-	<varlistentry>
-	<term>failed</term>
-	<listitem><para>Failed delivering a message and the SMSC will now attempt to resend the message or part of the message.
-	</para></listitem>
-	</varlistentry>
-	</variablelist>
-	<variablelist>
-	<title>If delivering to ESME:</title>
-	<varlistentry>
-	<term>partial_esme</term>
-	<listitem><para>Delivered a part of a multi-part message but not the last part.
-	</para></listitem>
-	</varlistentry>
-	<varlistentry>
-	<term>success_esme</term>
-	<listitem><para>Delivered the last part of a multi-part message or a single message.
-	</para></listitem>
-	</varlistentry>
-	<varlistentry>
-	<term>temp_failed_esme</term>
-	<listitem><para>Failed delivering a part of a multi-part message or a single message.
-	</para></listitem>
-	</varlistentry>
-	<varlistentry>
-	<term>failed_esme</term>
-	<listitem><para>Failed delivering a message and the SMSC will now attempt to resend the message or part of the message.
-	</para></listitem>
-	</varlistentry>
-	</variablelist>
-</para>
-<para>For more details on the other fields in the CDR file, please refer to their explanation in <xref linkend="SLOT_MESSAGES_TABLE_yyyy_mm_dd" />.
-		</para>
-
 	</section>
 </chapter>
