@@ -7,9 +7,10 @@
 		<artifactId>services-parent</artifactId>
 		<version>6.2.0-TelScale-SNAPSHOT</version>
 	</parent>
+	<artifactId>charging-sbb</artifactId>
 
-	<artifactId>tx-smppserver-sbb</artifactId>
-	<name>Core : SLEE : Services Tx SMPP Server SBB</name>
+	<name>Core : SLEE : Services Charging SBB</name>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -17,14 +18,30 @@
 			<version>1.5.0</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
-			<groupId>org.mobicents.servers.jainslee.api</groupId>
-			<artifactId>jain-slee-11-ext</artifactId>
-			<version>${jslee.ext.version}</version>
-			<scope>provided</scope>
+			<artifactId>mobicents-slee-ra-diameter-cca-common-library</artifactId>
+			<groupId>org.mobicents.resources</groupId>
+			<version>${jdiameter.version}</version>
 		</dependency>
 		<dependency>
-			<artifactId>persistence-ra-library</artifactId>
+			<artifactId>mobicents-slee-ra-diameter-ro-events</artifactId>
+			<groupId>org.mobicents.resources</groupId>
+			<version>${jdiameter.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>mobicents-slee-ra-diameter-ro-ra</artifactId>
+			<groupId>org.mobicents.resources</groupId>
+			<version>${jdiameter.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>mobicents-slee-ra-diameter-ro-ratype</artifactId>
+			<groupId>org.mobicents.resources</groupId>
+			<version>${jdiameter.version}</version>
+		</dependency>
+
+		<dependency>
+			<artifactId>smsc-library</artifactId>
 			<groupId>${pom.groupId}</groupId>
 			<version>${pom.version}</version>
 		</dependency>
@@ -33,31 +50,13 @@
 			<groupId>${pom.groupId}</groupId>
 			<version>${pom.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.telscale.smsc</groupId>
-			<artifactId>smpp-server-ra-library</artifactId>
-			<version>${pom.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mobicents.resources</groupId>
-			<artifactId>mobicents-slee-ra-map-ratype</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.telscale.smsc</groupId>
-			<artifactId>smpp-server-ra-ratype</artifactId>
-			<version>${pom.version}</version>
-		</dependency>
-		
-		<dependency>
-			<artifactId>smpp-server-ra-events</artifactId>
-			<groupId>${pom.groupId}</groupId>
-		</dependency>
 
+		<!-- javolution -->
 		<dependency>
-			<groupId>${pom.groupId}</groupId>
-			<artifactId>charging-sbb</artifactId>
-			<version>${pom.version}</version>
-		</dependency>			
+			<groupId>javolution</groupId>
+			<artifactId>javolution</artifactId>
+			<version>${javolution.version}</version>
+		</dependency>
 	</dependencies>
 
 	<profiles>
@@ -67,12 +66,6 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<dependencies>
-				<dependency>
-					<groupId>${pom.groupId}</groupId>
-					<artifactId>persistence-ra</artifactId>
-					<version>${pom.version}</version>
-					<type>test-jar</type>
-				</dependency>			
 				<dependency>
 					<groupId>org.testng</groupId>
 					<artifactId>testng</artifactId>

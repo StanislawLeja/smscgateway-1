@@ -25,11 +25,16 @@
 		</dependency>
 		 -->
 		 
-		<dependency>
-			<artifactId>alert-sbb</artifactId>
-			<groupId>${pom.groupId}</groupId>
-			<version>${pom.version}</version>
-		</dependency>
+        <dependency>
+            <artifactId>alert-sbb</artifactId>
+            <groupId>${pom.groupId}</groupId>
+            <version>${pom.version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>charging-sbb</artifactId>
+            <groupId>${pom.groupId}</groupId>
+            <version>${pom.version}</version>
+        </dependency>
 		<!-- 
 		<dependency>
 			<artifactId>persistence-sbb</artifactId>

@@ -19,6 +19,7 @@
 		<module>persistencesbb</module>
 		 -->
 		<module>alertsbb</module>
+		<module>chargingsbb</module>
 		<module>txsmppserversbb</module>
 		<module>rxsmppserversbb</module>
 		<module>mtsbb</module>

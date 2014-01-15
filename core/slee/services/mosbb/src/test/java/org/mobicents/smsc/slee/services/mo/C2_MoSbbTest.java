@@ -71,6 +71,7 @@ import org.mobicents.protocols.ss7.map.smstpdu.SmsSubmitTpduImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.ValidityPeriodImpl;
+import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Sms;
@@ -574,6 +575,12 @@ public class C2_MoSbbTest {
 
         @Override
         public MoActivityContextInterface asSbbActivityContextInterface(ActivityContextInterface aci) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public ChildRelationExt getChargingSbb() {
             // TODO Auto-generated method stub
             return null;
         }

@@ -42,6 +42,7 @@ import javax.slee.TransactionRolledbackLocalException;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingGroup;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
+import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
@@ -516,6 +517,12 @@ public class C2_TxSmppServerSbbTest {
 
         protected Sms createSmsEvent(BaseSm event, Esme origEsme, TargetAddress ta, PersistenceRAInterface store) throws SmscProcessingException {
             return super.createSmsEvent(event, origEsme, ta, store);
+        }
+
+        @Override
+        public ChildRelationExt getChargingSbb() {
+            // TODO Auto-generated method stub
+            return null;
         }
     }
 

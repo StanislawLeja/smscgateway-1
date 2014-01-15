@@ -146,7 +146,6 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// if SMSHomeRouting is enabled, SMSC will accept MtForwardSMS and forwardSm like mobile station
 	private boolean isSMSHomeRouting = false;
 
-    // TODO: new **************************
 	// After SMSC restart it will revise previous reviseSecondsOnSmscStart seconds dueSlot's for unsent messages 
 	private int reviseSecondsOnSmscStart = 60;
 	// Timeout of life cycle of SmsSet in SmsSetCashe.ProcessingSmsSet in seconds
@@ -154,6 +153,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // true: we generate CDR for both receipt and regular messages
     // false: we generate CDR only for regular messages
 	private boolean generateReceiptCdr = false;
+
+	// TODO: new **************************
+    private boolean moiCharging = true;
+    private boolean txSmppCharging = false;
     // TODO: new **************************
 
 	private SmscPropertiesManagement(String name) {
@@ -472,6 +475,22 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     public void setGenerateReceiptCdr(boolean generateReceiptCdr) {
         this.generateReceiptCdr = generateReceiptCdr;
         this.store();
+    }
+
+    public boolean isMoiCharging() {
+        return moiCharging;
+    }
+
+    public void setMoiCharging(boolean moiCharging) {
+        this.moiCharging = moiCharging;
+    }
+
+    public boolean isTxSmppCharging() {
+        return txSmppCharging;
+    }
+
+    public void setTxSmppCharging(boolean txSmppCharging) {
+        this.txSmppCharging = txSmppCharging;
     }
 
 

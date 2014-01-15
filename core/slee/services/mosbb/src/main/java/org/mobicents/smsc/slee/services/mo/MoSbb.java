@@ -60,6 +60,7 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriod;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriodFormat;
+import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogNotice;
 import org.mobicents.slee.resource.map.events.DialogProviderAbort;
@@ -71,14 +72,14 @@ import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
+import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
+import org.mobicents.smsc.slee.services.charging.ChargingType;
 import org.mobicents.smsc.smpp.SmscStatProvider;
 
 import com.cloudhopper.commons.charset.CharsetUtil;
@@ -945,22 +946,26 @@ public abstract class MoSbb extends MoCommonSbb {
 	}
 
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
-		try {
-			// TODO: we can make this some check will we send this message or
-			// not
+        // TODO: we can make this some check will we send this message or not
 
-            sms.setStored(true);
-            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                store.createLiveSms(sms);
-                store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
-            } else {
+        if (smscPropertiesManagement.isMoiCharging()) {
+            ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
+            chargingSbb.setupChargingRequestInterface(ChargingType.MoOrig, sms);
+        } else {
+            try {
                 sms.setStored(true);
-                store.c2_scheduleMessage(sms);
+                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                    store.createLiveSms(sms);
+                    store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                } else {
+                    sms.setStored(true);
+                    store.c2_scheduleMessage(sms);
+                }
+            } catch (PersistenceException e) {
+                throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
+                        MAPErrorCode.systemFailure, null, e);
             }
-		} catch (PersistenceException e) {
-			throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(),
-					SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
-		}
+        }
 	}
 
 	public enum MoProcessingState {
@@ -970,5 +975,28 @@ public abstract class MoSbb extends MoCommonSbb {
 	public abstract void setProcessingState(MoProcessingState processingState);
 
 	public abstract MoProcessingState getProcessingState();
+
+	/**
+     * Get child ChargingSBB
+     *
+     * @return
+     */
+    public abstract ChildRelationExt getChargingSbb();
+
+    private ChargingSbbLocalObject getChargingSbbObject() {
+        ChildRelationExt relation = getChargingSbb();
+
+        ChargingSbbLocalObject ret = (ChargingSbbLocalObject) relation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
+        if (ret == null) {
+            try {
+                ret = (ChargingSbbLocalObject) relation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
+            } catch (Exception e) {
+                if (this.logger.isSevereEnabled()) {
+                    this.logger.severe("Exception while trying to creat ChargingSbb child", e);
+                }
+            }
+        }
+        return ret;
+    }
 
 }

@@ -46,6 +46,7 @@ import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
+import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
@@ -61,6 +62,8 @@ import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmppExtraConstants;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
+import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
+import org.mobicents.smsc.slee.services.charging.ChargingType;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
@@ -725,36 +728,65 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
 
-        boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
-
-        // TODO ...................... direct launch
-        storeAndForwMode = true;
-        // TODO ...................... direct launch
-        if (!storeAndForwMode) {
-            // TODO ...................... direct launch
-
+        if (smscPropertiesManagement.isTxSmppCharging()) {
+            ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
+            chargingSbb.setupChargingRequestInterface(ChargingType.TxSmppOrig, sms);
         } else {
-            // store and forward
-            try {
-                // TODO: we can make this some check will we send this message
-                // or not
+            boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
 
-                sms.setStored(true);
-                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                    store.createLiveSms(sms);
-                    if (sms.getScheduleDeliveryTime() == null)
-                        store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
-                    else
-                        store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
-                } else {
+            // TODO ...................... direct launch
+            storeAndForwMode = true;
+            // TODO ...................... direct launch
+            if (!storeAndForwMode) {
+                // TODO ...................... direct launch
+
+            } else {
+                // store and forward
+                try {
+                    // TODO: we can make this some check will we send this
+                    // message
+                    // or not
+
                     sms.setStored(true);
-                    store.c2_scheduleMessage(sms);
+                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                        store.createLiveSms(sms);
+                        if (sms.getScheduleDeliveryTime() == null)
+                            store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                        else
+                            store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
+                    } else {
+                        sms.setStored(true);
+                        store.c2_scheduleMessage(sms);
+                    }
+                } catch (PersistenceException e) {
+                    throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
+                            MAPErrorCode.systemFailure, null, e);
                 }
-            } catch (PersistenceException e) {
-                throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
-                        MAPErrorCode.systemFailure, null, e);
             }
         }
 	}
+
+    /**
+     * Get child ChargingSBB
+     *
+     * @return
+     */
+    public abstract ChildRelationExt getChargingSbb();
+
+    private ChargingSbbLocalObject getChargingSbbObject() {
+        ChildRelationExt relation = getChargingSbb();
+
+        ChargingSbbLocalObject ret = (ChargingSbbLocalObject) relation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
+        if (ret == null) {
+            try {
+                ret = (ChargingSbbLocalObject) relation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
+            } catch (Exception e) {
+                if (this.logger.isSevereEnabled()) {
+                    this.logger.severe("Exception while trying to creat ChargingSbb child", e);
+                }
+            }
+        }
+        return ret;
+    }
 }
 
