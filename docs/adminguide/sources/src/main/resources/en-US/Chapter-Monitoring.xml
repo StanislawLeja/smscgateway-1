@@ -107,7 +107,7 @@ where <literal>DELIVER_DATE, ADDR_SRC_DIGITS, ADDR_SRC_TON, ADDR_SRC_NPI, ADDR_D
 		<para>
 The CDR text file contains a special field, <literal>Message_Delivery_Status</literal>, that specifies the message delivery status and the possible values are described below.
 	<variablelist>
-	<title>If delivering to GSM network:</title>
+	<title>Message_Delivery_Status if delivering to GSM network:</title>
 	<varlistentry>
 	<term>partial</term>
 	<listitem><para>Delivered a part of a multi-part message but not the last part.
@@ -130,7 +130,7 @@ The CDR text file contains a special field, <literal>Message_Delivery_Status</li
 	</varlistentry>
 	</variablelist>
 	<variablelist>
-	<title>If delivering to ESME:</title>
+	<title>Message_Delivery_Status if delivering to ESME:</title>
 	<varlistentry>
 	<term>partial_esme</term>
 	<listitem><para>Delivered a part of a multi-part message but not the last part.
@@ -155,7 +155,7 @@ The CDR text file contains a special field, <literal>Message_Delivery_Status</li
 	</para>
 <para>The last field in the CDR generated is <literal>Reason_For_Failure</literal>, which records the reason for delivery failure and is empty if the delivery is successful. The possible delivery failure cases are explained below.
 		<variablelist>
-			<title>Reasons for Delivery Failure</title>
+			<title>Reasons_For_Failure</title>
 			<varlistentry>
 				<term>XXX response from HLR</term>
 				<listitem><para>A MAP error message is received from HLR after SRI request; XXX: <literal>AbsentSubscriber</literal>, <literal>AbsentSubscriberSM</literal>, <literal>CallBarred</literal>, <literal>FacilityNotSuppored</literal>, <literal>SystemFailure</literal>, <literal>UnknownSubscriber</literal>, <literal>DataMissing</literal>, <literal>UnexpectedDataValue</literal>, <literal>TeleserviceNotProvisioned</literal>.</para></listitem>
