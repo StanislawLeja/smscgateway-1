@@ -32,9 +32,11 @@ import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.protocols.ss7.map.api.service.sms.ReportSMDeliveryStatusResponse;
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
+import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 
 /**
  * 
@@ -82,8 +84,14 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
         }
     }
 
+    public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
+        if (this.logger.isInfoEnabled()) {
+            this.logger.info("\nRx :  onErrorComponent after setupReportSMDeliveryStatusRequest " + event + " Dialog=" + event.getMAPDialog());
+        }
+    }
 
-	/**
+
+    /**
 	 * SBB Local Object Methods
 	 * 
 	 * @throws MAPException
