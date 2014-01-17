@@ -44,8 +44,8 @@ import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
 
-import net.java.slee.resource.diameter.cca.events.CreditControlAnswer;
-import net.java.slee.resource.diameter.ro.RoActivityContextInterfaceFactory;
+import net.java.slee.resource.diameter.ro.RoProvider;
+import net.java.slee.resource.diameter.ro.events.RoCreditControlAnswer;
 
 /**
  * 
@@ -64,7 +64,7 @@ public abstract class ChargingSbb implements Sbb {
     protected Tracer logger;
     private SbbContextExt sbbContext;
 
-    private RoActivityContextInterfaceFactory roActivityContextInterfaceFactory;
+    private RoProvider roProvider;
     private PersistenceRAInterface persistence;
 
 
@@ -126,15 +126,16 @@ public abstract class ChargingSbb implements Sbb {
     }
 
     @Override
-    public void setSbbContext(SbbContext arg0) {
+    public void setSbbContext(SbbContext sbbContext) {
         this.sbbContext = (SbbContextExt) sbbContext;
 
         try {
             Context ctx = (Context) new InitialContext().lookup("java:comp/env");
 
             this.logger = this.sbbContext.getTracer(getClass().getSimpleName());
-            
-            this.roActivityContextInterfaceFactory = (RoActivityContextInterfaceFactory) this.sbbContext.getResourceAdaptorInterface(DIAMETER_ID, LINK_DIAM);
+
+            this.roProvider = (RoProvider) this.sbbContext.getResourceAdaptorInterface(DIAMETER_ID, LINK_DIAM);
+
             this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK_PERS);
         } catch (Exception ne) {
             logger.severe("Could not set SBB context:", ne);
@@ -145,7 +146,7 @@ public abstract class ChargingSbb implements Sbb {
     @Override
     public void unsetSbbContext() {
         // TODO Auto-generated method stub
-        
+
     }
 
 
@@ -178,7 +179,7 @@ public abstract class ChargingSbb implements Sbb {
 
     // Events
 
-    public void onCreditControlAnswer(CreditControlAnswer evt, ActivityContextInterface aci) {
+    public void onRoCreditControlAnswer(RoCreditControlAnswer evt, ActivityContextInterface aci) {
         // TODO: implement it
     }
 

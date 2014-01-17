@@ -4,6 +4,7 @@
 	<jar>jars/tx-smppserver-sbb-6.1.2-TelScale-SNAPSHOT.jar</jar>
 	<jar>jars/mt-sbb-6.1.2-TelScale-SNAPSHOT.jar</jar>
 	<jar>jars/alert-sbb-6.1.2-TelScale-SNAPSHOT.jar</jar>
+	<jar>jars/charging-sbb-6.1.2-TelScale-SNAPSHOT.jar</jar>
 	<jar>jars/smsc-library-6.1.2-TelScale-SNAPSHOT.jar</jar>
 	<jar>jars/rx-smppserver-sbb-6.1.2-TelScale-SNAPSHOT.jar</jar>
 	<jar>jars/persistence-sbb-6.1.2-TelScale-SNAPSHOT.jar</jar>

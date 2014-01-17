@@ -20,6 +20,11 @@
 			<groupId>org.mobicents.resources</groupId>
 		</dependency>
 		<dependency>
+			<artifactId>mobicents-slee-ra-diameter-cca-common-library</artifactId>
+			<groupId>org.mobicents.resources</groupId>
+			<version>${jdiameter.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.github.stephenc.eaio-uuid</groupId>
 			<artifactId>uuid</artifactId>
 			<version>3.2.0</version>

@@ -34,9 +34,9 @@
 -->
 
 		<event event-direction="Receive" initial-event="False">
-			<event-name>CreditControlAnswer</event-name>
+			<event-name>RoCreditControlAnswer</event-name>
 			<event-type-ref>
-				<event-type-name>net.java.slee.resource.diameter.cca.events.CreditControlAnswer</event-type-name>
+				<event-type-name>net.java.slee.resource.diameter.ro.events.RoCreditControlAnswer</event-type-name>
 				<event-type-vendor>java.net</event-type-vendor>
 				<event-type-version>0.8</event-type-version>
 			</event-type-ref>
@@ -55,5 +55,18 @@
 				<resource-adaptor-entity-link>DiameterRo</resource-adaptor-entity-link>
 			</resource-adaptor-entity-binding>
 		</resource-adaptor-type-binding>
+
+        <resource-adaptor-type-binding>
+            <resource-adaptor-type-ref>
+                <resource-adaptor-type-name>PersistenceResourceAdaptorType</resource-adaptor-type-name>
+                <resource-adaptor-type-vendor>org.mobicents</resource-adaptor-type-vendor>
+                <resource-adaptor-type-version>1.0</resource-adaptor-type-version>
+            </resource-adaptor-type-ref>
+            
+            <resource-adaptor-entity-binding>
+                <resource-adaptor-object-name>slee/resources/persistence/1.0/provider</resource-adaptor-object-name>
+                <resource-adaptor-entity-link>PersistenceResourceAdaptor</resource-adaptor-entity-link>
+            </resource-adaptor-entity-binding>
+        </resource-adaptor-type-binding>
 	</sbb>
 </sbb-jar>
