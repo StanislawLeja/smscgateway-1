@@ -157,6 +157,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// TODO: new **************************
     private boolean moiCharging = true;
     private boolean txSmppCharging = false;
+    private String diameterDestRealm = "mobicents.org";
+    private String diameterDestHost = null;
+    private int diameterDestPort = 3868;
+    private String diameterUserName = null;
     // TODO: new **************************
 
 	private SmscPropertiesManagement(String name) {
@@ -491,6 +495,44 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     public void setTxSmppCharging(boolean txSmppCharging) {
         this.txSmppCharging = txSmppCharging;
+    }
+
+    /**
+     * @return the diameterDestRealm
+     */
+    public String getDiameterDestRealm() {
+        return diameterDestRealm;
+    }
+
+    /**
+     * @param diameterDestRealm the diameterDestRealm to set
+     */
+    public void setDiameterDestRealm(String diameterDestRealm) {
+        this.diameterDestRealm = diameterDestRealm;
+    }
+
+    public String getDiameterDestHost() {
+        return diameterDestHost;
+    }
+
+    public void setDiameterDestHost(String diameterDestHost) {
+        this.diameterDestHost = diameterDestHost;
+    }
+
+    public int getDiameterDestPort() {
+        return diameterDestPort;
+    }
+
+    public void setDiameterDestPort(int diameterDestPort) {
+        this.diameterDestPort = diameterDestPort;
+    }
+
+    public String getDiameterUserName() {
+        return diameterUserName;
+    }
+
+    public void setDiameterUserName(String diameterUserName) {
+        this.diameterUserName = diameterUserName;
     }
 
 
