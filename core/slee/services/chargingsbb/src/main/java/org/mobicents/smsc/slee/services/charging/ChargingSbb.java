@@ -33,7 +33,10 @@ import javax.slee.CreateException;
 import javax.slee.RolledBackContext;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
+import javax.slee.facilities.TimerEvent;
 import javax.slee.facilities.TimerFacility;
+import javax.slee.facilities.TimerOptions;
+import javax.slee.facilities.TimerPreserveMissed;
 import javax.slee.facilities.Tracer;
 import javax.slee.nullactivity.NullActivityContextInterfaceFactory;
 import javax.slee.nullactivity.NullActivityFactory;
@@ -41,7 +44,9 @@ import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.slee.SbbContextExt;
+import org.mobicents.smsc.cassandra.CdrGenerator;
 import org.mobicents.smsc.cassandra.DatabaseType;
+import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
@@ -54,7 +59,9 @@ import com.cloudhopper.smpp.SmppConstants;
 import net.java.slee.resource.diameter.base.events.avp.DiameterAvp;
 import net.java.slee.resource.diameter.base.events.avp.DiameterIdentity;
 import net.java.slee.resource.diameter.cca.events.avp.CcRequestType;
+import net.java.slee.resource.diameter.cca.events.avp.MultipleServicesCreditControlAvp;
 import net.java.slee.resource.diameter.cca.events.avp.RequestedActionType;
+import net.java.slee.resource.diameter.cca.events.avp.RequestedServiceUnitAvp;
 import net.java.slee.resource.diameter.cca.events.avp.SubscriptionIdAvp;
 import net.java.slee.resource.diameter.cca.events.avp.SubscriptionIdType;
 import net.java.slee.resource.diameter.ro.RoActivityContextInterfaceFactory;
@@ -75,6 +82,7 @@ public abstract class ChargingSbb implements Sbb {
 
     public static final String SERVICE_CONTEXT_ID_SMSC = "32274@3gpp.org";
     public static final int APPLICATION_ID_OF_THE_DIAMETER_CREDIT_CONTROL_APPLICATION = 4;
+    public static final int CCR_TIMEOUT = 15;
 
     protected static SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
@@ -105,6 +113,16 @@ public abstract class ChargingSbb implements Sbb {
 
     private PersistenceRAInterface persistence;
 
+    private static final TimerOptions defaultTimerOptions = createDefaultTimerOptions();
+    private NullActivityContextInterfaceFactory nullActivityContextInterfaceFactory;
+
+    private static TimerOptions createDefaultTimerOptions() {
+        TimerOptions timerOptions = new TimerOptions();
+        timerOptions.setPreserveMissed(TimerPreserveMissed.ALL);
+        return timerOptions;
+    }
+
+//    public abstract SbbActivityContextInterface asSbbActivityContextInterface(ActivityContextInterface aci);
 
     public ChargingSbb() {
     }
@@ -210,36 +228,25 @@ public abstract class ChargingSbb implements Sbb {
 
         try {
 
-
-
-
-//            ServerTransaction serverTransaction = requestEvent.getServerTransaction();
-//            DialogActivity dialog = (DialogActivity) sipProvider.getNewDialog(serverTransaction);
-//            dialog.terminateOnBye(true);
-//            sipAcif.getActivityContextInterface(dialog).attach(this.sbbContext.getSbbLocalObject());
-
-
-
-
-
+            DiameterIdentity destHost = null;
+            if (smscPropertiesManagement.getDiameterDestHost() != null) {
+//                destHost = new DiameterIdentity("aaa://" + smscPropertiesManagement.getDiameterDestHost() + ":" + smscPropertiesManagement.getDiameterDestPort());
+                destHost = new DiameterIdentity(smscPropertiesManagement.getDiameterDestHost());
+            }
             DiameterIdentity destRealm = new DiameterIdentity(smscPropertiesManagement.getDiameterDestRealm());
-//            RoClientSession roSession = roProvider.createRoClientSessionActivity(destHost, destRealm);
-            RoClientSessionActivity activity = this.roProvider.createRoClientSessionActivity(null, destRealm);
+            RoClientSessionActivity activity = this.roProvider.createRoClientSessionActivity(destHost, destRealm);
             ActivityContextInterface roACI = acif.getActivityContextInterface(activity);
             roACI.attach(getSbbContext().getSbbLocalObject());
 
             RoCreditControlRequest ccr = activity.createRoCreditControlRequest(CcRequestType.EVENT_REQUEST);
 
-            ccr.setDestinationRealm(destRealm);
-            ccr.setAuthApplicationId(APPLICATION_ID_OF_THE_DIAMETER_CREDIT_CONTROL_APPLICATION);
+//            ccr.setDestinationRealm(destRealm);
+//            ccr.setAuthApplicationId(APPLICATION_ID_OF_THE_DIAMETER_CREDIT_CONTROL_APPLICATION);
             ccr.setServiceContextId(SERVICE_CONTEXT_ID_SMSC);
             ccr.setCcRequestNumber(0);
-            // destHost may be null, in this case it will be determined by destRealm
 
-            if (smscPropertiesManagement.getDiameterDestHost() != null) {
-                DiameterIdentity destHost = new DiameterIdentity("aaa://" + smscPropertiesManagement.getDiameterDestHost() + ":" + smscPropertiesManagement.getDiameterDestPort());
-                ccr.setDestinationHost(destHost);
-            }
+            // destHost may be null, in this case it will be determined by destRealm
+//            ccr.setDestinationHost(destHost);
 
             // Contains the user name determined by the domain:
             // bearer, sub-system or service as described in middle tier TS.
@@ -265,6 +272,20 @@ public abstract class ChargingSbb implements Sbb {
 
 //            ccr.setMultipleServicesIndicator(MultipleServicesIndicatorType.MULTIPLE_SERVICES_NOT_SUPPORTED);
 
+            // requested units
+            int messageCount = 1;
+            int serviceIdentifier = 1;
+
+            MultipleServicesCreditControlAvp multipleServicesCreditControl = avpFactory.createMultipleServicesCreditControl();
+
+            RequestedServiceUnitAvp requestedServiceUnit = avpFactory.createRequestedServiceUnit();
+            requestedServiceUnit.setCreditControlServiceSpecificUnits(messageCount);
+            multipleServicesCreditControl.setRequestedServiceUnit(requestedServiceUnit);
+
+            multipleServicesCreditControl.setServiceIdentifier(serviceIdentifier);
+
+            ccr.setMultipleServicesCreditControl(multipleServicesCreditControl);
+            
 //            RequestedServiceUnitAvp RSU = avpFactory.createRequestedServiceUnit();
 //            RSU.setCreditControlTime(_FIRST_CHARGE_TIME);
 //            ccr.setRequestedServiceUnit(RSU);
@@ -274,7 +295,7 @@ public abstract class ChargingSbb implements Sbb {
             int vendorID = 10415;
 
             ArrayList<DiameterAvp> originatorReceivedAddressAvpLst = new ArrayList<DiameterAvp>();
-            DiameterAvp avpAddressType = avpFactory.getBaseFactory().createAvp(vendorID, 899, AddressTypeEnum.Msisdn);
+            DiameterAvp avpAddressType = avpFactory.getBaseFactory().createAvp(vendorID, 899, AddressTypeEnum.Msisdn.getValue());
             originatorReceivedAddressAvpLst.add(avpAddressType);
             DiameterAvp avpAddressData = avpFactory.getBaseFactory().createAvp(vendorID, 897, msisdn);
             originatorReceivedAddressAvpLst.add(avpAddressData);
@@ -295,6 +316,9 @@ public abstract class ChargingSbb implements Sbb {
 
             activity.sendEventRoCreditControlRequest(ccr);
             logger.info("Sent INITIAL CCR: \n"+ccr);
+
+            // set new timer for the case we will not get CCA in time
+            timerFacility.setTimer(roACI, null, System.currentTimeMillis() + (CCR_TIMEOUT * 1000), defaultTimerOptions);
         } catch (Exception e1) {
             logger.severe("setupChargingRequestInterface(): error while sending RoCreditControlRequest: " + e1.getMessage(), e1);
         }
@@ -318,7 +342,6 @@ public abstract class ChargingSbb implements Sbb {
 //        }
     }
 
-
     // CMP
 
     public abstract void setChargingData(ChargingData chargingData);
@@ -328,13 +351,51 @@ public abstract class ChargingSbb implements Sbb {
 
     // Events
 
-    public void onRoCreditControlAnswer(RoCreditControlAnswer evt, ActivityContextInterface aci) {
-        logger.info("RoCreditControlAnswer received: " + evt);
+    public void onRoCreditControlAnswer(RoCreditControlAnswer cca, ActivityContextInterface aci) {
+        logger.info("RoCreditControlAnswer received: " + cca);
 
-        // TODO: implement it
+        ChargingData chargingData = getChargingData();
+        if (chargingData == null) {
+            logger.warning("RoCreditControlAnswer is recieved but chargingData is null");
+            return;
+        }
+
+        try {
+            long resultCode = cca.getResultCode();
+
+            if (resultCode == 2001) { // access granted
+                acceptSms(chargingData);
+            } else { // access rejected
+                rejectSms(chargingData, cca);
+            }
+        } catch (Throwable e) {
+            logger.warning("Exception when processing RoCreditControlAnswer response: " + e.getMessage(), e);
+        }
     }
 
-    private void acceptSms(Sms sms) throws SmscProcessingException {
+    public void onTimerEvent(TimerEvent timer, ActivityContextInterface aci) {
+        ChargingData chargingData = getChargingData();
+        if (chargingData == null) {
+            logger.warning("RoCreditControlAnswer is recieved but chargingData is null");
+            return;
+        }
+
+        logger.info("Timeout waiting for CCA for: " + chargingData);
+
+        // detach from this activity, we don't want to handle any other event on it
+        aci.detach(this.sbbContext.getSbbLocalObject());
+
+        try {
+            rejectSms(chargingData, null);
+        } catch (Throwable e) {
+            logger.warning("Exception when processing onTimerEvent response: " + e.getMessage(), e);
+        }
+    }
+
+    private void acceptSms(ChargingData chargingData) throws SmscProcessingException {
+        Sms sms = chargingData.getSms();
+        logger.info("ChargingSbb: accessGranted for: chargingType=" + chargingData.getChargingType() + ", message=[" + sms + "]");
+
         try {
             sms.setStored(true);
             if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
@@ -345,13 +406,33 @@ public abstract class ChargingSbb implements Sbb {
                 persistence.c2_scheduleMessage(sms);
             }
         } catch (PersistenceException e) {
-            throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
+            throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
                     MAPErrorCode.systemFailure, null, e);
         }
     }
 
-    private void rejectSms(Sms sms) {
-        // TODO: implement it
+    private void rejectSms(ChargingData chargingData, RoCreditControlAnswer evt) throws SmscProcessingException {
+        Sms sms = chargingData.getSms();
+        logger.info("ChargingSbb: accessRejected for: resultCode =" + (evt != null ? evt.getResultCode() : "timeout") + ", chargingType="
+                + chargingData.getChargingType() + ", message=[" + sms + "]");
+
+        try {
+            sms.getSmsSet().setStatus(ErrorCode.OCS_ACCESS_NOT_GRANTED);
+            sms.setStored(true);
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                persistence.archiveFailuredSms(sms);
+            } else {
+                sms.setStored(true);
+                persistence.c2_createRecordArchive(sms);
+            }
+            
+            // TODO: if CCR gives some response verbal reject reason 
+            // we need replace CdrGenerator.CDR_SUCCESS_NO_REASON with this reason
+            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_OCS_REJECTED, CdrGenerator.CDR_SUCCESS_NO_REASON, smscPropertiesManagement.getGenerateReceiptCdr());
+        } catch (PersistenceException e) {
+            throw new SmscProcessingException("PersistenceException when storing into Archive rejected by OCS message : " + e.getMessage(),
+                    SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
+        }
     }
 
     protected SbbContext getSbbContext() {

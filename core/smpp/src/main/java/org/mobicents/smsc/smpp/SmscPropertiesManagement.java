@@ -158,7 +158,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private boolean moiCharging = true;
     private boolean txSmppCharging = false;
     private String diameterDestRealm = "mobicents.org";
-    private String diameterDestHost = null;
+    private String diameterDestHost = "127.0.0.2";
     private int diameterDestPort = 3868;
     private String diameterUserName = null;
     // TODO: new **************************
