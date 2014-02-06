@@ -605,7 +605,24 @@ public class SMSCShellExecutor implements ShellExecutor {
             } else if (parName.equals("generatereceiptcdr")) {
                 smscPropertiesManagement.setGenerateReceiptCdr(Boolean.parseBoolean(options[3]));
 
-			} else {
+            } else if (parName.equals("mocharging")) {
+                smscPropertiesManagement.setMoCharging(Boolean.parseBoolean(options[3]));
+            } else if (parName.equals("txsmppcharging")) {
+                smscPropertiesManagement.setTxSmppCharging(Boolean.parseBoolean(options[3]));
+            } else if (parName.equals("diameterdestrealm")) {
+                String val = options[3];
+                smscPropertiesManagement.setDiameterDestRealm(val);
+            } else if (parName.equals("diameterdesthost")) {
+                String val = options[3];
+                smscPropertiesManagement.setDiameterDestHost(val);
+            } else if (parName.equals("diameterdestport")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setDiameterDestPort(val);
+            } else if (parName.equals("diameterusername")) {
+                String val = options[3];
+                smscPropertiesManagement.setDiameterUserName(val);
+
+            } else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
 		} catch (IllegalArgumentException e) {
@@ -793,6 +810,19 @@ public class SMSCShellExecutor implements ShellExecutor {
             } else if (parName.equals("generatereceiptcdr")) {
                 sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
 
+            } else if (parName.equals("mocharging")) {
+                sb.append(smscPropertiesManagement.isMoCharging());
+            } else if (parName.equals("txsmppcharging")) {
+                sb.append(smscPropertiesManagement.isTxSmppCharging());
+            } else if (parName.equals("diameterdestrealm")) {
+                sb.append(smscPropertiesManagement.getDiameterDestRealm());
+            } else if (parName.equals("diameterdesthost")) {
+                sb.append(smscPropertiesManagement.getDiameterDestHost());
+            } else if (parName.equals("diameterdestport")) {
+                sb.append(smscPropertiesManagement.getDiameterDestPort());
+            } else if (parName.equals("diameterusername")) {
+                sb.append(smscPropertiesManagement.getDiameterUserName());
+
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -910,6 +940,31 @@ public class SMSCShellExecutor implements ShellExecutor {
 
             sb.append("generatereceiptcdr = ");
             sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
+            sb.append("\n");
+
+
+            sb.append("mocharging = ");
+            sb.append(smscPropertiesManagement.isMoCharging());
+            sb.append("\n");
+
+            sb.append("txsmppcharging = ");
+            sb.append(smscPropertiesManagement.isTxSmppCharging());
+            sb.append("\n");
+
+            sb.append("diameterdestrealm = ");
+            sb.append(smscPropertiesManagement.getDiameterDestRealm());
+            sb.append("\n");
+
+            sb.append("diameterdesthost = ");
+            sb.append(smscPropertiesManagement.getDiameterDestHost());
+            sb.append("\n");
+
+            sb.append("diameterdestport = ");
+            sb.append(smscPropertiesManagement.getDiameterDestPort());
+            sb.append("\n");
+
+            sb.append("diameterusername = ");
+            sb.append(smscPropertiesManagement.getDiameterUserName());
             sb.append("\n");
 
 			// private int defaultValidityPeriodHours = 3 * 24;

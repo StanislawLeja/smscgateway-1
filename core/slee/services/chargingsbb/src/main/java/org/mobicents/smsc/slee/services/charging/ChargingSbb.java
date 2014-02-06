@@ -229,7 +229,7 @@ public abstract class ChargingSbb implements Sbb {
         try {
 
             DiameterIdentity destHost = null;
-            if (smscPropertiesManagement.getDiameterDestHost() != null) {
+            if (smscPropertiesManagement.getDiameterDestHost() != null && !smscPropertiesManagement.getDiameterDestHost().equals("")) {
 //                destHost = new DiameterIdentity("aaa://" + smscPropertiesManagement.getDiameterDestHost() + ":" + smscPropertiesManagement.getDiameterDestPort());
                 destHost = new DiameterIdentity(smscPropertiesManagement.getDiameterDestHost());
             }
@@ -252,7 +252,7 @@ public abstract class ChargingSbb implements Sbb {
             // bearer, sub-system or service as described in middle tier TS.
             // contains Network Access Identifier (NAI).
             // for SIP: name = ((SipUri)fromHeader.getAddress().getURI()).getUser();
-            if (smscPropertiesManagement.getDiameterUserName() != null) {
+            if (smscPropertiesManagement.getDiameterUserName() != null && !smscPropertiesManagement.getDiameterUserName().equals("")) {
                 ccr.setUserName(smscPropertiesManagement.getDiameterUserName());
             }
 
@@ -322,24 +322,6 @@ public abstract class ChargingSbb implements Sbb {
         } catch (Exception e1) {
             logger.severe("setupChargingRequestInterface(): error while sending RoCreditControlRequest: " + e1.getMessage(), e1);
         }
-        
-        
-        
-        // ....................................
-        // ....................................
-        
-        
-        // TODO: implement it
-
-        // TODO: here for chargingType==TxSmppOrig and not storeAndForwMode mode is declared at SMSC
-        // we need to launch direct (not store at the database)
-
-        // now we just storing a message
-//        try {
-//            this.storeSms(sms);
-//        } catch (SmscProcessingException e) {
-//            logger.severe("ChargingSbb: error while storeing message into database: " + e.getMessage(), e);
-//        }
     }
 
     // CMP

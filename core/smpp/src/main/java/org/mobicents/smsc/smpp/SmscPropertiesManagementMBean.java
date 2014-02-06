@@ -143,4 +143,29 @@ public interface SmscPropertiesManagementMBean {
 
     public void setGenerateReceiptCdr(boolean generateReceiptCdr);
 
+
+    public boolean isMoCharging();
+
+    public void setMoCharging(boolean moCharging);
+
+    public boolean isTxSmppCharging();
+
+    public void setTxSmppCharging(boolean txSmppCharging);
+
+    public String getDiameterDestRealm();
+
+    public void setDiameterDestRealm(String diameterDestRealm);
+
+    public String getDiameterDestHost();
+
+    public void setDiameterDestHost(String diameterDestHost);
+
+    public int getDiameterDestPort();
+
+    public void setDiameterDestPort(int diameterDestPort);
+
+    public String getDiameterUserName();
+
+    public void setDiameterUserName(String diameterUserName);
+
 }

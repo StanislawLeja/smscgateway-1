@@ -24,3 +24,9 @@
 <reviseSecondsOnSmscStart value="60"/>
 <processingSmsSetTimeout value="600"/>
 <generateReceiptCdr value="false"/>
+<moCharging value="false"/>
+<txSmppCharging value="false"/>
+<diameterDestRealm value="mobicents.org"/>
+<diameterDestHost value="127.0.0.1"/>
+<diameterDestPort value="3868"/>
+<diameterUserName value=""/>

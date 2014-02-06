@@ -948,7 +948,7 @@ public abstract class MoSbb extends MoCommonSbb {
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
         // TODO: we can make this some check will we send this message or not
 
-        if (smscPropertiesManagement.isMoiCharging()) {
+        if (smscPropertiesManagement.isMoCharging()) {
             ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
             chargingSbb.setupChargingRequestInterface(ChargingType.MoOrig, sms);
         } else {

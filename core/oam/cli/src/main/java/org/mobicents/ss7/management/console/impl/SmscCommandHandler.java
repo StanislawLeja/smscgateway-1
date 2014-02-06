@@ -65,7 +65,13 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("revisesecondsonsmscstart");
         set.addChild("processingsmssettimeout");
         set.addChild("generatereceiptcdr");
-        
+        set.addChild("mocharging");
+        set.addChild("txsmppcharging");
+        set.addChild("diameterdestrealm");
+        set.addChild("diameterdesthost");
+        set.addChild("diameterdestport");
+        set.addChild("diameterusername");
+
         Node smppencodingforucs2 = set.addChild("smppencodingforucs2");
         smppencodingforucs2.addChild("utf8");
         smppencodingforucs2.addChild("unicode");
@@ -98,6 +104,12 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("revisesecondsonsmscstart");
         get.addChild("processingsmssettimeout");
         get.addChild("generatereceiptcdr");
+        get.addChild("mocharging");
+        get.addChild("txsmppcharging");
+        get.addChild("diameterdestrealm");
+        get.addChild("diameterdesthost");
+        get.addChild("diameterdestport");
+        get.addChild("diameterusername");
 
         smppencodingforucs2 = get.addChild("smppencodingforucs2");
         smppencodingforucs2.addChild("utf8");
