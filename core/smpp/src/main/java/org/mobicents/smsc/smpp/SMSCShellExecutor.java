@@ -171,6 +171,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		boolean countersEnabled = true;
 		int enquireLinkDelay = 30000;
+        boolean chargingEnabled = false;
 
 		while (count < args.length) {
 			// These are all optional parameters for a Tx/Rx/Trx binds
@@ -206,8 +207,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 				clusterName = args[count++];
 			} else if (key.equals("counters-enabled")) {
 				countersEnabled = Boolean.parseBoolean(args[count++]);
-			} else if (key.equals("enquire-link-delay")) {
-				enquireLinkDelay = Integer.parseInt(args[count++]);
+            } else if (key.equals("enquire-link-delay")) {
+                enquireLinkDelay = Integer.parseInt(args[count++]);
+            } else if (key.equals("charging-enabled")) {
+                chargingEnabled = true;
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -215,7 +218,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 		}
 
 		Address address = new Address(esmeTonType, esmeNpiType, esmeAddrRange);
-		Esme esme = this.smscManagement.getEsmeManagement().createEsme(name, systemId, password, host, intPort,
+		Esme esme = this.smscManagement.getEsmeManagement().createEsme(name, systemId, password, host, intPort, chargingEnabled,
 				smppBindType, systemType, smppVersionType, address, smppSessionType, windowSize, connectTimeout,
 				requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled,
 				enquireLinkDelay);
@@ -608,7 +611,7 @@ public class SMSCShellExecutor implements ShellExecutor {
             } else if (parName.equals("mocharging")) {
                 smscPropertiesManagement.setMoCharging(Boolean.parseBoolean(options[3]));
             } else if (parName.equals("txsmppcharging")) {
-                smscPropertiesManagement.setTxSmppCharging(Boolean.parseBoolean(options[3]));
+                smscPropertiesManagement.setTxSmppCharging(Enum.valueOf(EsmeChargingType.class, options[3]));
             } else if (parName.equals("diameterdestrealm")) {
                 String val = options[3];
                 smscPropertiesManagement.setDiameterDestRealm(val);

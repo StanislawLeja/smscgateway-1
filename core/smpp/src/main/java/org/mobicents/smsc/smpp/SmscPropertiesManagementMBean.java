@@ -148,9 +148,9 @@ public interface SmscPropertiesManagementMBean {
 
     public void setMoCharging(boolean moCharging);
 
-    public boolean isTxSmppCharging();
+    public EsmeChargingType isTxSmppCharging();
 
-    public void setTxSmppCharging(boolean txSmppCharging);
+    public void setTxSmppCharging(EsmeChargingType txSmppCharging);
 
     public String getDiameterDestRealm();
 

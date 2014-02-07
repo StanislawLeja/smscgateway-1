@@ -189,7 +189,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 		return discoveredEsme;
 	}
 
-	public Esme createEsme(String name, String systemId, String password, String host, int port, String smppBindType,
+	public Esme createEsme(String name, String systemId, String password, String host, int port, boolean chargingEnabled, String smppBindType,
 			String systemType, String smppIntVersion, byte ton, byte npi, String address, String smppSessionType,
 			int windowSize, long connectTimeout, long requestExpiryTimeout, long windowMonitorInterval,
 			long windowWaitTimeout, String clusterName, boolean countersEnabled, int enquireLinkDelay) throws Exception {
@@ -199,7 +199,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 		Address addressObj = new Address(ton, npi, address);
 		SmppSession.Type smppSessionTypeObj = SmppSession.Type.valueOf(smppSessionType);
 
-		return this.createEsme(name, systemId, password, host, port, smppBindTypeOb, systemType,
+		return this.createEsme(name, systemId, password, host, port, chargingEnabled, smppBindTypeOb, systemType,
 				smppInterfaceVersionTypeObj, addressObj, smppSessionTypeObj, windowSize, connectTimeout,
 				requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled,
 				enquireLinkDelay);
@@ -228,7 +228,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 	 * @throws Exception
 	 */
 	@Override
-	public synchronized Esme createEsme(String name, String systemId, String password, String host, int port,
+	public synchronized Esme createEsme(String name, String systemId, String password, String host, int port, boolean chargingEnabled,
 			SmppBindType smppBindType, String systemType, SmppInterfaceVersionType smppIntVersion, Address address,
 			SmppSession.Type smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
 			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
@@ -288,10 +288,10 @@ public class EsmeManagement implements EsmeManagementMBean {
 
 		Esme esme = null;
 		if (smppSessionType.equals(SmppSession.Type.SERVER)) {
-			esme = new Esme(name, systemId, password, host, port, smppBindType, systemType, smppIntVersion, address,
+			esme = new Esme(name, systemId, password, host, port, chargingEnabled, smppBindType, systemType, smppIntVersion, address,
 					clusterName, countersEnabled);
 		} else {
-			esme = new Esme(name, systemId, password, host, port, systemType, smppIntVersion, address, smppBindType,
+			esme = new Esme(name, systemId, password, host, port, chargingEnabled, systemType, smppIntVersion, address, smppBindType,
 					smppSessionType, windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval,
 					windowWaitTimeout, clusterName, countersEnabled, enquireLinkDelay);
 		}

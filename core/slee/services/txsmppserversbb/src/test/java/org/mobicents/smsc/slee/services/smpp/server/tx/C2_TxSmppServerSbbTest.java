@@ -57,6 +57,7 @@ import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfacePr
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
+import org.mobicents.smsc.smpp.EsmeChargingType;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
 import org.mobicents.smsc.smpp.SmppInterfaceVersionType;
@@ -138,7 +139,7 @@ public class C2_TxSmppServerSbbTest {
         this.sbb.setSmppServerSessions(smppSess);
 
         Address address = new Address();
-        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, SmppBindType.TRANSCEIVER, "systemType", SmppInterfaceVersionType.SMPP50, address,
+        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, false, SmppBindType.TRANSCEIVER, "systemType", SmppInterfaceVersionType.SMPP50, address,
                 "clusterName", false);
         ActivityContextInterface aci = new SmppTransactionProxy(esme);
 
@@ -183,7 +184,7 @@ public class C2_TxSmppServerSbbTest {
         this.sbb.setSmppServerSessions(smppSess);
 
         Address address = new Address();
-        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, SmppBindType.TRANSCEIVER, "systemType", SmppInterfaceVersionType.SMPP50, address,
+        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, false, SmppBindType.TRANSCEIVER, "systemType", SmppInterfaceVersionType.SMPP50, address,
                 "clusterName", false);
         ActivityContextInterface aci = new SmppTransactionProxy(esme);
 
@@ -239,7 +240,7 @@ public class C2_TxSmppServerSbbTest {
         this.sbb.setSmppServerSessions(smppSess);
 
         Address address = new Address();
-        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, SmppBindType.TRANSCEIVER, "systemType", SmppInterfaceVersionType.SMPP50, address,
+        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, false, SmppBindType.TRANSCEIVER, "systemType", SmppInterfaceVersionType.SMPP50, address,
                 "clusterName", false);
         ActivityContextInterface aci = new SmppTransactionProxy(esme);
 

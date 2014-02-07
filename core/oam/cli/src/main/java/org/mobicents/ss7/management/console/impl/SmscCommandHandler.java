@@ -66,11 +66,15 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("processingsmssettimeout");
         set.addChild("generatereceiptcdr");
         set.addChild("mocharging");
-        set.addChild("txsmppcharging");
+        Node txsmppcharging = set.addChild("txsmppcharging");
         set.addChild("diameterdestrealm");
         set.addChild("diameterdesthost");
         set.addChild("diameterdestport");
         set.addChild("diameterusername");
+
+        txsmppcharging.addChild("None");
+        txsmppcharging.addChild("Selected");
+        txsmppcharging.addChild("All");
 
         Node smppencodingforucs2 = set.addChild("smppencodingforucs2");
         smppencodingforucs2.addChild("utf8");

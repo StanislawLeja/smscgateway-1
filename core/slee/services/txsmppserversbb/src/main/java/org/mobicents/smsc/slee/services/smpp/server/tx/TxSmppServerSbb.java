@@ -65,6 +65,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
 import org.mobicents.smsc.slee.services.charging.ChargingType;
 import org.mobicents.smsc.smpp.Esme;
+import org.mobicents.smsc.smpp.EsmeChargingType;
 import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.mobicents.smsc.smpp.SmscStatProvider;
@@ -135,7 +136,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			try {
 				synchronized (lock) {
                     sms = this.createSmsEvent(event, esme, ta, store);
-					this.processSms(sms, store);
+					this.processSms(sms, store, esme);
 				}
 			} finally {
 				store.releaseSynchroObject(lock);
@@ -228,7 +229,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			try {
 				synchronized (lock) {
 					sms = this.createSmsEvent(event, esme, ta, store);
-					this.processSms(sms, store);
+					this.processSms(sms, store, esme);
 				}
 			} finally {
 				store.releaseSynchroObject(lock);
@@ -368,7 +369,7 @@ public abstract class TxSmppServerSbb implements Sbb {
             try {
                 synchronized (lock) {
                     sms = this.createSmsEvent(event, esme, ta, store);
-                    this.processSms(sms, store);
+                    this.processSms(sms, store, esme);
                 }
             } finally {
                 store.releaseSynchroObject(lock);
@@ -726,9 +727,19 @@ public abstract class TxSmppServerSbb implements Sbb {
 		return sms;
 	}
 
-	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
+	private void processSms(Sms sms, PersistenceRAInterface store, Esme esme) throws SmscProcessingException {
 
-        if (smscPropertiesManagement.isTxSmppCharging()) {
+        boolean withCharging = false;
+        switch (smscPropertiesManagement.isTxSmppCharging()) {
+        case Selected:
+            withCharging = esme.isChargingEnabled();
+            break;
+        case All:
+            withCharging = true;
+            break;
+        }
+
+        if (withCharging) {
             ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
             chargingSbb.setupChargingRequestInterface(ChargingType.TxSmppOrig, sms);
         } else {

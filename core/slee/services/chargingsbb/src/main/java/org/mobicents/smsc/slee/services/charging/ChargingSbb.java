@@ -129,47 +129,47 @@ public abstract class ChargingSbb implements Sbb {
 
     @Override
     public void sbbActivate() {
-        logger.info("sbbActivate invoked.");
+        logger.fine("sbbActivate invoked.");
     }
 
     @Override
     public void sbbCreate() throws CreateException {
-        logger.info("sbbCreate invoked.");
+        logger.fine("sbbCreate invoked.");
     }
 
     @Override
     public void sbbExceptionThrown(Exception arg0, Object arg1, ActivityContextInterface arg2) {
-        logger.info("sbbExceptionThrown invoked.");
+        logger.fine("sbbExceptionThrown invoked.");
     }
 
     @Override
     public void sbbLoad() {
-        logger.info("sbbLoad invoked.");
+        logger.fine("sbbLoad invoked.");
     }
 
     @Override
     public void sbbPassivate() {
-        logger.info("sbbPassivate invoked.");
+        logger.fine("sbbPassivate invoked.");
     }
 
     @Override
     public void sbbPostCreate() throws CreateException {
-        logger.info("sbbPostCreate invoked.");
+        logger.fine("sbbPostCreate invoked.");
     }
 
     @Override
     public void sbbRemove() {
-        logger.info("sbbRemove invoked.");
+        logger.fine("sbbRemove invoked.");
     }
 
     @Override
     public void sbbRolledBack(RolledBackContext arg0) {
-        logger.info("sbbRolledBack invoked.");
+        logger.fine("sbbRolledBack invoked.");
     }
 
     @Override
     public void sbbStore() {
-        logger.info("sbbStore invoked.");
+        logger.fine("sbbStore invoked.");
     }
 
     @Override

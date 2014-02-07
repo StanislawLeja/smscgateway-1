@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.smpp;
 
 import java.io.File;
@@ -161,10 +162,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private boolean generateReceiptCdr = false;
 
 	// TODO: new **************************
-    // true: all MO originated messages will be checked by OCS via Diameter before sending 
+    // true: all MO originated messages will be charged by OCS via Diameter before sending 
     private boolean moCharging = false; // true
-    // true: all SMPP originated messages will be checked by OCS via Diameter before sending
-    private boolean txSmppCharging = false;
+    // true: all SMPP originated messages will be charged by OCS via Diameter before sending
+    private EsmeChargingType txSmppCharging = EsmeChargingType.None;
     // Diameter destination Realm for connection to OCS
     private String diameterDestRealm = "mobicents.org";
     // Diameter destination Host for connection to OCS
@@ -501,11 +502,11 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         this.moCharging = moCharging;
     }
 
-    public boolean isTxSmppCharging() {
+    public EsmeChargingType isTxSmppCharging() {
         return txSmppCharging;
     }
 
-    public void setTxSmppCharging(boolean txSmppCharging) {
+    public void setTxSmppCharging(EsmeChargingType txSmppCharging) {
         this.txSmppCharging = txSmppCharging;
     }
 
@@ -619,7 +620,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             writer.write(this.generateReceiptCdr, GENERATE_RECEIPT_CDR, Boolean.class);
 
             writer.write(this.moCharging, MO_CHARGING, Boolean.class);
-            writer.write(this.txSmppCharging, TX_SMPP_CHARGING, Boolean.class);
+            writer.write(this.txSmppCharging.toString(), TX_SMPP_CHARGING, String.class);
             writer.write(this.diameterDestRealm, DIAMETER_DEST_REALM, String.class);
             writer.write(this.diameterDestHost, DIAMETER_DEST_HOST, String.class);
             writer.write(this.diameterDestPort, DIAMETER_DEST_PORT, Integer.class);
@@ -725,10 +726,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             if (valB != null) {
                 this.moCharging = valB.booleanValue();
             }
-            valB = reader.read(TX_SMPP_CHARGING, Boolean.class);
-            if (valB != null) {
-                this.txSmppCharging = valB.booleanValue();
-            }
+            vals = reader.read(TX_SMPP_CHARGING, String.class);
+            if (vals != null)
+                this.txSmppCharging = Enum.valueOf(EsmeChargingType.class, vals);
             this.diameterDestRealm = reader.read(DIAMETER_DEST_REALM, String.class);
             this.diameterDestHost = reader.read(DIAMETER_DEST_HOST, String.class);
             val = reader.read(DIAMETER_DEST_PORT, Integer.class);

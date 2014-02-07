@@ -131,7 +131,9 @@ public interface SMSCOAMMessages {
 
 	public static final String SHOW_ESME_HOST = " host=";
 
-	public static final String SHOW_ESME_PORT = " port=";
+    public static final String SHOW_ESME_PORT = " port=";
+
+    public static final String CHARGING_ENABLED = " chargingEnabled=";
 
 	public static final String SHOW_ESME_BIND_TYPE = " bindType=";
 
