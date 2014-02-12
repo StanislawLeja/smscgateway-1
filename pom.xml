@@ -52,6 +52,7 @@
 		<ts.slee.version>6.1.2.GA-TelScale</ts.slee.version>
 		<jslee.ext.version>${ts.slee.version}</jslee.ext.version>
 		<mobicents.resources.map.version>6.1.4.GA-TelScale</mobicents.resources.map.version>
+		<mobicents.resources.sip.version>6.1.2.GA-TelScale</mobicents.resources.sip.version>
 		<jdiameter.version>2.8.0-SNAPSHOT</jdiameter.version>
 		<telscale.licensing.version>1.0.3.Final</telscale.licensing.version>
 		<project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
