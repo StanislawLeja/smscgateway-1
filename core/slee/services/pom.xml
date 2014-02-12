@@ -24,6 +24,7 @@
 		<module>rxsmppserversbb</module>
 		<module>mtsbb</module>
 		<module>mosbb</module>
+		<module>txsipserversbb</module>
 		<module>du</module>
 	</modules>
 
