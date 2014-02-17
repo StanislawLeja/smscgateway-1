@@ -36,7 +36,12 @@ public enum SmType {
     /**
      * MT message
      */
-    SMS_FOR_SS7(1);
+    SMS_FOR_SS7(1),
+    
+    /**
+     * SIP terminated message
+     */
+    SMS_FOR_SIP(2);
 
     private int code;
 
@@ -53,6 +58,8 @@ public enum SmType {
                 return SMS_FOR_ESME;
             case 1:
                 return SMS_FOR_SS7;
+            case 2:
+                return SMS_FOR_SIP;                
             default:
                 throw new IllegalArgumentException("The '" + v + "' is not a valid value!");
         }

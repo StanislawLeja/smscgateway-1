@@ -87,4 +87,10 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 		return null;
 	}
 
+	@Override
+	public String getSipClusterName(int ton, int npi, String address) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
