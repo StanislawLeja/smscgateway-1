@@ -178,4 +178,10 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
         }
 	}
 
+	@Override
+	public String getSipClusterName(int ton, int npi, String address) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

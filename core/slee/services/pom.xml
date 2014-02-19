@@ -25,6 +25,7 @@
 		<module>mtsbb</module>
 		<module>mosbb</module>
 		<module>txsipserversbb</module>
+		<module>rxsipserversbb</module>
 		<module>du</module>
 	</modules>
 

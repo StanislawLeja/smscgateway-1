@@ -107,6 +107,11 @@ public interface SMSCOAMMessages {
 	
 	public static final String MAP_VERSION_CACHE_SUCCESSFULLY_CLEARED = "Successfully cleared version cache";
 	
+	
+	public static final String CREATE_SIP_FAIL_ALREADY_EXIST = "Creation of SIP failed. Other SIP with name=%s already exist";
+	
+	public static final String DELETE_SIP_FAILED_NO_ESME_FOUND = "No Sip found with given name %s";
+	
 	/**
 	 * Generic constants
 	 */

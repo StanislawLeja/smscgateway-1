@@ -57,5 +57,9 @@ public class SmsRouteManagement {
 	public String getEsmeClusterName(int ton, int npi, String address) {
 		return this.smsRoutingRule.getEsmeClusterName(ton, npi, address);
 	}
+	
+	public String getSipClusterName(int ton, int npi, String address){
+		return this.smsRoutingRule.getSipClusterName(ton, npi, address);
+	}
 
 }

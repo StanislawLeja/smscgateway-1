@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<scgt value="0"/>
-<scssn value="0"/>
-<hlrssn value="0"/>
-<mscssn value="0"/>
-<maxmapv value="0"/>
+<scgt value="9960639901"/>
+<scssn value="8"/>
+<hlrssn value="6"/>
+<mscssn value="8"/>
+<maxmapv value="3"/>
 <defaultValidityPeriodHours value="72"/>
 <maxValidityPeriodHours value="240"/>
 <defaultTon value="1"/>
@@ -25,3 +25,9 @@
 <reviseSecondsOnSmscStart value="70"/>
 <processingSmsSetTimeout value="600"/>
 <generateReceiptCdr value="false"/>
+<moCharging value="false"/>
+<txSmppCharging value="None"/>
+<diameterDestRealm value="mobicents.org"/>
+<diameterDestHost value="127.0.0.1"/>
+<diameterDestPort value="3868"/>
+<diameterUserName value=""/>

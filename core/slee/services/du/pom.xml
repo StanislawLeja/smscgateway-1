@@ -68,7 +68,12 @@
 			<artifactId>tx-sipserver-sbb</artifactId>
 			<groupId>${pom.groupId}</groupId>
 			<version>${pom.version}</version>
-		</dependency>		
+		</dependency>
+		<dependency>
+			<artifactId>rx-sipserver-sbb</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+		</dependency>				
 	</dependencies>
 
 	<build>
