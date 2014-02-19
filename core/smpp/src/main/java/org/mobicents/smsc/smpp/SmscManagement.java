@@ -266,6 +266,7 @@ public class SmscManagement implements SmscManagementMBean {
 			smsRoutingRule = new DefaultSmsRoutingRule();
 		}
 		smsRoutingRule.setEsmeManagement(esmeManagement);
+		smsRoutingRule.setSipManagement(sipManagement);
 		smsRoutingRule.setSmscPropertiesManagement(smscPropertiesManagement);
 		SmsRouteManagement.getInstance().setSmsRoutingRule(smsRoutingRule);
 

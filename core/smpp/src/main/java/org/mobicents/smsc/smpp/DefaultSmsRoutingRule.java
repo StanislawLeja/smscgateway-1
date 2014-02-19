@@ -37,6 +37,7 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 
 	private SmscPropertiesManagement smscPropertiesManagement;
 	private EsmeManagement esmeManagement;
+	private SipManagement sipManagement;
 
 	/**
 	 * 
@@ -47,6 +48,11 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 	@Override
 	public void setEsmeManagement(EsmeManagement em) {
 		this.esmeManagement = em;
+	}
+
+	@Override
+	public void setSipManagement(SipManagement sm) {
+		this.sipManagement = sm;
 	}
 
 	@Override
@@ -89,7 +95,19 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 
 	@Override
 	public String getSipClusterName(int ton, int npi, String address) {
-		// TODO Auto-generated method stub
+		for (FastList.Node<Sip> n = this.sipManagement.sips.head(), end = this.sipManagement.sips.tail(); (n = n
+				.getNext()) != end;) {
+			Sip sip = n.getValue();
+			Pattern p = sip.getAddressRangePattern();
+			if (p == null) {
+				continue;
+			}
+
+			Matcher m = p.matcher(address);
+			if (m.matches()) {
+				return sip.getClusterName();
+			}
+		}
 		return null;
 	}
 

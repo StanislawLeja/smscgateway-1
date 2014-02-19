@@ -45,6 +45,7 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 
 	private SmscPropertiesManagement smscPropertiesManagement;
 	private EsmeManagement esmeManagement;
+	private SipManagement sipManagement;
 
 	private static final Pattern pattern = Pattern.compile("(([\\+]?[1])|[0]?)");
 
@@ -63,6 +64,11 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 	@Override
 	public void setEsmeManagement(EsmeManagement em) {
 		this.esmeManagement = em;
+	}
+	
+	@Override
+	public void setSipManagement(SipManagement sm) {
+		this.sipManagement = sm;
 	}
 
 	@Override

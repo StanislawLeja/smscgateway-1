@@ -254,8 +254,9 @@ public class SipManagement implements SipManagementMBean {
 
 			// Populate cluster
 			for (FastList.Node<Sip> n = this.sips.head(), end = this.sips.tail(); (n = n.getNext()) != end;) {
-				Sip esme = n.getValue();
-				String esmeClusterName = esme.getClusterName();
+				Sip sip = n.getValue();
+				sip.init();
+				String esmeClusterName = sip.getClusterName();
 			}
 
 			reader.close();

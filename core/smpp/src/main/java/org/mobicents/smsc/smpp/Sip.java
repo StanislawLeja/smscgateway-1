@@ -59,7 +59,7 @@ public class Sip implements SipMBean {
 		this.host = host;
 		this.port = port;
 		
-		this.resetSipAddress();
+		this.init();
 		
 		this.chargingEnabled = chargingEnabled;
 		this.countersEnabled = countersEnabled;
@@ -116,7 +116,7 @@ public class Sip implements SipMBean {
 	@Override
 	public void setHost(String host) {
 		this.host = host;
-		this.resetSipAddress();
+		this.init();
 	}
 
 	/**
@@ -134,7 +134,7 @@ public class Sip implements SipMBean {
 	@Override
 	public void setPort(int port) {
 		this.port = port;
-		this.resetSipAddress();
+		this.init();
 	}
 
 	/*
@@ -232,8 +232,8 @@ public class Sip implements SipMBean {
 		}
 	};
 
-	private void resetSipAddress() {
-		this.sipAddress = host + ":" + port;
+	protected void init() {
+		this.sipAddress = this.host + ":" + this.port;
 	}
 
 }
