@@ -42,6 +42,11 @@ public class CdrGenerator {
     public static final String CDR_PARTIAL_ESME = "partial_esme";
     public static final String CDR_FAILED_ESME = "failed_esme";
     public static final String CDR_TEMP_FAILED_ESME = "temp_failed_esme";
+    
+    public static final String CDR_SUCCESS_SIP = "success_sip";
+    public static final String CDR_PARTIAL_SIP = "partial_sip";
+    public static final String CDR_FAILED_SIP = "failed_sip";
+    public static final String CDR_TEMP_FAILED_SIP = "temp_failed_sip";
 
     public static final String CDR_SUCCESS_NO_REASON = "";
 

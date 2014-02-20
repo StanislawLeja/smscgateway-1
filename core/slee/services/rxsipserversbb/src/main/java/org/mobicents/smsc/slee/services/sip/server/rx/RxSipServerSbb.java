@@ -54,6 +54,7 @@ import javax.slee.SbbContext;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
+import net.java.slee.resource.sip.SipActivityContextInterfaceFactory;
 import net.java.slee.resource.sip.SleeSipProvider;
 
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
@@ -107,6 +108,8 @@ public abstract class RxSipServerSbb implements Sbb {
 	private AddressFactory addressFactory;
 	private HeaderFactory headerFactory;
 
+	private SipActivityContextInterfaceFactory sipACIFactory = null;
+
 	private Tracer logger;
 	private SbbContextExt sbbContext;
 
@@ -130,8 +133,8 @@ public abstract class RxSipServerSbb implements Sbb {
 	public void onSipSm(SmsSetEvent event, ActivityContextInterface aci, EventContext eventContext) {
 
 		try {
-			if (this.logger.isInfoEnabled()) {
-				this.logger.info("\nReceived SIP SMS. event= " + event + "this=" + this);
+			if (this.logger.isFineEnabled()) {
+				this.logger.fine("\nReceived SIP SMS. event= " + event + "this=" + this);
 			}
 
 			SmsSet smsSet = event.getSmsSet();
@@ -213,7 +216,7 @@ public abstract class RxSipServerSbb implements Sbb {
 			logger.severe("onSERVER_ERROR but CMP smsSet is missed, targetId=" + targetId);
 		}
 
-		// TODO : Is CLIENT ERROR temporary?
+		// TODO : Is SERVER ERROR permanent?
 		this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SC_SYSTEM_ERROR,
 				"SIP Exception SERVER_ERROR received. Reason : " + event.getResponse().getReasonPhrase()
 						+ " Status Code : " + event.getResponse().getStatusCode());
@@ -248,8 +251,7 @@ public abstract class RxSipServerSbb implements Sbb {
 
 				// we need to find if it is the last or single segment
 				boolean isPartial = MessageUtil.isSmsNotLastSegment(sms);
-				CdrGenerator.generateCdr(sms,
-						isPartial ? CdrGenerator.CDR_PARTIAL_ESME : CdrGenerator.CDR_SUCCESS_ESME,
+				CdrGenerator.generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL_SIP : CdrGenerator.CDR_SUCCESS_SIP,
 						CdrGenerator.CDR_SUCCESS_NO_REASON, smscPropertiesManagement.getGenerateReceiptCdr());
 
 				if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
@@ -475,6 +477,10 @@ public abstract class RxSipServerSbb implements Sbb {
 
 			// create client transaction and send request
 			ClientTransaction clientTransaction = sipRA.getNewClientTransaction(request);
+
+			ActivityContextInterface sipClientTxaci = this.sipACIFactory.getActivityContextInterface(clientTransaction);
+			sipClientTxaci.attach(this.sbbContext.getSbbLocalObject());
+
 			clientTransaction.sendRequest();
 		} catch (Exception e) {
 			throw new SmscProcessingException(
@@ -529,7 +535,6 @@ public abstract class RxSipServerSbb implements Sbb {
 			if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 				Date lastDelivery = new Date();
 				pers.setDeliverySuccess(smsSet, lastDelivery);
-				this.decrementDeliveryActivityCount();
 
 				if (!pers.deleteSmsSet(smsSet)) {
 					pers.setNewMessageScheduled(smsSet, MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
@@ -541,6 +546,8 @@ public abstract class RxSipServerSbb implements Sbb {
 		} catch (PersistenceException e) {
 			this.logger.severe("PersistenceException when freeSmsSetSucceded(SmsSet smsSet)" + e.getMessage(), e);
 		}
+
+		this.decrementDeliveryActivityCount();
 	}
 
 	private void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason) {
@@ -548,7 +555,7 @@ public abstract class RxSipServerSbb implements Sbb {
 		Sms smsa = smsSet.getSms(currentMsgNum);
 		if (smsa != null) {
 			String s1 = reason.replace("\n", "\t");
-			CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED_ESME, s1,
+			CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED_SIP, s1,
 					smscPropertiesManagement.getGenerateReceiptCdr());
 		}
 
@@ -622,7 +629,7 @@ public abstract class RxSipServerSbb implements Sbb {
 		}
 
 		for (Sms sms : lstFailured) {
-			CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED_ESME, reason,
+			CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED_SIP, reason,
 					smscPropertiesManagement.getGenerateReceiptCdr());
 
 			// adding an error receipt if it is needed
@@ -838,6 +845,8 @@ public abstract class RxSipServerSbb implements Sbb {
 
 			// get SIP stuff
 			this.sipRA = (SleeSipProvider) this.sbbContext.getResourceAdaptorInterface(SIP_RA_TYPE_ID, SIP_RA_LINK);
+			this.sipACIFactory = (SipActivityContextInterfaceFactory) this.sbbContext
+					.getActivityContextInterfaceFactory(SIP_RA_TYPE_ID);
 
 			this.messageFactory = this.sipRA.getMessageFactory();
 			this.headerFactory = this.sipRA.getHeaderFactory();
