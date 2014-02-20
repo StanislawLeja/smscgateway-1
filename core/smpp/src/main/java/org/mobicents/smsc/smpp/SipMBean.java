@@ -15,6 +15,13 @@ public interface SipMBean {
 
 	String getName();
 
+	/**
+	 * Cluster in which this SIP stack belongs. Not used as of now.
+	 * 
+	 * @param clusterName
+	 */
+	void setClusterName(String clusterName);
+
 	String getClusterName();
 
 	/**

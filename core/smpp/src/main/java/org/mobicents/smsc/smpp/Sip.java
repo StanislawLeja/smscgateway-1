@@ -58,9 +58,9 @@ public class Sip implements SipMBean {
 
 		this.host = host;
 		this.port = port;
-		
+
 		this.init();
-		
+
 		this.chargingEnabled = chargingEnabled;
 		this.countersEnabled = countersEnabled;
 
@@ -99,6 +99,11 @@ public class Sip implements SipMBean {
 	@Override
 	public String getClusterName() {
 		return this.clusterName;
+	}
+
+	@Override
+	public void setClusterName(String clusterName) {
+		this.clusterName = clusterName;
 	}
 
 	/**
@@ -181,6 +186,19 @@ public class Sip implements SipMBean {
 	 */
 	protected Pattern getAddressRangePattern() {
 		return pattern;
+	}
+
+	public void show(StringBuffer sb) {
+		sb.append(SMSCOAMMessages.SHOW_SIP_NAME).append(this.name).append(SMSCOAMMessages.SHOW_CLUSTER_NAME)
+				.append(this.clusterName).append(SMSCOAMMessages.SHOW_ESME_HOST).append(this.host)
+				.append(SMSCOAMMessages.SHOW_ESME_PORT).append(this.port).append(SMSCOAMMessages.SHOW_STARTED)
+				.append(this.isStarted).append(SMSCOAMMessages.SHOW_ADDRESS_TON).append(this.address.getTon())
+				.append(SMSCOAMMessages.SHOW_ADDRESS_NPI).append(this.address.getNpi())
+				.append(SMSCOAMMessages.SHOW_ADDRESS_RANGE).append(this.address.getAddress())
+				.append(SMSCOAMMessages.SHOW_COUNTERS_ENABLED).append(this.countersEnabled)
+				.append(SMSCOAMMessages.CHARGING_ENABLED).append(this.chargingEnabled);
+
+		sb.append(SMSCOAMMessages.NEW_LINE);
 	}
 
 	/**

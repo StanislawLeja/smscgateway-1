@@ -171,7 +171,7 @@ public class SipManagement implements SipManagementMBean {
 	public Sip destroySip(String esmeName) throws Exception {
 		Sip esme = this.getSipByName(esmeName);
 		if (esme == null) {
-			throw new Exception(String.format(SMSCOAMMessages.DELETE_SIP_FAILED_NO_ESME_FOUND, esmeName));
+			throw new Exception(String.format(SMSCOAMMessages.SIP_NOT_FOUND, esmeName));
 		}
 
 		// if (esme.isStarted()) {

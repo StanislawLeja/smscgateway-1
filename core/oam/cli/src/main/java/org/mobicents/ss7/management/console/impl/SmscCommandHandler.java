@@ -37,6 +37,10 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 	static final Tree commandTree = new Tree("smsc");
 	static {
 		Node parent = commandTree.getTopNode();
+		
+		Node sip = parent.addChild("sip");
+		sip.addChild("modify");
+		sip.addChild("show");
 
 		Node esme = parent.addChild("esme");
 		esme.addChild("create");
