@@ -48,8 +48,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	private static final String EVENT_VENDOR = "org.mobicents";
 	private static final String EVENT_VERSION = "1.0";
 
-	private static final String EVENT_DELIVER_SM = "org.mobicents.smsc.slee.services.smpp.server.events.DELIVER_SM";
-	private static final String EVENT_SUBMIT_SM = "org.mobicents.smsc.slee.services.smpp.server.events.SUBMIT_SM";
+	private static final String EVENT_SMPP_SM = "org.mobicents.smsc.slee.services.smpp.server.events.SMPP_SM";
+	private static final String EVENT_SS7_SM = "org.mobicents.smsc.slee.services.smpp.server.events.SS7_SM";
 	private static final String EVENT_SIP_SM = "org.mobicents.smsc.slee.services.smpp.server.events.SIP_SM";
 
 	protected Tracer tracer = null;
@@ -448,10 +448,10 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			String eventName = null;
 			switch (smsSet.getType()) {
 			case SMS_FOR_ESME:
-				eventName = EVENT_DELIVER_SM;
+				eventName = EVENT_SMPP_SM;
 				break;
 			case SMS_FOR_SS7:
-				eventName = EVENT_SUBMIT_SM;
+				eventName = EVENT_SS7_SM;
 				break;
 			case SMS_FOR_SIP:
 				eventName = EVENT_SIP_SM;
