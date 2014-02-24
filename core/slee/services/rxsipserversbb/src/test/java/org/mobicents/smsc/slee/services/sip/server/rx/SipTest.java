@@ -34,7 +34,7 @@ public class SipTest {
 
 	@Test(groups = { "Base" })
 	public void testSipUri() throws Exception {
-		String user = "abhayani";
+		String user = "*135%23";
 		String fromDisplayName = user;
 		String fromSipAddress = "127.0.0.1:5065";
 

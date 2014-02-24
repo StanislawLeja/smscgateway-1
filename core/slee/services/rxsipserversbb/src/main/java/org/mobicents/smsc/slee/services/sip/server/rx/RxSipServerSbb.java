@@ -163,9 +163,7 @@ public abstract class RxSipServerSbb implements Sbb {
 			}
 
 			this.setCurrentMsgNum(curMsg);
-			SmsDeliveryData smsDeliveryData = new SmsDeliveryData();
-			smsDeliveryData.setTargetId(smsSet.getTargetId());
-			this.setSmsDeliveryData(smsDeliveryData);
+			this.setTargetId(smsSet.getTargetId());
 
 			try {
 				this.sendMessage(smsSet);
@@ -184,16 +182,16 @@ public abstract class RxSipServerSbb implements Sbb {
 	public void onCLIENT_ERROR(javax.sip.ResponseEvent event, ActivityContextInterface aci) {
 		this.logger.warning("onCLIENT_ERROR " + event);
 
-		SmsDeliveryData smsDeliveryData = this.getSmsDeliveryData();
-		if (smsDeliveryData == null) {
-			this.logger.severe("onCLIENT_ERROR but there is no SmsDeliveryData CMP!");
+		String targetId = this.getTargetId();
+		if (targetId == null) {
+			this.logger.severe("onCLIENT_ERROR but there is no TargetId CMP!");
 			return;
 		}
-		String targetId = smsDeliveryData.getTargetId();
 		SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
 
 		if (smsSet == null) {
 			logger.severe("onCLIENT_ERROR but CMP smsSet is missed, targetId=" + targetId);
+			return;
 		}
 
 		// TODO : Is CLIENT ERROR temporary?
@@ -205,16 +203,16 @@ public abstract class RxSipServerSbb implements Sbb {
 	public void onSERVER_ERROR(javax.sip.ResponseEvent event, ActivityContextInterface aci) {
 		this.logger.severe("onSERVER_ERROR " + event);
 
-		SmsDeliveryData smsDeliveryData = this.getSmsDeliveryData();
-		if (smsDeliveryData == null) {
-			this.logger.severe("onSERVER_ERROR but there is no SmsDeliveryData CMP!");
+		String targetId = this.getTargetId();
+		if (targetId == null) {
+			this.logger.severe("onSERVER_ERROR but there is no TargetId CMP!");
 			return;
 		}
-		String targetId = smsDeliveryData.getTargetId();
 		SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
 
 		if (smsSet == null) {
 			logger.severe("onSERVER_ERROR but CMP smsSet is missed, targetId=" + targetId);
+			return;
 		}
 
 		// TODO : Is SERVER ERROR permanent?
@@ -228,17 +226,16 @@ public abstract class RxSipServerSbb implements Sbb {
 
 		try {
 
-			SmsDeliveryData smsDeliveryData = this.getSmsDeliveryData();
-			if (smsDeliveryData == null) {
-				throw new SmscProcessingException("RxSmppServerSbb.sendDeliverSm(): onDeliverSmResp CMP missed", 0, 0,
-						null);
+			String targetId = this.getTargetId();
+			if (targetId == null) {
+				logger.severe("RxSmppServerSbb.sendDeliverSm(): onDeliverSmResp CMP missed");
+				return;
 			}
-			String targetId = smsDeliveryData.getTargetId();
 			SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
 			if (smsSet == null) {
-				throw new SmscProcessingException(
-						"RxSmppServerSbb.sendDeliverSm(): In onDeliverSmResp CMP smsSet is missed, targetId="
-								+ targetId, 0, 0, null);
+				logger.severe("RxSmppServerSbb.sendDeliverSm(): In onDeliverSmResp CMP smsSet is missed, targetId="
+						+ targetId);
+				return;
 			}
 
 			// current message is sent pushing current message into an archive
@@ -398,16 +395,16 @@ public abstract class RxSipServerSbb implements Sbb {
 	public void onGLOBAL_FAILURE(javax.sip.ResponseEvent event, ActivityContextInterface aci) {
 		this.logger.severe("onGLOBAL_FAILURE " + event);
 
-		SmsDeliveryData smsDeliveryData = this.getSmsDeliveryData();
-		if (smsDeliveryData == null) {
-			this.logger.severe("onGLOBAL_FAILURE but there is no SmsDeliveryData CMP!");
+		String targetId = this.getTargetId();
+		if (targetId == null) {
+			this.logger.severe("onGLOBAL_FAILURE but there is no TargetId CMP!");
 			return;
 		}
-		String targetId = smsDeliveryData.getTargetId();
 		SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
 
 		if (smsSet == null) {
 			logger.severe("onGLOBAL_FAILURE but CMP smsSet is missed, targetId=" + targetId);
+			return;
 		}
 
 		// TODO : Is GLOBAL FAILURE PERMANENT?
@@ -416,16 +413,31 @@ public abstract class RxSipServerSbb implements Sbb {
 						+ " Status Code : " + event.getResponse().getStatusCode());
 	}
 
-	public void onTRANSACTION(javax.sip.TimeoutEvent event, ActivityContextInterface aci) {
-		this.logger.info("onTRANSACTION " + event);
+	public void onTRANSACTION_TIMEOUT(javax.sip.TimeoutEvent event, ActivityContextInterface aci) {
+		this.logger.warning("onTRANSACTION_TIMEOUT " + event);
+
+		String targetId = this.getTargetId();
+		if (targetId == null) {
+			this.logger.severe("onTRANSACTION_TIMEOUT but there is no TargetId CMP!");
+			return;
+		}
+		SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+
+		if (smsSet == null) {
+			logger.severe("onTRANSACTION_TIMEOUT but CMP smsSet is missed, targetId=" + targetId);
+			return;
+		}
+
+		this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR,
+				"SIP Exception TRANSACTION_TIMEOUT received.");
 	}
 
 	/**
 	 * CMPs
 	 */
-	public abstract void setSmsDeliveryData(SmsDeliveryData smsDeliveryData);
+	public abstract void setTargetId(String targetId);
 
-	public abstract SmsDeliveryData getSmsDeliveryData();
+	public abstract String getTargetId();
 
 	public abstract void setCurrentMsgNum(int currentMsgNum);
 
@@ -885,5 +897,4 @@ public abstract class RxSipServerSbb implements Sbb {
 		return null;
 	}
 
-	
 }

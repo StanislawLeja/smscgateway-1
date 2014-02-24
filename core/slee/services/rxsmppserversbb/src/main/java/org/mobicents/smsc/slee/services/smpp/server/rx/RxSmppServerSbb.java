@@ -145,9 +145,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 			}
 
 			this.setCurrentMsgNum(curMsg);
-			SmsDeliveryData smsDeliveryData = new SmsDeliveryData();
-			smsDeliveryData.setTargetId(smsSet.getTargetId());
-			this.setSmsDeliveryData(smsDeliveryData);
+			this.setTargetId(smsSet.getTargetId());
 
 			try {
 				this.sendDeliverSm(smsSet);
@@ -170,17 +168,16 @@ public abstract class RxSmppServerSbb implements Sbb {
 				logger.info(String.format("\nonDeliverSmResp : DeliverSmResp=%s", event));
 			}
 
-			SmsDeliveryData smsDeliveryData = this.getSmsDeliveryData();
-			if (smsDeliveryData == null) {
-				throw new SmscProcessingException("RxSmppServerSbb.sendDeliverSm(): onDeliverSmResp CMP missed", 0, 0,
-						null);
+			String targetId = this.getTargetId();
+			if (targetId == null) {
+				logger.severe("RxSmppServerSbb.sendDeliverSm(): onDeliverSmResp CMP missed");
+				return;
 			}
-			String targetId = smsDeliveryData.getTargetId();
 			SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
 			if (smsSet == null) {
-				throw new SmscProcessingException(
-						"RxSmppServerSbb.sendDeliverSm(): In onDeliverSmResp CMP smsSet is missed, targetId="
-								+ targetId, 0, 0, null);
+				logger.severe("RxSmppServerSbb.sendDeliverSm(): In onDeliverSmResp CMP smsSet is missed, targetId="
+						+ targetId);
+				return;
 			}
 
 			int status = event.getCommandStatus();
@@ -331,21 +328,20 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 	public void onPduRequestTimeout(PduRequestTimeout event, ActivityContextInterface aci, EventContext eventContext) {
 		try {
-			SmsDeliveryData smsDeliveryData = this.getSmsDeliveryData();
-			if (smsDeliveryData == null) {
-				throw new SmscProcessingException("RxSmppServerSbb.onPduRequestTimeout(): onDeliverSmResp CMP missed",
-						0, 0, null);
+			logger.severe(String.format("\nonPduRequestTimeout : PduRequestTimeout=" + event));
+
+			String targetId = this.getTargetId();
+			if (targetId == null) {
+				logger.severe("RxSmppServerSbb.onPduRequestTimeout(): onDeliverSmResp CMP missed");
+				return;
 			}
-			String targetId = smsDeliveryData.getTargetId();
+
 			SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
 
-			logger.severe(String
-					.format("\nonPduRequestTimeout : targetId=" + targetId + ", PduRequestTimeout=" + event));
-
 			if (smsSet == null) {
-				throw new SmscProcessingException(
-						"RxSmppServerSbb.onPduRequestTimeout(): In onDeliverSmResp CMP smsSet is missed, targetId="
-								+ targetId, 0, 0, null);
+				logger.severe("RxSmppServerSbb.onPduRequestTimeout(): In onDeliverSmResp CMP smsSet is missed, targetId="
+						+ targetId);
+				return;
 			}
 
 			this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "PduRequestTimeout: ");
@@ -359,21 +355,21 @@ public abstract class RxSmppServerSbb implements Sbb {
 	public void onRecoverablePduException(RecoverablePduException event, ActivityContextInterface aci,
 			EventContext eventContext) {
 		try {
-			SmsDeliveryData smsDeliveryData = this.getSmsDeliveryData();
-			if (smsDeliveryData == null) {
-				throw new SmscProcessingException(
-						"RxSmppServerSbb.onRecoverablePduException(): onDeliverSmResp CMP missed", 0, 0, null);
+			String targetId = this.getTargetId();
+			if (targetId == null) {
+				logger.severe("RxSmppServerSbb.onRecoverablePduException(): onDeliverSmResp CMP missed");
+				return;
 			}
-			String targetId = smsDeliveryData.getTargetId();
+
 			SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
 
 			logger.severe(String.format("\nonRecoverablePduException : targetId=" + targetId
 					+ ", RecoverablePduException=" + event));
 
 			if (smsSet == null) {
-				throw new SmscProcessingException(
-						"RxSmppServerSbb.onRecoverablePduException(): In onDeliverSmResp CMP smsSet is missed, targetId="
-								+ targetId, 0, 0, null);
+				logger.severe("RxSmppServerSbb.onRecoverablePduException(): In onDeliverSmResp CMP smsSet is missed, targetId="
+						+ targetId);
+				return;
 			}
 
 			this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR,
@@ -388,9 +384,9 @@ public abstract class RxSmppServerSbb implements Sbb {
 	/**
 	 * CMPs
 	 */
-	public abstract void setSmsDeliveryData(SmsDeliveryData smsDeliveryData);
+	public abstract void setTargetId(String targetId);
 
-	public abstract SmsDeliveryData getSmsDeliveryData();
+	public abstract String getTargetId();
 
 	public abstract void setCurrentMsgNum(int currentMsgNum);
 
