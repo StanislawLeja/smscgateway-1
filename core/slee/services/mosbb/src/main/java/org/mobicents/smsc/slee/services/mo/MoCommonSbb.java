@@ -160,8 +160,8 @@ public abstract class MoCommonSbb implements Sbb {
 	}
 
 	public void onDialogRelease(DialogRelease evt, ActivityContextInterface aci) {
-		if (logger.isInfoEnabled()) {
-			this.logger.info("\nRx :  DialogRelease" + evt);
+		if (logger.isFineEnabled()) {
+			this.logger.fine("\nRx :  DialogRelease" + evt);
 		}
 	}
 

@@ -36,7 +36,6 @@ import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
-import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 
 /**
  * 
@@ -45,7 +44,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
  */
 public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliveryStatusInterface {
 
-	private static final String className = "RsdsSbb";
+	private static final String className = RsdsSbb.class.getSimpleName();
 
 	public RsdsSbb() {
 		super(className);
@@ -64,8 +63,8 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
 	 */
 
     public void onReportSMDeliveryStatusResponse(ReportSMDeliveryStatusResponse evt, ActivityContextInterface aci) {
-        if (this.logger.isInfoEnabled()) {
-            this.logger.info("\nReceived REPORT_SM_DELIVERY_STATUS_RESPONSE = " + evt);
+        if (this.logger.isFineEnabled()) {
+            this.logger.fine("\nReceived REPORT_SM_DELIVERY_STATUS_RESPONSE = " + evt);
         }
 
         if (this.getSmDeliveryOutcome() != SMDeliveryOutcome.successfulTransfer) {

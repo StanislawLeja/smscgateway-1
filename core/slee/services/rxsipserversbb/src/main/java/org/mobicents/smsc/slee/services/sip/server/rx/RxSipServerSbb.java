@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.sip.ClientTransaction;
 import javax.sip.ListeningPoint;
 import javax.sip.address.AddressFactory;
@@ -222,7 +220,9 @@ public abstract class RxSipServerSbb implements Sbb {
 	}
 
 	public void onSUCCESS(javax.sip.ResponseEvent event, ActivityContextInterface aci) {
-		this.logger.info("onSUCCESS " + event);
+		if (this.logger.isFineEnabled()) {
+			this.logger.fine("onSUCCESS " + event);
+		}
 
 		try {
 
@@ -847,8 +847,6 @@ public abstract class RxSipServerSbb implements Sbb {
 		this.sbbContext = (SbbContextExt) sbbContext;
 
 		try {
-			Context ctx = (Context) new InitialContext().lookup("java:comp/env");
-
 			this.logger = this.sbbContext.getTracer(getClass().getSimpleName());
 
 			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID,

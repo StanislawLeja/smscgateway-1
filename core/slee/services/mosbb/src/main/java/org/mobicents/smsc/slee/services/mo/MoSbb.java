@@ -50,7 +50,6 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AbsoluteTimeStamp;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AddressField;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
-import org.mobicents.protocols.ss7.map.api.smstpdu.NumberingPlanIdentification;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsCommandTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverReportTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
@@ -93,7 +92,7 @@ import com.cloudhopper.smpp.SmppConstants;
  */
 public abstract class MoSbb extends MoCommonSbb {
 
-	private static final String className = "MoSbb";
+	private static final String className = MoSbb.class.getSimpleName();
 
 	public MoSbb() {
 		super(className);
@@ -110,8 +109,8 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		if (this.getProcessingState() == MoProcessingState.OnlyRequestRecieved) {
 			this.setProcessingState(null);
-			if (this.logger.isInfoEnabled())
-				this.logger.info("MoSBB: onDialogDelimiter - sending empty TC-CONTINUE for " + evt);
+			if (this.logger.isFineEnabled())
+				this.logger.fine("MoSBB: onDialogDelimiter - sending empty TC-CONTINUE for " + evt);
 			evt.getMAPDialog();
 			MAPDialog dialog = evt.getMAPDialog();
 
@@ -175,8 +174,8 @@ public abstract class MoSbb extends MoCommonSbb {
 	 * @param aci
 	 */
 	public void onMoForwardShortMessageRequest(MoForwardShortMessageRequest evt, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("\nReceived MO_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
+		if (this.logger.isFineEnabled()) {
+			this.logger.fine("\nReceived MO_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
 		}
 
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
@@ -236,8 +235,8 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		try {
 			dialog.addMoForwardShortMessageResponse(evt.getInvokeId(), null, null);
-			if (this.logger.isInfoEnabled()) {
-				this.logger.info("\nSent MoForwardShortMessageResponse = " + evt);
+			if (this.logger.isFineEnabled()) {
+				this.logger.fine("\nSent MoForwardShortMessageResponse = " + evt);
 			}
 
 			dialog.close(false);
@@ -257,8 +256,8 @@ public abstract class MoSbb extends MoCommonSbb {
 	}
 
 	public void onForwardShortMessageRequest(ForwardShortMessageRequest evt, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
+		if (this.logger.isFineEnabled()) {
+			this.logger.fine("Received FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
 		}
 
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
@@ -318,8 +317,8 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		try {
 			dialog.addForwardShortMessageResponse(evt.getInvokeId());
-			if (this.logger.isInfoEnabled()) {
-				this.logger.info("\nSent ForwardShortMessageResponse = " + evt);
+			if (this.logger.isFineEnabled()) {
+				this.logger.fine("\nSent ForwardShortMessageResponse = " + evt);
 			}
 
 			dialog.close(false);
@@ -335,8 +334,8 @@ public abstract class MoSbb extends MoCommonSbb {
 	 * @param aci
 	 */
 	public void onMtForwardShortMessageRequest(MtForwardShortMessageRequest evt, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("\nReceived MT_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
+		if (this.logger.isFineEnabled()) {
+			this.logger.fine("\nReceived MT_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
 		}
 
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
@@ -394,8 +393,8 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		try {
 			dialog.addMtForwardShortMessageResponse(evt.getInvokeId(), null, null);
-			if (this.logger.isInfoEnabled()) {
-				this.logger.info("\nSent MtForwardShortMessageResponse = " + evt);
+			if (this.logger.isFineEnabled()) {
+				this.logger.fine("\nSent MtForwardShortMessageResponse = " + evt);
 			}
 
 			dialog.close(false);
@@ -429,7 +428,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		try {
 			smsTpdu = smsSignalInfo.decodeTpdu(false);
 
-			logger.info("The SmsTpduType is " + smsTpdu.getSmsTpduType());
+			logger.fine("The SmsTpduType is " + smsTpdu.getSmsTpduType());
 
 			switch (smsTpdu.getSmsTpduType()) {
 			case SMS_DELIVER:
@@ -558,7 +557,6 @@ public abstract class MoSbb extends MoCommonSbb {
 			throw new SmscProcessingException("MO DestAddress TON not supported: " + af.getTypeOfNumber().getCode(),
 					SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
 		}
-		NumberingPlanIdentification npi;
 		switch (af.getNumberingPlanIdentification()) {
 		case Unknown:
 			destNpi = smscPropertiesManagement.getDefaultNpi();

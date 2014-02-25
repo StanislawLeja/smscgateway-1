@@ -27,12 +27,8 @@ import gov.nist.javax.sip.address.SipUri;
 import java.sql.Timestamp;
 import java.util.UUID;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.sip.ServerTransaction;
-import javax.sip.address.AddressFactory;
 import javax.sip.header.FromHeader;
-import javax.sip.header.HeaderFactory;
 import javax.sip.header.ToHeader;
 import javax.sip.message.MessageFactory;
 import javax.sip.message.Request;
@@ -48,8 +44,6 @@ import javax.slee.resource.ResourceAdaptorTypeID;
 import net.java.slee.resource.sip.SleeSipProvider;
 
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
-import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
-import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.DatabaseType;
@@ -87,8 +81,8 @@ public abstract class TxSipServerSbb implements Sbb {
 	private SleeSipProvider sipRA;
 
 	private MessageFactory messageFactory;
-	private AddressFactory addressFactory;
-	private HeaderFactory headerFactory;
+	// private AddressFactory addressFactory;
+	// private HeaderFactory headerFactory;
 
 	protected Tracer logger;
 	private SbbContextExt sbbContext;
@@ -143,7 +137,7 @@ public abstract class TxSipServerSbb implements Sbb {
 				store.releaseSynchroObject(lock);
 			}
 
-			//this.sendMessage(toUser, fromUser);
+			// this.sendMessage(toUser, fromUser);
 		} catch (Exception e) {
 			this.logger.severe("Error while trying to send the SMS");
 		}
@@ -151,23 +145,29 @@ public abstract class TxSipServerSbb implements Sbb {
 	}
 
 	public void onCLIENT_ERROR(javax.sip.ResponseEvent event, ActivityContextInterface aci) {
-		this.logger.info("onCLIENT_ERROR " + event);
+		this.logger.severe("onCLIENT_ERROR " + event);
 	}
 
 	public void onSERVER_ERROR(javax.sip.ResponseEvent event, ActivityContextInterface aci) {
-		this.logger.info("onSERVER_ERROR " + event);
+		this.logger.severe("onSERVER_ERROR " + event);
 	}
 
 	public void onSUCCESS(javax.sip.ResponseEvent event, ActivityContextInterface aci) {
-		this.logger.info("onSUCCESS " + event);
+		if (this.logger.isFineEnabled()) {
+			this.logger.fine("onSUCCESS " + event);
+		}
 	}
 
 	public void onTRYING(javax.sip.ResponseEvent event, ActivityContextInterface aci) {
-		this.logger.info("onTRYING " + event);
+		if (this.logger.isFineEnabled()) {
+			this.logger.fine("onTRYING " + event);
+		}
 	}
 
 	public void onPROVISIONAL(javax.sip.ResponseEvent event, ActivityContextInterface aci) {
-		this.logger.info("onPROVISIONAL " + event);
+		if (this.logger.isFineEnabled()) {
+			this.logger.fine("onPROVISIONAL " + event);
+		}
 	}
 
 	public void onREDIRECT(javax.sip.ResponseEvent event, ActivityContextInterface aci) {
@@ -175,11 +175,11 @@ public abstract class TxSipServerSbb implements Sbb {
 	}
 
 	public void onGLOBAL_FAILURE(javax.sip.ResponseEvent event, ActivityContextInterface aci) {
-		this.logger.info("onGLOBAL_FAILURE " + event);
+		this.logger.severe("onGLOBAL_FAILURE " + event);
 	}
 
 	public void onTRANSACTION(javax.sip.TimeoutEvent event, ActivityContextInterface aci) {
-		this.logger.info("onTRANSACTION " + event);
+		this.logger.severe("onTRANSACTION " + event);
 	}
 
 	public PersistenceRAInterface getStore() {
@@ -255,16 +255,14 @@ public abstract class TxSipServerSbb implements Sbb {
 		this.sbbContext = (SbbContextExt) sbbContext;
 
 		try {
-			Context ctx = (Context) new InitialContext().lookup("java:comp/env");
-
 			this.logger = this.sbbContext.getTracer(getClass().getSimpleName());
 
 			// get SIP stuff
 			this.sipRA = (SleeSipProvider) this.sbbContext.getResourceAdaptorInterface(SIP_RA_TYPE_ID, SIP_RA_LINK);
 
 			this.messageFactory = this.sipRA.getMessageFactory();
-			this.headerFactory = this.sipRA.getHeaderFactory();
-			this.addressFactory = this.sipRA.getAddressFactory();
+			// this.headerFactory = this.sipRA.getHeaderFactory();
+			// this.addressFactory = this.sipRA.getAddressFactory();
 
 			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID,
 					LINK);
@@ -289,8 +287,10 @@ public abstract class TxSipServerSbb implements Sbb {
 		sms.setSourceAddrTon(smscPropertiesManagement.getDefaultTon());
 		sms.setSourceAddrNpi(smscPropertiesManagement.getDefaultNpi());
 
+		// TODO : Should we take care of Datacoding or breaking long SMS into
+		// smaller ones?
 		int dcs = 0;// 0 is for GSM7
-		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
+		// DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
 		sms.setDataCoding(dcs);
 
 		sms.setSubmitDate(new Timestamp(System.currentTimeMillis()));
@@ -298,8 +298,10 @@ public abstract class TxSipServerSbb implements Sbb {
 		// short message data
 		sms.setShortMessage(message);
 
-		int lenSolid = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
-		int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
+		// int lenSolid =
+		// MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
+		// int lenSegmented =
+		// MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
 
 		MessageUtil.applyValidityPeriod(sms, null, false);
 

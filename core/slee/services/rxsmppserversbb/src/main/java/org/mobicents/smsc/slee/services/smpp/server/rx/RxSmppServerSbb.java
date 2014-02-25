@@ -164,8 +164,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 	public void onDeliverSmResp(DeliverSmResp event, ActivityContextInterface aci, EventContext eventContext) {
 		try {
-			if (logger.isInfoEnabled()) {
-				logger.info(String.format("\nonDeliverSmResp : DeliverSmResp=%s", event));
+			if (logger.isFineEnabled()) {
+				logger.fine(String.format("\nonDeliverSmResp : DeliverSmResp=%s", event));
 			}
 
 			String targetId = this.getTargetId();
@@ -227,8 +227,11 @@ public abstract class RxSmppServerSbb implements Sbb {
 										pers.createLiveSms(receipt);
 										pers.setNewMessageScheduled(receipt.getSmsSet(),
 												MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
-										this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr()
-												+ ", dest=" + receipt.getSmsSet().getDestAddr());
+										if (this.logger.isFineEnabled()) {
+											this.logger.fine("Adding a delivery receipt: source="
+													+ receipt.getSourceAddr() + ", dest="
+													+ receipt.getSmsSet().getDestAddr());
+										}
 									} else {
 										receipt = MessageUtil.createReceiptSms(sms, true);
 										SmsSet backSmsSet = new SmsSet();

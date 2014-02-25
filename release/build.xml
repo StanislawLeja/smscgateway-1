@@ -314,8 +314,8 @@
 		</copy>
     	
 		<echo>Copy jboss-log4j.xml</echo>
-		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/conf/jboss-log4j.xml" todir="${release.dir}/jboss-5.1.0.GA/server/default/conf" failonerror="true" />
-		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/conf/jboss-log4j.xml" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/conf" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/log4j/jboss-log4j-default.xml" todir="${release.dir}/jboss-5.1.0.GA/server/default/conf/jboss-log4j.xml" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/log4j/jboss-log4j-debug.xml" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/jboss-log4j.xml" failonerror="true" />
 			
     	<!-- oam/new-ui - jolokia war & jss7-management-console.war-->
 	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/oam/new-ui/jolokia.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
