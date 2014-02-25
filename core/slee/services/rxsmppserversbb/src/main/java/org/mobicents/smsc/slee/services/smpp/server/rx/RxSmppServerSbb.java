@@ -566,7 +566,6 @@ public abstract class RxSmppServerSbb implements Sbb {
 			if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 				Date lastDelivery = new Date();
 				pers.setDeliverySuccess(smsSet, lastDelivery);
-				this.decrementDeliveryActivityCount();
 
 				if (!pers.deleteSmsSet(smsSet)) {
 					pers.setNewMessageScheduled(smsSet, MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
@@ -578,6 +577,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 		} catch (PersistenceException e) {
 			this.logger.severe("PersistenceException when freeSmsSetSucceded(SmsSet smsSet)" + e.getMessage(), e);
 		}
+		
+		this.decrementDeliveryActivityCount();
 	}
 
 	private void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason) {
