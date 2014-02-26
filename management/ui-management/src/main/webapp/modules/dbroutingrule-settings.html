@@ -19,15 +19,26 @@
 					<h5>Update Configuration</h5>						
 					<div id="dbrr-update-configuration-wrapper">
 						<div class="input-prepend">
+							<div id="div-dbRuleType" class="control-group">
+							<span id="dbRuleType-span" class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="updates existing routing rule for SIP or SMPP">
+								<span class="add-on">Type</span>
+								<select id="dbRuleType" style="width: 100px;">
+									<option value="SMPP">SMPP</option>	
+									<option value="SIP">SIP</option>
+								</select>
+							</span>
+							</div>
+							
 							<div id="div-updatemsisdn" class="control-group">
 							<span id="updatemsisdn-span" class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="updates existing routing rule if exist else creates new. MSISDN for which rule is to be set.">
 								<span class="add-on">MSISDN</span>
 								<input id="updatemsisdn" type="text" class="input-mini" style="width: 220px; margin-right: 12px; text-align: center;" value="" />
 							</span>
 							</div>
+							
 							<div id="div-updtaemsisdnclunme" class="control-group">
 							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cluster name of ESME where the message should be routed for configured MSISDN.">
-								<span class="add-on">ESME cluster name</span>
+								<span class="add-on">Name</span>
 								<input id="updtaemsisdnclunme" type="text" class="input-mini" style="width: 180px; margin-right: 12px; text-align: center;" value="" />
 							</span>					
 							</div>
@@ -44,6 +55,16 @@
 					<h5>Delete Configuration</h5>
 					<div id="dbrr-delete-configuration-wrapper">
 						<div class="input-prepend">
+							<div id="div-dbRuleType-delete" class="control-group">
+							<span id="dbRuleType-span-delete" class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="delete existing routing rule for SIP or SMPP">
+								<span class="add-on">Type</span>
+								<select id="dbRuleType-delete" style="width: 100px;">
+									<option value="SMPP">SMPP</option>	
+									<option value="SIP">SIP</option>
+								</select>
+							</span>
+							</div>
+													
 							<div id="div-deletemsisdn" class="control-group">
 							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="delete the routing rule set for given MSISDN.">
 								<span class="add-on">MSISDN</span>
@@ -63,6 +84,17 @@
 					<h5>View Configuration</h5>
 					<div id="dbrr-view-configuration-wrapper">
 						<div class="input-prepend">
+							
+							<div id="div-dbRuleType-view" class="control-group">
+							<span id="dbRuleType-span-view" class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="view the routing rule for SIP or SMPP">
+								<span class="add-on">Type</span>
+								<select id="dbRuleType-view" style="width: 100px;">
+									<option value="SMPP">SMPP</option>	
+									<option value="SIP">SIP</option>
+								</select>
+							</span>
+							</div>						
+						
 							<div id="div-viewmsisdn" class="control-group">
 							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="view the routing rule (cluster name) set for given MSISDN.">
 								<span class="add-on">MSISDN</span>
@@ -83,8 +115,10 @@
 					});
 					
 					function updateDbRr() {
-						var mbeanSearch="com.telscale.smsc:layer=EsmeManagement,name=SmscManagement";
+						var mbeanSearch="com.telscale.smsc:layer=DatabaseSmsRoutingRule,name=SmscManagement";
 						var formInvalid = false;
+						
+						var dbRuleType = $("#dbRuleType").val();
 						
 						var updatemsisdn = $("#updatemsisdn").val();
 						if(updatemsisdn.trim() == "") {
@@ -110,7 +144,7 @@
 							$("#login-settings-error").hide();
 						}						
 						
-						jolokia.execute(mbeanSearch,"updateDatabaseRule",updatemsisdn,updtaemsisdnclunme,
+						jolokia.execute(mbeanSearch,"updateDbSmsRoutingRule",dbRuleType,updatemsisdn,updtaemsisdnclunme,
 								{
 									success: function(value) {
 										logToConsole('INFO', 'Successfully set routing rule to ' + updtaemsisdnclunme + ' for MSISDN ' + updatemsisdn );
@@ -125,8 +159,10 @@
 					}
 					
 					function deleteDbRr() {
-						var mbeanSearch="com.telscale.smsc:layer=EsmeManagement,name=SmscManagement";
+						var mbeanSearch="com.telscale.smsc:layer=DatabaseSmsRoutingRule,name=SmscManagement";
 						var formInvalid = false;
+						
+						var dbRuleType = $("#dbRuleType-delete").val();
 						
 						var deletemsisdn = $("#deletemsisdn").val();
 						if(deletemsisdn.trim() == "") {
@@ -144,7 +180,7 @@
 							$("#login-settings-error").hide();
 						}						
 						
-						jolokia.execute(mbeanSearch,"deleteDatabaseRule",deletemsisdn,
+						jolokia.execute(mbeanSearch,"deleteDbSmsRoutingRule",dbRuleType,deletemsisdn,
 								{
 									success: function(value) {
 										logToConsole('INFO', 'Successfully deleted rule for MSISDN ' + deletemsisdn );
@@ -159,8 +195,10 @@
 					}	
 					
 					function viewDbRr() {
-						var mbeanSearch="com.telscale.smsc:layer=EsmeManagement,name=SmscManagement";
+						var mbeanSearch="com.telscale.smsc:layer=DatabaseSmsRoutingRule,name=SmscManagement";
 						var formInvalid = false;
+						
+						var dbRuleType = $("#dbRuleType-view").val();
 						
 						var viewmsisdn = $("#viewmsisdn").val();
 						if(viewmsisdn.trim() == "") {
@@ -178,10 +216,14 @@
 							$("#login-settings-error").hide();
 						}						
 						
-						jolokia.execute(mbeanSearch,"getDatabaseRule",viewmsisdn,
+						jolokia.execute(mbeanSearch,"getSmsRoutingRule",dbRuleType,viewmsisdn,
 								{
 									success: function(value) {
-										logToConsole('INFO', value );
+										if(value!=null){
+											logToConsole('INFO', 'Name:'+value.clusterName + ' Address:'+value.address + ' Type:'+value.smsRoutingRuleType );
+										} else{
+											logToConsole('WARN','No rule defined for '+viewmsisdn);
+										}
 									},
 									error: function(value){
 										errorUID = ("st" + new Date().getTime()).hashCode();
