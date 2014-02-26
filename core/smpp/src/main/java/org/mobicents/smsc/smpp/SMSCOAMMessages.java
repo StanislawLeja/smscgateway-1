@@ -79,7 +79,7 @@ public interface SMSCOAMMessages {
 
 	public static final String NO_ESME_DEFINED_YET = "No ESME defined yet";
 
-	public static final String NO_ROUTING_RULE_DEFINED_YET = "No Routing rule defined yet";
+	public static final String NO_ROUTING_RULE_DEFINED_YET = "No Routing rule defined yet for address %s and type %s";
 
 	public static final String DELETE_ESME_FAILED_NO_ESME_FOUND = "No Esme found with given name %s";
 
@@ -114,6 +114,9 @@ public interface SMSCOAMMessages {
 	public static final String SIP_MODIFY_SUCCESS = "Successfully modified SIP name %s";
 
 	public static final String NO_SIP_DEFINED_YET = "No SIP defined yet";
+	
+	public static final String NO_DATABASE_SMS_ROUTING_RULE = "DatabaseSmsRoutingRule is not used";
+	
 
 	/**
 	 * Generic constants

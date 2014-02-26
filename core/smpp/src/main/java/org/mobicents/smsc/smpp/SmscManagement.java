@@ -60,6 +60,8 @@ public class SmscManagement implements SmscManagementMBean {
 	public static final String JMX_LAYER_SMPP_SERVER_MANAGEMENT = "SmppServerManagement";
 	public static final String JMX_LAYER_SMPP_CLIENT_MANAGEMENT = "SmppClientManagement";
 
+	public static final String JMX_LAYER_DATABASE_SMS_ROUTING_RULE = "DatabaseSmsRoutingRule";
+
 	protected static final String SMSC_PERSIST_DIR_KEY = "smsc.persist.dir";
 	protected static final String USER_DIR_KEY = "user.dir";
 
@@ -95,6 +97,8 @@ public class SmscManagement implements SmscManagementMBean {
 	private static SmscManagement instance = null;
 
 	private static SmscStatProvider smscStatProvider = null;
+
+	private SmsRoutingRule smsRoutingRule = null;
 
 	private SmscManagement(String name) {
 		this.name = name;
@@ -135,6 +139,10 @@ public class SmscManagement implements SmscManagementMBean {
 
 	public EsmeManagement getEsmeManagement() {
 		return esmeManagement;
+	}
+
+	public SmsRoutingRule getSmsRoutingRule() {
+		return smsRoutingRule;
 	}
 
 	public ArchiveSms getArchiveSms() {
@@ -259,9 +267,15 @@ public class SmscManagement implements SmscManagementMBean {
 		this.registerMBean(this.sipManagement, SipManagementMBean.class, false, sipObjNname);
 
 		// Step 4 Set Routing Rule class
-		SmsRoutingRule smsRoutingRule = null;
 		if (this.smsRoutingRuleClass != null) {
 			smsRoutingRule = (SmsRoutingRule) Class.forName(this.smsRoutingRuleClass).newInstance();
+
+			if (smsRoutingRule instanceof DatabaseSmsRoutingRule) {
+				ObjectName dbSmsRoutingRuleObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+						+ JMX_LAYER_DATABASE_SMS_ROUTING_RULE + ",name=" + this.getName());
+				this.registerMBean((DatabaseSmsRoutingRule) smsRoutingRule, DatabaseSmsRoutingRuleMBean.class, true,
+						dbSmsRoutingRuleObjName);
+			}
 		} else {
 			smsRoutingRule = new DefaultSmsRoutingRule();
 		}
@@ -314,6 +328,12 @@ public class SmscManagement implements SmscManagementMBean {
 	}
 
 	public void stopSmscManagement() throws Exception {
+
+		if (smsRoutingRule instanceof DatabaseSmsRoutingRule) {
+			ObjectName dbSmsRoutingRuleObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+					+ JMX_LAYER_DATABASE_SMS_ROUTING_RULE + ",name=" + this.getName());
+			this.unregisterMbean(dbSmsRoutingRuleObjName);
+		}
 
 		this.esmeManagement.stop();
 		ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ESME_MANAGEMENT

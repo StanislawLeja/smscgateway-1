@@ -82,7 +82,7 @@ public class TT_PersistenceProxy extends DBOperations_C2 {
                 session.execute(boundStatement);
 
                 // deleting of current tables
-                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_SMS_ROUTING_RULE + "\";");
+                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_SMPP_SMS_ROUTING_RULE + "\";");
                 boundStatement = new BoundStatement(ps);
                 boundStatement.bind();
                 try {

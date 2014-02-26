@@ -31,6 +31,8 @@ import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
+import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
+import org.mobicents.smsc.cassandra.SmsRoutingRuleType;
 import org.mobicents.ss7.management.console.ShellExecutor;
 
 import com.cloudhopper.smpp.SmppBindType;
@@ -401,6 +403,11 @@ public class SMSCShellExecutor implements ShellExecutor {
 				String rasCmd = args[2];
 				if (rasCmd == null) {
 					return SMSCOAMMessages.INVALID_COMMAND;
+				}
+
+				SmsRoutingRule smsRoutingRule = this.smscManagement.getSmsRoutingRule();
+				if (!(smsRoutingRule instanceof DatabaseSmsRoutingRule)) {
+					return SMSCOAMMessages.NO_DATABASE_SMS_ROUTING_RULE;
 				}
 
 				if (rasCmd.equals("update")) {
@@ -1128,13 +1135,15 @@ public class SMSCShellExecutor implements ShellExecutor {
 	}
 
 	/**
-	 * smsc databaseRule update <address> <systemId>
+	 * smsc databaseRule update <address> <systemId> <SMPP|SIP>
 	 * 
 	 * @param args
 	 * @return
 	 */
 	private String databaseRuleUpdate(String[] args) throws Exception {
-		if (args.length < 5 || args.length > 5) {
+		DatabaseSmsRoutingRule smsRoutingRule = (DatabaseSmsRoutingRule) this.smscManagement.getSmsRoutingRule();
+
+		if (args.length < 5 || args.length > 6) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -1148,18 +1157,28 @@ public class SMSCShellExecutor implements ShellExecutor {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		this.smscManagement.getEsmeManagement().updateDatabaseRule(address, systemId);
+		SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.SMPP;
+		if (args.length == 6) {
+			smsRoutingRuleType = SmsRoutingRuleType.valueOf(args[5]);
+		}
+
+		if (smsRoutingRuleType == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+		smsRoutingRule.updateDbSmsRoutingRule(smsRoutingRuleType, address, systemId);
 		return String.format(SMSCOAMMessages.UPDATE_DATABASE_RULE_SUCCESSFULL, address);
 	}
 
 	/**
-	 * smsc databaseRule delete <address>
+	 * smsc databaseRule delete <address> <SMPP|SIP>
 	 * 
 	 * @param args
 	 * @return
 	 */
 	private String databaseRuleDelete(String[] args) throws Exception {
-		if (args.length < 4 || args.length > 4) {
+		DatabaseSmsRoutingRule smsRoutingRule = (DatabaseSmsRoutingRule) this.smscManagement.getSmsRoutingRule();
+
+		if (args.length < 4 || args.length > 5) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -1168,18 +1187,29 @@ public class SMSCShellExecutor implements ShellExecutor {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		this.smscManagement.getEsmeManagement().deleteDatabaseRule(address);
+		SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.SMPP;
+		if (args.length == 5) {
+			smsRoutingRuleType = SmsRoutingRuleType.valueOf(args[4]);
+		}
+
+		if (smsRoutingRuleType == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		smsRoutingRule.deleteDbSmsRoutingRule(smsRoutingRuleType, address);
 		return String.format(SMSCOAMMessages.DELETE_DATABASE_RULE_SUCCESSFULL, address);
 	}
 
 	/**
-	 * smsc databaseRule get <address>
+	 * smsc databaseRule get <address> <SMPP|SIP>
 	 * 
 	 * @param args
 	 * @return
 	 */
 	private String databaseRuleGet(String[] args) throws Exception {
-		if (args.length < 4 || args.length > 4) {
+		DatabaseSmsRoutingRule smsRoutingRule = (DatabaseSmsRoutingRule) this.smscManagement.getSmsRoutingRule();
+
+		if (args.length < 4 || args.length > 5) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -1188,33 +1218,63 @@ public class SMSCShellExecutor implements ShellExecutor {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		String res = this.smscManagement.getEsmeManagement().getDatabaseRule(address);
-		return res;
+		SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.SMPP;
+		if (args.length == 5) {
+			smsRoutingRuleType = SmsRoutingRuleType.valueOf(args[4]);
+		}
+
+		if (smsRoutingRuleType == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		DbSmsRoutingRule res = smsRoutingRule.getSmsRoutingRule(smsRoutingRuleType, address);
+		if (res == null) {
+			return String.format(SMSCOAMMessages.NO_ROUTING_RULE_DEFINED_YET, address, smsRoutingRuleType.name());
+		}
+		return res.toString();
 	}
 
 	/**
-	 * smsc databaseRule getRange <address> or smsc databaseRule getRange
+	 * smsc databaseRule getRange <SMPP|SIP> <address> or smsc databaseRule
+	 * getRange <SMPP|SIP>
 	 * 
 	 * @param args
 	 * @return
 	 */
 	private String databaseRuleGetRange(String[] args) throws Exception {
-		if (args.length < 3 || args.length > 4) {
+		DatabaseSmsRoutingRule smsRoutingRule = (DatabaseSmsRoutingRule) this.smscManagement.getSmsRoutingRule();
+
+		if (args.length < 4 || args.length > 5) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		String res;
-		if (args.length == 4) {
-			String address = args[3];
+		SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.valueOf(args[3]);
+
+		if (smsRoutingRuleType == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		String address = null;
+		if (args.length == 5) {
+			address = args[4];
 			if (address == null) {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
-			res = this.smscManagement.getEsmeManagement().getDatabaseRulesRange(address);
-		} else {
-			res = this.smscManagement.getEsmeManagement().getDatabaseRulesRange();
 		}
 
-		return res;
+		List<DbSmsRoutingRule> res = smsRoutingRule.getSmsRoutingRulesRange(smsRoutingRuleType, address);
+
+		StringBuilder sb = new StringBuilder();
+		int i1 = 0;
+		for (DbSmsRoutingRule rr : res) {
+			if (i1 == 0)
+				i1 = 1;
+			else
+				sb.append("\n");
+			sb.append(rr.toString());
+		}
+		return sb.toString();
+
 	}
 
 	/**

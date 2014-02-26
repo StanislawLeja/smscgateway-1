@@ -22,11 +22,14 @@
 
 package org.mobicents.smsc.smpp;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 
 import java.util.List;
 
 import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
+import org.mobicents.smsc.cassandra.SmsRoutingRuleType;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -83,9 +86,7 @@ public class DbSmsRoutingRuleTest {
         assertNull(rl1);
         assertNull(rl2);
 
-        DbSmsRoutingRule rla = new DbSmsRoutingRule();
-        rla.setAddress("1111");
-        rla.setClusterName("AAA");
+        DbSmsRoutingRule rla = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP, "1111", "AAA");
 
         this.sbb.updateDbSmsRoutingRule(rla);
         rl1 = this.sbb.getSmsRoutingRule("1111");
@@ -96,9 +97,7 @@ public class DbSmsRoutingRuleTest {
         assertEquals(rl1.getClusterName(), "AAA");
 
 
-        rla = new DbSmsRoutingRule();
-        rla.setAddress("2222");
-        rla.setClusterName("BBB");
+        rla = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP, "2222", "BBB");
 
         this.sbb.updateDbSmsRoutingRule(rla);
         rl1 = this.sbb.getSmsRoutingRule("1111");

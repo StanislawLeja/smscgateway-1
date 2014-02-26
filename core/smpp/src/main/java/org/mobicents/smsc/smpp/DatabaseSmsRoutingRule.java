@@ -23,8 +23,6 @@
 package org.mobicents.smsc.smpp;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.mobicents.smsc.cassandra.DBOperations_C1;
@@ -32,14 +30,13 @@ import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
 import org.mobicents.smsc.cassandra.PersistenceException;
-
-import com.cloudhopper.smpp.SmppConstants;
+import org.mobicents.smsc.cassandra.SmsRoutingRuleType;
 
 /**
  * @author Amit Bhayani
  * 
  */
-public class DatabaseSmsRoutingRule implements SmsRoutingRule {
+public class DatabaseSmsRoutingRule implements DatabaseSmsRoutingRuleMBean {
 
 	private static final Logger logger = Logger.getLogger(DatabaseSmsRoutingRule.class);
 
@@ -47,12 +44,8 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 	private EsmeManagement esmeManagement;
 	private SipManagement sipManagement;
 
-	private static final Pattern pattern = Pattern.compile("(([\\+]?[1])|[0]?)");
-
-	private static final String USA_COUNTRY_CODE = "1";
-
-    private DBOperations_C1 dbOperations_C1 = null;
-    private DBOperations_C2 dbOperations_C2 = null;
+	private DBOperations_C1 dbOperations_C1 = null;
+	private DBOperations_C2 dbOperations_C2 = null;
 
 	/**
 	 * 
@@ -65,7 +58,7 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 	public void setEsmeManagement(EsmeManagement em) {
 		this.esmeManagement = em;
 	}
-	
+
 	@Override
 	public void setSipManagement(SipManagement sm) {
 		this.sipManagement = sm;
@@ -78,12 +71,13 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 
 	private void init() {
 		try {
-//            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-//                dbOperations_C1 = DBOperations_C1.getInstance();
-//            } else {
-//                dbOperations_C2 = DBOperations_C2.getInstance();
-//            }
-            dbOperations_C2 = DBOperations_C2.getInstance();
+			// if (smscPropertiesManagement.getDatabaseType() ==
+			// DatabaseType.Cassandra_1) {
+			// dbOperations_C1 = DBOperations_C1.getInstance();
+			// } else {
+			// dbOperations_C2 = DBOperations_C2.getInstance();
+			// }
+			dbOperations_C2 = DBOperations_C2.getInstance();
 		} catch (Exception e) {
 			logger.error("Error initializing cassandra database for DatabaseSmsRoutingRule", e);
 		}
@@ -98,27 +92,15 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 	@Override
 	public String getEsmeClusterName(int ton, int npi, String address) {
 
-		// lets convert national to international
-		if (ton == SmppConstants.TON_NATIONAL) {
-			String origAddress = address;
-			Matcher matcher = pattern.matcher(address);
-			address = matcher.replaceFirst(USA_COUNTRY_CODE);
-
-			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Converted national address=%s to international address=%s", origAddress,
-						address));
-			}
-		}
-
 		String clusterName = null;
 
 		try {
-		    DbSmsRoutingRule rr;
-            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                rr = dbOperations_C1.getSmsRoutingRule(address);
-            } else {
-                rr = dbOperations_C2.c2_getSmsRoutingRule(address);
-            }
+			DbSmsRoutingRule rr;
+			if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+				rr = dbOperations_C1.getSmsRoutingRule(address);
+			} else {
+				rr = dbOperations_C2.c2_getSmppSmsRoutingRule(address);
+			}
 			if (rr != null) {
 				clusterName = rr.getClusterName();
 			} else {
@@ -140,54 +122,116 @@ public class DatabaseSmsRoutingRule implements SmsRoutingRule {
 		return clusterName;
 	}
 
-	public void updateDbSmsRoutingRule(String address, String clusterName) throws PersistenceException {
-		DbSmsRoutingRule dbSmsRoutingRule = new DbSmsRoutingRule();
-		dbSmsRoutingRule.setAddress(address);
-		dbSmsRoutingRule.setClusterName(clusterName);
+	@Override
+	public String getSipClusterName(int ton, int npi, String address) {
+		String clusterName = null;
 
-        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-            dbOperations_C1.updateDbSmsRoutingRule(dbSmsRoutingRule);
-        } else {
-            dbOperations_C2.c2_updateDbSmsRoutingRule(dbSmsRoutingRule);
-        }
-	}
+		try {
+			DbSmsRoutingRule rr;
+			if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+				return null;
+			}
 
-	public void deleteDbSmsRoutingRule(String address) throws PersistenceException {
-        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-            dbOperations_C1.deleteDbSmsRoutingRule(address);
-        } else {
-            dbOperations_C2.c2_deleteDbSmsRoutingRule(address);
-        }
-	}
+			rr = dbOperations_C2.c2_getSipSmsRoutingRule(address);
 
-	public DbSmsRoutingRule getSmsRoutingRule(String address) throws PersistenceException {
-        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-            return dbOperations_C1.getSmsRoutingRule(address);
-        } else {
-            return dbOperations_C2.c2_getSmsRoutingRule(address);
-        }
-	}
+			if (rr != null) {
+				clusterName = rr.getClusterName();
+			}
+		} catch (PersistenceException e) {
+			logger.error("PersistenceException while selecting from table SmsRoutingRule", e);
+		}
 
-	public List<DbSmsRoutingRule> getSmsRoutingRulesRange() throws PersistenceException {
-        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-            return dbOperations_C1.getSmsRoutingRulesRange();
-        } else {
-            return dbOperations_C2.c2_getSmsRoutingRulesRange();
-        }
-	}
-
-	public List<DbSmsRoutingRule> getSmsRoutingRulesRange(String lastAdress) throws PersistenceException {
-        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-            return dbOperations_C1.getSmsRoutingRulesRange(lastAdress);
-        } else {
-            return dbOperations_C2.c2_getSmsRoutingRulesRange(lastAdress);
-        }
+		return clusterName;
 	}
 
 	@Override
-	public String getSipClusterName(int ton, int npi, String address) {
-		// TODO Auto-generated method stub
-		return null;
+	public void updateDbSmsRoutingRule(SmsRoutingRuleType dbSmsRoutingRuleType, String address, String clusterName)
+			throws PersistenceException {
+		DbSmsRoutingRule dbSmsRoutingRule = new DbSmsRoutingRule(dbSmsRoutingRuleType, address, clusterName);
+
+		if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+			dbOperations_C1.updateDbSmsRoutingRule(dbSmsRoutingRule);
+		} else {
+			switch (dbSmsRoutingRuleType) {
+			case SMPP:
+				dbOperations_C2.c2_updateSmppSmsRoutingRule(dbSmsRoutingRule);
+				break;
+			case SIP:
+				dbOperations_C2.c2_updateSipSmsRoutingRule(dbSmsRoutingRule);
+				break;
+			default:
+				throw new PersistenceException("Unknown DbSmsRoutingRuleType=" + dbSmsRoutingRuleType);
+			}
+		}
 	}
 
+	@Override
+	public void deleteDbSmsRoutingRule(SmsRoutingRuleType dbSmsRoutingRuleType, String address)
+			throws PersistenceException {
+		if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+			dbOperations_C1.deleteDbSmsRoutingRule(address);
+		} else {
+			switch (dbSmsRoutingRuleType) {
+			case SMPP:
+				dbOperations_C2.c2_deleteSmppSmsRoutingRule(address);
+				break;
+			case SIP:
+				dbOperations_C2.c2_deleteSipSmsRoutingRule(address);
+				break;
+			default:
+				throw new PersistenceException("Unknown DbSmsRoutingRuleType=" + dbSmsRoutingRuleType);
+			}
+		}
+	}
+
+	@Override
+	public DbSmsRoutingRule getSmsRoutingRule(SmsRoutingRuleType dbSmsRoutingRuleType, String address)
+			throws PersistenceException {
+		if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+			return dbOperations_C1.getSmsRoutingRule(address);
+		} else {
+			switch (dbSmsRoutingRuleType) {
+			case SMPP:
+				return dbOperations_C2.c2_getSmppSmsRoutingRule(address);
+			case SIP:
+				return dbOperations_C2.c2_getSipSmsRoutingRule(address);
+			default:
+				throw new PersistenceException("Unknown DbSmsRoutingRuleType=" + dbSmsRoutingRuleType);
+			}
+		}
+	}
+
+	@Override
+	public List<DbSmsRoutingRule> getSmsRoutingRulesRange(SmsRoutingRuleType dbSmsRoutingRuleType)
+			throws PersistenceException {
+		if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+			return dbOperations_C1.getSmsRoutingRulesRange();
+		} else {
+			switch (dbSmsRoutingRuleType) {
+			case SMPP:
+				return dbOperations_C2.c2_getSmppSmsRoutingRulesRange();
+			case SIP:
+				return dbOperations_C2.c2_getSipSmsRoutingRulesRange();
+			default:
+				throw new PersistenceException("Unknown DbSmsRoutingRuleType=" + dbSmsRoutingRuleType);
+			}
+		}
+	}
+
+	@Override
+	public List<DbSmsRoutingRule> getSmsRoutingRulesRange(SmsRoutingRuleType dbSmsRoutingRuleType, String lastAdress)
+			throws PersistenceException {
+		if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+			return dbOperations_C1.getSmsRoutingRulesRange(lastAdress);
+		} else {
+			switch (dbSmsRoutingRuleType) {
+			case SMPP:
+				return dbOperations_C2.c2_getSmppSmsRoutingRulesRange(lastAdress);
+			case SIP:
+				return dbOperations_C2.c2_getSipSmsRoutingRulesRange(lastAdress);
+			default:
+				throw new PersistenceException("Unknown DbSmsRoutingRuleType=" + dbSmsRoutingRuleType);
+			}
+		}
+	}
 }
