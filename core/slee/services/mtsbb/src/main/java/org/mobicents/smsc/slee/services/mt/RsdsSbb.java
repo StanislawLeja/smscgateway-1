@@ -32,6 +32,7 @@ import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.protocols.ss7.map.api.service.sms.ReportSMDeliveryStatusResponse;
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
+import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
@@ -43,7 +44,7 @@ import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
  */
 public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliveryStatusInterface {
 
-	private static final String className = "RsdsSbb";
+	private static final String className = RsdsSbb.class.getSimpleName();
 
 	public RsdsSbb() {
 		super(className);
@@ -62,8 +63,8 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
 	 */
 
     public void onReportSMDeliveryStatusResponse(ReportSMDeliveryStatusResponse evt, ActivityContextInterface aci) {
-        if (this.logger.isInfoEnabled()) {
-            this.logger.info("\nReceived REPORT_SM_DELIVERY_STATUS_RESPONSE = " + evt);
+        if (this.logger.isFineEnabled()) {
+            this.logger.fine("\nReceived REPORT_SM_DELIVERY_STATUS_RESPONSE = " + evt);
         }
 
         if (this.getSmDeliveryOutcome() != SMDeliveryOutcome.successfulTransfer) {
@@ -82,8 +83,14 @@ public abstract class RsdsSbb extends MtCommonSbb implements ReportSMDeliverySta
         }
     }
 
+    public void onErrorComponent(ErrorComponent event, ActivityContextInterface aci) {
+        if (this.logger.isInfoEnabled()) {
+            this.logger.info("\nRx :  onErrorComponent after setupReportSMDeliveryStatusRequest " + event + " Dialog=" + event.getMAPDialog());
+        }
+    }
 
-	/**
+
+    /**
 	 * SBB Local Object Methods
 	 * 
 	 * @throws MAPException

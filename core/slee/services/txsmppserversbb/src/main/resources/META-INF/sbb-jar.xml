@@ -9,10 +9,26 @@
 		<sbb-version>1.0</sbb-version>
 		<sbb-alias>TxSmppServerSbb</sbb-alias>
 
+        <sbb-ref>
+            <sbb-name>ChargingSbb</sbb-name>
+            <sbb-vendor>org.mobicents</sbb-vendor>
+            <sbb-version>1.0</sbb-version>
+            <sbb-alias>ChargingSbb</sbb-alias>
+        </sbb-ref>
 
 		<sbb-classes>
 			<sbb-abstract-class>
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.smpp.server.tx.TxSmppServerSbb</sbb-abstract-class-name>
+
+                <get-child-relation-method>
+                    <sbb-alias-ref>
+                        ChargingSbb
+                    </sbb-alias-ref>
+                    <get-child-relation-method-name>
+                        getChargingSbb
+                    </get-child-relation-method-name>
+                    <default-priority>0</default-priority>
+                </get-child-relation-method>
 			</sbb-abstract-class>
 		</sbb-classes>
 

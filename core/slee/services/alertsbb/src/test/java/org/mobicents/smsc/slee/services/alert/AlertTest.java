@@ -67,6 +67,7 @@ import org.testng.annotations.Test;
  * @author sergey vetyutnev
  * 
  */
+@Test(enabled=false)
 public class AlertTest {
 
 	private AlertSbbProxy sbb;

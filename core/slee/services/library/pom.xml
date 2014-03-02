@@ -1,7 +1,4 @@
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
@@ -21,6 +18,11 @@
 		<dependency>
 			<artifactId>mobicents-slee-ra-map-library</artifactId>
 			<groupId>org.mobicents.resources</groupId>
+		</dependency>
+		<dependency>
+			<artifactId>mobicents-slee-ra-diameter-cca-common-library</artifactId>
+			<groupId>org.mobicents.resources</groupId>
+			<version>${jdiameter.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.stephenc.eaio-uuid</groupId>

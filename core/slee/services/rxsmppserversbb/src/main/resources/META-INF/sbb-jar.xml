@@ -14,7 +14,7 @@
 			<sbb-abstract-class>
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.smpp.server.rx.RxSmppServerSbb</sbb-abstract-class-name>
 
-				<cmp-field><cmp-field-name>smsDeliveryData</cmp-field-name></cmp-field>
+				<cmp-field><cmp-field-name>targetId</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>currentMsgNum</cmp-field-name></cmp-field>
 			</sbb-abstract-class>
 		</sbb-classes>
@@ -22,7 +22,7 @@
 		<event event-direction="Receive" initial-event="True">
 			<event-name>DeliverSm</event-name>
 			<event-type-ref>
-				<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.DELIVER_SM</event-type-name>
+				<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.SMPP_SM</event-type-name>
 				<event-type-vendor>org.mobicents</event-type-vendor>
 				<event-type-version>1.0</event-type-version>
 			</event-type-ref>

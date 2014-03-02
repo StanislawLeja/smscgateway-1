@@ -42,6 +42,7 @@ import javax.slee.TransactionRolledbackLocalException;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingGroup;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
+import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
@@ -56,6 +57,7 @@ import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfacePr
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
+import org.mobicents.smsc.smpp.EsmeChargingType;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
 import org.mobicents.smsc.smpp.SmppInterfaceVersionType;
@@ -137,7 +139,7 @@ public class C2_TxSmppServerSbbTest {
         this.sbb.setSmppServerSessions(smppSess);
 
         Address address = new Address();
-        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, SmppBindType.TRANSCEIVER, "systemType", SmppInterfaceVersionType.SMPP50, address,
+        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, false, SmppBindType.TRANSCEIVER, "systemType", SmppInterfaceVersionType.SMPP50, address,
                 "clusterName", false);
         ActivityContextInterface aci = new SmppTransactionProxy(esme);
 
@@ -182,7 +184,7 @@ public class C2_TxSmppServerSbbTest {
         this.sbb.setSmppServerSessions(smppSess);
 
         Address address = new Address();
-        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, SmppBindType.TRANSCEIVER, "systemType", SmppInterfaceVersionType.SMPP50, address,
+        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, false, SmppBindType.TRANSCEIVER, "systemType", SmppInterfaceVersionType.SMPP50, address,
                 "clusterName", false);
         ActivityContextInterface aci = new SmppTransactionProxy(esme);
 
@@ -238,7 +240,7 @@ public class C2_TxSmppServerSbbTest {
         this.sbb.setSmppServerSessions(smppSess);
 
         Address address = new Address();
-        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, SmppBindType.TRANSCEIVER, "systemType", SmppInterfaceVersionType.SMPP50, address,
+        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, false, SmppBindType.TRANSCEIVER, "systemType", SmppInterfaceVersionType.SMPP50, address,
                 "clusterName", false);
         ActivityContextInterface aci = new SmppTransactionProxy(esme);
 
@@ -516,6 +518,12 @@ public class C2_TxSmppServerSbbTest {
 
         protected Sms createSmsEvent(BaseSm event, Esme origEsme, TargetAddress ta, PersistenceRAInterface store) throws SmscProcessingException {
             return super.createSmsEvent(event, origEsme, ta, store);
+        }
+
+        @Override
+        public ChildRelationExt getChargingSbb() {
+            // TODO Auto-generated method stub
+            return null;
         }
     }
 

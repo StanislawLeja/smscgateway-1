@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.smpp;
 
 import java.io.File;
@@ -73,6 +74,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private static final String REVISE_SECONDS_ON_SMSC_START = "reviseSecondsOnSmscStart";
     private static final String PROCESSING_SMS_SET_TIMEOUT = "processingSmsSetTimeout";
     private static final String GENERATE_RECEIPT_CDR = "generateReceiptCdr";
+    private static final String MO_CHARGING = "moCharging";
+    private static final String TX_SMPP_CHARGING = "txSmppCharging";
+    private static final String DIAMETER_DEST_REALM = "diameterDestRealm";
+    private static final String DIAMETER_DEST_HOST = "diameterDestHost";
+    private static final String DIAMETER_DEST_PORT = "diameterDestPort";
+    private static final String DIAMETER_USER_NAME = "diameterUserName";
 
 	private static final String TAB_INDENT = "\t";
 	private static final String CLASS_ATTRIBUTE = "type";
@@ -146,7 +153,6 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// if SMSHomeRouting is enabled, SMSC will accept MtForwardSMS and forwardSm like mobile station
 	private boolean isSMSHomeRouting = false;
 
-    // TODO: new **************************
 	// After SMSC restart it will revise previous reviseSecondsOnSmscStart seconds dueSlot's for unsent messages 
 	private int reviseSecondsOnSmscStart = 60;
 	// Timeout of life cycle of SmsSet in SmsSetCashe.ProcessingSmsSet in seconds
@@ -154,6 +160,20 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // true: we generate CDR for both receipt and regular messages
     // false: we generate CDR only for regular messages
 	private boolean generateReceiptCdr = false;
+
+	// TODO: new **************************
+    // true: all MO originated messages will be charged by OCS via Diameter before sending 
+    private boolean moCharging = false; // true
+    // true: all SMPP originated messages will be charged by OCS via Diameter before sending
+    private EsmeChargingType txSmppCharging = EsmeChargingType.None;
+    // Diameter destination Realm for connection to OCS
+    private String diameterDestRealm = "mobicents.org";
+    // Diameter destination Host for connection to OCS
+    private String diameterDestHost = "127.0.0.1"; // "127.0.0.2"
+    // Diameter destination port for connection to OCS
+    private int diameterDestPort = 3868;
+    // Diameter UserName for connection to OCS
+    private String diameterUserName = "";
     // TODO: new **************************
 
 	private SmscPropertiesManagement(String name) {
@@ -474,6 +494,54 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         this.store();
     }
 
+    public boolean isMoCharging() {
+        return moCharging;
+    }
+
+    public void setMoCharging(boolean moCharging) {
+        this.moCharging = moCharging;
+    }
+
+    public EsmeChargingType isTxSmppCharging() {
+        return txSmppCharging;
+    }
+
+    public void setTxSmppCharging(EsmeChargingType txSmppCharging) {
+        this.txSmppCharging = txSmppCharging;
+    }
+
+    public String getDiameterDestRealm() {
+        return diameterDestRealm;
+    }
+
+    public void setDiameterDestRealm(String diameterDestRealm) {
+        this.diameterDestRealm = diameterDestRealm;
+    }
+
+    public String getDiameterDestHost() {
+        return diameterDestHost;
+    }
+
+    public void setDiameterDestHost(String diameterDestHost) {
+        this.diameterDestHost = diameterDestHost;
+    }
+
+    public int getDiameterDestPort() {
+        return diameterDestPort;
+    }
+
+    public void setDiameterDestPort(int diameterDestPort) {
+        this.diameterDestPort = diameterDestPort;
+    }
+
+    public String getDiameterUserName() {
+        return diameterUserName;
+    }
+
+    public void setDiameterUserName(String diameterUserName) {
+        this.diameterUserName = diameterUserName;
+    }
+
 
 	public void start() throws Exception {
 
@@ -550,6 +618,13 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             writer.write(this.reviseSecondsOnSmscStart, REVISE_SECONDS_ON_SMSC_START, Integer.class);
             writer.write(this.processingSmsSetTimeout, PROCESSING_SMS_SET_TIMEOUT, Integer.class);
             writer.write(this.generateReceiptCdr, GENERATE_RECEIPT_CDR, Boolean.class);
+
+            writer.write(this.moCharging, MO_CHARGING, Boolean.class);
+            writer.write(this.txSmppCharging.toString(), TX_SMPP_CHARGING, String.class);
+            writer.write(this.diameterDestRealm, DIAMETER_DEST_REALM, String.class);
+            writer.write(this.diameterDestHost, DIAMETER_DEST_HOST, String.class);
+            writer.write(this.diameterDestPort, DIAMETER_DEST_PORT, Integer.class);
+            writer.write(this.diameterUserName, DIAMETER_USER_NAME, String.class);
 
 			writer.close();
 		} catch (Exception e) {
@@ -646,6 +721,20 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             if (valB != null) {
                 this.generateReceiptCdr = valB.booleanValue();
             }
+
+            valB = reader.read(MO_CHARGING, Boolean.class);
+            if (valB != null) {
+                this.moCharging = valB.booleanValue();
+            }
+            vals = reader.read(TX_SMPP_CHARGING, String.class);
+            if (vals != null)
+                this.txSmppCharging = Enum.valueOf(EsmeChargingType.class, vals);
+            this.diameterDestRealm = reader.read(DIAMETER_DEST_REALM, String.class);
+            this.diameterDestHost = reader.read(DIAMETER_DEST_HOST, String.class);
+            val = reader.read(DIAMETER_DEST_PORT, Integer.class);
+            if (val != null)
+                this.diameterDestPort = val;
+            this.diameterUserName = reader.read(DIAMETER_USER_NAME, String.class);
 
 			reader.close();
 		} catch (XMLStreamException ex) {

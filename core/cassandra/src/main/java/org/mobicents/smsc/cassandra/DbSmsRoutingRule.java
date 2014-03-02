@@ -27,45 +27,42 @@ import java.io.Serializable;
 /**
  * 
  * @author sergey vetyutnev
- *
+ * @author Amit Bhayani
+ * 
  */
 public class DbSmsRoutingRule implements Serializable {
 
-    private static final long serialVersionUID = -4693280752311155768L;
+	private static final long serialVersionUID = -4693280752311155768L;
 
-    private String address;
-    private String clusterName;
+	private final String address;
+	private final String clusterName;
+	private final SmsRoutingRuleType dbSmsRoutingRuleType;
 
-    public DbSmsRoutingRule() {
-    }
+	public DbSmsRoutingRule(SmsRoutingRuleType dbSmsRoutingRuleType, String address, String clusterName) {
+		this.dbSmsRoutingRuleType = dbSmsRoutingRuleType;
+		this.address = address;
+		this.clusterName = clusterName;
+	}
 
-    public String getAddress() {
-        return address;
-    }
+	public String getAddress() {
+		return address;
+	}
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
+	public String getClusterName() {
+		return clusterName;
+	}
 
-    public String getClusterName() {
-        return clusterName;
-    }
+	public SmsRoutingRuleType getSmsRoutingRuleType() {
+		return dbSmsRoutingRuleType;
+	}
 
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
-    }
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
+		sb.append("DbSmsRoutingRule [address=").append(address).append(", clusterName=").append(clusterName)
+				.append(", DbSmsRoutingRuleType=").append(dbSmsRoutingRuleType).append("]");
 
-        sb.append("DbSmsRoutingRule [address=");
-        sb.append(address);
-        sb.append(", clusterName=");
-        sb.append(clusterName);
-
-        sb.append("]");
-
-        return sb.toString();
-    }
+		return sb.toString();
+	}
 }

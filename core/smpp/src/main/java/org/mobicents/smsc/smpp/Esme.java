@@ -65,7 +65,8 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	private static final String ESME_INTERFACE_VERSION = "smppVersion";
 	private static final String ESME_TON = "ton";
 	private static final String ESME_NPI = "npi";
-	private static final String ESME_ADDRESS_RANGE = "addressRange";
+    private static final String ESME_ADDRESS_RANGE = "addressRange";
+    private static final String CHARGING_ENABLED = "chargingEnabled";
 
 	private static final String WINDOW_SIZE = "windowSize";
 	private static final String CONNECT_TIMEOUT = "connectTimeout";
@@ -88,8 +89,9 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	private SmppInterfaceVersionType smppVersion = null;
 	private transient Address address = null;
 	private SmppBindType smppBindType;
+    private boolean chargingEnabled = false;
 
-	private boolean countersEnabled = true;
+    private boolean countersEnabled = true;
 
 	private int enquireLinkDelay = 30000;
 
@@ -134,7 +136,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 
 	}
 
-	public Esme(String name, String systemId, String pwd, String host, int port, SmppBindType smppBindType,
+	public Esme(String name, String systemId, String pwd, String host, int port, boolean chargingEnabled, SmppBindType smppBindType,
 			String systemType, SmppInterfaceVersionType version, Address address, String clusterName,
 			boolean countersEnabled) {
 		this.name = name;
@@ -153,6 +155,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		}
 
 		this.clusterName = clusterName;
+        this.chargingEnabled = chargingEnabled;
 	}
 
 	/**
@@ -168,11 +171,11 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param smscManagement
 	 * @param state
 	 */
-	public Esme(String name, String systemId, String password, String host, int port, String systemType,
+	public Esme(String name, String systemId, String password, String host, int port, boolean chargingEnabled, String systemType,
 			SmppInterfaceVersionType smppVersion, Address address, SmppBindType smppBindType, Type smppSessionType,
 			int windowSize, long connectTimeout, long requestExpiryTimeout, long windowMonitorInterval,
 			long windowWaitTimeout, String clusterName, boolean countersEnabled, int enquireLinkDelay) {
-		this(name, systemId, password, host, port, smppBindType, systemType, smppVersion, address, clusterName,
+		this(name, systemId, password, host, port, chargingEnabled, smppBindType, systemType, smppVersion, address, clusterName,
 				countersEnabled);
 
 		this.smppSessionType = smppSessionType;
@@ -456,6 +459,14 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		return countersEnabled;
 	}
 
+    public boolean isChargingEnabled() {
+        return chargingEnabled;
+    }
+
+    public void setChargingEnabled(boolean chargingEnabled) {
+        this.chargingEnabled = chargingEnabled;
+    }
+
 	/**
 	 * XML Serialization/Deserialization
 	 */
@@ -507,6 +518,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			esme.countersEnabled = xml.getAttribute(COUNTERS_ENABLED, true);
 			esme.enquireLinkDelay = xml.getAttribute(ENQUIRE_LINK_DELAY, 30000);
 
+			esme.chargingEnabled = xml.getAttribute(CHARGING_ENABLED, false);
 		}
 
 		@Override
@@ -537,19 +549,20 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			xml.setAttribute(WINDOW_WAIT_TIMEOUT, esme.windowWaitTimeout);
 			xml.setAttribute(COUNTERS_ENABLED, esme.countersEnabled);
 			xml.setAttribute(ENQUIRE_LINK_DELAY, esme.enquireLinkDelay);
+
+            xml.setAttribute(CHARGING_ENABLED, esme.chargingEnabled);
 		}
 	};
 
 	public void show(StringBuffer sb) {
 		sb.append(SMSCOAMMessages.SHOW_ESME_NAME).append(this.name).append(SMSCOAMMessages.SHOW_ESME_SYSTEM_ID)
-				.append(this.systemId).append(SMSCOAMMessages.SHOW_ESME_STATE).append(this.getStateName())
-				.append(SMSCOAMMessages.SHOW_ESME_PASSWORD).append(this.password)
-				.append(SMSCOAMMessages.SHOW_ESME_HOST).append(this.host).append(SMSCOAMMessages.SHOW_ESME_PORT)
-				.append(this.port).append(SMSCOAMMessages.SHOW_ESME_BIND_TYPE).append(this.smppBindType)
-				.append(SMSCOAMMessages.SHOW_ESME_SYSTEM_TYPE).append(this.systemType)
-				.append(SMSCOAMMessages.SHOW_ESME_INTERFACE_VERSION).append(this.smppVersion)
-				.append(SMSCOAMMessages.SHOW_ADDRESS).append(this.address).append(SMSCOAMMessages.SHOW_CLUSTER_NAME)
-				.append(this.clusterName);
+.append(this.systemId)
+                .append(SMSCOAMMessages.SHOW_ESME_STATE).append(this.getStateName()).append(SMSCOAMMessages.SHOW_ESME_PASSWORD).append(this.password)
+                .append(SMSCOAMMessages.SHOW_ESME_HOST).append(this.host).append(SMSCOAMMessages.SHOW_ESME_PORT).append(this.port)
+                .append(SMSCOAMMessages.CHARGING_ENABLED).append(this.chargingEnabled).append(SMSCOAMMessages.SHOW_ESME_BIND_TYPE).append(this.smppBindType)
+                .append(SMSCOAMMessages.SHOW_ESME_SYSTEM_TYPE).append(this.systemType).append(SMSCOAMMessages.SHOW_ESME_INTERFACE_VERSION)
+                .append(this.smppVersion).append(SMSCOAMMessages.SHOW_ADDRESS).append(this.address).append(SMSCOAMMessages.SHOW_CLUSTER_NAME)
+                .append(this.clusterName);
 
 		sb.append(SMSCOAMMessages.NEW_LINE);
 	}

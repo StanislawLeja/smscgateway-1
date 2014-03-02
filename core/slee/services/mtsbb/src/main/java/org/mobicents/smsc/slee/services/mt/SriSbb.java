@@ -76,7 +76,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
  */
 public abstract class SriSbb extends MtCommonSbb {
 
-	private static final String className = "SriSbb";
+	private static final String className = SriSbb.class.getSimpleName();
 
 	protected MAPApplicationContextVersion maxMAPApplicationContextVersion = null;
 
@@ -91,8 +91,8 @@ public abstract class SriSbb extends MtCommonSbb {
 	public void onSms(SmsSetEvent event, ActivityContextInterface aci, EventContext eventContext) {
 
         try {
-            if (this.logger.isInfoEnabled()) {
-                this.logger.info("\nReceived Submit SMS. event= " + event + "this=" + this);
+            if (this.logger.isFineEnabled()) {
+                this.logger.fine("\nReceived Submit SMS. event= " + event + "this=" + this);
             }
 
             SmsSet smsSet = event.getSmsSet();
@@ -343,8 +343,8 @@ public abstract class SriSbb extends MtCommonSbb {
 	 * @param aci
 	 */
 	public void onSendRoutingInfoForSMResponse(SendRoutingInfoForSMResponse evt, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("\nReceived SEND_ROUTING_INFO_FOR_SM_RESPONSE = " + evt + " Dialog=" + evt.getMAPDialog());
+		if (this.logger.isFineEnabled()) {
+			this.logger.fine("\nReceived SEND_ROUTING_INFO_FOR_SM_RESPONSE = " + evt + " Dialog=" + evt.getMAPDialog());
 		}
 
 		if (evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() == MAPApplicationContextVersion.version1

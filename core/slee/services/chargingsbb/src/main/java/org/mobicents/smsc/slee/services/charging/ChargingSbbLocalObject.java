@@ -20,27 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.services.smpp.server.rx;
+package org.mobicents.smsc.slee.services.charging;
 
-import java.io.Serializable;
-
-import org.mobicents.smsc.cassandra.SmsSet;
+import javax.slee.SbbLocalObject;
 
 /**
  * 
  * @author sergey vetyutnev
  * 
  */
-public class SmsDeliveryData implements Serializable {
-
-	private String targetId;
-
-	public String getTargetId() {
-		return targetId;
-	}
-
-	public void setTargetId(String targetId) {
-		this.targetId = targetId;
-	}
+public interface ChargingSbbLocalObject extends SbbLocalObject, ChargingRequestInterface {
 
 }

@@ -42,7 +42,6 @@
 	</appender> 
 
 	<category name="javax.slee">
-		<priority value="INFO" />
 		<appender-ref ref="FILE"/> 
 	</category>
 	

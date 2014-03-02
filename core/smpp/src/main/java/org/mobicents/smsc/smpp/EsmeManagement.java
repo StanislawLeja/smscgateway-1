@@ -46,7 +46,6 @@ import javolution.xml.stream.XMLStreamException;
 
 import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
-import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
 
 import com.cloudhopper.smpp.SmppBindType;
 import com.cloudhopper.smpp.SmppSession;
@@ -189,17 +188,18 @@ public class EsmeManagement implements EsmeManagementMBean {
 		return discoveredEsme;
 	}
 
-	public Esme createEsme(String name, String systemId, String password, String host, int port, String smppBindType,
-			String systemType, String smppIntVersion, byte ton, byte npi, String address, String smppSessionType,
-			int windowSize, long connectTimeout, long requestExpiryTimeout, long windowMonitorInterval,
-			long windowWaitTimeout, String clusterName, boolean countersEnabled, int enquireLinkDelay) throws Exception {
+	public Esme createEsme(String name, String systemId, String password, String host, int port,
+			boolean chargingEnabled, String smppBindType, String systemType, String smppIntVersion, byte ton, byte npi,
+			String address, String smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
+			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
+			int enquireLinkDelay) throws Exception {
 		SmppBindType smppBindTypeOb = SmppBindType.valueOf(smppBindType);
 		SmppInterfaceVersionType smppInterfaceVersionTypeObj = SmppInterfaceVersionType
 				.getInterfaceVersionType(smppIntVersion);
 		Address addressObj = new Address(ton, npi, address);
 		SmppSession.Type smppSessionTypeObj = SmppSession.Type.valueOf(smppSessionType);
 
-		return this.createEsme(name, systemId, password, host, port, smppBindTypeOb, systemType,
+		return this.createEsme(name, systemId, password, host, port, chargingEnabled, smppBindTypeOb, systemType,
 				smppInterfaceVersionTypeObj, addressObj, smppSessionTypeObj, windowSize, connectTimeout,
 				requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled,
 				enquireLinkDelay);
@@ -229,10 +229,10 @@ public class EsmeManagement implements EsmeManagementMBean {
 	 */
 	@Override
 	public synchronized Esme createEsme(String name, String systemId, String password, String host, int port,
-			SmppBindType smppBindType, String systemType, SmppInterfaceVersionType smppIntVersion, Address address,
-			SmppSession.Type smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
-			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
-			int enquireLinkDelay) throws Exception {
+			boolean chargingEnabled, SmppBindType smppBindType, String systemType,
+			SmppInterfaceVersionType smppIntVersion, Address address, SmppSession.Type smppSessionType, int windowSize,
+			long connectTimeout, long requestExpiryTimeout, long windowMonitorInterval, long windowWaitTimeout,
+			String clusterName, boolean countersEnabled, int enquireLinkDelay) throws Exception {
 
 		if (smppSessionType == SmppSession.Type.CLIENT) {
 			if (port < 1) {
@@ -263,7 +263,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 					primaryKey = primaryKey + host + port;
 					existingPrimaryKey = existingPrimaryKey + esme.getHost() + esme.getPort();
 				} else {
-					//Let the ESME be created
+					// Let the ESME be created
 					primaryKey = "X";
 					existingPrimaryKey = "Y";
 				}
@@ -288,12 +288,12 @@ public class EsmeManagement implements EsmeManagementMBean {
 
 		Esme esme = null;
 		if (smppSessionType.equals(SmppSession.Type.SERVER)) {
-			esme = new Esme(name, systemId, password, host, port, smppBindType, systemType, smppIntVersion, address,
-					clusterName, countersEnabled);
+			esme = new Esme(name, systemId, password, host, port, chargingEnabled, smppBindType, systemType,
+					smppIntVersion, address, clusterName, countersEnabled);
 		} else {
-			esme = new Esme(name, systemId, password, host, port, systemType, smppIntVersion, address, smppBindType,
-					smppSessionType, windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval,
-					windowWaitTimeout, clusterName, countersEnabled, enquireLinkDelay);
+			esme = new Esme(name, systemId, password, host, port, chargingEnabled, systemType, smppIntVersion, address,
+					smppBindType, smppSessionType, windowSize, connectTimeout, requestExpiryTimeout,
+					windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled, enquireLinkDelay);
 		}
 		esmes.add(esme);
 
@@ -386,89 +386,6 @@ public class EsmeManagement implements EsmeManagementMBean {
 				this.smppClient.stopSmppClientSession(esme);
 			}
 		}
-	}
-
-	private DatabaseSmsRoutingRule getDatabaseSmsRoutingRule() {
-		SmsRoutingRule smsRoutingRule = SmsRouteManagement.getInstance().getSmsRoutingRule();
-		if (smsRoutingRule != null && (smsRoutingRule instanceof DatabaseSmsRoutingRule)) {
-			return (DatabaseSmsRoutingRule) smsRoutingRule;
-		} else {
-			return null;
-		}
-	}
-
-	@Override
-	public void updateDatabaseRule(String address, String systemId) throws Exception {
-		DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
-		if (smsRoutingRule == null)
-			throw new Exception("DatabaseSmsRoutingRule is not defined in the system");
-
-		smsRoutingRule.updateDbSmsRoutingRule(address, systemId);
-	}
-
-	@Override
-	public void deleteDatabaseRule(String address) throws Exception {
-		DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
-		if (smsRoutingRule == null)
-			throw new Exception("DatabaseSmsRoutingRule is not defined in the system");
-
-		smsRoutingRule.deleteDbSmsRoutingRule(address);
-	}
-
-	@Override
-	public String getDatabaseRule(String address) throws Exception {
-		DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
-		if (smsRoutingRule == null)
-			throw new Exception("DatabaseSmsRoutingRule is not defined in the system");
-
-		DbSmsRoutingRule rr = smsRoutingRule.getSmsRoutingRule(address);
-		if (rr != null)
-			return rr.toString();
-		else
-			return "Record not found for: " + address;
-	}
-
-	@Override
-	public String getDatabaseRulesRange() throws Exception {
-		DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
-		if (smsRoutingRule == null)
-			throw new Exception("DatabaseSmsRoutingRule is not defined in the system");
-
-		List<DbSmsRoutingRule> rrr = smsRoutingRule.getSmsRoutingRulesRange();
-		StringBuilder sb = new StringBuilder();
-		int i1 = 0;
-		for (DbSmsRoutingRule rr : rrr) {
-			if (i1 == 0)
-				i1 = 1;
-			else
-				sb.append("\n");
-			sb.append(rr.toString());
-		}
-		return sb.toString();
-
-	}
-
-	@Override
-	public String getDatabaseRulesRange(String lastAdress) throws Exception {
-		DatabaseSmsRoutingRule smsRoutingRule = this.getDatabaseSmsRoutingRule();
-		if (smsRoutingRule == null)
-			throw new Exception("DatabaseSmsRoutingRule is not defined in the system");
-
-		DbSmsRoutingRule rr0 = smsRoutingRule.getSmsRoutingRule(lastAdress);
-		if (rr0 == null)
-			return "Record not found for a key: " + lastAdress;
-
-		List<DbSmsRoutingRule> rrr = smsRoutingRule.getSmsRoutingRulesRange(lastAdress);
-		StringBuilder sb = new StringBuilder();
-		int i1 = 0;
-		for (DbSmsRoutingRule rr : rrr) {
-			if (i1 == 0)
-				i1 = 1;
-			else
-				sb.append("\n");
-			sb.append(rr.toString());
-		}
-		return sb.toString();
 	}
 
 	public void start() throws Exception {

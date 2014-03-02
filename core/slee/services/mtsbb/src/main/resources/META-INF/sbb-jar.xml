@@ -65,21 +65,10 @@
 			 -->
 		</sbb-classes>
 
-<!--		
-		<event event-direction="Fire">
-			<event-name>SendDeliveryReportSms</event-name>
-			<event-type-ref>
-				<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.DELIVER_SM</event-type-name>
-				<event-type-vendor>org.mobicents</event-type-vendor>
-				<event-type-version>1.0</event-type-version>
-			</event-type-ref>
-		</event>
--->
-
 		<event event-direction="Receive" initial-event="True">
 			<event-name>Sms</event-name>
 			<event-type-ref>
-				<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.SUBMIT_SM</event-type-name>
+				<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.SS7_SM</event-type-name>
 				<event-type-vendor>org.mobicents</event-type-vendor>
 				<event-type-version>1.0</event-type-version>
 			</event-type-ref>
@@ -319,17 +308,6 @@
 			</sbb-activity-context-interface>
 			 -->
 		</sbb-classes>
-
-<!-- 
-		<event event-direction="Fire">
-			<event-name>SendDeliveryReportSms</event-name>
-			<event-type-ref>
-				<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.DELIVER_SM</event-type-name>
-				<event-type-vendor>org.mobicents</event-type-vendor>
-				<event-type-version>1.0</event-type-version>
-			</event-type-ref>
-		</event>
--->
 
 		<!-- MAP Dialog Events -->
 		<event event-direction="Receive" initial-event="False">

@@ -38,7 +38,7 @@
 										<echo>
 											${jboss.home}server/default/deploy
 										</echo>
-										<copy file="${project.build.directory}/smsc-management.war" todir="${jboss.home}/server/${node}/deploy"/>
+										<copy file="${project.build.directory}/smsc-management.war" todir="${jboss.home}/server/${node}/deploy" />
 									</tasks>
 								</configuration>
 							</execution>

@@ -91,13 +91,17 @@ public class Schema {
     //SmsRoutingRule tables columns and names
     public static final String COLUMN_ADDRESS = "ADDRESS";
     public static final String COLUMN_CLUSTER_NAME = "CLUSTER_NAME";
+    public static final String COLUMN_TYPE = "TYPE";
 
     public static final String COLUMN_NEXT_SLOT = "NEXT_SLOT";
 
     public static final String FAMILY_LIVE_SMS = "LIVE_SMS";
     public static final String FAMILY_ARCHIVE = "ARCHIVE";
     public static final String FAMILY_LIVE = "LIVE";
-    public static final String FAMILY_SMS_ROUTING_RULE = "SMS_ROUTING_RULE";
+    public static final String FAMILY_SMPP_SMS_ROUTING_RULE = "SMPP_SMS_ROUTING_RULE";
+    
+    public static final String FAMILY_SIP_SMS_ROUTING_RULE = "SIP_SMS_ROUTING_RULE";
+    
     public static final String FAMILY_DATA = "DATA";
     public static final String FAMILY_SLOTS = "SLOTS";
     public static final String FAMILY_DESTS = "DESTS";

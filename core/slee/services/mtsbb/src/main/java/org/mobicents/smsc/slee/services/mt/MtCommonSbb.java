@@ -24,7 +24,6 @@ package org.mobicents.smsc.slee.services.mt;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;

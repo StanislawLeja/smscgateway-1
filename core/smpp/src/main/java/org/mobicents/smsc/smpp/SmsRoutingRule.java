@@ -28,8 +28,12 @@ package org.mobicents.smsc.smpp;
 public interface SmsRoutingRule {
 
 	public String getEsmeClusterName(int ton, int npi, String address);
+	
+	public String getSipClusterName(int ton, int npi, String address);
 
     public void setEsmeManagement(EsmeManagement em);
+    
+    public void setSipManagement(SipManagement sm);
 
     public void setSmscPropertiesManagement(SmscPropertiesManagement sm);
 

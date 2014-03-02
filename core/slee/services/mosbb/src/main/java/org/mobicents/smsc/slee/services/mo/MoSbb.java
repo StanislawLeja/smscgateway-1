@@ -50,7 +50,6 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AbsoluteTimeStamp;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AddressField;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
-import org.mobicents.protocols.ss7.map.api.smstpdu.NumberingPlanIdentification;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsCommandTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverReportTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
@@ -60,6 +59,7 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriod;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriodFormat;
+import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogNotice;
 import org.mobicents.slee.resource.map.events.DialogProviderAbort;
@@ -71,14 +71,14 @@ import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
+import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
+import org.mobicents.smsc.slee.services.charging.ChargingType;
 import org.mobicents.smsc.smpp.SmscStatProvider;
 
 import com.cloudhopper.commons.charset.CharsetUtil;
@@ -92,7 +92,7 @@ import com.cloudhopper.smpp.SmppConstants;
  */
 public abstract class MoSbb extends MoCommonSbb {
 
-	private static final String className = "MoSbb";
+	private static final String className = MoSbb.class.getSimpleName();
 
 	public MoSbb() {
 		super(className);
@@ -109,8 +109,8 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		if (this.getProcessingState() == MoProcessingState.OnlyRequestRecieved) {
 			this.setProcessingState(null);
-			if (this.logger.isInfoEnabled())
-				this.logger.info("MoSBB: onDialogDelimiter - sending empty TC-CONTINUE for " + evt);
+			if (this.logger.isFineEnabled())
+				this.logger.fine("MoSBB: onDialogDelimiter - sending empty TC-CONTINUE for " + evt);
 			evt.getMAPDialog();
 			MAPDialog dialog = evt.getMAPDialog();
 
@@ -174,8 +174,8 @@ public abstract class MoSbb extends MoCommonSbb {
 	 * @param aci
 	 */
 	public void onMoForwardShortMessageRequest(MoForwardShortMessageRequest evt, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("\nReceived MO_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
+		if (this.logger.isFineEnabled()) {
+			this.logger.fine("\nReceived MO_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
 		}
 
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
@@ -235,8 +235,8 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		try {
 			dialog.addMoForwardShortMessageResponse(evt.getInvokeId(), null, null);
-			if (this.logger.isInfoEnabled()) {
-				this.logger.info("\nSent MoForwardShortMessageResponse = " + evt);
+			if (this.logger.isFineEnabled()) {
+				this.logger.fine("\nSent MoForwardShortMessageResponse = " + evt);
 			}
 
 			dialog.close(false);
@@ -256,8 +256,8 @@ public abstract class MoSbb extends MoCommonSbb {
 	}
 
 	public void onForwardShortMessageRequest(ForwardShortMessageRequest evt, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("Received FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
+		if (this.logger.isFineEnabled()) {
+			this.logger.fine("Received FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
 		}
 
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
@@ -317,8 +317,8 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		try {
 			dialog.addForwardShortMessageResponse(evt.getInvokeId());
-			if (this.logger.isInfoEnabled()) {
-				this.logger.info("\nSent ForwardShortMessageResponse = " + evt);
+			if (this.logger.isFineEnabled()) {
+				this.logger.fine("\nSent ForwardShortMessageResponse = " + evt);
 			}
 
 			dialog.close(false);
@@ -334,8 +334,8 @@ public abstract class MoSbb extends MoCommonSbb {
 	 * @param aci
 	 */
 	public void onMtForwardShortMessageRequest(MtForwardShortMessageRequest evt, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("\nReceived MT_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
+		if (this.logger.isFineEnabled()) {
+			this.logger.fine("\nReceived MT_FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
 		}
 
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
@@ -393,8 +393,8 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		try {
 			dialog.addMtForwardShortMessageResponse(evt.getInvokeId(), null, null);
-			if (this.logger.isInfoEnabled()) {
-				this.logger.info("\nSent MtForwardShortMessageResponse = " + evt);
+			if (this.logger.isFineEnabled()) {
+				this.logger.fine("\nSent MtForwardShortMessageResponse = " + evt);
 			}
 
 			dialog.close(false);
@@ -428,7 +428,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		try {
 			smsTpdu = smsSignalInfo.decodeTpdu(false);
 
-			logger.info("The SmsTpduType is " + smsTpdu.getSmsTpduType());
+			logger.fine("The SmsTpduType is " + smsTpdu.getSmsTpduType());
 
 			switch (smsTpdu.getSmsTpduType()) {
 			case SMS_DELIVER:
@@ -557,7 +557,6 @@ public abstract class MoSbb extends MoCommonSbb {
 			throw new SmscProcessingException("MO DestAddress TON not supported: " + af.getTypeOfNumber().getCode(),
 					SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
 		}
-		NumberingPlanIdentification npi;
 		switch (af.getNumberingPlanIdentification()) {
 		case Unknown:
 			destNpi = smscPropertiesManagement.getDefaultNpi();
@@ -945,22 +944,26 @@ public abstract class MoSbb extends MoCommonSbb {
 	}
 
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
-		try {
-			// TODO: we can make this some check will we send this message or
-			// not
+        // TODO: we can make this some check will we send this message or not
 
-            sms.setStored(true);
-            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                store.createLiveSms(sms);
-                store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
-            } else {
+        if (smscPropertiesManagement.isMoCharging()) {
+            ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
+            chargingSbb.setupChargingRequestInterface(ChargingType.MoOrig, sms);
+        } else {
+            try {
                 sms.setStored(true);
-                store.c2_scheduleMessage(sms);
+                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                    store.createLiveSms(sms);
+                    store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                } else {
+                    sms.setStored(true);
+                    store.c2_scheduleMessage(sms);
+                }
+            } catch (PersistenceException e) {
+                throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
+                        MAPErrorCode.systemFailure, null, e);
             }
-		} catch (PersistenceException e) {
-			throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(),
-					SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
-		}
+        }
 	}
 
 	public enum MoProcessingState {
@@ -970,5 +973,28 @@ public abstract class MoSbb extends MoCommonSbb {
 	public abstract void setProcessingState(MoProcessingState processingState);
 
 	public abstract MoProcessingState getProcessingState();
+
+	/**
+     * Get child ChargingSBB
+     *
+     * @return
+     */
+    public abstract ChildRelationExt getChargingSbb();
+
+    private ChargingSbbLocalObject getChargingSbbObject() {
+        ChildRelationExt relation = getChargingSbb();
+
+        ChargingSbbLocalObject ret = (ChargingSbbLocalObject) relation.get(ChildRelationExt.DEFAULT_CHILD_NAME);
+        if (ret == null) {
+            try {
+                ret = (ChargingSbbLocalObject) relation.create(ChildRelationExt.DEFAULT_CHILD_NAME);
+            } catch (Exception e) {
+                if (this.logger.isSevereEnabled()) {
+                    this.logger.severe("Exception while trying to creat ChargingSbb child", e);
+                }
+            }
+        }
+        return ret;
+    }
 
 }

@@ -70,7 +70,7 @@ public class PersistenceProxy extends DBOperations_C1 {
 
             session.execute("USE \"" + keyspace + "\"");
 
-            PreparedStatement ps = session.prepare("select * from \"" + Schema.FAMILY_SMS_ROUTING_RULE + "\" limit 1;");
+            PreparedStatement ps = session.prepare("select * from \"" + Schema.FAMILY_SMPP_SMS_ROUTING_RULE + "\" limit 1;");
             BoundStatement boundStatement = new BoundStatement(ps);
             boundStatement.bind();
             session.execute(boundStatement);

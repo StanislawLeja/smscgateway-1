@@ -27,15 +27,20 @@
 			</resource-adaptor-interface>
 		</resource-adaptor-type-classes>
 		<event-type-ref>
-			<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.SUBMIT_SM</event-type-name>
+			<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.SS7_SM</event-type-name>
 			<event-type-vendor>org.mobicents</event-type-vendor>
 			<event-type-version>1.0</event-type-version>
 		</event-type-ref>
 		<event-type-ref>
-			<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.DELIVER_SM</event-type-name>
+			<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.SMPP_SM</event-type-name>
 			<event-type-vendor>org.mobicents</event-type-vendor>
 			<event-type-version>1.0</event-type-version>
 		</event-type-ref>
+		<event-type-ref>
+			<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.SIP_SM</event-type-name>
+			<event-type-vendor>org.mobicents</event-type-vendor>
+			<event-type-version>1.0</event-type-version>
+		</event-type-ref>		
 	</resource-adaptor-type>
 </resource-adaptor-type-jar>
 

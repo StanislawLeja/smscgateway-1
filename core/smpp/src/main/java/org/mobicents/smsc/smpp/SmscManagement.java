@@ -52,12 +52,15 @@ public class SmscManagement implements SmscManagementMBean {
 	public static final String JMX_DOMAIN = "com.telscale.smsc";
 	public static final String JMX_LAYER_SMSC_MANAGEMENT = "SmscManagement";
 	public static final String JMX_LAYER_ESME_MANAGEMENT = "EsmeManagement";
+	public static final String JMX_LAYER_SIP_MANAGEMENT = "SipManagement";
 	public static final String JMX_LAYER_ARCHIVE_SMS = "ArchiveSms";
 	public static final String JMX_LAYER_MAP_VERSION_CACHE = "MapVersionCache";
 	public static final String JMX_LAYER_SMSC_STATS = "SmscStats";
 	public static final String JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT = "SmscPropertiesManagement";
 	public static final String JMX_LAYER_SMPP_SERVER_MANAGEMENT = "SmppServerManagement";
 	public static final String JMX_LAYER_SMPP_CLIENT_MANAGEMENT = "SmppClientManagement";
+
+	public static final String JMX_LAYER_DATABASE_SMS_ROUTING_RULE = "DatabaseSmsRoutingRule";
 
 	protected static final String SMSC_PERSIST_DIR_KEY = "smsc.persist.dir";
 	protected static final String USER_DIR_KEY = "user.dir";
@@ -78,6 +81,7 @@ public class SmscManagement implements SmscManagementMBean {
 	private SmppClientManagement smppClientManagement = null;
 
 	private EsmeManagement esmeManagement = null;
+	private SipManagement sipManagement = null;
 	private SmscPropertiesManagement smscPropertiesManagement = null;
 	private ArchiveSms archiveSms;
 	private MapVersionCache mapVersionCache;
@@ -91,8 +95,10 @@ public class SmscManagement implements SmscManagementMBean {
 	private boolean isStarted = false;
 
 	private static SmscManagement instance = null;
-	
+
 	private static SmscStatProvider smscStatProvider = null;
+
+	private SmsRoutingRule smsRoutingRule = null;
 
 	private SmscManagement(String name) {
 		this.name = name;
@@ -135,6 +141,10 @@ public class SmscManagement implements SmscManagementMBean {
 		return esmeManagement;
 	}
 
+	public SmsRoutingRule getSmsRoutingRule() {
+		return smsRoutingRule;
+	}
+
 	public ArchiveSms getArchiveSms() {
 		return archiveSms;
 	}
@@ -157,13 +167,13 @@ public class SmscManagement implements SmscManagementMBean {
 	public void start() throws Exception {
 		logger.warn("Starting SmscManagemet " + name);
 
-        SmscStatProvider.getInstance().setSmscStartTime(new Date());
+		SmscStatProvider.getInstance().setSmscStartTime(new Date());
 
-        // Step 0 clear SmsSetCashe
+		// Step 0 clear SmsSetCashe
 		SmsSetCashe.getInstance().clearProcessingSmsSet();
 
-        // Step 1 Get the MBeanServer
-        this.mbeanServer = MBeanServerLocator.locateJBoss();
+		// Step 1 Get the MBeanServer
+		this.mbeanServer = MBeanServerLocator.locateJBoss();
 
 		// Step 2 Setup SMSC Properties
 		this.smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.name);
@@ -178,9 +188,12 @@ public class SmscManagement implements SmscManagementMBean {
 		String[] hostsArr = this.smscPropertiesManagement.getHosts().split(":");
 		String host = hostsArr[0];
 		int port = Integer.parseInt(hostsArr[1]);
-//        DBOperations_C1.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName());
-        DBOperations_C2.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName(), this.smscPropertiesManagement.getFirstDueDelay(),
-                this.smscPropertiesManagement.getReviseSecondsOnSmscStart(), this.smscPropertiesManagement.getProcessingSmsSetTimeout());
+		// DBOperations_C1.getInstance().start(host, port,
+		// this.smscPropertiesManagement.getKeyspaceName());
+		DBOperations_C2.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName(),
+				this.smscPropertiesManagement.getFirstDueDelay(),
+				this.smscPropertiesManagement.getReviseSecondsOnSmscStart(),
+				this.smscPropertiesManagement.getProcessingSmsSetTimeout());
 
 		// Step 4 Setup ArchiveSms
 		this.archiveSms = ArchiveSms.getInstance(this.name);
@@ -189,16 +202,16 @@ public class SmscManagement implements SmscManagementMBean {
 		ObjectName arhiveObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ARCHIVE_SMS
 				+ ",name=" + this.getName());
 		this.registerMBean(this.archiveSms, ArchiveSmsMBean.class, false, arhiveObjNname);
-		
-		//Step 5 Setup MAP Version Cache MBean
+
+		// Step 5 Setup MAP Version Cache MBean
 		this.mapVersionCache = MapVersionCache.getInstance(this.name);
-		ObjectName mapVersionCacheObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_MAP_VERSION_CACHE
-				+ ",name=" + this.getName());
+		ObjectName mapVersionCacheObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+				+ JMX_LAYER_MAP_VERSION_CACHE + ",name=" + this.getName());
 		this.registerMBean(this.mapVersionCache, MapVersionCacheMBean.class, false, mapVersionCacheObjNname);
-		
+
 		this.smscStatProvider = SmscStatProvider.getInstance();
-		ObjectName smscStatProviderObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_SMSC_STATS
-				+ ",name=" + this.getName());
+		ObjectName smscStatProviderObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+				+ JMX_LAYER_SMSC_STATS + ",name=" + this.getName());
 		this.registerMBean(this.smscStatProvider, SmscStatProviderMBean.class, false, smscStatProviderObjNname);
 
 		logger.warn("Started SmscManagemet " + name);
@@ -213,22 +226,21 @@ public class SmscManagement implements SmscManagementMBean {
 				+ JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT + ",name=" + this.getName());
 		this.unregisterMbean(smscObjNname);
 
-        DBOperations_C1.getInstance().stop();
-        DBOperations_C2.getInstance().stop();
+		DBOperations_C1.getInstance().stop();
+		DBOperations_C2.getInstance().stop();
 
 		this.archiveSms.stop();
 		ObjectName arhiveObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ARCHIVE_SMS
 				+ ",name=" + this.getName());
 		this.unregisterMbean(arhiveObjNname);
-		
-		ObjectName mapVersionCacheObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_MAP_VERSION_CACHE
-				+ ",name=" + this.getName());
+
+		ObjectName mapVersionCacheObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+				+ JMX_LAYER_MAP_VERSION_CACHE + ",name=" + this.getName());
 		this.unregisterMbean(mapVersionCacheObjNname);
-		
-		ObjectName smscStatProviderObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_SMSC_STATS
-				+ ",name=" + this.getName());
+
+		ObjectName smscStatProviderObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+				+ JMX_LAYER_SMSC_STATS + ",name=" + this.getName());
 		this.unregisterMbean(smscStatProviderObjNname);
-		
 
 		logger.info("Stopped SmscManagemet " + name);
 
@@ -245,14 +257,30 @@ public class SmscManagement implements SmscManagementMBean {
 				+ ",name=" + this.getName());
 		this.registerMBean(this.esmeManagement, EsmeManagementMBean.class, false, esmeObjNname);
 
+		// Step 3. Setup SIP
+		this.sipManagement = SipManagement.getInstance(this.name);
+		this.sipManagement.setPersistDir(this.persistDir);
+		this.sipManagement.start();
+
+		ObjectName sipObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_SIP_MANAGEMENT
+				+ ",name=" + this.getName());
+		this.registerMBean(this.sipManagement, SipManagementMBean.class, false, sipObjNname);
+
 		// Step 4 Set Routing Rule class
-		SmsRoutingRule smsRoutingRule = null;
 		if (this.smsRoutingRuleClass != null) {
 			smsRoutingRule = (SmsRoutingRule) Class.forName(this.smsRoutingRuleClass).newInstance();
+
+			if (smsRoutingRule instanceof DatabaseSmsRoutingRule) {
+				ObjectName dbSmsRoutingRuleObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+						+ JMX_LAYER_DATABASE_SMS_ROUTING_RULE + ",name=" + this.getName());
+				this.registerMBean((DatabaseSmsRoutingRule) smsRoutingRule, DatabaseSmsRoutingRuleMBean.class, true,
+						dbSmsRoutingRuleObjName);
+			}
 		} else {
 			smsRoutingRule = new DefaultSmsRoutingRule();
 		}
 		smsRoutingRule.setEsmeManagement(esmeManagement);
+		smsRoutingRule.setSipManagement(sipManagement);
 		smsRoutingRule.setSmscPropertiesManagement(smscPropertiesManagement);
 		SmsRouteManagement.getInstance().setSmsRoutingRule(smsRoutingRule);
 
@@ -301,10 +329,21 @@ public class SmscManagement implements SmscManagementMBean {
 
 	public void stopSmscManagement() throws Exception {
 
+		if (smsRoutingRule instanceof DatabaseSmsRoutingRule) {
+			ObjectName dbSmsRoutingRuleObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+					+ JMX_LAYER_DATABASE_SMS_ROUTING_RULE + ",name=" + this.getName());
+			this.unregisterMbean(dbSmsRoutingRuleObjName);
+		}
+
 		this.esmeManagement.stop();
 		ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_ESME_MANAGEMENT
 				+ ",name=" + this.getName());
 		this.unregisterMbean(esmeObjNname);
+
+		this.sipManagement.stop();
+		ObjectName sipObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_SIP_MANAGEMENT
+				+ ",name=" + this.getName());
+		this.unregisterMbean(sipObjNname);
 
 		this.smppServerManagement.stop();
 		ObjectName smppServerManaObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="

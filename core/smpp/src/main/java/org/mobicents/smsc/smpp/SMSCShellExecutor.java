@@ -31,6 +31,8 @@ import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
+import org.mobicents.smsc.cassandra.DbSmsRoutingRule;
+import org.mobicents.smsc.cassandra.SmsRoutingRuleType;
 import org.mobicents.ss7.management.console.ShellExecutor;
 
 import com.cloudhopper.smpp.SmppBindType;
@@ -80,6 +82,81 @@ public class SMSCShellExecutor implements ShellExecutor {
 	 */
 	public void setSmscManagement(SmscManagement smscManagement) {
 		this.smscManagement = smscManagement;
+	}
+
+	private String showSip() {
+		SipManagement sipManagement = SipManagement.getInstance();
+		List<Sip> sips = sipManagement.getSips();
+		if (sips.size() == 0) {
+			return SMSCOAMMessages.NO_SIP_DEFINED_YET;
+		}
+
+		StringBuffer sb = new StringBuffer();
+		for (Sip sip : sips) {
+			sb.append(SMSCOAMMessages.NEW_LINE);
+			sip.show(sb);
+		}
+		return sb.toString();
+	}
+
+	private String modifySip(String[] args) throws Exception {
+		if (args.length < 6 || args.length > 20) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		// modify existing SIP
+		String name = args[3];
+		if (name == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		SipManagement sipManagement = SipManagement.getInstance();
+		Sip sip = sipManagement.getSipByName(name);
+		if (sip == null) {
+			return String.format(SMSCOAMMessages.SIP_NOT_FOUND, name);
+		}
+
+		int count = 4;
+		String command;
+
+		boolean success = false;
+		while (count < (args.length - 1) && ((command = args[count++]) != null)) {
+			String value = args[count++];
+			if (command.equals("cluster-name")) {
+				sip.setClusterName(value);
+				success = true;
+			} else if (command.equals("host")) {
+				sip.setHost(value);
+				success = true;
+			} else if (command.equals("port")) {
+				sip.setPort(Integer.parseInt(value));
+				success = true;
+			} else if (command.equals("ton")) {
+				Address address = sip.getAddress();
+				address.setTon(Byte.parseByte(value));
+				success = true;
+			} else if (command.equals("npi")) {
+				Address address = sip.getAddress();
+				address.setNpi(Byte.parseByte(value));
+				success = true;
+			} else if (command.equals("range")) {
+				Address address = sip.getAddress();
+				address.setAddress(value);
+				success = true;
+			} else if (command.equals("counters-enabled")) {
+				sip.setCountersEnabled(Boolean.parseBoolean(value));
+				success = true;
+			} else if (command.equals("charging-enabled")) {
+				sip.setChargingEnabled(Boolean.parseBoolean(value));
+				success = true;
+			}
+		}// while
+
+		if (!success) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		return String.format(SMSCOAMMessages.SIP_MODIFY_SUCCESS, name);
 	}
 
 	/**
@@ -171,6 +248,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		boolean countersEnabled = true;
 		int enquireLinkDelay = 30000;
+		boolean chargingEnabled = false;
 
 		while (count < args.length) {
 			// These are all optional parameters for a Tx/Rx/Trx binds
@@ -208,6 +286,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 				countersEnabled = Boolean.parseBoolean(args[count++]);
 			} else if (key.equals("enquire-link-delay")) {
 				enquireLinkDelay = Integer.parseInt(args[count++]);
+			} else if (key.equals("charging-enabled")) {
+				chargingEnabled = true;
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -216,9 +296,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		Address address = new Address(esmeTonType, esmeNpiType, esmeAddrRange);
 		Esme esme = this.smscManagement.getEsmeManagement().createEsme(name, systemId, password, host, intPort,
-				smppBindType, systemType, smppVersionType, address, smppSessionType, windowSize, connectTimeout,
-				requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled,
-				enquireLinkDelay);
+				chargingEnabled, smppBindType, systemType, smppVersionType, address, smppSessionType, windowSize,
+				connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName,
+				countersEnabled, enquireLinkDelay);
 		return String.format(SMSCOAMMessages.CREATE_ESME_SUCCESSFULL, esme.getSystemId());
 	}
 
@@ -286,6 +366,20 @@ public class SMSCShellExecutor implements ShellExecutor {
 					return this.stopEsme(args);
 				}
 				return SMSCOAMMessages.INVALID_COMMAND;
+			} else if (args[1].equals("sip")) {
+				String rasCmd = args[2];
+				if (rasCmd == null) {
+					return SMSCOAMMessages.INVALID_COMMAND;
+				}
+
+				if (rasCmd.equals("modify")) {
+					return this.modifySip(args);
+				} else if (rasCmd.equals("show")) {
+					return this.showSip();
+				}
+
+				return SMSCOAMMessages.INVALID_COMMAND;
+
 			} else if (args[1].equals("set")) {
 				return this.manageSet(args);
 			} else if (args[1].equals("get")) {
@@ -309,6 +403,11 @@ public class SMSCShellExecutor implements ShellExecutor {
 				String rasCmd = args[2];
 				if (rasCmd == null) {
 					return SMSCOAMMessages.INVALID_COMMAND;
+				}
+
+				SmsRoutingRule smsRoutingRule = this.smscManagement.getSmsRoutingRule();
+				if (!(smsRoutingRule instanceof DatabaseSmsRoutingRule)) {
+					return SMSCOAMMessages.NO_DATABASE_SMS_ROUTING_RULE;
 				}
 
 				if (rasCmd.equals("update")) {
@@ -349,18 +448,18 @@ public class SMSCShellExecutor implements ShellExecutor {
 				}
 
 				return SMSCOAMMessages.INVALID_COMMAND;
-            } else if (args[1].toLowerCase().equals("stat")) {
-                String rasCmd = args[2];
+			} else if (args[1].toLowerCase().equals("stat")) {
+				String rasCmd = args[2];
 
-                if (rasCmd == null) {
-                    return SMSCOAMMessages.INVALID_COMMAND;
-                }
+				if (rasCmd == null) {
+					return SMSCOAMMessages.INVALID_COMMAND;
+				}
 
-                if (rasCmd.equals("get")) {
-                    return this.getStat(args);
-                }
+				if (rasCmd.equals("get")) {
+					return this.getStat(args);
+				}
 
-                return SMSCOAMMessages.INVALID_COMMAND;
+				return SMSCOAMMessages.INVALID_COMMAND;
 			}
 
 			return SMSCOAMMessages.INVALID_COMMAND;
@@ -559,18 +658,19 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (parName.equals("duedelaymultiplicator")) {
 				int val = Integer.parseInt(options[3]);
 				smscPropertiesManagement.setDueDelayMultiplicator(val);
-            } else if (parName.equals("maxmessagelengthreducer")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setMaxMessageLengthReducer(val);
-            } else if (parName.equals("smppencodingforucs2")) {
-                String s1 = options[3].toLowerCase();
-                if (s1.equals("utf8")) {
-                    smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
-                } else if (s1.equals("unicode")) {
-                    smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Unicode);
-                } else {
-                    return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, "SmppEncodingForUCS2 value", "UTF8 or UNICODE are possible");
-                }
+			} else if (parName.equals("maxmessagelengthreducer")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setMaxMessageLengthReducer(val);
+			} else if (parName.equals("smppencodingforucs2")) {
+				String s1 = options[3].toLowerCase();
+				if (s1.equals("utf8")) {
+					smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
+				} else if (s1.equals("unicode")) {
+					smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Unicode);
+				} else {
+					return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, "SmppEncodingForUCS2 value",
+							"UTF8 or UNICODE are possible");
+				}
 			} else if (parName.equals("hosts")) {
 				String val = options[3];
 				smscPropertiesManagement.setHosts(val);
@@ -596,14 +696,31 @@ public class SMSCShellExecutor implements ShellExecutor {
 				smscPropertiesManagement.setEsmeDefaultClusterName(options[3]);
 			} else if (parName.equals("smshomerouting")) {
 				smscPropertiesManagement.setSMSHomeRouting(Boolean.parseBoolean(options[3]));
-            } else if (parName.equals("revisesecondsonsmscstart")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setReviseSecondsOnSmscStart(val);
-            } else if (parName.equals("processingsmssettimeout")) {
-                int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setProcessingSmsSetTimeout(val);
-            } else if (parName.equals("generatereceiptcdr")) {
-                smscPropertiesManagement.setGenerateReceiptCdr(Boolean.parseBoolean(options[3]));
+			} else if (parName.equals("revisesecondsonsmscstart")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setReviseSecondsOnSmscStart(val);
+			} else if (parName.equals("processingsmssettimeout")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setProcessingSmsSetTimeout(val);
+			} else if (parName.equals("generatereceiptcdr")) {
+				smscPropertiesManagement.setGenerateReceiptCdr(Boolean.parseBoolean(options[3]));
+
+			} else if (parName.equals("mocharging")) {
+				smscPropertiesManagement.setMoCharging(Boolean.parseBoolean(options[3]));
+			} else if (parName.equals("txsmppcharging")) {
+				smscPropertiesManagement.setTxSmppCharging(Enum.valueOf(EsmeChargingType.class, options[3]));
+			} else if (parName.equals("diameterdestrealm")) {
+				String val = options[3];
+				smscPropertiesManagement.setDiameterDestRealm(val);
+			} else if (parName.equals("diameterdesthost")) {
+				String val = options[3];
+				smscPropertiesManagement.setDiameterDestHost(val);
+			} else if (parName.equals("diameterdestport")) {
+				int val = Integer.parseInt(options[3]);
+				smscPropertiesManagement.setDiameterDestPort(val);
+			} else if (parName.equals("diameterusername")) {
+				String val = options[3];
+				smscPropertiesManagement.setDiameterUserName(val);
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -764,10 +881,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sb.append(smscPropertiesManagement.getMaxDueDelay());
 			} else if (parName.equals("duedelaymultiplicator")) {
 				sb.append(smscPropertiesManagement.getDueDelayMultiplicator());
-            } else if (parName.equals("maxmessagelengthreducer")) {
-                sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
-            } else if (parName.equals("smppencodingforucs2")) {
-                sb.append(smscPropertiesManagement.getSmppEncodingForUCS2());
+			} else if (parName.equals("maxmessagelengthreducer")) {
+				sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
+			} else if (parName.equals("smppencodingforucs2")) {
+				sb.append(smscPropertiesManagement.getSmppEncodingForUCS2());
 			} else if (parName.equals("hosts")) {
 				sb.append(smscPropertiesManagement.getHosts());
 			} else if (parName.equals("keyspacename")) {
@@ -784,14 +901,27 @@ public class SMSCShellExecutor implements ShellExecutor {
 				// sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
 			} else if (parName.equals("esmedefaultcluster")) {
 				sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
-            } else if (parName.equals("smshomerouting")) {
-                sb.append(smscPropertiesManagement.getSMSHomeRouting());
-            } else if (parName.equals("revisesecondsonsmscstart")) {
-                sb.append(smscPropertiesManagement.getReviseSecondsOnSmscStart());
-            } else if (parName.equals("processingsmssettimeout")) {
-                sb.append(smscPropertiesManagement.getProcessingSmsSetTimeout());
-            } else if (parName.equals("generatereceiptcdr")) {
-                sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
+			} else if (parName.equals("smshomerouting")) {
+				sb.append(smscPropertiesManagement.getSMSHomeRouting());
+			} else if (parName.equals("revisesecondsonsmscstart")) {
+				sb.append(smscPropertiesManagement.getReviseSecondsOnSmscStart());
+			} else if (parName.equals("processingsmssettimeout")) {
+				sb.append(smscPropertiesManagement.getProcessingSmsSetTimeout());
+			} else if (parName.equals("generatereceiptcdr")) {
+				sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
+
+			} else if (parName.equals("mocharging")) {
+				sb.append(smscPropertiesManagement.isMoCharging());
+			} else if (parName.equals("txsmppcharging")) {
+				sb.append(smscPropertiesManagement.isTxSmppCharging());
+			} else if (parName.equals("diameterdestrealm")) {
+				sb.append(smscPropertiesManagement.getDiameterDestRealm());
+			} else if (parName.equals("diameterdesthost")) {
+				sb.append(smscPropertiesManagement.getDiameterDestHost());
+			} else if (parName.equals("diameterdestport")) {
+				sb.append(smscPropertiesManagement.getDiameterDestPort());
+			} else if (parName.equals("diameterusername")) {
+				sb.append(smscPropertiesManagement.getDiameterUserName());
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -860,9 +990,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
 			sb.append("\n");
 
-            sb.append("smppEncodingForUCS2 = ");
-            sb.append(smscPropertiesManagement.getSmppEncodingForUCS2());
-            sb.append("\n");
+			sb.append("smppEncodingForUCS2 = ");
+			sb.append(smscPropertiesManagement.getSmppEncodingForUCS2());
+			sb.append("\n");
 
 			sb.append("hosts = ");
 			sb.append(smscPropertiesManagement.getHosts());
@@ -895,22 +1025,46 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append("esmedefaultcluster = ");
 			sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
 			sb.append("\n");
-            
-            sb.append("smshomerouting = ");
-            sb.append(smscPropertiesManagement.getSMSHomeRouting());
-            sb.append("\n");
 
-            sb.append("revisesecondsonsmscstart = ");
-            sb.append(smscPropertiesManagement.getReviseSecondsOnSmscStart());
-            sb.append("\n");
+			sb.append("smshomerouting = ");
+			sb.append(smscPropertiesManagement.getSMSHomeRouting());
+			sb.append("\n");
 
-            sb.append("processingsmssettimeout = ");
-            sb.append(smscPropertiesManagement.getProcessingSmsSetTimeout());
-            sb.append("\n");
+			sb.append("revisesecondsonsmscstart = ");
+			sb.append(smscPropertiesManagement.getReviseSecondsOnSmscStart());
+			sb.append("\n");
 
-            sb.append("generatereceiptcdr = ");
-            sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
-            sb.append("\n");
+			sb.append("processingsmssettimeout = ");
+			sb.append(smscPropertiesManagement.getProcessingSmsSetTimeout());
+			sb.append("\n");
+
+			sb.append("generatereceiptcdr = ");
+			sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
+			sb.append("\n");
+
+			sb.append("mocharging = ");
+			sb.append(smscPropertiesManagement.isMoCharging());
+			sb.append("\n");
+
+			sb.append("txsmppcharging = ");
+			sb.append(smscPropertiesManagement.isTxSmppCharging());
+			sb.append("\n");
+
+			sb.append("diameterdestrealm = ");
+			sb.append(smscPropertiesManagement.getDiameterDestRealm());
+			sb.append("\n");
+
+			sb.append("diameterdesthost = ");
+			sb.append(smscPropertiesManagement.getDiameterDestHost());
+			sb.append("\n");
+
+			sb.append("diameterdestport = ");
+			sb.append(smscPropertiesManagement.getDiameterDestPort());
+			sb.append("\n");
+
+			sb.append("diameterusername = ");
+			sb.append(smscPropertiesManagement.getDiameterUserName());
+			sb.append("\n");
 
 			// private int defaultValidityPeriodHours = 3 * 24;
 			// private int maxValidityPeriodHours = 10 * 24;
@@ -981,13 +1135,15 @@ public class SMSCShellExecutor implements ShellExecutor {
 	}
 
 	/**
-	 * smsc databaseRule update <address> <systemId>
+	 * smsc databaseRule update <address> <systemId> <SMPP|SIP>
 	 * 
 	 * @param args
 	 * @return
 	 */
 	private String databaseRuleUpdate(String[] args) throws Exception {
-		if (args.length < 5 || args.length > 5) {
+		DatabaseSmsRoutingRule smsRoutingRule = (DatabaseSmsRoutingRule) this.smscManagement.getSmsRoutingRule();
+
+		if (args.length < 5 || args.length > 6) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -1001,18 +1157,28 @@ public class SMSCShellExecutor implements ShellExecutor {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		this.smscManagement.getEsmeManagement().updateDatabaseRule(address, systemId);
+		SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.SMPP;
+		if (args.length == 6) {
+			smsRoutingRuleType = SmsRoutingRuleType.valueOf(args[5]);
+		}
+
+		if (smsRoutingRuleType == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+		smsRoutingRule.updateDbSmsRoutingRule(smsRoutingRuleType, address, systemId);
 		return String.format(SMSCOAMMessages.UPDATE_DATABASE_RULE_SUCCESSFULL, address);
 	}
 
 	/**
-	 * smsc databaseRule delete <address>
+	 * smsc databaseRule delete <address> <SMPP|SIP>
 	 * 
 	 * @param args
 	 * @return
 	 */
 	private String databaseRuleDelete(String[] args) throws Exception {
-		if (args.length < 4 || args.length > 4) {
+		DatabaseSmsRoutingRule smsRoutingRule = (DatabaseSmsRoutingRule) this.smscManagement.getSmsRoutingRule();
+
+		if (args.length < 4 || args.length > 5) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -1021,18 +1187,29 @@ public class SMSCShellExecutor implements ShellExecutor {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		this.smscManagement.getEsmeManagement().deleteDatabaseRule(address);
+		SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.SMPP;
+		if (args.length == 5) {
+			smsRoutingRuleType = SmsRoutingRuleType.valueOf(args[4]);
+		}
+
+		if (smsRoutingRuleType == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		smsRoutingRule.deleteDbSmsRoutingRule(smsRoutingRuleType, address);
 		return String.format(SMSCOAMMessages.DELETE_DATABASE_RULE_SUCCESSFULL, address);
 	}
 
 	/**
-	 * smsc databaseRule get <address>
+	 * smsc databaseRule get <address> <SMPP|SIP>
 	 * 
 	 * @param args
 	 * @return
 	 */
 	private String databaseRuleGet(String[] args) throws Exception {
-		if (args.length < 4 || args.length > 4) {
+		DatabaseSmsRoutingRule smsRoutingRule = (DatabaseSmsRoutingRule) this.smscManagement.getSmsRoutingRule();
+
+		if (args.length < 4 || args.length > 5) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -1041,33 +1218,63 @@ public class SMSCShellExecutor implements ShellExecutor {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		String res = this.smscManagement.getEsmeManagement().getDatabaseRule(address);
-		return res;
+		SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.SMPP;
+		if (args.length == 5) {
+			smsRoutingRuleType = SmsRoutingRuleType.valueOf(args[4]);
+		}
+
+		if (smsRoutingRuleType == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		DbSmsRoutingRule res = smsRoutingRule.getSmsRoutingRule(smsRoutingRuleType, address);
+		if (res == null) {
+			return String.format(SMSCOAMMessages.NO_ROUTING_RULE_DEFINED_YET, address, smsRoutingRuleType.name());
+		}
+		return res.toString();
 	}
 
 	/**
-	 * smsc databaseRule getRange <address> or smsc databaseRule getRange
+	 * smsc databaseRule getRange <SMPP|SIP> <address> or smsc databaseRule
+	 * getRange <SMPP|SIP>
 	 * 
 	 * @param args
 	 * @return
 	 */
 	private String databaseRuleGetRange(String[] args) throws Exception {
-		if (args.length < 3 || args.length > 4) {
+		DatabaseSmsRoutingRule smsRoutingRule = (DatabaseSmsRoutingRule) this.smscManagement.getSmsRoutingRule();
+
+		if (args.length < 4 || args.length > 5) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		String res;
-		if (args.length == 4) {
-			String address = args[3];
+		SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.valueOf(args[3]);
+
+		if (smsRoutingRuleType == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		String address = null;
+		if (args.length == 5) {
+			address = args[4];
 			if (address == null) {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
-			res = this.smscManagement.getEsmeManagement().getDatabaseRulesRange(address);
-		} else {
-			res = this.smscManagement.getEsmeManagement().getDatabaseRulesRange();
 		}
 
-		return res;
+		List<DbSmsRoutingRule> res = smsRoutingRule.getSmsRoutingRulesRange(smsRoutingRuleType, address);
+
+		StringBuilder sb = new StringBuilder();
+		int i1 = 0;
+		for (DbSmsRoutingRule rr : res) {
+			if (i1 == 0)
+				i1 = 1;
+			else
+				sb.append("\n");
+			sb.append(rr.toString());
+		}
+		return sb.toString();
+
 	}
 
 	/**
@@ -1099,30 +1306,30 @@ public class SMSCShellExecutor implements ShellExecutor {
 		return SMSCOAMMessages.ACCEPTED_ARCHIVE_GENERATE_CDR_SUCCESSFULL;
 	}
 
-    public String getStat(String[] args) {
-        StringBuilder sb = new StringBuilder();
+	public String getStat(String[] args) {
+		StringBuilder sb = new StringBuilder();
 
-        SmscStatProvider smscStatProvider = SmscStatProvider.getInstance();
-        sb.append("Stat: ");
-        sb.append("Time: ");
-        sb.append(new Date());
-        sb.append(", MessageInProcess: ");
-        sb.append(smscStatProvider.getMessageInProcess());
-        sb.append(", MessageId: ");
-        sb.append(smscStatProvider.getCurrentMessageId());
-        sb.append(", MessageScheduledTotal: ");
-        sb.append(smscStatProvider.getMessageScheduledTotal());
-        sb.append(", DueSlotProcessingLag: ");
-        sb.append(smscStatProvider.getDueSlotProcessingLag());
-        sb.append(", Param1: ");
-        sb.append(smscStatProvider.getParam1());
-        sb.append(", Param2: ");
-        sb.append(smscStatProvider.getParam2());
-        sb.append(", SmscStartTime: ");
-        sb.append(smscStatProvider.getSmscStartTime());
+		SmscStatProvider smscStatProvider = SmscStatProvider.getInstance();
+		sb.append("Stat: ");
+		sb.append("Time: ");
+		sb.append(new Date());
+		sb.append(", MessageInProcess: ");
+		sb.append(smscStatProvider.getMessageInProcess());
+		sb.append(", MessageId: ");
+		sb.append(smscStatProvider.getCurrentMessageId());
+		sb.append(", MessageScheduledTotal: ");
+		sb.append(smscStatProvider.getMessageScheduledTotal());
+		sb.append(", DueSlotProcessingLag: ");
+		sb.append(smscStatProvider.getDueSlotProcessingLag());
+		sb.append(", Param1: ");
+		sb.append(smscStatProvider.getParam1());
+		sb.append(", Param2: ");
+		sb.append(smscStatProvider.getParam2());
+		sb.append(", SmscStartTime: ");
+		sb.append(smscStatProvider.getSmscStartTime());
 
-        return sb.toString();
-    }
+		return sb.toString();
+	}
 
 	public String execute(String[] args) {
 		if (args[0].equals("smsc")) {

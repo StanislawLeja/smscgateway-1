@@ -173,8 +173,8 @@ public abstract class AlertSbb implements Sbb {
 	}
 
 	public void onAlertServiceCentreRequest(AlertServiceCentreRequest evt, ActivityContextInterface aci) {
-		if (this.logger.isInfoEnabled()) {
-			this.logger.info("\nReceived onAlertServiceCentreRequest= " + evt);
+		if (this.logger.isFineEnabled()) {
+			this.logger.fine("\nReceived onAlertServiceCentreRequest= " + evt);
 		}
 
 		try {
@@ -183,8 +183,8 @@ public abstract class AlertSbb implements Sbb {
 			if (mapApplicationContext.getApplicationContextVersion() == MAPApplicationContextVersion.version2) {
 				// Send back response only for V2
 				mapDialogSms.addAlertServiceCentreResponse(evt.getInvokeId());
-				if (this.logger.isInfoEnabled()) {
-					this.logger.info("\nSending AlertServiceCentreResponse");
+				if (this.logger.isFineEnabled()) {
+					this.logger.fine("\nSending AlertServiceCentreResponse");
 				}
 
 				mapDialogSms.close(false);

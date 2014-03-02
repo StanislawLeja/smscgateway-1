@@ -36,14 +36,18 @@ import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
+import org.mobicents.protocols.ss7.map.api.smstpdu.ConcatenatedShortMessagesIdentifier;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
+import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.SmppConstants;
+import com.cloudhopper.smpp.tlv.Tlv;
+import com.cloudhopper.smpp.tlv.TlvConvertException;
 
 /**
  * 
@@ -472,5 +476,45 @@ public class MessageUtil {
         }
         return first20CharOfSms;
     }
+
+    public static boolean isSmsNotLastSegment(Sms sms) {
+        boolean isPartial = false;
+        Tlv sarMsgRefNum = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
+        Tlv sarTotalSegments = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
+        Tlv sarSegmentSeqnum = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
+        if ((sms.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0) {
+            // message already contains UDH - checking for segment
+            // number
+            byte[] shortMessage = sms.getShortMessage();
+            if (shortMessage.length > 2) {
+                // UDH exists
+                int udhLen = (shortMessage[0] & 0xFF) + 1;
+                if (udhLen <= shortMessage.length) {
+                    byte[] udhData = new byte[udhLen];
+                    System.arraycopy(shortMessage, 0, udhData, 0, udhLen);
+                    UserDataHeaderImpl userDataHeader = new UserDataHeaderImpl(udhData);
+                    ConcatenatedShortMessagesIdentifier csm = userDataHeader.getConcatenatedShortMessagesIdentifier();
+                    if (csm != null) {
+                        int mSCount = csm.getMesageSegmentCount();
+                        int mSNumber = csm.getMesageSegmentNumber();
+                        if (mSNumber < mSCount)
+                            isPartial = true;
+                    }
+                }
+            }
+        } else if (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null) {
+            // we have tlv's that define message
+            // count/number/reference
+            try {
+                int mSCount = sarTotalSegments.getValueAsUnsignedByte();
+                int mSNumber = sarSegmentSeqnum.getValueAsUnsignedByte();
+                if (mSNumber < mSCount)
+                    isPartial = true;
+            } catch (TlvConvertException e) {
+            }
+        }
+        return isPartial;
+    }
+
 }
 

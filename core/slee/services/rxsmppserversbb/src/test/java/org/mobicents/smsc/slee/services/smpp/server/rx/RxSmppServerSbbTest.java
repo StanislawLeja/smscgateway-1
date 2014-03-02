@@ -44,7 +44,7 @@ public class RxSmppServerSbbTest {
     public void testSubmitSm_createSmsEvent() throws Exception {
         RxSmppServerSbbProxy proxy = new RxSmppServerSbbProxy();
 
-        String s1 = "ПриветHel";
+        String s1 = "пїЅпїЅпїЅпїЅпїЅпїЅHel";
 
         Charset utf8Charset = Charset.forName("UTF-8");
         ByteBuffer bf = utf8Charset.encode(s1);
@@ -93,13 +93,13 @@ public class RxSmppServerSbbTest {
         }
 
         @Override
-        public void setSmsDeliveryData(SmsDeliveryData smsDeliveryData) {
+        public void setTargetId(String smsDeliveryData) {
             // TODO Auto-generated method stub
             
         }
 
         @Override
-        public SmsDeliveryData getSmsDeliveryData() {
+        public String getTargetId() {
             // TODO Auto-generated method stub
             return null;
         }

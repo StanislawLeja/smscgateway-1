@@ -9,16 +9,23 @@
 
 	<event-definition>
 		<description>SMS event fired to Mt Service to send SMS to Mobile User</description>
-		<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.SUBMIT_SM</event-type-name>
+		<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.SS7_SM</event-type-name>
 		<event-type-vendor>org.mobicents</event-type-vendor>
 		<event-type-version>1.0</event-type-version>
 		<event-class-name>org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent</event-class-name>
 	</event-definition>
 	<event-definition>
 		<description>SMS event fired to Rx SMPP module to be delivered to ESME</description>
-		<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.DELIVER_SM</event-type-name>
+		<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.SMPP_SM</event-type-name>
 		<event-type-vendor>org.mobicents</event-type-vendor>
 		<event-type-version>1.0</event-type-version>
 		<event-class-name>org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent</event-class-name>
 	</event-definition>
+	<event-definition>
+		<description>SMS event fired to Rx SIP module to be delivered to SIP CLient</description>
+		<event-type-name>org.mobicents.smsc.slee.services.smpp.server.events.SIP_SM</event-type-name>
+		<event-type-vendor>org.mobicents</event-type-vendor>
+		<event-type-version>1.0</event-type-version>
+		<event-class-name>org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent</event-class-name>
+	</event-definition>	
 </event-jar>
