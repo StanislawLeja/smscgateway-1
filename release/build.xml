@@ -16,8 +16,14 @@
     <property name="release.map.dir" value="${base.dir}/checkout/map-release" />
 	
 	<!-- version properties-->
-	<property name="telscale.smsc.git.tag" value="ts115ga"/>
-	<property name="telscale.smsc.release.version" value="6.1.5.GA"/>
+		<!-- //** change this properties from CLI to build specific versions-->
+		<!-- Eg: 
+			ant -Dtelscale.smsc.git.tag=ts115ga -Dtelscale.smsc.release.version=6.1.5.GA-TelScale
+		-->
+		<property name="telscale.smsc.git.tag" value="master"/>
+		<property name="telscale.smsc.release.version" value="6.1.6-TelScale-SNAPSHOT"/>
+		<!-- **//-->
+	
 	<property name="telscale-slee.version" value="6.1.2.GA" />
 	<property name="telscale-jss7.version" value="6.1.5.GA" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
