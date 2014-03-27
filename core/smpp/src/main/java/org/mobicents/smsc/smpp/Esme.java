@@ -185,6 +185,8 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		this.requestExpiryTimeout = requestExpiryTimeout;
 		this.windowMonitorInterval = windowMonitorInterval;
 		this.windowWaitTimeout = windowWaitTimeout;
+		
+		this.enquireLinkDelay = enquireLinkDelay;
 
 	}
 
