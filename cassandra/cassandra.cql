@@ -1,3 +1,8 @@
+CREATE KEYSPACE "TelscaleSMSC"
+         WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1};
+         
+USE "TelscaleSMSC";         
+
 CREATE TABLE "CURRENT_SLOT_TABLE" (
 	"ID" int,
 	"NEXT_SLOT" bigint,
@@ -120,7 +125,12 @@ CREATE TABLE "MESSAGES_YYYY_MM_DD" (
 );
 
 
-CREATE TABLE "SMS_ROUTING_RULE" (
+CREATE TABLE "SMPP_SMS_ROUTING_RULE" (
+    "ADDRESS" text PRIMARY KEY,
+    "CLUSTER_NAME" text, 
+);
+
+CREATE TABLE "SIP_SMS_ROUTING_RULE" (
     "ADDRESS" text PRIMARY KEY,
     "CLUSTER_NAME" text, 
 );
