@@ -432,7 +432,7 @@
 									
 									spanElementTxt.innerHTML= inputTextEle.value;
 								},
-								error: function(response) {
+								error: function(value) {
 									errorUID = ("st" + new Date().getTime()).hashCode();
 									createStackTrace(errorUID, value.stacktrace);
 									logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");

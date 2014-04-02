@@ -132,16 +132,13 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sip.setPort(Integer.parseInt(value));
 				success = true;
 			} else if (command.equals("ton")) {
-				Address address = sip.getAddress();
-				address.setTon(Byte.parseByte(value));
+				sip.setAddressTon(Byte.parseByte(value));
 				success = true;
 			} else if (command.equals("npi")) {
-				Address address = sip.getAddress();
-				address.setNpi(Byte.parseByte(value));
+				sip.setAddressNpi(Byte.parseByte(value));
 				success = true;
 			} else if (command.equals("range")) {
-				Address address = sip.getAddress();
-				address.setAddress(value);
+				sip.setAddressRange(value);
 				success = true;
 			} else if (command.equals("counters-enabled")) {
 				sip.setCountersEnabled(Boolean.parseBoolean(value));

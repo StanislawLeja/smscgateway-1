@@ -142,7 +142,7 @@ public class SipManagement implements SipManagementMBean {
 	}
 
 	public synchronized Sip createSip(String name, String clusterName, String host, int port, boolean chargingEnabled,
-			Address address, boolean countersEnabled) throws Exception {
+			byte addressTon, byte addressNpi, String addressRange, boolean countersEnabled) throws Exception {
 
 		for (FastList.Node<Sip> n = sips.head(), end = sips.tail(); (n = n.getNext()) != end;) {
 			Sip esme = n.getValue();
@@ -157,7 +157,8 @@ public class SipManagement implements SipManagementMBean {
 			clusterName = name;
 		}
 
-		Sip esme = new Sip(name, clusterName, host, port, chargingEnabled, address, countersEnabled);
+		Sip esme = new Sip(name, clusterName, host, port, chargingEnabled, addressTon, addressNpi, addressRange,
+				countersEnabled);
 
 		sips.add(esme);
 
@@ -221,9 +222,10 @@ public class SipManagement implements SipManagementMBean {
 			// TODO : We hard coded creation of SIP here as there will always be
 			// only one SIP. However in future when we allow adding more SIP
 			// stack, this can be changed
-			Address address = new Address((byte) smscPropertiesManagement.getDefaultTon(),
-					(byte) smscPropertiesManagement.getDefaultNpi(), null);
-			this.createSip(SIP_NAME, SIP_NAME, "127.0.0.1", 5065, false, address, false);
+
+			this.createSip(SIP_NAME, SIP_NAME, "127.0.0.1", 5065, false,
+					(byte) smscPropertiesManagement.getDefaultTon(), (byte) smscPropertiesManagement.getDefaultNpi(),
+					null, false);
 		}
 
 	}
@@ -255,8 +257,7 @@ public class SipManagement implements SipManagementMBean {
 			// Populate cluster
 			for (FastList.Node<Sip> n = this.sips.head(), end = this.sips.tail(); (n = n.getNext()) != end;) {
 				Sip sip = n.getValue();
-				sip.init();
-				String esmeClusterName = sip.getClusterName();
+				String sipClusterName = sip.getClusterName();
 			}
 
 			reader.close();

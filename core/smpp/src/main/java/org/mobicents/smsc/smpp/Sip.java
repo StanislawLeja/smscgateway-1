@@ -35,7 +35,11 @@ public class Sip implements SipMBean {
 	private String clusterName;
 	private String host;
 	private int port;
-	private transient Address address = null;
+
+	private byte addressTon = -1;
+	private byte addressNpi = -1;
+	private String addressRange;
+
 	private boolean countersEnabled = true;
 	private boolean chargingEnabled = false;
 	private boolean isStarted = true;
@@ -51,24 +55,24 @@ public class Sip implements SipMBean {
 	/**
 	 * 
 	 */
-	public Sip(String name, String clusterName, String host, int port, boolean chargingEnabled, Address address,
-			boolean countersEnabled) {
+	public Sip(String name, String clusterName, String host, int port, boolean chargingEnabled, byte addressTon,
+			byte addressNpi, String addressRange, boolean countersEnabled) {
 		this.name = name;
 		this.clusterName = clusterName;
 
 		this.host = host;
 		this.port = port;
 
-		this.init();
+		this.resetSipAddress();
 
 		this.chargingEnabled = chargingEnabled;
 		this.countersEnabled = countersEnabled;
 
-		this.address = address;
+		this.addressTon = addressTon;
+		this.addressNpi = addressNpi;
+		this.addressRange = addressRange;
 
-		if (this.address != null && this.address.getAddress() != null) {
-			this.pattern = Pattern.compile(this.address.getAddress());
-		}
+		resetPattern();
 	}
 
 	/*
@@ -121,7 +125,7 @@ public class Sip implements SipMBean {
 	@Override
 	public void setHost(String host) {
 		this.host = host;
-		this.init();
+		this.resetSipAddress();
 	}
 
 	/**
@@ -139,22 +143,38 @@ public class Sip implements SipMBean {
 	@Override
 	public void setPort(int port) {
 		this.port = port;
-		this.init();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.mobicents.smsc.smpp.SipMBean#getAddress()
-	 */
-	@Override
-	public Address getAddress() {
-		return this.address;
+		this.resetSipAddress();
 	}
 
 	@Override
-	public void setAddress(Address address) {
-		this.address = address;
+	public byte getAddressNpi() {
+		return this.addressNpi;
+	}
+
+	@Override
+	public byte getAddressTon() {
+		return this.addressTon;
+	}
+
+	@Override
+	public String getAddressRange() {
+		return this.addressRange;
+	}
+
+	@Override
+	public void setAddressNpi(byte npi) {
+		this.addressNpi = npi;
+	}
+
+	@Override
+	public void setAddressTon(byte ton) {
+		this.addressTon = ton;
+	}
+
+	@Override
+	public void setAddressRange(String range) {
+		this.addressRange = range;
+		this.resetPattern();
 	}
 
 	@Override
@@ -192,9 +212,9 @@ public class Sip implements SipMBean {
 		sb.append(SMSCOAMMessages.SHOW_SIP_NAME).append(this.name).append(SMSCOAMMessages.SHOW_CLUSTER_NAME)
 				.append(this.clusterName).append(SMSCOAMMessages.SHOW_ESME_HOST).append(this.host)
 				.append(SMSCOAMMessages.SHOW_ESME_PORT).append(this.port).append(SMSCOAMMessages.SHOW_STARTED)
-				.append(this.isStarted).append(SMSCOAMMessages.SHOW_ADDRESS_TON).append(this.address.getTon())
-				.append(SMSCOAMMessages.SHOW_ADDRESS_NPI).append(this.address.getNpi())
-				.append(SMSCOAMMessages.SHOW_ADDRESS_RANGE).append(this.address.getAddress())
+				.append(this.isStarted).append(SMSCOAMMessages.SHOW_ADDRESS_TON).append(this.addressTon)
+				.append(SMSCOAMMessages.SHOW_ADDRESS_NPI).append(this.addressNpi)
+				.append(SMSCOAMMessages.SHOW_ADDRESS_RANGE).append(this.addressRange)
 				.append(SMSCOAMMessages.SHOW_COUNTERS_ENABLED).append(this.countersEnabled)
 				.append(SMSCOAMMessages.CHARGING_ENABLED).append(this.chargingEnabled);
 
@@ -214,17 +234,15 @@ public class Sip implements SipMBean {
 			sip.host = xml.getAttribute(REMOTE_HOST_IP, "");
 			sip.port = xml.getAttribute(REMOTE_HOST_PORT, -1);
 
+			sip.resetSipAddress();
+
 			sip.isStarted = xml.getAttribute(STARTED, false);
 
-			byte ton = xml.getAttribute(SIP_TON, (byte) 0);
-			byte npi = xml.getAttribute(SIP_NPI, (byte) 0);
-			String addressRange = xml.getAttribute(SIP_ADDRESS_RANGE, null);
+			sip.addressTon = xml.getAttribute(SIP_TON, (byte) -1);
+			sip.addressNpi = xml.getAttribute(SIP_NPI, (byte) -1);
+			sip.addressRange = xml.getAttribute(SIP_ADDRESS_RANGE, null);
 
-			sip.address = new Address(ton, npi, addressRange);
-
-			if (addressRange != null) {
-				sip.pattern = Pattern.compile(addressRange);
-			}
+			sip.resetPattern();
 
 			sip.countersEnabled = xml.getAttribute(COUNTERS_ENABLED, true);
 			sip.chargingEnabled = xml.getAttribute(CHARGING_ENABLED, false);
@@ -240,9 +258,9 @@ public class Sip implements SipMBean {
 
 			xml.setAttribute(STARTED, sip.isStarted);
 
-			xml.setAttribute(SIP_TON, sip.address.getTon());
-			xml.setAttribute(SIP_NPI, sip.address.getNpi());
-			xml.setAttribute(SIP_ADDRESS_RANGE, sip.address.getAddress());
+			xml.setAttribute(SIP_TON, sip.addressTon);
+			xml.setAttribute(SIP_NPI, sip.addressNpi);
+			xml.setAttribute(SIP_ADDRESS_RANGE, sip.addressRange);
 
 			xml.setAttribute(COUNTERS_ENABLED, sip.countersEnabled);
 
@@ -250,8 +268,14 @@ public class Sip implements SipMBean {
 		}
 	};
 
-	protected void init() {
+	private void resetSipAddress() {
 		this.sipAddress = this.host + ":" + this.port;
+	}
+
+	private void resetPattern() {
+		if (this.addressRange != null) {
+			this.pattern = Pattern.compile(this.addressRange);
+		}
 	}
 
 }
