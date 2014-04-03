@@ -26,6 +26,7 @@
 <generateReceiptCdr value="false"/>
 <moCharging value="false"/>
 <txSmppCharging value="None"/>
+<txSipCharging value="None"/>
 <diameterDestRealm value="mobicents.org"/>
 <diameterDestHost value="127.0.0.1"/>
 <diameterDestPort value="3868"/>

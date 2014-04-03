@@ -78,7 +78,7 @@ import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
-import org.mobicents.smsc.slee.services.charging.ChargingType;
+import org.mobicents.smsc.slee.services.charging.ChargingMedium;
 import org.mobicents.smsc.smpp.SmscStatProvider;
 
 import com.cloudhopper.commons.charset.CharsetUtil;
@@ -948,7 +948,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
         if (smscPropertiesManagement.isMoCharging()) {
             ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
-            chargingSbb.setupChargingRequestInterface(ChargingType.MoOrig, sms);
+            chargingSbb.setupChargingRequestInterface(ChargingMedium.MoOrig, sms);
         } else {
             try {
                 sms.setStored(true);

@@ -36,7 +36,7 @@ public class ChargingData implements Serializable {
     private static final long serialVersionUID = -3420640918920786814L;
 
     private Sms sms;
-    private ChargingType chargingType;
+    private ChargingMedium chargingType;
 
     public Sms getSms() {
         return sms;
@@ -46,11 +46,11 @@ public class ChargingData implements Serializable {
         this.sms = sms;
     }
 
-    public ChargingType getChargingType() {
+    public ChargingMedium getChargingType() {
         return chargingType;
     }
 
-    public void setChargingType(ChargingType chargingType) {
+    public void setChargingType(ChargingMedium chargingType) {
         this.chargingType = chargingType;
     }
 }

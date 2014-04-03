@@ -19,6 +19,7 @@
   						<li><a href="#ss7settings" data-toggle="tab">SS7 settings</a></li>
   						<li><a href="#dbsettings" data-toggle="tab">Cassandra</a></li>
   						<li><a href="#scheduler" data-toggle="tab">Scheduler</a></li>
+  						<li><a href="#diameter" data-toggle="tab">Diameter</a></li>
 					</ul>	
 						
   				 	<div class="tab-content">
@@ -230,7 +231,67 @@
 									<input id="processingSmsSetTimeout" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span> 
 							</div>							
-                        </div>                        
+                        </div>
+                        
+                        <div class="tab-pane" id="diameter">
+							<h5 style="border-bottom: 1px solid #DDD;">Diameter Servre Configuration</h5>
+							<div id="div-chargingdiamdestrealm" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="destination realm for Diameter charging">
+									<span class="add-on">Destination Realm</span>
+									<input id="chargingdiamdestrealm" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span> 
+							</div>
+							<div id="div-chargingdiamdesthost" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="destination host for Diameter charging">
+									<span class="add-on">Destination Host</span>
+									<input id="chargingdiamdesthost" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span> 
+							</div>
+							<div id="div-chargingdiamdestport" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="destination port for Diameter charging">
+									<span class="add-on">Destination Port</span>
+									<input id="chargingdiamdestport" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span> 
+							</div>
+							<div id="div-chargingdiamusername" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="user name for Diameter charging">
+									<span class="add-on">User Name</span>
+									<input id="chargingdiamusername" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span> 
+							</div>
+							&nbsp;
+							<h5 style="border-bottom: 1px solid #DDD;">Charging Configuration</h5>
+							<div id="div-chargingmo" class="control-group">        						                		
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="should mobile originated SMS be charged">
+									<span class="add-on">Mobile Originated SMS Charged </span>
+									<select id="chargingmo" >
+										<option>True</option>
+										<option>False</option>
+									</select>
+								</span>  															
+							</div>	
+							<div id="div-chargingesme" class="control-group">        						                		
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="should ESME originated SMS be charged">
+									<span class="add-on">ESME Originated SMS Charged </span>
+									<select id="chargingesme" >
+										<option>None</option>
+										<option>Selected</option>
+										<option>All</option>
+									</select>
+								</span>  															
+							</div>	
+							<div id="div-chargingesip" class="control-group">        						                		
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="should SIP originated SMS be charged">
+									<span class="add-on">SIP Originated SMS Charged </span>
+									<select id="chargingsip" >
+										<option>None</option>
+										<option>Selected</option>
+										<option>All</option>
+									</select>
+								</span>  															
+							</div>																					
+                        </div>
+                                                                        
 					</div>	
 					</span>					 
 				</p>	
@@ -308,6 +369,39 @@
 										
 										$("#reviseSecondsOnSmscStart").val(response.value.ReviseSecondsOnSmscStart);
 										$("#processingSmsSetTimeout").val(response.value.ProcessingSmsSetTimeout);
+										
+										$("#chargingdiamdestrealm").val(response.value.DiameterDestRealm);
+										$("#chargingdiamdesthost").val(response.value.DiameterDestHost);
+										$("#chargingdiamdestport").val(response.value.DiameterDestPort);
+										$("#chargingdiamusername").val(response.value.DiameterUserName);
+										
+										var chargingmoVar = response.value.MoCharging
+										
+										if(chargingmoVar){
+											chargingmo.options[0].selected = true;
+										} else {
+											chargingmo.options[1].selected = true;
+										}
+										
+										var chargingesmeVar = response.value.TxSmppChargingType
+										
+										if(chargingesmeVar == "None"){
+											chargingesme.options[0].selected = true;
+										} else if(chargingesmeVar == "Selected"){
+											chargingesme.options[1].selected = true;
+										} else {
+											chargingesme.options[2].selected = true;
+										}	
+										
+										var chargingsipVar = response.value.TxSipChargingType
+										
+										if(chargingsipVar == "None"){
+											chargingsip.options[0].selected = true;
+										} else if(chargingsipVar == "Selected"){
+											chargingsip.options[1].selected = true;
+										} else {
+											chargingsip.options[2].selected = true;
+										}										
 										
 									}],
 									error: function(value) {
@@ -521,7 +615,49 @@
 			    			formInvalid = true;
 			    		} else if($("#div-processingSmsSetTimeout").hasClass("error")) {
 			    			$("#div-processingSmsSetTimeout").removeClass("error");		
-			    		}							
+			    		}	
+						
+						var chargingdiamdestrealm = $("#chargingdiamdestrealm").val();
+						if(chargingdiamdestrealm.trim() == "") {
+			    			$("#div-chargingdiamdestrealm").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-chargingdiamdestrealm").hasClass("error")) {
+			    			$("#div-chargingdiamdestrealm").removeClass("error");		
+			    		}
+						
+						var chargingdiamdesthost = $("#chargingdiamdesthost").val();
+						if(chargingdiamdesthost.trim() == "") {
+			    			$("#div-chargingdiamdesthost").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-chargingdiamdesthost").hasClass("error")) {
+			    			$("#div-chargingdiamdesthost").removeClass("error");		
+			    		}
+						
+						var chargingdiamdestport = $("#chargingdiamdestport").val();
+						if(chargingdiamdestport.trim() == "") {
+			    			$("#div-chargingdiamdestport").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-chargingdiamdestport").hasClass("error")) {
+			    			$("#div-chargingdiamdestport").removeClass("error");		
+			    		}
+						
+						var chargingdiamusername = $("#chargingdiamusername").val();
+						if(chargingdiamusername.trim() == "") {
+			    			$("#div-chargingdiamusername").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-chargingdiamusername").hasClass("error")) {
+			    			$("#div-chargingdiamusername").removeClass("error");		
+			    		}	
+						
+						e = document.getElementById("chargingmo");
+						var chargingmo = e.options[e.selectedIndex].text;
+						
+						e = document.getElementById("chargingesme");
+						var chargingesme = e.options[e.selectedIndex].text;
+						
+						e = document.getElementById("chargingsip");
+						var chargingsip = e.options[e.selectedIndex].text;
+						
 						
 						if(formInvalid) {
 							$("#login-settings-error").show();
@@ -562,6 +698,13 @@
 									{ type: "write", mbean: mbeanSearch, attribute: "ProcessingSmsSetTimeout", value: processingSmsSetTimeout },
 									{ type: "write", mbean: mbeanSearch, attribute: "GenerateReceiptCdr", value: generateReceiptCdr },
 									{ type: "write", mbean: mbeanSearch, attribute: "SMSHomeRouting", value: smsHomeRouting },
+									{ type: "write", mbean: mbeanSearch, attribute: "DiameterDestRealm", value: chargingdiamdestrealm },
+									{ type: "write", mbean: mbeanSearch, attribute: "DiameterDestHost", value: chargingdiamdesthost },
+									{ type: "write", mbean: mbeanSearch, attribute: "DiameterDestPort", value: chargingdiamdestport },
+									{ type: "write", mbean: mbeanSearch, attribute: "DiameterUserName", value: chargingdiamusername },
+									{ type: "write", mbean: mbeanSearch, attribute: "MoCharging", value: chargingmo },
+									{ type: "write", mbean: mbeanSearch, attribute: "TxSmppChargingType", value: chargingesme },
+									{ type: "write", mbean: mbeanSearch, attribute: "TxSipChargingType", value: chargingsip },
 								],
 								{
 									success: function(response) {

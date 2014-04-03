@@ -242,7 +242,7 @@ public abstract class ChargingSbb implements Sbb {
 
 	// Setup charging request
 
-	public void setupChargingRequestInterface(ChargingType chargingType, Sms sms) {
+	public void setupChargingRequestInterface(ChargingMedium chargingType, Sms sms) {
 		if (logger.isFineEnabled()) {
 			logger.fine("ChargingSbb: received message for process charging process: chargingType=" + chargingType
 					+ ", message=[" + sms + "]");

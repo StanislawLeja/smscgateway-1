@@ -27,6 +27,6 @@ package org.mobicents.smsc.slee.services.charging;
  * @author sergey vetyutnev
  *
  */
-public enum ChargingType {
-    MoOrig, TxSmppOrig,
+public enum ChargingMedium {
+    MoOrig, TxSmppOrig, TxSipOrig
 }

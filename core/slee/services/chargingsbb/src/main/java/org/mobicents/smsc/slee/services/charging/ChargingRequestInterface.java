@@ -31,6 +31,6 @@ import org.mobicents.smsc.cassandra.Sms;
  */
 public interface ChargingRequestInterface {
 
-    public void setupChargingRequestInterface(ChargingType chargingType, Sms sms);
+    public void setupChargingRequestInterface(ChargingMedium chargingType, Sms sms);
 
 }
