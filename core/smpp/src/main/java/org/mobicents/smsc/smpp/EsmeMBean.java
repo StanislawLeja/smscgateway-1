@@ -36,4 +36,7 @@ public interface EsmeMBean extends DefaultSmppSessionMXBean {
 	
 	public String getHost();
 	public int getPort();
+	
+    public boolean isChargingEnabled();
+    public void setChargingEnabled(boolean chargingEnabled);
 }

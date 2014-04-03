@@ -164,13 +164,13 @@ public class SMSCShellExecutor implements ShellExecutor {
 	 * <clusterName> window-size <windowSize> connect-timeout <connectTimeout>
 	 * request-expiry-timeout <requestExpiryTimeout> window-monitor-interval
 	 * <windowMonitorInterval> window-wait-timeout <windowWaitTimeout>
-	 * counters-enabled <true | false> enquire-link-delay <30000>
+	 * counters-enabled <true | false> enquire-link-delay <30000> charging-enabled <true | false>
 	 * 
 	 * @param args
 	 * @return
 	 */
 	private String createEsme(String[] args) throws Exception {
-		if (args.length < 10 || args.length > 36) {
+		if (args.length < 10 || args.length > 38) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -284,7 +284,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (key.equals("enquire-link-delay")) {
 				enquireLinkDelay = Integer.parseInt(args[count++]);
 			} else if (key.equals("charging-enabled")) {
-				chargingEnabled = true;
+				chargingEnabled = Boolean.parseBoolean(args[count++]);
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}

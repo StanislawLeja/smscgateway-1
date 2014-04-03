@@ -105,6 +105,16 @@
 						</select>
 					</span>
 				</div>
+				
+				<div id="div-chargingEnabledBtnGrp" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if charging is enabled for this ESME. The 'ESME Originated SMS Charged' property should be 'Selected' for this setting to take effect">
+						<span class="add-on">Charging Enabled</span>
+						<select id="chargingEnabled" >
+							<option>False</option>
+							<option>True</option>
+						</select>
+					</span>
+				</div>				
 
 				<div id="div-systemType" class="control-group">
 					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="is used to categorize the type of ESME that is binding to the SMSC">
@@ -272,6 +282,8 @@
 									var name = response.value.Name;
 									var clusterName = response.value.ClusterName;
 									
+									var chargingenabled = response.value.ChargingEnabled;
+									
 									var esmeAddress = response.value.Address;
 									
 									
@@ -341,6 +353,16 @@
 														'<dt>Password</dt> <dd>' + password + ' </dd>' + 
 													'</dl>'+
 									        '    </div>'+
+									        
+							        		'<hr style="margin: 5px 0;"/>' +
+									        '    <div>'+
+									        '      <p class="muted">Charging</p>'+
+													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+														'<dt>ChargingEnabled</dt> <dd>' + chargingenabled + ' </dd>' +
+													'</dl>'+
+									        '    </div>'+				        		
+									        
+									        
 								        		'<hr style="margin: 5px 0;"/>' +
 										        '    <div>'+
 										        '      <p class="muted">ESME Address</p>'+
@@ -650,6 +672,9 @@
 			enqLinkDelay = "30000";
 		}
 		
+		var e6 = document.getElementById("chargingEnabled");
+		var chargingEnabled = e6.options[e5.selectedIndex].text;
+		
 		if(formInvalid) {
 			$("#login-settings-error").show();
 			logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
@@ -658,7 +683,7 @@
 			$("#login-settings-error").hide();
 		}
 		
-		jolokia.execute("com.telscale.smsc:layer=EsmeManagement,name=SmscManagement","createEsme(java.lang.String,java.lang.String,java.lang.String,java.lang.String,int,java.lang.String,java.lang.String,java.lang.String,byte,byte,java.lang.String,java.lang.String,int,long,long,long,long,java.lang.String,boolean,int)", esmeName,systemId,password,ipAddress,ipPort,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay, 
+		jolokia.execute("com.telscale.smsc:layer=EsmeManagement,name=SmscManagement","createEsme(java.lang.String,java.lang.String,java.lang.String,java.lang.String,int,boolean,java.lang.String,java.lang.String,java.lang.String,byte,byte,java.lang.String,java.lang.String,int,long,long,long,long,java.lang.String,boolean,int)", esmeName,systemId,password,ipAddress,ipPort,chargingEnabled,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay, 
 				{
 					success: function(value) {
 						updateEsmes();
