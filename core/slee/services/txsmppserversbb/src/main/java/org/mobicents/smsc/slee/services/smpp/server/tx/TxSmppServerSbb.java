@@ -747,7 +747,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 	private void processSms(Sms sms, PersistenceRAInterface store, Esme esme) throws SmscProcessingException {
 
 		boolean withCharging = false;
-		switch (smscPropertiesManagement.isTxSmppCharging()) {
+		switch (smscPropertiesManagement.getTxSmppChargingType()) {
 		case Selected:
 			withCharging = esme.isChargingEnabled();
 			break;

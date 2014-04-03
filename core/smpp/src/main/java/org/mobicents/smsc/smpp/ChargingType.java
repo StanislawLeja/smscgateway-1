@@ -23,11 +23,12 @@
 package org.mobicents.smsc.smpp;
 
 /**
- * Will ESME be charged (none of ESMEs, only marked ESMEs, all ESMEs)
- *
+ * Will ESME/SIP be charged (none of ESMESIPs, only marked ESME/SIPs, all
+ * ESME/SIPs)
+ * 
  * @author sergey vetyutnev
  * 
  */
-public enum EsmeChargingType {
-    None, Selected, All,
+public enum ChargingType {
+	None, Selected, All,
 }

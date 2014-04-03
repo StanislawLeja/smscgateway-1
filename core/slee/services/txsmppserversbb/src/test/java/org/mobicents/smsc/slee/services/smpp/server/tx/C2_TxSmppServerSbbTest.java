@@ -57,7 +57,7 @@ import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfacePr
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
-import org.mobicents.smsc.smpp.EsmeChargingType;
+import org.mobicents.smsc.smpp.ChargingType;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
 import org.mobicents.smsc.smpp.SmppInterfaceVersionType;
@@ -96,7 +96,7 @@ public class C2_TxSmppServerSbbTest {
     private Date scheduleDeliveryTime;
 
     static {
-        String s1 = "ПриветHel";
+        String s1 = "пїЅпїЅпїЅпїЅпїЅпїЅHel";
 
         Charset utf8Charset = Charset.forName("UTF-8");
         ByteBuffer bf = utf8Charset.encode(s1);
@@ -292,7 +292,7 @@ public class C2_TxSmppServerSbbTest {
         TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
 
         SmscPropertiesManagement spm = SmscPropertiesManagement.getInstance("Test");
-        String sMsgA = "ПриветHel";
+        String sMsgA = "пїЅпїЅпїЅпїЅпїЅпїЅHel";
 
         // only message part
         Charset utf8 = Charset.forName("UTF-8");

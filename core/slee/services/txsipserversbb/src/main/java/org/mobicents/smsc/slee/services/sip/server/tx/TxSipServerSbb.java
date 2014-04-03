@@ -336,15 +336,15 @@ public abstract class TxSipServerSbb implements Sbb {
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
 
 		boolean withCharging = false;
-		// TODO : Take care of charging
-		// switch (smscPropertiesManagement.isTxSmppCharging()) {
-		// case Selected:
-		// withCharging = esme.isChargingEnabled();
-		// break;
-		// case All:
-		// withCharging = true;
-		// break;
-		// }
+		switch (smscPropertiesManagement.getTxSmppChargingType()) {
+		case Selected:
+			// withCharging = esme.isChargingEnabled();
+			// TODO Selected not supported now as there is only 1 SIP Stack
+			break;
+		case All:
+			withCharging = true;
+			break;
+		}
 
 		if (withCharging) {
 			ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
