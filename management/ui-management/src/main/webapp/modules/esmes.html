@@ -99,12 +99,22 @@
 				<div id="div-smppSessionTypeBtnGrp" class="control-group">
 					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SERVER, SMSC acts as server listening for incoming SMPP binds. If CLIENT, SMSC will initiate SMPP bind to remote server">
 						<span class="add-on">Smpp Session Type</span>
-						<select id="smppSessionType" >
+						<select id="smppSessionType" onchange="clientServerFunction()">
 							<option>CLIENT</option>
 							<option>SERVER</option>
 						</select>
 					</span>
 				</div>
+				
+				<div id="div-chargingEnabledBtnGrp" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if charging is enabled for this ESME. The 'ESME Originated SMS Charged' property should be 'Selected' for this setting to take effect">
+						<span class="add-on">Charging Enabled</span>
+						<select id="chargingEnabled" >
+							<option>False</option>
+							<option>True</option>
+						</select>
+					</span>
+				</div>				
 
 				<div id="div-systemType" class="control-group">
 					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="is used to categorize the type of ESME that is binding to the SMSC">
@@ -238,6 +248,34 @@
 </div>
 
 <script type="text/javascript">
+	function clientServerFunction(){
+		
+		var e1 = document.getElementById("smppSessionType");
+		var smppSessionType = e1.options[e1.selectedIndex].text;		
+		
+		alert(smppSessionType);
+		
+		if(smppSessionType == "SERVER"){
+			document.getElementById("windowSize").disabled = true;
+			document.getElementById("connectTimeout").disabled = true;
+			document.getElementById("reqExpTimeout").disabled = true;
+			document.getElementById("windowMonitorInterval").disabled = true;
+			document.getElementById("windowWaitTimeout").disabled = true;
+			document.getElementById("countersEnabled").disabled = true;
+			document.getElementById("enqLinkDelay").disabled = true;
+			
+		} else {
+			document.getElementById("windowSize").disabled = false;
+			document.getElementById("connectTimeout").disabled = false;
+			document.getElementById("reqExpTimeout").disabled = false;
+			document.getElementById("windowMonitorInterval").disabled = false;
+			document.getElementById("windowWaitTimeout").disabled = false;
+			document.getElementById("countersEnabled").disabled = false;
+			document.getElementById("enqLinkDelay").disabled = false;
+		}
+		
+	}
+	
 	function updateEsmes() {
 		mbeanSearch="com.telscale.smsc:layer=Esme,name=*";
 		var mbeanVar;
@@ -271,6 +309,8 @@
 									
 									var name = response.value.Name;
 									var clusterName = response.value.ClusterName;
+									
+									var chargingenabled = response.value.ChargingEnabled;
 									
 									var esmeAddress = response.value.Address;
 									
@@ -341,6 +381,16 @@
 														'<dt>Password</dt> <dd>' + password + ' </dd>' + 
 													'</dl>'+
 									        '    </div>'+
+									        
+							        		'<hr style="margin: 5px 0;"/>' +
+									        '    <div>'+
+									        '      <p class="muted">Charging</p>'+
+													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+														'<dt>ChargingEnabled</dt> <dd>' + chargingenabled + ' </dd>' +
+													'</dl>'+
+									        '    </div>'+				        		
+									        
+									        
 								        		'<hr style="margin: 5px 0;"/>' +
 										        '    <div>'+
 										        '      <p class="muted">ESME Address</p>'+
@@ -650,6 +700,9 @@
 			enqLinkDelay = "30000";
 		}
 		
+		var e6 = document.getElementById("chargingEnabled");
+		var chargingEnabled = e6.options[e5.selectedIndex].text;
+		
 		if(formInvalid) {
 			$("#login-settings-error").show();
 			logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
@@ -658,7 +711,7 @@
 			$("#login-settings-error").hide();
 		}
 		
-		jolokia.execute("com.telscale.smsc:layer=EsmeManagement,name=SmscManagement","createEsme(java.lang.String,java.lang.String,java.lang.String,java.lang.String,int,java.lang.String,java.lang.String,java.lang.String,byte,byte,java.lang.String,java.lang.String,int,long,long,long,long,java.lang.String,boolean,int)", esmeName,systemId,password,ipAddress,ipPort,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay, 
+		jolokia.execute("com.telscale.smsc:layer=EsmeManagement,name=SmscManagement","createEsme(java.lang.String,java.lang.String,java.lang.String,java.lang.String,int,boolean,java.lang.String,java.lang.String,java.lang.String,byte,byte,java.lang.String,java.lang.String,int,long,long,long,long,java.lang.String,boolean,int)", esmeName,systemId,password,ipAddress,ipPort,chargingEnabled,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay, 
 				{
 					success: function(value) {
 						updateEsmes();

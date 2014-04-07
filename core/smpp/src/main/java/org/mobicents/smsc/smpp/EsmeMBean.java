@@ -27,13 +27,50 @@ import com.cloudhopper.smpp.type.Address;
 /**
  * 
  * @author Amit Bhayani
- *
+ * 
  */
 public interface EsmeMBean extends DefaultSmppSessionMXBean {
 	public boolean isStarted();
+
 	public String getClusterName();
+
 	public Address getAddress();
-	
+
 	public String getHost();
+
 	public int getPort();
+
+	public boolean isChargingEnabled();
+
+	public void setChargingEnabled(boolean chargingEnabled);
+
+	/**
+	 * every SMS coming into SMSC should have same source_addr_ton as mentioned
+	 * here. If the value here is -1, means SMSC doesn't care
+	 * 
+	 * @return
+	 */
+	public int getSourceTon();
+
+	public void setSourceTon(int sourceTon);
+
+	/**
+	 * every SMS coming into SMSC should have same source_addr_npi as mentioned
+	 * here. If the value here is -1, means SMSC doesn't care
+	 * 
+	 * @return
+	 */
+	public int getSourceNpi();
+
+	public void setSourceNpi(int sourceNpi);
+
+	/**
+	 * every SMS coming into SMSC should have same source_addr as mentioned
+	 * here. This is regular java expression. Default value is ^[0-9a-zA-Z]*
+	 * 
+	 * @return
+	 */
+	public String getSourceAddressRange();
+
+	public void setSourceAddressRange(String sourceAddressRange);
 }

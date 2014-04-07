@@ -25,7 +25,7 @@ package org.mobicents.smsc.smpp;
  * 
  * @author Amit Bhayani
  * @author sergey vetyutnev
- *
+ * 
  */
 public interface SmscPropertiesManagementMBean {
 
@@ -85,87 +85,88 @@ public interface SmscPropertiesManagementMBean {
 
 	public void setDueDelayMultiplicator(int dueDelayMultiplicator);
 
-    public int getMaxMessageLengthReducer();
+	public int getMaxMessageLengthReducer();
 
-    public void setMaxMessageLengthReducer(int maxMessageLengReducer);
+	public void setMaxMessageLengthReducer(int maxMessageLengReducer);
 
-    public SmppEncodingForUCS2 getSmppEncodingForUCS2();
+	public SmppEncodingForUCS2 getSmppEncodingForUCS2();
 
-    public void setSmppEncodingForUCS2(SmppEncodingForUCS2 smppEncodingForUCS2);
+	public void setSmppEncodingForUCS2(SmppEncodingForUCS2 smppEncodingForUCS2);
 
+	public String getHosts();
 
-    public String getHosts();
+	public void setHosts(String hosts);
 
-    public void setHosts(String hosts);
+	public String getKeyspaceName();
 
-    public String getKeyspaceName();
+	public void setKeyspaceName(String keyspaceName);
 
-    public void setKeyspaceName(String keyspaceName);
+	public String getClusterName();
 
-    public String getClusterName();
+	public void setClusterName(String clusterName);
 
-    public void setClusterName(String clusterName);
+	public long getFetchPeriod();
 
-    public long getFetchPeriod();
+	public void setFetchPeriod(long fetchPeriod);
 
-    public void setFetchPeriod(long fetchPeriod);
+	public int getFetchMaxRows();
 
-    public int getFetchMaxRows();
+	public void setFetchMaxRows(int fetchMaxRows);
 
-    public void setFetchMaxRows(int fetchMaxRows);
+	public int getMaxActivityCount();
 
-    public int getMaxActivityCount();
+	public void setMaxActivityCount(int maxActivityCount);
 
-    public void setMaxActivityCount(int maxActivityCount);
+	// public int getCdrDatabaseExportDuration();
+	//
+	// public void setCdrDatabaseExportDuration(int cdrDatabaseExportDuration);
 
+	public String getEsmeDefaultClusterName();
 
-//    public int getCdrDatabaseExportDuration();
-//
-//    public void setCdrDatabaseExportDuration(int cdrDatabaseExportDuration);
+	public void setEsmeDefaultClusterName(String val);
 
-    public String getEsmeDefaultClusterName();
+	public boolean getSMSHomeRouting();
 
-    public void setEsmeDefaultClusterName(String val);
+	public void setSMSHomeRouting(boolean isSMSHomeRouting);
 
-    public boolean getSMSHomeRouting();
+	public int getReviseSecondsOnSmscStart();
 
-    public void setSMSHomeRouting(boolean isSMSHomeRouting);
+	public void setReviseSecondsOnSmscStart(int reviseSecondsOnSmscStart);
 
-    public int getReviseSecondsOnSmscStart();
+	public int getProcessingSmsSetTimeout();
 
-    public void setReviseSecondsOnSmscStart(int reviseSecondsOnSmscStart);
+	public void setProcessingSmsSetTimeout(int processingSmsSetTimeout);
 
-    public int getProcessingSmsSetTimeout();
+	public boolean getGenerateReceiptCdr();
 
-    public void setProcessingSmsSetTimeout(int processingSmsSetTimeout);
+	public void setGenerateReceiptCdr(boolean generateReceiptCdr);
 
-    public boolean getGenerateReceiptCdr();
+	public boolean isMoCharging();
 
-    public void setGenerateReceiptCdr(boolean generateReceiptCdr);
+	public void setMoCharging(boolean moCharging);
 
+	public ChargingType getTxSmppChargingType();
 
-    public boolean isMoCharging();
+	public void setTxSmppChargingType(ChargingType txSmppCharging);
 
-    public void setMoCharging(boolean moCharging);
+	public ChargingType getTxSipChargingType();
 
-    public EsmeChargingType isTxSmppCharging();
+	public void setTxSipChargingType(ChargingType txSmppCharging);
 
-    public void setTxSmppCharging(EsmeChargingType txSmppCharging);
+	public String getDiameterDestRealm();
 
-    public String getDiameterDestRealm();
+	public void setDiameterDestRealm(String diameterDestRealm);
 
-    public void setDiameterDestRealm(String diameterDestRealm);
+	public String getDiameterDestHost();
 
-    public String getDiameterDestHost();
+	public void setDiameterDestHost(String diameterDestHost);
 
-    public void setDiameterDestHost(String diameterDestHost);
+	public int getDiameterDestPort();
 
-    public int getDiameterDestPort();
+	public void setDiameterDestPort(int diameterDestPort);
 
-    public void setDiameterDestPort(int diameterDestPort);
+	public String getDiameterUserName();
 
-    public String getDiameterUserName();
-
-    public void setDiameterUserName(String diameterUserName);
+	public void setDiameterUserName(String diameterUserName);
 
 }

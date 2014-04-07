@@ -1,6 +1,6 @@
 /*
- * TeleStax, Open Source Cloud Communications  
- * Copyright 2012, Telestax Inc and individual contributors
+ * TeleStax, Open Source Cloud Communications  Copyright 2012. 
+ * and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -20,14 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.smpp;
+package org.mobicents.smsc.slee.services.charging;
 
 /**
- * Will ESME be charged (none of ESMEs, only marked ESMEs, all ESMEs)
- *
- * @author sergey vetyutnev
  * 
+ * @author sergey vetyutnev
+ *
  */
-public enum EsmeChargingType {
-    None, Selected, All,
+public enum ChargingMedium {
+    MoOrig, TxSmppOrig, TxSipOrig
 }

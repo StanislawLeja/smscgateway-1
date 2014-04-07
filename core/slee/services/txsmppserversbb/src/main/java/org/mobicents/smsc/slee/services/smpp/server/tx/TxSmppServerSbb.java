@@ -62,7 +62,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
-import org.mobicents.smsc.slee.services.charging.ChargingType;
+import org.mobicents.smsc.slee.services.charging.ChargingMedium;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
@@ -747,7 +747,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 	private void processSms(Sms sms, PersistenceRAInterface store, Esme esme) throws SmscProcessingException {
 
 		boolean withCharging = false;
-		switch (smscPropertiesManagement.isTxSmppCharging()) {
+		switch (smscPropertiesManagement.getTxSmppChargingType()) {
 		case Selected:
 			withCharging = esme.isChargingEnabled();
 			break;
@@ -758,7 +758,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		if (withCharging) {
 			ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
-			chargingSbb.setupChargingRequestInterface(ChargingType.TxSmppOrig, sms);
+			chargingSbb.setupChargingRequestInterface(ChargingMedium.TxSmppOrig, sms);
 		} else {
 			boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
 

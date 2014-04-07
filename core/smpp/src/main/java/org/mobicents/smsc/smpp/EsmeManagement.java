@@ -192,7 +192,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 			boolean chargingEnabled, String smppBindType, String systemType, String smppIntVersion, byte ton, byte npi,
 			String address, String smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
 			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
-			int enquireLinkDelay) throws Exception {
+			int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange) throws Exception {
 		SmppBindType smppBindTypeOb = SmppBindType.valueOf(smppBindType);
 		SmppInterfaceVersionType smppInterfaceVersionTypeObj = SmppInterfaceVersionType
 				.getInterfaceVersionType(smppIntVersion);
@@ -202,7 +202,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 		return this.createEsme(name, systemId, password, host, port, chargingEnabled, smppBindTypeOb, systemType,
 				smppInterfaceVersionTypeObj, addressObj, smppSessionTypeObj, windowSize, connectTimeout,
 				requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled,
-				enquireLinkDelay);
+				enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange);
 
 	}
 
@@ -232,7 +232,8 @@ public class EsmeManagement implements EsmeManagementMBean {
 			boolean chargingEnabled, SmppBindType smppBindType, String systemType,
 			SmppInterfaceVersionType smppIntVersion, Address address, SmppSession.Type smppSessionType, int windowSize,
 			long connectTimeout, long requestExpiryTimeout, long windowMonitorInterval, long windowWaitTimeout,
-			String clusterName, boolean countersEnabled, int enquireLinkDelay) throws Exception {
+			String clusterName, boolean countersEnabled, int enquireLinkDelay, int sourceTon, int sourceNpi,
+			String sourceAddressRange) throws Exception {
 
 		if (smppSessionType == SmppSession.Type.CLIENT) {
 			if (port < 1) {
@@ -293,7 +294,8 @@ public class EsmeManagement implements EsmeManagementMBean {
 		} else {
 			esme = new Esme(name, systemId, password, host, port, chargingEnabled, systemType, smppIntVersion, address,
 					smppBindType, smppSessionType, windowSize, connectTimeout, requestExpiryTimeout,
-					windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled, enquireLinkDelay);
+					windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled, enquireLinkDelay,
+					sourceTon, sourceNpi, sourceAddressRange);
 		}
 		esmes.add(esme);
 

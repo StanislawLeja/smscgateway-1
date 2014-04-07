@@ -132,16 +132,13 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sip.setPort(Integer.parseInt(value));
 				success = true;
 			} else if (command.equals("ton")) {
-				Address address = sip.getAddress();
-				address.setTon(Byte.parseByte(value));
+				sip.setAddressTon(Byte.parseByte(value));
 				success = true;
 			} else if (command.equals("npi")) {
-				Address address = sip.getAddress();
-				address.setNpi(Byte.parseByte(value));
+				sip.setAddressNpi(Byte.parseByte(value));
 				success = true;
 			} else if (command.equals("range")) {
-				Address address = sip.getAddress();
-				address.setAddress(value);
+				sip.setAddressRange(value);
 				success = true;
 			} else if (command.equals("counters-enabled")) {
 				sip.setCountersEnabled(Boolean.parseBoolean(value));
@@ -168,12 +165,14 @@ public class SMSCShellExecutor implements ShellExecutor {
 	 * request-expiry-timeout <requestExpiryTimeout> window-monitor-interval
 	 * <windowMonitorInterval> window-wait-timeout <windowWaitTimeout>
 	 * counters-enabled <true | false> enquire-link-delay <30000>
+	 * charging-enabled <true | false> source-ton <source address ton>
+	 * source-npi <source address npi> source-range <source address range>
 	 * 
 	 * @param args
 	 * @return
 	 */
 	private String createEsme(String[] args) throws Exception {
-		if (args.length < 10 || args.length > 36) {
+		if (args.length < 10 || args.length > 44) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -250,6 +249,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 		int enquireLinkDelay = 30000;
 		boolean chargingEnabled = false;
 
+		int sourceTon = -1;
+		int sourceNpi = -1;
+		String sourceAddressRange = "^[0-9a-zA-Z]*";
+
 		while (count < args.length) {
 			// These are all optional parameters for a Tx/Rx/Trx binds
 			String key = args[count++];
@@ -287,7 +290,13 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (key.equals("enquire-link-delay")) {
 				enquireLinkDelay = Integer.parseInt(args[count++]);
 			} else if (key.equals("charging-enabled")) {
-				chargingEnabled = true;
+				chargingEnabled = Boolean.parseBoolean(args[count++]);
+			} else if (key.equals("source-ton")) {
+				sourceTon = Integer.parseInt(args[count++]);
+			} else if (key.equals("source-npi")) {
+				sourceNpi = Integer.parseInt(args[count++]);
+			} else if (key.equals("source-range")) {
+				sourceAddressRange = args[count++];
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -298,7 +307,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 		Esme esme = this.smscManagement.getEsmeManagement().createEsme(name, systemId, password, host, intPort,
 				chargingEnabled, smppBindType, systemType, smppVersionType, address, smppSessionType, windowSize,
 				connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName,
-				countersEnabled, enquireLinkDelay);
+				countersEnabled, enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange);
 		return String.format(SMSCOAMMessages.CREATE_ESME_SUCCESSFULL, esme.getSystemId());
 	}
 
@@ -708,7 +717,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (parName.equals("mocharging")) {
 				smscPropertiesManagement.setMoCharging(Boolean.parseBoolean(options[3]));
 			} else if (parName.equals("txsmppcharging")) {
-				smscPropertiesManagement.setTxSmppCharging(Enum.valueOf(EsmeChargingType.class, options[3]));
+				smscPropertiesManagement.setTxSmppChargingType(Enum.valueOf(ChargingType.class, options[3]));
+			} else if (parName.equals("txsipcharging")) {
+				smscPropertiesManagement.setTxSipChargingType(Enum.valueOf(ChargingType.class, options[3]));
 			} else if (parName.equals("diameterdestrealm")) {
 				String val = options[3];
 				smscPropertiesManagement.setDiameterDestRealm(val);
@@ -913,7 +924,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (parName.equals("mocharging")) {
 				sb.append(smscPropertiesManagement.isMoCharging());
 			} else if (parName.equals("txsmppcharging")) {
-				sb.append(smscPropertiesManagement.isTxSmppCharging());
+				sb.append(smscPropertiesManagement.getTxSmppChargingType());
+			} else if (parName.equals("txsipcharging")) {
+				sb.append(smscPropertiesManagement.getTxSipChargingType());
 			} else if (parName.equals("diameterdestrealm")) {
 				sb.append(smscPropertiesManagement.getDiameterDestRealm());
 			} else if (parName.equals("diameterdesthost")) {
@@ -1047,7 +1060,11 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append("\n");
 
 			sb.append("txsmppcharging = ");
-			sb.append(smscPropertiesManagement.isTxSmppCharging());
+			sb.append(smscPropertiesManagement.getTxSmppChargingType());
+			sb.append("\n");
+
+			sb.append("txsipcharging = ");
+			sb.append(smscPropertiesManagement.getTxSipChargingType());
 			sb.append("\n");
 
 			sb.append("diameterdestrealm = ");

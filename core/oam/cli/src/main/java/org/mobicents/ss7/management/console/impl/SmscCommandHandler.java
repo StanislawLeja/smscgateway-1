@@ -71,6 +71,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("generatereceiptcdr");
         set.addChild("mocharging");
         Node txsmppcharging = set.addChild("txsmppcharging");
+        Node txsipcharging = set.addChild("txsipcharging");
         set.addChild("diameterdestrealm");
         set.addChild("diameterdesthost");
         set.addChild("diameterdestport");
@@ -79,6 +80,10 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         txsmppcharging.addChild("None");
         txsmppcharging.addChild("Selected");
         txsmppcharging.addChild("All");
+        
+        txsipcharging.addChild("None");
+        txsipcharging.addChild("Selected");
+        txsipcharging.addChild("All");
 
         Node smppencodingforucs2 = set.addChild("smppencodingforucs2");
         smppencodingforucs2.addChild("utf8");

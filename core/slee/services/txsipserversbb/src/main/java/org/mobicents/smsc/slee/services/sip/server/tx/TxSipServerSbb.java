@@ -55,7 +55,7 @@ import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
-import org.mobicents.smsc.slee.services.charging.ChargingType;
+import org.mobicents.smsc.slee.services.charging.ChargingMedium;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.mobicents.smsc.smpp.SmscStatProvider;
 
@@ -336,19 +336,19 @@ public abstract class TxSipServerSbb implements Sbb {
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
 
 		boolean withCharging = false;
-		// TODO : Take care of charging
-		// switch (smscPropertiesManagement.isTxSmppCharging()) {
-		// case Selected:
-		// withCharging = esme.isChargingEnabled();
-		// break;
-		// case All:
-		// withCharging = true;
-		// break;
-		// }
+		switch (smscPropertiesManagement.getTxSmppChargingType()) {
+		case Selected:
+			// withCharging = esme.isChargingEnabled();
+			// TODO Selected not supported now as there is only 1 SIP Stack
+			break;
+		case All:
+			withCharging = true;
+			break;
+		}
 
 		if (withCharging) {
 			ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
-			chargingSbb.setupChargingRequestInterface(ChargingType.TxSmppOrig, sms);
+			chargingSbb.setupChargingRequestInterface(ChargingMedium.TxSipOrig, sms);
 		} else {
 			boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
 

@@ -65,21 +65,22 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String CLUSTER_NAME = "clusterName";
 	private static final String FETCH_PERIOD = "fetchPeriod";
 	private static final String FETCH_MAX_ROWS = "fetchMaxRows";
-    private static final String MAX_ACTIVITY_COUNT = "maxActivityCount";
-    private static final String SMPP_ENCODING_FOR_UCS2 = "smppEncodingForUCS2";
-    private static final String SMS_HOME_ROUTING = "smsHomeRouting";
+	private static final String MAX_ACTIVITY_COUNT = "maxActivityCount";
+	private static final String SMPP_ENCODING_FOR_UCS2 = "smppEncodingForUCS2";
+	private static final String SMS_HOME_ROUTING = "smsHomeRouting";
 	// private static final String CDR_DATABASE_EXPORT_DURATION =
 	// "cdrDatabaseExportDuration";
-    private static final String ESME_DEFAULT_CLUSTER_NAME = "esmeDefaultCluster";
-    private static final String REVISE_SECONDS_ON_SMSC_START = "reviseSecondsOnSmscStart";
-    private static final String PROCESSING_SMS_SET_TIMEOUT = "processingSmsSetTimeout";
-    private static final String GENERATE_RECEIPT_CDR = "generateReceiptCdr";
-    private static final String MO_CHARGING = "moCharging";
-    private static final String TX_SMPP_CHARGING = "txSmppCharging";
-    private static final String DIAMETER_DEST_REALM = "diameterDestRealm";
-    private static final String DIAMETER_DEST_HOST = "diameterDestHost";
-    private static final String DIAMETER_DEST_PORT = "diameterDestPort";
-    private static final String DIAMETER_USER_NAME = "diameterUserName";
+	private static final String ESME_DEFAULT_CLUSTER_NAME = "esmeDefaultCluster";
+	private static final String REVISE_SECONDS_ON_SMSC_START = "reviseSecondsOnSmscStart";
+	private static final String PROCESSING_SMS_SET_TIMEOUT = "processingSmsSetTimeout";
+	private static final String GENERATE_RECEIPT_CDR = "generateReceiptCdr";
+	private static final String MO_CHARGING = "moCharging";
+	private static final String TX_SMPP_CHARGING = "txSmppCharging";
+	private static final String TX_SIP_CHARGING = "txSipCharging";
+	private static final String DIAMETER_DEST_REALM = "diameterDestRealm";
+	private static final String DIAMETER_DEST_HOST = "diameterDestHost";
+	private static final String DIAMETER_DEST_PORT = "diameterDestPort";
+	private static final String DIAMETER_USER_NAME = "diameterUserName";
 
 	private static final String TAB_INDENT = "\t";
 	private static final String CLASS_ATTRIBUTE = "type";
@@ -122,7 +123,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// maxMessageLengthReducer
 	// Recommended value = 6 Possible values from 0 to 12
 	private int maxMessageLengthReducer = 6;
-    // Encoding type at SMPP part for data coding schema==8 (UCS2)
+	// Encoding type at SMPP part for data coding schema==8 (UCS2)
 	// 0-UTF8, 1-UNICODE
 	private SmppEncodingForUCS2 smppEncodingForUCS2 = SmppEncodingForUCS2.Utf8;
 
@@ -133,12 +134,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	// parameters for cassandra database access
 	private String hosts = "127.0.0.1:9042";
-	private String keyspaceName = "saturn";
-	private String clusterName = "saturn";
+	private String keyspaceName = "TelscaleSMSC";
+	private String clusterName = "TelscaleSMSC";
 
 	// period of fetching messages from a database for delivering
-//    private long fetchPeriod = 5000; // that was C1
-    private long fetchPeriod = 200;
+	// private long fetchPeriod = 5000; // that was C1
+	private long fetchPeriod = 200;
 	// max message fetching count for one fetching step
 	private int fetchMaxRows = 100;
 	// max count of delivering Activities that are possible at the same time
@@ -149,32 +150,43 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// DatabaseSmsRoutingRule)
 	// (if it is specified)
 	private String esmeDefaultClusterName;
-	
-	// if SMSHomeRouting is enabled, SMSC will accept MtForwardSMS and forwardSm like mobile station
+
+	// if SMSHomeRouting is enabled, SMSC will accept MtForwardSMS and forwardSm
+	// like mobile station
 	private boolean isSMSHomeRouting = false;
 
-	// After SMSC restart it will revise previous reviseSecondsOnSmscStart seconds dueSlot's for unsent messages 
+	// After SMSC restart it will revise previous reviseSecondsOnSmscStart
+	// seconds dueSlot's for unsent messages
 	private int reviseSecondsOnSmscStart = 60;
-	// Timeout of life cycle of SmsSet in SmsSetCashe.ProcessingSmsSet in seconds
+	// Timeout of life cycle of SmsSet in SmsSetCashe.ProcessingSmsSet in
+	// seconds
 	private int processingSmsSetTimeout = 10 * 60;
-    // true: we generate CDR for both receipt and regular messages
-    // false: we generate CDR only for regular messages
+	// true: we generate CDR for both receipt and regular messages
+	// false: we generate CDR only for regular messages
 	private boolean generateReceiptCdr = false;
 
 	// TODO: new **************************
-    // true: all MO originated messages will be charged by OCS via Diameter before sending 
-    private boolean moCharging = false; // true
-    // true: all SMPP originated messages will be charged by OCS via Diameter before sending
-    private EsmeChargingType txSmppCharging = EsmeChargingType.None;
-    // Diameter destination Realm for connection to OCS
-    private String diameterDestRealm = "mobicents.org";
-    // Diameter destination Host for connection to OCS
-    private String diameterDestHost = "127.0.0.1"; // "127.0.0.2"
-    // Diameter destination port for connection to OCS
-    private int diameterDestPort = 3868;
-    // Diameter UserName for connection to OCS
-    private String diameterUserName = "";
-    // TODO: new **************************
+	// true: all MO originated messages will be charged by OCS via Diameter
+	// before sending
+	private boolean moCharging = false; // true
+	// Defualt is None: none of SMPP originated messages will be charged by OCS
+	// via Diameter before sending
+	private ChargingType txSmppCharging = ChargingType.None;
+
+	// Defualt is None: none of SIP originated messages will be charged by OCS
+	// via Diameter before sending
+	private ChargingType txSipCharging = ChargingType.None;
+
+	// Diameter destination Realm for connection to OCS
+	private String diameterDestRealm = "mobicents.org";
+	// Diameter destination Host for connection to OCS
+	private String diameterDestHost = "127.0.0.1"; // "127.0.0.2"
+	// Diameter destination port for connection to OCS
+	private int diameterDestPort = 3868;
+	// Diameter UserName for connection to OCS
+	private String diameterUserName = "";
+
+	// TODO: new **************************
 
 	private SmscPropertiesManagement(String name) {
 		this.name = name;
@@ -204,9 +216,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.persistDir = persistDir;
 	}
 
-    public DatabaseType getDatabaseType() {
-        return this.databaseType;
-    }
+	public DatabaseType getDatabaseType() {
+		return this.databaseType;
+	}
 
 	public String getServiceCenterGt() {
 		return serviceCenterGt;
@@ -345,16 +357,16 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.store();
 	}
 
-    @Override
-    public SmppEncodingForUCS2 getSmppEncodingForUCS2() {
-        return smppEncodingForUCS2;
-    }
+	@Override
+	public SmppEncodingForUCS2 getSmppEncodingForUCS2() {
+		return smppEncodingForUCS2;
+	}
 
-    @Override
-    public void setSmppEncodingForUCS2(SmppEncodingForUCS2 smppEncodingForUCS2) {
-        this.smppEncodingForUCS2 = smppEncodingForUCS2;
-        this.store();
-    }
+	@Override
+	public void setSmppEncodingForUCS2(SmppEncodingForUCS2 smppEncodingForUCS2) {
+		this.smppEncodingForUCS2 = smppEncodingForUCS2;
+		this.store();
+	}
 
 	// TODO : Let port be defined independently instead of ip:prt. Also when
 	// cluster will be used there will be more ip's. Hosts should be comma
@@ -455,7 +467,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		esmeDefaultClusterName = val;
 		this.store();
 	}
-	
+
 	@Override
 	public boolean getSMSHomeRouting() {
 		return this.isSMSHomeRouting;
@@ -467,81 +479,102 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.store();
 	}
 
-    public int getReviseSecondsOnSmscStart() {
-        return this.reviseSecondsOnSmscStart;
-    }
+	public int getReviseSecondsOnSmscStart() {
+		return this.reviseSecondsOnSmscStart;
+	}
 
-    public void setReviseSecondsOnSmscStart(int reviseSecondsOnSmscStart) {
-        this.reviseSecondsOnSmscStart = reviseSecondsOnSmscStart;
-        this.store();
-    }
+	public void setReviseSecondsOnSmscStart(int reviseSecondsOnSmscStart) {
+		this.reviseSecondsOnSmscStart = reviseSecondsOnSmscStart;
+		this.store();
+	}
 
-    public int getProcessingSmsSetTimeout() {
-        return this.processingSmsSetTimeout;
-    }
+	public int getProcessingSmsSetTimeout() {
+		return this.processingSmsSetTimeout;
+	}
 
-    public void setProcessingSmsSetTimeout(int processingSmsSetTimeout) {
-        this.processingSmsSetTimeout = processingSmsSetTimeout;
-        this.store();
-    }
+	public void setProcessingSmsSetTimeout(int processingSmsSetTimeout) {
+		this.processingSmsSetTimeout = processingSmsSetTimeout;
+		this.store();
+	}
 
-    public boolean getGenerateReceiptCdr() {
-        return this.generateReceiptCdr;
-    }
+	public boolean getGenerateReceiptCdr() {
+		return this.generateReceiptCdr;
+	}
 
-    public void setGenerateReceiptCdr(boolean generateReceiptCdr) {
-        this.generateReceiptCdr = generateReceiptCdr;
-        this.store();
-    }
+	public void setGenerateReceiptCdr(boolean generateReceiptCdr) {
+		this.generateReceiptCdr = generateReceiptCdr;
+		this.store();
+	}
 
-    public boolean isMoCharging() {
-        return moCharging;
-    }
+	@Override
+	public boolean isMoCharging() {
+		return moCharging;
+	}
 
-    public void setMoCharging(boolean moCharging) {
-        this.moCharging = moCharging;
-    }
+	@Override
+	public void setMoCharging(boolean moCharging) {
+		this.moCharging = moCharging;
+	}
 
-    public EsmeChargingType isTxSmppCharging() {
-        return txSmppCharging;
-    }
+	@Override
+	public ChargingType getTxSmppChargingType() {
+		return txSmppCharging;
+	}
 
-    public void setTxSmppCharging(EsmeChargingType txSmppCharging) {
-        this.txSmppCharging = txSmppCharging;
-    }
+	@Override
+	public void setTxSmppChargingType(ChargingType txSmppCharging) {
+		this.txSmppCharging = txSmppCharging;
+	}
 
-    public String getDiameterDestRealm() {
-        return diameterDestRealm;
-    }
+	@Override
+	public ChargingType getTxSipChargingType() {
+		return this.txSipCharging;
+	}
 
-    public void setDiameterDestRealm(String diameterDestRealm) {
-        this.diameterDestRealm = diameterDestRealm;
-    }
+	@Override
+	public void setTxSipChargingType(ChargingType txSipCharging) {
+		this.txSipCharging = txSipCharging;
+	}
 
-    public String getDiameterDestHost() {
-        return diameterDestHost;
-    }
+	@Override
+	public String getDiameterDestRealm() {
+		return diameterDestRealm;
+	}
 
-    public void setDiameterDestHost(String diameterDestHost) {
-        this.diameterDestHost = diameterDestHost;
-    }
+	@Override
+	public void setDiameterDestRealm(String diameterDestRealm) {
+		this.diameterDestRealm = diameterDestRealm;
+	}
 
-    public int getDiameterDestPort() {
-        return diameterDestPort;
-    }
+	@Override
+	public String getDiameterDestHost() {
+		return diameterDestHost;
+	}
 
-    public void setDiameterDestPort(int diameterDestPort) {
-        this.diameterDestPort = diameterDestPort;
-    }
+	@Override
+	public void setDiameterDestHost(String diameterDestHost) {
+		this.diameterDestHost = diameterDestHost;
+	}
 
-    public String getDiameterUserName() {
-        return diameterUserName;
-    }
+	@Override
+	public int getDiameterDestPort() {
+		return diameterDestPort;
+	}
 
-    public void setDiameterUserName(String diameterUserName) {
-        this.diameterUserName = diameterUserName;
-    }
+	@Override
+	public void setDiameterDestPort(int diameterDestPort) {
+		this.diameterDestPort = diameterDestPort;
+	}
 
+	@Override
+	public String getDiameterUserName() {
+		return diameterUserName;
+	}
+
+	@Override
+	public void setDiameterUserName(String diameterUserName) {
+		this.diameterUserName = diameterUserName;
+	}
 
 	public void start() throws Exception {
 
@@ -611,20 +644,21 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			// CDR_DATABASE_EXPORT_DURATION, Integer.class);
 
 			writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
-            writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
-            writer.write(this.isSMSHomeRouting, SMS_HOME_ROUTING, Boolean.class);
-            writer.write(this.smppEncodingForUCS2.toString(), SMPP_ENCODING_FOR_UCS2, String.class);
+			writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
+			writer.write(this.isSMSHomeRouting, SMS_HOME_ROUTING, Boolean.class);
+			writer.write(this.smppEncodingForUCS2.toString(), SMPP_ENCODING_FOR_UCS2, String.class);
 
-            writer.write(this.reviseSecondsOnSmscStart, REVISE_SECONDS_ON_SMSC_START, Integer.class);
-            writer.write(this.processingSmsSetTimeout, PROCESSING_SMS_SET_TIMEOUT, Integer.class);
-            writer.write(this.generateReceiptCdr, GENERATE_RECEIPT_CDR, Boolean.class);
+			writer.write(this.reviseSecondsOnSmscStart, REVISE_SECONDS_ON_SMSC_START, Integer.class);
+			writer.write(this.processingSmsSetTimeout, PROCESSING_SMS_SET_TIMEOUT, Integer.class);
+			writer.write(this.generateReceiptCdr, GENERATE_RECEIPT_CDR, Boolean.class);
 
-            writer.write(this.moCharging, MO_CHARGING, Boolean.class);
-            writer.write(this.txSmppCharging.toString(), TX_SMPP_CHARGING, String.class);
-            writer.write(this.diameterDestRealm, DIAMETER_DEST_REALM, String.class);
-            writer.write(this.diameterDestHost, DIAMETER_DEST_HOST, String.class);
-            writer.write(this.diameterDestPort, DIAMETER_DEST_PORT, Integer.class);
-            writer.write(this.diameterUserName, DIAMETER_USER_NAME, String.class);
+			writer.write(this.moCharging, MO_CHARGING, Boolean.class);
+			writer.write(this.txSmppCharging.toString(), TX_SMPP_CHARGING, String.class);
+			writer.write(this.txSipCharging.toString(), TX_SIP_CHARGING, String.class);
+			writer.write(this.diameterDestRealm, DIAMETER_DEST_REALM, String.class);
+			writer.write(this.diameterDestHost, DIAMETER_DEST_HOST, String.class);
+			writer.write(this.diameterDestPort, DIAMETER_DEST_PORT, Integer.class);
+			writer.write(this.diameterUserName, DIAMETER_USER_NAME, String.class);
 
 			writer.close();
 		} catch (Exception e) {
@@ -645,7 +679,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 			reader.setBinding(binding);
 			this.serviceCenterGt = reader.read(SC_GT, String.class);
-			
+
 			this.serviceCenterSsn = reader.read(SC_SSN, Integer.class);
 			this.hlrSsn = reader.read(HLR_SSN, Integer.class);
 			this.mscSsn = reader.read(MSC_SSN, Integer.class);
@@ -694,47 +728,55 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			// val = reader.read(CDR_DATABASE_EXPORT_DURATION, Integer.class);
 			// if (val != null)
 			// this.cdrDatabaseExportDuration = val;
-			
+
 			this.esmeDefaultClusterName = reader.read(ESME_DEFAULT_CLUSTER_NAME, String.class);
 
 			val = reader.read(MAX_ACTIVITY_COUNT, Integer.class);
 			if (val != null)
 				this.maxActivityCount = val;
-			
+
 			Boolean valB = reader.read(SMS_HOME_ROUTING, Boolean.class);
-			if(valB != null){
+			if (valB != null) {
 				this.isSMSHomeRouting = valB.booleanValue();
 			}
-			
+
 			String vals = reader.read(SMPP_ENCODING_FOR_UCS2, String.class);
-            if (vals != null)
-                this.smppEncodingForUCS2 = Enum.valueOf(SmppEncodingForUCS2.class, vals);
+			if (vals != null)
+				this.smppEncodingForUCS2 = Enum.valueOf(SmppEncodingForUCS2.class, vals);
 
-            val = reader.read(REVISE_SECONDS_ON_SMSC_START, Integer.class);
-            if (val != null)
-                this.reviseSecondsOnSmscStart = val;
-            val = reader.read(PROCESSING_SMS_SET_TIMEOUT, Integer.class);
-            if (val != null)
-                this.processingSmsSetTimeout = val;
+			val = reader.read(REVISE_SECONDS_ON_SMSC_START, Integer.class);
+			if (val != null)
+				this.reviseSecondsOnSmscStart = val;
+			val = reader.read(PROCESSING_SMS_SET_TIMEOUT, Integer.class);
+			if (val != null)
+				this.processingSmsSetTimeout = val;
 
-            valB = reader.read(GENERATE_RECEIPT_CDR, Boolean.class);
-            if (valB != null) {
-                this.generateReceiptCdr = valB.booleanValue();
-            }
+			valB = reader.read(GENERATE_RECEIPT_CDR, Boolean.class);
+			if (valB != null) {
+				this.generateReceiptCdr = valB.booleanValue();
+			}
 
-            valB = reader.read(MO_CHARGING, Boolean.class);
-            if (valB != null) {
-                this.moCharging = valB.booleanValue();
-            }
-            vals = reader.read(TX_SMPP_CHARGING, String.class);
-            if (vals != null)
-                this.txSmppCharging = Enum.valueOf(EsmeChargingType.class, vals);
-            this.diameterDestRealm = reader.read(DIAMETER_DEST_REALM, String.class);
-            this.diameterDestHost = reader.read(DIAMETER_DEST_HOST, String.class);
-            val = reader.read(DIAMETER_DEST_PORT, Integer.class);
-            if (val != null)
-                this.diameterDestPort = val;
-            this.diameterUserName = reader.read(DIAMETER_USER_NAME, String.class);
+			valB = reader.read(MO_CHARGING, Boolean.class);
+			if (valB != null) {
+				this.moCharging = valB.booleanValue();
+			}
+			vals = reader.read(TX_SMPP_CHARGING, String.class);
+			if (vals != null)
+				this.txSmppCharging = Enum.valueOf(ChargingType.class, vals);
+
+			vals = reader.read(TX_SIP_CHARGING, String.class);
+			if (vals != null)
+				this.txSipCharging = Enum.valueOf(ChargingType.class, vals);
+
+			this.diameterDestRealm = reader.read(DIAMETER_DEST_REALM, String.class);
+
+			this.diameterDestHost = reader.read(DIAMETER_DEST_HOST, String.class);
+
+			val = reader.read(DIAMETER_DEST_PORT, Integer.class);
+			if (val != null)
+				this.diameterDestPort = val;
+
+			this.diameterUserName = reader.read(DIAMETER_USER_NAME, String.class);
 
 			reader.close();
 		} catch (XMLStreamException ex) {
