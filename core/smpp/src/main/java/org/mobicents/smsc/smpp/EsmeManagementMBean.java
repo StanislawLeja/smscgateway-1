@@ -39,17 +39,18 @@ public interface EsmeManagementMBean {
 
 	public Esme getEsmeByClusterName(String esmeClusterName);
 
-	public Esme createEsme(String name, String systemId, String password, String host, int port, boolean chargingEnabled,
-			SmppBindType smppBindType, String systemType, SmppInterfaceVersionType smppIntVersion, Address address,
-			SmppSession.Type smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
+	public Esme createEsme(String name, String systemId, String password, String host, int port,
+			boolean chargingEnabled, SmppBindType smppBindType, String systemType,
+			SmppInterfaceVersionType smppIntVersion, Address address, SmppSession.Type smppSessionType, int windowSize,
+			long connectTimeout, long requestExpiryTimeout, long windowMonitorInterval, long windowWaitTimeout,
+			String clusterName, boolean countersEnabled, int enquireLinkDelay, int sourceTon, int sourceNpi,
+			String sourceAddressRange) throws Exception;
+
+	public Esme createEsme(String name, String systemId, String password, String host, int port,
+			boolean chargingEnabled, String smppBindType, String systemType, String smppIntVersion, byte ton, byte npi,
+			String address, String smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
 			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
-			int enquireLinkDelay) throws Exception;
-	
-	public Esme createEsme(String name, String systemId, String password, String host, int port, boolean chargingEnabled,
-			String smppBindType, String systemType, String smppIntVersion, byte ton, byte npi, String address,
-			String smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
-			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
-			int enquireLinkDelay) throws Exception;	
+			int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange) throws Exception;
 
 	public Esme destroyEsme(String esmeName) throws Exception;
 

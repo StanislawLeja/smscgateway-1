@@ -114,9 +114,8 @@ public interface SMSCOAMMessages {
 	public static final String SIP_MODIFY_SUCCESS = "Successfully modified SIP name %s";
 
 	public static final String NO_SIP_DEFINED_YET = "No SIP defined yet";
-	
+
 	public static final String NO_DATABASE_SMS_ROUTING_RULE = "DatabaseSmsRoutingRule is not used";
-	
 
 	/**
 	 * Generic constants
@@ -165,11 +164,17 @@ public interface SMSCOAMMessages {
 	public static final String SHOW_STARTED = " started=";
 
 	public static final String SHOW_ADDRESS = " address=";
-	
+
 	public static final String SHOW_ADDRESS_TON = " ton=";
-	
+
 	public static final String SHOW_ADDRESS_NPI = " npi=";
-	
+
+	public static final String SHOW_SOURCE_ADDRESS = " sourceAddress=";
+
+	public static final String SHOW_SOURCE_ADDRESS_TON = " sourceTon=";
+
+	public static final String SHOW_SOURCE_ADDRESS_NPI = " sourceNpi=";
+
 	public static final String SHOW_ADDRESS_RANGE = " range=";
 
 	public static final String SHOW_CLUSTER_NAME = " clusterName=";

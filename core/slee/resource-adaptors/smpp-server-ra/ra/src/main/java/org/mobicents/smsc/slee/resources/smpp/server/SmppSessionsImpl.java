@@ -1,7 +1,5 @@
 package org.mobicents.smsc.slee.resources.smpp.server;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import javax.slee.SLEEException;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ActivityAlreadyExistsException;
@@ -26,6 +24,7 @@ import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
 import com.cloudhopper.smpp.pdu.SubmitSm;
 import com.cloudhopper.smpp.pdu.SubmitSmResp;
+import com.cloudhopper.smpp.type.Address;
 import com.cloudhopper.smpp.type.RecoverablePduException;
 import com.cloudhopper.smpp.type.SmppChannelException;
 import com.cloudhopper.smpp.type.SmppTimeoutException;
@@ -131,8 +130,9 @@ public class SmppSessionsImpl implements SmppSessions {
 				this.smppServerResourceAdaptor.endActivity(smppServerTransactionImpl);
 			}
 		}
-		
-		//TODO Should it catch UnrecoverablePduException and SmppChannelException and close underlying SmppSession?
+
+		// TODO Should it catch UnrecoverablePduException and
+		// SmppChannelException and close underlying SmppSession?
 	}
 
 	protected class SmppSessionHandlerInterfaceImpl implements SmppSessionHandlerInterface {
@@ -161,31 +161,57 @@ public class SmppSessionsImpl implements SmppSessions {
 			try {
 				SmppTransactionImpl smppServerTransaction = null;
 				SmppTransactionHandle smppServerTransactionHandle = null;
+				Address sourceAddress = null;
 				switch (pduRequest.getCommandId()) {
 				case SmppConstants.CMD_ID_ENQUIRE_LINK:
 					break;
 				case SmppConstants.CMD_ID_UNBIND:
 					break;
 				case SmppConstants.CMD_ID_SUBMIT_SM:
-//                    // TODO remove it ...........................
-//				    SubmitSm submitSm = (SubmitSm) pduRequest;
-//				    Date dt = new Date();
-//				    submitSm.setServiceType(dt.toGMTString());
-//                    // TODO remove it ...........................
+					// // TODO remove it ...........................
+					// SubmitSm submitSm = (SubmitSm) pduRequest;
+					// Date dt = new Date();
+					// submitSm.setServiceType(dt.toGMTString());
+					// // TODO remove it ...........................
 
-                    
-                    smppServerTransactionHandle = new SmppTransactionHandle(this.esme.getName(),
+					SubmitSm submitSm = (SubmitSm) pduRequest;
+					sourceAddress = submitSm.getSourceAddress();
+					if (!this.esme.isSourceAddressMatching(sourceAddress)) {
+						tracer.warning(String
+								.format("Incoming SUBMIT_SM's sequence_number=%d source_addr_ton=%d source_addr_npi=%d source_addr=%s doesn't match with configured ESME name=%s source_addr_ton=%d source_addr_npi=%d source_addr=%s",
+										submitSm.getSequenceNumber(), sourceAddress.getTon(), sourceAddress.getNpi(),
+										sourceAddress.getAddress(), this.esme.getName(), this.esme.getSourceTon(),
+										this.esme.getSourceNpi(), this.esme.getSourceAddressRange()));
+
+						response.setCommandStatus(SmppConstants.STATUS_INVSRCADR);
+						return response;
+					}
+
+					smppServerTransactionHandle = new SmppTransactionHandle(this.esme.getName(),
 							pduRequest.getSequenceNumber(), SmppTransactionType.INCOMING);
 					smppServerTransaction = new SmppTransactionImpl(pduRequest, this.esme, smppServerTransactionHandle,
 							smppServerResourceAdaptor);
 
 					smppServerResourceAdaptor.startNewSmppServerTransactionActivity(smppServerTransaction);
 					smppServerResourceAdaptor.fireEvent(EventsType.SUBMIT_SM,
-							smppServerTransaction.getActivityHandle(), (SubmitSm) pduRequest);
+							smppServerTransaction.getActivityHandle(), submitSm);
 
 					// Return null. Let SBB send response back
 					return null;
 				case SmppConstants.CMD_ID_DATA_SM:
+					DataSm dataSm = (DataSm) pduRequest;
+					sourceAddress = dataSm.getSourceAddress();
+					if (!this.esme.isSourceAddressMatching(sourceAddress)) {
+						tracer.warning(String
+								.format("Incoming DATA_SM's sequence_number=%d source_addr_ton=%d source_addr_npi=%d source_addr=%s doesn't match with configured ESME name=%s source_addr_ton=%d source_addr_npi=%d source_addr=%s",
+										dataSm.getSequenceNumber(), sourceAddress.getTon(), sourceAddress.getNpi(),
+										sourceAddress.getAddress(), this.esme.getName(), this.esme.getSourceTon(),
+										this.esme.getSourceNpi(), this.esme.getSourceAddressRange()));
+
+						response.setCommandStatus(SmppConstants.STATUS_INVSRCADR);
+						return response;
+					}
+
 					smppServerTransactionHandle = new SmppTransactionHandle(this.esme.getName(),
 							pduRequest.getSequenceNumber(), SmppTransactionType.INCOMING);
 					smppServerTransaction = new SmppTransactionImpl(pduRequest, this.esme, smppServerTransactionHandle,
@@ -197,6 +223,19 @@ public class SmppSessionsImpl implements SmppSessions {
 					// Return null. Let SBB send response back
 					return null;
 				case SmppConstants.CMD_ID_DELIVER_SM:
+					DeliverSm deliverSm = (DeliverSm) pduRequest;
+					sourceAddress = deliverSm.getSourceAddress();
+					if (!this.esme.isSourceAddressMatching(sourceAddress)) {
+						tracer.warning(String
+								.format("Incoming DATA_SM's sequence_number=%d source_addr_ton=%d source_addr_npi=%d source_addr=%s doesn't match with configured ESME name=%s source_addr_ton=%d source_addr_npi=%d source_addr=%s",
+										deliverSm.getSequenceNumber(), sourceAddress.getTon(), sourceAddress.getNpi(),
+										sourceAddress.getAddress(), this.esme.getName(), this.esme.getSourceTon(),
+										this.esme.getSourceNpi(), this.esme.getSourceAddressRange()));
+
+						response.setCommandStatus(SmppConstants.STATUS_INVSRCADR);
+						return response;
+					}
+
 					smppServerTransactionHandle = new SmppTransactionHandle(this.esme.getName(),
 							pduRequest.getSequenceNumber(), SmppTransactionType.INCOMING);
 					smppServerTransaction = new SmppTransactionImpl(pduRequest, this.esme, smppServerTransactionHandle,

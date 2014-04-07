@@ -164,13 +164,15 @@ public class SMSCShellExecutor implements ShellExecutor {
 	 * <clusterName> window-size <windowSize> connect-timeout <connectTimeout>
 	 * request-expiry-timeout <requestExpiryTimeout> window-monitor-interval
 	 * <windowMonitorInterval> window-wait-timeout <windowWaitTimeout>
-	 * counters-enabled <true | false> enquire-link-delay <30000> charging-enabled <true | false>
+	 * counters-enabled <true | false> enquire-link-delay <30000>
+	 * charging-enabled <true | false> source-ton <source address ton>
+	 * source-npi <source address npi> source-range <source address range>
 	 * 
 	 * @param args
 	 * @return
 	 */
 	private String createEsme(String[] args) throws Exception {
-		if (args.length < 10 || args.length > 38) {
+		if (args.length < 10 || args.length > 44) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -247,6 +249,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 		int enquireLinkDelay = 30000;
 		boolean chargingEnabled = false;
 
+		int sourceTon = -1;
+		int sourceNpi = -1;
+		String sourceAddressRange = "^[0-9a-zA-Z]*";
+
 		while (count < args.length) {
 			// These are all optional parameters for a Tx/Rx/Trx binds
 			String key = args[count++];
@@ -285,6 +291,12 @@ public class SMSCShellExecutor implements ShellExecutor {
 				enquireLinkDelay = Integer.parseInt(args[count++]);
 			} else if (key.equals("charging-enabled")) {
 				chargingEnabled = Boolean.parseBoolean(args[count++]);
+			} else if (key.equals("source-ton")) {
+				sourceTon = Integer.parseInt(args[count++]);
+			} else if (key.equals("source-npi")) {
+				sourceNpi = Integer.parseInt(args[count++]);
+			} else if (key.equals("source-range")) {
+				sourceAddressRange = args[count++];
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -295,7 +307,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 		Esme esme = this.smscManagement.getEsmeManagement().createEsme(name, systemId, password, host, intPort,
 				chargingEnabled, smppBindType, systemType, smppVersionType, address, smppSessionType, windowSize,
 				connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName,
-				countersEnabled, enquireLinkDelay);
+				countersEnabled, enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange);
 		return String.format(SMSCOAMMessages.CREATE_ESME_SUCCESSFULL, esme.getSystemId());
 	}
 
