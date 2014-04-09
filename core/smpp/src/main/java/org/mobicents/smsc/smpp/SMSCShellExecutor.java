@@ -97,6 +97,16 @@ public class SMSCShellExecutor implements ShellExecutor {
 		return sb.toString();
 	}
 
+	/**
+	 * Command is smsc sip modify name cluster-name <clusterName> host <ip> port
+	 * <port> routing-ton <routing address ton> routing-npi <routing address
+	 * npi> routing-range <routing address range> counters-enabled <true |
+	 * false> charging-enabled <true | false>
+	 * 
+	 * @param args
+	 * @return
+	 * @throws Exception
+	 */
 	private String modifySip(String[] args) throws Exception {
 		if (args.length < 6 || args.length > 20) {
 			return SMSCOAMMessages.INVALID_COMMAND;
@@ -129,14 +139,14 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (command.equals("port")) {
 				sip.setPort(Integer.parseInt(value));
 				success = true;
-			} else if (command.equals("ton")) {
-				sip.setAddressTon(Byte.parseByte(value));
+			} else if (command.equals("routing-ton")) {
+				sip.setRoutingTon(Integer.parseInt(value));
 				success = true;
-			} else if (command.equals("npi")) {
-				sip.setAddressNpi(Byte.parseByte(value));
+			} else if (command.equals("routing-npi")) {
+				sip.setRoutingNpi(Integer.parseInt(value));
 				success = true;
-			} else if (command.equals("range")) {
-				sip.setAddressRange(value);
+			} else if (command.equals("routing-range")) {
+				sip.setRoutingAddressRange(value);
 				success = true;
 			} else if (command.equals("counters-enabled")) {
 				sip.setCountersEnabled(Boolean.parseBoolean(value));

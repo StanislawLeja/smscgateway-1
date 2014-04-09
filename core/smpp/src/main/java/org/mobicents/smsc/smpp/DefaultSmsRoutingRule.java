@@ -93,13 +93,8 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 		for (FastList.Node<Sip> n = this.sipManagement.sips.head(), end = this.sipManagement.sips.tail(); (n = n
 				.getNext()) != end;) {
 			Sip sip = n.getValue();
-			Pattern p = sip.getAddressRangePattern();
-			if (p == null) {
-				continue;
-			}
 
-			Matcher m = p.matcher(address);
-			if (m.matches()) {
+			if (sip.isRoutingAddressMatching(ton, npi, address)) {
 				return sip.getClusterName();
 			}
 		}

@@ -619,7 +619,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		return false;
 	}
 
-	public boolean isRoutingAddressMatching(int destTon, int destNpi, String destAddress) {
+	protected boolean isRoutingAddressMatching(int destTon, int destNpi, String destAddress) {
 
 		// Check sourceTon
 		if (this.routingTon != -1 && this.routingTon != destTon) {

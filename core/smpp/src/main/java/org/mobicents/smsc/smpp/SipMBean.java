@@ -42,32 +42,43 @@ public interface SipMBean {
 
 	void setPort(int port);
 
-	byte getAddressNpi();
+	/**
+	 * The {@link DefaultSmsRoutingRule} will try to match the dest_addr_ton of
+	 * outgoing SMS with one configured here. If configured value is null(-1) or
+	 * it's not null and match's, SMSC will compare dest_addr_npi and
+	 * destination_addr as below. It it doesn't match, SMSC will select next SIP
+	 * in list for matching routing rule
+	 * 
+	 * @return
+	 */
+	int getRoutingTon();
+
+	void setRoutingTon(int routingTon);
 
 	/**
-	 * Helper method to modify the Address numbering plan indicator
+	 * The {@link DefaultSmsRoutingRule} will try to match the dest_addr_npi
+	 * with one configured here. If configured value is null(-1)or it's not null
+	 * and match's, SMSC will compare destination_addr as below. It it doesn't
+	 * match, SMSC will select next SIP in list for matching routing rule
 	 * 
-	 * @param npi
+	 * @return
 	 */
-	void setAddressNpi(byte npi);
+	int getRoutingNpi();
 
-	byte getAddressTon();
+	void setRoutingNpi(int sourceNpi);
 
 	/**
-	 * Helper method to modify the Address type of number
+	 * The {@link DefaultSmsRoutingRule} will try to match destination_addr
+	 * here. This is regular java expression. Default value is null. If it
+	 * match's, SMSC will send the SMS out over this SIP connection. If it
+	 * doesn't match, SMSC will select next ESME in list for matching routing
+	 * rule
 	 * 
-	 * @param ton
+	 * @return
 	 */
-	void setAddressTon(byte ton);
+	String getRoutingAddressRange();
 
-	String getAddressRange();
-
-	/**
-	 * Helper method to modify the Address range
-	 * 
-	 * @param range
-	 */
-	void setAddressRange(String range);
+	void setRoutingAddressRange(String sourceAddressRange);
 
 	/**
 	 * true if counters is enabled. Not used as of now
