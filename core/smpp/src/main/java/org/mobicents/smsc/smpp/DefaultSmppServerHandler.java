@@ -96,18 +96,17 @@ public class DefaultSmppServerHandler implements SmppServerHandler {
 		}
 
 		// Check if TON, NPI and Address Range matches
-		Address esmeAddressRange = esme.getAddress();
 		Address bindRequestAddressRange = bindRequest.getAddressRange();
 
-		if (esmeAddressRange.getTon() != bindRequestAddressRange.getTon()) {
+		if (esme.getEsmeTon() != -1 && esme.getEsmeTon() != bindRequestAddressRange.getTon()) {
 			logger.error(String.format("Received BIND request with TON=%d but configured TON=%d",
-					bindRequestAddressRange.getTon(), esmeAddressRange.getTon()));
+					bindRequestAddressRange.getTon(), esme.getEsmeTon()));
 			throw new SmppProcessingException(SmppConstants.STATUS_INVBNDSTS);
 		}
 
-		if (esmeAddressRange.getNpi() != bindRequestAddressRange.getNpi()) {
+		if (esme.getEsmeNpi() != -1 && esme.getEsmeNpi() != bindRequestAddressRange.getNpi()) {
 			logger.error(String.format("Received BIND request with NPI=%d but configured NPI=%d",
-					bindRequestAddressRange.getNpi(), esmeAddressRange.getNpi()));
+					bindRequestAddressRange.getNpi(), esme.getEsmeNpi()));
 			throw new SmppProcessingException(SmppConstants.STATUS_INVBNDSTS);
 		}
 
@@ -115,10 +114,10 @@ public class DefaultSmppServerHandler implements SmppServerHandler {
 
 		if (bindRequestAddressRange.getAddress() == null || bindRequestAddressRange.getAddress() == "") {
 			// If ESME doesn't know we set it up from our config
-			bindRequestAddressRange.setAddress(esmeAddressRange.getAddress());
-		} else if (!bindRequestAddressRange.getAddress().equals(esmeAddressRange.getAddress())) {
+			bindRequestAddressRange.setAddress(esme.getEsmeAddressRange());
+		} else if (!bindRequestAddressRange.getAddress().equals(esme.getEsmeAddressRange())) {
 			logger.error(String.format("Received BIND request with Address_Range=%s but configured Address_Range=%s",
-					bindRequestAddressRange.getAddress(), esmeAddressRange.getAddress()));
+					bindRequestAddressRange.getAddress(), esme.getEsmeAddressRange()));
 			throw new SmppProcessingException(SmppConstants.STATUS_INVBNDSTS);
 		}
 

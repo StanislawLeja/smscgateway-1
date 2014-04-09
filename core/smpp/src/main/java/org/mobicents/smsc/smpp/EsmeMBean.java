@@ -22,7 +22,6 @@
 package org.mobicents.smsc.smpp;
 
 import com.cloudhopper.smpp.jmx.DefaultSmppSessionMXBean;
-import com.cloudhopper.smpp.type.Address;
 
 /**
  * 
@@ -30,47 +29,128 @@ import com.cloudhopper.smpp.type.Address;
  * 
  */
 public interface EsmeMBean extends DefaultSmppSessionMXBean {
-	public boolean isStarted();
+	boolean isStarted();
 
-	public String getClusterName();
-
-	public Address getAddress();
-
-	public String getHost();
-
-	public int getPort();
-
-	public boolean isChargingEnabled();
-
-	public void setChargingEnabled(boolean chargingEnabled);
+	String getClusterName();
 
 	/**
-	 * every SMS coming into SMSC should have same source_addr_ton as mentioned
-	 * here. If the value here is -1, means SMSC doesn't care
+	 * Defines ESME TON. if SMPP Session Type is CLIENT this TON will be used in
+	 * BIND request, if SMPP Session Type is SERVER, incoming BIND request
+	 * should have same TON as configured here. If configured is null(-1), SMSC
+	 * will ignore in both the cases
 	 * 
 	 * @return
 	 */
-	public int getSourceTon();
+	int getEsmeTon();
 
-	public void setSourceTon(int sourceTon);
+	void setEsmeTon(int esmeTon);
 
 	/**
-	 * every SMS coming into SMSC should have same source_addr_npi as mentioned
-	 * here. If the value here is -1, means SMSC doesn't care
+	 * Defines ESME NPI. if SMPP Session Type is CLIENT this NPI will be used in
+	 * BIND request, if SMPP Session Type is SERVER, incoming BIND request
+	 * should have same NPI as configured here. If configured is null(-1), SMSC
+	 * will ignore in both the cases
 	 * 
 	 * @return
 	 */
-	public int getSourceNpi();
+	int getEsmeNpi();
 
-	public void setSourceNpi(int sourceNpi);
+	void setEsmeNpi(int esmeNpi);
 
 	/**
-	 * every SMS coming into SMSC should have same source_addr as mentioned
-	 * here. This is regular java expression. Default value is ^[0-9a-zA-Z]*
+	 * Defines ESME Address Range. if SMPP Session Type is CLIENT this address
+	 * range will be used in BIND request, if SMPP Session Type is SERVER,
+	 * incoming BIND request should have same address range as configured here.
+	 * If configured is null, SMSC will ignore in both the cases
 	 * 
 	 * @return
 	 */
-	public String getSourceAddressRange();
+	String getEsmeAddressRange();
 
-	public void setSourceAddressRange(String sourceAddressRange);
+	void setEsmeAddressRange(String sourceAddressRange);
+
+	String getHost();
+
+	int getPort();
+
+	boolean isChargingEnabled();
+
+	void setChargingEnabled(boolean chargingEnabled);
+
+	/**
+	 * every SMS coming into SMSC via this ESME should have same source_addr_ton
+	 * as configured here. If the value here is null(-1) or it's not null and
+	 * match's, SMSC will compare source_addr_npi and source_addr as mentioned
+	 * below. If it doesn't match SMSC will reject this SMS with error code
+	 * "0x0000000A" - Invalid Source Address.
+	 * 
+	 * @return
+	 */
+	int getSourceTon();
+
+	void setSourceTon(int sourceTon);
+
+	/**
+	 * every SMS coming into SMSC via this ESME should have same source_addr_npi
+	 * as configured here. If the value here is null(-1)or it's not null and
+	 * match's, SMSC will compare source_addr as mentioned below. If it doesn't
+	 * match SMSC will reject this SMS with error code "0x0000000A" - Invalid
+	 * Source Address.
+	 * 
+	 * @return
+	 */
+	int getSourceNpi();
+
+	void setSourceNpi(int sourceNpi);
+
+	/**
+	 * every SMS coming into SMSC via this ESME should have same source_addr as
+	 * mentioned here. This is regular java expression. Default value is
+	 * ^[0-9a-zA-Z]* If it match's, SMSC will accept incoming SMS and process
+	 * further. If it doesn't match SMSC will reject this SMS with error code
+	 * "0x0000000A" - Invalid Source Address.
+	 * 
+	 * @return
+	 */
+	String getSourceAddressRange();
+
+	void setSourceAddressRange(String sourceAddressRange);
+
+	/**
+	 * The {@link DefaultSmsRoutingRule} will try to match the dest_addr_ton of
+	 * outgoing SMS with one configured here. If configured value is null(-1) or
+	 * it's not null and match's, SMSC will compare dest_addr_npi and
+	 * destination_addr as below. It it doesn't match, SMSC will select next
+	 * ESME in list for matching routing rule
+	 * 
+	 * @return
+	 */
+	int getRoutingTon();
+
+	void setRoutingTon(int routingTon);
+
+	/**
+	 * The {@link DefaultSmsRoutingRule} will try to match the dest_addr_npi
+	 * with one configured here. If configured value is null(-1)or it's not null
+	 * and match's, SMSC will compare destination_addr as below. It it doesn't
+	 * match, SMSC will select next ESME in list for matching routing rule
+	 * 
+	 * @return
+	 */
+	int getRoutingNpi();
+
+	void setRoutingNpi(int sourceNpi);
+
+	/**
+	 * The {@link DefaultSmsRoutingRule} will try to match destination_addr
+	 * here. This is regular java expression. Default value is ^[0-9a-zA-Z]*. If
+	 * it match's, SMSC will send the SMS out over this SMPP connection. If it
+	 * doesn't match, SMSC will select next ESME in list for matching routing
+	 * rule
+	 * 
+	 * @return
+	 */
+	String getRoutingAddressRange();
+
+	void setRoutingAddressRange(String sourceAddressRange);
 }

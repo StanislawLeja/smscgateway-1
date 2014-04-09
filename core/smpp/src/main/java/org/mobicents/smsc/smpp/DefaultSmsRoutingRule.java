@@ -79,12 +79,7 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 					|| (sessionBindType == SmppBindType.RECEIVER && smppSessionType == SmppSession.Type.SERVER)
 					|| (sessionBindType == SmppBindType.TRANSMITTER && smppSessionType == SmppSession.Type.CLIENT)) {
 
-				Pattern p = esme.getAddressRangePattern();
-				if (p == null) {
-					continue;
-				}
-				Matcher m = p.matcher(address);
-				if (m.matches()) {
+				if (esme.isRoutingAddressMatching(ton, npi, address)) {
 					return esme.getClusterName();
 				}
 			}

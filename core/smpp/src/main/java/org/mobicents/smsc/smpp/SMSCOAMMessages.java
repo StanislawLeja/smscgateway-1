@@ -169,13 +169,19 @@ public interface SMSCOAMMessages {
 
 	public static final String SHOW_ADDRESS_NPI = " npi=";
 
-	public static final String SHOW_SOURCE_ADDRESS = " sourceAddress=";
+	public static final String SHOW_ADDRESS_RANGE = " range=";
 
 	public static final String SHOW_SOURCE_ADDRESS_TON = " sourceTon=";
 
 	public static final String SHOW_SOURCE_ADDRESS_NPI = " sourceNpi=";
 
-	public static final String SHOW_ADDRESS_RANGE = " range=";
+	public static final String SHOW_SOURCE_ADDRESS = " sourceAddress=";
+
+	public static final String SHOW_ROUTING_ADDRESS_TON = " routingTon=";
+
+	public static final String SHOW_ROUTING_ADDRESS_NPI = " routingNpi=";
+
+	public static final String SHOW_ROUTING_ADDRESS = " routingAddress=";
 
 	public static final String SHOW_CLUSTER_NAME = " clusterName=";
 

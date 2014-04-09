@@ -37,6 +37,7 @@ import com.cloudhopper.smpp.pdu.EnquireLink;
 import com.cloudhopper.smpp.pdu.EnquireLinkResp;
 import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
+import com.cloudhopper.smpp.type.Address;
 import com.cloudhopper.smpp.type.RecoverablePduException;
 import com.cloudhopper.smpp.type.UnrecoverablePduException;
 
@@ -74,7 +75,7 @@ public class SmppClientOpsThread implements Runnable {
 	 */
 	protected void setStarted(boolean started) {
 		this.started = started;
-		
+
 		synchronized (this.waitObject) {
 			this.waitObject.notify();
 		}
@@ -231,7 +232,12 @@ public class SmppClientOpsThread implements Runnable {
 			config0.setRequestExpiryTimeout(esme.getRequestExpiryTimeout());
 			config0.setWindowMonitorInterval(esme.getWindowMonitorInterval());
 			config0.setCountersEnabled(esme.isCountersEnabled());
-			config0.setAddressRange(esme.getAddress());
+
+			Address address = null;
+			if (esme.getEsmeTon() != -1 && esme.getEsmeNpi() != -1 && esme.getEsmeAddressRange() != null) {
+				address = new Address((byte) esme.getEsmeTon(), (byte) esme.getEsmeNpi(), esme.getEsmeAddressRange());
+			}
+			config0.setAddressRange(address);
 
 			SmppSessionHandler sessionHandler = new ClientSmppSessionHandler(esme,
 					this.smppSessionHandlerInterface.createNewSmppSessionHandler(esme));

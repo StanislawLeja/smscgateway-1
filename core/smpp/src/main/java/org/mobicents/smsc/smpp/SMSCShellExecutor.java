@@ -37,8 +37,6 @@ import org.mobicents.ss7.management.console.ShellExecutor;
 
 import com.cloudhopper.smpp.SmppBindType;
 import com.cloudhopper.smpp.SmppConstants;
-import com.cloudhopper.smpp.SmppSession;
-import com.cloudhopper.smpp.type.Address;
 
 /**
  * @author amit bhayani
@@ -167,12 +165,14 @@ public class SMSCShellExecutor implements ShellExecutor {
 	 * counters-enabled <true | false> enquire-link-delay <30000>
 	 * charging-enabled <true | false> source-ton <source address ton>
 	 * source-npi <source address npi> source-range <source address range>
+	 * routing-ton <routing address ton> routing-npi <routing address npi>,
+	 * routing-range <routing address range>
 	 * 
 	 * @param args
 	 * @return
 	 */
 	private String createEsme(String[] args) throws Exception {
-		if (args.length < 10 || args.length > 44) {
+		if (args.length < 10 || args.length > 50) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -206,34 +206,21 @@ public class SMSCShellExecutor implements ShellExecutor {
 			}
 		}
 
-		SmppBindType smppBindType = null;
 		String smppBindTypeStr = args[8];
 
 		if (smppBindTypeStr == null) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		if (SmppBindType.TRANSCEIVER.toString().equals(smppBindTypeStr)) {
-			smppBindType = SmppBindType.TRANSCEIVER;
-		} else if (SmppBindType.TRANSMITTER.toString().equals(smppBindTypeStr)) {
-			smppBindType = SmppBindType.TRANSMITTER;
-		} else if (SmppBindType.RECEIVER.toString().equals(smppBindTypeStr)) {
-			smppBindType = SmppBindType.RECEIVER;
-		} else {
-			return SMSCOAMMessages.INVALID_COMMAND;
-		}
-
 		String smppSessionTypeStr = args[9];
-		if (smppBindTypeStr == null) {
+		if (smppSessionTypeStr == null) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
-
-		SmppSession.Type smppSessionType = SmppSession.Type.valueOf(smppSessionTypeStr);
 
 		String systemType = null;
-		SmppInterfaceVersionType smppVersionType = null;
-		byte esmeTonType = (byte) smscPropertiesManagement.getDefaultTon();
-		byte esmeNpiType = (byte) smscPropertiesManagement.getDefaultNpi();
+		String smppVersionType = SmppInterfaceVersionType.SMPP34.getType();
+		byte esmeTonType = -1;
+		byte esmeNpiType = -1;
 		String esmeAddrRange = null;
 		String clusterName = name;
 
@@ -253,6 +240,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 		int sourceNpi = -1;
 		String sourceAddressRange = "^[0-9a-zA-Z]*";
 
+		int routinigTon = -1;
+		int routingNpi = -1;
+		String routingAddressRange = "^[0-9a-zA-Z]*";
+
 		while (count < args.length) {
 			// These are all optional parameters for a Tx/Rx/Trx binds
 			String key = args[count++];
@@ -263,10 +254,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 			if (key.equals("system-type")) {
 				systemType = args[count++];
 			} else if (key.equals("interface-version")) {
-				smppVersionType = SmppInterfaceVersionType.getInterfaceVersionType(args[count++]);
-				if (smppVersionType == null) {
-					smppVersionType = SmppInterfaceVersionType.SMPP34;
-				}
+				smppVersionType = args[count++];
 			} else if (key.equals("esme-ton")) {
 				esmeTonType = Byte.parseByte(args[count++]);
 			} else if (key.equals("esme-npi")) {
@@ -297,17 +285,23 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sourceNpi = Integer.parseInt(args[count++]);
 			} else if (key.equals("source-range")) {
 				sourceAddressRange = args[count++];
+			} else if (key.equals("routing-ton")) {
+				routinigTon = Integer.parseInt(args[count++]);
+			} else if (key.equals("routing-npi")) {
+				routingNpi = Integer.parseInt(args[count++]);
+			} else if (key.equals("routing-range")) {
+				routingAddressRange = args[count++];
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
 
 		}
 
-		Address address = new Address(esmeTonType, esmeNpiType, esmeAddrRange);
 		Esme esme = this.smscManagement.getEsmeManagement().createEsme(name, systemId, password, host, intPort,
-				chargingEnabled, smppBindType, systemType, smppVersionType, address, smppSessionType, windowSize,
-				connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName,
-				countersEnabled, enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange);
+				chargingEnabled, smppBindTypeStr, systemType, smppVersionType, esmeTonType, esmeNpiType, esmeAddrRange,
+				smppSessionTypeStr, windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval,
+				windowWaitTimeout, clusterName, countersEnabled, enquireLinkDelay, sourceTon, sourceNpi,
+				sourceAddressRange, routinigTon, routingNpi, routingAddressRange);
 		return String.format(SMSCOAMMessages.CREATE_ESME_SUCCESSFULL, esme.getSystemId());
 	}
 
