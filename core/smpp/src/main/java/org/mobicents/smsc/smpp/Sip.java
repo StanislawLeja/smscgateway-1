@@ -216,6 +216,8 @@ public class Sip implements SipMBean {
 		}
 
 		// Check sourceAddress
+        if (this.routingAddressRangePattern == null)
+            return false;
 		Matcher m = this.routingAddressRangePattern.matcher(destAddress);
 		if (m.matches()) {
 			return true;
