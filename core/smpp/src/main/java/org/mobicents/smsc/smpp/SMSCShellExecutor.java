@@ -836,9 +836,19 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (parName.equals("diameterdestport")) {
 				int val = Integer.parseInt(options[3]);
 				smscPropertiesManagement.setDiameterDestPort(val);
-			} else if (parName.equals("diameterusername")) {
-				String val = options[3];
-				smscPropertiesManagement.setDiameterUserName(val);
+            } else if (parName.equals("diameterusername")) {
+                String val = options[3];
+                smscPropertiesManagement.setDiameterUserName(val);
+            } else if (parName.equals("removinglivetablesdays")) {
+                int val = Integer.parseInt(options[3]);
+                if (val == 1 || val == 2 || val < 0)
+                    return SMSCOAMMessages.REMOVING_LIVE_ARCHIVE_TABLES_DAYS_BAD_VALUES;
+                smscPropertiesManagement.setRemovingLiveTablesDays(val);
+            } else if (parName.equals("removingarchivetablesdays")) {
+                int val = Integer.parseInt(options[3]);
+                if (val == 1 || val == 2 || val < 0)
+                    return SMSCOAMMessages.REMOVING_LIVE_ARCHIVE_TABLES_DAYS_BAD_VALUES;
+                smscPropertiesManagement.setRemovingArchiveTablesDays(val);
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -1040,8 +1050,12 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sb.append(smscPropertiesManagement.getDiameterDestHost());
 			} else if (parName.equals("diameterdestport")) {
 				sb.append(smscPropertiesManagement.getDiameterDestPort());
-			} else if (parName.equals("diameterusername")) {
-				sb.append(smscPropertiesManagement.getDiameterUserName());
+            } else if (parName.equals("diameterusername")) {
+                sb.append(smscPropertiesManagement.getDiameterUserName());
+            } else if (parName.equals("removinglivetablesdays")) {
+                sb.append(smscPropertiesManagement.getRemovingLiveTablesDays());
+            } else if (parName.equals("removingarchivetablesdays")) {
+                sb.append(smscPropertiesManagement.getRemovingArchiveTablesDays());
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -1186,9 +1200,17 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getDiameterDestPort());
 			sb.append("\n");
 
-			sb.append("diameterusername = ");
-			sb.append(smscPropertiesManagement.getDiameterUserName());
-			sb.append("\n");
+            sb.append("diameterusername = ");
+            sb.append(smscPropertiesManagement.getDiameterUserName());
+            sb.append("\n");
+
+            sb.append("removingLiveTablesDays = ");
+            sb.append(smscPropertiesManagement.getRemovingLiveTablesDays());
+            sb.append("\n");
+
+            sb.append("removingArchiveTablesDays = ");
+            sb.append(smscPropertiesManagement.getRemovingArchiveTablesDays());
+            sb.append("\n");
 
 			// private int defaultValidityPeriodHours = 3 * 24;
 			// private int maxValidityPeriodHours = 10 * 24;

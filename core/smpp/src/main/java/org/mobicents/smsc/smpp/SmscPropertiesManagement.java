@@ -80,7 +80,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String DIAMETER_DEST_REALM = "diameterDestRealm";
 	private static final String DIAMETER_DEST_HOST = "diameterDestHost";
 	private static final String DIAMETER_DEST_PORT = "diameterDestPort";
-	private static final String DIAMETER_USER_NAME = "diameterUserName";
+    private static final String DIAMETER_USER_NAME = "diameterUserName";
+    private static final String REMOVING_LIVE_TABLES_DAYS = "removingLiveTablesDays";
+    private static final String REMOVING_ARCHIVE_TABLES_DAYS = "removingArchiveTablesDays";
+
 
 	private static final String TAB_INDENT = "\t";
 	private static final String CLASS_ATTRIBUTE = "type";
@@ -186,6 +189,16 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// Diameter UserName for connection to OCS
 	private String diameterUserName = "";
 
+    // Days after which old cassandra live tables will be removed
+    // min value is 3 days (this means at least 2 days before today tables must be alive),
+	// if less value is defined data tables will not be deleted
+    // set this option to 0 to disable this option
+    private int removingLiveTablesDays = 3;
+    // Days after which old cassandra archive tables will be removed
+    // min value is 3 days (this means at least 2 days before today tables must be alive),
+    // if less value is defined data tables will not be deleted
+    // set this option to 0 to disable this option
+    private int removingArchiveTablesDays = 3;
 	// TODO: new **************************
 
 	private SmscPropertiesManagement(String name) {
@@ -576,6 +589,22 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.diameterUserName = diameterUserName;
 	}
 
+    public int getRemovingLiveTablesDays() {
+        return removingLiveTablesDays;
+    }
+
+    public void setRemovingLiveTablesDays(int removingLiveTablesDays) {
+        this.removingLiveTablesDays = removingLiveTablesDays;
+    }
+
+    public int getRemovingArchiveTablesDays() {
+        return removingArchiveTablesDays;
+    }
+
+    public void setRemovingArchiveTablesDays(int removingArchiveTablesDays) {
+        this.removingArchiveTablesDays = removingArchiveTablesDays;
+    }
+
 	public void start() throws Exception {
 
 		this.persistFile.clear();
@@ -642,6 +671,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.fetchMaxRows, FETCH_MAX_ROWS, Integer.class);
 			// writer.write(this.cdrDatabaseExportDuration,
 			// CDR_DATABASE_EXPORT_DURATION, Integer.class);
+
+            writer.write(this.removingLiveTablesDays, REMOVING_LIVE_TABLES_DAYS, Integer.class);
+            writer.write(this.removingArchiveTablesDays, REMOVING_ARCHIVE_TABLES_DAYS, Integer.class);
 
 			writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
 			writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
@@ -728,6 +760,13 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			// val = reader.read(CDR_DATABASE_EXPORT_DURATION, Integer.class);
 			// if (val != null)
 			// this.cdrDatabaseExportDuration = val;
+
+            val = reader.read(REMOVING_LIVE_TABLES_DAYS, Integer.class);
+            if (val != null)
+                this.removingLiveTablesDays = val;
+            val = reader.read(REMOVING_ARCHIVE_TABLES_DAYS, Integer.class);
+            if (val != null)
+                this.removingArchiveTablesDays = val;
 
 			this.esmeDefaultClusterName = reader.read(ESME_DEFAULT_CLUSTER_NAME, String.class);
 

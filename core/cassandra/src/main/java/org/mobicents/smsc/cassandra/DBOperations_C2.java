@@ -1528,6 +1528,83 @@ public class DBOperations_C2 {
 		}
 	}
 
+    /**
+     * Deleting live tables (DST_SLOT_TABLE_YYYY_MM_DD and
+     * SLOT_MESSAGES_TABLE_YYYY_MM_DD) for a defined date. Before deleting
+     * checking is made for we can not delay table for future, today and 2 days
+     * before
+     *
+     * @param dt
+     *            Date for a table
+     */
+    public void c2_deleteLiveTablesForDate(Date dt) {
+        // auto_snapshot option !!!
+
+        // checking date
+        int maxBackupsDays = 2;
+        Date curTime = new Date();
+        Date curDate = new Date(curTime.getYear(), curTime.getMonth(), curTime.getDate());
+        Date maxDate = new Date(curDate.getTime() - maxBackupsDays * 24 * 3600 * 1000);
+        if (!dt.before(maxDate)) {
+            logger.warn("Rejected an attempt of dropping of live cassandra tables for too late date: " + dt);
+            return;
+        }
+
+        String tName = "DST_SLOT_TABLE" + getTableName(dt);
+        this.doDeleteTable(tName);
+
+        tName = "SLOT_MESSAGES_TABLE" + getTableName(dt);
+        this.doDeleteTable(tName);
+    }
+
+    /**
+     * Deleting live table (MESSAGES) for a defined date. Before deleting
+     * checking is made for we can not delay table for future, today and 2 days
+     * before
+     *
+     * @param dt
+     *            Date for a table
+     */
+    public void c2_deleteArchiveTablesForDate(Date dt) {
+        // auto_snapshot option !!!
+
+        // checking date
+        int maxBackupsDays = 2;
+        Date curTime = new Date();
+        Date curDate = new Date(curTime.getYear(), curTime.getMonth(), curTime.getDate());
+        Date maxDate = new Date(curDate.getTime() - maxBackupsDays * 24 * 3600 * 1000);
+        if (!dt.before(maxDate)) {
+            logger.warn("Rejected an attempt of dropping of archive cassandra tables for too late date: " + dt);
+            return;
+        }
+
+        String tName = "MESSAGES" + getTableName(dt);
+        this.doDeleteTable(tName);
+    }
+
+    private void doDeleteTable(String tName) {
+        try {
+            String sa = "select * from \"" + tName + "\" limit 1";
+            PreparedStatement ps = session.prepare(sa);
+            BoundStatement boundStatement = new BoundStatement(ps);
+            session.execute(boundStatement);
+        } catch (Exception e) {
+            logger.info("Can not drop cassandra table because it is absent: " + tName);
+            return;
+        }
+
+        try {
+            String sb = "DROP TABLE \"" + tName + "\"";
+            PreparedStatement ps = session.prepare(sb);
+            BoundStatement boundStatement = new BoundStatement(ps);
+            session.execute(boundStatement);
+
+            logger.warn("Successfully dropped cassandra table: " + tName);
+        } catch (Exception e) {
+            logger.warn("Exception when dropping cassandra table: " + tName, e);
+        }
+    }
+
 	private class DueSlotWritingElement {
 		public long dueSlot;
 		public int writingCount;
