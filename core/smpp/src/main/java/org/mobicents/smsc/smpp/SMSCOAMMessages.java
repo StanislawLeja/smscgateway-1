@@ -117,7 +117,9 @@ public interface SMSCOAMMessages {
 
 	public static final String NO_SIP_DEFINED_YET = "No SIP defined yet";
 
-	public static final String NO_DATABASE_SMS_ROUTING_RULE = "DatabaseSmsRoutingRule is not used";
+    public static final String NO_DATABASE_SMS_ROUTING_RULE = "DatabaseSmsRoutingRule is not used";
+
+    public static final String REMOVING_LIVE_ARCHIVE_TABLES_DAYS_BAD_VALUES = "Value of removingLiveTablesDays or removingArcjiveTablesDays must be 0 (disabling of the feature) or >=3";
 
 	/**
 	 * Generic constants

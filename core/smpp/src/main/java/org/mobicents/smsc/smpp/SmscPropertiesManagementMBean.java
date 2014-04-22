@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.smpp;
 
 /**
@@ -168,5 +169,13 @@ public interface SmscPropertiesManagementMBean {
 	public String getDiameterUserName();
 
 	public void setDiameterUserName(String diameterUserName);
+
+    public int getRemovingLiveTablesDays();
+
+    public void setRemovingLiveTablesDays(int removingLiveTablesDays);
+
+    public int getRemovingArchiveTablesDays();
+
+    public void setRemovingArchiveTablesDays(int removingArchiveTablesDays);
 
 }

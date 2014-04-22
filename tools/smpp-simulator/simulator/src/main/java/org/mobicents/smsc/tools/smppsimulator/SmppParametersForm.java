@@ -60,6 +60,7 @@ public class SmppParametersForm extends JDialog {
 	private JTextField tbRequestExpiryTimeout;
 	private JTextField tbWindowMonitorInterval;
 	private JCheckBox cbRejectIncomingDeliveryMessage;
+	private JTextField tbAddressRange;
 
 	public SmppParametersForm(JFrame owner) {
 		super(owner, true);
@@ -182,6 +183,15 @@ public class SmppParametersForm extends JDialog {
 		cbSmppSessionType = new JComboBox();
 		cbSmppSessionType.setBounds(424, 152, 180, 20);
 		panel.add(cbSmppSessionType);
+		
+		JLabel lblEsmeaddressrangeField = new JLabel("Esme \"address_range\" field");
+		lblEsmeaddressrangeField.setBounds(10, 181, 401, 14);
+		panel.add(lblEsmeaddressrangeField);
+		
+		tbAddressRange = new JTextField();
+		tbAddressRange.setColumns(10);
+		tbAddressRange.setBounds(424, 178, 180, 20);
+		panel.add(tbAddressRange);
 
 	}
 
@@ -196,6 +206,7 @@ public class SmppParametersForm extends JDialog {
 		this.tbConnectTimeout.setText(((Long) data.getConnectTimeout()).toString());
 		this.tbRequestExpiryTimeout.setText(((Long) data.getRequestExpiryTimeout()).toString());
 		this.tbWindowMonitorInterval.setText(((Long) data.getWindowMonitorInterval()).toString());
+		this.tbAddressRange.setText(data.getAddressRange());
 
         this.cbBindType.removeAllItems();
         SmppBindType[] vall = SmppBindType.values();
@@ -277,6 +288,8 @@ public class SmppParametersForm extends JDialog {
 
 		this.data.setRejectIncomingDeliveryMessage(this.cbRejectIncomingDeliveryMessage.isSelected());
 
+		this.data.setAddressRange(tbAddressRange.getText());
+		
 		this.dispose();
 	}
 
