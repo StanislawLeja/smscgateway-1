@@ -2,10 +2,14 @@ Name
 	smsc databaserule delete
 
 SYNOPSIS
-	smsc databaserule delete <address> 
+	smsc databaserule delete <address> <SMPP|SIP>
 
 DESCRIPTION
-	This command is used to delete an existing Database Rule specified for 'address'. 
+	This command is used to delete an existing Database Rule specified for 'address'.
+
+	The parameter <SMPP|SIP> is used to define if the rule is deleted for SMPP or SIP. 
+	This is an optional parameter and if unspecified, by default the rule is 
+	deleted for SMPP. 
 
 SEE ALSO
 	smsc esme_create, smsc get scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
