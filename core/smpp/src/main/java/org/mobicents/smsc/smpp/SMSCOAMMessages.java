@@ -50,6 +50,8 @@ public interface SMSCOAMMessages {
 	public static final String ESME_STOP_SUCCESSFULL = "Successfully stopped ESME name=%s";
 
 	public static final String CREATE_ESME_SUCCESSFULL = "Successfully created ESME name=%s";
+	
+	public static final String MODIFY_ESME_SUCCESSFULL = "Successfully modified ESME name=%s";
 
 	public static final String CREATE_EMSE_FAIL_ALREADY_EXIST = "Creation of EMSE failed. Other ESME with name=%s already exist";
 

@@ -423,11 +423,14 @@
 									var password = response.value.Password;
 									
 									var windowSize = response.value.WindowSize;
+									var connectTimeout = response.value.ConnectTimeout;
 									var requestExpiryTimeout = response.value.RequestExpiryTimeout;
 									var windowMonitorInterval = response.value.WindowMonitorInterval;
 									var windowWaitTimeout = response.value.WindowWaitTimeout;
 									var maxWindowSize = response.value.MaxWindowSize;
 									var windowMonitorEnabled = response.value.WindowMonitorEnabled;
+									var countersEnabled = response.value.CountersEnabled;
+									var enquireLinkDelay = response.value.EnquireLinkDelay;
 									
 									var boundDuration = response.value.BoundDuration;
 									var rxDataSMCounter = response.value.RxDataSMCounter;
@@ -464,6 +467,7 @@
 												'<button class="btn btn-small btn-success"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Start ESME" data-placement="bottom" onclick="esmeOperation(\'startEsme\', \'' + name + '\')"><i class="icon-play"> </i></button> ' +
 												'<button class="btn btn-small btn-danger"' + (!isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Stop ESME" data-placement="bottom" onclick="esmeOperation(\'stopEsme\', \'' + name +  '\')"><i class="icon-stop"> </i></button> ' +
 												'<button class="btn btn-small btn-danger"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Remove ESME" data-placement="bottom" onclick="esmeOperation(\'destroyEsme\', \'' + name +  '\')"><i class="icon-remove"> </i></button> ' +
+												'<a href="#entities-modal'+name+'" role="button" class="btn btn-info btn-small" data-toggle="modal"><i class="icon-external-link"></i></a>' +
 											'</td></tr>'+
 
 
@@ -523,12 +527,15 @@
 									        '    <div>'+
 									        '      <p class="muted">Configuration</p>'+
 													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+														'<dt>ConnectTimeout</dt> <dd>' + connectTimeout + ' </dd>' +
 														'<dt>WindowSize</dt> <dd>' + windowSize + ' </dd>' +
 														'<dt>RequestExpiryTimeout</dt> <dd>' + requestExpiryTimeout + ' </dd>' +
 														'<dt>WindowMonitorInterval</dt> <dd>' + windowMonitorInterval + ' </dd>' +
 														'<dt>WindowWaitTimeout</dt> <dd>' + windowWaitTimeout + ' </dd>' +
 														'<dt>MaxWindowSize</dt> <dd>' + maxWindowSize + ' </dd>' +
 														'<dt>WindowMonitorEnabled</dt> <dd>' + windowMonitorEnabled + ' </dd>' +
+														'<dt>CountersEnabled</dt> <dd>' + countersEnabled + ' </dd>' +
+														'<dt>EnquireLinkDelay</dt> <dd>' + enquireLinkDelay + ' </dd>' +
 													'</dl>'+
 									        '    </div>'+	
 									        '<hr style="margin: 5px 0;"/>' +
@@ -578,7 +585,311 @@
 									 		'</div>'+
 									 		
 											'</td></tr>'
-									);									
+									);	
+									
+									$('#esmes-table-wrapper').append('<div id="entities-modal'+name+'" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'+
+											'<div class="modal-header">'+
+												'<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>'+
+												'<h3>ESME '+name+' properties</h3>'+
+											'</div>'+	
+											'<div id="entities-modal-body" class="modal-body">'+
+													'<div class="accordion-group">' +
+														'<div class="accordion-heading">' +name+ 										
+														'</div>'+
+														'<div id="' + name + '" class="accordion-body">' +
+															'<div class="accordion-inner">' +
+																'<strong><i class="icon-list"></i> ESME Configuration Properties</strong>' +
+																
+																'<div class="alert alert-error" id="login-settings-error" style="display:none;">'+
+																  '<button type="button" class="close">&times;</button>'+
+																  'Some Fields are not correctly filled out, please double check the settings below !'+
+																'</div>'+																			
+																
+																'<table class="table table-condensed table-striped">' + 
+																	'<thead><tr><th style="width: 40%;">Name</th><th style="width: 55%;">Value</th><th>&nbsp;</th></tr></thead>' +
+																	'<tbody>'+
+																		'<tr data-toggle="tooltip" title="esme TON">'+
+																			'<td style="font-size: 0.9em;">ESME TON</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'SystemId-input" class="control-group">'+
+																				'<span id="' + name +'SystemId-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + esmeTon + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'EsmeTon\', \'' + name+"SystemId" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"SystemId"+']\').toggle(); $(\'input[id^='+name+"SystemId"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'SystemId-text">' + esmeTon + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"SystemId"+']\').toggle(); $(\'input[id^='+name+"SystemId"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+
+																		'<tr data-toggle="tooltip" title="esme NPI">'+
+																			'<td style="font-size: 0.9em;">ESME NPI</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'EsmeNpi-input" class="control-group">'+
+																				'<span id="' + name +'EsmeNpi-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + esmeNpi + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'EsmeNpi\', \'' + name+"EsmeNpi" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"EsmeNpi"+']\').toggle(); $(\'input[id^='+name+"EsmeNpi"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'EsmeNpi-text">' + esmeNpi + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"EsmeNpi"+']\').toggle(); $(\'input[id^='+name+"EsmeNpi"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="esme Address Range">'+
+																			'<td style="font-size: 0.9em;">ESME Address Range</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'EsmeAddressRange-input" class="control-group">'+
+																				'<span id="' + name +'EsmeAddressRange-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + esmeAddressRange + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'EsmeAddressRange\', \'' + name+"EsmeAddressRange" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"EsmeAddressRange"+']\').toggle(); $(\'input[id^='+name+"EsmeAddressRange"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'EsmeAddressRange-text">' + esmeAddressRange + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"EsmeAddressRange"+']\').toggle(); $(\'input[id^='+name+"EsmeAddressRange"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="window size">'+
+																			'<td style="font-size: 0.9em;">Window Size</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'WindowSize-input" class="control-group">'+
+																				'<span id="' + name +'WindowSize-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + windowSize + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'WindowSize\', \'' + name+"WindowSize" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"WindowSize"+']\').toggle(); $(\'input[id^='+name+"WindowSize"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'WindowSize-text">' + windowSize + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"WindowSize"+']\').toggle(); $(\'input[id^='+name+"WindowSize"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Connect Timeout">'+
+																			'<td style="font-size: 0.9em;">Connect Timeout</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'ConnectTimeout-input" class="control-group">'+
+																				'<span id="' + name +'ConnectTimeout-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + connectTimeout + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'ConnectTimeout\', \'' + name+"ConnectTimeout" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"ConnectTimeout"+']\').toggle(); $(\'input[id^='+name+"ConnectTimeout"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'ConnectTimeout-text">' + connectTimeout + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"ConnectTimeout"+']\').toggle(); $(\'input[id^='+name+"ConnectTimeout"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+																		
+																		
+																		'<tr data-toggle="tooltip" title="Request Expiry Timeout">'+
+																			'<td style="font-size: 0.9em;">Request Expiry Timeout</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'RequestExpiryTimeout-input" class="control-group">'+
+																				'<span id="' + name +'RequestExpiryTimeout-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + requestExpiryTimeout + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RequestExpiryTimeout\', \'' + name+"RequestExpiryTimeout" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RequestExpiryTimeout"+']\').toggle(); $(\'input[id^='+name+"RequestExpiryTimeout"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'RequestExpiryTimeout-text">' + requestExpiryTimeout + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RequestExpiryTimeout"+']\').toggle(); $(\'input[id^='+name+"RequestExpiryTimeout"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Window Monitor Interval">'+
+																			'<td style="font-size: 0.9em;">Window Monitor Interval</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'WindowMonitorInterval-input" class="control-group">'+
+																				'<span id="' + name +'WindowMonitorInterval-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + windowMonitorInterval + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'WindowMonitorInterval\', \'' + name+"WindowMonitorInterval" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"WindowMonitorInterval"+']\').toggle(); $(\'input[id^='+name+"WindowMonitorInterval"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'WindowMonitorInterval-text">' + windowMonitorInterval + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"WindowMonitorInterval"+']\').toggle(); $(\'input[id^='+name+"WindowMonitorInterval"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Window Wait Timeout">'+
+																			'<td style="font-size: 0.9em;">Window Wait Timeout</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'WindowWaitTimeout-input" class="control-group">'+
+																				'<span id="' + name +'WindowWaitTimeout-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + windowWaitTimeout + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'WindowWaitTimeout\', \'' + name+"WindowWaitTimeout" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"WindowWaitTimeout"+']\').toggle(); $(\'input[id^='+name+"WindowWaitTimeout"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'WindowWaitTimeout-text">' + windowWaitTimeout + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"WindowWaitTimeout"+']\').toggle(); $(\'input[id^='+name+"WindowWaitTimeout"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="Counters Enabled">'+
+																			'<td style="font-size: 0.9em;">Counters Enabled</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'CountersEnabled-input" class="control-group">'+
+																				'<span id="' + name +'CountersEnabled-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + countersEnabled + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'CountersEnabled\', \'' + name+"CountersEnabled" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"CountersEnabled"+']\').toggle(); $(\'input[id^='+name+"CountersEnabled"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'CountersEnabled-text">' + countersEnabled + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"CountersEnabled"+']\').toggle(); $(\'input[id^='+name+"CountersEnabled"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="Enquire Link Delay">'+
+																			'<td style="font-size: 0.9em;">Enquire Link Delay</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'EnquireLinkDelay-input" class="control-group">'+
+																				'<span id="' + name +'EnquireLinkDelay-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + enquireLinkDelay + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'EnquireLinkDelay\', \'' + name+"EnquireLinkDelay" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"EnquireLinkDelay"+']\').toggle(); $(\'input[id^='+name+"EnquireLinkDelay"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'EnquireLinkDelay-text">' + enquireLinkDelay + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"EnquireLinkDelay"+']\').toggle(); $(\'input[id^='+name+"EnquireLinkDelay"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="Charging Enabled">'+
+																			'<td style="font-size: 0.9em;">Charging Enabled</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'ChargingEnabled-input" class="control-group">'+
+																				'<span id="' + name +'ChargingEnabled-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + chargingenabled + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'ChargingEnabled\', \'' + name+"ChargingEnabled" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"ChargingEnabled"+']\').toggle(); $(\'input[id^='+name+"ChargingEnabled"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'ChargingEnabled-text">' + chargingenabled + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"ChargingEnabled"+']\').toggle(); $(\'input[id^='+name+"ChargingEnabled"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Source Ton">'+
+																			'<td style="font-size: 0.9em;">Source Ton</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'SourceTon-input" class="control-group">'+
+																				'<span id="' + name +'SourceTon-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + sourceTon + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'SourceTon\', \'' + name+"SourceTon" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"SourceTon"+']\').toggle(); $(\'input[id^='+name+"SourceTon"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'SourceTon-text">' + sourceTon + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"SourceTon"+']\').toggle(); $(\'input[id^='+name+"SourceTon"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Source Npi">'+
+																			'<td style="font-size: 0.9em;">Source Npi</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'SourceNpi-input" class="control-group">'+
+																				'<span id="' + name +'SourceNpi-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + sourceNpi + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'SourceNpi\', \'' + name+"SourceNpi" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"SourceNpi"+']\').toggle(); $(\'input[id^='+name+"SourceNpi"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'SourceNpi-text">' + sourceNpi + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"SourceNpi"+']\').toggle(); $(\'input[id^='+name+"SourceNpi"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Source Address Range">'+
+																			'<td style="font-size: 0.9em;">Source Address Range</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'SourceAddressRange-input" class="control-group">'+
+																				'<span id="' + name +'SourceAddressRange-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + sourceAddressRange + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'SourceAddressRange\', \'' + name+"SourceAddressRange" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"SourceAddressRange"+']\').toggle(); $(\'input[id^='+name+"SourceAddressRange"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'SourceAddressRange-text">' + sourceAddressRange + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"SourceAddressRange"+']\').toggle(); $(\'input[id^='+name+"SourceAddressRange"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Routing Ton">'+
+																			'<td style="font-size: 0.9em;">Routing Ton</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'RoutingTon-input" class="control-group">'+
+																				'<span id="' + name +'RoutingTon-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + routingTon + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RoutingTon\', \'' + name+"RoutingTon" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingTon"+']\').toggle(); $(\'input[id^='+name+"RoutingTon"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'RoutingTon-text">' + routingTon + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingTon"+']\').toggle(); $(\'input[id^='+name+"RoutingTon"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Routing Npi">'+
+																			'<td style="font-size: 0.9em;">Routing Npi</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'RoutingNpi-input" class="control-group">'+
+																				'<span id="' + name +'RoutingNpi-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + routingNpi + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RoutingNpi\', \'' + name+"RoutingNpi" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingNpi"+']\').toggle(); $(\'input[id^='+name+"RoutingNpi"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'RoutingNpi-text">' + routingNpi + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingNpi"+']\').toggle(); $(\'input[id^='+name+"RoutingNpi"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="Routing Address Range">'+
+																			'<td style="font-size: 0.9em;">Routing Address Range</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'RoutingAddressRange-input" class="control-group">'+
+																				'<span id="' + name +'RoutingAddressRange-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + routingAddressRange + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RoutingAddressRange\', \'' + name+"RoutingAddressRange" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingAddressRange"+']\').toggle(); $(\'input[id^='+name+"RoutingAddressRange"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'RoutingAddressRange-text">' + routingAddressRange + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingAddressRange"+']\').toggle(); $(\'input[id^='+name+"RoutingAddressRange"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+																		
+																		
+																	'</tbody>' +
+																'</table>' +															
+															'</div>'+
+														'</div>'+
+													'</div>'+
+											'</div>'+
+											'<div class="modal-footer">'+
+												'<a href="#" onclick="$(\'#entities-modal'+name+'\').modal(\'hide\'); return false;" class="btn">Close</a>'+
+											'</div>'+										
+										'</div>');											
 									
 								}],
 								error: function(value){
@@ -864,6 +1175,56 @@
 				});		
 		
 	}
+	function onModifyEsmeOk(mbeanName, propertyName, spanId){
+		var formInvalid = false;
+		
+		var spanElement = document.getElementById(spanId + "-input");
+		var eleChild = spanElement.childNodes;
+		var inputTextEle = eleChild[0];
+		var spanElementTxt = document.getElementById(spanId + "-text");
+		
+		var propvalue = inputTextEle.value;
+		
+		if(propvalue.trim() == "") {
+			$("#div-"+spanId + "-input").addClass("error");					    			
+			formInvalid = true;
+		} else if($("#div-"+spanId + "-input").hasClass("error")) {
+			$("#div-"+spanId + "-input").removeClass("error");		
+		}	
+		
+		if(formInvalid) {
+			$("#login-settings-error").show();
+			logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+			return false;
+		} else {
+			$("#login-settings-error").hide();
+		}					
+		
+		var mbeanSearch="com.telscale.smsc:layer=Esme,name="+mbeanName;
+		jolokia.request(
+				[
+					{ type: "write", mbean: mbeanSearch, attribute: propertyName, value: inputTextEle.value },
+				],
+				{
+					success: function(response) {
+						
+						logToConsole("INFO", "ESME property "+ propertyName +"  successfully updated.");
+						
+						spanElementTxt.innerHTML= inputTextEle.value;
+					},
+					error: function(value) {
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+					} 
+				}
+			);		
+		
+		spanElement.style.display = 'none';
+		spanElementTxt.style.display = '';
+		
+		
+	}	
 	$(document).ready(function () {
 		updateEsmes();
 	});

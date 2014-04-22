@@ -165,6 +165,107 @@ public class SMSCShellExecutor implements ShellExecutor {
 	}
 
 	/**
+	 * Command is smsc esme modify <name> password <password> esme-ton <esme
+	 * address ton> esme-npi <esme address npi> esme-range <esme address range>
+	 * window-size <windowSize> connect-timeout <connectTimeout>
+	 * request-expiry-timeout <requestExpiryTimeout> window-monitor-interval
+	 * <windowMonitorInterval> window-wait-timeout <windowWaitTimeout>
+	 * counters-enabled <true | false> enquire-link-delay <30000>
+	 * charging-enabled <true | false> source-ton <source address ton>
+	 * source-npi <source address npi> source-range <source address range>
+	 * routing-ton <routing address ton> routing-npi <routing address npi>
+	 * routing-range <routing address range>
+	 * 
+	 * @param args
+	 * @return
+	 */
+	private String modifyEsme(String[] args) throws Exception {
+		if (args.length < 10 || args.length > 40) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		// Create new Rem ESME
+		String name = args[3];
+		if (name == null) {
+			return SMSCOAMMessages.INVALID_COMMAND;
+		}
+
+		Esme esme = this.smscManagement.getEsmeManagement().getEsmeByName(name);
+
+		if (esme == null) {
+			throw new Exception(String.format(SMSCOAMMessages.DELETE_ESME_FAILED_NO_ESME_FOUND, name));
+		}
+
+		int count = 4;
+
+		while (count < args.length) {
+			// These are all optional parameters for a Tx/Rx/Trx binds
+			String key = args[count++];
+			if (key == null) {
+				return SMSCOAMMessages.INVALID_COMMAND;
+			}
+
+			if (key.equals("esme-ton")) {
+				byte esmeTonType = Byte.parseByte(args[count++]);
+				esme.setEsmeTon(esmeTonType);
+			} else if (key.equals("esme-npi")) {
+				byte esmeNpiType = Byte.parseByte(args[count++]);
+				esme.setEsmeNpi(esmeNpiType);
+			} else if (key.equals("esme-range")) {
+				String esmeAddrRange = /* Regex */args[count++];
+				esme.setEsmeAddressRange(esmeAddrRange);
+			} else if (key.equals("window-size")) {
+				int windowSize = Integer.parseInt(args[count++]);
+				esme.setWindowSize(windowSize);
+			} else if (key.equals("connect-timeout")) {
+				long connectTimeout = Long.parseLong(args[count++]);
+				esme.setConnectTimeout(connectTimeout);
+			} else if (key.equals("request-expiry-timeout")) {
+				long requestExpiryTimeout = Long.parseLong(args[count++]);
+				esme.setRequestExpiryTimeout(requestExpiryTimeout);
+			} else if (key.equals("window-monitor-interval")) {
+				long windowMonitorInterval = Long.parseLong(args[count++]);
+				esme.setWindowMonitorInterval(windowMonitorInterval);
+			} else if (key.equals("window-wait-timeout")) {
+				long windowWaitTimeout = Long.parseLong(args[count++]);
+				esme.setWindowWaitTimeout(windowWaitTimeout);
+			} else if (key.equals("counters-enabled")) {
+				boolean countersEnabled = Boolean.parseBoolean(args[count++]);
+				esme.setCountersEnabled(countersEnabled);
+			} else if (key.equals("enquire-link-delay")) {
+				int enquireLinkDelay = Integer.parseInt(args[count++]);
+				esme.setEnquireLinkDelay(enquireLinkDelay);
+			} else if (key.equals("charging-enabled")) {
+				boolean chargingEnabled = Boolean.parseBoolean(args[count++]);
+				esme.setChargingEnabled(chargingEnabled);
+			} else if (key.equals("source-ton")) {
+				int sourceTon = Integer.parseInt(args[count++]);
+				esme.setSourceTon(sourceTon);
+			} else if (key.equals("source-npi")) {
+				int sourceNpi = Integer.parseInt(args[count++]);
+				esme.setSourceNpi(sourceNpi);
+			} else if (key.equals("source-range")) {
+				String sourceAddressRange = args[count++];
+				esme.setSourceAddressRange(sourceAddressRange);
+			} else if (key.equals("routing-ton")) {
+				int routingTon = Integer.parseInt(args[count++]);
+				esme.setRoutingTon(routingTon);
+			} else if (key.equals("routing-npi")) {
+				int routingNpi = Integer.parseInt(args[count++]);
+				esme.setRoutingNpi(routingNpi);
+			} else if (key.equals("routing-range")) {
+				String routingAddressRange = args[count++];
+				esme.setRoutingAddressRange(routingAddressRange);
+			} else {
+				return SMSCOAMMessages.INVALID_COMMAND;
+			}
+
+		}
+
+		return String.format(SMSCOAMMessages.MODIFY_ESME_SUCCESSFULL, esme.getSystemId());
+	}
+
+	/**
 	 * Command is smsc esme create name <systemId> <Specify password> <host-ip>
 	 * <port> <SmppBindType> <SmppSession.Type> system-type <sms | vms | ota >
 	 * interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton> esme-npi
@@ -369,6 +470,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 				if (rasCmd.equals("create")) {
 					return this.createEsme(args);
+				} else if (rasCmd.equals("modify")) {
+					return this.modifyEsme(args);
 				} else if (rasCmd.equals("delete")) {
 					return this.destroyEsme(args);
 				} else if (rasCmd.equals("show")) {

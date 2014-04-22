@@ -476,6 +476,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	/**
 	 * @return the windowSize
 	 */
+	@Override
 	public int getWindowSize() {
 		return windowSize;
 	}
@@ -484,6 +485,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param windowSize
 	 *            the windowSize to set
 	 */
+	@Override
 	public void setWindowSize(int windowSize) {
 		this.windowSize = windowSize;
 	}
@@ -491,6 +493,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	/**
 	 * @return the connectTimeout
 	 */
+	@Override
 	public long getConnectTimeout() {
 		return connectTimeout;
 	}
@@ -499,13 +502,15 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param connectTimeout
 	 *            the connectTimeout to set
 	 */
-	public void setConnectTimeout(int connectTimeout) {
+	@Override
+	public void setConnectTimeout(long connectTimeout) {
 		this.connectTimeout = connectTimeout;
 	}
 
 	/**
 	 * @return the requestExpiryTimeout
 	 */
+	@Override
 	public long getRequestExpiryTimeout() {
 		return requestExpiryTimeout;
 	}
@@ -514,6 +519,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param requestExpiryTimeout
 	 *            the requestExpiryTimeout to set
 	 */
+	@Override
 	public void setRequestExpiryTimeout(long requestExpiryTimeout) {
 		this.requestExpiryTimeout = requestExpiryTimeout;
 	}
@@ -521,6 +527,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	/**
 	 * @return the windowMonitorInterval
 	 */
+	@Override
 	public long getWindowMonitorInterval() {
 		return windowMonitorInterval;
 	}
@@ -529,6 +536,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param windowMonitorInterval
 	 *            the windowMonitorInterval to set
 	 */
+	@Override
 	public void setWindowMonitorInterval(long windowMonitorInterval) {
 		this.windowMonitorInterval = windowMonitorInterval;
 	}
@@ -536,6 +544,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	/**
 	 * @return the windowWaitTimeout
 	 */
+	@Override
 	public long getWindowWaitTimeout() {
 		return windowWaitTimeout;
 	}
@@ -544,6 +553,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param windowWaitTimeout
 	 *            the windowWaitTimeout to set
 	 */
+	@Override
 	public void setWindowWaitTimeout(long windowWaitTimeout) {
 		this.windowWaitTimeout = windowWaitTimeout;
 	}
@@ -551,6 +561,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	/**
 	 * @return the started
 	 */
+	@Override
 	public boolean isStarted() {
 		return started;
 	}
@@ -559,7 +570,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param started
 	 *            the started to set
 	 */
-	public void setStarted(boolean started) {
+	protected void setStarted(boolean started) {
 		this.started = started;
 	}
 
@@ -578,22 +589,32 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		this.defaultSmppSession = smppSession;
 	}
 
+	@Override
 	public int getEnquireLinkDelay() {
 		return enquireLinkDelay;
 	}
 
+	@Override
 	public void setEnquireLinkDelay(int enquireLinkDelay) {
 		this.enquireLinkDelay = enquireLinkDelay;
 	}
 
+	@Override
 	public boolean isCountersEnabled() {
 		return countersEnabled;
 	}
+	
+	@Override
+	public void setCountersEnabled(boolean countersEnabled) {
+		this.countersEnabled = countersEnabled;
+	}
 
+	@Override
 	public boolean isChargingEnabled() {
 		return chargingEnabled;
 	}
 
+	@Override
 	public void setChargingEnabled(boolean chargingEnabled) {
 		this.chargingEnabled = chargingEnabled;
 	}

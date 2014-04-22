@@ -73,9 +73,14 @@ public interface EsmeMBean extends DefaultSmppSessionMXBean {
 
 	int getPort();
 
-	boolean isChargingEnabled();
-
+	/**
+	 * Sets charging for this ESME
+	 * 
+	 * @param chargingEnabled
+	 */
 	void setChargingEnabled(boolean chargingEnabled);
+
+	boolean isChargingEnabled();
 
 	/**
 	 * every SMS coming into SMSC via this ESME should have same source_addr_ton
@@ -153,4 +158,104 @@ public interface EsmeMBean extends DefaultSmppSessionMXBean {
 	String getRoutingAddressRange();
 
 	void setRoutingAddressRange(String sourceAddressRange);
+
+	/**
+	 * Returns true if counters is enabled else false
+	 * 
+	 * @return
+	 */
+	boolean isCountersEnabled();
+
+	/**
+	 * Set to true if counters is to be enabled. Value takes effect only when
+	 * ESME is restarted
+	 * 
+	 * @param countersEnabled
+	 */
+	void setCountersEnabled(boolean countersEnabled);
+
+	/**
+	 * Sets the default window size. Value takes effect only when ESME is
+	 * restarted.
+	 * 
+	 * The window size is the amount of unacknowledged requests that are
+	 * permitted to be outstanding/unacknowledged at any given time. If more
+	 * requests are added, the underlying stack will throw an exception.
+	 * 
+	 * This value is set only when ESME is defined as Client side. For Server
+	 * side this value is taken from the 'SMPP Server Settings'.
+	 * 
+	 * @param windowSize
+	 */
+	void setWindowSize(int windowSize);
+
+	/**
+	 * Value takes effect only when ESME is restarted.
+	 * 
+	 * Default value is 10000 milli seconds. This parameter is used to specify
+	 * the time within which the connection to a remote SMSC server should be
+	 * established.
+	 * 
+	 * This is useful only when ESME is defined as Client Side. For Server side
+	 * this value is taken from the the 'SMPP Server Settings'.
+	 * 
+	 * @param connectTimeout
+	 */
+	void setConnectTimeout(long connectTimeout);
+
+	long getConnectTimeout();
+
+	/**
+	 * Value takes effect only when ESME is restarted.
+	 * 
+	 * Default value is -1 (disabled). This parameter is used to specify the
+	 * time to wait in milli seconds for an endpoint to respond to before it
+	 * expires. This is useful only when ESME is defined as Client Side. For
+	 * Server side this value is taken from the the 'SMPP Server Settings'.
+	 * 
+	 * @param requestExpiryTimeout
+	 */
+	void setRequestExpiryTimeout(long requestExpiryTimeout);
+
+	/**
+	 * Value takes effect only when ESME is restarted.
+	 * 
+	 * Default value is -1 (disabled). This parameter is used to specify the
+	 * time between executions of monitoring the window for requests that
+	 * expire. It is recommended that this value, generally, either matches or
+	 * is half the value of 'request-expiry-timeout'. Therefore, in the worst
+	 * case scenario, a request could take upto 1.5 times the
+	 * 'requestExpiryTimeout' to clear out.
+	 * 
+	 * This is useful only when ESME is defined as Client Side. For Server side
+	 * this value is taken from the the 'SMPP Server Settings'.
+	 * 
+	 * @param windowMonitorInterval
+	 */
+	void setWindowMonitorInterval(long windowMonitorInterval);
+
+	/**
+	 * Value takes effect only when ESME is restarted.
+	 * 
+	 * Default value is 60000 milli seconds. This parameter is used to specify
+	 * the time to wait until a slot opens up in the 'sendWindow'.
+	 * 
+	 * This is useful only when ESME is defined as Client Side. For Server side
+	 * this value is taken from the the 'SMPP Server Settings'.
+	 * 
+	 * @param windowWaitTimeout
+	 */
+	void setWindowWaitTimeout(long windowWaitTimeout);
+
+	/**
+	 * Default value is 30000 milli seconds. When SMSC connects to a remote
+	 * server as CLIENT, it sends an 'ENQUIRE_LINK' after every configured
+	 * enquire-link-delay.
+	 * 
+	 * @param enquireLinkDelay
+	 */
+	void setEnquireLinkDelay(int enquireLinkDelay);
+
+	int getEnquireLinkDelay();
+
 }
