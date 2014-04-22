@@ -23,39 +23,29 @@ package org.mobicents.smsc.smpp;
 
 import java.util.List;
 
-import com.cloudhopper.smpp.SmppBindType;
-import com.cloudhopper.smpp.SmppSession;
-import com.cloudhopper.smpp.type.Address;
-
 /**
  * 
  * @author Amit Bhayani
  * 
  */
 public interface EsmeManagementMBean {
-	public List<Esme> getEsmes();
+	List<Esme> getEsmes();
 
-	public Esme getEsmeByName(String esmeName);
+	Esme getEsmeByName(String esmeName);
 
-	public Esme getEsmeByClusterName(String esmeClusterName);
+	Esme getEsmeByClusterName(String esmeClusterName);
 
-	public Esme createEsme(String name, String systemId, String password, String host, int port,
-			boolean chargingEnabled, SmppBindType smppBindType, String systemType,
-			SmppInterfaceVersionType smppIntVersion, Address address, SmppSession.Type smppSessionType, int windowSize,
-			long connectTimeout, long requestExpiryTimeout, long windowMonitorInterval, long windowWaitTimeout,
-			String clusterName, boolean countersEnabled, int enquireLinkDelay, int sourceTon, int sourceNpi,
-			String sourceAddressRange) throws Exception;
-
-	public Esme createEsme(String name, String systemId, String password, String host, int port,
-			boolean chargingEnabled, String smppBindType, String systemType, String smppIntVersion, byte ton, byte npi,
-			String address, String smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
+	Esme createEsme(String name, String systemId, String password, String host, int port, boolean chargingEnabled,
+			String smppBindType, String systemType, String smppIntVersion, byte ton, byte npi, String address,
+			String smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
 			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
-			int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange) throws Exception;
+			int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange, int routingTon,
+			int routingNpi, String routingAddressRange) throws Exception;
 
-	public Esme destroyEsme(String esmeName) throws Exception;
+	Esme destroyEsme(String esmeName) throws Exception;
 
-	public void startEsme(String esmeName) throws Exception;
+	void startEsme(String esmeName) throws Exception;
 
-	public void stopEsme(String esmeName) throws Exception;
+	void stopEsme(String esmeName) throws Exception;
 
 }

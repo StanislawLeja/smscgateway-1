@@ -72,6 +72,10 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	private static final String SOURCE_NPI = "sourceNpi";
 	private static final String SOURCE_ADDRESS_RANGE = "sourceAddressRange";
 
+	private static final String ROUTING_TON = "routingTon";
+	private static final String ROUTING_NPI = "routingNpi";
+	private static final String ROUTING_ADDRESS_RANGE = "routingAddressRange";
+
 	private static final String CHARGING_ENABLED = "chargingEnabled";
 
 	private static final String WINDOW_SIZE = "windowSize";
@@ -93,15 +97,31 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	private int port;
 	private String systemType;
 	private SmppInterfaceVersionType smppVersion = null;
-	private transient Address address = null;
+
+	// These are configured ESME TON, NPI and Address Range. If ESME is acting
+	// as Server, incoming BIND request should match there TON, NPI and address
+	// range. If ESME is acting as Client, these values will be set in outgoing
+	// BIND request. if TON and NPI are -1 or esmeAddressRange is null they are
+	// ignored
+	private int esmeTon = -1;
+	private int esmeNpi = -1;
+	private String esmeAddressRange = null;
 
 	// Incoming SMS should match these TON, NPI and addressRange. TON and NPI
-	// can be -1 which means SMSC doesn't care for these fields on only
-	// addressRange should match
+	// can be -1 which means SMSC doesn't care for these fields and only
+	// addressRange (pattern) should match
 	private int sourceTon = -1;
 	private int sourceNpi = -1;
 	private String sourceAddressRange = "^[0-9a-zA-Z]*";
 	private Pattern sourceAddressRangePattern = null;
+
+	// Outgoing SMS should match these TON, NPI and addressRange. TON and NPI
+	// can be -1 which means SMSC doesn't care for these fields and only
+	// addressRange (pattern) should match
+	private int routingTon;
+	private int routingNpi;
+	private String routingAddressRange;
+	private Pattern routingAddressRangePattern;
 
 	private SmppBindType smppBindType;
 	private boolean chargingEnabled = false;
@@ -145,32 +165,8 @@ public class Esme implements XMLSerializable, EsmeMBean {
 
 	private transient DefaultSmppSession defaultSmppSession = null;
 
-	private Pattern pattern;
-
 	public Esme() {
 
-	}
-
-	public Esme(String name, String systemId, String pwd, String host, int port, boolean chargingEnabled,
-			SmppBindType smppBindType, String systemType, SmppInterfaceVersionType version, Address address,
-			String clusterName, boolean countersEnabled) {
-		this.name = name;
-
-		this.systemId = systemId;
-		this.password = pwd;
-		this.host = host;
-		this.port = port;
-		this.systemType = systemType;
-		this.smppVersion = version;
-		this.address = address;
-		this.smppBindType = smppBindType;
-
-		if (this.address != null && this.address.getAddress() != null) {
-			this.pattern = Pattern.compile(this.address.getAddress());
-		}
-
-		this.clusterName = clusterName;
-		this.chargingEnabled = chargingEnabled;
 	}
 
 	/**
@@ -187,20 +183,40 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param state
 	 */
 	public Esme(String name, String systemId, String password, String host, int port, boolean chargingEnabled,
-			String systemType, SmppInterfaceVersionType smppVersion, Address address, SmppBindType smppBindType,
-			Type smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
-			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
-			int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange) {
-		this(name, systemId, password, host, port, chargingEnabled, smppBindType, systemType, smppVersion, address,
-				clusterName, countersEnabled);
+			String systemType, SmppInterfaceVersionType smppVersion, int esmeTon, int esmeNpi, String esmeAddressRange,
+			SmppBindType smppBindType, Type smppSessionType, int windowSize, long connectTimeout,
+			long requestExpiryTimeout, long windowMonitorInterval, long windowWaitTimeout, String clusterName,
+			boolean countersEnabled, int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange,
+			int routingTon, int routingNpi, String routingAddressRange) {
+
+		this.name = name;
+
+		this.systemId = systemId;
+		this.password = password;
+		this.host = host;
+		this.port = port;
+
+		this.chargingEnabled = chargingEnabled;
+
+		this.systemType = systemType;
+		this.smppVersion = smppVersion;
+		this.esmeTon = esmeTon;
+		this.esmeNpi = esmeNpi;
+		this.esmeAddressRange = esmeAddressRange;
+		this.smppBindType = smppBindType;
 
 		this.smppSessionType = smppSessionType;
 
 		this.windowSize = windowSize;
 		this.connectTimeout = connectTimeout;
 		this.requestExpiryTimeout = requestExpiryTimeout;
+
 		this.windowMonitorInterval = windowMonitorInterval;
 		this.windowWaitTimeout = windowWaitTimeout;
+
+		this.clusterName = clusterName;
+
+		this.countersEnabled = countersEnabled;
 
 		this.enquireLinkDelay = enquireLinkDelay;
 
@@ -208,7 +224,17 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		this.sourceNpi = sourceNpi;
 		this.sourceAddressRange = sourceAddressRange;
 
-		this.sourceAddressRangePattern = Pattern.compile(this.sourceAddressRange);
+		if (this.sourceAddressRange != null) {
+			this.sourceAddressRangePattern = Pattern.compile(this.sourceAddressRange);
+		}
+
+		this.routingTon = routingTon;
+		this.routingNpi = routingNpi;
+		this.routingAddressRange = routingAddressRange;
+
+		if (this.routingAddressRange != null) {
+			this.routingAddressRangePattern = Pattern.compile(this.routingAddressRange);
+		}
 
 	}
 
@@ -336,14 +362,6 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		this.smppVersion = smppVersion;
 	}
 
-	public Address getAddress() {
-		return address;
-	}
-
-	public void setAddress(Address address) {
-		this.address = address;
-	}
-
 	@Override
 	public int getSourceTon() {
 		return sourceTon;
@@ -372,6 +390,72 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setSourceAddressRange(String sourceAddressRange) {
 		this.sourceAddressRange = sourceAddressRange;
+		if (this.sourceAddressRange != null) {
+			this.sourceAddressRangePattern = Pattern.compile(this.sourceAddressRange);
+		}
+	}
+
+	@Override
+	public int getRoutingTon() {
+		return routingTon;
+	}
+
+	@Override
+	public void setRoutingTon(int routingTon) {
+		this.routingTon = routingTon;
+	}
+
+	@Override
+	public int getRoutingNpi() {
+		return routingNpi;
+	}
+
+	@Override
+	public void setRoutingNpi(int routingNpi) {
+		this.routingNpi = routingNpi;
+	}
+
+	@Override
+	public String getRoutingAddressRange() {
+		return routingAddressRange;
+	}
+
+	@Override
+	public void setRoutingAddressRange(String routingAddressRange) {
+		this.routingAddressRange = routingAddressRange;
+		if (this.routingAddressRange != null) {
+			this.routingAddressRangePattern = Pattern.compile(this.routingAddressRange);
+		}
+	}
+
+	@Override
+	public int getEsmeTon() {
+		return esmeTon;
+	}
+
+	@Override
+	public void setEsmeTon(int esmeTon) {
+		this.esmeTon = esmeTon;
+	}
+
+	@Override
+	public int getEsmeNpi() {
+		return esmeNpi;
+	}
+
+	@Override
+	public void setEsmeNpi(int esmeNpi) {
+		this.esmeNpi = esmeNpi;
+	}
+
+	@Override
+	public String getEsmeAddressRange() {
+		return esmeAddressRange;
+	}
+
+	@Override
+	public void setEsmeAddressRange(String esmeAddressRange) {
+		this.esmeAddressRange = esmeAddressRange;
 	}
 
 	/**
@@ -392,6 +476,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	/**
 	 * @return the windowSize
 	 */
+	@Override
 	public int getWindowSize() {
 		return windowSize;
 	}
@@ -400,6 +485,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param windowSize
 	 *            the windowSize to set
 	 */
+	@Override
 	public void setWindowSize(int windowSize) {
 		this.windowSize = windowSize;
 	}
@@ -407,6 +493,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	/**
 	 * @return the connectTimeout
 	 */
+	@Override
 	public long getConnectTimeout() {
 		return connectTimeout;
 	}
@@ -415,13 +502,15 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param connectTimeout
 	 *            the connectTimeout to set
 	 */
-	public void setConnectTimeout(int connectTimeout) {
+	@Override
+	public void setConnectTimeout(long connectTimeout) {
 		this.connectTimeout = connectTimeout;
 	}
 
 	/**
 	 * @return the requestExpiryTimeout
 	 */
+	@Override
 	public long getRequestExpiryTimeout() {
 		return requestExpiryTimeout;
 	}
@@ -430,6 +519,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param requestExpiryTimeout
 	 *            the requestExpiryTimeout to set
 	 */
+	@Override
 	public void setRequestExpiryTimeout(long requestExpiryTimeout) {
 		this.requestExpiryTimeout = requestExpiryTimeout;
 	}
@@ -437,6 +527,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	/**
 	 * @return the windowMonitorInterval
 	 */
+	@Override
 	public long getWindowMonitorInterval() {
 		return windowMonitorInterval;
 	}
@@ -445,6 +536,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param windowMonitorInterval
 	 *            the windowMonitorInterval to set
 	 */
+	@Override
 	public void setWindowMonitorInterval(long windowMonitorInterval) {
 		this.windowMonitorInterval = windowMonitorInterval;
 	}
@@ -452,6 +544,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	/**
 	 * @return the windowWaitTimeout
 	 */
+	@Override
 	public long getWindowWaitTimeout() {
 		return windowWaitTimeout;
 	}
@@ -460,6 +553,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param windowWaitTimeout
 	 *            the windowWaitTimeout to set
 	 */
+	@Override
 	public void setWindowWaitTimeout(long windowWaitTimeout) {
 		this.windowWaitTimeout = windowWaitTimeout;
 	}
@@ -467,6 +561,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	/**
 	 * @return the started
 	 */
+	@Override
 	public boolean isStarted() {
 		return started;
 	}
@@ -475,7 +570,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 * @param started
 	 *            the started to set
 	 */
-	public void setStarted(boolean started) {
+	protected void setStarted(boolean started) {
 		this.started = started;
 	}
 
@@ -494,29 +589,32 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		this.defaultSmppSession = smppSession;
 	}
 
-	/**
-	 * @return the pattern
-	 */
-	protected Pattern getAddressRangePattern() {
-		return pattern;
-	}
-
+	@Override
 	public int getEnquireLinkDelay() {
 		return enquireLinkDelay;
 	}
 
+	@Override
 	public void setEnquireLinkDelay(int enquireLinkDelay) {
 		this.enquireLinkDelay = enquireLinkDelay;
 	}
 
+	@Override
 	public boolean isCountersEnabled() {
 		return countersEnabled;
 	}
+	
+	@Override
+	public void setCountersEnabled(boolean countersEnabled) {
+		this.countersEnabled = countersEnabled;
+	}
 
+	@Override
 	public boolean isChargingEnabled() {
 		return chargingEnabled;
 	}
 
+	@Override
 	public void setChargingEnabled(boolean chargingEnabled) {
 		this.chargingEnabled = chargingEnabled;
 	}
@@ -524,17 +622,38 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	public boolean isSourceAddressMatching(Address sourceAddress) {
 
 		// Check sourceTon
-		if (sourceTon != -1 && sourceTon != sourceAddress.getTon()) {
+		if (this.sourceTon != -1 && this.sourceTon != sourceAddress.getTon()) {
 			return false;
 		}
 
 		// Check sourceNpi
-		if (sourceNpi != -1 && sourceNpi != sourceAddress.getNpi()) {
+		if (this.sourceNpi != -1 && this.sourceNpi != sourceAddress.getNpi()) {
 			return false;
 		}
 
 		// Check sourceAddress
 		Matcher m = this.sourceAddressRangePattern.matcher(sourceAddress.getAddress());
+		if (m.matches()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	protected boolean isRoutingAddressMatching(int destTon, int destNpi, String destAddress) {
+
+		// Check sourceTon
+		if (this.routingTon != -1 && this.routingTon != destTon) {
+			return false;
+		}
+
+		// Check sourceNpi
+		if (this.routingNpi != -1 && this.routingNpi != destNpi) {
+			return false;
+		}
+
+		// Check sourceAddress
+		Matcher m = this.routingAddressRangePattern.matcher(destAddress);
 		if (m.matches()) {
 			return true;
 		}
@@ -575,15 +694,9 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			esme.smppVersion = SmppInterfaceVersionType.getInterfaceVersionType(xml.getAttribute(
 					ESME_INTERFACE_VERSION, ""));
 
-			byte ton = xml.getAttribute(ESME_TON, (byte) 0);
-			byte npi = xml.getAttribute(ESME_NPI, (byte) 0);
-			String addressRange = xml.getAttribute(ESME_ADDRESS_RANGE, null);
-
-			esme.address = new Address(ton, npi, addressRange);
-
-			if (addressRange != null) {
-				esme.pattern = Pattern.compile(addressRange);
-			}
+			esme.esmeTon = xml.getAttribute(ESME_TON, (byte) 0);
+			esme.esmeNpi = xml.getAttribute(ESME_NPI, (byte) 0);
+			esme.esmeAddressRange = xml.getAttribute(ESME_ADDRESS_RANGE, null);
 
 			esme.windowSize = xml.getAttribute(WINDOW_SIZE, 0);
 			esme.connectTimeout = xml.getAttribute(CONNECT_TIMEOUT, 0);
@@ -598,8 +711,17 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			esme.sourceTon = xml.getAttribute(SOURCE_TON, -1);
 			esme.sourceNpi = xml.getAttribute(SOURCE_NPI, -1);
 			esme.sourceAddressRange = xml.getAttribute(SOURCE_ADDRESS_RANGE, "^[0-9a-zA-Z]*");
-
 			esme.sourceAddressRangePattern = Pattern.compile(esme.sourceAddressRange);
+
+			esme.routingTon = xml.getAttribute(ROUTING_TON, -1);
+			esme.routingNpi = xml.getAttribute(ROUTING_NPI, -1);
+			// default value we are using here is esme.esmeAddressRange to be
+			// backward compatible
+			esme.routingAddressRange = xml.getAttribute(ROUTING_ADDRESS_RANGE, esme.esmeAddressRange);
+			if (esme.routingAddressRange != null) {
+				esme.routingAddressRangePattern = Pattern.compile(esme.routingAddressRange);
+			}
+
 		}
 
 		@Override
@@ -619,9 +741,9 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			if (esme.systemType != null) {
 				xml.setAttribute(ESME_SYSTEM_TYPE, esme.systemType);
 			}
-			xml.setAttribute(ESME_TON, esme.address.getTon());
-			xml.setAttribute(ESME_NPI, esme.address.getNpi());
-			xml.setAttribute(ESME_ADDRESS_RANGE, esme.address.getAddress());
+			xml.setAttribute(ESME_TON, esme.esmeTon);
+			xml.setAttribute(ESME_NPI, esme.esmeNpi);
+			xml.setAttribute(ESME_ADDRESS_RANGE, esme.esmeAddressRange);
 
 			xml.setAttribute(WINDOW_SIZE, esme.windowSize);
 			xml.setAttribute(CONNECT_TIMEOUT, esme.connectTimeout);
@@ -636,6 +758,10 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			xml.setAttribute(SOURCE_TON, esme.sourceTon);
 			xml.setAttribute(SOURCE_NPI, esme.sourceNpi);
 			xml.setAttribute(SOURCE_ADDRESS_RANGE, esme.sourceAddressRange);
+
+			xml.setAttribute(ROUTING_TON, esme.routingTon);
+			xml.setAttribute(ROUTING_NPI, esme.routingNpi);
+			xml.setAttribute(ROUTING_ADDRESS_RANGE, esme.routingAddressRange);
 		}
 	};
 
@@ -648,10 +774,15 @@ public class Esme implements XMLSerializable, EsmeMBean {
 				.append(SMSCOAMMessages.SHOW_ESME_BIND_TYPE).append(this.smppBindType)
 				.append(SMSCOAMMessages.SHOW_ESME_SYSTEM_TYPE).append(this.systemType)
 				.append(SMSCOAMMessages.SHOW_ESME_INTERFACE_VERSION).append(this.smppVersion)
-				.append(SMSCOAMMessages.SHOW_ADDRESS).append(this.address).append(SMSCOAMMessages.SHOW_CLUSTER_NAME)
-				.append(this.clusterName).append(SMSCOAMMessages.SHOW_SOURCE_ADDRESS_TON).append(this.sourceTon)
+				.append(SMSCOAMMessages.SHOW_ADDRESS_TON).append(this.esmeTon).append(SMSCOAMMessages.SHOW_ADDRESS_NPI)
+				.append(this.esmeNpi).append(SMSCOAMMessages.SHOW_ADDRESS).append(this.esmeAddressRange)
+				.append(SMSCOAMMessages.SHOW_CLUSTER_NAME).append(this.clusterName)
+				.append(SMSCOAMMessages.SHOW_SOURCE_ADDRESS_TON).append(this.sourceTon)
 				.append(SMSCOAMMessages.SHOW_SOURCE_ADDRESS_NPI).append(this.sourceNpi)
-				.append(SMSCOAMMessages.SHOW_SOURCE_ADDRESS).append(this.sourceAddressRange);
+				.append(SMSCOAMMessages.SHOW_SOURCE_ADDRESS).append(this.sourceAddressRange)
+				.append(SMSCOAMMessages.SHOW_ROUTING_ADDRESS_TON).append(this.routingTon)
+				.append(SMSCOAMMessages.SHOW_ROUTING_ADDRESS_NPI).append(this.routingNpi)
+				.append(SMSCOAMMessages.SHOW_ROUTING_ADDRESS).append(this.routingAddressRange);
 
 		sb.append(SMSCOAMMessages.NEW_LINE);
 	}

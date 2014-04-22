@@ -79,12 +79,7 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 					|| (sessionBindType == SmppBindType.RECEIVER && smppSessionType == SmppSession.Type.SERVER)
 					|| (sessionBindType == SmppBindType.TRANSMITTER && smppSessionType == SmppSession.Type.CLIENT)) {
 
-				Pattern p = esme.getAddressRangePattern();
-				if (p == null) {
-					continue;
-				}
-				Matcher m = p.matcher(address);
-				if (m.matches()) {
+				if (esme.isRoutingAddressMatching(ton, npi, address)) {
 					return esme.getClusterName();
 				}
 			}
@@ -98,13 +93,8 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 		for (FastList.Node<Sip> n = this.sipManagement.sips.head(), end = this.sipManagement.sips.tail(); (n = n
 				.getNext()) != end;) {
 			Sip sip = n.getValue();
-			Pattern p = sip.getAddressRangePattern();
-			if (p == null) {
-				continue;
-			}
 
-			Matcher m = p.matcher(address);
-			if (m.matches()) {
+			if (sip.isRoutingAddressMatching(ton, npi, address)) {
 				return sip.getClusterName();
 			}
 		}

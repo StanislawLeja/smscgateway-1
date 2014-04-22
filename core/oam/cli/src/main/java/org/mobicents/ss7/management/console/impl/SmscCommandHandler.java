@@ -44,6 +44,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 
 		Node esme = parent.addChild("esme");
 		esme.addChild("create");
+		esme.addChild("modify");
 		esme.addChild("delete");
 		esme.addChild("start");
 		esme.addChild("stop");

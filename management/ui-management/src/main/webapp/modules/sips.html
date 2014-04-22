@@ -70,9 +70,9 @@
 									
 									var state = "STOPPED";
 									
-									var addressTon = response.value.AddressTon;
-									var addressNpi = response.value.AddressNpi;
-									var addressRange = response.value.AddressRange;
+									var addressTon = response.value.RoutingTon;
+									var addressNpi = response.value.RoutingNpi;
+									var addressRange = response.value.RoutingAddressRange;
 									
 									if(isSmppServerStarted){
 										state = "STARTED";
@@ -98,7 +98,7 @@
 									        '    </div>'+
 								        		'<hr style="margin: 5px 0;"/>' +
 										        '    <div>'+
-										        '      <p class="muted">SIP Address</p>'+
+										        '      <p class="muted">SIP Rouing Address</p>'+
 														'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
 															'<dt>TypeOfNumber</dt> <dd>' + addressTon + ' </dd>' +
 															'<dt>NumberPlanIndicator</dt> <dd>' + addressNpi + ' </dd>' +
@@ -194,12 +194,12 @@
 																		'</tr>'+	
 																		
 																		'<tr data-toggle="tooltip" title="destination address ton to consider for routing SMS to this SIP stack">'+
-																			'<td style="font-size: 0.9em;">Address Ton</td>'+
+																			'<td style="font-size: 0.9em;">Routing Address Ton</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'AutoNegotiateInterfaceVersion-input" class="control-group">'+
 																				'<span id="' +name+ 'AutoNegotiateInterfaceVersion-input" style="display: none;">'+
 																					'<input type="text" class="input-small" value="' + addressTon + '" /> ' +
-																					'<i class="icon-ok" style="cursor: pointer;" onclick="onSipServrConfigOk(\'' + name+ '\', \'AddressTon\', \'' + name+"AutoNegotiateInterfaceVersion" + '\')"></i> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onSipServrConfigOk(\'' + name+ '\', \'RoutingTon\', \'' + name+"AutoNegotiateInterfaceVersion" + '\')"></i> ' +
 																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"AutoNegotiateInterfaceVersion"+']\').toggle(); $(\'input[id^='+name+"AutoNegotiateInterfaceVersion"+']\').focus();"></i>' + 
 																				'</span>'+
 																				'</div>' +
@@ -210,12 +210,12 @@
 																		'</tr>'+	
 																	
 																		'<tr data-toggle="tooltip" title="destination address npi to consider for routing SMS to this SIP stack">'+
-																			'<td style="font-size: 0.9em;">Address Npi</td>'+
+																			'<td style="font-size: 0.9em;">Routing Address Npi</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'InterfaceVersion-input" class="control-group">'+
 																				'<span id="' +name+ 'InterfaceVersion-input" style="display: none;">'+
 																					'<input type="text" class="input-small" value="' + addressNpi + '" /> ' +
-																					'<i class="icon-ok" style="cursor: pointer;" onclick="onSipServrConfigOk(\'' + name+ '\', \'AddressNpi\', \'' + name+"InterfaceVersion" + '\')"></i> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onSipServrConfigOk(\'' + name+ '\', \'RoutingNpi\', \'' + name+"InterfaceVersion" + '\')"></i> ' +
 																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"InterfaceVersion"+']\').toggle(); $(\'input[id^='+name+"InterfaceVersion"+']\').focus();"></i>' + 
 																				'</span>'+
 																				'</div>' +
@@ -226,12 +226,12 @@
 																		'</tr>'+	
 																		
 																		'<tr data-toggle="tooltip" title="destination address range to consider for routing SMS to this SIP stack">'+
-																			'<td style="font-size: 0.9em;">Address Range</td>'+
+																			'<td style="font-size: 0.9em;">Routing Address Range</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'MaxConnSize-input" class="control-group">'+
 																				'<span id="' +name+ 'MaxConnSize-input" style="display: none;">'+
 																					'<input type="text" class="input-small" value="' + addressRange + '" /> ' +
-																					'<i class="icon-ok" style="cursor: pointer;" onclick="onSipServrConfigOk(\'' + name+ '\', \'AddressRange\', \'' + name+"MaxConnSize" + '\')"></i> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onSipServrConfigOk(\'' + name+ '\', \'RoutingAddressRange\', \'' + name+"MaxConnSize" + '\')"></i> ' +
 																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"MaxConnSize"+']\').toggle(); $(\'input[id^='+name+"MaxConnSize"+']\').focus();"></i>' + 
 																				'</span>'+
 																				'</div>' +

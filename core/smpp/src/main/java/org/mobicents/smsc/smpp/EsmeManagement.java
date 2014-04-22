@@ -49,7 +49,6 @@ import org.jboss.mx.util.MBeanServerLocator;
 
 import com.cloudhopper.smpp.SmppBindType;
 import com.cloudhopper.smpp.SmppSession;
-import com.cloudhopper.smpp.type.Address;
 
 /**
  * 
@@ -192,50 +191,29 @@ public class EsmeManagement implements EsmeManagementMBean {
 			boolean chargingEnabled, String smppBindType, String systemType, String smppIntVersion, byte ton, byte npi,
 			String address, String smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
 			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
-			int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange) throws Exception {
+			int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange, int routingTon,
+			int routingNpi, String routingAddressRange) throws Exception {
+
 		SmppBindType smppBindTypeOb = SmppBindType.valueOf(smppBindType);
+
+		if (smppBindTypeOb == null) {
+			throw new Exception("SmppBindType must be either of TRANSCEIVER, TRANSMITTER or RECEIVER. Passed is "
+					+ smppBindType);
+		}
+
+		SmppSession.Type smppSessionTypeObj = SmppSession.Type.valueOf(smppSessionType);
+		if (smppSessionTypeObj == null) {
+			throw new Exception("SmppSession.Type must be either of SERVER or CLIENT. Passed is " + smppSessionType);
+		}
+
 		SmppInterfaceVersionType smppInterfaceVersionTypeObj = SmppInterfaceVersionType
 				.getInterfaceVersionType(smppIntVersion);
-		Address addressObj = new Address(ton, npi, address);
-		SmppSession.Type smppSessionTypeObj = SmppSession.Type.valueOf(smppSessionType);
 
-		return this.createEsme(name, systemId, password, host, port, chargingEnabled, smppBindTypeOb, systemType,
-				smppInterfaceVersionTypeObj, addressObj, smppSessionTypeObj, windowSize, connectTimeout,
-				requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled,
-				enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange);
+		if (smppInterfaceVersionTypeObj == null) {
+			smppInterfaceVersionTypeObj = SmppInterfaceVersionType.SMPP34;
+		}
 
-	}
-
-	/**
-	 * <p>
-	 * Create new {@link Esme}
-	 * </p>
-	 * <p>
-	 * Command is smsc esme create <name> <systemId> <Specify password>
-	 * <host-ip> <port> <SmppBindType> <SmppSession.Type> system-type <sms | vms
-	 * | ota > interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton>
-	 * esme-npi <esme address npi> esme-range <esme address range> cluster-name
-	 * <cluster-name>
-	 * </p>
-	 * <p>
-	 * where system-type, interface-version, esme-ton, esme-npi, esme-range are
-	 * optional, by default interface-version is 3.4.
-	 * 
-	 * </p>
-	 * 
-	 * @param args
-	 * @return
-	 * @throws Exception
-	 */
-	@Override
-	public synchronized Esme createEsme(String name, String systemId, String password, String host, int port,
-			boolean chargingEnabled, SmppBindType smppBindType, String systemType,
-			SmppInterfaceVersionType smppIntVersion, Address address, SmppSession.Type smppSessionType, int windowSize,
-			long connectTimeout, long requestExpiryTimeout, long windowMonitorInterval, long windowWaitTimeout,
-			String clusterName, boolean countersEnabled, int enquireLinkDelay, int sourceTon, int sourceNpi,
-			String sourceAddressRange) throws Exception {
-
-		if (smppSessionType == SmppSession.Type.CLIENT) {
+		if (smppSessionTypeObj == SmppSession.Type.CLIENT) {
 			if (port < 1) {
 				throw new Exception(SMSCOAMMessages.CREATE_EMSE_FAIL_PORT_CANNOT_BE_LESS_THAN_ZERO);
 			}
@@ -256,10 +234,10 @@ public class EsmeManagement implements EsmeManagementMBean {
 			// SystemId:IP:Port:SmppBindType combination should be unique for
 			// CLIENT. For SERVER it accepts multiple incoming binds as far as
 			// host is anonymous (-1) and/or port is -1
-			String primaryKey = systemId + smppBindType.name();
+			String primaryKey = systemId + smppBindType;
 			String existingPrimaryKey = esme.getSystemId() + esme.getSmppBindType().name();
 
-			if (smppSessionType == SmppSession.Type.SERVER) {
+			if (smppSessionTypeObj == SmppSession.Type.SERVER) {
 				if (!host.equals("-1") && port != -1) {
 					primaryKey = primaryKey + host + port;
 					existingPrimaryKey = existingPrimaryKey + esme.getHost() + esme.getPort();
@@ -279,24 +257,16 @@ public class EsmeManagement implements EsmeManagementMBean {
 			}
 		}// for loop
 
-		if (smppIntVersion == null) {
-			smppIntVersion = SmppInterfaceVersionType.SMPP34;
-		}
-
 		if (clusterName == null) {
 			clusterName = name;
 		}
 
-		Esme esme = null;
-		if (smppSessionType.equals(SmppSession.Type.SERVER)) {
-			esme = new Esme(name, systemId, password, host, port, chargingEnabled, smppBindType, systemType,
-					smppIntVersion, address, clusterName, countersEnabled);
-		} else {
-			esme = new Esme(name, systemId, password, host, port, chargingEnabled, systemType, smppIntVersion, address,
-					smppBindType, smppSessionType, windowSize, connectTimeout, requestExpiryTimeout,
-					windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled, enquireLinkDelay,
-					sourceTon, sourceNpi, sourceAddressRange);
-		}
+		Esme esme = new Esme(name, systemId, password, host, port, chargingEnabled, systemType,
+				smppInterfaceVersionTypeObj, ton, npi, address, smppBindTypeOb, smppSessionTypeObj, windowSize,
+				connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName,
+				countersEnabled, enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange, routingTon, routingNpi,
+				routingAddressRange);
+
 		esmes.add(esme);
 
 		EsmeCluster esmeCluster = this.esmeClusters.get(clusterName);

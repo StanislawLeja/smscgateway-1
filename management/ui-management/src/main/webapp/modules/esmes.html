@@ -136,9 +136,10 @@
 				</div>
 				
 				<div id="div-esmeTon" class="control-group">
-					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMSC is acting as server, esme-ton for incoming BIND request should match with configured value. If SMSC is initiating BIND then this value will be included in bind request">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="defines ESME TON. if SMPP Session Type is CLIENT this TON will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same TON as configured here. If configured is null(-1), SMSC will ignore in both the cases">
 						<span class="add-on">ESME Type of number (TON)</span>
 						<select id="esmeTon" >
+							<option value="-1">Null</option>
 							<option value="0">Unknown</option>
 							<option value="1">International</option>
 							<option value="2">National</option>
@@ -152,9 +153,10 @@
 				</div>
 								
 				<div id="div-esmeNpi" class="control-group">
-					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMSC is acting as server, esme-npi for incoming BIND request should match with configured value. If SMSC is initiating BIND then this value will be included in bind request.">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="defines ESME NPI. if SMPP Session Type is CLIENT this NPI will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same NPI as configured here. If configured is null(-1), SMSC will ignore in both the cases">
 						<span class="add-on">ESME Number plan indicator (NPI)</span>
 						<select id="esmeNpi" >
+							<option value="-1">Null</option>
 							<option value="0">Unknown</option>
 							<option value="1">ISDN (E163/E164)</option>
 							<option value="3">Data (X.121)</option>
@@ -170,11 +172,99 @@
 				</div>				
 				
 				<div id="div-esmeRange" class="control-group">
-					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMSC is acting as server, incoming bind request's esme-range should match with configured one. If incoming doesn't carry esme-range, one defined here will be used. If SMSC is acting as client, the bind request initiated will carry this esme-range.">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="defines ESME Address Range. if SMPP Session Type is CLIENT this address range will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same address range as configured here. If configured is null, SMSC will ignore in both the cases">
 						<span class="add-on">ESME Range</span>
 						<input id="esmeRange" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="ESME Range" value="^[0-9a-zA-Z]*"/>
 					</span>	
 				</div>
+				
+				
+				<div id="div-sourceTon" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="every SMS coming into SMSC via this ESME should have same source_addr_ton as configured here. If the value here is null(-1) or it's not null and match's, SMSC will compare source_addr_npi and source_addr as mentioned below. If it doesn't match SMSC will reject this SMS with error code 0x0000000A - Invalid Source Address.">
+						<span class="add-on">Source Type of number (TON)</span>
+						<select id="sourceTon" >
+							<option value="-1">Null</option>
+							<option value="0">Unknown</option>
+							<option value="1">International</option>
+							<option value="2">National</option>
+							<option value="3">Network Specific</option>
+							<option value="4">Subscriber Number</option>
+							<option value="5">Alphanumeric</option>
+							<option value="6">Abbreviated</option>
+							<option value="7">Reserved</option>
+						</select>
+					</span>	
+				</div>
+								
+				<div id="div-sourceNpi" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="every SMS coming into SMSC via this ESME should have same source_addr_npi as configured here. If the value here is null(-1)or it's not null and match's, SMSC will compare source_addr as mentioned below. If it doesn't match SMSC will reject this SMS with error code 0x0000000A - Invalid Source Address.">
+						<span class="add-on">Source Number plan indicator (NPI)</span>
+						<select id="sourceNpi" >
+							<option value="-1">Null</option>
+							<option value="0">Unknown</option>
+							<option value="1">ISDN (E163/E164)</option>
+							<option value="3">Data (X.121)</option>
+							<option value="4">Telex (F.69)</option>
+							<option value="6">Land Mobile (E.212)</option>
+							<option value="8">National</option>
+							<option value="9">Private</option>
+							<option value="10">ERMES</option>
+							<option value="14">Internet (IP)</option>
+							<option value="18">WAP Client Id</option>
+						</select>
+					</span>	
+				</div>				
+				
+				<div id="div-sourceRange" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="every SMS coming into SMSC via this ESME should have same source_addr as mentioned here. This is regular java expression. Default value is ^[0-9a-zA-Z]* If it match's, SMSC will accept incoming SMS and process further. If it doesn't match SMSC will reject this SMS with error code 0x0000000A - Invalid Source Address.">
+						<span class="add-on">Source Range</span>
+						<input id="sourceRange" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Source Range" value="^[0-9a-zA-Z]*"/>
+					</span>	
+				</div>	
+				
+				<div id="div-routingTon" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="DefaultSmsRoutingRule will try to match the dest_addr_ton of outgoing SMS with one configured here. If configured value is null(-1) or it's not null and match's, SMSC will compare dest_addr_npi and destination_addr as below. It it doesn't match, SMSC will select next ESME in list for matching routing rule">
+						<span class="add-on">Routing Type of number (TON)</span>
+						<select id="routingTon" >
+							<option value="-1">Null</option>
+							<option value="0">Unknown</option>
+							<option value="1">International</option>
+							<option value="2">National</option>
+							<option value="3">Network Specific</option>
+							<option value="4">Subscriber Number</option>
+							<option value="5">Alphanumeric</option>
+							<option value="6">Abbreviated</option>
+							<option value="7">Reserved</option>
+						</select>
+					</span>	
+				</div>
+								
+				<div id="div-routingNpi" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="DefaultSmsRoutingRule will try to match the dest_addr_npi with one configured here. If configured value is null(-1)or it's not null and match's, SMSC will compare destination_addr as below. It it doesn't match, SMSC will select next ESME in list for matching routing rule">
+						<span class="add-on">Routing Number plan indicator (NPI)</span>
+						<select id="routingNpi" >
+							<option value="-1">Null</option>
+							<option value="0">Unknown</option>
+							<option value="1">ISDN (E163/E164)</option>
+							<option value="3">Data (X.121)</option>
+							<option value="4">Telex (F.69)</option>
+							<option value="6">Land Mobile (E.212)</option>
+							<option value="8">National</option>
+							<option value="9">Private</option>
+							<option value="10">ERMES</option>
+							<option value="14">Internet (IP)</option>
+							<option value="18">WAP Client Id</option>
+						</select>
+					</span>	
+				</div>				
+				
+				<div id="div-routingRange" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="DefaultSmsRoutingRule will try to match destination_addr here. This is regular java expression. Default value is ^[0-9a-zA-Z]*. If it match's, SMSC will send the SMS out over this SMPP connection. If it doesn't match, SMSC will select next ESME in list for matching routing rule">
+						<span class="add-on">Routing Range</span>
+						<input id="routingRange" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Routing Range" value="^[0-9a-zA-Z]*"/>
+					</span>	
+				</div>							
+				
 	
 				<div id="div-clusterName" class="control-group">
 					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="its possible to group different SMPP connections together by specifying same cluster-name. All the SMPP connection 's that are capable of sending out SMS are candidates for grouping ">
@@ -253,8 +343,6 @@
 		var e1 = document.getElementById("smppSessionType");
 		var smppSessionType = e1.options[e1.selectedIndex].text;		
 		
-		alert(smppSessionType);
-		
 		if(smppSessionType == "SERVER"){
 			document.getElementById("windowSize").disabled = true;
 			document.getElementById("connectTimeout").disabled = true;
@@ -312,7 +400,17 @@
 									
 									var chargingenabled = response.value.ChargingEnabled;
 									
-									var esmeAddress = response.value.Address;
+									var esmeTon = response.value.EsmeTon;
+									var esmeNpi = response.value.EsmeNpi;
+									var esmeAddressRange = response.value.EsmeAddressRange;
+									
+									var sourceTon = response.value.SourceTon;
+									var sourceNpi = response.value.SourceNpi;
+									var sourceAddressRange = response.value.SourceAddressRange;
+									
+									var routingTon = response.value.RoutingTon;
+									var routingNpi = response.value.RoutingNpi;
+									var routingAddressRange = response.value.RoutingAddressRange;
 									
 									
 									var systemId = response.value.SystemId;
@@ -325,11 +423,14 @@
 									var password = response.value.Password;
 									
 									var windowSize = response.value.WindowSize;
+									var connectTimeout = response.value.ConnectTimeout;
 									var requestExpiryTimeout = response.value.RequestExpiryTimeout;
 									var windowMonitorInterval = response.value.WindowMonitorInterval;
 									var windowWaitTimeout = response.value.WindowWaitTimeout;
 									var maxWindowSize = response.value.MaxWindowSize;
 									var windowMonitorEnabled = response.value.WindowMonitorEnabled;
+									var countersEnabled = response.value.CountersEnabled;
+									var enquireLinkDelay = response.value.EnquireLinkDelay;
 									
 									var boundDuration = response.value.BoundDuration;
 									var rxDataSMCounter = response.value.RxDataSMCounter;
@@ -366,6 +467,7 @@
 												'<button class="btn btn-small btn-success"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Start ESME" data-placement="bottom" onclick="esmeOperation(\'startEsme\', \'' + name + '\')"><i class="icon-play"> </i></button> ' +
 												'<button class="btn btn-small btn-danger"' + (!isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Stop ESME" data-placement="bottom" onclick="esmeOperation(\'stopEsme\', \'' + name +  '\')"><i class="icon-stop"> </i></button> ' +
 												'<button class="btn btn-small btn-danger"' + (isSmppServerStarted ? 'disabled' : '') + ' data-toggle="tooltip" title="Remove ESME" data-placement="bottom" onclick="esmeOperation(\'destroyEsme\', \'' + name +  '\')"><i class="icon-remove"> </i></button> ' +
+												'<a href="#entities-modal'+name+'" role="button" class="btn btn-info btn-small" data-toggle="modal"><i class="icon-external-link"></i></a>' +
 											'</td></tr>'+
 
 
@@ -395,21 +497,45 @@
 										        '    <div>'+
 										        '      <p class="muted">ESME Address</p>'+
 														'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
-															'<dt>TypeOfNumber</dt> <dd>' + esmeAddress.ton + ' </dd>' +
-															'<dt>NumberPlanIndicator</dt> <dd>' + esmeAddress.npi + ' </dd>' +
-															'<dt>AddressRange</dt> <dd>' + esmeAddress.address + ' </dd>' +
+															'<dt>TypeOfNumber</dt> <dd>' + esmeTon + ' </dd>' +
+															'<dt>NumberPlanIndicator</dt> <dd>' + esmeNpi + ' </dd>' +
+															'<dt>AddressRange</dt> <dd>' + esmeAddressRange + ' </dd>' +
 														'</dl>'+
-										        '    </div>'+				        		
+										        '    </div>'+	
+
+								        		'<hr style="margin: 5px 0;"/>' +
+										        '    <div>'+
+										        '      <p class="muted">Source Address</p>'+
+														'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+															'<dt>TypeOfNumber</dt> <dd>' + sourceTon + ' </dd>' +
+															'<dt>NumberPlanIndicator</dt> <dd>' + sourceNpi + ' </dd>' +
+															'<dt>AddressRange</dt> <dd>' + sourceAddressRange + ' </dd>' +
+														'</dl>'+
+										        '    </div>'+
+										        
+								        		'<hr style="margin: 5px 0;"/>' +
+										        '    <div>'+
+										        '      <p class="muted">Routing Address</p>'+
+														'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+															'<dt>TypeOfNumber</dt> <dd>' + routingTon + ' </dd>' +
+															'<dt>NumberPlanIndicator</dt> <dd>' + routingNpi + ' </dd>' +
+															'<dt>AddressRange</dt> <dd>' + routingAddressRange + ' </dd>' +
+														'</dl>'+
+										        '    </div>'+											        
+										        
 									        	'<hr style="margin: 5px 0;"/>' +
 									        '    <div>'+
 									        '      <p class="muted">Configuration</p>'+
 													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+														'<dt>ConnectTimeout</dt> <dd>' + connectTimeout + ' </dd>' +
 														'<dt>WindowSize</dt> <dd>' + windowSize + ' </dd>' +
 														'<dt>RequestExpiryTimeout</dt> <dd>' + requestExpiryTimeout + ' </dd>' +
 														'<dt>WindowMonitorInterval</dt> <dd>' + windowMonitorInterval + ' </dd>' +
 														'<dt>WindowWaitTimeout</dt> <dd>' + windowWaitTimeout + ' </dd>' +
 														'<dt>MaxWindowSize</dt> <dd>' + maxWindowSize + ' </dd>' +
 														'<dt>WindowMonitorEnabled</dt> <dd>' + windowMonitorEnabled + ' </dd>' +
+														'<dt>CountersEnabled</dt> <dd>' + countersEnabled + ' </dd>' +
+														'<dt>EnquireLinkDelay</dt> <dd>' + enquireLinkDelay + ' </dd>' +
 													'</dl>'+
 									        '    </div>'+	
 									        '<hr style="margin: 5px 0;"/>' +
@@ -459,7 +585,311 @@
 									 		'</div>'+
 									 		
 											'</td></tr>'
-									);									
+									);	
+									
+									$('#esmes-table-wrapper').append('<div id="entities-modal'+name+'" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'+
+											'<div class="modal-header">'+
+												'<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>'+
+												'<h3>ESME '+name+' properties</h3>'+
+											'</div>'+	
+											'<div id="entities-modal-body" class="modal-body">'+
+													'<div class="accordion-group">' +
+														'<div class="accordion-heading">' +name+ 										
+														'</div>'+
+														'<div id="' + name + '" class="accordion-body">' +
+															'<div class="accordion-inner">' +
+																'<strong><i class="icon-list"></i> ESME Configuration Properties</strong>' +
+																
+																'<div class="alert alert-error" id="login-settings-error" style="display:none;">'+
+																  '<button type="button" class="close">&times;</button>'+
+																  'Some Fields are not correctly filled out, please double check the settings below !'+
+																'</div>'+																			
+																
+																'<table class="table table-condensed table-striped">' + 
+																	'<thead><tr><th style="width: 40%;">Name</th><th style="width: 55%;">Value</th><th>&nbsp;</th></tr></thead>' +
+																	'<tbody>'+
+																		'<tr data-toggle="tooltip" title="esme TON">'+
+																			'<td style="font-size: 0.9em;">ESME TON</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'SystemId-input" class="control-group">'+
+																				'<span id="' + name +'SystemId-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + esmeTon + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'EsmeTon\', \'' + name+"SystemId" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"SystemId"+']\').toggle(); $(\'input[id^='+name+"SystemId"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'SystemId-text">' + esmeTon + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"SystemId"+']\').toggle(); $(\'input[id^='+name+"SystemId"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+
+																		'<tr data-toggle="tooltip" title="esme NPI">'+
+																			'<td style="font-size: 0.9em;">ESME NPI</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'EsmeNpi-input" class="control-group">'+
+																				'<span id="' + name +'EsmeNpi-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + esmeNpi + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'EsmeNpi\', \'' + name+"EsmeNpi" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"EsmeNpi"+']\').toggle(); $(\'input[id^='+name+"EsmeNpi"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'EsmeNpi-text">' + esmeNpi + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"EsmeNpi"+']\').toggle(); $(\'input[id^='+name+"EsmeNpi"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="esme Address Range">'+
+																			'<td style="font-size: 0.9em;">ESME Address Range</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'EsmeAddressRange-input" class="control-group">'+
+																				'<span id="' + name +'EsmeAddressRange-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + esmeAddressRange + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'EsmeAddressRange\', \'' + name+"EsmeAddressRange" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"EsmeAddressRange"+']\').toggle(); $(\'input[id^='+name+"EsmeAddressRange"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'EsmeAddressRange-text">' + esmeAddressRange + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"EsmeAddressRange"+']\').toggle(); $(\'input[id^='+name+"EsmeAddressRange"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="window size">'+
+																			'<td style="font-size: 0.9em;">Window Size</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'WindowSize-input" class="control-group">'+
+																				'<span id="' + name +'WindowSize-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + windowSize + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'WindowSize\', \'' + name+"WindowSize" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"WindowSize"+']\').toggle(); $(\'input[id^='+name+"WindowSize"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'WindowSize-text">' + windowSize + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"WindowSize"+']\').toggle(); $(\'input[id^='+name+"WindowSize"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Connect Timeout">'+
+																			'<td style="font-size: 0.9em;">Connect Timeout</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'ConnectTimeout-input" class="control-group">'+
+																				'<span id="' + name +'ConnectTimeout-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + connectTimeout + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'ConnectTimeout\', \'' + name+"ConnectTimeout" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"ConnectTimeout"+']\').toggle(); $(\'input[id^='+name+"ConnectTimeout"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'ConnectTimeout-text">' + connectTimeout + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"ConnectTimeout"+']\').toggle(); $(\'input[id^='+name+"ConnectTimeout"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+																		
+																		
+																		'<tr data-toggle="tooltip" title="Request Expiry Timeout">'+
+																			'<td style="font-size: 0.9em;">Request Expiry Timeout</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'RequestExpiryTimeout-input" class="control-group">'+
+																				'<span id="' + name +'RequestExpiryTimeout-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + requestExpiryTimeout + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RequestExpiryTimeout\', \'' + name+"RequestExpiryTimeout" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RequestExpiryTimeout"+']\').toggle(); $(\'input[id^='+name+"RequestExpiryTimeout"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'RequestExpiryTimeout-text">' + requestExpiryTimeout + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RequestExpiryTimeout"+']\').toggle(); $(\'input[id^='+name+"RequestExpiryTimeout"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Window Monitor Interval">'+
+																			'<td style="font-size: 0.9em;">Window Monitor Interval</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'WindowMonitorInterval-input" class="control-group">'+
+																				'<span id="' + name +'WindowMonitorInterval-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + windowMonitorInterval + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'WindowMonitorInterval\', \'' + name+"WindowMonitorInterval" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"WindowMonitorInterval"+']\').toggle(); $(\'input[id^='+name+"WindowMonitorInterval"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'WindowMonitorInterval-text">' + windowMonitorInterval + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"WindowMonitorInterval"+']\').toggle(); $(\'input[id^='+name+"WindowMonitorInterval"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Window Wait Timeout">'+
+																			'<td style="font-size: 0.9em;">Window Wait Timeout</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'WindowWaitTimeout-input" class="control-group">'+
+																				'<span id="' + name +'WindowWaitTimeout-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + windowWaitTimeout + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'WindowWaitTimeout\', \'' + name+"WindowWaitTimeout" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"WindowWaitTimeout"+']\').toggle(); $(\'input[id^='+name+"WindowWaitTimeout"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'WindowWaitTimeout-text">' + windowWaitTimeout + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"WindowWaitTimeout"+']\').toggle(); $(\'input[id^='+name+"WindowWaitTimeout"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="Counters Enabled">'+
+																			'<td style="font-size: 0.9em;">Counters Enabled</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'CountersEnabled-input" class="control-group">'+
+																				'<span id="' + name +'CountersEnabled-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + countersEnabled + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'CountersEnabled\', \'' + name+"CountersEnabled" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"CountersEnabled"+']\').toggle(); $(\'input[id^='+name+"CountersEnabled"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'CountersEnabled-text">' + countersEnabled + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"CountersEnabled"+']\').toggle(); $(\'input[id^='+name+"CountersEnabled"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="Enquire Link Delay">'+
+																			'<td style="font-size: 0.9em;">Enquire Link Delay</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'EnquireLinkDelay-input" class="control-group">'+
+																				'<span id="' + name +'EnquireLinkDelay-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + enquireLinkDelay + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'EnquireLinkDelay\', \'' + name+"EnquireLinkDelay" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"EnquireLinkDelay"+']\').toggle(); $(\'input[id^='+name+"EnquireLinkDelay"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'EnquireLinkDelay-text">' + enquireLinkDelay + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"EnquireLinkDelay"+']\').toggle(); $(\'input[id^='+name+"EnquireLinkDelay"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="Charging Enabled">'+
+																			'<td style="font-size: 0.9em;">Charging Enabled</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'ChargingEnabled-input" class="control-group">'+
+																				'<span id="' + name +'ChargingEnabled-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + chargingenabled + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'ChargingEnabled\', \'' + name+"ChargingEnabled" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"ChargingEnabled"+']\').toggle(); $(\'input[id^='+name+"ChargingEnabled"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'ChargingEnabled-text">' + chargingenabled + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"ChargingEnabled"+']\').toggle(); $(\'input[id^='+name+"ChargingEnabled"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Source Ton">'+
+																			'<td style="font-size: 0.9em;">Source Ton</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'SourceTon-input" class="control-group">'+
+																				'<span id="' + name +'SourceTon-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + sourceTon + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'SourceTon\', \'' + name+"SourceTon" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"SourceTon"+']\').toggle(); $(\'input[id^='+name+"SourceTon"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'SourceTon-text">' + sourceTon + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"SourceTon"+']\').toggle(); $(\'input[id^='+name+"SourceTon"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Source Npi">'+
+																			'<td style="font-size: 0.9em;">Source Npi</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'SourceNpi-input" class="control-group">'+
+																				'<span id="' + name +'SourceNpi-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + sourceNpi + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'SourceNpi\', \'' + name+"SourceNpi" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"SourceNpi"+']\').toggle(); $(\'input[id^='+name+"SourceNpi"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'SourceNpi-text">' + sourceNpi + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"SourceNpi"+']\').toggle(); $(\'input[id^='+name+"SourceNpi"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Source Address Range">'+
+																			'<td style="font-size: 0.9em;">Source Address Range</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'SourceAddressRange-input" class="control-group">'+
+																				'<span id="' + name +'SourceAddressRange-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + sourceAddressRange + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'SourceAddressRange\', \'' + name+"SourceAddressRange" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"SourceAddressRange"+']\').toggle(); $(\'input[id^='+name+"SourceAddressRange"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'SourceAddressRange-text">' + sourceAddressRange + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"SourceAddressRange"+']\').toggle(); $(\'input[id^='+name+"SourceAddressRange"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Routing Ton">'+
+																			'<td style="font-size: 0.9em;">Routing Ton</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'RoutingTon-input" class="control-group">'+
+																				'<span id="' + name +'RoutingTon-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + routingTon + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RoutingTon\', \'' + name+"RoutingTon" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingTon"+']\').toggle(); $(\'input[id^='+name+"RoutingTon"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'RoutingTon-text">' + routingTon + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingTon"+']\').toggle(); $(\'input[id^='+name+"RoutingTon"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Routing Npi">'+
+																			'<td style="font-size: 0.9em;">Routing Npi</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'RoutingNpi-input" class="control-group">'+
+																				'<span id="' + name +'RoutingNpi-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + routingNpi + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RoutingNpi\', \'' + name+"RoutingNpi" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingNpi"+']\').toggle(); $(\'input[id^='+name+"RoutingNpi"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'RoutingNpi-text">' + routingNpi + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingNpi"+']\').toggle(); $(\'input[id^='+name+"RoutingNpi"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="Routing Address Range">'+
+																			'<td style="font-size: 0.9em;">Routing Address Range</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'RoutingAddressRange-input" class="control-group">'+
+																				'<span id="' + name +'RoutingAddressRange-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + routingAddressRange + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RoutingAddressRange\', \'' + name+"RoutingAddressRange" + '\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingAddressRange"+']\').toggle(); $(\'input[id^='+name+"RoutingAddressRange"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'RoutingAddressRange-text">' + routingAddressRange + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingAddressRange"+']\').toggle(); $(\'input[id^='+name+"RoutingAddressRange"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+																		
+																		
+																	'</tbody>' +
+																'</table>' +															
+															'</div>'+
+														'</div>'+
+													'</div>'+
+											'</div>'+
+											'<div class="modal-footer">'+
+												'<a href="#" onclick="$(\'#entities-modal'+name+'\').modal(\'hide\'); return false;" class="btn">Close</a>'+
+											'</div>'+										
+										'</div>');											
 									
 								}],
 								error: function(value){
@@ -660,6 +1090,25 @@
 		var esmeNpi = e4.options[e4.selectedIndex].value;
 		
 		var esmeRange = $("#esmeRange").val();
+		
+		var e7 = document.getElementById("sourceTon");
+		var sourceTon = e7.options[e7.selectedIndex].value;	
+		
+		var e8 = document.getElementById("sourceNpi");
+		var sourceNpi = e8.options[e8.selectedIndex].value;
+		
+		var sourceRange = $("#sourceRange").val();
+		
+		
+		var e9 = document.getElementById("routingTon");
+		var routingTon = e9.options[e9.selectedIndex].value;	
+		
+		var e10 = document.getElementById("routingNpi");
+		var routingNpi = e10.options[e10.selectedIndex].value;
+		
+		var routingRange = $("#routingRange").val();		
+		
+		
 		var clusterName = $("#clusterName").val();
 		
 		if(clusterName.trim() == ""){
@@ -711,7 +1160,7 @@
 			$("#login-settings-error").hide();
 		}
 		
-		jolokia.execute("com.telscale.smsc:layer=EsmeManagement,name=SmscManagement","createEsme(java.lang.String,java.lang.String,java.lang.String,java.lang.String,int,boolean,java.lang.String,java.lang.String,java.lang.String,byte,byte,java.lang.String,java.lang.String,int,long,long,long,long,java.lang.String,boolean,int)", esmeName,systemId,password,ipAddress,ipPort,chargingEnabled,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay, 
+		jolokia.execute("com.telscale.smsc:layer=EsmeManagement,name=SmscManagement","createEsme", esmeName,systemId,password,ipAddress,ipPort,chargingEnabled,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay,sourceTon,sourceNpi,sourceRange,routingTon,routingNpi,routingRange, 
 				{
 					success: function(value) {
 						updateEsmes();
@@ -726,6 +1175,56 @@
 				});		
 		
 	}
+	function onModifyEsmeOk(mbeanName, propertyName, spanId){
+		var formInvalid = false;
+		
+		var spanElement = document.getElementById(spanId + "-input");
+		var eleChild = spanElement.childNodes;
+		var inputTextEle = eleChild[0];
+		var spanElementTxt = document.getElementById(spanId + "-text");
+		
+		var propvalue = inputTextEle.value;
+		
+		if(propvalue.trim() == "") {
+			$("#div-"+spanId + "-input").addClass("error");					    			
+			formInvalid = true;
+		} else if($("#div-"+spanId + "-input").hasClass("error")) {
+			$("#div-"+spanId + "-input").removeClass("error");		
+		}	
+		
+		if(formInvalid) {
+			$("#login-settings-error").show();
+			logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+			return false;
+		} else {
+			$("#login-settings-error").hide();
+		}					
+		
+		var mbeanSearch="com.telscale.smsc:layer=Esme,name="+mbeanName;
+		jolokia.request(
+				[
+					{ type: "write", mbean: mbeanSearch, attribute: propertyName, value: inputTextEle.value },
+				],
+				{
+					success: function(response) {
+						
+						logToConsole("INFO", "ESME property "+ propertyName +"  successfully updated.");
+						
+						spanElementTxt.innerHTML= inputTextEle.value;
+					},
+					error: function(value) {
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+					} 
+				}
+			);		
+		
+		spanElement.style.display = 'none';
+		spanElementTxt.style.display = '';
+		
+		
+	}	
 	$(document).ready(function () {
 		updateEsmes();
 	});

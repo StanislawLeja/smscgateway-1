@@ -50,6 +50,8 @@ public interface SMSCOAMMessages {
 	public static final String ESME_STOP_SUCCESSFULL = "Successfully stopped ESME name=%s";
 
 	public static final String CREATE_ESME_SUCCESSFULL = "Successfully created ESME name=%s";
+	
+	public static final String MODIFY_ESME_SUCCESSFULL = "Successfully modified ESME name=%s";
 
 	public static final String CREATE_EMSE_FAIL_ALREADY_EXIST = "Creation of EMSE failed. Other ESME with name=%s already exist";
 
@@ -169,13 +171,19 @@ public interface SMSCOAMMessages {
 
 	public static final String SHOW_ADDRESS_NPI = " npi=";
 
-	public static final String SHOW_SOURCE_ADDRESS = " sourceAddress=";
+	public static final String SHOW_ADDRESS_RANGE = " range=";
 
 	public static final String SHOW_SOURCE_ADDRESS_TON = " sourceTon=";
 
 	public static final String SHOW_SOURCE_ADDRESS_NPI = " sourceNpi=";
 
-	public static final String SHOW_ADDRESS_RANGE = " range=";
+	public static final String SHOW_SOURCE_ADDRESS = " sourceAddress=";
+
+	public static final String SHOW_ROUTING_ADDRESS_TON = " routingTon=";
+
+	public static final String SHOW_ROUTING_ADDRESS_NPI = " routingNpi=";
+
+	public static final String SHOW_ROUTING_ADDRESS = " routingAddress=";
 
 	public static final String SHOW_CLUSTER_NAME = " clusterName=";
 
