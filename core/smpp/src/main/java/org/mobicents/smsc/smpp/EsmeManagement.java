@@ -266,6 +266,8 @@ public class EsmeManagement implements EsmeManagementMBean {
 				connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName,
 				countersEnabled, enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange, routingTon, routingNpi,
 				routingAddressRange);
+		
+		esme.esmeManagement = this;
 
 		esmes.add(esme);
 
@@ -439,6 +441,9 @@ public class EsmeManagement implements EsmeManagementMBean {
 			// Populate cluster
 			for (FastList.Node<Esme> n = this.esmes.head(), end = this.esmes.tail(); (n = n.getNext()) != end;) {
 				Esme esme = n.getValue();
+				
+				esme.esmeManagement = this;
+				
 				String esmeClusterName = esme.getClusterName();
 				EsmeCluster esmeCluster = this.esmeClusters.get(esmeClusterName);
 				if (esmeCluster == null) {

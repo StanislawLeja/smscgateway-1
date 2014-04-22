@@ -608,8 +608,8 @@
 																'<table class="table table-condensed table-striped">' + 
 																	'<thead><tr><th style="width: 40%;">Name</th><th style="width: 55%;">Value</th><th>&nbsp;</th></tr></thead>' +
 																	'<tbody>'+
-																		'<tr data-toggle="tooltip" title="esme TON">'+
-																			'<td style="font-size: 0.9em;">ESME TON</td>'+
+																		'<tr data-toggle="tooltip" title="Defines ESME TON. if SMPP Session Type is CLIENT this TON will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same TON as configured here. If configured is null(-1), SMSC will ignore in both the cases. Value will take effect after SMPP is restarted.">'+
+																			'<td style="font-size: 0.9em;">ESME Ton</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'SystemId-input" class="control-group">'+
 																				'<span id="' + name +'SystemId-input" style="display: none;">'+
@@ -624,8 +624,8 @@
 																			'</td>'+
 																		'</tr>'+
 
-																		'<tr data-toggle="tooltip" title="esme NPI">'+
-																			'<td style="font-size: 0.9em;">ESME NPI</td>'+
+																		'<tr data-toggle="tooltip" title="Defines ESME NPI. If SMPP Session Type is CLIENT this NPI will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same NPI as configured here. If configured is null(-1), SMSC will ignore in both the cases. Value will take effect after SMPP is restarted.">'+
+																			'<td style="font-size: 0.9em;">ESME Npi</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'EsmeNpi-input" class="control-group">'+
 																				'<span id="' + name +'EsmeNpi-input" style="display: none;">'+
@@ -640,13 +640,13 @@
 																			'</td>'+
 																		'</tr>'+	
 																		
-																		'<tr data-toggle="tooltip" title="esme Address Range">'+
+																		'<tr data-toggle="tooltip" title="Defines ESME Address Range. If SMPP Session Type is CLIENT this address range will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same address range as configured here. If configured is null, SMSC will ignore in both the cases. Value will take effect after SMPP is restarted.">'+
 																			'<td style="font-size: 0.9em;">ESME Address Range</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'EsmeAddressRange-input" class="control-group">'+
 																				'<span id="' + name +'EsmeAddressRange-input" style="display: none;">'+
 																					'<input type="text" class="input-small" value="' + esmeAddressRange + '" /> ' +
-																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'EsmeAddressRange\', \'' + name+"EsmeAddressRange" + '\')"></i> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'EsmeAddressRange\', \'' + name+"EsmeAddressRange" + '\', \'true\')"></i> ' +
 																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"EsmeAddressRange"+']\').toggle(); $(\'input[id^='+name+"EsmeAddressRange"+']\').focus();"></i>' + 
 																				'</span>'+
 																				'</div>' +
@@ -656,7 +656,7 @@
 																			'</td>'+
 																		'</tr>'+	
 																		
-																		'<tr data-toggle="tooltip" title="window size">'+
+																		'<tr data-toggle="tooltip" title="Sets the default window size. Value takes effect only when ESME is restarted. The window size is the amount of unacknowledged requests that are permitted to be outstanding/unacknowledged at any given time. If more requests are added, the underlying stack will throw an exception. This value is set only when ESME is defined as Client side. For Server side this value is taken from the SMPP Server Settings. Value will take effect after SMPP is restarted.">'+
 																			'<td style="font-size: 0.9em;">Window Size</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'WindowSize-input" class="control-group">'+
@@ -672,7 +672,7 @@
 																			'</td>'+
 																		'</tr>'+	
 																		
-																		'<tr data-toggle="tooltip" title="Connect Timeout">'+
+																		'<tr data-toggle="tooltip" title="Value takes effect only when ESME is restarted. Default value is 10000 milli seconds. This parameter is used to specify the time within which the connection to a remote SMSC server should be established. This is useful only when ESME is defined as Client Side. For Server side this value is taken from the the SMPP Server Settings">'+
 																			'<td style="font-size: 0.9em;">Connect Timeout</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'ConnectTimeout-input" class="control-group">'+
@@ -688,7 +688,7 @@
 																			'</td>'+
 																		'</tr>'+																		
 																		
-																		'<tr data-toggle="tooltip" title="Request Expiry Timeout">'+
+																		'<tr data-toggle="tooltip" title="Value takes effect only when ESME is restarted. Default value is -1 (disabled). This parameter is used to specify the time to wait in milli seconds for an endpoint to respond to before it expires. This is useful only when ESME is defined as Client Side. For Server side this value is taken from the the SMPP Server Settings">'+
 																			'<td style="font-size: 0.9em;">Request Expiry Timeout</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'RequestExpiryTimeout-input" class="control-group">'+
@@ -704,7 +704,7 @@
 																			'</td>'+
 																		'</tr>'+	
 																		
-																		'<tr data-toggle="tooltip" title="Window Monitor Interval">'+
+																		'<tr data-toggle="tooltip" title="Value takes effect only when ESME is restarted. Default value is -1 (disabled). This parameter is used to specify the time between executions of monitoring the window for requests that expire. It is recommended that this value, generally, either matches or is half the value of request-expiry-timeout. Therefore, in the worst case scenario, a request could take upto 1.5 times the requestExpiryTimeout to clear out. This is useful only when ESME is defined as Client Side. For Server side this value is taken from the the SMPP Server Settings.">'+
 																			'<td style="font-size: 0.9em;">Window Monitor Interval</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'WindowMonitorInterval-input" class="control-group">'+
@@ -720,7 +720,7 @@
 																			'</td>'+
 																		'</tr>'+	
 																		
-																		'<tr data-toggle="tooltip" title="Window Wait Timeout">'+
+																		'<tr data-toggle="tooltip" title="Value takes effect only when ESME is restarted. Default value is 60000 milli seconds. This parameter is used to specify the time to wait until a slot opens up in the sendWindow. This is useful only when ESME is defined as Client Side. For Server side this value is taken from the the SMPP Server Settings">'+
 																			'<td style="font-size: 0.9em;">Window Wait Timeout</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'WindowWaitTimeout-input" class="control-group">'+
@@ -736,7 +736,7 @@
 																			'</td>'+
 																		'</tr>'+
 																		
-																		'<tr data-toggle="tooltip" title="Counters Enabled">'+
+																		'<tr data-toggle="tooltip" title="Set to true if counters is to be enabled. Value takes effect only when ESME is restarted">'+
 																			'<td style="font-size: 0.9em;">Counters Enabled</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'CountersEnabled-input" class="control-group">'+
@@ -752,7 +752,7 @@
 																			'</td>'+
 																		'</tr>'+
 																		
-																		'<tr data-toggle="tooltip" title="Enquire Link Delay">'+
+																		'<tr data-toggle="tooltip" title="When SMSC connects to a remote server as CLIENT, it sends an ENQUIRE_LINK after every configured enquire-link-delay.">'+
 																			'<td style="font-size: 0.9em;">Enquire Link Delay</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'EnquireLinkDelay-input" class="control-group">'+
@@ -768,7 +768,7 @@
 																			'</td>'+
 																		'</tr>'+
 																		
-																		'<tr data-toggle="tooltip" title="Charging Enabled">'+
+																		'<tr data-toggle="tooltip" title="Sets charging for this ESME. If charging is enabled, SMSC will try to deduct the units from charging server. If charging server returns negative response or error, SMS will be dropped and CDR will be logged">'+
 																			'<td style="font-size: 0.9em;">Charging Enabled</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'ChargingEnabled-input" class="control-group">'+
@@ -784,7 +784,7 @@
 																			'</td>'+
 																		'</tr>'+	
 																		
-																		'<tr data-toggle="tooltip" title="Source Ton">'+
+																		'<tr data-toggle="tooltip" title="every SMS coming into SMSC via this ESME should have same source_addr_ton as configured here. If the value here is null(-1) or its not null and matchs, SMSC will compare source_addr_npi and source_addr as mentioned below. If it doesnt match SMSC will reject this SMS with error code 0x0000000A - Invalid Source Address">'+
 																			'<td style="font-size: 0.9em;">Source Ton</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'SourceTon-input" class="control-group">'+
@@ -800,7 +800,7 @@
 																			'</td>'+
 																		'</tr>'+	
 																		
-																		'<tr data-toggle="tooltip" title="Source Npi">'+
+																		'<tr data-toggle="tooltip" title="every SMS coming into SMSC via this ESME should have same source_addr_npi as configured here. If the value here is null(-1)or its not null and matchs, SMSC will compare source_addr as mentioned below. If it doesnt match SMSC will reject this SMS with error code 0x0000000A - Invalid Source Address.">'+
 																			'<td style="font-size: 0.9em;">Source Npi</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'SourceNpi-input" class="control-group">'+
@@ -816,7 +816,7 @@
 																			'</td>'+
 																		'</tr>'+	
 																		
-																		'<tr data-toggle="tooltip" title="Source Address Range">'+
+																		'<tr data-toggle="tooltip" title="every SMS coming into SMSC via this ESME should have same source_addr as mentioned here. This is regular java expression. Default value is ^[0-9a-zA-Z] If it matchs, SMSC will accept incoming SMS and process further. If it doesnt match SMSC will reject this SMS with error code 0x0000000A - Invalid Source Address">'+
 																			'<td style="font-size: 0.9em;">Source Address Range</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'SourceAddressRange-input" class="control-group">'+
@@ -832,7 +832,7 @@
 																			'</td>'+
 																		'</tr>'+	
 																		
-																		'<tr data-toggle="tooltip" title="Routing Ton">'+
+																		'<tr data-toggle="tooltip" title="The DefaultSmsRoutingRule} will try to match the dest_addr_ton of outgoing SMS with one configured here. If configured value is null(-1) or its not null and matchs, SMSC will compare dest_addr_npi and destination_addr as below. It it doesnt match, SMSC will select next ESME in list for matching routing rule">'+
 																			'<td style="font-size: 0.9em;">Routing Ton</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'RoutingTon-input" class="control-group">'+
@@ -848,7 +848,7 @@
 																			'</td>'+
 																		'</tr>'+	
 																		
-																		'<tr data-toggle="tooltip" title="Routing Npi">'+
+																		'<tr data-toggle="tooltip" title="The DefaultSmsRoutingRule will try to match the dest_addr_npi with one configured here. If configured value is null(-1)or its not null and matchs, SMSC will compare destination_addr as below. It it doesnt match, SMSC will select next ESME in list for matching routing rule">'+
 																			'<td style="font-size: 0.9em;">Routing Npi</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'RoutingNpi-input" class="control-group">'+
@@ -864,7 +864,7 @@
 																			'</td>'+
 																		'</tr>'+
 																		
-																		'<tr data-toggle="tooltip" title="Routing Address Range">'+
+																		'<tr data-toggle="tooltip" title="The DefaultSmsRoutingRule will try to match destination_addr here. This is regular java expression. Default value is ^[0-9a-zA-Z]. If it matchs, SMSC will send the SMS out over this SMPP connection. If it doesnt match, SMSC will select next ESME in list for matching routing rule">'+
 																			'<td style="font-size: 0.9em;">Routing Address Range</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'RoutingAddressRange-input" class="control-group">'+
@@ -1175,7 +1175,14 @@
 				});		
 		
 	}
+	
 	function onModifyEsmeOk(mbeanName, propertyName, spanId){
+		var skipCheck = false;
+		onModifyEsmeOk(mbeanName, propertyName, spanId, skipCheck)
+	}
+	
+	function onModifyEsmeOk(mbeanName, propertyName, spanId, skipCheck){
+		alert(skipCheck);
 		var formInvalid = false;
 		
 		var spanElement = document.getElementById(spanId + "-input");
@@ -1185,20 +1192,22 @@
 		
 		var propvalue = inputTextEle.value;
 		
-		if(propvalue.trim() == "") {
-			$("#div-"+spanId + "-input").addClass("error");					    			
-			formInvalid = true;
-		} else if($("#div-"+spanId + "-input").hasClass("error")) {
-			$("#div-"+spanId + "-input").removeClass("error");		
-		}	
-		
-		if(formInvalid) {
-			$("#login-settings-error").show();
-			logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
-			return false;
-		} else {
-			$("#login-settings-error").hide();
-		}					
+		if(!skipCheck){
+			if(propvalue.trim() == "") {
+				$("#div-"+spanId + "-input").addClass("error");					    			
+				formInvalid = true;
+			} else if($("#div-"+spanId + "-input").hasClass("error")) {
+				$("#div-"+spanId + "-input").removeClass("error");		
+			}	
+			
+			if(formInvalid) {
+				$("#login-settings-error").show();
+				logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+				return false;
+			} else {
+				$("#login-settings-error").hide();
+			}
+		}
 		
 		var mbeanSearch="com.telscale.smsc:layer=Esme,name="+mbeanName;
 		jolokia.request(

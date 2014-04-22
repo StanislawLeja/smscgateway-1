@@ -157,7 +157,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 */
 	private long windowWaitTimeout;
 
-	protected transient SmscManagement smscManagement = null;
+	protected transient EsmeManagement esmeManagement = null;
 
 	private boolean started = false;
 
@@ -258,6 +258,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 */
 	protected void setClusterName(String clusterName) {
 		this.clusterName = clusterName;
+		this.store();
 	}
 
 	/**
@@ -275,6 +276,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 */
 	public void setSystemId(String systemId) {
 		this.systemId = systemId;
+		this.store();
 	}
 
 	/**
@@ -290,6 +292,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 */
 	public void setPassword(String password) {
 		this.password = password;
+		this.store();
 	}
 
 	/**
@@ -306,6 +309,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 */
 	public void setHost(String host) {
 		this.host = host;
+		this.store();
 	}
 
 	/**
@@ -322,6 +326,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 */
 	public void setPort(int port) {
 		this.port = port;
+		this.store();
 	}
 
 	protected SmppBindType getSmppBindType() {
@@ -330,6 +335,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 
 	protected void setSmppBindType(SmppBindType smppBindType) {
 		this.smppBindType = smppBindType;
+		this.store();
 	}
 
 	/**
@@ -345,6 +351,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 */
 	public void setSystemType(String systemType) {
 		this.systemType = systemType;
+		this.store();
 	}
 
 	/**
@@ -360,6 +367,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 */
 	public void setSmppVersion(SmppInterfaceVersionType smppVersion) {
 		this.smppVersion = smppVersion;
+		this.store();
 	}
 
 	@Override
@@ -370,6 +378,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setSourceTon(int sourceTon) {
 		this.sourceTon = sourceTon;
+		this.store();
 	}
 
 	@Override
@@ -380,6 +389,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setSourceNpi(int sourceNpi) {
 		this.sourceNpi = sourceNpi;
+		this.store();
 	}
 
 	@Override
@@ -393,6 +403,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		if (this.sourceAddressRange != null) {
 			this.sourceAddressRangePattern = Pattern.compile(this.sourceAddressRange);
 		}
+		this.store();
 	}
 
 	@Override
@@ -403,6 +414,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setRoutingTon(int routingTon) {
 		this.routingTon = routingTon;
+		this.store();
 	}
 
 	@Override
@@ -413,6 +425,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setRoutingNpi(int routingNpi) {
 		this.routingNpi = routingNpi;
+		this.store();
 	}
 
 	@Override
@@ -426,6 +439,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		if (this.routingAddressRange != null) {
 			this.routingAddressRangePattern = Pattern.compile(this.routingAddressRange);
 		}
+		this.store();
 	}
 
 	@Override
@@ -436,6 +450,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setEsmeTon(int esmeTon) {
 		this.esmeTon = esmeTon;
+		this.store();
 	}
 
 	@Override
@@ -446,6 +461,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setEsmeNpi(int esmeNpi) {
 		this.esmeNpi = esmeNpi;
+		this.store();
 	}
 
 	@Override
@@ -456,6 +472,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setEsmeAddressRange(String esmeAddressRange) {
 		this.esmeAddressRange = esmeAddressRange;
+		this.store();
 	}
 
 	/**
@@ -471,6 +488,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	 */
 	public void setSmppSessionType(SmppSession.Type smppSessionType) {
 		this.smppSessionType = smppSessionType;
+		this.store();
 	}
 
 	/**
@@ -488,6 +506,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setWindowSize(int windowSize) {
 		this.windowSize = windowSize;
+		this.store();
 	}
 
 	/**
@@ -505,6 +524,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setConnectTimeout(long connectTimeout) {
 		this.connectTimeout = connectTimeout;
+		this.store();
 	}
 
 	/**
@@ -522,6 +542,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setRequestExpiryTimeout(long requestExpiryTimeout) {
 		this.requestExpiryTimeout = requestExpiryTimeout;
+		this.store();
 	}
 
 	/**
@@ -539,6 +560,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setWindowMonitorInterval(long windowMonitorInterval) {
 		this.windowMonitorInterval = windowMonitorInterval;
+		this.store();
 	}
 
 	/**
@@ -556,6 +578,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setWindowWaitTimeout(long windowWaitTimeout) {
 		this.windowWaitTimeout = windowWaitTimeout;
+		this.store();
 	}
 
 	/**
@@ -597,16 +620,18 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setEnquireLinkDelay(int enquireLinkDelay) {
 		this.enquireLinkDelay = enquireLinkDelay;
+		this.store();
 	}
 
 	@Override
 	public boolean isCountersEnabled() {
 		return countersEnabled;
 	}
-	
+
 	@Override
 	public void setCountersEnabled(boolean countersEnabled) {
 		this.countersEnabled = countersEnabled;
+		this.store();
 	}
 
 	@Override
@@ -617,6 +642,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	@Override
 	public void setChargingEnabled(boolean chargingEnabled) {
 		this.chargingEnabled = chargingEnabled;
+		this.store();
 	}
 
 	public boolean isSourceAddressMatching(Address sourceAddress) {
@@ -1080,5 +1106,9 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		} else if (!name.equals(other.name))
 			return false;
 		return true;
+	}
+
+	private void store() {
+		this.esmeManagement.store();
 	}
 }

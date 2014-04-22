@@ -28,8 +28,6 @@ import javolution.xml.stream.XMLStreamException;
 import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
 
-import com.cloudhopper.smpp.type.Address;
-
 /**
  * @author Amit Bhayani
  * 
@@ -157,16 +155,17 @@ public class SipManagement implements SipManagementMBean {
 			clusterName = name;
 		}
 
-		Sip esme = new Sip(name, clusterName, host, port, chargingEnabled, addressTon, addressNpi, addressRange,
+		Sip sip = new Sip(name, clusterName, host, port, chargingEnabled, addressTon, addressNpi, addressRange,
 				countersEnabled);
+		sip.sipManagement = this;
 
-		sips.add(esme);
+		sips.add(sip);
 
 		this.store();
 
-		this.registerSipMbean(esme);
+		this.registerSipMbean(sip);
 
-		return esme;
+		return sip;
 	}
 
 	public Sip destroySip(String esmeName) throws Exception {
@@ -257,6 +256,7 @@ public class SipManagement implements SipManagementMBean {
 			// Populate cluster
 			for (FastList.Node<Sip> n = this.sips.head(), end = this.sips.tail(); (n = n.getNext()) != end;) {
 				Sip sip = n.getValue();
+				sip.sipManagement = this;
 				String sipClusterName = sip.getClusterName();
 			}
 

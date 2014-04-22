@@ -193,7 +193,7 @@
 																			'</td>'+
 																		'</tr>'+	
 																		
-																		'<tr data-toggle="tooltip" title="destination address ton to consider for routing SMS to this SIP stack">'+
+																		'<tr data-toggle="tooltip" title="The DefaultSmsRoutingRule will try to match the dest_addr_ton of outgoing SMS with one configured here. If configured value is null(-1) or its not null and matchs, SMSC will compare dest_addr_npi and destination_addr as below. It it doesnt match, SMSC will select next SIP in list for matching routing rule">'+
 																			'<td style="font-size: 0.9em;">Routing Address Ton</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'AutoNegotiateInterfaceVersion-input" class="control-group">'+
@@ -209,7 +209,7 @@
 																			'</td>'+
 																		'</tr>'+	
 																	
-																		'<tr data-toggle="tooltip" title="destination address npi to consider for routing SMS to this SIP stack">'+
+																		'<tr data-toggle="tooltip" title="The DefaultSmsRoutingRule will try to match the dest_addr_npi with one configured here. If configured value is null(-1)or its not null and matchs, SMSC will compare destination_addr as below. It it doesnt match, SMSC will select next SIP in list for matching routing rule">'+
 																			'<td style="font-size: 0.9em;">Routing Address Npi</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'InterfaceVersion-input" class="control-group">'+
@@ -225,7 +225,7 @@
 																			'</td>'+
 																		'</tr>'+	
 																		
-																		'<tr data-toggle="tooltip" title="destination address range to consider for routing SMS to this SIP stack">'+
+																		'<tr data-toggle="tooltip" title="The DefaultSmsRoutingRule will try to match destination_addr here. This is regular java expression. Default value is null. If it matchs, SMSC will send the SMS out over this SIP connection. If it doesnt match, SMSC will select next ESME in list for matching routing rule">'+
 																			'<td style="font-size: 0.9em;">Routing Address Range</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
 																				'<div id="div-' + name +'MaxConnSize-input" class="control-group">'+

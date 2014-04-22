@@ -74,7 +74,7 @@ public interface EsmeMBean extends DefaultSmppSessionMXBean {
 	int getPort();
 
 	/**
-	 * Sets charging for this ESME
+	 * Sets charging for this ESME. If charging is enabled, SMSC will try to deduct the units from charging server. If charging server returns negative response or error, SMS will be dropped and CDR will be logged
 	 * 
 	 * @param chargingEnabled
 	 */
