@@ -337,6 +337,8 @@ public class TT_CassandraTest {
         sbb.c2_updateDueSlotForTargetId("222222_1_11", newDueSlot);
 
         sbb.c2_deleteLiveTablesForDate(dt);
+
+//        dt = new Date(114, 3, 16);
         sbb.c2_deleteArchiveTablesForDate(dt);
     }
 

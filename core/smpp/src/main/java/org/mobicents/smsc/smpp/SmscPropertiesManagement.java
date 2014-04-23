@@ -527,6 +527,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	@Override
 	public void setMoCharging(boolean moCharging) {
 		this.moCharging = moCharging;
+        this.store();
 	}
 
 	@Override
@@ -537,6 +538,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	@Override
 	public void setTxSmppChargingType(ChargingType txSmppCharging) {
 		this.txSmppCharging = txSmppCharging;
+        this.store();
 	}
 
 	@Override
@@ -547,6 +549,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	@Override
 	public void setTxSipChargingType(ChargingType txSipCharging) {
 		this.txSipCharging = txSipCharging;
+        this.store();
 	}
 
 	@Override
@@ -557,6 +560,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	@Override
 	public void setDiameterDestRealm(String diameterDestRealm) {
 		this.diameterDestRealm = diameterDestRealm;
+        this.store();
 	}
 
 	@Override
@@ -567,6 +571,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	@Override
 	public void setDiameterDestHost(String diameterDestHost) {
 		this.diameterDestHost = diameterDestHost;
+        this.store();
 	}
 
 	@Override
@@ -577,6 +582,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	@Override
 	public void setDiameterDestPort(int diameterDestPort) {
 		this.diameterDestPort = diameterDestPort;
+        this.store();
 	}
 
 	@Override
@@ -587,6 +593,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	@Override
 	public void setDiameterUserName(String diameterUserName) {
 		this.diameterUserName = diameterUserName;
+        this.store();
 	}
 
     public int getRemovingLiveTablesDays() {
@@ -595,6 +602,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     public void setRemovingLiveTablesDays(int removingLiveTablesDays) {
         this.removingLiveTablesDays = removingLiveTablesDays;
+        this.store();
     }
 
     public int getRemovingArchiveTablesDays() {
@@ -603,6 +611,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     public void setRemovingArchiveTablesDays(int removingArchiveTablesDays) {
         this.removingArchiveTablesDays = removingArchiveTablesDays;
+        this.store();
     }
 
 	public void start() throws Exception {
