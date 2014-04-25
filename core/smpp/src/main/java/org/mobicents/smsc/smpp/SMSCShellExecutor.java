@@ -836,9 +836,19 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (parName.equals("diameterdestport")) {
 				int val = Integer.parseInt(options[3]);
 				smscPropertiesManagement.setDiameterDestPort(val);
-			} else if (parName.equals("diameterusername")) {
-				String val = options[3];
-				smscPropertiesManagement.setDiameterUserName(val);
+            } else if (parName.equals("diameterusername")) {
+                String val = options[3];
+                smscPropertiesManagement.setDiameterUserName(val);
+            } else if (parName.equals("removinglivetablesdays")) {
+                int val = Integer.parseInt(options[3]);
+                if (val == 1 || val == 2 || val < 0)
+                    return SMSCOAMMessages.REMOVING_LIVE_ARCHIVE_TABLES_DAYS_BAD_VALUES;
+                smscPropertiesManagement.setRemovingLiveTablesDays(val);
+            } else if (parName.equals("removingarchivetablesdays")) {
+                int val = Integer.parseInt(options[3]);
+                if (val == 1 || val == 2 || val < 0)
+                    return SMSCOAMMessages.REMOVING_LIVE_ARCHIVE_TABLES_DAYS_BAD_VALUES;
+                smscPropertiesManagement.setRemovingArchiveTablesDays(val);
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -1040,8 +1050,12 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sb.append(smscPropertiesManagement.getDiameterDestHost());
 			} else if (parName.equals("diameterdestport")) {
 				sb.append(smscPropertiesManagement.getDiameterDestPort());
-			} else if (parName.equals("diameterusername")) {
-				sb.append(smscPropertiesManagement.getDiameterUserName());
+            } else if (parName.equals("diameterusername")) {
+                sb.append(smscPropertiesManagement.getDiameterUserName());
+            } else if (parName.equals("removinglivetablesdays")) {
+                sb.append(smscPropertiesManagement.getRemovingLiveTablesDays());
+            } else if (parName.equals("removingarchivetablesdays")) {
+                sb.append(smscPropertiesManagement.getRemovingArchiveTablesDays());
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -1070,47 +1084,47 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getMaxMapVersion());
 			sb.append("\n");
 
-			sb.append("defaultValidityPeriodHours = ");
+			sb.append("defaultvalidityperiodhours = ");
 			sb.append(smscPropertiesManagement.getDefaultValidityPeriodHours());
 			sb.append("\n");
 
-			sb.append("maxValidityPeriodHours = ");
+			sb.append("maxvalidityperiodhours = ");
 			sb.append(smscPropertiesManagement.getMaxValidityPeriodHours());
 			sb.append("\n");
 
-			sb.append("defaultTon = ");
+			sb.append("defaultton = ");
 			sb.append(smscPropertiesManagement.getDefaultTon());
 			sb.append("\n");
 
-			sb.append("defaultNpi = ");
+			sb.append("defaultnpi = ");
 			sb.append(smscPropertiesManagement.getDefaultNpi());
 			sb.append("\n");
 
-			sb.append("subscriberBusyDueDelay = ");
+			sb.append("subscriberbusyduedelay = ");
 			sb.append(smscPropertiesManagement.getSubscriberBusyDueDelay());
 			sb.append("\n");
 
-			sb.append("firstDueDelay = ");
+			sb.append("firstduedelay = ");
 			sb.append(smscPropertiesManagement.getFirstDueDelay());
 			sb.append("\n");
 
-			sb.append("secondDueDelay = ");
+			sb.append("secondduedelay = ");
 			sb.append(smscPropertiesManagement.getSecondDueDelay());
 			sb.append("\n");
 
-			sb.append("maxDueDelay = ");
+			sb.append("maxduedelay = ");
 			sb.append(smscPropertiesManagement.getMaxDueDelay());
 			sb.append("\n");
 
-			sb.append("dueDelayMultiplicator = ");
+			sb.append("duedelaymultiplicator = ");
 			sb.append(smscPropertiesManagement.getDueDelayMultiplicator());
 			sb.append("\n");
 
-			sb.append("maxMessageLengthReducer = ");
+			sb.append("maxmessagelengthreducer = ");
 			sb.append(smscPropertiesManagement.getMaxMessageLengthReducer());
 			sb.append("\n");
 
-			sb.append("smppEncodingForUCS2 = ");
+			sb.append("smppencodingforucs2 = ");
 			sb.append(smscPropertiesManagement.getSmppEncodingForUCS2());
 			sb.append("\n");
 
@@ -1122,19 +1136,19 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getKeyspaceName());
 			sb.append("\n");
 
-			sb.append("maxActivityCount = ");
+			sb.append("maxactivitycount = ");
 			sb.append(smscPropertiesManagement.getMaxActivityCount());
 			sb.append("\n");
 
-			sb.append("fetchPeriod = ");
+			sb.append("fetchperiod = ");
 			sb.append(smscPropertiesManagement.getFetchPeriod());
 			sb.append("\n");
 
-			sb.append("fetchMaxRows = ");
+			sb.append("fetchmaxrows = ");
 			sb.append(smscPropertiesManagement.getFetchMaxRows());
 			sb.append("\n");
 
-			sb.append("maxActivityCount = ");
+			sb.append("maxactivitycount = ");
 			sb.append(smscPropertiesManagement.getMaxActivityCount());
 			sb.append("\n");
 
@@ -1186,9 +1200,17 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getDiameterDestPort());
 			sb.append("\n");
 
-			sb.append("diameterusername = ");
-			sb.append(smscPropertiesManagement.getDiameterUserName());
-			sb.append("\n");
+            sb.append("diameterusername = ");
+            sb.append(smscPropertiesManagement.getDiameterUserName());
+            sb.append("\n");
+
+            sb.append("removinglivetablesdays = ");
+            sb.append(smscPropertiesManagement.getRemovingLiveTablesDays());
+            sb.append("\n");
+
+            sb.append("removingarchivetablesdays = ");
+            sb.append(smscPropertiesManagement.getRemovingArchiveTablesDays());
+            sb.append("\n");
 
 			// private int defaultValidityPeriodHours = 3 * 24;
 			// private int maxValidityPeriodHours = 10 * 24;

@@ -58,7 +58,8 @@ public class SmscManagement implements SmscManagementMBean {
 	public static final String JMX_LAYER_SMSC_STATS = "SmscStats";
 	public static final String JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT = "SmscPropertiesManagement";
 	public static final String JMX_LAYER_SMPP_SERVER_MANAGEMENT = "SmppServerManagement";
-	public static final String JMX_LAYER_SMPP_CLIENT_MANAGEMENT = "SmppClientManagement";
+    public static final String JMX_LAYER_SMPP_CLIENT_MANAGEMENT = "SmppClientManagement";
+    public static final String JMX_LAYER_SMSC_DATABASE_MANAGEMENT = "SmscDatabaseManagement";
 
 	public static final String JMX_LAYER_DATABASE_SMS_ROUTING_RULE = "DatabaseSmsRoutingRule";
 
@@ -83,6 +84,7 @@ public class SmscManagement implements SmscManagementMBean {
 	private EsmeManagement esmeManagement = null;
 	private SipManagement sipManagement = null;
 	private SmscPropertiesManagement smscPropertiesManagement = null;
+	private SmscDatabaseManagement smscDatabaseManagement = null;
 	private ArchiveSms archiveSms;
 	private MapVersionCache mapVersionCache;
 
@@ -312,16 +314,24 @@ public class SmscManagement implements SmscManagementMBean {
 				+ JMX_LAYER_SMPP_SERVER_MANAGEMENT + ",name=" + this.getName());
 		this.registerMBean(this.smppServerManagement, SmppServerManagementMBean.class, true, smppServerManaObjName);
 
-		// Ste 7 Start SMPP Clients
-		this.smppClientManagement = new SmppClientManagement(this.name, this.esmeManagement,
-				this.smppSessionHandlerInterface);
+        // Step 7 Start SMPP Clients
+        this.smppClientManagement = new SmppClientManagement(this.name, this.esmeManagement,
+                this.smppSessionHandlerInterface);
 
-		this.esmeManagement.setSmppClient(this.smppClientManagement);
-		this.smppClientManagement.start();
+        this.esmeManagement.setSmppClient(this.smppClientManagement);
+        this.smppClientManagement.start();
 
-		ObjectName smppClientManaObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
-				+ JMX_LAYER_SMPP_CLIENT_MANAGEMENT + ",name=" + this.getName());
-		this.registerMBean(this.smppClientManagement, SmppClientManagementMBean.class, true, smppClientManaObjName);
+        ObjectName smppClientManaObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+                + JMX_LAYER_SMPP_CLIENT_MANAGEMENT + ",name=" + this.getName());
+        this.registerMBean(this.smppClientManagement, SmppClientManagementMBean.class, true, smppClientManaObjName);
+
+        // Step 8 Start SmscDatabaseManagement
+        this.smscDatabaseManagement = SmscDatabaseManagement.getInstance(this.name);
+        this.smscDatabaseManagement.start();
+
+        ObjectName smscDatabaseManagementObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+                + JMX_LAYER_SMSC_DATABASE_MANAGEMENT + ",name=" + this.getName());
+        this.registerMBean(this.smscDatabaseManagement, SmscDatabaseManagement.class, true, smscDatabaseManagementObjName);
 
 		this.isStarted = true;
 		logger.info("Started SmscManagement");
@@ -350,10 +360,15 @@ public class SmscManagement implements SmscManagementMBean {
 				+ JMX_LAYER_SMPP_SERVER_MANAGEMENT + ",name=" + this.getName());
 		this.unregisterMbean(smppServerManaObjName);
 
-		this.smppClientManagement.stop();
-		ObjectName smppClientManaObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
-				+ JMX_LAYER_SMPP_CLIENT_MANAGEMENT + ",name=" + this.getName());
-		this.unregisterMbean(smppClientManaObjName);
+        this.smppClientManagement.stop();
+        ObjectName smppClientManaObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+                + JMX_LAYER_SMPP_CLIENT_MANAGEMENT + ",name=" + this.getName());
+        this.unregisterMbean(smppClientManaObjName);
+
+        this.smscDatabaseManagement.stop();
+        ObjectName smscDatabaseManagementObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_SMSC_DATABASE_MANAGEMENT + ",name="
+                + this.getName());
+        this.unregisterMbean(smscDatabaseManagementObjName);
 
 		this.isStarted = false;
 

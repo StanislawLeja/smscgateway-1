@@ -120,7 +120,7 @@ public class SmppClientManagement implements SmppClientManagementMBean {
 	public void stop() throws Exception {
 		this.smppClientOpsThread.setStarted(false);
 		this.clientBootstrap.destroy();
-		
+
 		this.executor.shutdownNow();
 		this.monitorExecutor.shutdownNow();
 	}

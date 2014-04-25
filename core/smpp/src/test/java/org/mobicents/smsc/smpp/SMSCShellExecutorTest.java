@@ -1,5 +1,8 @@
 package org.mobicents.smsc.smpp;
 
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Date;
 
 import javax.slee.facilities.FacilityException;
@@ -24,6 +27,21 @@ public class SMSCShellExecutorTest {
         args[1] = "get";
         exec.execute(args);
     }
+
+//    @Test(groups = { "aaa" })
+//    public void testA1() throws Exception {
+//
+//        try {
+//            String urlString = "file:///c:/JavaT/jboss_r/README.txt";
+//            URL url = new URL(urlString);
+//            URLConnection conn = url.openConnection();
+//            InputStream is = conn.getInputStream();
+//        } catch (Exception ee) {
+//            int gg = 0;
+//            gg++;
+//        }
+//
+//    }
 
 //    @Test(groups = { "ShellExecutor" })
 //    public void testSchedulerRA() throws Exception {

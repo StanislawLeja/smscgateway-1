@@ -48,8 +48,9 @@ public class SmppSimulatorParameters {
 	private NPI sourceNpi = NPI.ISDN;
 	private TON destTon = TON.International;
 	private NPI destNpi = NPI.ISDN;
-	private String sourceAddress = "6666";
+    private String sourceAddress = "6666";
 	private String destAddress = "5555";
+    private String addressRange = "6666";
 
 	private String messageText = "Hello!";
 	private EncodingType encodingType = EncodingType.GSM7;
@@ -191,7 +192,15 @@ public class SmppSimulatorParameters {
     public void setSourceAddress(String value) {
         this.sourceAddress = value;
     }
-    
+
+    public String getAddressRange() {
+        return this.addressRange;
+    }
+
+    public void setAddressRange(String value) {
+        this.addressRange = value;
+    }
+
     public String getDestAddress() {
         return this.destAddress;
     }

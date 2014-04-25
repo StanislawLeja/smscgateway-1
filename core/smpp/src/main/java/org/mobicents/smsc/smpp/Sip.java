@@ -49,6 +49,9 @@ public class Sip implements SipMBean {
 	private boolean isStarted = true;
 
 	private String sipAddress = null;
+	
+	
+	protected transient SipManagement sipManagement = null;
 
 	public Sip() {
 
@@ -110,6 +113,7 @@ public class Sip implements SipMBean {
 	@Override
 	public void setClusterName(String clusterName) {
 		this.clusterName = clusterName;
+		this.store();
 	}
 
 	/**
@@ -128,6 +132,7 @@ public class Sip implements SipMBean {
 	public void setHost(String host) {
 		this.host = host;
 		this.resetSipAddress();
+		this.store();
 	}
 
 	/**
@@ -146,6 +151,7 @@ public class Sip implements SipMBean {
 	public void setPort(int port) {
 		this.port = port;
 		this.resetSipAddress();
+		this.store();
 	}
 
 	@Override
@@ -166,17 +172,20 @@ public class Sip implements SipMBean {
 	@Override
 	public void setRoutingNpi(int npi) {
 		this.routingNpi = npi;
+		this.store();
 	}
 
 	@Override
 	public void setRoutingTon(int ton) {
 		this.routingTon = ton;
+		this.store();
 	}
 
 	@Override
 	public void setRoutingAddressRange(String range) {
 		this.routingAddressRange = range;
 		this.resetPattern();
+		this.store();
 	}
 
 	@Override
@@ -294,6 +303,10 @@ public class Sip implements SipMBean {
 		if (this.routingAddressRange != null) {
 			this.routingAddressRangePattern = Pattern.compile(this.routingAddressRange);
 		}
+	}
+	
+	private void store() {
+		this.sipManagement.store();
 	}
 
 }

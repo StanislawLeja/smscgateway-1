@@ -77,6 +77,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("diameterdesthost");
         set.addChild("diameterdestport");
         set.addChild("diameterusername");
+        set.addChild("removinglivetablesdays");
+        set.addChild("removingarchivetablesdays");
 
         txsmppcharging.addChild("None");
         txsmppcharging.addChild("Selected");
@@ -124,6 +126,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("diameterdesthost");
         get.addChild("diameterdestport");
         get.addChild("diameterusername");
+        get.addChild("removinglivetablesdays");
+        get.addChild("removingarchivetablesdays");
 
         smppencodingforucs2 = get.addChild("smppencodingforucs2");
         smppencodingforucs2.addChild("utf8");
