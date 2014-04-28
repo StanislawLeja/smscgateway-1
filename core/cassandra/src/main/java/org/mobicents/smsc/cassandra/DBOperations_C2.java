@@ -1533,21 +1533,21 @@ public class DBOperations_C2 {
      * SLOT_MESSAGES_TABLE_YYYY_MM_DD) for a defined date. Before deleting
      * checking is made for we can not delay table for future, today and 2 days
      * before
-     *
+     * 
      * @param dt
      *            Date for a table
+     * @return true: success or perm failure, false: temporary failure, we need
+     *         to retry
      */
-    public void c2_deleteLiveTablesForDate(Date dt) {
+    public boolean c2_deleteLiveTablesForDate(Date dt) {
         // auto_snapshot option !!!
 
-        // checking date
-        int maxBackupsDays = 2;
-        Date curTime = new Date();
-        Date curDate = new Date(curTime.getYear(), curTime.getMonth(), curTime.getDate());
-        Date maxDate = new Date(curDate.getTime() - maxBackupsDays * 24 * 3600 * 1000);
-        if (!dt.before(maxDate)) {
-            logger.warn("Rejected an attempt of dropping of live cassandra tables for too late date: " + dt);
-            return;
+        CheckDeletingDateResult res = checkDeletingDate(dt, "live cassandra tables");
+        switch (res) {
+        case permFailure:
+            return true;
+        case tempFailure:
+            return false;
         }
 
         String tName = "DST_SLOT_TABLE" + getTableName(dt);
@@ -1555,6 +1555,11 @@ public class DBOperations_C2 {
 
         tName = "SLOT_MESSAGES_TABLE" + getTableName(dt);
         this.doDeleteTable(tName);
+
+        String tName2 = this.getTableName(dt);
+        dataTableRead.remove(tName2);
+
+        return true;
     }
 
     /**
@@ -1564,22 +1569,52 @@ public class DBOperations_C2 {
      *
      * @param dt
      *            Date for a table
+     * @return true: success or perm failure, false: temporary failure, we need
+     *         to retry
      */
-    public void c2_deleteArchiveTablesForDate(Date dt) {
+    public boolean c2_deleteArchiveTablesForDate(Date dt) {
         // auto_snapshot option !!!
 
+        CheckDeletingDateResult res = checkDeletingDate(dt, "archive cassandra tables");
+        switch (res) {
+        case permFailure:
+            return true;
+        case tempFailure:
+            return false;
+        }
+
+        String tName = "MESSAGES" + getTableName(dt);
+        this.doDeleteTable(tName);
+
+        String tName2 = this.getTableName(dt);
+        dataTableRead.remove(tName2);
+
+        return true;
+    }
+
+    private CheckDeletingDateResult checkDeletingDate(Date dt, String taskName) {
         // checking date
         int maxBackupsDays = 2;
         Date curTime = new Date();
         Date curDate = new Date(curTime.getYear(), curTime.getMonth(), curTime.getDate());
         Date maxDate = new Date(curDate.getTime() - maxBackupsDays * 24 * 3600 * 1000);
         if (!dt.before(maxDate)) {
-            logger.warn("Rejected an attempt of dropping of archive cassandra tables for too late date: " + dt);
-            return;
+            logger.warn("Rejected an attempt of dropping of " + taskName + " for too late date: " + dt);
+            return CheckDeletingDateResult.permFailure;
         }
 
-        String tName = "MESSAGES" + getTableName(dt);
-        this.doDeleteTable(tName);
+        // checking if this date is still in processing
+        Date procDate = this.c2_getTimeForDueSlot(this.c2_getCurrentDueSlot());
+        if (procDate.getYear() != curDate.getYear() || procDate.getMonth() != curDate.getMonth() || procDate.getDate() != curDate.getDate()) {
+            logger.warn("Rejected an attempt of dropping of " + taskName + " for old message data are still in processing: " + dt);
+            return CheckDeletingDateResult.tempFailure;
+        }
+
+        return CheckDeletingDateResult.success;
+    }
+
+    enum CheckDeletingDateResult {
+        success, permFailure, tempFailure;
     }
 
     private void doDeleteTable(String tName) {

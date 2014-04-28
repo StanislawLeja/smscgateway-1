@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
+import org.mobicents.smsc.cassandra.DatabaseType;
 
 /**
  * 
@@ -99,18 +100,37 @@ public class SmscDatabaseManagement implements SmscDatabaseManagementMBean, Runn
             int liveDays = this.smscPropertiesManagement.getRemovingLiveTablesDays();
             int archDays = this.smscPropertiesManagement.getRemovingArchiveTablesDays();
             Date curDate = new Date();
-            
 
-            if (liveDays > 0) {
-                Date tagDate = new Date(curDate.getTime() - liveDays * 24 * 3600 * 1000);
-                dbOperations_C2.c2_deleteLiveTablesForDate(tagDate);
-            }
+            while (true) {
+                if (liveDays > 0) {
+                    Date tagDate = new Date(curDate.getTime() - liveDays * 24 * 3600 * 1000);
+                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                        // TODO: implement it
+                    } else {
+                        if (!dbOperations_C2.c2_deleteLiveTablesForDate(tagDate)) {
+                            setUnprocessed();
+                            break;
+                        }
+                    }
+                }
 
-            if (archDays > 0) {
-                Date tagDate = new Date(curDate.getTime() - archDays * 24 * 3600 * 1000);
-                dbOperations_C2.c2_deleteArchiveTablesForDate(tagDate);
+                if (archDays > 0) {
+                    Date tagDate = new Date(curDate.getTime() - archDays * 24 * 3600 * 1000);
+                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                        // TODO: implement it
+                    } else {
+                        if (!dbOperations_C2.c2_deleteArchiveTablesForDate(tagDate)) {
+                            setUnprocessed();
+                            break;
+                        }
+                    }
+                }
+                break;
             }
         }
+
+        if (isStarted)
+            this.idleTimerFuture = this.executor.schedule(this, 30, TimeUnit.SECONDS);
     }
 
     private boolean checkUnprocessed() {
@@ -138,14 +158,22 @@ public class SmscDatabaseManagement implements SmscDatabaseManagementMBean, Runn
     @Override
     public void deleteLiveTablesForDate(Date date) {
         if (date != null) {
-            dbOperations_C2.c2_deleteLiveTablesForDate(date);
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                // TODO: implement it
+            } else {
+                dbOperations_C2.c2_deleteLiveTablesForDate(date);
+            }
         }
     }
 
     @Override
     public void deleteArchiveTablesForDate(Date date) {
         if (date != null) {
-            dbOperations_C2.c2_deleteArchiveTablesForDate(date);
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                // TODO: implement it
+            } else {
+                dbOperations_C2.c2_deleteArchiveTablesForDate(date);
+            }
         }
     }
 
