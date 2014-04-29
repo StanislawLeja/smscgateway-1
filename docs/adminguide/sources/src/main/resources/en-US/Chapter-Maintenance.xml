@@ -87,14 +87,14 @@ PARAMETERS
 ]]></screen>
 
 			</section>
-			<section id="auto_delete_GUI">
+			<!--<section id="auto_delete_GUI">
 			<title>Using GUI</title>
 			<procedure>
 				<title>Auto Drop Settings using the GUI</title>
 				<step><para>
 				</para></step>
 			</procedure>
-			</section>
+			</section>-->
 		</section>
 		<section id="manual_delete">
 		<title>Manually drop tables</title>
