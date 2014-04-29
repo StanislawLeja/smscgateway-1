@@ -1,12 +1,10 @@
 Name
-	smsc esme create
+	smsc esme modify
 
 SYNOPSIS
-	smsc esme create name <systemId> <Specify password> <host-ip> <port> 
-	<SmppBindType> <SmppSession.Type> system-type <sms | vms | ota > 
-	interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton> 
-	esme-npi <esme address npi> esme-range <esme address range> 
-	cluster-name <clusterName> window-size <windowSize> 
+	smsc esme modify <name> password <Specify new password> 
+	esme-ton <esme address ton> esme-npi <esme address npi> 
+	esme-range <esme address range> window-size <windowSize> 
 	connect-timeout <connectTimeout> request-expiry-timeout <requestExpiryTimeout> 
 	window-monitor-interval <windowMonitorInterval> 
 	window-wait-timeout <windowWaitTimeout> counters-enabled <true | false> 
@@ -16,98 +14,53 @@ SYNOPSIS
 	routing-npi <routing address npi> routing-range <routing address range>
 
 DESCRIPTION
-	This command is used to configure a new ESME.
+	This command is used to modify the settings of an existing ESME configuration.
 
 PARAMETERS
 
 	Standard Parameters
 
-	Name			- A unique name for this ESME configuration. You can 
-				  define as many ESMEs as you want as far as the name is 
-				  unique and the combination of 
-				  SystemId:host-ip:port:SmppBindType is unique.
+	Name			- The name of the ESME that is being modified.
 
-	System Id		- This is used to identify an ESME or an SMSC at bind 
-				  time. An 'ESME system_id' identifies the ESME or ESME 
-				  agent to the SMSC. The 'SMSC system_id' provides an 
-				  identification of the SMSC to the ESME. You can define 
-				  multiple ESMEs, each with a unique name but the same 
-				  <literal>systemId<literal> to allow anonymous incoming
-				  binds and multiple binds from the same IP depending on
-				  the values specified for host-ip and port.
-
-	Password		- It is used by the SMSC to authenticate the identity of 
+	Password		- Specify the new password.
+				  It is used by the SMSC to authenticate the identity of 
 				  the binding ESME. The Service Provider may require 
 				  ESME’s to provide a password when binding to the SMSC.
 
-	host-ip	& port		- If the SMSC is acting as an ESME, the BIND request will 
-				  be sent to the configured IP and Port. If the SMSC is 
-				  acting as a Server, it will accept incoming BIND 
-				  requests from the specified IP and Port. 
-				  If the port is unknown, you must pass '-1' as wild 
-				  character.
-
-				  When you define multiple ESMEs with the same systemId,if
-				  host-ip and port values are -1 (for SMPP type Server), 
-				  the SMSC will accept multiple incoming BIND requests
-			          from any IP:port as long as the systemId and password
-				  match. 
-
-				  When you define multiple ESMEs with the same systemId,if
-				  host-ip is a real value (a specific IP) and port value 
-				  is -1, the SMSC will accept as many BINDS as ESMEs 
-				  defined from the specified IP but any port as long as 
-				  the systemId and password match. 
-
-	SmppBindType 		- Possible values: TRANSCEIVER, TRANSMITTER or RECEIVER. 
-				  If the SMSC is acting as an ESME, it will initiate 
-				  corresponding bind. If the SMSC is acting as a Server,
-				  it will accept corresponding bind from a remote ESME.
-
-	SmppSession.Type 	- Possible values: SERVER or CLIENT. 
-				  If the value is 'SERVER', the SMSC acts as a Server 
-				  listening for incoming SMPP binds. 
-				  If the value is 'CLIENT', the SMSC will initiate 
-				  SMPP bind to a remote Server.
+				  The new value takes effect when SMPP is restarted.
 
 	Optional Parameters
 
-	system-type 		- Default value is null. 
-				  This is used to categorize the type of ESME that is 
-				  binding to the SMSC.
-
-	interface-version	- Default value is 3.4. 
-
-				  It is used to indicate the version of the SMPP protocol.
-
-				  It is set in 'SMPPServer Settings'. 
-
-	esme-ton 		- Defines ESME TON. If the SMPP Session Type is CLIENT,
+	esme-ton 		- Specify new ESME TON. 
+				  If the SMPP Session Type is CLIENT,
 				  this TON will be used in the BIND request. If the SMPP
 				  Session Type is SERVER, the incoming BIND request should
 				  have the same TON as configured here. If the configured 
 				  value is null (-1), SMSC will ignore it in both cases.
 
-	esme-npi 		- Defines ESME NPI. If the SMPP Session Type is CLIENT,
+				  The new value takes effect when SMPP is restarted.
+
+	esme-npi 		- Specify new ESME NPI. 
+				  If the SMPP Session Type is CLIENT,
 				  this NPI will be used in the BIND request. If the SMPP
 				  Session Type is SERVER, the incoming BIND request should
 				  have the same NPI as configured here. If the configured 
 				  value is null (-1), SMSC will ignore it in both cases.		
 
-	esme-range 		- Defines ESME Address Range. If the SMPP Session Type is 
+				  The new value takes effect when SMPP is restarted.
+
+	esme-range 		- Specify ESME Address Range. 
+				  If the SMPP Session Type is 
 				  CLIENT, this Address Range will be used in the BIND 
 				  request. If the SMPP Session Type is SERVER, the 
 				  incoming BIND request should have the same Address Range
 				  as configured here. If the configured value is 
 				  null (-1), SMSC will ignore it in both cases.
 
-	cluster-name 		- If it is not specified then its same as the name. 
-				  It is possible to group different SMPP connections 
-				  together by specifying the same cluster-name. 
-				  All the SMPP connection's that are capable of sending 
-				  out SMS are candidates for grouping.
+				  The new value takes effect when SMPP is restarted.
 
-	window-size 		- Default value is 1. 
+	window-size 		- Specify new window size.
+				  Default value is 1. 
 				  The window size is the amount of unacknowledged requests
 				  that are permitted to be outstanding/unacknowledged at 
 				  any given time. If more requests are added, the 
@@ -116,6 +69,8 @@ PARAMETERS
 				  This value is set only when ESME is defined as Client 
 				  side. For Server side this value is taken from the 
 				  'SMPP Server Settings'.
+
+				  The new value takes effect when SMPP is restarted.
 	  
 	connect-timeout		- Default value is 10000 milli seconds. 
 				  This parameter is used to specify the time within which 
@@ -126,6 +81,8 @@ PARAMETERS
 				  For Server side this value is taken from the
 				  the 'SMPP Server Settings'.
 
+				  The new value takes effect when SMPP is restarted.
+
 	request-expiry-timeout	- Default value is -1 (disabled). 
 				  This parameter is used to specify the time to wait in 
 				  milli seconds for an endpoint to respond to before it 
@@ -134,6 +91,8 @@ PARAMETERS
 				  This is useful only when ESME is defined as Client Side. 
 				  For Server side this value is taken from the
 				  the 'SMPP Server Settings'.
+
+				  The new value takes effect when SMPP is restarted.
 
 	window-monitor-interval	- Default value is -1 (disabled).
 				  This parameter is used to specify the time between 
@@ -148,6 +107,8 @@ PARAMETERS
 				  For Server side this value is taken from the
 				  the 'SMPP Server Settings'.
 
+				  The new value takes effect when SMPP is restarted.
+
 	window-wait-timeout 	- Default value is 60000 milli seconds. 
 				  This parameter is used to specify the time to wait 
 				  until a slot opens up in the 'sendWindow'.
@@ -155,6 +116,8 @@ PARAMETERS
 				  This is useful only when ESME is defined as Client Side. 
 				  For Server side this value is taken from the
 				  the 'SMPP Server Settings'.
+
+				  The new value takes effect when SMPP is restarted.
 
 	counters-enabled 	- Default value is true. 
 				  When this is enabled, SMSC exposes the statistics for
@@ -164,13 +127,19 @@ PARAMETERS
 				  For Server side this value is taken from the
 				  the 'SMPP Server Settings'.
 
+				  The new value takes effect when SMPP is restarted.
+
 	enquire-link-delay	- Default value is 30000 milli seconds. 
 				  When SMSC connects to a remote server as CLIENT, it 
 				  sends an 'ENQUIRE_LINK' after every configured 
 				  enquire-link-delay.
 
+				  The new value takes effect immediately.
+
 	charging-enabled	- Flag to enable or disable charging for every SMS 
 				  arriving from SIP.
+
+				  The new value takes effect immediately.
 
 	source-ton		- Every SMS coming into the SMSC via this ESME should have
 				  the same 'source_addr_ton' as the value configured here.
@@ -184,6 +153,8 @@ PARAMETERS
 				  an error code '0x0000000A' indicating 
 				  Invalid Source Address.
 
+				  The new value takes effect immediately.
+
 	source-npi		- Every SMS coming into the SMSC via this ESME should have
 				  the same 'source_addr_npi' as the value configured here.
 				  configured here. 
@@ -196,6 +167,8 @@ PARAMETERS
 				  SMS with an error code '0x0000000A' indicating 
 				  Invalid Source Address.
 
+				  The new value takes effect immediately.
+
 	source-range		- Every SMS coming into the SMSC via this ESME should have
 				  the same 'source_addr_range' as the value configured 
 				  here.This is a regular java expression and 
@@ -207,6 +180,8 @@ PARAMETERS
 				  If it doesn't match, the SMSC will reject this 
 				  SMS with an error code '0x0000000A' indicating 
 				  Invalid Source Address.
+
+				  The new value takes effect immediately.
 
 	routing-ton		- The DefaultSmsRoutingRule will try to match the 
 				  'dest_addr_ton' of outgoing SMS with the value 
@@ -224,6 +199,8 @@ PARAMETERS
 				  3) SmppBindType is TRANSMITTER and 
 				  SmppSession.Type is CLIENT
 
+				  The new value takes effect immediately.
+
 	routing-npi		- The DefaultSmsRoutingRule will try to match the 
 				  'dest_addr_npi' of outgoing SMS with the value
 				  configured here. If this configured value is null(-1)
@@ -240,6 +217,8 @@ PARAMETERS
 				  3) SmppBindType is TRANSMITTER and 
 				  SmppSession.Type is CLIENT
 
+				  The new value takes effect immediately.
+
 	routing-range		- The DefaultSmsRoutingRule will try to match the 
 				  'destination_addr' of outgoing SMS with the value
 				  configured here. This is a regular java expression and 
@@ -255,8 +234,10 @@ PARAMETERS
 				  SmppSession.Type is SERVER
 				  3) SmppBindType is TRANSMITTER and 
 				  SmppSession.Type is CLIENT
+
+				  The new value takes effect immediately.
 	
 SEE ALSO
 	smsc get scgt, smsc set scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
 	smsc set hlrssn, smsc get mscssn, smsc set mscssn, smsc get maxmapv, 
-	smsc set maxmapv, smsc esme modify
+	smsc set maxmapv, smsc esme create
