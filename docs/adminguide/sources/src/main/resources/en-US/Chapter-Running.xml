@@ -278,7 +278,7 @@ telscale>
 <para>
 Switch to the SMSC GW tab and you will find that the window will look similar to the figure below. The GUI is divided into three sections:
 	<itemizedlist>
-	<listitem><para>A left panel listing the management and monitoring units (Server Settings, SMPP Server, ESMEs, MAP Version Cache, DB Routing Rules). You can click on any of these to select and navigate to the specific management unit.</para></listitem>
+	<listitem><para>A left panel listing the management and monitoring units (Server Settings, SMPP Server, ESMEs, SIPs, MAP Version Cache, DB Routing Rules). You can click on any of these to select and navigate to the specific management unit.</para></listitem>
 	<listitem><para>A main panel displaying the currently selected management unit. <!-- At the top of this panel you will find a bread crumb trail providing links back to each previous page that you navigated through in order to get to the current page.--> The main view is categorized into multiple tabs to manage different aspects of the selected layer.</para></listitem>
 	<listitem><para>A bottom panel displaying the log data. You can clear the log anytime by clicking on the trash icon at the top right corner of this panel. You can also minimize or maximize this panel to suit your needs.</para></listitem>
 	</itemizedlist>

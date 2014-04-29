@@ -64,7 +64,7 @@ EXAMPLES
 				<title>Set Default Validity Period using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the default validity period (in hours) by entering the value in the text field 'Default validity period hours (in hours)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -104,7 +104,7 @@ EXAMPLES
 				<title>Set Maximum Validity Period using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the maximum validity period (in hours) by entering the value in the text field 'Maximum validity period (in hours)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -143,7 +143,7 @@ EXAMPLES
 				<title>Set Default type of number (TON) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Default type of number (TON) by entering the value in the text field 'Default type of number (TON)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -182,7 +182,7 @@ EXAMPLES
 				<title>Set Default numbering plan indicator (NPI) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Default numbering plan indicator (NPI) by entering the value in the text field 'Default numbering plan indicator (NPI)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -229,7 +229,7 @@ DESCRIPTION
 				<title>Set Cluster Name using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Cluster Name by entering the value in the text field 'Cluster Name'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -271,7 +271,7 @@ EXAMPLES
 				<title>Set SMPP Encoding for UCS2 using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the encoding scheme by choosing from the two values (UTF8 or UNICODE) in the list for 'SMPP Encoding for UCS2'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -311,7 +311,7 @@ EXAMPLES
 				<title>Set Subscriber busy due delay (in sec) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Subscriber busy due delay by entering the value in the text field 'Subscriber busy due delay (in sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -349,7 +349,7 @@ EXAMPLES
 				<title>Set First due delay (in sec) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the First due delay by entering the value in the text field 'First due delay (in sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -387,7 +387,7 @@ EXAMPLES
 				<title>Set Second due delay (in sec) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Second due delay by entering the value in the text field 'Second due delay (in sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -425,7 +425,7 @@ EXAMPLES
 				<title>Set Max due delay (in sec) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Max due delay by entering the value in the text field 'Max due delay (in sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -498,7 +498,7 @@ EXAMPLES
 				<title>Set Due delay multiplicator using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Due delay multiplicator by entering the value in the text field 'Due delay multiplicator'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -533,7 +533,7 @@ DESCRIPTION
 				<title>Set 'generate CDR for receipt messages'  using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify if the SMSC should generate CDR for receipt messages by choosing the value true for the field 'Generate receipt CDR'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -567,7 +567,7 @@ DESCRIPTION
 				<title>Enable/Disable SMS Home Routing using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify if the SMSC should accept MT messages (i.e if you want the SMSC to support SMS Home Routing) by setting the value for the field 'Home routing' to true or false accordingly. If this is enabled (set to true), the SMSC will support Home Routing. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -603,7 +603,7 @@ DESCRIPTION
 				<title>Set SMSC Global Title using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'SS7 Settings' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'SS7 Settings' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the SMSC Global Title by entering the value in the text field 'SMSC Gateway Global Title'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -640,7 +640,7 @@ DESCRIPTION
 				<title>Set SMSC Sub System Number (SSN) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'SS7 Settings' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'SS7 Settings' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the SMSC Sub System Number (SSN) by entering the value in the text field 'SMSC Gateway subsystem number'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -674,7 +674,7 @@ DESCRIPTION
 				<title>Set HLR Sub System Number (SSN) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'SS7 Settings' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'SS7 Settings' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the HLR Sub System Number (SSN) by entering the value in the text field 'HLR subsystem number'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -708,7 +708,7 @@ DESCRIPTION
 				<title>Set MSC Sub System Number (SSN) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'SS7 Settings' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'SS7 Settings' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the MSC Sub System Number (SSN) by entering the value in the text field 'MSC subsystem number'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -748,7 +748,7 @@ DESCRIPTION
 				<title>Set MAP Application Context version using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'SS7 Settings' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'SS7 Settings' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the MAP Application Context version by entering the value in the text field 'MAP version supported'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -800,7 +800,7 @@ EXAMPLES
 				<title>Set Max Message Length Reducer using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'SS7 Settings' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'SS7 Settings' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Max Message Length Reducer by entering the value in the text field 'Max Message Length Reducer'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -843,7 +843,7 @@ EXAMPLES
 				<title>Set Cassandra Configuration - Host Address and Port using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Cassandra' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Cassandra' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the host-ip address and port by entering appropriate values in the text fields 'Host Address' and 'Port' respectively. For more details of these parameters, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -879,7 +879,7 @@ DESCRIPTION
 				<title>Set Cassandra Configuration - Keyspace Name using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Cassandra' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Cassandra' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Keyspace Name by entering the value in the text field 'Keyspace Name'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -917,7 +917,7 @@ EXAMPLES
 				<title>Set Cassandra Configuration - Cluster Name using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Cassandra' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Cassandra' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Cluster Name by entering the value in the text field 'Cluster Name'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -960,7 +960,7 @@ EXAMPLES
 				<title>Set Cassandra Configuration - Cluster Name using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Scheduler' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Scheduler' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Fetch Period by entering the value in the text field 'Fetch Period (in ms)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -998,7 +998,7 @@ EXAMPLES
 				<title>Set Max Rows using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Scheduler' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Scheduler' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Max Rows by entering the value in the text field 'Max Rows'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1039,7 +1039,7 @@ EXAMPLES
 				<title>Set Max Activity Count using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Scheduler' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Scheduler' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Max Activity Count by entering the value in the text field 'Max Activity Count'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1077,7 +1077,7 @@ EXAMPLES
 				<title>Set Revise Period using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Scheduler' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Scheduler' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the revise period in seconds by entering the value in the text field 'Revise period after SMSC restart (sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1116,7 +1116,7 @@ EXAMPLES
 				<title>Set Cache timeout Period using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into four horizontal tabs: Properties, SS7 Settings, Cassandra and Scheduler. Switch to the 'Scheduler' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Scheduler' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Cache timeout period in seconds by entering the value in the text field 'Processing Sms set cache timeout (sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1125,6 +1125,250 @@ EXAMPLES
 			</procedure>
 			</section>
 			</section>
+		</section>
+		<section id="SMSC_diameter_Settings">
+		<title>Diameter Settings</title>
+			<para>You can modify Diameter settings using the CLI or GUI.</para>
+			<section id="dest_realm">
+			<title>Destination Realm</title>
+			<section id="dest_realm_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'Destination Realm' value by issuing the command <command>smsc set diameterdestrealm</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get diameterdestrealm</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set diameterdestrealm
+
+SYNOPSIS
+	smsc set diameterdestrealm <value>
+
+DESCRIPTION
+	This command is used to set the Diameter Destination Realm for connection to OCS.
+
+EXAMPLES
+	smsc set diameterdestrealm mobicents.org
+]]></screen>
+			</section>
+			<section id="dest_realm_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set Diameter Destination Realm using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Diameter' tab in the GUI.
+				</para></step>
+				<step><para>You can specify the Destination Realm by entering the value in the corresponding text field. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+
+			<section id="dest_host">
+			<title>Destination Host</title>
+			<section id="dest_host_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'Destination Host' value by issuing the command <command>smsc set diameterdesthost</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get diameterdesthost</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set diameterdesthost
+
+SYNOPSIS
+	smsc set diameterdesthost <value>
+
+DESCRIPTION
+	This command is used to set the Diameter Destination Host for connection to OCS.
+
+EXAMPLES
+	smsc set diameterdesthost 127.0.0.1
+]]></screen>
+			</section>
+			<section id="dest_host_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set Diameter Host using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Diameter' tab in the GUI.
+				</para></step>
+				<step><para>You can specify the Destination Host by entering the value in the corresponding text field. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+
+			<section id="dest_port">
+			<title>Destination Port</title>
+			<section id="dest_port_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'Destination Port' value by issuing the command <command>smsc set diameterdestport</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get diameterdestport</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set diameterdestport
+
+SYNOPSIS
+	smsc set diameterdestport <value>
+
+DESCRIPTION
+	This command is used to set the Diameter Destination Port for connection to OCS.
+
+EXAMPLES
+	smsc set diameterdestport 3868
+]]></screen>
+			</section>
+			<section id="dest_port_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set Diameter Port using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Diameter' tab in the GUI.
+				</para></step>
+				<step><para>You can specify the Destination Port by entering the value in the corresponding text field. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+
+			<section id="dest_username">
+			<title>Destination Username</title>
+			<section id="dest_username_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'Destination Username' value by issuing the command <command>smsc set diameterusername</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get diameterusername</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set diameterusername
+
+SYNOPSIS
+	smsc set diameterusername <value>
+
+DESCRIPTION
+	This command is used to set the Diameter Username for connection to OCS.
+
+EXAMPLES
+	smsc set diameterdestusername svinu
+]]></screen>
+			</section>
+			<section id="dest_username_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set Diameter Username using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Diameter' tab in the GUI.
+				</para></step>
+				<step><para>You can specify the Username by entering the value in the corresponding text field. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+
+			<section id="dest_mocharging">
+			<title>MO Charge Settings</title>
+			<section id="dest_mocharging_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'MO Charged' value by issuing the command <command>smsc set mocharging</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get mocharging</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set mocharging
+
+SYNOPSIS
+	smsc set mocharging <true|false>
+
+DESCRIPTION
+	This command is used to set the value of the parameter 'moCharging' to true
+	or false. This value is set to true by default.
+
+	If this is set to true, all Mobile Originated messages will be charged by OCS via
+	Diameter, prior to being sent.
+
+EXAMPLES
+	smsc set mocharging true
+]]></screen>
+			</section>
+			<section id="dest_mocharging_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set MO Charge using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Diameter' tab in the GUI.
+				</para></step>
+				<step><para>You can set 'Mobile Originated SMS Charged' value to true or false, in the corresponding list. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+
+			<section id="dest_txSmppCharging">
+			<title>ESME Charge Settings</title>
+			<section id="dest_txSmppCharging_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'ESME Originated SMS Charged' value by issuing the command <command>smsc set txsmppcharging</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get txsmppcharging</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set txsmppcharging
+
+SYNOPSIS
+	smsc set txsmppcharging <none|selected|all>
+
+DESCRIPTION
+	This command is used to set the value of the parameter 'txsmppcharging' to none,
+	selected or all. 
+
+	If this is set to 'all', all ESME Originated messages will be charged by OCS via
+	Diameter, prior to being sent.
+
+	If this is set to 'selected', only those messages originating from ESMEs marked 
+	with the parameter 'charging-enabled'=true at the time of ESME creation  will be 
+	charged by OCS via Diameter, prior to being sent.
+
+	If this is set to 'none', none of the ESME Originated messages will be charged by 
+	OCS via Diameter, prior to being sent. 
+
+	The parameter 'txsmppcharging' is set to 'none' by default.
+
+EXAMPLES
+	smsc set txsmppcharging selected
+]]></screen>
+			</section>
+			<section id="dest_txSmppCharging_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set ESME Charge using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler and Diameter. Switch to the 'Diameter' tab in the GUI.
+				</para></step>
+				<step><para>You can set 'ESME Originated SMS Charged' value to none, selected or all, in the corresponding list. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+
+
 		</section>
 	</section>
 	<section id="SMPP_Server_Settings">
@@ -1448,7 +1692,10 @@ SYNOPSIS
 	connect-timeout <connectTimeout> request-expiry-timeout <requestExpiryTimeout> 
 	window-monitor-interval <windowMonitorInterval> 
 	window-wait-timeout <windowWaitTimeout> counters-enabled <true | false> 
-	enquire-link-delay <30000>
+	enquire-link-delay <30000> charging-enabled <true | false> 
+	source-ton <source address ton> source-npi <source address npi>
+	source-range <source address range> routing-ton <routing address ton>
+	routing-npi <routing address npi> routing-range <routing address range>
 
 DESCRIPTION
 	This command is used to configure a new ESME.
@@ -1485,7 +1732,7 @@ PARAMETERS
 				  When you define multiple ESMEs with the same systemId,if
 				  host-ip and port values are -1 (for SMPP type Server), 
 				  the SMSC will accept multiple incoming BIND requests
-			          from any IP:Port as long as the systemId and password
+			          from any IP:port as long as the systemId and password
 				  match. 
 
 				  When you define multiple ESMEs with the same systemId,if
@@ -1517,63 +1764,24 @@ PARAMETERS
 
 				  It is set in 'SMPPServer Settings'. 
 
-	esme-ton 		- Default value is 1 (International).
+	esme-ton 		- Defines ESME TON. If the SMPP Session Type is CLIENT,
+				  this TON will be used in the BIND request. If the SMPP
+				  Session Type is SERVER, the incoming BIND request should
+				  have the same TON as configured here. If the configured 
+				  value is null (-1), SMSC will ignore it in both cases.
 
-				  If the SMSC is acting as a Server, esme-ton for incoming 
-				  BIND request should match with the configured value. 
-				  If the SMSC is initiating the BIND then this value will 
-				  be included in the bind request.
+	esme-npi 		- Defines ESME NPI. If the SMPP Session Type is CLIENT,
+				  this NPI will be used in the BIND request. If the SMPP
+				  Session Type is SERVER, the incoming BIND request should
+				  have the same NPI as configured here. If the configured 
+				  value is null (-1), SMSC will ignore it in both cases.		
 
-				  It is set in "Server Settings". 
-				 
-				  Possible values:
-
-				  Value 	Description
-				  ----------------------------------
-				  0 		Unknown
-				  1 		International
-				  2 		National
-				  3 		Network Specific
-				  4 		Subscriber Number
-				  5		Alphanumeric
-				  6		Abbreviated
-				  7		Reserved Ext
-
-	esme-npi 		- Default value is 1 [ISDN (E163/E164)]  
-
-				  If the SMSC is acting as a Server, the esme-npi for 
-				  incoming BIND request should match with the configured 
-				  value. 
-				  If the SMSC is initiating the BIND then this value will 
-				  be included in bind request.
-
-				  It is set in "Server Settings". 
-
-				  Possible values:
-
-				  Value 	Description
-				  ----------------------------------
-				  0 		Unknown
-				  1 		ISDN (E163/E164)
-				  3 		Data (X.121)
-				  4 		Telex (F.69)
-				  6 		Land Mobile (E.212)
-				  8		National
-				  9		Private
-				  10		ERMES 
-				  12		Internet (IP)
-				  18		WAP Client Id (to be defined by WAP Forum)		
-
-	esme-range 		- If the SMSC is acting as a Server, the incoming bind 
-				  request's 'esme-range' should match with the configured 
-				  value. If the incoming bind doesn't carry an esme-range,
-				  the value defined here will be used.
-
-				  If the SMSC is acting as a Client, the bind request 
-				  initiated will carry this esme-range.
-
-				  If the routing rule is not defined, SMS routing between 
-				  different ESMEs happens based on the esme-range.
+	esme-range 		- Defines ESME Address Range. If the SMPP Session Type is 
+				  CLIENT, this Address Range will be used in the BIND 
+				  request. If the SMPP Session Type is SERVER, the 
+				  incoming BIND request should have the same Address Range
+				  as configured here. If the configured value is 
+				  null (-1), SMSC will ignore it in both cases.
 
 	cluster-name 		- If it is not specified then its same as the name. 
 				  It is possible to group different SMPP connections 
@@ -1643,10 +1851,93 @@ PARAMETERS
 				  sends an 'ENQUIRE_LINK' after every configured 
 				  enquire-link-delay.
 
-SEE ALSO
-	smsc get scgt, smsc set scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
-	smsc set hlrssn, smsc get mscssn, smsc set mscssn, smsc get maxmapv, 
-	smsc set maxmapv
+	charging-enabled	- Flag to enable or disable charging for every SMS 
+				  arriving from SIP.
+
+	source-ton		- Every SMS coming into the SMSC via this ESME should have
+				  the same 'source_addr_ton' as the value configured here.
+
+				  If this configured value is null(-1) or not null and 
+				  matches, the SMSC will compare the
+				  'source_addr_npi' and 'source_addr_range' as explained 
+				  below. 
+
+				  If it doesn't match, the SMSC will reject this SMS with 
+				  an error code '0x0000000A' indicating 
+				  Invalid Source Address.
+
+	source-npi		- Every SMS coming into the SMSC via this ESME should have
+				  the same 'source_addr_npi' as the value configured here.
+				  configured here. 
+
+				  If this configured value is null(-1)
+				  or not null and matches, the SMSC will compare the 
+				  'source_addr_range' as below. 
+
+				  If it doesn't match, the SMSC will reject this 
+				  SMS with an error code '0x0000000A' indicating 
+				  Invalid Source Address.
+
+	source-range		- Every SMS coming into the SMSC via this ESME should have
+				  the same 'source_addr_range' as the value configured 
+				  here.This is a regular java expression and 
+				  default value is ^[0-9a-zA-Z]*. 
+
+				  If it matches, the SMSC will accept the incoming SMS 
+				  and process further.
+
+				  If it doesn't match, the SMSC will reject this 
+				  SMS with an error code '0x0000000A' indicating 
+				  Invalid Source Address.
+
+	routing-ton		- The DefaultSmsRoutingRule will try to match the 
+				  'dest_addr_ton' of outgoing SMS with the value 
+				  configured here. If this configured value is null(-1) 
+				  or not null and matches, the SMSC will compare the
+				  'dest_addr_npi' and 'destination_addr' as explained 
+				  below. If it doesn't match, the SMSC will select the 
+				  next ESME in the list for matching routing rule.
+
+				  DefaultSmsRoutingRule will consider ESME for routing 
+				  only if
+				  1) SmppBindType is TRANSCEIVER
+				  2) SmppBindType is RECEIVER and 
+				  SmppSession.Type is SERVER
+				  3) SmppBindType is TRANSMITTER and 
+				  SmppSession.Type is CLIENT
+
+	routing-npi		- The DefaultSmsRoutingRule will try to match the 
+				  'dest_addr_npi' of outgoing SMS with the value
+				  configured here. If this configured value is null(-1)
+				  or not null and matches, the SMSC will compare the 
+				  'destination_addr' as below. If it doesn't match, the 
+				  SMSC will select the next ESME in the list for matching 
+				  routing rule.
+
+				  DefaultSmsRoutingRule will consider ESME for routing 
+				  only if
+				  1) SmppBindType is TRANSCEIVER
+				  2) SmppBindType is RECEIVER and 
+				  SmppSession.Type is SERVER
+				  3) SmppBindType is TRANSMITTER and 
+				  SmppSession.Type is CLIENT
+
+	routing-range		- The DefaultSmsRoutingRule will try to match the 
+				  'destination_addr' of outgoing SMS with the value
+				  configured here. This is a regular java expression and 
+				  default value is ^[0-9a-zA-Z]*. If it matches, the SMSC
+				  will send the SMS out over this SMPP connection. If it 
+				  doesn't match, the SMSC will select the next ESME in 
+				  the list for matching routing rule.
+
+				  DefaultSmsRoutingRule will consider ESME for routing 
+				  only if
+				  1) SmppBindType is TRANSCEIVER
+				  2) SmppBindType is RECEIVER and 
+				  SmppSession.Type is SERVER
+				  3) SmppBindType is TRANSMITTER and 
+				  SmppSession.Type is CLIENT
+	
 ]]></screen>
 			</section>
 			<section id="ESME_Settings_Create_GUI">
@@ -1820,6 +2111,87 @@ PARAMETERS
 		</section>
 		</section>
 	</section>
+	<section id="SIP">
+			<title>SIP Settings</title>
+			<para>&THIS.PLATFORM; &THIS.APPLICATION; comes with default JSLEE SIP RA. You can modify the SIP settings using the CLI or GUI.</para>
+
+			<section id="sip_cli">
+			<title>Using CLI</title>
+			<para>
+			You can modify the SIP settings by issuing the command <command>smsc sip modify</command> with appropriate parameters as described below. You can view the settings by issuing the command <command>smsc sip show</command> which will display all the values.
+			</para>
+<screen><![CDATA[
+Name
+	smsc sip modify
+
+SYNOPSIS
+	smsc sip modify name cluster-name <clusterName> host <ip> port <port> 
+	routing-ton <routing address ton> routing-npi <routing address npi> 
+	routing-range <routing address range> counters-enabled <true | false> 
+	charging-enabled <true | false> 
+
+DESCRIPTION
+	This command is used to modify SIP settings. 
+
+PARAMETERS
+
+	Standard Parameters
+
+	Name			- The name of the SIP Stack that is being modified. Since
+				  the Gateway does not allow creating more than one SIP
+				  Stack presently, the name is hardcored to "SIP".
+
+	Cluster-name		- The name of the Cluster to which this SIP Stack belongs 
+				  to. This parameter is not used presently and is meant
+				  for future use when Cluster of SIP is enabled.
+
+	Host			- IP address of the remote node to which all SIP messages
+				  must be forwarded.
+
+	Port			- Port of the remote node to which all SIP messages
+				  must be forwarded.
+
+	routing-ton		- The DefaultSmsRoutingRule will try to match the 
+				  'dest_addr_ton' of outgoing SMS with the value 
+				  configured here. If this configured value is null(-1) 
+				  or not null and matches, the SMSC will compare the
+				  'dest_addr_npi' and 'destination_addr' as explained 
+				  below. If it doesn't match, the SMSC will select the 
+				  next SIP in the list for matching routing rule.
+
+	routing-npi		- The DefaultSmsRoutingRule will try to match the 
+				  'dest_addr_npi' of outgoing SMS with the value
+				  configured here. If this configured value is null(-1)
+				  or not null and matches, the SMSC will compare the 
+				  'destination_addr' as below. If it doesn't match, the 
+				  SMSC will select the next SIP in the list for matching 
+				  routing rule.
+
+	routing-range		- The DefaultSmsRoutingRule will try to match the 
+				  'destination_addr' of outgoing SMS with the value
+				  configured here. This is a regular java expression and 
+				  default value is null. If it matches, the SMSC will 
+				  send the SMS out over this SIP connection. If it 
+				  doesn't match, the SMSC will select the next ESME in 
+				  the list for matching routing rule.
+
+	counters-enabled	- Flag to enable or disable counters. Not used presently.
+
+	charging-enabled	- Flag to enable or disable charging for every SMS 
+				  arriving from SIP.
+]]></screen>
+			</section>
+			<section id="sip_gui">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Managing the SIP Connection using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'SIPs' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing SIP settings. You can view and modify the SIP settings in this panel.
+				</para></step>
+			</procedure>
+			</section>
+		</section>
 <section id="mapcache">
 			<title>MAP Version Cache</title>
 			<para>&THIS.PLATFORM; &THIS.APPLICATION; caches the negotiated MAP Version for each network node. Cache stores the Global Title of SCCP address of the network node. Every MT SMS sent to this node will use the cached Version. This will help in reducing the MAP Version negotiation duration everytime and hence improve the performance.</para>
@@ -1893,23 +2265,26 @@ Name
 	smsc databaserule update
 
 SYNOPSIS
-	smsc databaserule update <address> <systemId>
+	smsc databaserule update <address> <systemId> <SMPP|SIP>
 
 DESCRIPTION
-	This command is used to add or update a Database Rule. 
+	This command is used to add or update a Database Rule for SMPP or SIP. 
 
+	The parameter <SMPP|SIP> is used to define if the rule is for SMPP or SIP. This 
+	is an optional parameter and if unspecified, by default the rule is set for SMPP.
+ 	
 	Database Rules are Rules that are used for routing messages to a proper ESME. 
-	
 	When you define a rule using the above command, you are creating a routing rule
 	that states:
 	"If the destination address of a message corresponds with the value specified in
 	the 'address' field, then the message be sent to an ESME identified by the value
 	specified in the 'systemId' field".
 
-	To add a new rule you must issue the command with only the systemId parameter.
+	To add a new rule you must issue the command with the systemId parameter and
+	specify if the rule is for SIP or SMPP.
 
 	To update an existing rule, you must issue the command with both the address 
-	parameter and the systemId parameter.
+	parameter and the systemId parameter and specifiy if the rule is for SIP or SMPP.
 ]]>
 </screen>
 			</section>
@@ -1919,9 +2294,9 @@ DESCRIPTION
 				<title>Create/Update Database Routing Rule using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'DB Routing Rule' in the left panel.
 				</para></step>
-				<step><para>The main panel will allow you to create/update, delete and view DB Routing Rules.
+				<step><para>The main panel will allow you to create/update, delete and view DB Routing Rules for SMPP or SIP.
 				</para></step>
-				<step><para>In order to create or update a DB Routing Rule, enter the values for MSISDN and ESME cluster name and click on 'Update'. A new rule will be created if it does not exist or updated if it exists. 
+				<step><para>In order to create or update a DB Routing Rule, choose the type as SMPP or SIP from the drop down box, enter the values for MSISDN and ESME cluster name and click on 'Update'. A new rule will be created if it does not exist or updated if it exists. 
 				</para></step>
 			</procedure>
 			</section>
@@ -1937,10 +2312,14 @@ Name
 	smsc databaserule delete
 
 SYNOPSIS
-	smsc databaserule delete <address> 
+	smsc databaserule delete <address> <SMPP|SIP>
 
 DESCRIPTION
-	This command is used to delete an existing Database Rule specified for 'address'. 
+	This command is used to delete an existing Database Rule specified for 'address'.
+
+	The parameter <SMPP|SIP> is used to define if the rule is deleted for SMPP or SIP. 
+	This is an optional parameter and if unspecified, by default the rule is 
+	deleted for SMPP. 
 ]]>
 </screen>
 			</section>
@@ -1950,9 +2329,9 @@ DESCRIPTION
 				<title>Delete Database Routing Rule using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'DB Routing Rule' in the left panel.
 				</para></step>
-				<step><para>The main panel will allow you to create/update, delete and view DB Routing Rules.
+				<step><para>The main panel will allow you to create/update, delete and view DB Routing Rules for SMPP or SIP.
 				</para></step>
-				<step><para>In order to delete a DB Routing Rule, enter the value for MSISDN and click on 'Delete'. The routing rule corresponding to that MSISDN will be deleted. 
+				<step><para>In order to delete a DB Routing Rule, choose the type as SMPP or SIP from the drop down box, enter the value for MSISDN and click on 'Delete'. The routing rule corresponding to that MSISDN will be deleted. 
 				</para></step>
 			</procedure>
 			</section>
@@ -1968,11 +2347,15 @@ Name
 	smsc databaserule get
 
 SYNOPSIS
-	smsc databaserule get <address> 
+	smsc databaserule get <address> <SMPP|SIP>
 
 DESCRIPTION
 	This command is used to view the details of an existing Database Rule specified 
 	for 'address'. 
+
+	The parameter <SMPP|SIP> is used to define if the rule is to be viewed for SMPP 
+	or SIP. This is an optional parameter and if unspecified, by default the rule is 
+	retrieved for SMPP. 
 ]]>
 </screen>
 			</section>
@@ -1982,9 +2365,9 @@ DESCRIPTION
 				<title>View Database Routing Rule using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'DB Routing Rule' in the left panel.
 				</para></step>
-				<step><para>The main panel will allow you to create/update, delete and view DB Routing Rules.
+				<step><para>The main panel will allow you to create/update, delete and view DB Routing Rules for SMPP or SIP.
 				</para></step>
-				<step><para>In order to view a DB Routing Rule, enter the value for MSISDN and click on 'View'. The routing rule corresponding to that MSISDN will be displayed. 
+				<step><para>In order to view a DB Routing Rule, choose the type as SMPP or SIP from the drop down box, enter the value for MSISDN and click on 'View'. The routing rule corresponding to that MSISDN will be displayed. 
 				</para></step>
 			</procedure>
 			</section>
@@ -2000,18 +2383,23 @@ Name
 	smsc databaserule getrange
 
 SYNOPSIS
-	smsc databaserule getrange <address>
+	smsc databaserule getrange <SMPP|SIP> <address>
 
 DESCRIPTION
 	This command is used to retrieve a list of database rules as text data. 
 
-	<address> is an optional parameter.
+PARAMETERS
+	Standard Parameters:
+	<SMPP|SIP> -	This parameter is used to specify if you wish to retrieve the
+			range corresponding to SMPP or SIP.	
 
-	If a value is not specified for <address>, then the command will retrieve the 
-	first 100 database rules. 
+	Optional Parameters:
+	<address> - 	If a value is not specified for <address>, then the command will 
+			retrieve the first 100 database rules. 
 
-	If <address> is specified, then the command will retrieve a list of 100 database 
-	rules starting from the record next to the record with address='address'.
+			If <address> is specified, then the command will retrieve a list 
+			of 100 database rules starting from the record next to the record 
+			with address='address'.
 ]]>
 </screen>
 			</section>
