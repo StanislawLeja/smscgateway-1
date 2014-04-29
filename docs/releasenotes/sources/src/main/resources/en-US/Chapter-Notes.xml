@@ -31,33 +31,34 @@
 	<section id="notes_whats_new">
 		<title>What's New?</title>
 		<formalpara>
-		<title>New Database Schema</title>
-		<para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; comes with a new Database Schema. The procedure to create the database has been changed and is explained in the Installation Guide. The &THIS.APPLICATION; creates three tables for every new day with the date suffixed to the names of the tables as <literal>DST_SLOT_TABLE_yyyy_mm_dd</literal>, <literal>SLOT_MESSAGES_TABLE_yyyy_mm_dd</literal> and <literal>MESSAGES_yyyy_mm_dd</literal> where <literal>yyyy_mm_dd</literal> is the date in that format. Refer to the Admin Guide for more details on the database structure.
+		<title>Diameter Support</title>
+		<para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; now comes with Diameter Support. Refer to the Admin Guide for more details on configuring the settings.
 		</para>
 		</formalpara>
 		<formalpara>
-		<title>Support for SMS Home Routing</title>
-		<para>&THIS.PLATFORM; &THIS.APPLICATION; supports SMS Home Routing that enables you to handle Mobile Terminated messages in the network that owns the customer so you can offer a full range of advanced and value added services on both inbound and outbound SMS. You may switch on/off SMS Home Routing according to your requirements.</para> 
+		<title>SIP Support</title>
+		<para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; comes with SIP Support. Refer to the Admin Guide for more details on configuring the settings.
+		</para> 
 		</formalpara>
 		<formalpara>
-		<title>Monitoring SMSC Statistics</title>
-		<para>&THIS.PLATFORM; &THIS.APPLICATION; now allows you to monitor the SMSC and view the current statistics in the GUI Management Console or through the Command Line Interface.
+		<title>Auto Drop Cassandra Tables</title>
+		<para>You can now configure the &THIS.PLATFORM; &THIS.APPLICATION; to automatically drop tables from the Cassandra Database after a certain period.
 		</para>
 		</formalpara>
 		<formalpara>
-		<title>CDR for Receipt messages</title>
-		<para>The SMSC can now be configured to generate CDR for both receipt and regular messages or generate CDR only for regular messages. For more details on how to configure this setting, please refer to the Admin Guide.
+		<title>Regular Expression for outgoing SMS defined at ESME Creation</title>
+		<para>SMPP can now define regular expression for outgoing SMS. For every SMS coming into the SMSC via this ESME, if the expression doesnt match the SMSC will reject this SMS with error code "0x0000000A" - Invalid Source Address. 
 		</para>
 		</formalpara>
 		<formalpara>
-		<title>Additional SMSC Parameters</title>
-		<para>You can now configure few additional SMSC Parameters (<literal>reviseSecondsOnSmscStart</literal> and <literal>processingSmsSetTimeout</literal>) using CLI and GUI. 
+		<title>NPI and TON of ESME in Routing</title>
+		<para>&THIS.PLATFORM; &THIS.APPLICATION;'s default routing rule now comes with an option to consider the NPI and TON of ESME in taking a decision on routing. For more details on how to configure this setting, please refer to the Admin Guide.
 		</para>
 		</formalpara>
 	</section>
 	<section id="features_bug_fixes">
 		<title>Issues Fixed</title>
-		<para>For a full list of resolved issues please refer to <ulink url="https://bitbucket.org/telestax/telscale-smscgateway/issues?milestone=TelScale SMSC 6.1.5.GA" />.</para>
+		<para>For a full list of resolved issues please refer to <ulink url="https://telestax.atlassian.net/browse/SMSC/" />.</para>
 	</section>
 	<section id="Config_settings">
 		<title>Configuration Settings</title>

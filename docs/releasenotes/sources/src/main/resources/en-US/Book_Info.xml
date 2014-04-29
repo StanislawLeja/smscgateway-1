@@ -8,7 +8,7 @@
 	<subtitle>Release Notes</subtitle>
 	<productname>&THIS.PLATFORM; &THIS.APPLICATION; </productname>
 	<productnumber>&THIS.VERSION;</productnumber>
-	<edition>3.0</edition>
+	<edition>4.0</edition>
 	<pubsnumber>1</pubsnumber>
 
 	<abstract>
