@@ -116,6 +116,9 @@ public class Schema {
     public static final List<String> COLUMNS_ARCHIVE;
     public static final List<String> COLUMNS_SMS_ROUTING_RULE;
 
+    public static final String COLUMN_SYSTEM_KEYSPACE_NAME = "keyspace_name";
+    public static final String COLUMN_SYSTEM_COLUMNFAMILY_NAME = "columnfamily_name";
+
     static{
         List<String> tmp = new ArrayList<String>();
         tmp.add(COLUMN_TARGET_ID);

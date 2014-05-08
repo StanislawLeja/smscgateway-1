@@ -342,6 +342,27 @@ public class TT_CassandraTest {
         sbb.c2_deleteArchiveTablesForDate(dt);
     }
 
+    @Test(groups = { "cassandra" })
+    public void testingTableList() throws Exception {
+
+        if (!this.cassandraDbInited)
+            return;
+
+        Date[] ss = sbb.c2_getArchiveTableList(sbb.getKeyspaceName());
+        int i1 = 0;
+
+
+//        Date dt0 = new Date();
+//        Date dt = new Date(dt0.getTime() - 3 * 24 * 3600 * 1000);
+//        PreparedStatementCollection_C3 psc = sbb.getStatementCollection(dt);
+//        long newDueSlot = sbb.c2_getDueSlotForTime(dt);
+//        sbb.c2_updateDueSlotForTargetId("222222_1_11", newDueSlot);
+//
+//        sbb.c2_deleteLiveTablesForDate(dt);
+//
+//        sbb.c2_deleteArchiveTablesForDate(dt);
+    }
+
     public long addingNewMessages() throws Exception {
         Date dt = new Date();
         PreparedStatementCollection_C3 psc = sbb.getStatementCollection(dt);
