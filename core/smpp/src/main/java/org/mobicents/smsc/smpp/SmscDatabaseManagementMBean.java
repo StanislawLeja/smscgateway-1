@@ -35,4 +35,8 @@ public interface SmscDatabaseManagementMBean {
 
     void deleteArchiveTablesForDate(Date date);
 
+    Date[] getLiveTablesListBeforeDate(Date date);
+
+    Date[] getArchiveTablesListBeforeDate(Date date);
+
 }

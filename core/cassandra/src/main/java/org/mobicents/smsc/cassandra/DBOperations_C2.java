@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -1638,6 +1639,111 @@ public class DBOperations_C2 {
         } catch (Exception e) {
             logger.warn("Exception when dropping cassandra table: " + tName, e);
         }
+    }
+
+    public Date[] c2_getLiveTableList(String keyspace) {
+        String[] ss = this.c2_getTableList(keyspace);
+
+        FastMap<Date, Date> res = new FastMap<Date, Date>();
+        for (String s : ss) {
+            Date dt = null;
+            if (s.startsWith("DST_SLOT_TABLE_") && s.length() == 25) {
+                String sYear = s.substring(15, 19);
+                String sMon = s.substring(20, 22);
+                String sDay = s.substring(23, 25);
+                try {
+                    int year = Integer.parseInt(sYear);
+                    int mon = Integer.parseInt(sMon);
+                    int day = Integer.parseInt(sDay);
+                    dt = new Date(year - 1900, mon - 1, day);
+                } catch (Exception e) {
+                }
+            }
+            if (s.startsWith("SLOT_MESSAGES_TABLE_") && s.length() == 30) {
+                String sYear = s.substring(20, 24);
+                String sMon = s.substring(25, 27);
+                String sDay = s.substring(28, 30);
+                try {
+                    int year = Integer.parseInt(sYear);
+                    int mon = Integer.parseInt(sMon);
+                    int day = Integer.parseInt(sDay);
+                    dt = new Date(year - 1900, mon - 1, day);
+                } catch (Exception e) {
+                }
+            }
+            if (dt != null) {
+                res.put(dt, dt);
+            }
+        }
+
+        Date[] dd = new Date[res.size()];
+        int i1 = 0;
+        for (Date dt : res.keySet()) {
+            dd[i1++] = dt;
+        }
+        Arrays.sort(dd);
+
+        return dd;
+    }
+
+    public Date[] c2_getArchiveTableList(String keyspace) {
+        String[] ss = this.c2_getTableList(keyspace);
+
+        FastMap<Date, Date> res = new FastMap<Date, Date>();
+        for (String s : ss) {
+            Date dt = null;
+            if (s.startsWith("MESSAGES_") && s.length() == 19) {
+                String sYear = s.substring(9, 13);
+                String sMon = s.substring(14, 16);
+                String sDay = s.substring(17, 19);
+                try {
+                    int year = Integer.parseInt(sYear);
+                    int mon = Integer.parseInt(sMon);
+                    int day = Integer.parseInt(sDay);
+                    dt = new Date(year - 1900, mon - 1, day);
+                } catch (Exception e) {
+                }
+            }
+            if (dt != null) {
+                res.put(dt, dt);
+            }
+        }
+
+        Date[] dd = new Date[res.size()];
+        int i1 = 0;
+        for (Date dt : res.keySet()) {
+            dd[i1++] = dt;
+        }
+        Arrays.sort(dd);
+
+        return dd;
+    }
+
+    public String[] c2_getTableList(String keyspace) {
+        ArrayList<String> res = new ArrayList<String>();
+        try {
+            String sa = "select * from system.schema_columnfamilies;";
+            PreparedStatement ps = session.prepare(sa);
+            BoundStatement boundStatement = new BoundStatement(ps);
+
+            ResultSet result = session.execute(boundStatement);
+
+            for (Row row : result) {
+                String keyspace1 = row.getString(Schema.COLUMN_SYSTEM_KEYSPACE_NAME);
+                String tableName = row.getString(Schema.COLUMN_SYSTEM_COLUMNFAMILY_NAME);
+
+                if (keyspace.equals(keyspace1)) {
+                    res.add(tableName);
+                }
+            }
+        } catch (Exception e) {
+            logger.info("Can not get a cassandra table list");
+            return new String[0];
+        }
+
+        String[] ss = new String[res.size()];
+        res.toArray(ss);
+        return ss;
     }
 
 	private class DueSlotWritingElement {

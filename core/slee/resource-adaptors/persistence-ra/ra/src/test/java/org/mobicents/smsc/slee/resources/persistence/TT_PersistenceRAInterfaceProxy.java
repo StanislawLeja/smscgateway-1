@@ -68,6 +68,10 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
         return session;
     }
 
+    public String getKeyspaceName() {
+        return keyspace;
+    }
+
     public void start() throws Exception {
         super.start(ip, 9042, keyspace, 60, 60, 60 * 10);
     }

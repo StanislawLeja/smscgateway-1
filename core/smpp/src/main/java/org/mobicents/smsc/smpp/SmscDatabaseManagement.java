@@ -22,6 +22,7 @@
 
 package org.mobicents.smsc.smpp;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -107,10 +108,17 @@ public class SmscDatabaseManagement implements SmscDatabaseManagementMBean, Runn
                     if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                         // TODO: implement it
                     } else {
-                        if (!dbOperations_C2.c2_deleteLiveTablesForDate(tagDate)) {
-                            setUnprocessed();
-                            break;
+                        Date[] dtt = this.getLiveTablesListBeforeDate(tagDate);
+                        boolean processed = true;
+                        for (Date dt : dtt) {
+                            if (!dbOperations_C2.c2_deleteLiveTablesForDate(dt)) {
+                                setUnprocessed();
+                                processed = false;
+                                break;
+                            }
                         }
+                        if (!processed)
+                            break;
                     }
                 }
 
@@ -119,10 +127,17 @@ public class SmscDatabaseManagement implements SmscDatabaseManagementMBean, Runn
                     if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                         // TODO: implement it
                     } else {
-                        if (!dbOperations_C2.c2_deleteArchiveTablesForDate(tagDate)) {
-                            setUnprocessed();
-                            break;
+                        Date[] dtt = this.getArchiveTablesListBeforeDate(tagDate);
+                        boolean processed = true;
+                        for (Date dt : dtt) {
+                            if (!dbOperations_C2.c2_deleteArchiveTablesForDate(dt)) {
+                                setUnprocessed();
+                                processed = false;
+                                break;
+                            }
                         }
+                        if (!processed)
+                            break;
                     }
                 }
                 break;
@@ -175,6 +190,62 @@ public class SmscDatabaseManagement implements SmscDatabaseManagementMBean, Runn
                 dbOperations_C2.c2_deleteArchiveTablesForDate(date);
             }
         }
+    }
+
+    private Date[] performDateFilter(Date[] dtt, Date maxDate) {
+        ArrayList<Date> res = new ArrayList<Date>();
+
+        for (Date dt : dtt) {
+            if (dt.getYear() < maxDate.getYear()) {
+                res.add(dt);
+            } else if (dt.getYear() == maxDate.getYear()) {
+                if (dt.getMonth() < maxDate.getMonth()) {
+                    res.add(dt);
+                } else if (dt.getMonth() == maxDate.getMonth()) {
+                    if (dt.getDate() <= maxDate.getDate()) {
+                        res.add(dt);
+                    }
+                }
+            }
+        }
+
+        Date[] rr = new Date[res.size()];
+        res.toArray(rr);
+        return rr;
+    }
+
+    @Override
+    public Date[] getLiveTablesListBeforeDate(Date maxDate) {
+        if (maxDate == null) {
+            maxDate = new Date(500, 1, 1);
+        }
+
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            // TODO: implement it
+        } else {
+            Date[] dtt = dbOperations_C2.c2_getLiveTableList(smscPropertiesManagement.getKeyspaceName());
+            Date[] dtt2 = this.performDateFilter(dtt, maxDate);
+            return dtt2;
+        }
+
+        return null;
+    }
+
+    @Override
+    public Date[] getArchiveTablesListBeforeDate(Date maxDate) {
+        if (maxDate == null) {
+            maxDate = new Date(500, 1, 1);
+        }
+
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            // TODO: implement it
+        } else {
+            Date[] dtt = dbOperations_C2.c2_getArchiveTableList(smscPropertiesManagement.getKeyspaceName());
+            Date[] dtt2 = this.performDateFilter(dtt, maxDate);
+            return dtt2;
+        }
+
+        return null;
     }
 
 }
