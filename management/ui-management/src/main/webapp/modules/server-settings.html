@@ -1,8 +1,6 @@
 					<h3 style="margin: 0px;"><i class="icon-dashboard"></i> SMSC Gateway Server Settings</h3>
 					<hr style="margin: 10 0px;"/>
 
-					<button id="apply-server-settings" class="btn btn-small" onclick="applyServerSettings()"><i class="icon-save" style="color: #000000;"></i>  Apply Changes</button>
-					
 					<p>
 						<br/>
 					</p> 
@@ -28,13 +26,13 @@
                         	<h5 style="border-bottom: 1px solid #DDD;">SMS Validity Configuration</h5> 
                         	
                         	<div id="div-propdefaultvalidityhrs" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMS arrives without validity period, default validity period (in hours) will be used">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="set a value for default validity period (in hours) for incoming SMSC messages that do not have their own validity period value. Validity period is the time duration for which the SMSC Gateway will attempt to send the SMS. If the time period expires before the message can be delivered, the SMSC Gateway will drop it.">
 									<span class="add-on">Default validity period hours (in hours)</span>
 									<input id="propdefaultvalidityhrs" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span>
 							</div>	
 							<div id="div-propmaxvalidityhrs" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMS arrives with validity period greater than maximum validity period configured, it will be reset to maximum validity">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set a value for the maximum validity period (in hours). All incoming messages with a validity period set greater than the value specified by this parameter will either be rejected (if they are ESME originated messages) or the value of their validity period will be set to this value (for MO originated messages).">
 									<span class="add-on">Maximum validity period (in hours)</span>
 									<input id="propmaxvalidityhrs" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span>
@@ -42,25 +40,25 @@
 							&nbsp;
                         	<h5 style="border-bottom: 1px solid #DDD;">SMPP/ESME Configuration</h5> 
                         	<div id="div-propdefaultton" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMS is received via SMPP without TON, below configured TON will be used">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set a value for default TON (Type Of Number). If an incoming message does not have a value defined for TON, i.e. if TON is set as 'unknown', then the value specified for defaultton will be used as TON for that message.">
 									<span class="add-on">Default type of number (TON)</span>
 									<input id="propdefaultton" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span>						
 							</div>								
 							<div id="div-propdefaultnpi" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if SMS is received via SMPP without NPI, below configured NPI will be used">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set a value for default NPI (Number Plan Indicator). If an incoming message does not have a value defined for NPI, i.e. if NPI is set as 'unknown', then the value specified for defaultnpi will be used as NPI for that message.">
 									<span class="add-on">Default numbering plan indicator (NPI)</span>
 									<input id="propdefaultnpi" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span>
 							</div>
 							<div id="div-esmedefaultclustername" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if destinationAddress does not match to any esme (any ClusterName) or a message will be routed to defaultClusterName (only for DatabaseSmsRoutingRule) if it is specified">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set a value for ESME default cluster. If the destination-address does not match to any ESME (any Cluster Name) the message will be routed to the cluster with the name specified here for esme-default- cluster.">
 									<span class="add-on">Default Cluster Name</span>
 									<input id="esmedefaultclustername" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
 								</span>                         
 							</div>
 							<div id="div-ucs2encoding" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="UCS2 encoding">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the SMPP Encoding Scheme for UCS2. SMPP side messages with data coding == 8 [UCS2] accept two different encoding schemes [UTF8 and UNICODE] for both sending and receiving messages. SMSC can be configured to accept for one of them (the one that ESME supports). If this is not set, then the default encoding scheme is UTF8.">
 									<span class="add-on">SMPP Encoding for UCS2</span>
 									<select id="smppencodingforucs2" >
 										<option>Utf8</option>
@@ -72,31 +70,35 @@
 							&nbsp;
                         	<h5 style="border-bottom: 1px solid #DDD;">Delivery Delay Configuration</h5>
                         	<div id="div-propsubbusduedel" class="control-group"> 
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="delay after delivering failure with cause subscriber busy (sec)">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set a value for subscriber-busy-due-delay (in seconds). This parameter specifies the delay time period in seconds when there has been a delivery failure with the cause subscriber busy.">
 									<span class="add-on">Subscriber busy due delay (in sec)</span>
 									<input id="propsubbusduedel" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span>														
 							</div>
 							<div id="div-propfirduedel" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="delay before first delivering try after incoming message receiving (sec) ">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set a value for first-due-delay (in seconds). This parameter specifies the delay time period in seconds between message incoming time and first delivery attempt. ">
 									<span class="add-on">First due delay (in sec)</span>
 									<input id="propfirduedel" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span>												
 							</div>		
 							<div id="div-propsecduedel" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="delay after first delivering failure (sec)">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set a value for second-due-delay (in seconds). This parameter specifies the delay time period in seconds between the first and second delivery attempt (i.e. if the first delivery attempt failed).">
 									<span class="add-on">Second due delay (in sec)</span>
 									<input id="propsecduedel" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span>												
 							</div>		
 							<div id="div-propmaxduedel" class="control-group">									                        
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="max possible delay between delivering failure (sec)">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set a value for max-due-delay (in seconds). This parameter specifies the maximum possible delay time period in seconds between delivery attempts.">
 									<span class="add-on">Max due delay (in sec)</span>
 									<input id="propmaxduedel" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span>												
 							</div>		
 							<div id="div-duedelaymultiplicator" class="control-group">									                        
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="next delay (after failure will be calculated as prevDueDelay * dueDelayMultiplicator / 100")">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set a value for due-delay-multiplicator. This parameter specifies the delay multiplicator value before another delivery attempt (after failure) is made. After a message delivery failure (if message validity period is not over and the failure is temporary), a delay period is induced before the next delivery attempt. This delay period is calculated as follows:
+
+Delay after the first delivery failure = second-due-delay
+
+Delay after every consecutive delivery failure = prev-due-delay * due-delay-multiplicator / 100 where prev-due-delay is the delay at the previous step.">
 									<span class="add-on">Due delay multiplicator</span>
 									<input id="duedelaymultiplicator" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span>												
@@ -105,7 +107,7 @@
 							&nbsp;
                         	<h5 style="border-bottom: 1px solid #DDD;">CDR Configuration</h5>
 							<div id="div-generateReceiptCdr" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="should SMSC generate CDR for SMS receipt too">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="The SMSC can be configured to generate CDR for both receipt and regular messages or generate CDR only for regular messages. By default the SMSC will generate CDR for regular messages only. However if you require the SMSC to generate CDR for receipt messages as well, you must set the parameter 'generatereceiptcdr' to true.">
 									<span class="add-on">Generate receipt CDR</span>
 									<select id="generateReceiptCdr" >
 										<option>true</option>
@@ -117,7 +119,7 @@
 							&nbsp;
                         	<h5 style="border-bottom: 1px solid #DDD;">SMS Home Routing Configuration</h5>
 							<div id="div-smsHomeRouting" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="should SMSC follow the home routing functionality. If this is set to true, it will accept MT SMS too">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC can be configured to support SMS Home Routing by enabling the parameter smshomerouting. If this is set to true, the SMSC will accept MT messages and support Home Routing functionality.">
 									<span class="add-on">Home routing</span>
 									<select id="smsHomeRouting" >
 										<option>true</option>
@@ -125,7 +127,12 @@
 									</select>
 								</span>                         
 							</div>																			
-								
+							<div class="control-group">
+								<span class="span12" style="text-align: left;">
+									&nbsp;<button class="btn btn-danger" onclick="updateProperties();"><i class="icon-undo"></i> Revert</button>
+									&nbsp;<button class="btn btn-primary" onclick="applyProperties();"><i class="icon-save"></i> Save</button>
+								</span>
+							</div>								
                         </div>  				 	
                         <div class="tab-pane" id="ss7settings">
                         	<h5 style="border-bottom: 1px solid #DDD;">Global Title Configuration</h5>
@@ -158,7 +165,7 @@
 							&nbsp;
 							<h5 style="border-bottom: 1px solid #DDD;">SS7 Version Configuration</h5>
 							<div id="div-maxmapv" class="control-group">        						                		
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="this is MAP version supported. The outgoing message will be formed for this MAP version, if far end returns error indicating lower/highers version, SMSC Gw will automatically create new message with lower/highers version of MAP message">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the value of MAP Application Context version. The version number set here will be used for SMS messages exchanged. Telscale SMSC Gateway supports version negotiation. So if you set this to a higher version (say for example version 3, however your network only understands version 2), the SMSC Gateway will automatically do the version negotiation and exchange V2 messages when V3 exchange fails. However this causes additional messages to be exchanged and increases the overall load on the system. Therefore it is advisable to always set the correct version.">
 									<span class="add-on">MAP version supported</span>
 									<input id="maxmapv" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
 								</span>	
@@ -166,11 +173,21 @@
 							&nbsp;
 							<h5 style="border-bottom: 1px solid #DDD;">Others</h5>
 							<div id="div-maxmessagelengthreducer" class="control-group">        						                		
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="empty TC-BEGIN will be used if messageLength > maxPossibleMessageLength - maxMessageLengthReduce. Recommended value = 6 Possible values from 0 to 12">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set an integer value for max-message-length- reducer. The recommended value is 6. Possible values are numbers from 0 to 12. Empty TC-BEGIN will be used if the message length is greater than the maximum possible message length minus the value specified for max-message-length- reducer.  
+
+(message-length > max-possible-message-length - max-message-length-reducer)  
+
+Empty TC-BEGIN is used in MAP Version 2 and 3 for forwardSM and Mt- ForwardSM requests. In MAP Version 2 the dailog portion (ApplicationContextName, MAPOpenInfo primitive) and the component portion (forwardSM and mt-ForwardSM requests) may both together be too long to fit within a MTP message. In Empty TC-BEGIN case, it first sends the dailog portion in TC-BEGIN followed by the component portion in the next TC-CONTINUE. Whether empty TC-BEGIN is used or not depends on the length of a message and the length of SCCP addresses. This option increases the guarantee of delivery of a message to some network.">
 									<span class="add-on">Max Message Length Reducer</span>
 									<input id="maxmessagelengthreducer" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
 								</span>								
 							</div>
+							<div class="control-group">
+								<span class="span12" style="text-align: left;">
+									&nbsp;<button class="btn btn-danger" onclick="updateSs7Properties();"><i class="icon-undo"></i> Revert</button>
+									&nbsp;<button class="btn btn-primary" onclick="applySs7Settings();"><i class="icon-save"></i> Save</button>
+								</span>
+							</div>							
                         </div>
                          <div class="tab-pane" id="dbsettings">
 							<h5 style="border-bottom: 1px solid #DDD;">Cassandra Configuration</h5>
@@ -198,63 +215,92 @@
 									<input id="cassandraclustername" type="text" class="input-mini" style="width: 100px; margin-right: 12px; text-align: center;" value="0" />
 								</span>                         
 							</div>
+							<h5 style="border-bottom: 1px solid #DDD;">Archive Table Configuration</h5>
+							<div id="div-removinglivetablesdays" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="configure the SMSC to automatically drop LIVE tables from the Cassandra Database. The SMSC will attempt to delete tables just after midnight and after every SMSC restart. This parameter is used to specify the number of days the LIVE tables should be kept before attempting to drop them automatically. If this value is specified as 0, the SMSC will not drop tables automatically. In this case you must manually drop tables. You must specify a value of 3 or more. You can not set this value to 1 or 2 days. This is to ensure the tables will be kept for a minimum of 2 days after creation date. The SMSC wil attempt to delete tables for one day. If the Cassandra Database keeps tables for older days, then the administrator should drop these manually.">
+									<span class="add-on">Removing Live Tables Days</span>
+									<input id="removinglivetablesdays" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
+								</span>                         
+							</div>
+							<div id="div-removingarchivetabledays" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="This command is used to configure the SMSC to automatically drop ARCHIVE tables from the Cassandra Database. The SMSC will attempt to delete tables just after
+midnight and after every SMSC restart. This parameter is used to specify the number of days the ARCHIVE tables should be kept before attempting to drop them automatically.
+If this value is specified as 0, the SMSC will not drop tables automatically. In this case you must manually drop tables. You must specify a value of 3 or more. You can
+not set this value to 1 or 2 days. This is to ensure the tables will be kept for a minimum of 2 days after creation date. The SMSC wil attempt to delete tables for one
+day. If the Cassandra Database keeps tables for older days, then the administrator should drop">
+									<span class="add-on">Removing Archive Table Days</span>
+									<input id="removingarchivetabledays" type="text" class="input-mini" style="width: 100px; margin-right: 12px; text-align: center;" value="0" />
+								</span>                         
+							</div>	
+							<div class="control-group">
+								<span class="span12" style="text-align: left;">
+									&nbsp;<button class="btn btn-danger" onclick="updateCassandra();"><i class="icon-undo"></i> Revert</button>
+									&nbsp;<button class="btn btn-primary" onclick="applyCassandra();"><i class="icon-save"></i> Save</button>
+								</span>
+							</div>													
                         </div>
                         <div class="tab-pane" id="scheduler">
 							<h5 style="border-bottom: 1px solid #DDD;">Scheduler Configuration</h5>
 							<div id="div-schedulerfetchperiod" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="period of fetching messages from a database for delivering">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the fetch period value in milli-seconds for the Cassandra database. The parameter fetch-period specifies the time period (in milli-seconds) of fetching messages for delivery from the database.">
 									<span class="add-on">Fetch Period (in ms)</span>
 									<input id="schedulerfetchperiod" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span> 
 							</div>
 							<div id="div-schedulerfetchmaxrows" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="max message fetching count for one fetching step">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the maximum message fetching count for every fetching step from the database. The default value is 100 messages.">
 									<span class="add-on">Max Rows</span>
 									<input id="schedulerfetchmaxrows" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span> 
 							</div>
 							<div id="div-schedulerfetchmaxactivity" class="control-group">
-							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="max count of delivering Activities that are possible at the same time">
+							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the maximum count of delivering activities that are possible at the same time. Count of delivering activities means the count of messages that are in the state delivering (messages that are fetched from the database and may be already sent or are going to be sent but no delivery acception/rejection has been received).">
 								<span class="add-on">Max Activity Count</span>
 								<input id="schedulerfetchmaxactivity" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 							</span> 
 							</div>							
 							<div id="div-reviseSecondsOnSmscStart" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="after every restart, SMSC will revise last 'x' seconds before shutdown to make sure all arrived messages are processed">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the revise period (in seconds). After every restart, the SMSC Gateway will revise the last x seconds before shutdown to ensure that all the arrived messages are processed; where 'x' is the value set in seconds">
 									<span class="add-on">Revise period after SMSC restart (sec)</span>
 									<input id="reviseSecondsOnSmscStart" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span> 
 							</div>
 							<div id="div-processingSmsSetTimeout" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMS's are cahched in SMSC till processing is on going. For any reason if delivery of SMS is failed and cached not cleared, SMSC will force cleaning after configured timeout">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the Cache timeout period (in seconds). Messages are cached in the SMSC until the processing is completed. In case of a delivery failure, these cached messages are force cleaned by the SMSC after waiting for the timeout period">
 									<span class="add-on">Processing Sms set cache timeout (sec)</span>
 									<input id="processingSmsSetTimeout" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span> 
-							</div>							
+							</div>
+							<div class="control-group">
+								<span class="span12" style="text-align: left;">
+									&nbsp;<button class="btn btn-danger" onclick="updateScheduler();"><i class="icon-undo"></i> Revert</button>
+									&nbsp;<button class="btn btn-primary" onclick="applyScheduler();"><i class="icon-save"></i> Save</button>
+								</span>
+							</div>															
                         </div>
                         
                         <div class="tab-pane" id="diameter">
 							<h5 style="border-bottom: 1px solid #DDD;">Diameter Servre Configuration</h5>
 							<div id="div-chargingdiamdestrealm" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="destination realm for Diameter charging">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the Diameter Destination Realm for connection to OCS.">
 									<span class="add-on">Destination Realm</span>
 									<input id="chargingdiamdestrealm" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span> 
 							</div>
 							<div id="div-chargingdiamdesthost" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="destination host for Diameter charging">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the Diameter Destination Host for connection to OCS">
 									<span class="add-on">Destination Host</span>
 									<input id="chargingdiamdesthost" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span> 
 							</div>
 							<div id="div-chargingdiamdestport" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="destination port for Diameter charging">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the Diameter Destination Port for connection to OCS">
 									<span class="add-on">Destination Port</span>
 									<input id="chargingdiamdestport" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span> 
 							</div>
 							<div id="div-chargingdiamusername" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="user name for Diameter charging">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the Diameter Username for connection to OCS">
 									<span class="add-on">User Name</span>
 									<input id="chargingdiamusername" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span> 
@@ -262,7 +308,7 @@
 							&nbsp;
 							<h5 style="border-bottom: 1px solid #DDD;">Charging Configuration</h5>
 							<div id="div-chargingmo" class="control-group">        						                		
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="should mobile originated SMS be charged">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the value of the parameter 'moCharging' to true or false. If this is set to true, all Mobile Originated messages will be charged by OCS via Diameter, prior to being sent.">
 									<span class="add-on">Mobile Originated SMS Charged </span>
 									<select id="chargingmo" >
 										<option>True</option>
@@ -271,7 +317,7 @@
 								</span>  															
 							</div>	
 							<div id="div-chargingesme" class="control-group">        						                		
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="should ESME originated SMS be charged">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the value of the parameter 'txsmppcharging' to none, selected or all. If this is set to 'all', all ESME Originated messages will be charged by OCS via Diameter, prior to being sent. If this is set to 'selected', only those messages originating from ESMEs marked with the parameter 'charging-enabled'=true at the time of ESME creation will be charged by OCS via Diameter, prior to being sent. If this is set to 'none', none of the ESME Originated messages will be charged by OCS via Diameter, prior to being sent.">
 									<span class="add-on">ESME Originated SMS Charged </span>
 									<select id="chargingesme" >
 										<option>None</option>
@@ -289,7 +335,13 @@
 										<option>All</option>
 									</select>
 								</span>  															
-							</div>																					
+							</div>	
+							<div class="control-group">
+								<span class="span12" style="text-align: left;">
+									&nbsp;<button class="btn btn-danger" onclick="updateDiameter();"><i class="icon-undo"></i> Revert</button>
+									&nbsp;<button class="btn btn-primary" onclick="applyDiameter();"><i class="icon-save"></i> Save</button>
+								</span>
+							</div>																											
                         </div>
                                                                         
 					</div>	
@@ -299,8 +351,17 @@
 					$('#login-settings-error .close').on("click", function(e) {
 					    $(this).parent().hide();
 					});
-				
+					
+					
 					$(document).ready(function () {												
+						updateProperties();		
+						updateSs7Properties();
+						updateCassandra();
+						updateScheduler();
+						updateDiameter();
+	    			});					
+					
+					function updateProperties(){
 						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
 						jolokia.request(
 								[
@@ -343,15 +404,48 @@
 										} else {
 											smsHomeRouting.options[1].selected = true;
 										}
-										
+									}],
+									error: function(value) {
+										errorUID = ("st" + new Date().getTime()).hashCode();
+										createStackTrace(errorUID, value.stacktrace);
+										logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");										
+									} 
+								}
+							);						
+					}
+					
+					function updateSs7Properties(){
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						jolokia.request(
+								[
+									{ type: "read", mbean: mbeanSearch },
+								],
+								{ success: [
+									function(response) {
 										$("#ussdgt").val(response.value.ServiceCenterGt);
 										$("#ussdssn").val(response.value.ServiceCenterSsn);
 										$("#hlrssn").val(response.value.HlrSsn);
 										$("#mscssn").val(response.value.MscSsn);
 										$("#maxmapv").val(response.value.MaxMapVersion);
 										$("#maxmessagelengthreducer").val(response.value.MaxMessageLengthReducer);
-										
-										
+									}],
+									error: function(value) {
+										errorUID = ("st" + new Date().getTime()).hashCode();
+										createStackTrace(errorUID, value.stacktrace);
+										logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");										
+									} 
+								}
+							);						
+					}	
+					
+					function updateCassandra(){
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						jolokia.request(
+								[
+									{ type: "read", mbean: mbeanSearch },
+								],
+								{ success: [
+									function(response) {
 										var hosts = response.value.Hosts;
 										var hostportarr = hosts.split(":");
 										var cassandrahost = hostportarr[0] 
@@ -363,13 +457,50 @@
 										$("#cassandrakeyspace").val(response.value.KeyspaceName);
 										$("#cassandraclustername").val(response.value.ClusterName);
 										
+										$("#removinglivetablesdays").val(response.value.RemovingLiveTablesDays);
+										$("#removingarchivetabledays").val(response.value.RemovingArchiveTablesDays);										
+									}],
+									error: function(value) {
+										errorUID = ("st" + new Date().getTime()).hashCode();
+										createStackTrace(errorUID, value.stacktrace);
+										logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");										
+									} 
+								}
+							);						
+					}	
+					
+					function updateScheduler(){
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						jolokia.request(
+								[
+									{ type: "read", mbean: mbeanSearch },
+								],
+								{ success: [
+									function(response) {
 										$("#schedulerfetchperiod").val(response.value.FetchPeriod);
 										$("#schedulerfetchmaxrows").val(response.value.FetchMaxRows);
 										$("#schedulerfetchmaxactivity").val(response.value.MaxActivityCount);
 										
 										$("#reviseSecondsOnSmscStart").val(response.value.ReviseSecondsOnSmscStart);
 										$("#processingSmsSetTimeout").val(response.value.ProcessingSmsSetTimeout);
-										
+									}],
+									error: function(value) {
+										errorUID = ("st" + new Date().getTime()).hashCode();
+										createStackTrace(errorUID, value.stacktrace);
+										logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");										
+									} 
+								}
+							);						
+					}
+					
+					function updateDiameter(){
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						jolokia.request(
+								[
+									{ type: "read", mbean: mbeanSearch },
+								],
+								{ success: [
+									function(response) {
 										$("#chargingdiamdestrealm").val(response.value.DiameterDestRealm);
 										$("#chargingdiamdesthost").val(response.value.DiameterDestHost);
 										$("#chargingdiamdestport").val(response.value.DiameterDestPort);
@@ -401,8 +532,7 @@
 											chargingsip.options[1].selected = true;
 										} else {
 											chargingsip.options[2].selected = true;
-										}										
-										
+										}
 									}],
 									error: function(value) {
 										errorUID = ("st" + new Date().getTime()).hashCode();
@@ -411,10 +541,10 @@
 									} 
 								}
 							);						
+					}					
+
 					
-	    			});
-					
-					function applyServerSettings() {
+					function applyProperties() {
 						var formInvalid = false;
 						
 						var propdefaultvalidityhrs = $("#propdefaultvalidityhrs").val();
@@ -499,35 +629,48 @@
 
 						var e2 = document.getElementById("smsHomeRouting");
 						var smsHomeRouting = e2.options[e2.selectedIndex].text;
+												
 						
-						var cassandrahost = $("#cassandrahost").val();
-						if(cassandrahost.trim() == "") {
-			    			$("#div-cassandrahost").addClass("error");					    			
-			    			formInvalid = true;
-			    		} else if($("#div-cassandrahost").hasClass("error")) {
-			    			$("#div-cassandrahost").removeClass("error");		
-			    		}
+						if(formInvalid) {
+							$("#login-settings-error").show();
+							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+							return false;
+						} else {
+							$("#login-settings-error").hide();
+						}
 						
-						var cassandraport = $("#cassandraport").val();
-						if(cassandraport.trim() == "") {
-			    			$("#div-cassandraport").addClass("error");					    			
-			    			formInvalid = true;
-			    		} else if($("#div-cassandraport").hasClass("error")) {
-			    			$("#div-cassandraport").removeClass("error");		
-			    		}
 						
-						var hosts = cassandrahost + ":" + cassandraport;
-						
-						var cassandrakeyspace = $("#cassandrakeyspace").val();
-						if(cassandrakeyspace.trim() == "") {
-			    			$("#div-cassandrakeyspace").addClass("error");					    			
-			    			formInvalid = true;
-			    		} else if($("#div-cassandrakeyspace").hasClass("error")) {
-			    			$("#div-cassandrakeyspace").removeClass("error");		
-			    		}
-						
-						var cassandraclustername = $("#cassandraclustername").val();
-						
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						jolokia.request(
+								[
+									{ type: "write", mbean: mbeanSearch, attribute: "DefaultValidityPeriodHours", value: propdefaultvalidityhrs },
+									{ type: "write", mbean: mbeanSearch, attribute: "MaxValidityPeriodHours", value: propmaxvalidityhrs },
+									{ type: "write", mbean: mbeanSearch, attribute: "DefaultTon", value: propdefaultton },
+									{ type: "write", mbean: mbeanSearch, attribute: "DefaultNpi", value: propdefaultnpi },
+									{ type: "write", mbean: mbeanSearch, attribute: "EsmeDefaultClusterName", value: propesmedefaultclustername },
+									{ type: "write", mbean: mbeanSearch, attribute: "SmppEncodingForUCS2", value: smppencodingforucs2 },
+									{ type: "write", mbean: mbeanSearch, attribute: "SubscriberBusyDueDelay", value: propsubbusduedel },
+									{ type: "write", mbean: mbeanSearch, attribute: "FirstDueDelay", value: propfirduedel },
+									{ type: "write", mbean: mbeanSearch, attribute: "SecondDueDelay", value: propsecduedel },
+									{ type: "write", mbean: mbeanSearch, attribute: "MaxDueDelay", value: propmaxduedel },
+									{ type: "write", mbean: mbeanSearch, attribute: "DueDelayMultiplicator", value: duedelaymultiplicator },
+									{ type: "write", mbean: mbeanSearch, attribute: "GenerateReceiptCdr", value: generateReceiptCdr },
+									{ type: "write", mbean: mbeanSearch, attribute: "SMSHomeRouting", value: smsHomeRouting },
+								],
+								{
+									success: function(response) {
+										logToConsole("INFO", "SMSC Gateway Proerties successfully updated.");
+									},
+									error: function(response) {
+										logToConsole("ERROR", "Failure trying to communicate with the Telscale SMSC Gateway. Please try again later.");
+									} 
+								}
+							);
+									
+					}
+					
+					function applySs7Settings() {
+						var formInvalid = false;
 						
 						var ussdgt = $("#ussdgt").val();
 						if(ussdgt.trim() == "") {
@@ -577,6 +720,119 @@
 			    			$("#div-maxmessagelengthreducer").removeClass("error");		
 			    		}
 						
+						if(formInvalid) {
+							$("#login-settings-error").show();
+							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+							return false;
+						} else {
+							$("#login-settings-error").hide();
+						}
+						
+						
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						jolokia.request(
+								[
+									{ type: "write", mbean: mbeanSearch, attribute: "ServiceCenterGt", value: ussdgt },
+									{ type: "write", mbean: mbeanSearch, attribute: "ServiceCenterSsn", value: ussdssn },
+									{ type: "write", mbean: mbeanSearch, attribute: "HlrSsn", value: hlrssn },
+									{ type: "write", mbean: mbeanSearch, attribute: "MscSsn", value: mscssn },
+									{ type: "write", mbean: mbeanSearch, attribute: "MaxMapVersion", value: maxmapv },
+									{ type: "write", mbean: mbeanSearch, attribute: "MaxMessageLengthReducer", value: maxmessagelengthreducer },
+								],
+								{
+									success: function(response) {
+										logToConsole("INFO", "SMSC Gateway SS7 settings successfully updated.");
+									},
+									error: function(response) {
+										logToConsole("ERROR", "Failure trying to communicate with the Telscale SMSC Gateway. Please try again later.");
+									} 
+								}
+							);
+									
+					}
+					
+					function applyCassandra() {
+						var formInvalid = false;
+						
+						var cassandrahost = $("#cassandrahost").val();
+						if(cassandrahost.trim() == "") {
+			    			$("#div-cassandrahost").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-cassandrahost").hasClass("error")) {
+			    			$("#div-cassandrahost").removeClass("error");		
+			    		}
+						
+						var cassandraport = $("#cassandraport").val();
+						if(cassandraport.trim() == "") {
+			    			$("#div-cassandraport").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-cassandraport").hasClass("error")) {
+			    			$("#div-cassandraport").removeClass("error");		
+			    		}
+						
+						var hosts = cassandrahost + ":" + cassandraport;
+						
+						var cassandrakeyspace = $("#cassandrakeyspace").val();
+						if(cassandrakeyspace.trim() == "") {
+			    			$("#div-cassandrakeyspace").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-cassandrakeyspace").hasClass("error")) {
+			    			$("#div-cassandrakeyspace").removeClass("error");		
+			    		}
+						
+						var cassandraclustername = $("#cassandraclustername").val();
+						
+						
+						var removinglivetablesdays = $("#removinglivetablesdays").val();
+						if(removinglivetablesdays.trim() == "") {
+			    			$("#div-removinglivetablesdays").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-removinglivetablesdays").hasClass("error")) {
+			    			$("#div-removinglivetablesdays").removeClass("error");		
+			    		}
+						
+						
+						var removingarchivetabledays = $("#removingarchivetabledays").val();
+						if(removingarchivetabledays.trim() == "") {
+			    			$("#div-removingarchivetabledays").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-removingarchivetabledays").hasClass("error")) {
+			    			$("#div-removingarchivetabledays").removeClass("error");		
+			    		}
+						
+						if(formInvalid) {
+							$("#login-settings-error").show();
+							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+							return false;
+						} else {
+							$("#login-settings-error").hide();
+						}
+						
+						
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						jolokia.request(
+								[
+									{ type: "write", mbean: mbeanSearch, attribute: "Hosts", value: hosts },
+									{ type: "write", mbean: mbeanSearch, attribute: "KeyspaceName", value: cassandrakeyspace },
+									{ type: "write", mbean: mbeanSearch, attribute: "ClusterName", value: cassandraclustername },
+									{ type: "write", mbean: mbeanSearch, attribute: "RemovingLiveTablesDays", value: removinglivetablesdays },
+									{ type: "write", mbean: mbeanSearch, attribute: "RemovingArchiveTablesDays", value: removingarchivetabledays },
+								],
+								{
+									success: function(response) {
+										logToConsole("INFO", "SMSC Gateway Cassandra setting successfully updated.");
+									},
+									error: function(response) {
+										logToConsole("ERROR", "Failure trying to communicate with the Telscale SMSC Gateway. Please try again later.");
+									} 
+								}
+							);
+									
+					}	
+					
+					function applyScheduler() {
+						var formInvalid = false;
+						
 						var schedulerfetchperiod = $("#schedulerfetchperiod").val();
 						if(schedulerfetchperiod.trim() == "") {
 			    			$("#div-schedulerfetchperiod").addClass("error");					    			
@@ -616,6 +872,39 @@
 			    		} else if($("#div-processingSmsSetTimeout").hasClass("error")) {
 			    			$("#div-processingSmsSetTimeout").removeClass("error");		
 			    		}	
+						
+						if(formInvalid) {
+							$("#login-settings-error").show();
+							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+							return false;
+						} else {
+							$("#login-settings-error").hide();
+						}
+						
+						
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						jolokia.request(
+								[
+									{ type: "write", mbean: mbeanSearch, attribute: "FetchPeriod", value: schedulerfetchperiod },
+									{ type: "write", mbean: mbeanSearch, attribute: "FetchMaxRows", value: schedulerfetchmaxrows },
+									{ type: "write", mbean: mbeanSearch, attribute: "MaxActivityCount", value: schedulerfetchmaxactivity },
+									{ type: "write", mbean: mbeanSearch, attribute: "ReviseSecondsOnSmscStart", value: reviseSecondsOnSmscStart },
+									{ type: "write", mbean: mbeanSearch, attribute: "ProcessingSmsSetTimeout", value: processingSmsSetTimeout },
+								],
+								{
+									success: function(response) {
+										logToConsole("INFO", "SMSC Gateway Scheduler setting successfully updated.");
+									},
+									error: function(response) {
+										logToConsole("ERROR", "Failure trying to communicate with the Telscale SMSC Gateway. Please try again later.");
+									} 
+								}
+							);
+									
+					}
+					
+					function applyDiameter() {
+						var formInvalid = false;
 						
 						var chargingdiamdestrealm = $("#chargingdiamdestrealm").val();
 						if(chargingdiamdestrealm.trim() == "") {
@@ -671,33 +960,6 @@
 						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
 						jolokia.request(
 								[
-									{ type: "write", mbean: mbeanSearch, attribute: "DefaultValidityPeriodHours", value: propdefaultvalidityhrs },
-									{ type: "write", mbean: mbeanSearch, attribute: "MaxValidityPeriodHours", value: propmaxvalidityhrs },
-									{ type: "write", mbean: mbeanSearch, attribute: "DefaultTon", value: propdefaultton },
-									{ type: "write", mbean: mbeanSearch, attribute: "DefaultNpi", value: propdefaultnpi },
-									{ type: "write", mbean: mbeanSearch, attribute: "EsmeDefaultClusterName", value: propesmedefaultclustername },
-									{ type: "write", mbean: mbeanSearch, attribute: "SmppEncodingForUCS2", value: smppencodingforucs2 },
-									{ type: "write", mbean: mbeanSearch, attribute: "SubscriberBusyDueDelay", value: propsubbusduedel },
-									{ type: "write", mbean: mbeanSearch, attribute: "FirstDueDelay", value: propfirduedel },
-									{ type: "write", mbean: mbeanSearch, attribute: "SecondDueDelay", value: propsecduedel },
-									{ type: "write", mbean: mbeanSearch, attribute: "MaxDueDelay", value: propmaxduedel },
-									{ type: "write", mbean: mbeanSearch, attribute: "DueDelayMultiplicator", value: duedelaymultiplicator },
-									{ type: "write", mbean: mbeanSearch, attribute: "Hosts", value: hosts },
-									{ type: "write", mbean: mbeanSearch, attribute: "KeyspaceName", value: cassandrakeyspace },
-									{ type: "write", mbean: mbeanSearch, attribute: "ClusterName", value: cassandraclustername },
-									{ type: "write", mbean: mbeanSearch, attribute: "ServiceCenterGt", value: ussdgt },
-									{ type: "write", mbean: mbeanSearch, attribute: "ServiceCenterSsn", value: ussdssn },
-									{ type: "write", mbean: mbeanSearch, attribute: "HlrSsn", value: hlrssn },
-									{ type: "write", mbean: mbeanSearch, attribute: "MscSsn", value: mscssn },
-									{ type: "write", mbean: mbeanSearch, attribute: "MaxMapVersion", value: maxmapv },
-									{ type: "write", mbean: mbeanSearch, attribute: "MaxMessageLengthReducer", value: maxmessagelengthreducer },
-									{ type: "write", mbean: mbeanSearch, attribute: "FetchPeriod", value: schedulerfetchperiod },
-									{ type: "write", mbean: mbeanSearch, attribute: "FetchMaxRows", value: schedulerfetchmaxrows },
-									{ type: "write", mbean: mbeanSearch, attribute: "MaxActivityCount", value: schedulerfetchmaxactivity },
-									{ type: "write", mbean: mbeanSearch, attribute: "ReviseSecondsOnSmscStart", value: reviseSecondsOnSmscStart },
-									{ type: "write", mbean: mbeanSearch, attribute: "ProcessingSmsSetTimeout", value: processingSmsSetTimeout },
-									{ type: "write", mbean: mbeanSearch, attribute: "GenerateReceiptCdr", value: generateReceiptCdr },
-									{ type: "write", mbean: mbeanSearch, attribute: "SMSHomeRouting", value: smsHomeRouting },
 									{ type: "write", mbean: mbeanSearch, attribute: "DiameterDestRealm", value: chargingdiamdestrealm },
 									{ type: "write", mbean: mbeanSearch, attribute: "DiameterDestHost", value: chargingdiamdesthost },
 									{ type: "write", mbean: mbeanSearch, attribute: "DiameterDestPort", value: chargingdiamdestport },
@@ -708,7 +970,7 @@
 								],
 								{
 									success: function(response) {
-										logToConsole("INFO", "SMSC Gateway Proerties successfully updated.");
+										logToConsole("INFO", "SMSC Gateway Diameter settings successfully updated.");
 									},
 									error: function(response) {
 										logToConsole("ERROR", "Failure trying to communicate with the Telscale SMSC Gateway. Please try again later.");
@@ -716,5 +978,6 @@
 								}
 							);
 									
-					}
+					}					
+					
 					</script>
