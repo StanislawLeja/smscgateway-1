@@ -36,10 +36,10 @@
 		</caption>
 	</mediaobject>
 	<para>
-		&THIS.PLATFORM; &THIS.APPLICATION; provides four basic services of an SMSC as shown in the figure above. Each of these four services are implemented in the Gateway as a module that can be activated or deactivated based on the needs of an operator. All these services interact with the Cassandra database for storing data (messages not yet sent and an archive for sent/failed to send messages) and retreiving data for messages that are pending to be sent.
+		&THIS.PLATFORM; &THIS.APPLICATION; provides six basic services of an SMSC as shown in the figure above. Each of these six services are implemented in the Gateway as a module that can be activated or deactivated based on the needs of an operator. All these services interact with the Cassandra database for storing data (messages not yet sent and an archive for sent/failed to send messages) and retreiving data for messages that are pending to be sent.
 	</para>
 	<para>
-&THIS.PLATFORM; &THIS.APPLICATION; can accept SMPP (incoming BIND) from ESMEs or can also initiate SMPP (outgoing BIND) to third party SMSC and hence itself acting as an ESME. &THIS.PLATFORM; &THIS.APPLICATION; provides intelligent routing rules that can route SMS between various SMPP connections or between SMPP and GSM Network.
+&THIS.PLATFORM; &THIS.APPLICATION; can accept SMPP (incoming BIND) from ESMEs or can also initiate SMPP (outgoing BIND) to third party SMSC and hence itself acting as an ESME. &THIS.PLATFORM; &THIS.APPLICATION; provides intelligent routing rules that can route SMS between various SMPP connections or between SMPP, GSM and SIP Network.
 </para>
 	<para>
 		<variablelist>
@@ -54,13 +54,20 @@
 			</varlistentry>
 			<varlistentry>
 				<term>Rx SMPP module</term>
-				<listitem><para>Listens for incoming SMS from ESME/third party SMSC and routes them to Mt module (GSM) or other ESME/third party SMSC depending on the routing rule.</para></listitem>
+				<listitem><para>Listens for incoming SMS from ESME/third party SMSC and routes them to Mt module (GSM), other ESME/third party SMSC or SIP Client depending on the routing rule.</para></listitem>
 			</varlistentry>
 			<varlistentry>
-				<term>Tx SMPP module
-</term>
-				<listitem><para>Delivers SMS to external ESME/third party SMSC received from Mo Module (GSM) or ESME/third Party SMSC.</para></listitem>
+				<term>Tx SMPP module</term>
+				<listitem><para>Delivers SMS to external ESME/third party SMSC received from Mo Module (GSM), ESME/third Party SMSC or SIP Client.</para></listitem>
 			</varlistentry>
+			<varlistentry>
+				<term>Rx SIP module</term>
+				<listitem><para>Listens for incoming SMS from SIP Client and routes them to Mt module (GSM), other ESME/third party SMSC or SIP Client depending on the routing rule.</para></listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>Tx SIP module</term>
+				<listitem><para>Delivers SMS to SIP Client received from Mo Module (GSM), ESME/third Party SMSC or other SIP Client.</para></listitem>
+			</varlistentry>						
 
 		</variablelist>
 		<variablelist>
@@ -93,7 +100,7 @@ storing unsent messages, messages successfully sent and messages that failed to 
 		The &THIS.PLATFORM; &THIS.APPLICATION; creates three tables for every new day with the date suffixed to the names of the tables as <literal>DST_SLOT_TABLE_yyyy_mm_dd</literal>, <literal>SLOT_MESSAGES_TABLE_yyyy_mm_dd</literal> and <literal>MESSAGES_yyyy_mm_dd</literal> where <literal>yyyy_mm_dd</literal> is the date in that format. 
 		</para>
 		<para>
-		Apart from the above tables created everyday, the database also comprises of two other tables namely <literal>CURRENT_SLOT_TABLE</literal> and <literal>SMS_ROUTING_RULE</literal> respectively, created when the SMSC is started for the first time. The former is used for storing system-wide data and the latter for storing the routing rules.
+		Apart from the above tables created everyday, the database also comprises of three other tables namely <literal>CURRENT_SLOT_TABLE</literal>, <literal>SMPP_SMS_ROUTING_RULE</literal> and <literal>SIP_SMS_ROUTING_RULE</literal> respectively, created when the SMSC is started for the first time. The former is used for storing system-wide data and the latter two for storing the routing rules.
 		</para>
 		<section id="CURRENT_SLOT_TABLE">
 		<title>CURRENT_SLOT_TABLE</title>
@@ -135,12 +142,12 @@ storing unsent messages, messages successfully sent and messages that failed to 
 </table>
 	</section>
 	<section id="SMS_ROUTING_RULE">
-		<title>SMS_ROUTING_RULE</title>
+		<title>SMPP_SMS_ROUTING_RULE</title>
 
 <table
 						frame="all"
 						pgwide="1">
-		<title> <literal>SMS_ROUTING_RULE</literal></title>
+		<title> <literal>SMPP_SMS_ROUTING_RULE</literal></title>
 		<tgroup cols='3' colsep='1' rowsep='1'>
 		<colspec
 								colnum="1"
@@ -167,12 +174,45 @@ storing unsent messages, messages successfully sent and messages that failed to 
 			<row>
 				<entry>CLUSTER_NAME</entry>
 				<entry>Text</entry>
-				<entry>The name of the Cluster.</entry>
+				<entry>The name of the SMPP Cluster.</entry>
 			</row>
 		</tbody>
 		</tgroup>
 </table>
 	</section>
+	
+	<section id="SIP_SMS_ROUTING_RULE">
+		<title>SIP_SMS_ROUTING_RULE</title>
+
+		<table frame="all" pgwide="1">
+			<title> <literal>SIP_SMS_ROUTING_RULE</literal></title>
+			<tgroup cols='3' colsep='1' rowsep='1'>
+			<colspec colnum="1" colname="c0" />
+			<colspec colnum="2" colname="c1" />
+			<colspec colnum="3" colname="c2" />
+		<thead>
+			<row>
+				<entry>Column Name</entry>
+				<entry>Data Type</entry>
+				<entry>Description</entry>
+			</row>
+		</thead>
+		<tbody>
+			<row>
+				<entry>ADDRESS</entry>
+				<entry>Text</entry>
+				<entry>Acts as a primary key and is unique for each entry. Stores the address for which the messages are being routed.</entry>
+			</row>
+			<row>
+				<entry>CLUSTER_NAME</entry>
+				<entry>Text</entry>
+				<entry>The name of the SIP Cluster. This is not used as of now and all SMS message are routed through a single SIP stack.</entry>
+			</row>
+		</tbody>
+		</tgroup>
+		</table>
+	</section>	
+	
 <section id="DST_SLOT_TABLE_yyyy_mm_dd">
 		<title>DST_SLOT_TABLE_yyyy_mm_dd</title>
 <para>
