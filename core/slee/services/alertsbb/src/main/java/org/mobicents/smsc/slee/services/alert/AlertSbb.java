@@ -269,7 +269,7 @@ public abstract class AlertSbb implements Sbb {
                                             for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
                                                 Sms sms = smsSet.getSms(i1);
 
-                                                // TODO: issuing direct Activity here !!!
+                                                // TODO: issuing direct Activity here !!! - and skip messages with expired validity period
 //                                                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS);
                                                 pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
                                                 SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet0.getTargetId());
