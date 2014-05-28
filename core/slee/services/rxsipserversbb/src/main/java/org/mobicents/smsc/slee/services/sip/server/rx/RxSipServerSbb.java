@@ -77,7 +77,6 @@ import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.Sip;
 import org.mobicents.smsc.smpp.SipManagement;
-import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -116,6 +115,10 @@ public abstract class RxSipServerSbb implements Sbb {
 	private SchedulerRaSbbInterface scheduler;
 
 	private static final SipManagement sipManagement = SipManagement.getInstance();
+
+    private static Charset ucs2Charset = Charset.forName("UTF-16BE");
+    private static Charset utf8Charset = Charset.forName("UTF-8");
+
 
 	public RxSipServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -484,9 +487,14 @@ public abstract class RxSipServerSbb implements Sbb {
 
 			CallIdHeader callId = this.sipRA.getNewCallId();
 
+			byte[] msg = sms.getShortMessage();
+            if (msg != null) {
+                msg = recodeShortMessage(sms.getEsmClass(), sms.getDataCoding(), msg);
+            }
+
 			// create request
 			Request request = messageFactory.createRequest(toAddressUri, Request.MESSAGE, callId, cSeqHeader,
-					fromHeader, toHeader, viaHeaders, maxForwardsHeader, contentTypeHeader, sms.getShortMessage());
+					fromHeader, toHeader, viaHeaders, maxForwardsHeader, contentTypeHeader, msg);
 
 			// create client transaction and send request
 			ClientTransaction clientTransaction = sipRA.getNewClientTransaction(request);
@@ -505,37 +513,35 @@ public abstract class RxSipServerSbb implements Sbb {
 	private byte[] recodeShortMessage(int esmeClass, int dataCoding, byte[] msg) {
 		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dataCoding);
 		boolean udhPresent = (esmeClass & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
-		if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncodingForUCS2.Utf8
-				&& dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
-			byte[] textPart = msg;
-			byte[] udhData = null;
-			if (udhPresent && msg.length > 2) {
-				// UDH exists
-				int udhLen = (msg[0] & 0xFF) + 1;
-				if (udhLen <= msg.length) {
-					textPart = new byte[msg.length - udhLen];
-					udhData = new byte[udhLen];
-					System.arraycopy(msg, udhLen, textPart, 0, textPart.length);
-					System.arraycopy(msg, 0, udhData, 0, udhLen);
-				}
-			}
 
-			Charset ucs2Charset = Charset.forName("UTF-16BE");
-			ByteBuffer bb = ByteBuffer.wrap(textPart);
-			CharBuffer cb = ucs2Charset.decode(bb);
-			Charset utf8Charset = Charset.forName("UTF-8");
-			ByteBuffer bf2 = utf8Charset.encode(cb);
-			if (udhData != null) {
-				msg = new byte[udhData.length + bf2.limit()];
-				System.arraycopy(udhData, 0, msg, 0, udhData.length);
-				bf2.get(msg, udhData.length, bf2.limit());
-			} else {
-				msg = new byte[bf2.limit()];
-				bf2.get(msg);
-			}
-		}
-		return msg;
-	}
+        byte[] textPart = msg;
+        byte[] udhData = null;
+        if (udhPresent && msg.length > 2) {
+            // UDH exists
+            int udhLen = (msg[0] & 0xFF) + 1;
+            if (udhLen <= msg.length) {
+                textPart = new byte[msg.length - udhLen];
+                udhData = new byte[udhLen];
+                System.arraycopy(msg, udhLen, textPart, 0, textPart.length);
+                System.arraycopy(msg, 0, udhData, 0, udhLen);
+            }
+        }
+
+        String mes;
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
+            ByteBuffer bb = ByteBuffer.wrap(textPart);
+            CharBuffer bf = ucs2Charset.decode(bb);
+            mes = bf.toString();
+        } else {
+            mes = new String(textPart);
+        }
+
+        CharBuffer cb = CharBuffer.wrap(mes.toCharArray());
+        ByteBuffer bf2 = utf8Charset.encode(cb);
+        byte[] msg2 = new byte[bf2.limit()];
+        bf2.get(msg2);
+        return msg2;
+    }
 
 	/**
 	 * remove smsSet from LIVE database after all messages has been delivered

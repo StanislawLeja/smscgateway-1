@@ -721,7 +721,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		DataCodingScheme dataCodingScheme = smsSubmitTpdu.getDataCodingScheme();
 		byte[] smsPayload = null;
 		int dcs = dataCodingScheme.getCode();
-		String err = MessageUtil.chechDataCodingSchemeSupport(dcs);
+		String err = MessageUtil.checkDataCodingSchemeSupport(dcs);
 		if (err != null) {
 			throw new SmscProcessingException("MO DataCoding scheme does not supported: " + dcs + " - " + err,
 					SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
@@ -880,7 +880,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		DataCodingScheme dataCodingScheme = smsDeliverTpdu.getDataCodingScheme();
 		byte[] smsPayload = null;
 		int dcs = dataCodingScheme.getCode();
-		String err = MessageUtil.chechDataCodingSchemeSupport(dcs);
+		String err = MessageUtil.checkDataCodingSchemeSupport(dcs);
 		if (err != null) {
 			throw new SmscProcessingException("MO DataCoding scheme does not supported: " + dcs + " - " + err,
 					SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);

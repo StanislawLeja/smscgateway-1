@@ -374,7 +374,7 @@ public class MessageUtil {
      * @param dcs
      * @return null if SMSC can process or String with error description if not
      */
-    public static String chechDataCodingSchemeSupport(int dcs) {
+    public static String checkDataCodingSchemeSupport(int dcs) {
         DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
         if (dataCodingScheme.getCharacterSet() != CharacterSet.GSM7 && dataCodingScheme.getCharacterSet() != CharacterSet.UCS2)
             return "Only GSM7 and USC2 are supported";

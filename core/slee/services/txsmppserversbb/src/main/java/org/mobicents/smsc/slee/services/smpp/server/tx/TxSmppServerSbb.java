@@ -580,7 +580,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		}
 
 		int dcs = event.getDataCoding();
-		String err = MessageUtil.chechDataCodingSchemeSupport(dcs);
+		String err = MessageUtil.checkDataCodingSchemeSupport(dcs);
 		if (err != null) {
 			throw new SmscProcessingException("TxSmpp DataCoding scheme does not supported: " + dcs + " - " + err,
 					SmppExtraConstants.ESME_RINVDCS, MAPErrorCode.systemFailure, null);

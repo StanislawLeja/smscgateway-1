@@ -24,6 +24,7 @@ package org.mobicents.smsc.slee.services.sip.server.tx;
 
 import gov.nist.javax.sip.address.SipUri;
 
+import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -44,6 +45,10 @@ import javax.slee.resource.ResourceAdaptorTypeID;
 import net.java.slee.resource.sip.SleeSipProvider;
 
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
+import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingGroup;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharset;
+import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.DatabaseType;
@@ -89,6 +94,13 @@ public abstract class TxSipServerSbb implements Sbb {
 
 	protected PersistenceRAInterface persistence = null;
 
+	private static Charset utf8 = Charset.forName("UTF-8");
+	private static Charset ucs2 = Charset.forName("UTF-16BE");
+    private static DataCodingSchemeImpl dcsGsm7 = new DataCodingSchemeImpl(DataCodingGroup.GeneralGroup, null, null, null, CharacterSet.GSM7,
+            false);
+    private static DataCodingSchemeImpl dcsUsc2 = new DataCodingSchemeImpl(DataCodingGroup.GeneralGroup, null, null, null, CharacterSet.UCS2,
+            false);
+
 	public TxSipServerSbb() {
 		// TODO Auto-generated constructor stub
 	}
@@ -107,22 +119,13 @@ public abstract class TxSipServerSbb implements Sbb {
 
 			byte[] message = request.getRawContent();
 
-			ServerTransaction serverTransaction = event.getServerTransaction();
-			Response res;
-			try {
-				res = (this.messageFactory.createResponse(200, serverTransaction.getRequest()));
-				event.getServerTransaction().sendResponse(res);
-			} catch (Exception e) {
-				this.logger.severe("Exeception while trying to send Ok response");
-			}
-
 			final ToHeader toHeader = (ToHeader) request.getHeader(ToHeader.NAME);
 			final String toUser = ((SipUri) toHeader.getAddress().getURI()).getUser();
 
 			final FromHeader fromHeader = (FromHeader) request.getHeader(FromHeader.NAME);
 			final String fromUser = ((SipUri) fromHeader.getAddress().getURI()).getUser();
 
-			// Persiste this message
+			// Persist this message
 			TargetAddress ta = this.createDestTargetAddress(toUser);
 			PersistenceRAInterface store = getStore();
 			TargetAddress lock = store.obtainSynchroObject(ta);
@@ -133,11 +136,47 @@ public abstract class TxSipServerSbb implements Sbb {
 					sms = this.createSmsEvent(fromUser, message, ta, store);
 					this.processSms(sms, store);
 				}
+	        } catch (SmscProcessingException e1) {
+	            this.logger.severe("SmscProcessingException while processing a message from sip", e1);
+
+	            ServerTransaction serverTransaction = event.getServerTransaction();
+	            Response res;
+	            try {
+	                // TODO: we possibly need to response ERROR message to sip
+	                res = (this.messageFactory.createResponse(200, serverTransaction.getRequest()));
+	                event.getServerTransaction().sendResponse(res);
+	            } catch (Exception e) {
+	                this.logger.severe("Exception while trying to send Ok response to sip", e);
+	            }
+
+	            return;
+	        } catch (Throwable e1) {
+                this.logger.severe("Exception while processing a message from sip", e1);
+
+                ServerTransaction serverTransaction = event.getServerTransaction();
+                Response res;
+                try {
+                    // TODO: we possibly need to response ERROR message to sip
+                    res = (this.messageFactory.createResponse(200, serverTransaction.getRequest()));
+                    event.getServerTransaction().sendResponse(res);
+                } catch (Exception e) {
+                    this.logger.severe("Exception while trying to send Ok response to sip", e);
+                }
+
+                return;
 			} finally {
 				store.releaseSynchroObject(lock);
 			}
 
-			// this.sendMessage(toUser, fromUser);
+			ServerTransaction serverTransaction = event.getServerTransaction();
+            Response res;
+            try {
+                res = (this.messageFactory.createResponse(200, serverTransaction.getRequest()));
+                event.getServerTransaction().sendResponse(res);
+            } catch (Exception e) {
+                this.logger.severe("Exception while trying to send Ok response to sip");
+            }
+
 		} catch (Exception e) {
 			this.logger.severe("Error while trying to send the SMS");
 		}
@@ -280,28 +319,72 @@ public abstract class TxSipServerSbb implements Sbb {
 	protected Sms createSmsEvent(String fromUser, byte[] message, TargetAddress ta, PersistenceRAInterface store)
 			throws SmscProcessingException {
 
-		Sms sms = new Sms();
-		sms.setDbId(UUID.randomUUID());
+	    Sms sms = new Sms();
+        sms.setDbId(UUID.randomUUID());
 
-		sms.setSourceAddr(fromUser);
-		sms.setSourceAddrTon(smscPropertiesManagement.getDefaultTon());
-		sms.setSourceAddrNpi(smscPropertiesManagement.getDefaultNpi());
+	    // checking of source address
+        if (fromUser == null)
+            fromUser = "???";
+        boolean isDigital = true;
+        for (char ch : fromUser.toCharArray()) {
+            if (ch != '0' && ch != '1' && ch != '2' && ch != '3' && ch != '4' && ch != '5' && ch != '6' && ch != '7' && ch != '8' && ch != '9' && ch != '*'
+                    && ch != '#' && ch != 'a' && ch != 'b' && ch != 'c') {
+                isDigital = false;
+                break;
+            }
+        }
+        if (isDigital) {
+            if (fromUser.length() > 20) {
+                fromUser = fromUser.substring(0, 20);
+            }
+            sms.setSourceAddr(fromUser);
+            sms.setSourceAddrTon(smscPropertiesManagement.getDefaultTon());
+            sms.setSourceAddrNpi(smscPropertiesManagement.getDefaultNpi());
+        } else {
+            if (fromUser.length() > 11) {
+                fromUser = fromUser.substring(0, 11);
+            }
+            sms.setSourceAddr(fromUser);
+            sms.setSourceAddrTon(SmppConstants.TON_ALPHANUMERIC);
+            sms.setSourceAddrNpi(smscPropertiesManagement.getDefaultNpi());
+        }
 
-		// TODO : Should we take care of Datacoding or breaking long SMS into
-		// smaller ones?
-		int dcs = 0;// 0 is for GSM7
-		// DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
-		sms.setDataCoding(dcs);
+        // checking for a destination address
+        isDigital = true;
+        for (char ch : ta.getAddr().toCharArray()) {
+            if (ch != '0' && ch != '1' && ch != '2' && ch != '3' && ch != '4' && ch != '5' && ch != '6' && ch != '7' && ch != '8' && ch != '9' && ch != '*'
+                    && ch != '#' && ch != 'a' && ch != 'b' && ch != 'c') {
+                isDigital = false;
+                break;
+            }
+        }
+        if (!isDigital) {
+            throw new SmscProcessingException("Destination address contains not only digits, *, #, a, b, or c characters: " + ta.getAddr(),
+                    SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, null);
+        }
+        if (ta.getAddr().length() > 20) {
+            throw new SmscProcessingException("Destination address has too long length: " + ta.getAddr(), SmppConstants.STATUS_SUBMITFAIL,
+                    MAPErrorCode.systemFailure, null, null);
+        }
+        if (ta.getAddr().length() == 0) {
+            throw new SmscProcessingException("Destination address has no digits", SmppConstants.STATUS_SUBMITFAIL,
+                    MAPErrorCode.systemFailure, null, null);
+        }
+
+        // processing of a message text
+        String msg = new String(message, utf8);
+        boolean gsm7Encoding = GSMCharset.checkAllCharsCanBeEncoded(msg, GSMCharset.BYTE_TO_CHAR_DefaultAlphabet, null);
+        if (gsm7Encoding) {
+            sms.setDataCoding(dcsGsm7.getCode());
+            sms.setShortMessage(msg.getBytes());
+        } else {
+            sms.setDataCoding(dcsUsc2.getCode());
+            sms.setShortMessage(msg.getBytes(ucs2));
+        }
+
 
 		sms.setSubmitDate(new Timestamp(System.currentTimeMillis()));
 		sms.setPriority(0);
-		// short message data
-		sms.setShortMessage(message);
-
-		// int lenSolid =
-		// MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
-		// int lenSegmented =
-		// MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
 
 		MessageUtil.applyValidityPeriod(sms, null, false);
 
@@ -322,13 +405,9 @@ public abstract class TxSipServerSbb implements Sbb {
 		}
 		sms.setSmsSet(smsSet);
 
-		// long messageId = this.smppServerSessions.getNextMessageId();
 		long messageId = store.c2_getNextMessageId();
 		SmscStatProvider.getInstance().setCurrentMessageId(messageId);
 		sms.setMessageId(messageId);
-
-		// TODO: process case when event.getReplaceIfPresent()==true: we need
-		// remove old message with same MessageId ?
 
 		return sms;
 	}
