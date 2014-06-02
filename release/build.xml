@@ -25,7 +25,7 @@
 		<!-- **//-->
 	
 	<property name="telscale-slee.version" value="6.1.2.GA" />
-	<property name="telscale-jss7.version" value="6.1.5.GA" />
+	<property name="telscale-jss7.version" value="6.1.6.GA" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
 	<property name="telscale-diam.version" value="6.1.2.GA" />
 	
@@ -34,7 +34,7 @@
 	<property name="telscale-slee.download.url" value="ftp://ftp.box.com/TelScale%20JAIN-SLEE/${telscale-slee.version}/${telscale-slee.download.distro.file}" />
 	<property name="telscale-slee.distro.zip.path" value="${checkout.dir}/${telscale-slee.download.distro.file}" />
 	
-	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}-1309081630.zip" />
+	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}-1405190844.zip" />
 	<property name="telscale-jss7.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-jss7.version}/${telscale-jss7.download.distro.file}" />
 	<property name="telscale-jss7.distro.zip.path" value="${checkout.dir}/${telscale-jss7.download.distro.file}" />
 	
