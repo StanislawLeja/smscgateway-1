@@ -137,8 +137,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	// parameters for cassandra database access
 	private String hosts = "127.0.0.1:9042";
-	private String keyspaceName = "TelscaleSMSC";
-	private String clusterName = "TelscaleSMSC";
+	private String keyspaceName = "TelestaxSMSC";
+	private String clusterName = "TelestaxSMSC";
 
 	// period of fetching messages from a database for delivering
 	// private long fetchPeriod = 5000; // that was C1

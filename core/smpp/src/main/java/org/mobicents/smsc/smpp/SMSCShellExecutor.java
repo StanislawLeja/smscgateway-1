@@ -453,7 +453,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 	private String executeSmsc(String[] args) {
 		try {
-			if (args.length < 2 || args.length > 20) {
+			if (args.length < 2 || args.length > 50) {
 				// any command will have atleast 3 args
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
