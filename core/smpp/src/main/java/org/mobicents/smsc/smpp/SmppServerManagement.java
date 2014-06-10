@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javolution.text.TextBuilder;
@@ -269,8 +270,12 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 		logger.info("Stopping SMPP server...");
 		this.defaultSmppServer.stop();
 
-		this.executor.shutdownNow();
-		this.monitorExecutor.shutdownNow();
+//        this.executor.shutdownNow();
+        this.monitorExecutor.shutdownNow();
+
+        this.executor.awaitTermination(10, TimeUnit.SECONDS);
+        this.executor.shutdown();
+//        this.monitorExecutor.shutdown();
 
 		logger.info("SMPP server stopped");
 		logger.info(String.format("Server counters: %s", this.defaultSmppServer.getCounters()));
