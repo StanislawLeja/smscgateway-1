@@ -65,7 +65,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.EsmeManagement;
-import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
+import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -523,7 +523,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 	protected byte[] recodeShortMessage(int esmeClass, int dataCoding, byte[] msg) {
 		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dataCoding);
 		boolean udhPresent = (esmeClass & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
-		if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncodingForUCS2.Utf8
+		if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncoding.Utf8
 				&& dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
 			byte[] textPart = msg;
 			byte[] udhData = null;

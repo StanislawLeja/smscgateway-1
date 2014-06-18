@@ -29,7 +29,6 @@ import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;
 
@@ -41,7 +40,11 @@ import javax.slee.TransactionRolledbackLocalException;
 
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingGroup;
+import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
+import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeaderElement;
+import org.mobicents.protocols.ss7.map.smstpdu.ConcatenatedShortMessagesIdentifierImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
+import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PersistenceException;
@@ -58,7 +61,7 @@ import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.smpp.Esme;
-import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
+import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.smsc.smpp.SmppInterfaceVersionType;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.AfterMethod;
@@ -68,7 +71,6 @@ import org.testng.annotations.Test;
 import com.cloudhopper.smpp.SmppBindType;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppSession;
-import com.cloudhopper.smpp.SmppSession.Type;
 import com.cloudhopper.smpp.pdu.BaseSm;
 import com.cloudhopper.smpp.pdu.DataSm;
 import com.cloudhopper.smpp.pdu.PduResponse;
@@ -91,23 +93,31 @@ public class C2_TxSmppServerSbbTest {
 
 	private TargetAddress ta1 = new TargetAddress(1, 1, "5555");
 
+    private static String sMsg = "������Hel";
 	private static byte[] msgUtf8;
-	private static byte[] msgUcs2;
+    private static byte[] msgUcs2;
+    private static byte[] udhCode;
 	private byte[] msg_ref_num = { 0, 10 };
 	private Date scheduleDeliveryTime;
 
 	static {
-		String s1 = "������Hel";
+		String s1 = sMsg;
 
 		Charset utf8Charset = Charset.forName("UTF-8");
 		ByteBuffer bf = utf8Charset.encode(s1);
 		msgUtf8 = new byte[bf.limit()];
 		bf.get(msgUtf8);
 
-		Charset ucs2Charset = Charset.forName("UTF-16BE");
+        UserDataHeader udh = new UserDataHeaderImpl();
+        UserDataHeaderElement informationElement = new ConcatenatedShortMessagesIdentifierImpl(false, 20, 5, 2);
+        udh.addInformationElement(informationElement);
+        udhCode = udh.getEncodedData();
+
+        Charset ucs2Charset = Charset.forName("UTF-16BE");
 		bf = ucs2Charset.encode(s1);
-		msgUcs2 = new byte[bf.limit()];
-		bf.get(msgUcs2);
+        msgUcs2 = new byte[udhCode.length + bf.limit()];
+        bf.get(msgUcs2, udhCode.length, bf.limit());
+        System.arraycopy(udhCode, 0, msgUcs2, 0, udhCode.length);
 	}
 
 	@BeforeMethod
@@ -163,7 +173,7 @@ public class C2_TxSmppServerSbbTest {
 		assertEquals(b1, 0);
 		assertEquals(b2, 0L);
 
-		TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8.Unicode);
+		TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Unicode);
 		this.sbb.onSubmitSm(event, aci);
 
 		b1 = this.pers.checkSmsExists(dueSlot, ta1.getTargetId());
@@ -172,7 +182,8 @@ public class C2_TxSmppServerSbbTest {
 		SmsSet smsSet = this.pers.c2_getRecordListForTargeId(dueSlot, ta1.getTargetId());
 		this.checkSmsSet(smsSet, curDate, true);
 		Sms sms = smsSet.getSms(0);
-		assertEquals(sms.getShortMessage(), msgUcs2);
+        assertEquals(sms.getShortMessageText(), sMsg); // msgUcs2
+        assertEquals(sms.getShortMessageBin(), udhCode);
 
 		assertEquals(this.smppSess.getReqList().size(), 0);
 		assertEquals(this.smppSess.getRespList().size(), 1);
@@ -223,7 +234,7 @@ public class C2_TxSmppServerSbbTest {
 		assertEquals(b1, 0);
 		assertEquals(b2, 0L);
 
-		TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
+		TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Utf8);
 		this.sbb.onDataSm(event, aci);
 
 		b2 = this.pers.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
@@ -235,7 +246,7 @@ public class C2_TxSmppServerSbbTest {
 		SmsSet smsSet = this.pers.c2_getRecordListForTargeId(dueSlot, ta1.getTargetId());
 		this.checkSmsSet(smsSet, curDate, false);
 		Sms sms = smsSet.getSms(0);
-		assertEquals(sms.getShortMessage(), msgUcs2);
+		assertEquals(sms.getShortMessageText(), sMsg); // msgUcs2
 
 		assertEquals(this.smppSess.getReqList().size(), 0);
 		assertEquals(this.smppSess.getRespList().size(), 1);
@@ -279,7 +290,7 @@ public class C2_TxSmppServerSbbTest {
 		// Boolean setIndicationActive,
 		// CharacterSet characterSet, boolean isCompressed
 
-		event.setDataCoding((byte) 4);
+		event.setDataCoding((byte) 12);
 
 		long dueSlot = this.pers.c2_getDueSlotForTime(scheduleDeliveryTime);
 		PreparedStatementCollection_C3 psc = this.pers.getStatementCollection(scheduleDeliveryTime);
@@ -288,7 +299,7 @@ public class C2_TxSmppServerSbbTest {
 		assertEquals(b1, 0);
 		assertEquals(b2, 0L);
 
-		TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
+		TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Utf8);
 		this.sbb.onSubmitSm(event, aci);
 
 		b2 = this.pers.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
@@ -302,7 +313,7 @@ public class C2_TxSmppServerSbbTest {
 		assertEquals(resp.getOptionalParameterCount(), 1);
 		Tlv tlvr = resp.getOptionalParameter(SmppConstants.TAG_ADD_STATUS_INFO);
 		String errMsg = tlvr.getValueAsString();
-		assertEquals(errMsg, "TxSmpp DataCoding scheme does not supported: 4 - Only GSM7 and USC2 are supported");
+		assertEquals(errMsg, "TxSmpp DataCoding scheme does not supported: 12 - Only GSM7, GSM8 and USC2 are supported");
 	}
 
 	@Test(groups = { "TxSmppServer" })
@@ -314,7 +325,7 @@ public class C2_TxSmppServerSbbTest {
 		this.smppSess = new SmppSessionsProxy();
 		this.sbb.setSmppServerSessions(smppSess);
 
-		TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
+		TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Utf8);
 
 		SmscPropertiesManagement spm = SmscPropertiesManagement.getInstance("Test");
 		String sMsgA = "������Hel";
@@ -348,12 +359,7 @@ public class C2_TxSmppServerSbbTest {
 		Esme origEsme = new Esme();
 		TargetAddress ta = ta1;
 		Sms sms = this.sbb.createSmsEvent(event, origEsme, ta, this.pers);
-
-		Charset ucs2Charset = Charset.forName("UTF-16BE");
-		bb = ByteBuffer.wrap(sms.getShortMessage());
-		CharBuffer bf = ucs2Charset.decode(bb);
-		String msg2 = bf.toString();
-		assertEquals(msg2, sMsgA);
+        assertEquals(sms.getShortMessageText(), sMsgA);
 
 		// message part and UDH
 		byte[] udh = new byte[] { 0x05, 0x00, 0x03, 0x29, 0x02, 0x02 };
@@ -369,17 +375,38 @@ public class C2_TxSmppServerSbbTest {
 		event.setEsmClass(SmppConstants.ESM_CLASS_UDHI_MASK);
 
 		sms = this.sbb.createSmsEvent(event, origEsme, ta, this.pers);
+        assertEquals(sms.getShortMessageText(), sMsgA);
+        assertEquals(sms.getShortMessageBin(), udh);
 
-		byte[] bf1 = new byte[udh.length];
-		byte[] bf2 = new byte[sms.getShortMessage().length - udh.length];
-		System.arraycopy(sms.getShortMessage(), 0, bf1, 0, udh.length);
-		System.arraycopy(sms.getShortMessage(), udh.length, bf2, 0, bf2.length);
-		bb = ByteBuffer.wrap(bf2);
-		// bf = utf8Charset.decode(bb);
-		bf = ucs2Charset.decode(bb);
-		msg2 = bf.toString();
-		assertEquals(msg2, sMsgA);
-		assertEquals(bf1, udh);
+        // binary GSM8
+        String s1 = "Optic xxx";
+        Charset iso = Charset.forName("ISO-8859-1");
+        byte[] aMsgC = s1.getBytes(iso);
+        byte[] aMsgCC = new byte[aMsgC.length + udh.length];
+        System.arraycopy(udh, 0, aMsgCC, 0, udh.length);
+        System.arraycopy(aMsgC, 0, aMsgCC, udh.length, aMsgC.length);
+
+        event = new com.cloudhopper.smpp.pdu.SubmitSm();
+        event.setSourceAddress(addr);
+        event.setDestAddress(addr2);
+        event.setDataCoding((byte) 4);
+        event.setShortMessage(aMsgCC);
+        event.setEsmClass(SmppConstants.ESM_CLASS_UDHI_MASK);
+
+        sms = this.sbb.createSmsEvent(event, origEsme, ta, this.pers);
+        assertEquals(sms.getShortMessageText(), s1);
+        assertEquals(sms.getShortMessageBin(), udh);
+
+        // GSM7
+        event = new com.cloudhopper.smpp.pdu.SubmitSm();
+        event.setSourceAddress(addr);
+        event.setDestAddress(addr2);
+        event.setDataCoding((byte) 0);
+        event.setShortMessage(aMsgC);
+
+        sms = this.sbb.createSmsEvent(event, origEsme, ta, this.pers);
+        assertEquals(sms.getShortMessageText(), s1);
+        assertNull(sms.getShortMessageBin());
 
 	}
 

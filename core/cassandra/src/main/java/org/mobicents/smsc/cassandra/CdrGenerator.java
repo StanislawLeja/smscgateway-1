@@ -72,14 +72,17 @@ public class CdrGenerator {
                 .append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddrNpi())
                 .append(CdrGenerator.CDR_SEPARATOR).append(status).append(CdrGenerator.CDR_SEPARATOR)
                 .append(smsEvent.getOrigSystemId()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getMessageId())
-                .append(CdrGenerator.CDR_SEPARATOR).append(getFirst20CharOfSMS(smsEvent.getShortMessage()))
+                .append(CdrGenerator.CDR_SEPARATOR).append(getFirst20CharOfSMS(smsEvent.getShortMessageText()))
                 .append(CdrGenerator.CDR_SEPARATOR).append(reason);
 
         CdrGenerator.generateCdr(sb.toString());
     }
 
-    private static String getFirst20CharOfSMS(byte[] rawSms) {
-        String first20CharOfSms = new String(rawSms);
+//    private static String getFirst20CharOfSMS(byte[] rawSms) {
+    private static String getFirst20CharOfSMS(String first20CharOfSms) {
+//        String first20CharOfSms = new String(rawSms);
+        if (first20CharOfSms == null)
+            return "";
         if (first20CharOfSms.length() > 20) {
             first20CharOfSms = first20CharOfSms.substring(0, 20);
         }

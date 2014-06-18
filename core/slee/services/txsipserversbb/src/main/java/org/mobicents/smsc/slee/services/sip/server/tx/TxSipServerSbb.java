@@ -95,7 +95,7 @@ public abstract class TxSipServerSbb implements Sbb {
 	protected PersistenceRAInterface persistence = null;
 
 	private static Charset utf8 = Charset.forName("UTF-8");
-	private static Charset ucs2 = Charset.forName("UTF-16BE");
+//	private static Charset ucs2 = Charset.forName("UTF-16BE");
     private static DataCodingSchemeImpl dcsGsm7 = new DataCodingSchemeImpl(DataCodingGroup.GeneralGroup, null, null, null, CharacterSet.GSM7,
             false);
     private static DataCodingSchemeImpl dcsUsc2 = new DataCodingSchemeImpl(DataCodingGroup.GeneralGroup, null, null, null, CharacterSet.UCS2,
@@ -372,14 +372,15 @@ public abstract class TxSipServerSbb implements Sbb {
         }
 
         // processing of a message text
+        if (message == null)
+            message = new byte[0];
         String msg = new String(message, utf8);
+        sms.setShortMessageText(msg);
         boolean gsm7Encoding = GSMCharset.checkAllCharsCanBeEncoded(msg, GSMCharset.BYTE_TO_CHAR_DefaultAlphabet, null);
         if (gsm7Encoding) {
             sms.setDataCoding(dcsGsm7.getCode());
-            sms.setShortMessage(msg.getBytes());
         } else {
             sms.setDataCoding(dcsUsc2.getCode());
-            sms.setShortMessage(msg.getBytes(ucs2));
         }
 
 

@@ -26,7 +26,7 @@ package org.mobicents.smsc.slee.resources.persistence;
 public class SkippingExpiredValidityPeriodTest {
 
 //    private String ip = "127.0.0.1";
-//    private String keyspace = "saturn";
+//    private String keyspace = "TelestaxSMSC";
 //    private TT_PersistenceRAInterfaceProxy sbb;
 //    private boolean cassandraDbInited;
 //

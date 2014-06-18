@@ -28,6 +28,7 @@ public class PreparedStatementCollection_C3 {
 
     private DBOperations_C2 dbOperation;
     private String tName;
+    private boolean shortMessageNewStringFormat;
 
     protected PreparedStatement createDueSlotForTargetId;
     protected PreparedStatement getDueSlotForTargetId;
@@ -41,6 +42,15 @@ public class PreparedStatementCollection_C3 {
     public PreparedStatementCollection_C3(DBOperations_C2 dbOperation, String tName, int ttlCurrent, int ttlArchive) {
         this.dbOperation = dbOperation;
         this.tName = tName;
+
+        // check table version format
+        try {
+            shortMessageNewStringFormat = false;
+            String s1 = "select \"" + Schema.COLUMN_MESSAGE_TEXT + "\" FROM \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\" limit 1;";
+            dbOperation.session.execute(s1);
+            shortMessageNewStringFormat = true;
+        } catch (Exception e) {
+        }
 
         try {
             String s1 = getFillUpdateFields();
@@ -82,9 +92,6 @@ public class PreparedStatementCollection_C3 {
                     + Schema.COLUMN_NNN_AN + "\", \"" + Schema.COLUMN_NNN_NP + "\", \"" + Schema.COLUMN_SM_TYPE + "\") VALUES (" + s2 + ", ?, ?, ?, ?, ?) "
                     + s3b + ";";
             createRecordArchive = dbOperation.session.prepare(sa);
-
-//            sa = "DELETE FROM \"" + Schema.FAMILY_SLOTS + tName + "\" where \"" + Schema.COLUMN_DUE_SLOT + "\"=? and \"" + Schema.COLUMN_TARGET_ID
-//                    + "\"=?;";
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -92,6 +99,10 @@ public class PreparedStatementCollection_C3 {
 
     public String getTName() {
         return tName;
+    }
+
+    public boolean getShortMessageNewStringFormat() {
+        return shortMessageNewStringFormat;
     }
 
     private String getFillUpdateFields() {
@@ -162,6 +173,12 @@ public class PreparedStatementCollection_C3 {
 
         sb.append(Schema.COLUMN_MESSAGE);
         sb.append("\", \"");
+        if (shortMessageNewStringFormat) {
+            sb.append(Schema.COLUMN_MESSAGE_TEXT);
+            sb.append("\", \"");
+            sb.append(Schema.COLUMN_MESSAGE_BIN);
+            sb.append("\", \"");
+        }
         sb.append(Schema.COLUMN_SCHEDULE_DELIVERY_TIME);
         sb.append("\", \"");
         sb.append(Schema.COLUMN_VALIDITY_PERIOD);
@@ -175,7 +192,13 @@ public class PreparedStatementCollection_C3 {
     }
 
     private String getFillUpdateFields2() {
-        int cnt = 33;
+        int cnt;
+        if (shortMessageNewStringFormat) {
+            cnt = 35;
+        } else {
+            cnt = 33;
+        }
+
         StringBuilder sb = new StringBuilder();
         int i2 = 0;
         for (int i1 = 0; i1 < cnt; i1++) {

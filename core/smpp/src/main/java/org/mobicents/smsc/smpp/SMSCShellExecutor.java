@@ -780,9 +780,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (parName.equals("smppencodingforucs2")) {
 				String s1 = options[3].toLowerCase();
 				if (s1.equals("utf8")) {
-					smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
+					smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Utf8);
 				} else if (s1.equals("unicode")) {
-					smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Unicode);
+					smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Unicode);
 				} else {
 					return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, "SmppEncodingForUCS2 value",
 							"UTF8 or UNICODE are possible");

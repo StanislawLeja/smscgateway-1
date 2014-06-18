@@ -25,6 +25,8 @@ package org.mobicents.smsc.cassandra;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -38,7 +40,11 @@ import javolution.xml.XMLObjectWriter;
 import javolution.xml.stream.XMLStreamException;
 
 import org.apache.log4j.Logger;
+import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 
+import com.cloudhopper.smpp.SmppConstants;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Cluster.Builder;
@@ -659,7 +665,7 @@ public class DBOperations_C2 {
 			PreparedStatement ps = psc.createRecordCurrent;
 			BoundStatement boundStatement = new BoundStatement(ps);
 
-			setSmsFields(sms, dueSlot, boundStatement, false);
+			setSmsFields(sms, dueSlot, boundStatement, false, psc.getShortMessageNewStringFormat());
 
 			ResultSet res = session.execute(boundStatement);
 		} catch (Exception e1) {
@@ -680,7 +686,7 @@ public class DBOperations_C2 {
 			PreparedStatement ps = psc.createRecordArchive;
 			BoundStatement boundStatement = new BoundStatement(ps);
 
-			setSmsFields(sms, dueSlot, boundStatement, true);
+			setSmsFields(sms, dueSlot, boundStatement, true, psc.getShortMessageNewStringFormat());
 
 			ResultSet res = session.execute(boundStatement);
 		} catch (Exception e1) {
@@ -690,7 +696,7 @@ public class DBOperations_C2 {
 		}
 	}
 
-	private void setSmsFields(Sms sms, long dueSlot, BoundStatement boundStatement, boolean archive)
+	private void setSmsFields(Sms sms, long dueSlot, BoundStatement boundStatement, boolean archive, boolean shortMessageNewStringFormat)
 			throws PersistenceException {
 		boundStatement.setUUID(Schema.COLUMN_ID, sms.getDbId());
 		boundStatement.setString(Schema.COLUMN_TARGET_ID, sms.getSmsSet().getTargetId());
@@ -738,9 +744,53 @@ public class DBOperations_C2 {
 		boundStatement.setInt(Schema.COLUMN_DATA_CODING, sms.getDataCoding());
 		boundStatement.setInt(Schema.COLUMN_DEFAULT_MSG_ID, sms.getDefaultMsgId());
 
-		if (sms.getShortMessage() != null) {
-			boundStatement.setBytes(Schema.COLUMN_MESSAGE, ByteBuffer.wrap(sms.getShortMessage()));
-		}
+        if (shortMessageNewStringFormat) {
+            if (sms.getShortMessageText() != null) {
+                boundStatement.setString(Schema.COLUMN_MESSAGE_TEXT, sms.getShortMessageText());
+            }
+            if (sms.getShortMessageBin() != null) {
+                boundStatement.setBytes(Schema.COLUMN_MESSAGE_BIN, ByteBuffer.wrap(sms.getShortMessageBin()));
+            }
+        } else {
+            // convert to an old format
+            String msg = sms.getShortMessageText();
+            byte[] udhData = sms.getShortMessageBin();
+            byte[] textPart = null;
+            DataCodingScheme dcs = new DataCodingSchemeImpl(sms.getDataCoding());
+            switch (dcs.getCharacterSet()) {
+            case GSM7:
+                textPart = msg.getBytes();
+                break;
+            case UCS2:
+                Charset ucs2Charset = Charset.forName("UTF-16BE");
+                ByteBuffer bb = ucs2Charset.encode(msg);
+                textPart = new byte[bb.limit()];
+                bb.get(textPart);
+                break;
+            default:
+                // we do not support this yet
+                break;
+            }
+
+            byte[] data;
+            if (textPart != null) {
+                if (udhData != null) {
+                    data = new byte[textPart.length + udhData.length];
+                    System.arraycopy(udhData, 0, data, 0, udhData.length);
+                    System.arraycopy(textPart, 0, data, udhData.length, textPart.length);
+                } else {
+                    data = textPart;
+                }
+            } else {
+                if (udhData != null) {
+                    data = udhData;
+                } else {
+                    data = new byte[0];
+                }
+            }
+            boundStatement.setBytes(Schema.COLUMN_MESSAGE, ByteBuffer.wrap(data));
+        }
+
 		if (sms.getScheduleDeliveryTime() != null) {
 			boundStatement.setDate(Schema.COLUMN_SCHEDULE_DELIVERY_TIME, sms.getScheduleDeliveryTime());
 		}
@@ -798,7 +848,7 @@ public class DBOperations_C2 {
 			ResultSet res = session.execute(boundStatement);
 
 			for (Row row : res) {
-				SmsSet smsSet = this.createSms(row, null);
+                SmsSet smsSet = this.createSms(row, null, psc.getShortMessageNewStringFormat());
 				if (smsSet != null)
 					result.add(smsSet);
 			}
@@ -822,7 +872,7 @@ public class DBOperations_C2 {
 			ResultSet res = session.execute(boundStatement);
 
 			for (Row row : res) {
-				result = this.createSms(row, result);
+				result = this.createSms(row, result, psc.getShortMessageNewStringFormat());
 			}
 		} catch (Exception e1) {
 			String msg = "Failed getRecordListForTargeId()";
@@ -833,7 +883,7 @@ public class DBOperations_C2 {
 		return result;
 	}
 
-	protected SmsSet createSms(final Row row, SmsSet smsSet) throws PersistenceException {
+	protected SmsSet createSms(final Row row, SmsSet smsSet, boolean shortMessageNewStringFormat) throws PersistenceException {
 		if (row == null)
 			return null;
 
@@ -868,11 +918,67 @@ public class DBOperations_C2 {
 		sms.setDataCoding(row.getInt(Schema.COLUMN_DATA_CODING));
 		sms.setDefaultMsgId(row.getInt(Schema.COLUMN_DEFAULT_MSG_ID));
 
-		ByteBuffer bb = row.getBytes(Schema.COLUMN_MESSAGE);
-		byte[] buf = new byte[bb.limit() - bb.position()];
-		bb.get(buf);
-		sms.setShortMessage(buf);
-		sms.setScheduleDeliveryTime(row.getDate(Schema.COLUMN_SCHEDULE_DELIVERY_TIME));
+        if (shortMessageNewStringFormat) {
+            sms.setShortMessageText(row.getString(Schema.COLUMN_MESSAGE_TEXT));
+            ByteBuffer bb = row.getBytes(Schema.COLUMN_MESSAGE_BIN);
+            if (bb != null) {
+                byte[] buf = new byte[bb.limit() - bb.position()];
+                bb.get(buf);
+                sms.setShortMessageBin(buf);
+            }
+        } else {
+            ByteBuffer bb = row.getBytes(Schema.COLUMN_MESSAGE);
+            if (bb != null) {
+                byte[] buf = new byte[bb.limit() - bb.position()];
+                bb.get(buf);
+                sms.setShortMessage(buf);
+
+                // convert to a new format
+                byte[] shortMessage = sms.getShortMessage();
+                byte[] textPart = shortMessage;
+                byte[] udhData = null;
+                boolean udhExists = false;
+                DataCodingScheme dcs = new DataCodingSchemeImpl(sms.getDataCoding());
+                String msg = null;
+                if (dcs.getCharacterSet() == CharacterSet.GSM8) {
+                    udhData = shortMessage;
+                } else {
+                    if ((sms.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0) {
+                        udhExists = true;
+                    }
+                    if (udhExists && shortMessage != null && shortMessage.length > 2) {
+                        // UDH exists
+                        int udhLen = (shortMessage[0] & 0xFF) + 1;
+                        if (udhLen <= shortMessage.length) {
+                            textPart = new byte[shortMessage.length - udhLen];
+                            udhData = new byte[udhLen];
+                            System.arraycopy(shortMessage, udhLen, textPart, 0, textPart.length);
+                            System.arraycopy(shortMessage, 0, udhData, 0, udhLen);
+                        }
+                    }
+
+                    switch (dcs.getCharacterSet()) {
+                    case GSM7:
+                        msg = new String(textPart);
+                        break;
+                    case UCS2:
+                        Charset ucs2Charset = Charset.forName("UTF-16BE");
+                        bb = ByteBuffer.wrap(textPart);
+                        CharBuffer bf = ucs2Charset.decode(bb);
+                        msg = bf.toString();
+                        break;
+                    default:
+                        udhData = sms.getShortMessage();
+                        break;
+                    }
+                }
+
+                sms.setShortMessageText(msg);
+                sms.setShortMessageBin(udhData);
+            }
+        }
+
+        sms.setScheduleDeliveryTime(row.getDate(Schema.COLUMN_SCHEDULE_DELIVERY_TIME));
 		sms.setValidityPeriod(row.getDate(Schema.COLUMN_VALIDITY_PERIOD));
 		sms.setDeliveryCount(row.getInt(Schema.COLUMN_DELIVERY_COUNT));
 
@@ -1127,7 +1233,7 @@ public class DBOperations_C2 {
 		return psc;
 	}
 
-	private void addSmsFields(StringBuilder sb) {
+	protected void addSmsFields(StringBuilder sb) {
 		appendField(sb, Schema.COLUMN_ID, "uuid");
 		appendField(sb, Schema.COLUMN_TARGET_ID, "ascii");
 		appendField(sb, Schema.COLUMN_DUE_SLOT, "bigint");
@@ -1164,7 +1270,9 @@ public class DBOperations_C2 {
 		appendField(sb, Schema.COLUMN_DATA_CODING, "int");
 		appendField(sb, Schema.COLUMN_DEFAULT_MSG_ID, "int");
 
-		appendField(sb, Schema.COLUMN_MESSAGE, "blob");
+        appendField(sb, Schema.COLUMN_MESSAGE, "blob");
+        appendField(sb, Schema.COLUMN_MESSAGE_TEXT, "text");
+        appendField(sb, Schema.COLUMN_MESSAGE_BIN, "blob");
 		appendField(sb, Schema.COLUMN_OPTIONAL_PARAMETERS, "text");
 		appendField(sb, Schema.COLUMN_SCHEDULE_DELIVERY_TIME, "timestamp");
 		appendField(sb, Schema.COLUMN_VALIDITY_PERIOD, "timestamp");
@@ -1270,7 +1378,7 @@ public class DBOperations_C2 {
 		}
 	}
 
-	private void appendField(StringBuilder sb, String name, String type) {
+	protected void appendField(StringBuilder sb, String name, String type) {
 		sb.append("\"");
 		sb.append(name);
 		sb.append("\" ");

@@ -66,7 +66,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String FETCH_PERIOD = "fetchPeriod";
 	private static final String FETCH_MAX_ROWS = "fetchMaxRows";
 	private static final String MAX_ACTIVITY_COUNT = "maxActivityCount";
-	private static final String SMPP_ENCODING_FOR_UCS2 = "smppEncodingForUCS2";
+    private static final String SMPP_ENCODING_FOR_UCS2 = "smppEncodingForUCS2";
+    private static final String SMPP_ENCODING_FOR_GSM7 = "smppEncodingForGsm7";
 	private static final String SMS_HOME_ROUTING = "smsHomeRouting";
 	// private static final String CDR_DATABASE_EXPORT_DURATION =
 	// "cdrDatabaseExportDuration";
@@ -126,9 +127,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// maxMessageLengthReducer
 	// Recommended value = 6 Possible values from 0 to 12
 	private int maxMessageLengthReducer = 6;
-	// Encoding type at SMPP part for data coding schema==8 (UCS2)
-	// 0-UTF8, 1-UNICODE
-	private SmppEncodingForUCS2 smppEncodingForUCS2 = SmppEncodingForUCS2.Utf8;
+    // Encoding type at SMPP part for data coding schema==0 (GSM7)
+    // 0-UTF8, 1-UNICODE
+    private SmppEncoding smppEncodingForGsm7 = SmppEncoding.Utf8;
+    // Encoding type at SMPP part for data coding schema==8 (UCS2)
+    // 0-UTF8, 1-UNICODE
+    private SmppEncoding smppEncodingForUCS2 = SmppEncoding.Utf8;
 
 	// time duration of exporting CDR's to a log based on cassandra database
 	// possible values: 1, 2, 5, 10, 15, 20, 30, 60 (minutes) or 0 (export is
@@ -371,15 +375,26 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	}
 
 	@Override
-	public SmppEncodingForUCS2 getSmppEncodingForUCS2() {
-		return smppEncodingForUCS2;
+	public SmppEncoding getSmppEncodingForGsm7() {
+		return smppEncodingForGsm7;
 	}
 
 	@Override
-	public void setSmppEncodingForUCS2(SmppEncodingForUCS2 smppEncodingForUCS2) {
-		this.smppEncodingForUCS2 = smppEncodingForUCS2;
+	public void setSmppEncodingForGsm7(SmppEncoding smppEncodingForGsm7) {
+		this.smppEncodingForGsm7 = smppEncodingForGsm7;
 		this.store();
 	}
+
+    @Override
+    public SmppEncoding getSmppEncodingForUCS2() {
+        return smppEncodingForUCS2;
+    }
+
+    @Override
+    public void setSmppEncodingForUCS2(SmppEncoding smppEncodingForUCS2) {
+        this.smppEncodingForUCS2 = smppEncodingForUCS2;
+        this.store();
+    }
 
 	// TODO : Let port be defined independently instead of ip:prt. Also when
 	// cluster will be used there will be more ip's. Hosts should be comma
@@ -687,7 +702,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
 			writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
 			writer.write(this.isSMSHomeRouting, SMS_HOME_ROUTING, Boolean.class);
-			writer.write(this.smppEncodingForUCS2.toString(), SMPP_ENCODING_FOR_UCS2, String.class);
+            writer.write(this.smppEncodingForGsm7.toString(), SMPP_ENCODING_FOR_GSM7, String.class);
+            writer.write(this.smppEncodingForUCS2.toString(), SMPP_ENCODING_FOR_UCS2, String.class);
 
 			writer.write(this.reviseSecondsOnSmscStart, REVISE_SECONDS_ON_SMSC_START, Integer.class);
 			writer.write(this.processingSmsSetTimeout, PROCESSING_SMS_SET_TIMEOUT, Integer.class);
@@ -788,9 +804,13 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 				this.isSMSHomeRouting = valB.booleanValue();
 			}
 
-			String vals = reader.read(SMPP_ENCODING_FOR_UCS2, String.class);
-			if (vals != null)
-				this.smppEncodingForUCS2 = Enum.valueOf(SmppEncodingForUCS2.class, vals);
+            String vals = reader.read(SMPP_ENCODING_FOR_GSM7, String.class);
+            if (vals != null)
+                this.smppEncodingForGsm7 = Enum.valueOf(SmppEncoding.class, vals);
+
+            vals = reader.read(SMPP_ENCODING_FOR_UCS2, String.class);
+            if (vals != null)
+                this.smppEncodingForUCS2 = Enum.valueOf(SmppEncoding.class, vals);
 
 			val = reader.read(REVISE_SECONDS_ON_SMSC_START, Integer.class);
 			if (val != null)

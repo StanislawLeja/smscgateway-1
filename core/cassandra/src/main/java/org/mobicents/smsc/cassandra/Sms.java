@@ -70,7 +70,9 @@ public class Sms implements Serializable {
 	private int dataCoding;
 	private int defaultMsgId; // not present in data_sm, not used in deliver_sm
 
-	private byte[] shortMessage;
+    private byte[] shortMessage;
+    private String shortMessageText;
+    private byte[] shortMessageBin;
 
 	private Date scheduleDeliveryTime; // not present in data_sm
 	private Date validityPeriod; // not present in data_sm
@@ -318,16 +320,37 @@ public class Sms implements Serializable {
 		this.defaultMsgId = defaultMsgId;
 	}
 
-	/**
-	 * Message text in source style that has been received from EMSE or from MS
-	 */
+    @Deprecated
 	public byte[] getShortMessage() {
 		return shortMessage;
 	}
 
+    @Deprecated
 	public void setShortMessage(byte[] shortMessage) {
 		this.shortMessage = shortMessage;
 	}
+
+    /**
+     * Message: text part
+     */
+    public String getShortMessageText() {
+        return shortMessageText;
+    }
+
+    public void setShortMessageText(String shortMessageText) {
+        this.shortMessageText = shortMessageText;
+    }
+
+    /**
+     * Message: binary part (UDH for text message or all message for binary messages)
+     */
+    public byte[] getShortMessageBin() {
+        return shortMessageBin;
+    }
+
+    public void setShortMessageBin(byte[] shortMessageBin) {
+        this.shortMessageBin = shortMessageBin;
+    }
 
 	/**
 	 * schedule_delivery_time smpp parameter time when SMSC should start a delivery (may be null � immediate message delivery)
@@ -428,8 +451,10 @@ public class Sms implements Serializable {
 		sb.append(scheduleDeliveryTime);
 		sb.append(", validityPeriod=");
 		sb.append(validityPeriod);
-		sb.append(", deliveryCount=");
-		sb.append(deliveryCount);
+        sb.append(", deliveryCount=");
+        sb.append(deliveryCount);
+        sb.append(", messageText=");
+        sb.append(shortMessageText);
 
 		if (this.tlvSet != null) {
 			sb.append(", tlvSet=");
@@ -443,7 +468,7 @@ public class Sms implements Serializable {
 		return sb.toString();
 	}
 
-	
+
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */

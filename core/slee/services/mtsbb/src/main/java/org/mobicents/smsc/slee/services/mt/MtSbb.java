@@ -22,8 +22,6 @@
 
 package org.mobicents.smsc.slee.services.mt;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
@@ -109,7 +107,7 @@ import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.tlv.TlvConvertException;
 
 /**
- * 
+ *
  * @author amit bhayani
  * @author sergey vetyutnev
  * 
@@ -123,6 +121,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	private static final int MASK_MAP_VERSION_1 = 0x01;
 	private static final int MASK_MAP_VERSION_2 = 0x02;
 	private static final int MASK_MAP_VERSION_3 = 0x04;
+
+	private static Charset isoCharset = Charset.forName("ISO-8859-1");
 
 	public MtSbb() {
 		super(className);
@@ -1050,70 +1050,36 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		}
 	}
 
-	private ArrayList<byte[]> sliceMessage(byte[] shortMessage, DataCodingScheme dataCodingScheme) {
+	private ArrayList<String> sliceMessage(String msg, DataCodingScheme dataCodingScheme) {
 
 		// TODO: if we use extended character tables we will need more
 		// sophisticated algorithm
 		// for calculating real message length (for GSM7)
 
-		int lenSolid = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
-		int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
+        int lenSolid = MessageUtil.getMaxSolidMessageCharsLength(dataCodingScheme);
+        int lenSegmented = MessageUtil.getMaxSegmentedMessageCharsLength(dataCodingScheme);
 
-		ArrayList<byte[]> res = new ArrayList<byte[]>();
-		if (shortMessage.length <= lenSolid) {
-			res.add(shortMessage);
+		ArrayList<String> res = new ArrayList<String>();
+		if (msg.length() <= lenSolid) {
+			res.add(msg);
 		} else {
-			int segmCnt = (shortMessage.length - 1) / lenSegmented + 1;
+			int segmCnt = (msg.length() - 1) / lenSegmented + 1;
 			for (int i1 = 0; i1 < segmCnt; i1++) {
-				byte[] buf;
-				if (i1 == segmCnt - 1) {
-					buf = new byte[shortMessage.length - i1 * lenSegmented];
-				} else {
-					buf = new byte[lenSegmented];
-				}
-				System.arraycopy(shortMessage, i1 * lenSegmented, buf, 0, buf.length);
-				res.add(buf);
+                if (i1 == segmCnt - 1) {
+                    res.add(msg.substring(i1 * lenSegmented, msg.length()));
+                } else {
+                    res.add(msg.substring(i1 * lenSegmented, (i1 + 1) * lenSegmented));
+                }
 			}
 		}
 
 		return res;
 	}
 
-	protected SmsSignalInfo createSignalInfo(Sms sms, byte[] shortMessage, boolean moreMessagesToSend,
-			int messageReferenceNumber, int messageSegmentCount, int messageSegmentNumber,
-			DataCodingScheme dataCodingScheme, boolean udhExists) throws MAPException {
+    protected SmsSignalInfo createSignalInfo(Sms sms, String msg, byte[] udhData, boolean moreMessagesToSend, int messageReferenceNumber,
+            int messageSegmentCount, int messageSegmentNumber, DataCodingScheme dataCodingScheme, boolean udhExists) throws MAPException {
 
-		UserDataImpl ud;
-		byte[] textPart = shortMessage;
-		UserDataHeader userDataHeader = null;
-		if (udhExists && shortMessage.length > 2) {
-			// UDH exists
-			int udhLen = (shortMessage[0] & 0xFF) + 1;
-			if (udhLen <= shortMessage.length) {
-				textPart = new byte[shortMessage.length - udhLen];
-				byte[] udhData = new byte[udhLen];
-				System.arraycopy(shortMessage, udhLen, textPart, 0, textPart.length);
-				System.arraycopy(shortMessage, 0, udhData, 0, udhLen);
-				userDataHeader = new UserDataHeaderImpl(udhData);
-			}
-		}
-
-		String msg = "";
-		DataCodingScheme dcs = new DataCodingSchemeImpl(sms.getDataCoding());
-		switch (dcs.getCharacterSet()) {
-		case GSM7:
-			msg = new String(textPart);
-			break;
-		case UCS2:
-			Charset ucs2Charset = Charset.forName("UTF-16BE");
-			ByteBuffer bb = ByteBuffer.wrap(textPart);
-			CharBuffer bf = ucs2Charset.decode(bb);
-			msg = bf.toString();
-			break;
-		default:
-			// we do not support this yet
-			break;
-		}
+        UserDataHeader userDataHeader = new UserDataHeaderImpl(udhData);
 
 		if (messageSegmentCount > 1) {
 			userDataHeader = this.mapSmsTpduParameterFactory.createUserDataHeader();
@@ -1123,7 +1089,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			userDataHeader.addInformationElement(concatenatedShortMessagesIdentifier);
 		}
 
-		ud = new UserDataImpl(msg, dataCodingScheme, userDataHeader, null);
+		UserDataImpl ud = new UserDataImpl(msg, dataCodingScheme, userDataHeader, isoCharset);
 
 		Date submitDate = sms.getSubmitDate();
 
@@ -1138,7 +1104,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				this.mapSmsTpduParameterFactory.createProtocolIdentifier(sms.getProtocolId()), serviceCentreTimeStamp,
 				ud);
 
-		SmsSignalInfoImpl smsSignalInfo = new SmsSignalInfoImpl(smsDeliverTpduImpl, null);
+		SmsSignalInfoImpl smsSignalInfo = new SmsSignalInfoImpl(smsDeliverTpduImpl, isoCharset);
 
 		return smsSignalInfo;
 	}
@@ -1188,32 +1154,31 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				Tlv sarTotalSegments = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
 				Tlv sarSegmentSeqnum = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
 				SmsSignalInfo[] segments;
-				if ((sms.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0) {
-					// message already contains UDH - we can not slice it
-					segments = new SmsSignalInfo[1];
-					segments[0] = this.createSignalInfo(sms, sms.getShortMessage(), moreMessagesToSend, 0, 1, 1,
-							dataCodingScheme, true);
+                if ((sms.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0) {
+                    // message already contains UDH - we can not slice it
+                    segments = new SmsSignalInfo[1];
+                    segments[0] = this.createSignalInfo(sms, sms.getShortMessageText(), sms.getShortMessageBin(), moreMessagesToSend, 0, 1, 1,
+                            dataCodingScheme, true);
 				} else if (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null) {
 					// we have tlv's that define message count/number/reference
 					int messageSegmentCount = sarTotalSegments.getValueAsUnsignedByte();
 					int messageSegmentNumber = sarSegmentSeqnum.getValueAsUnsignedByte();
 					int messageReferenceNumber = sarMsgRefNum.getValueAsUnsignedShort();
 					segments = new SmsSignalInfo[1];
-					segments[0] = this.createSignalInfo(sms, sms.getShortMessage(), moreMessagesToSend,
+					segments[0] = this.createSignalInfo(sms, sms.getShortMessageText(), sms.getShortMessageBin(), moreMessagesToSend,
 							messageReferenceNumber, messageSegmentCount, messageSegmentNumber, dataCodingScheme, false);
 				} else {
 					// possible a big message and segmentation
-					ArrayList<byte[]> segmentsByte;
-					segmentsByte = this.sliceMessage(sms.getShortMessage(), dataCodingScheme);
-					segments = new SmsSignalInfo[segmentsByte.size()];
+					ArrayList<String> segmentsByte;
+                    segmentsByte = this.sliceMessage(sms.getShortMessageText(), dataCodingScheme);
+                    segments = new SmsSignalInfo[segmentsByte.size()];
 
 					// TODO messageReferenceNumber should be generated
 					int messageReferenceNumber = msgNum + 1;
 
 					for (int i1 = 0; i1 < segmentsByte.size(); i1++) {
-						segments[i1] = this.createSignalInfo(sms, segmentsByte.get(i1),
-								(i1 < segmentsByte.size() - 1 ? true : moreMessagesToSend), messageReferenceNumber,
-								segmentsByte.size(), i1 + 1, dataCodingScheme, false);
+                        segments[i1] = this.createSignalInfo(sms, segmentsByte.get(i1), null, (i1 < segmentsByte.size() - 1 ? true : moreMessagesToSend),
+                                messageReferenceNumber, segmentsByte.size(), i1 + 1, dataCodingScheme, false);
 					}
 				}
 

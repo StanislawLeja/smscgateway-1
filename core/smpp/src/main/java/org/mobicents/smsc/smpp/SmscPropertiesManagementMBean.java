@@ -90,9 +90,13 @@ public interface SmscPropertiesManagementMBean {
 
 	public void setMaxMessageLengthReducer(int maxMessageLengReducer);
 
-	public SmppEncodingForUCS2 getSmppEncodingForUCS2();
+    public SmppEncoding getSmppEncodingForGsm7();
 
-	public void setSmppEncodingForUCS2(SmppEncodingForUCS2 smppEncodingForUCS2);
+    public void setSmppEncodingForGsm7(SmppEncoding smppEncodingForGsm7);
+
+	public SmppEncoding getSmppEncodingForUCS2();
+
+	public void setSmppEncodingForUCS2(SmppEncoding smppEncodingForUCS2);
 
 	public String getHosts();
 

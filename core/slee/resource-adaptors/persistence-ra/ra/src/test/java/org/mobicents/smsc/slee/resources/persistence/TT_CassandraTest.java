@@ -31,9 +31,15 @@ import java.util.UUID;
 
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
+import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeaderElement;
 import org.mobicents.protocols.ss7.map.primitives.IMSIImpl;
 import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.mobicents.protocols.ss7.map.service.sms.LocationInfoWithLMSIImpl;
+import org.mobicents.protocols.ss7.map.smstpdu.ConcatenatedShortMessagesIdentifierImpl;
+import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
+import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.SmType;
@@ -45,6 +51,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.tlv.Tlv;
 
 /**
@@ -325,6 +332,42 @@ public class TT_CassandraTest {
     }
 
     @Test(groups = { "cassandra" })
+    public void testingOldTimeEncoding() throws Exception {
+
+        if (!this.cassandraDbInited)
+            return;
+
+        this.sbb.setOldShortMessageDbFormat(true);
+
+        DataCodingScheme dcsGsm7 = new DataCodingSchemeImpl(0);
+        DataCodingScheme dcsUcs2 = new DataCodingSchemeImpl(8);
+        DataCodingScheme dcsGsm8 = new DataCodingSchemeImpl(4);
+
+        UserDataHeader udh = new UserDataHeaderImpl();
+        UserDataHeaderElement informationElement = new ConcatenatedShortMessagesIdentifierImpl(false, 20, 5, 2);
+        // boolean referenceIs16bit, int reference, int mesageSegmentCount, int
+        // mesageSegmentNumber
+        udh.addInformationElement(informationElement);
+
+        TargetAddress ta = new TargetAddress(1, 1, "1111");
+
+        // GSM7 + UDH
+        this.testOldFormatMessage(ta, dcsGsm7, "Test eng", udh);
+
+        // GSM7
+        this.testOldFormatMessage(ta, dcsGsm7, "Test eng", null);
+
+        // UCS2 + UDH
+        this.testOldFormatMessage(ta, dcsUcs2, "Test rus привет", udh);
+
+        // UCS2
+        this.testOldFormatMessage(ta, dcsUcs2, "Test rus привет", null);
+
+        // GSM8
+        this.testOldFormatMessage(ta, dcsGsm8, null, udh);
+    }
+
+    @Test(groups = { "cassandra" })
     public void testingTableDeleting() throws Exception {
 
         if (!this.cassandraDbInited)
@@ -361,6 +404,89 @@ public class TT_CassandraTest {
 //        sbb.c2_deleteLiveTablesForDate(dt);
 //
 //        sbb.c2_deleteArchiveTablesForDate(dt);
+    }
+
+    public void testOldFormatMessage(TargetAddress ta, DataCodingScheme dcs, String msg, UserDataHeader udh) throws Exception {
+        Date dt = new Date();
+        PreparedStatementCollection_C3 psc = sbb.getStatementCollection(dt);
+
+        TargetAddress lock = this.sbb.obtainSynchroObject(ta);
+        long dueSlot;
+        Sms sms;
+        try {
+            synchronized (lock) {
+                SmsSet smsSet = new SmsSet();
+                smsSet.setDestAddr(ta.getAddr());
+                smsSet.setDestAddrNpi(ta.getAddrNpi());
+                smsSet.setDestAddrTon(ta.getAddrTon());
+
+                sms = new Sms();
+                sms.setSmsSet(smsSet);
+
+                sms.setDbId(UUID.randomUUID());
+
+                sms.setSourceAddr("11112");
+                sms.setSourceAddrTon(1);
+                sms.setSourceAddrNpi(1);
+                sms.setMessageId(8888888);
+
+                sms.setDataCoding(dcs.getCode());
+
+                sms.setShortMessageText(msg);
+                if (udh != null) {
+                    sms.setEsmClass(SmppConstants.ESM_CLASS_UDHI_MASK);
+                    sms.setShortMessageBin(udh.getEncodedData());
+                }
+
+                dueSlot = this.sbb.c2_getDueSlotForTargetId(psc, ta.getTargetId());
+                if (dueSlot == 0 || dueSlot <= sbb.c2_getCurrentDueSlot()) {
+                    dueSlot = sbb.c2_getDueSlotForNewSms();
+                    sbb.c2_updateDueSlotForTargetId(ta.getTargetId(), dueSlot);
+                }
+                sms.setDueSlot(dueSlot);
+
+                sbb.c2_registerDueSlotWriting(dueSlot);
+                try {
+                    sbb.c2_createRecordCurrent(sms);
+                } finally {
+                    sbb.c2_unregisterDueSlotWriting(dueSlot);
+                }
+            }
+        } finally {
+            this.sbb.obtainSynchroObject(lock);
+        }
+
+        lock = this.sbb.obtainSynchroObject(ta);
+        try {
+            synchronized (lock) {
+                sbb.c2_registerDueSlotWriting(dueSlot);
+                ArrayList<SmsSet> lst0, lst;
+                try {
+                    lst0 = sbb.c2_getRecordList(dueSlot);
+                    lst = sbb.c2_sortRecordList(lst0);
+                } finally {
+                    sbb.c2_unregisterDueSlotWriting(dueSlot);
+                }
+
+                assertEquals(lst.size(), 1);
+                SmsSet smsSet = lst.get(0);
+                for (Sms sms1 : smsSet.getRawList()) {
+                    if (sms1.getDbId().equals(sms.getDbId())) {
+                        assertEquals(sms1.getDataCoding(), dcs.getCode());
+                        if (msg != null)
+                            assertEquals(sms1.getShortMessageText(), msg);
+                        else
+                            assertNull(sms1.getShortMessageText());
+                        if (udh != null)
+                            assertEquals(sms1.getShortMessageBin(), udh.getEncodedData());
+                        else
+                            assertNull(sms1.getShortMessageBin());
+                    }
+                }
+            }
+        } finally {
+            this.sbb.obtainSynchroObject(lock);
+        }
     }
 
     public long addingNewMessages() throws Exception {
@@ -586,7 +712,11 @@ public class TT_CassandraTest {
         sms.setDataCoding(16 + num);
         sms.setDefaultMsgId(17 + num);
 
-        sms.setShortMessage(new byte[] { (byte)(21 + num), 23, 25, 27, 29 });
+//        sms.setShortMessage(new byte[] { (byte)(21 + num), 23, 25, 27, 29 });
+        if (num != 2)
+            sms.setShortMessageText("Mes text" + num);
+        if (num != 3)
+            sms.setShortMessageBin(new byte[] { (byte) (21 + num), 23, 25, 27, 29 });
 
         sms.setScheduleDeliveryTime(new GregorianCalendar(2013, 1, 20, 10, 00 + num).getTime());
         sms.setValidityPeriod(new GregorianCalendar(2013, 1, 23, 13, 33 + num).getTime());
@@ -630,7 +760,15 @@ public class TT_CassandraTest {
         assertEquals(sms.getDataCoding(), 16 + num);
         assertEquals(sms.getDefaultMsgId(), 17 + num);
 
-        assertEquals(sms.getShortMessage(), new byte[] { (byte) (21 + num), 23, 25, 27, 29 });
+//        assertEquals(sms.getShortMessage(), new byte[] { (byte) (21 + num), 23, 25, 27, 29 });
+        if (num != 2)
+            assertEquals(sms.getShortMessageText(), "Mes text" + num);
+        else
+            assertNull(sms.getShortMessageText());
+        if (num != 3)
+            assertEquals(sms.getShortMessageBin(), new byte[] { (byte) (21 + num), 23, 25, 27, 29 });
+        else
+            assertNull(sms.getShortMessageBin());
 
         assertEquals(sms.getScheduleDeliveryTime(), new GregorianCalendar(2013, 1, 20, 10, 00 + num).getTime());
         assertEquals(sms.getValidityPeriod(), new GregorianCalendar(2013, 1, 23, 13, 33 + num).getTime());
