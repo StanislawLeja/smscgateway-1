@@ -47,6 +47,7 @@ import net.java.slee.resource.sip.SleeSipProvider;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingGroup;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.datacoding.GSMCharset;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.ChildRelationExt;
@@ -377,14 +378,26 @@ public abstract class TxSipServerSbb implements Sbb {
         String msg = new String(message, utf8);
         sms.setShortMessageText(msg);
         boolean gsm7Encoding = GSMCharset.checkAllCharsCanBeEncoded(msg, GSMCharset.BYTE_TO_CHAR_DefaultAlphabet, null);
+        DataCodingScheme dataCodingScheme;
         if (gsm7Encoding) {
-            sms.setDataCoding(dcsGsm7.getCode());
+            dataCodingScheme = dcsGsm7;
         } else {
-            sms.setDataCoding(dcsUsc2.getCode());
+            dataCodingScheme = dcsUsc2;
+        }
+        sms.setDataCoding(dataCodingScheme.getCode());
+
+        // checking max message length
+        int messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg.length());
+        int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
+        int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
+        // splitting by SMSC is supported for all messages from SIP
+        if (messageLen > lenSegmented * 255) {
+            throw new SmscProcessingException("Message length in bytes is too big for segmented message: " + messageLen + ">" + lenSegmented,
+                    SmppConstants.STATUS_INVPARLEN, MAPErrorCode.systemFailure, null);
         }
 
 
-		sms.setSubmitDate(new Timestamp(System.currentTimeMillis()));
+        sms.setSubmitDate(new Timestamp(System.currentTimeMillis()));
 		sms.setPriority(0);
 
 		MessageUtil.applyValidityPeriod(sms, null, false);

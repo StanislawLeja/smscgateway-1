@@ -577,8 +577,6 @@ public abstract class TxSmppServerSbb implements Sbb {
 		sms.setReplaceIfPresent(event.getReplaceIfPresent());
 		sms.setDefaultMsgId(event.getDefaultMsgId());
 
-		int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
-		int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
 		boolean udhPresent = (event.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
 		Tlv sarMsgRefNum = event.getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
 		Tlv sarTotalSegments = event.getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
@@ -639,6 +637,8 @@ public abstract class TxSmppServerSbb implements Sbb {
         sms.setShortMessageBin(udhData);
 
 		// checking max message length
+        int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
+        int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
         if (udhPresent || segmentTlvFlag) {
 			// here splitting by SMSC is not supported
 			if (messageLen > lenSolid) {

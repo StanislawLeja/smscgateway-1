@@ -22,6 +22,7 @@
 
 package org.mobicents.smsc.slee.services.mo;
 
+import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.UUID;
@@ -81,7 +82,6 @@ import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
 import org.mobicents.smsc.slee.services.charging.ChargingMedium;
 import org.mobicents.smsc.smpp.SmscStatProvider;
 
-import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.SmppConstants;
 
 /**
@@ -93,6 +93,8 @@ import com.cloudhopper.smpp.SmppConstants;
 public abstract class MoSbb extends MoCommonSbb {
 
 	private static final String className = MoSbb.class.getSimpleName();
+
+	private static Charset isoCharset = Charset.forName("ISO-8859-1");
 
 	public MoSbb() {
 		super(className);
@@ -454,6 +456,8 @@ public abstract class MoSbb extends MoCommonSbb {
 		// TODO: check if smRPDA contains local SMSC address and reject messages
 		// if not equal ???
 
+        smsSignalInfo.setGsm8Charset(isoCharset);
+
 		ISDNAddressString callingPartyAddress = smRPOA.getMsisdn();
 		if (callingPartyAddress == null && !smscPropertiesManagement.getSMSHomeRouting() ) {
 			throw new SmscProcessingException("MO callingPartyAddress is absent", SmppConstants.STATUS_SYSERR,
@@ -728,29 +732,34 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 		sms.setDataCoding(dcs);
 
-		switch (dataCodingScheme.getCharacterSet()) {
-		case GSM7:
-			UserDataHeader udh = userData.getDecodedUserDataHeader();
-			if (udh != null) {
-				byte[] buf1 = udh.getEncodedData();
-				if (buf1 != null) {
-					byte[] buf2 = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
-					smsPayload = new byte[buf1.length + buf2.length];
-					System.arraycopy(buf1, 0, smsPayload, 0, buf1.length);
-					System.arraycopy(buf2, 0, smsPayload, buf1.length, buf2.length);
-				} else {
-					smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
-				}
-			} else {
-				smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
-			}
-			break;
-		default:
-			smsPayload = userData.getEncodedData();
-			break;
-		}
+//		switch (dataCodingScheme.getCharacterSet()) {
+//		case GSM7:
+//			UserDataHeader udh = userData.getDecodedUserDataHeader();
+//			if (udh != null) {
+//				byte[] buf1 = udh.getEncodedData();
+//				if (buf1 != null) {
+//					byte[] buf2 = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
+//					smsPayload = new byte[buf1.length + buf2.length];
+//					System.arraycopy(buf1, 0, smsPayload, 0, buf1.length);
+//					System.arraycopy(buf2, 0, smsPayload, buf1.length, buf2.length);
+//				} else {
+//					smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
+//				}
+//			} else {
+//				smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
+//			}
+//			break;
+//		default:
+//			smsPayload = userData.getEncodedData();
+//			break;
+//		}
+//		sms.setShortMessage(smsPayload);
 
-		sms.setShortMessage(smsPayload);
+		sms.setShortMessageText(userData.getDecodedMessage());
+        UserDataHeader udh = userData.getDecodedUserDataHeader();
+        if (udh != null) {
+            sms.setShortMessageBin(udh.getEncodedData());
+        }
 
 		// ValidityPeriod processing
 		ValidityPeriod vp = smsSubmitTpdu.getValidityPeriod();
@@ -887,30 +896,35 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 		sms.setDataCoding(dcs);
 
-		switch (dataCodingScheme.getCharacterSet()) {
-		case GSM7:
-			UserDataHeader udh = userData.getDecodedUserDataHeader();
-			if (udh != null) {
-				byte[] buf1 = udh.getEncodedData();
-				if (buf1 != null) {
-					byte[] buf2 = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
-					smsPayload = new byte[buf1.length + buf2.length];
-					System.arraycopy(buf1, 0, smsPayload, 0, buf1.length);
-					System.arraycopy(buf2, 0, smsPayload, buf1.length, buf2.length);
-				} else {
-					smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
-				}
-			} else {
-				smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
-			}
-			break;
-		default:
-			smsPayload = userData.getEncodedData();
-			break;
-		}
+//		switch (dataCodingScheme.getCharacterSet()) {
+//		case GSM7:
+//			UserDataHeader udh = userData.getDecodedUserDataHeader();
+//			if (udh != null) {
+//				byte[] buf1 = udh.getEncodedData();
+//				if (buf1 != null) {
+//					byte[] buf2 = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
+//					smsPayload = new byte[buf1.length + buf2.length];
+//					System.arraycopy(buf1, 0, smsPayload, 0, buf1.length);
+//					System.arraycopy(buf2, 0, smsPayload, buf1.length, buf2.length);
+//				} else {
+//					smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
+//				}
+//			} else {
+//				smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
+//			}
+//			break;
+//		default:
+//			smsPayload = userData.getEncodedData();
+//			break;
+//		}
+//		sms.setShortMessage(smsPayload);
 
-		sms.setShortMessage(smsPayload);
-
+        sms.setShortMessageText(userData.getDecodedMessage());
+        UserDataHeader udh = userData.getDecodedUserDataHeader();
+        if (udh != null) {
+            sms.setShortMessageBin(udh.getEncodedData());
+        }
+		
 		// ValidityPeriod processing
 		MessageUtil.applyValidityPeriod(sms, null, false);
 
