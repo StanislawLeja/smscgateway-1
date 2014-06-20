@@ -60,7 +60,7 @@ public class SmppSimulatorParameters {
     private MCDeliveryReceipt mcDeliveryReceipt = MCDeliveryReceipt.No;
     private SendingMessageType sendingMessageType = SendingMessageType.SubmitSm;
     private SmppSession.Type smppSessionType = SmppSession.Type.CLIENT;
-    private int smppEncodingForUCS2 = 0;
+    private int smppEncoding = 0;
 
 	private int bulkDestAddressRangeStart = 500000;
 	private int bulkDestAddressRangeEnd = 600000;
@@ -314,17 +314,17 @@ public class SmppSimulatorParameters {
         this.smppSessionType = smppSessionType;
     }
 
-    public int getSmppEncodingForUCS2() {
-        return smppEncodingForUCS2;
+    public int getSmppEncoding() {
+        return smppEncoding;
     }
 
-    public void setSmppEncodingForUCS2(int smppEncodingForUCS2) {
-        this.smppEncodingForUCS2 = smppEncodingForUCS2;
+    public void setSmppEncoding(int smppEncoding) {
+        this.smppEncoding = smppEncoding;
     }
 
 
     public enum EncodingType {
-    	GSM7, UCS2,
+    	GSM7, GSM8, UCS2,
     }
 
     public enum SplittingType {

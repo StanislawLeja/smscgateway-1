@@ -22,12 +22,9 @@
 
 package org.mobicents.smsc.tools.smppsimulator;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 
-import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 
@@ -48,6 +45,10 @@ import com.cloudhopper.smpp.type.UnrecoverablePduException;
 public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
 
     private SmppTestingForm testingForm;
+
+    private static Charset utf8Charset = Charset.forName("UTF-8");
+    private static Charset ucs2Charset = Charset.forName("UTF-16BE");
+    private static Charset isoCharset = Charset.forName("ISO-8859-1");
 
     public ClientSmppSessionHandler(SmppTestingForm testingForm) {
         this.testingForm = testingForm;
@@ -72,32 +73,82 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
 
             if (pduRequest instanceof BaseSm) {
                 BaseSm dev = (BaseSm) pduRequest;
-                String s;
-                byte[] msg = dev.getShortMessage();
+                byte[] data = dev.getShortMessage();
                 DataCodingScheme dcs = new DataCodingSchemeImpl(dev.getDataCoding());
-                if (dcs.getCharacterSet() == CharacterSet.UCS2) {
-                    boolean udhPresent = (dev.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
-                    // if (udhPresent) {
-                    // Charset ucs2Charset = Charset.forName("UTF-16BE");
-                    // ByteBuffer bb = ByteBuffer.wrap(msg);
-                    // CharBuffer cb = ucs2Charset.decode(bb);
-                    // s = cb.toString();
-                    // } else {
 
-                    Charset utf8Charset;
-                    if (this.testingForm.getSmppSimulatorParameters().getSmppEncodingForUCS2() == 0) {
-                        utf8Charset = Charset.forName("UTF-8");
-                    } else {
-                        utf8Charset = Charset.forName("UTF-16BE");
+                boolean udhPresent = (dev.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
+                byte[] textPart = data;
+                byte[] udhData = null;
+                if (udhPresent && data.length > 2) {
+                    // UDH exists
+                    int udhLen = (data[0] & 0xFF) + 1;
+                    if (udhLen <= data.length) {
+                        textPart = new byte[textPart.length - udhLen];
+                        udhData = new byte[udhLen];
+                        System.arraycopy(data, udhLen, textPart, 0, textPart.length);
+                        System.arraycopy(data, 0, udhData, 0, udhLen);
                     }
-                    ByteBuffer bb = ByteBuffer.wrap(msg);
-                    CharBuffer cb = utf8Charset.decode(bb);
-                    s = cb.toString();
-                    // }
-                } else {
-                    s = new String(msg);
                 }
-                testingForm.addMessage("TextReceived: ", s);
+
+                String s = null;
+                switch (dcs.getCharacterSet()) {
+                case GSM7:
+                case UCS2:
+                    if (this.testingForm.getSmppSimulatorParameters().getSmppEncoding() == 0) {
+                        s = new String(textPart, utf8Charset);
+                    } else {
+                        s = new String(textPart, ucs2Charset);
+                    }
+                    break;
+                case GSM8:
+                    s = new String(textPart, isoCharset);
+                    break;
+                }
+
+                String s2 = "";
+                if (udhData != null) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("[");
+                    int i2 = 0;
+                    for (byte b : udhData) {
+                        int i1 = (b & 0xFF);
+                        if (i2 == 0)
+                            i2 = 1;
+                        else
+                            sb.append(", ");
+                        sb.append(i1);
+                    }
+                    sb.append("] ");
+                    s2 = sb.toString();
+                }
+
+
+//                if (dcs.getCharacterSet() == CharacterSet.UCS2) {
+//                    boolean udhPresent = (dev.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
+//                    // if (udhPresent) {
+//                    // Charset ucs2Charset = Charset.forName("UTF-16BE");
+//                    // ByteBuffer bb = ByteBuffer.wrap(msg);
+//                    // CharBuffer cb = ucs2Charset.decode(bb);
+//                    // s = cb.toString();
+//                    // } else {
+//
+//                    Charset utf8Charset;
+//                    if (this.testingForm.getSmppSimulatorParameters().getSmppEncoding() == 0) {
+//                        utf8Charset = Charset.forName("UTF-8");
+//                    } else {
+//                        utf8Charset = Charset.forName("UTF-16BE");
+//                    }
+//                    ByteBuffer bb = ByteBuffer.wrap(msg);
+//                    CharBuffer cb = utf8Charset.decode(bb);
+//                    s = cb.toString();
+//                    // }
+//                } else {
+//                    s = new String(msg);
+//                }
+
+
+
+                testingForm.addMessage("TextReceived: ", s2 + s);
             }
 
             if (this.testingForm.getSmppSimulatorParameters().isRejectIncomingDeliveryMessage()) {
