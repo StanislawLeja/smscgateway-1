@@ -485,7 +485,7 @@ public abstract class RxSipServerSbb implements Sbb {
             String msgStr = sms.getShortMessageText();
             byte[] msgUdh = sms.getShortMessageBin();
             byte[] msg;
-            if (msgUdh != null || msgUdh != null) {
+            if (msgStr != null || msgUdh != null) {
                 msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
             } else {
                 msg = new byte[0];
