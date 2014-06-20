@@ -172,7 +172,6 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// false: we generate CDR only for regular messages
 	private boolean generateReceiptCdr = false;
 
-	// TODO: new **************************
 	// true: all MO originated messages will be charged by OCS via Diameter
 	// before sending
 	private boolean moCharging = false; // true
@@ -203,9 +202,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // if less value is defined data tables will not be deleted
     // set this option to 0 to disable this option
     private int removingArchiveTablesDays = 3;
-	// TODO: new **************************
 
-	private SmscPropertiesManagement(String name) {
+
+    private SmscPropertiesManagement(String name) {
 		this.name = name;
 		binding.setClassAttribute(CLASS_ATTRIBUTE);
 	}
