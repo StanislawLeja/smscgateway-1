@@ -98,18 +98,18 @@ Halting VM]]></screen></para></step>
 	</section>
 <section id="running_the_gateway_simulator">
 		<title>Running the Gateway - Simulator Profile</title>
-			<para>The &THIS.PLATFORM; &THIS.APPLICATION; offers you an option to run the Gateway with a "simulator" profile for testing purpose. The "simulator" profile is a pre-configured profile to work with the jss7-simulator and the smpp-simulator. Starting the Gateway with the "simulator" profile is similar to the steps explained for the "default" profile except that you must pass the string value "simulator" to the -c command line option when invoking the run script. 
+			<para>The &THIS.PLATFORM; &THIS.APPLICATION; offers you an option to run the Gateway with a "simulator" profile for testing purpose. The "simulator" profile is a pre-configured profile to work with the jss7-simulator, the smpp-simulator and some SIP phone. Starting the Gateway with the "simulator" profile is similar to the steps explained for the "default" profile except that you must pass the string value "simulator" to the -c command line option when invoking the run script. 
 <screen><![CDATA[
 [bin]$ ./run.sh -c simulator
 ]]>
 </screen>
 </para>	
 			<para>
-By default, the SMSC Simulator profile is configured for use in Linux systems. For using it under Micsrosoft Windows you need to open the file <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/simulator/data/SCTPManagement_sctp.xml</filename> and replace (in two places) <literal>ipChannelType="0"</literal> to <literal>ipChannelType="1"</literal> for using a TCP connection instead of SCTP (SCTP is not supported under Windows). 
+By default, the SMSC Simulator profile is configured for use in Linux systems. For using it under Microsoft Windows you need to open the file <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/simulator/data/SCTPManagement_sctp.xml</filename> and replace (in two places) <literal>ipChannelType="0"</literal> to <literal>ipChannelType="1"</literal> for using a TCP connection instead of SCTP (SCTP is not supported under Windows). 
 			</para>
 		<section id="configuring_the_gateway_simulator_profile">
 			<title>Configuring the Gateway in Simulator Profile</title>
-			<para>In order to configure the Gateway in a Simulator Profile, you can make use of the following commands:</para>
+			<para>The SMSC Gateway in a Simulator Profile is configured as if you have configured it by using of the following CLI commands:</para>
 <screen><![CDATA[
 
 sctp server create serv1 127.0.0.1 8012 TCP 
@@ -139,6 +139,8 @@ smsc set maxmapv 3
 
 smsc esme create test test test 127.0.0.1 -1 TRANSCEIVER SERVER esme-ton 1 esme-npi 1 esme-range 6666 
 smsc esme start test
+
+smsc sip modify SIP cluster-name SIP host 127.0.0.1 port 5065 routing-ton 1 routing-npi 1 routing-range 5555 counters-enabled false charging-enabled false
 ]]>
 </screen>
 		</section>
@@ -252,6 +254,45 @@ When the SMSC Gateway is running in a "simulator" profile it works with SMPP as 
 			</step>
 		</procedure>
 		</section>
+
+
+        <section id="Sip_Phone">
+        <title>Running Jisti SIP phone</title>
+<para>For testing SMSC features for interconnection with SIP servers you can use Jisti SIP phone which will play SIP server role.
+</para>
+<para>Firstly you need to download Jisti from "jitsi.org" site and run it.
+</para>
+            <procedure>
+                <title>To configure Jitsi we need:</title>
+    <step>
+    <para>Create a registraless account (don't provide password, registar and proxy address) and enable PRESENSE (SIMPLE) at the forth tab for this account. Identifier of this account must be "5555" because SMSC is configured to route all messages for subscriber "5555" to SIP.
+    </para>
+    </step>
+    <step>
+    <para>At the general setting of Jitsi, go to Security -> Chat and enable all three options at the end
+    </para>
+    </step>
+    <step>
+    <para>Tools -> Options -> Advanced -> SIP port define as "5065" (SMSC is configured for sending outgoing SIP messages to this port)
+    </para>
+    </step>
+    <step>
+    <para>In menu "File - Add contact" we need to add a new contact with definition to which subscriber we will send messages. SMSC is configured so all messages for "6666" will be routed to ESME (SMPP simulator) and others (except "5555" that is for SIP) to GSM network (to SS7 Simulator). So we can add two contacts:
+for SS7 Simulator: "sip:1111@127.0.0.1:5060"
+for SMPP Simulator: "sip:6666@127.0.0.1:5060"
+SMSC listerns 5060 port for incoming SIP messages. "1111" address we will use for addressing to / from SS7 Simulator.
+    </para>
+    </step>
+            </procedure>
+<para>Then we can test:
+</para>
+<para>1) for sending messages from SIP phone we have to "Send message" to a concrete contact, type a message text and send. After about 1 minute you will the message at SS7 Simulator or SIP Simulator
+</para>
+<para>2) for sending messages to SIP phone you just need to send a message from SS7 Simulator / SMPP Simulator to "5555" address. You need as an originated address put "1111" (for SS7 Simulator) and ("6666") for SMPP SImulator.
+</para>
+        </section>
+
+
 </section>
 <section id="running_shell">
 			<title>Running the Shell</title>	
