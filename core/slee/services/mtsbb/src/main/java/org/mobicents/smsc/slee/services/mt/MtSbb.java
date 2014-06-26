@@ -73,7 +73,7 @@ import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.SmsDeliverTpduImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataImpl;
-import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
+import org.mobicents.protocols.ss7.sccp.parameter.GlobalTitle;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextName;
 import org.mobicents.slee.SbbLocalObjectExt;
@@ -1258,9 +1258,13 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	private SccpAddress getMSCSccpAddress(ISDNAddressString networkNodeNumber) {
 		NumberingPlan np = MessageUtil.getSccpNumberingPlan(networkNodeNumber.getNumberingPlan().getIndicator());
 		NatureOfAddress na = MessageUtil.getSccpNatureOfAddress(networkNodeNumber.getAddressNature().getIndicator());
-		GT0100 gt = new GT0100(0, np, na, networkNodeNumber.getAddress());
-		return new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
-				smscPropertiesManagement.getMscSsn());
+
+        GlobalTitle gt = sccpParameterFact.createGlobalTitle(networkNodeNumber.getAddress(), 0, np, null, na);
+        return sccpParameterFact.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0, smscPropertiesManagement.getMscSsn());
+
+//		GT0100 gt = new GT0100(0, np, na, networkNodeNumber.getAddress());
+//		return new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
+//				smscPropertiesManagement.getMscSsn());
 	}
 
 	private AddressField getSmsTpduOriginatingAddress(int ton, int npi, String address) {

@@ -48,7 +48,9 @@ import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
-import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
+import org.mobicents.protocols.ss7.sccp.impl.parameter.ParameterFactoryImpl;
+import org.mobicents.protocols.ss7.sccp.parameter.GlobalTitle;
+import org.mobicents.protocols.ss7.sccp.parameter.ParameterFactory;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.asn.comp.Problem;
 import org.mobicents.slee.SbbContextExt;
@@ -112,6 +114,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	protected MAPProvider mapProvider;
 	protected MAPParameterFactory mapParameterFactory;
 	protected MAPSmsTpduParameterFactory mapSmsTpduParameterFactory;
+	protected ParameterFactory sccpParameterFact;
 
 	private AddressString serviceCenterAddress;
 	private SccpAddress serviceCenterSCCPAddress = null;
@@ -379,6 +382,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 			this.mapProvider = (MAPProvider) ctx.lookup("slee/resources/map/2.0/provider");
 			this.mapParameterFactory = this.mapProvider.getMAPParameterFactory();
 			this.mapSmsTpduParameterFactory = this.mapProvider.getMAPSmsTpduParameterFactory();
+			this.sccpParameterFact = new ParameterFactoryImpl();
 
 			this.logger = this.sbbContext.getTracer(this.className);
 
@@ -432,10 +436,18 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	 */
 	protected SccpAddress getServiceCenterSccpAddress() {
 		if (this.serviceCenterSCCPAddress == null) {
-			GT0100 gt = new GT0100(0, NumberingPlan.ISDN_TELEPHONY, NatureOfAddress.INTERNATIONAL,
-					smscPropertiesManagement.getServiceCenterGt());
-			this.serviceCenterSCCPAddress = new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
-					smscPropertiesManagement.getServiceCenterSsn());
+            GlobalTitle gt = sccpParameterFact.createGlobalTitle(smscPropertiesManagement.getServiceCenterGt(), 0, NumberingPlan.ISDN_TELEPHONY, null,
+                    NatureOfAddress.INTERNATIONAL);
+            this.serviceCenterSCCPAddress = sccpParameterFact.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0,
+                    smscPropertiesManagement.getServiceCenterSsn());
+
+//            GlobalTitle0100Impl gt = new GlobalTitle0100Impl(0, NumberingPlan.ISDN_TELEPHONY, NatureOfAddress.INTERNATIONAL,
+//                    smscPropertiesManagement.getServiceCenterGt());
+//		    int translationType, NumberingPlan numberingPlan, NatureOfAddress natureOfAddress, String digits
+//		    final String digits,final int translationType, final EncodingScheme encodingScheme,final NumberingPlan numberingPlan, final NatureOfAddress natureOfAddress
+//            this.serviceCenterSCCPAddress = new SccpAddressImpl(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
+//                    smscPropertiesManagement.getServiceCenterSsn());
+//			final RoutingIndicator ri, final GlobalTitle gt, final int dpc, final int ssn
 		}
 		return this.serviceCenterSCCPAddress;
 	}

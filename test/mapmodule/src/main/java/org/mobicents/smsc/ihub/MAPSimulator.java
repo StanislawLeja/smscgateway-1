@@ -40,9 +40,7 @@ public class MAPSimulator {
 
 	public void start() throws Exception {
 		// Create MAP Stack and register listener
-        //this.mapStack = new MAPStackImpl("Test", this.sccpStack.getSccpProvider(), this.getSsn());
-        
-        this.mapStack = new MAPStackImpl( this.sccpStack.getSccpProvider(), this.getSsn());
+        this.mapStack = new MAPStackImpl("TestMAPSimulator", this.sccpStack.getSccpProvider(), this.getSsn());
 		this.mapProvider = this.mapStack.getMAPProvider();
 
 		this.mapListener = new MAPListener(this);

@@ -37,7 +37,7 @@ import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
  * @author sergey vetyutnev
  *
  */
-public class MAPServiceBaseProxy implements MAPServiceBase {
+public abstract class MAPServiceBaseProxy implements MAPServiceBase {
 
 	private MAPProviderProxy mapProvider;
 
@@ -73,13 +73,6 @@ public class MAPServiceBaseProxy implements MAPServiceBase {
 		// TODO Auto-generated method stub
 		
 	}
-
-    @Override
-    public MAPDialog createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
-            AddressString destReference) throws MAPException {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
 //    @Override
 //    public MAPDialog createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,

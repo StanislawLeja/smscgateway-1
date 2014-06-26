@@ -73,7 +73,7 @@ import org.mobicents.protocols.ss7.map.service.sms.ReportSMDeliveryStatusRequest
 import org.mobicents.protocols.ss7.map.service.sms.ReportSMDeliveryStatusResponseImpl;
 import org.mobicents.protocols.ss7.map.service.sms.SendRoutingInfoForSMResponseImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
-import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
+import org.mobicents.protocols.ss7.sccp.parameter.GlobalTitle0100;
 import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextNameImpl;
 import org.mobicents.slee.resource.map.events.DialogAccept;
 import org.mobicents.slee.resource.map.events.DialogClose;
@@ -255,11 +255,11 @@ public class C2_MtTest {
         ArrayList<MAPTestEvent> lstEvt = dlg.getEventList();
         assertEquals(lstEvt.size(), 2);
         assertEquals(dlg.getLocalAddress().getGlobalTitle().getDigits(), smscPropertiesManagement.getServiceCenterGt());
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
         assertEquals(dlg.getRemoteAddress().getGlobalTitle().getDigits(), msdnDig);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
 
         MAPTestEvent evt = lstEvt.get(0);
         assertEquals(evt.testEventType, MAPTestEventType.componentAdded);
@@ -283,7 +283,7 @@ public class C2_MtTest {
         IMSI imsi = new IMSIImpl(imsiDig);
         ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
-        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, null);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
@@ -412,11 +412,11 @@ public class C2_MtTest {
         ArrayList<MAPTestEvent> lstEvt = dlg.getEventList();
         assertEquals(lstEvt.size(), 2);
         assertEquals(dlg.getLocalAddress().getGlobalTitle().getDigits(), smscPropertiesManagement.getServiceCenterGt());
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
         assertEquals(dlg.getRemoteAddress().getGlobalTitle().getDigits(), msdnDig);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
 
         MAPTestEvent evt = lstEvt.get(0);
         assertEquals(evt.testEventType, MAPTestEventType.componentAdded);
@@ -436,7 +436,7 @@ public class C2_MtTest {
         IMSI imsi = new IMSIImpl(imsiDig);
         ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
-        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, null);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
@@ -570,11 +570,11 @@ public class C2_MtTest {
         ArrayList<MAPTestEvent> lstEvt = dlg.getEventList();
         assertEquals(lstEvt.size(), 2);
         assertEquals(dlg.getLocalAddress().getGlobalTitle().getDigits(), smscPropertiesManagement.getServiceCenterGt());
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
         assertEquals(dlg.getRemoteAddress().getGlobalTitle().getDigits(), msdnDig);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
 
         MAPTestEvent evt = lstEvt.get(0);
         assertEquals(evt.testEventType, MAPTestEventType.componentAdded);
@@ -598,7 +598,7 @@ public class C2_MtTest {
         IMSI imsi = new IMSIImpl(imsiDig);
         ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
-        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, null);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
@@ -775,11 +775,11 @@ public class C2_MtTest {
         ArrayList<MAPTestEvent> lstEvt = dlg.getEventList();
         assertEquals(lstEvt.size(), 2);
         assertEquals(dlg.getLocalAddress().getGlobalTitle().getDigits(), smscPropertiesManagement.getServiceCenterGt());
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
         assertEquals(dlg.getRemoteAddress().getGlobalTitle().getDigits(), msdnDig);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
 
         MAPTestEvent evt = lstEvt.get(0);
         assertEquals(evt.testEventType, MAPTestEventType.componentAdded);
@@ -807,11 +807,11 @@ public class C2_MtTest {
         lstEvt = dlg.getEventList();
         assertEquals(lstEvt.size(), 2);
         assertEquals(dlg.getLocalAddress().getGlobalTitle().getDigits(), smscPropertiesManagement.getServiceCenterGt());
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
         assertEquals(dlg.getRemoteAddress().getGlobalTitle().getDigits(), msdnDig);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
 
         evt = lstEvt.get(0);
         assertEquals(evt.testEventType, MAPTestEventType.componentAdded);
@@ -831,7 +831,7 @@ public class C2_MtTest {
         IMSI imsi = new IMSIImpl(imsiDig);
         ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
-        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, null);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
@@ -1146,11 +1146,11 @@ public class C2_MtTest {
         ArrayList<MAPTestEvent> lstEvt = dlg.getEventList();
         assertEquals(lstEvt.size(), 2);
         assertEquals(dlg.getLocalAddress().getGlobalTitle().getDigits(), smscPropertiesManagement.getServiceCenterGt());
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
         assertEquals(dlg.getRemoteAddress().getGlobalTitle().getDigits(), msdnDig);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
 
         MAPTestEvent evt = lstEvt.get(0);
         assertEquals(evt.testEventType, MAPTestEventType.componentAdded);
@@ -1178,11 +1178,11 @@ public class C2_MtTest {
         lstEvt = dlg.getEventList();
         assertEquals(lstEvt.size(), 2);
         assertEquals(dlg.getLocalAddress().getGlobalTitle().getDigits(), smscPropertiesManagement.getServiceCenterGt());
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getLocalAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
         assertEquals(dlg.getRemoteAddress().getGlobalTitle().getDigits(), msdnDig);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
-        assertEquals(((GT0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNumberingPlan(), org.mobicents.protocols.ss7.indicator.NumberingPlan.ISDN_TELEPHONY);
+        assertEquals(((GlobalTitle0100) dlg.getRemoteAddress().getGlobalTitle()).getNatureOfAddress(), NatureOfAddress.INTERNATIONAL);
 
         evt = lstEvt.get(0);
         assertEquals(evt.testEventType, MAPTestEventType.componentAdded);
@@ -1202,7 +1202,7 @@ public class C2_MtTest {
         IMSI imsi = new IMSIImpl(imsiDig);
         ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
-        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, null);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
@@ -1522,7 +1522,7 @@ public class C2_MtTest {
         IMSI imsi = new IMSIImpl(imsiDig);
         ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
-        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, true);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
@@ -1751,7 +1751,7 @@ public class C2_MtTest {
         IMSI imsi = new IMSIImpl(imsiDig);
         ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
-        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, true);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
@@ -1971,7 +1971,7 @@ public class C2_MtTest {
         IMSI imsi = new IMSIImpl(imsiDig);
         ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
-        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, true);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
@@ -2119,7 +2119,7 @@ public class C2_MtTest {
         IMSI imsi = new IMSIImpl(imsiDig);
         ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
-        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, true);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
@@ -2965,7 +2965,7 @@ public class C2_MtTest {
         IMSI imsi = new IMSIImpl(imsiDig);
         ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
-        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, null);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
@@ -3094,7 +3094,7 @@ public class C2_MtTest {
         IMSI imsi = new IMSIImpl(imsiDig);
         ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
-        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, null);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
@@ -3186,7 +3186,7 @@ public class C2_MtTest {
         IMSI imsi = new IMSIImpl(imsiDig);
         ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
-        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, null);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
@@ -3255,7 +3255,7 @@ public class C2_MtTest {
         imsi = new IMSIImpl(imsiDig);
         networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number, org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN,
                 nnnDig);
-        locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
         evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, null);
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);

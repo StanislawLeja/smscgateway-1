@@ -70,7 +70,6 @@ import org.mobicents.protocols.ss7.map.service.sms.ReportSMDeliveryStatusRequest
 import org.mobicents.protocols.ss7.map.service.sms.ReportSMDeliveryStatusResponseImpl;
 import org.mobicents.protocols.ss7.map.service.sms.SendRoutingInfoForSMResponseImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
-import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
 import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextNameImpl;
 import org.mobicents.slee.resource.map.events.DialogAccept;
 import org.mobicents.slee.resource.map.events.DialogClose;

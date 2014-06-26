@@ -37,6 +37,7 @@ import org.mobicents.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMResponse;
+import org.mobicents.protocols.ss7.sccp.impl.parameter.ParameterFactoryImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbLocalObjectExt;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
@@ -62,6 +63,7 @@ public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObject
 
 		this.mapProvider = new MAPProviderProxy();
 		this.mapParameterFactory = new MAPParameterFactoryImpl();
+		this.sccpParameterFact = new ParameterFactoryImpl();
 		this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement.getMaxMapVersion());
 		this.mapAcif = new MAPContextInterfaceFactoryProxy();
 		this.sbbContext = new SbbContextExtProxy(this);

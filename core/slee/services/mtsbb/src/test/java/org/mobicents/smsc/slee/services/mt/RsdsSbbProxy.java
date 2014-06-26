@@ -33,6 +33,7 @@ import javax.slee.TransactionRequiredLocalException;
 import javax.slee.TransactionRolledbackLocalException;
 
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
+import org.mobicents.protocols.ss7.sccp.impl.parameter.ParameterFactoryImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbLocalObjectExt;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
@@ -58,6 +59,7 @@ public class RsdsSbbProxy extends RsdsSbb implements ChildRelationExt, SbbLocalO
 		this.mapProvider = new MAPProviderProxy();
 		this.mapAcif = new MAPContextInterfaceFactoryProxy();
 		this.sbbContext = new SbbContextExtProxy(this);
+        this.sccpParameterFact = new ParameterFactoryImpl();
 	}
 
 	@Override

@@ -24,7 +24,6 @@ package org.mobicents.smsc.slee.resources.persistence;
 
 import java.util.ArrayList;
 
-import org.mobicents.protocols.ss7.map.MAPProviderImpl;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.MAPMessage;
@@ -39,6 +38,7 @@ import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.MAPExtensionContainer;
 import org.mobicents.protocols.ss7.map.api.service.mobility.subscriberManagement.TeleserviceCode;
+import org.mobicents.protocols.ss7.map.api.service.sms.AlertReason;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.protocols.ss7.map.api.service.sms.MWStatus;
@@ -47,7 +47,6 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_MTI;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_SMEA;
-import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.map.service.sms.ForwardShortMessageRequestImpl;
 import org.mobicents.protocols.ss7.map.service.sms.MtForwardShortMessageRequestImpl;
@@ -482,24 +481,56 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 		
 	}
 
-	public enum MAPTestEventType {
-		componentAdded,
-		send,
-		cancelInvoke,
-	}
+    @Override
+    public Long addReadyForSMRequest(IMSI imsi, AlertReason alertReason, boolean alertReasonIndicator, MAPExtensionContainer extensionContainer,
+            boolean additionalAlertReasonIndicator) throws MAPException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	public class MAPTestEvent {
-		public MAPTestEventType testEventType;
-		public MAPMessage event;
+    @Override
+    public Long addReadyForSMRequest(int customInvokeTimeout, IMSI imsi, AlertReason alertReason, boolean alertReasonIndicator,
+            MAPExtensionContainer extensionContainer, boolean additionalAlertReasonIndicator) throws MAPException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-		public MAPTestEvent(MAPTestEventType testEventType, MAPMessage event) {
-			this.testEventType = testEventType;
-			this.event = event;
-		}
+    @Override
+    public void addReadyForSMResponse(long invokeId, MAPExtensionContainer extensionContainer) throws MAPException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public Long addNoteSubscriberPresentRequest(IMSI imsi) throws MAPException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Long addNoteSubscriberPresentRequest(int customInvokeTimeout, IMSI imsi) throws MAPException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public enum MAPTestEventType {
+        componentAdded,
+        send,
+        cancelInvoke,
+    }
+
+    public class MAPTestEvent {
+        public MAPTestEventType testEventType;
+        public MAPMessage event;
+
+        public MAPTestEvent(MAPTestEventType testEventType, MAPMessage event) {
+            this.testEventType = testEventType;
+            this.event = event;
+        }
 
         public String toString() {
             return "MAPTestEvent[" + testEventType + "]";
         }
-	}
+    }
 }
 

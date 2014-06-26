@@ -40,12 +40,12 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.sccp.impl.parameter.ParameterFactoryImpl;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbLocalObjectExt;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
-import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
@@ -66,7 +66,8 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 
 		this.mapProvider = new MAPProviderProxy();
 		this.mapParameterFactory = new MAPParameterFactoryImpl();
-		
+        this.sccpParameterFact = new ParameterFactoryImpl();
+
 		this.mapSmsTpduParameterFactory = new MAPSmsTpduParameterFactoryImpl();
 		this.mapAcif = new MAPContextInterfaceFactoryProxy();
 		this.sbbContext = new SbbContextExtProxy(this);

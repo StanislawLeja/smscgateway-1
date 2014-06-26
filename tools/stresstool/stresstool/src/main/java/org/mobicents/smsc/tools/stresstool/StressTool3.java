@@ -589,7 +589,7 @@ public class StressTool3 {
                                         smsSet.setImsi(new IMSIImpl("123456789012324"));
                                         ISDNAddressStringImpl networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                                                 NumberingPlan.ISDN, "1231223123");
-                                        LocationInfoWithLMSIImpl locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+                                        LocationInfoWithLMSIImpl locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
                                         smsSet.setLocationInfoWithLMSI(locationInfoWithLMSI);
                                     }
 
