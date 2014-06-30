@@ -63,6 +63,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
 import org.mobicents.smsc.slee.services.charging.ChargingMedium;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+import org.mobicents.smsc.smpp.SmscStatAggregator;
 import org.mobicents.smsc.smpp.SmscStatProvider;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -94,6 +95,7 @@ public abstract class TxSipServerSbb implements Sbb {
 	private SbbContextExt sbbContext;
 
 	protected PersistenceRAInterface persistence = null;
+    private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 
 	private static Charset utf8 = Charset.forName("UTF-8");
 //	private static Charset ucs2 = Charset.forName("UTF-16BE");
@@ -139,6 +141,7 @@ public abstract class TxSipServerSbb implements Sbb {
 				}
 	        } catch (SmscProcessingException e1) {
 	            this.logger.severe("SmscProcessingException while processing a message from sip", e1);
+	            smscStatAggregator.updateMsgInFailedAll();
 
 	            ServerTransaction serverTransaction = event.getServerTransaction();
 	            Response res;
@@ -153,6 +156,7 @@ public abstract class TxSipServerSbb implements Sbb {
 	            return;
 	        } catch (Throwable e1) {
                 this.logger.severe("Exception while processing a message from sip", e1);
+                smscStatAggregator.updateMsgInFailedAll();
 
                 ServerTransaction serverTransaction = event.getServerTransaction();
                 Response res;
@@ -322,6 +326,7 @@ public abstract class TxSipServerSbb implements Sbb {
 
 	    Sms sms = new Sms();
         sms.setDbId(UUID.randomUUID());
+        sms.setOriginationType(Sms.OriginationType.SIP);
 
 	    // checking of source address
         if (fromUser == null)
@@ -474,6 +479,9 @@ public abstract class TxSipServerSbb implements Sbb {
 					throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(),
 							SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
 				}
+
+				smscStatAggregator.updateMsgInReceivedAll();
+	            smscStatAggregator.updateMsgInReceivedSip();
 			}
 		}
 	}

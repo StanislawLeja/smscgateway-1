@@ -871,6 +871,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			return;
 		}
 
+		smscStatAggregator.updateMsgOutSentAll();
+        smscStatAggregator.updateMsgOutSentSs7();
+
 		PersistenceRAInterface pers = this.getStore();
 		int currentMsgNum = this.doGetCurrentMsgNum();
 		Sms sms = smsSet.getSms(currentMsgNum);
@@ -886,7 +889,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			messageSegmentNumber++;
 			this.setMessageSegmentNumber(messageSegmentNumber);
 			try {
-				this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.nextSegmentSending,
+	            smscStatAggregator.updateMsgOutTryAll();
+	            smscStatAggregator.updateMsgOutTrySs7();
+
+	            this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.nextSegmentSending,
 						continueDialog ? mapDialogSms : null);
 				return;
 			} catch (SmscProcessingException e) {
@@ -981,7 +987,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 					}
 
 					try {
-						this.sendMtSms(mapDialogSms.getApplicationContext(),
+		                smscStatAggregator.updateMsgOutTryAll();
+		                smscStatAggregator.updateMsgOutTrySs7();
+
+		                this.sendMtSms(mapDialogSms.getApplicationContext(),
 								MessageProcessingState.firstMessageSending, continueDialog ? mapDialogSms : null);
 						return;
 					} catch (SmscProcessingException e) {
@@ -1011,7 +1020,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 						this.doSetCurrentMsgNum(currentMsgNum);
 
 						try {
-							this.sendMtSms(mapDialogSms.getApplicationContext(),
+			                smscStatAggregator.updateMsgOutTryAll();
+			                smscStatAggregator.updateMsgOutTrySs7();
+
+			                this.sendMtSms(mapDialogSms.getApplicationContext(),
 									MessageProcessingState.firstMessageSending, continueDialog ? mapDialogSms : null);
 							return;
 						} catch (SmscProcessingException e) {

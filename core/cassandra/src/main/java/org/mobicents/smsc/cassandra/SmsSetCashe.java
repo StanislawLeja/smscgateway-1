@@ -43,6 +43,7 @@ public class SmsSetCashe {
 	private AtomicInteger activityCount = new AtomicInteger(0);
 
 	private FastMap<String, SmsSet> lstSmsSetInProcessing = new FastMap<String, SmsSet>();
+    private UpdateMessagesInProcessListener smscStatAggregator;
 
 	private static SmsSetCashe singeltone;
 
@@ -56,6 +57,10 @@ public class SmsSetCashe {
 	public static SmsSetCashe getInstance() {
 		return singeltone;
 	}
+
+    public void setUpdateMessagesInProcessListener(UpdateMessagesInProcessListener smscStatAggregator) {
+        this.smscStatAggregator = smscStatAggregator;
+    }
 
 	public TargetAddress addSmsSet(TargetAddress ta) {
 		synchronized (lstSmsSetUnderAtomicOper) {
@@ -105,13 +110,22 @@ public class SmsSetCashe {
         this.processingSmsSetTimeout = processingSmsSetTimeout;
 
         synchronized (lstSmsSetInProcessing) {
-            return lstSmsSetInProcessing.put(targetId, smsSet);
+            SmsSet res = lstSmsSetInProcessing.put(targetId, smsSet);
+            if (smscStatAggregator != null) {
+                smscStatAggregator.updateMaxMessagesInProcess(lstSmsSetInProcessing.size());
+                smscStatAggregator.updateMinMessagesInProcess(lstSmsSetInProcessing.size());
+            }
+            return res;
         }
     }
 
     public SmsSet removeProcessingSmsSet(String targetId) {
         synchronized (lstSmsSetInProcessing) {
             SmsSet smsSet = lstSmsSetInProcessing.remove(targetId);
+            if (smscStatAggregator != null) {
+                smscStatAggregator.updateMaxMessagesInProcess(lstSmsSetInProcessing.size());
+                smscStatAggregator.updateMinMessagesInProcess(lstSmsSetInProcessing.size());
+            }
             return smsSet;
         }
     }
@@ -132,12 +146,20 @@ public class SmsSetCashe {
             for (String key : toDel) {
                 lstSmsSetInProcessing.remove(key);
             }
+            if (smscStatAggregator != null) {
+                smscStatAggregator.updateMaxMessagesInProcess(lstSmsSetInProcessing.size());
+                smscStatAggregator.updateMinMessagesInProcess(lstSmsSetInProcessing.size());
+            }
         }
     }
 
     public void clearProcessingSmsSet() {
         synchronized (lstSmsSetInProcessing) {
             lstSmsSetInProcessing.clear();
+            if (smscStatAggregator != null) {
+                smscStatAggregator.updateMaxMessagesInProcess(lstSmsSetInProcessing.size());
+                smscStatAggregator.updateMinMessagesInProcess(lstSmsSetInProcessing.size());
+            }
         }
     }
 

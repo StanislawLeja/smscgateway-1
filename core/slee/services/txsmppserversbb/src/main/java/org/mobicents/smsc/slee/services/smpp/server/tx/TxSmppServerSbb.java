@@ -64,6 +64,7 @@ import org.mobicents.smsc.slee.services.charging.ChargingMedium;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+import org.mobicents.smsc.smpp.SmscStatAggregator;
 import org.mobicents.smsc.smpp.SmscStatProvider;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -95,6 +96,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 	private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
 	protected SmppSessions smppServerSessions = null;
 	protected PersistenceRAInterface persistence = null;
+	private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 
 	private static Charset utf8Charset = Charset.forName("UTF-8");
 	private static Charset ucs2Charset = Charset.forName("UTF-16BE");
@@ -144,6 +146,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			}
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
+            smscStatAggregator.updateMsgInFailedAll();
 
 			SubmitSmResp response = event.createResponse();
 			response.setCommandStatus(e1.getSmppErrorCode());
@@ -171,6 +174,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		} catch (Throwable e1) {
 			String s = "Exception when processing SubmitSm message: " + e1.getMessage();
 			this.logger.severe(s, e1);
+            smscStatAggregator.updateMsgInFailedAll();
 
 			SubmitSmResp response = event.createResponse();
 			response.setCommandStatus(SmppConstants.STATUS_SYSERR);
@@ -237,6 +241,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			}
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
+            smscStatAggregator.updateMsgInFailedAll();
 
 			DataSmResp response = event.createResponse();
 			response.setCommandStatus(e1.getSmppErrorCode());
@@ -264,6 +269,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		} catch (Throwable e1) {
 			String s = "Exception when processing dataSm message: " + e1.getMessage();
 			this.logger.severe(s, e1);
+            smscStatAggregator.updateMsgInFailedAll();
 
 			DataSmResp response = event.createResponse();
 			response.setCommandStatus(SmppConstants.STATUS_SYSERR);
@@ -357,6 +363,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			}
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
+            smscStatAggregator.updateMsgInFailedAll();
 
 			DeliverSmResp response = event.createResponse();
 			response.setCommandStatus(e1.getSmppErrorCode());
@@ -384,6 +391,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		} catch (Throwable e1) {
 			String s = "Exception when processing SubmitSm message: " + e1.getMessage();
 			this.logger.severe(s, e1);
+            smscStatAggregator.updateMsgInFailedAll();
 
 			DeliverSmResp response = event.createResponse();
 			response.setCommandStatus(SmppConstants.STATUS_SYSERR);
@@ -514,6 +522,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		Sms sms = new Sms();
 		sms.setDbId(UUID.randomUUID());
+        sms.setOriginationType(Sms.OriginationType.SMPP);
 
 		// checking parameters first
 		if (event.getSourceAddress() == null || event.getSourceAddress().getAddress() == null
@@ -774,6 +783,8 @@ public abstract class TxSmppServerSbb implements Sbb {
 							SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
 				}
 			}
+            smscStatAggregator.updateMsgInReceivedAll();
+            smscStatAggregator.updateMsgInReceivedSmpp();
 		}
 	}
 

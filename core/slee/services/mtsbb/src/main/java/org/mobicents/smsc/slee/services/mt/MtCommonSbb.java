@@ -83,6 +83,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerActivity;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+import org.mobicents.smsc.smpp.SmscStatAggregator;
 
 /**
  * 
@@ -121,6 +122,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 	protected PersistenceRAInterface persistence;
 	protected SchedulerRaSbbInterface scheduler;
+	protected SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 
 	public MtCommonSbb(String className) {
 		this.className = className;
@@ -458,6 +460,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	}
 
     protected void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason, boolean removeSmsSet) {
+        smscStatAggregator.updateMsgOutFailedAll();
+
         PersistenceRAInterface pers = this.getStore();
 
         int currentMsgNum = this.doGetCurrentMsgNum();

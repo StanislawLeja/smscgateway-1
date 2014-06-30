@@ -94,6 +94,8 @@ public abstract class SriSbb extends MtCommonSbb {
             if (this.logger.isFineEnabled()) {
                 this.logger.fine("\nReceived Submit SMS. event= " + event + "this=" + this);
             }
+            smscStatAggregator.updateMsgOutTryAll();
+            smscStatAggregator.updateMsgOutTrySs7();
 
             SmsSet smsSet = event.getSmsSet();
             if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {

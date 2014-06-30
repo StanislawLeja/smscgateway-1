@@ -40,6 +40,7 @@ import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.SmsRouteManagement;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+import org.mobicents.smsc.smpp.SmscStatAggregator;
 import org.mobicents.smsc.smpp.SmscStatProvider;
 
 public class SchedulerResourceAdaptor implements ResourceAdaptor {
@@ -71,6 +72,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	protected DBOperations_C2 dbOperations_C2 = null;
 
 	private Date garbageCollectionTime = new Date();
+    private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 
 	public SchedulerResourceAdaptor() {
 		this.schedulerRaSbbInterface = new SchedulerRaSbbInterface() {
@@ -415,6 +417,18 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 					"Exception in SchedulerResourceAdaptor when fetching records and issuing events: "
 							+ e1.getMessage(), e1);
 		}
+
+		// stat update
+        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+        } else {
+            long processedDueSlot = dbOperations_C2.c2_getCurrentDueSlot();
+            long possibleDueSlot = dbOperations_C2.c2_getIntimeDueSlot();
+            Date processedDate = dbOperations_C2.c2_getTimeForDueSlot(processedDueSlot);
+            Date possibleDate = dbOperations_C2.c2_getTimeForDueSlot(possibleDueSlot);
+            int lag = (int) ((possibleDate.getTime() - processedDate.getTime()) / 1000);
+            smscStatAggregator.updateSmscDeliveringLag(lag);
+        }
 	}
 
 	protected void endAcitivity(SchedulerActivityHandle activityHandle) throws Exception {

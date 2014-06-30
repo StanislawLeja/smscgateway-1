@@ -75,6 +75,7 @@ import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.Sip;
 import org.mobicents.smsc.smpp.SipManagement;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+import org.mobicents.smsc.smpp.SmscStatAggregator;
 
 /**
  * 
@@ -108,6 +109,7 @@ public abstract class RxSipServerSbb implements Sbb {
 
 	private PersistenceRAInterface persistence;
 	private SchedulerRaSbbInterface scheduler;
+    private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 
 	private static final SipManagement sipManagement = SipManagement.getInstance();
 
@@ -235,6 +237,8 @@ public abstract class RxSipServerSbb implements Sbb {
 						+ targetId);
 				return;
 			}
+            smscStatAggregator.updateMsgOutSentAll();
+            smscStatAggregator.updateMsgOutSentSip();
 
 			// current message is sent pushing current message into an archive
 			int currentMsgNum = this.getCurrentMsgNum();
@@ -446,6 +450,9 @@ public abstract class RxSipServerSbb implements Sbb {
 	 */
 	private void sendMessage(SmsSet smsSet) throws SmscProcessingException {
 
+        smscStatAggregator.updateMsgOutTryAll();
+        smscStatAggregator.updateMsgOutTrySip();
+
 		int currentMsgNum = this.getCurrentMsgNum();
 		Sms sms = smsSet.getSms(currentMsgNum);
 
@@ -586,6 +593,8 @@ public abstract class RxSipServerSbb implements Sbb {
 	}
 
 	private void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason) {
+        smscStatAggregator.updateMsgInFailedAll();
+
 		int currentMsgNum = this.getCurrentMsgNum();
 		Sms smsa = smsSet.getSms(currentMsgNum);
 		if (smsa != null) {

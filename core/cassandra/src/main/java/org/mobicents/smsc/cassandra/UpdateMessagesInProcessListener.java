@@ -1,5 +1,5 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012.
+ * TeleStax, Open Source Cloud Communications  Copyright 2012. 
  * and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,19 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.smpp;
-
-
-//import com.telscale.protocols.ss7.oam.common.statistics.api.CounterDefSet;
-//import com.telscale.protocols.ss7.oam.common.statistics.api.CounterMediator;
-//import com.telscale.protocols.ss7.oam.common.statistics.api.SourceValueSet;
+package org.mobicents.smsc.cassandra;
 
 /**
-*
-* @author sergey vetyutnev
-*
-*/
-// public class SmscStatJmx implements CounterMediator {
-public class SmscStatJmx {
+ * 
+ * @author sergey vetyutnev
+ * 
+ */
+public interface UpdateMessagesInProcessListener {
+
+    void updateMinMessagesInProcess(long newVal);
+
+    void updateMaxMessagesInProcess(long newVal);
 
 }

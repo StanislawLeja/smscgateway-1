@@ -79,6 +79,8 @@ public class Sms implements Serializable {
 
     private int deliveryCount;
 
+    private OriginationType originationType;
+
 	private TlvSet tlvSet = new TlvSet();
 
 	public Sms() {
@@ -398,6 +400,20 @@ public class Sms implements Serializable {
 		this.tlvSet = tlvSet;
 	}
 
+    /**
+     * Type of message originated source
+     */
+    public OriginationType getOriginationType() {
+        return originationType;
+    }
+
+    /**
+     * @param originationType the originationType to set
+     */
+    public void setOriginationType(OriginationType originationType) {
+        this.originationType = originationType;
+    }
+
     public boolean isMcDeliveryReceipt() {
         if ((this.esmClass & ESME_DELIVERY_ACK) != 0)
             return true;
@@ -501,4 +517,7 @@ public class Sms implements Serializable {
 			return false;
     }
 
+    public enum OriginationType {
+        SMPP, SS7, SIP
+    }
 }

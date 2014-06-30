@@ -65,6 +65,7 @@ import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.EsmeManagement;
 import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+import org.mobicents.smsc.smpp.SmscStatAggregator;
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppSession.Type;
@@ -99,6 +100,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 	private PersistenceRAInterface persistence;
 	private SchedulerRaSbbInterface scheduler;
+    private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 
 	private static Charset utf8Charset = Charset.forName("UTF-8");
     private static Charset ucs2Charset = Charset.forName("UTF-16BE");
@@ -181,6 +183,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 						+ targetId);
 				return;
 			}
+            smscStatAggregator.updateMsgOutSentAll();
+            smscStatAggregator.updateMsgOutSentSmpp();
 
 			int status = event.getCommandStatus();
 			if (status == 0) {
@@ -406,6 +410,9 @@ public abstract class RxSmppServerSbb implements Sbb {
 		// TODO: let make here a special check if ESME in a good state
 		// if not - skip sending and set temporary error
 
+	    smscStatAggregator.updateMsgOutTryAll();
+        smscStatAggregator.updateMsgOutTrySmpp();
+
 		int currentMsgNum = this.getCurrentMsgNum();
 		Sms sms = smsSet.getSms(currentMsgNum);
 
@@ -586,7 +593,9 @@ public abstract class RxSmppServerSbb implements Sbb {
 	}
 
 	private void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason) {
-		int currentMsgNum = this.getCurrentMsgNum();
+        smscStatAggregator.updateMsgInFailedAll();
+
+        int currentMsgNum = this.getCurrentMsgNum();
 		Sms smsa = smsSet.getSms(currentMsgNum);
 		if (smsa != null) {
 			String s1 = reason.replace("\n", "\t");

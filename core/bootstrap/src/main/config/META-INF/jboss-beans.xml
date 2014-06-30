@@ -264,11 +264,17 @@
 			<parameter><inject bean="SccpStack" /></parameter>
 		</constructor>
 	</bean>	
-	
+
 	<bean name="TelscaleTcapManagement" class="com.telscale.protocols.ss7.oam.common.tcap.TcapManagementJmx">
 		<constructor>
 			<parameter><inject bean="Ss7Management" /></parameter>
 			<parameter><inject bean="TcapStack" /></parameter>
+		</constructor>
+	</bean>	
+
+	<bean name="SmscStatProviderJmx" class="org.mobicents.smsc.smpp.SmscStatProviderJmx">
+		<constructor>
+			<parameter><inject bean="Ss7Management" /></parameter>
 		</constructor>
 	</bean>	
 </deployment>
