@@ -11,11 +11,11 @@
             <title>SMSC Gateway</title>
             <para>SMSC (Short Message Service Center) is a telecommunications network facility responsible for handling the SMS operations of a wireless network. When a subscriber sends an SMS message from a mobile phone, the message first reaches the SMS Center which then forwards the message to the desired destination. The SMS Center is responsible for routing the SMS messages and regulating the process. If the recipient is not reachable (the phone is switched off or out of coverage area etc.) the SMS Center will store the message to a database and forward it to the recipient when available. Messages that are delivered successfully and messages that failed to be delivered are stored in an archive database for logging purposes.</para>
         </section>
-    <section id="telscale_smsc_overview">
-        <title>&THIS.PLATFORM; &THIS.APPLICATION;</title>
-       <para>&THIS.PLATFORM;'s implementation of SMSC Gateway is the first and only open source SMSC Gateway with a host of rich features and advantages.
-            </para>
-<para>
+    	<section id="telscale_smsc_overview">
+	        <title>&THIS.PLATFORM; &THIS.APPLICATION;</title>
+	       <para>&THIS.PLATFORM;'s implementation of SMSC Gateway is the first and only open source SMSC Gateway with a host of rich features and advantages.
+	            </para>
+			<para>
             <variablelist>
                 <varlistentry>
                     <term>Java-based:</term>
@@ -96,6 +96,18 @@ A single &THIS.PLATFORM; SMSC node can process up to 1000 SMS/sec. Multiple SMSC
             </variablelist>   
 	    </para>
         </section>
+        
+        <section id="smsc_gateway_sip">
+            <title>Session Initiation Protocol (SIP) Support</title>
+            <para>
+				IP Short Message Gateway (IP-SM-GW), which is in line with relevant 3GPP 23.824 specifications, acts as a bridge, managing the origination and termination of SMS messages between circuit-switched and IP-based networks (over SIP). With the solution, mobile operators can use existing messaging platforms such as short message service centers
+				(SMSCs) deliver IP-based messaging. The IP-SM-GW is also essential for rolling out rich communication services (RCS), which enable operators to deliver sticky messaging
+				services like presence-enabled address book, SIP-based chat services and mobile instant messaging.
+			</para>
+			<para>
+				TelScale SMSC has support for SIP messagaing and can send short messages from SIP to SS7 or ESME and vice-a-versa. TelScale SMSC can easily be integarted with TelScale RestComm via SIP to enable developers to rapidly build voice, video, WebRTC, USSD, SMS, fax and rich messaging applications. More details about RestComm can be obtained from <ulink url="http://www.telestax.com/restcomm/">here</ulink>            
+            </para>
+        </section>        
 
 </chapter>
 
