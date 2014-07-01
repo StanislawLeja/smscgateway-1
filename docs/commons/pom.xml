@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.telscale.smsc.docs</groupId>
 		<artifactId>telscale-smsc-docs</artifactId>
-		<version>6.1.6-TelScale-SNAPSHOT</version>
+		<version>6.1.6.GA-TelScale</version>
 	</parent>
 
 	<artifactId>telscale-smsc-commons-sources</artifactId>

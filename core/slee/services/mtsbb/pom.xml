@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.telscale.smsc</groupId>
 		<artifactId>services-parent</artifactId>
-		<version>6.1.6-TelScale-SNAPSHOT</version>
+		<version>6.1.6.GA-TelScale</version>
 	</parent>
 	<artifactId>mt-sbb</artifactId>
 
