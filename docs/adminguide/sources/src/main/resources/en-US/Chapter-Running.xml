@@ -265,7 +265,7 @@ When the SMSC Gateway is running in a "simulator" profile it works with SMPP as 
             <procedure>
                 <title>To configure Jitsi we need:</title>
     <step>
-    <para>Create a registraless account (don't provide password, registar and proxy address) and enable PRESENSE (SIMPLE) at the forth tab for this account. Identifier of this account must be "5555" because SMSC is configured to route all messages for subscriber "5555" to SIP.
+    <para>Create a registrarless account (don't provide password, registrar and proxy address) and enable PRESENSE (SIMPLE) at the forth tab for this account (Advanced). Identifier of this account must be "5555" because SMSC is configured to route all messages for subscriber "5555" to SIP.
     </para>
     </step>
     <step>
@@ -286,7 +286,7 @@ SMSC listerns 5060 port for incoming SIP messages. "1111" address we will use fo
             </procedure>
 <para>Then we can test:
 </para>
-<para>1) for sending messages from SIP phone we have to "Send message" to a concrete contact, type a message text and send. After about 1 minute you will the message at SS7 Simulator or SIP Simulator
+<para>1) for sending messages from SIP phone we have to "Send message" to a concrete contact, type a message text and send. After about 1 minute you will receive the message on SS7 Simulator or SIP Simulator
 </para>
 <para>2) for sending messages to SIP phone you just need to send a message from SS7 Simulator / SMPP Simulator to "5555" address. You need as an originated address put "1111" (for SS7 Simulator) and ("6666") for SMPP SImulator.
 </para>

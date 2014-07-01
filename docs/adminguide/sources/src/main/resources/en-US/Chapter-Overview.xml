@@ -32,8 +32,12 @@
                 <varlistentry>
                     <term>SIGTRAN (M3UA):</term>
                     <listitem><para>It also supports connectivity to MSC/HLR via SIGTRAN links (M3UA using SCTP).</para></listitem>
-                </varlistentry>  
- 		 <varlistentry>
+                </varlistentry> 
+                <varlistentry>
+                    <term>Charging enabled (Diameter):</term>
+                    <listitem><para>Pre paid based charging is enabled (optional) via Diameter Ro and Base protocol. TelScale SMSC easily integrates with <ulink url="http://telestax.wpengine.netdna-cdn.com/wp-content/uploads/2013/07/PRODUCT-DATASHEET-TELSCALE-Convergent-Charging-Server.pdf">TelScale Convergent Charging Server</ulink> over Diameter</para></listitem>
+                </varlistentry>                  
+ 		 		<varlistentry>
                     <term>Cloud-ready:</term>
                     <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; is cloud-ready and can also be deployed on a private cloud infrastructure.</para></listitem>
                 </varlistentry>               

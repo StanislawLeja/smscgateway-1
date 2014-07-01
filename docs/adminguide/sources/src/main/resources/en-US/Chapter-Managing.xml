@@ -1720,7 +1720,16 @@ DESCRIPTION
 	</section>
 	<section id="ESME_Settings">
 	<title>External Short Messaging Entities (ESMEs)</title>
-<para>&THIS.PLATFORM; &THIS.APPLICATION; can now act as ESME (initiate bind to remote SMSC) or can also act as SMSC (accept bind from remote ESME). While defining an ESME (SMPP connection), you can optionally pass the Cluster name. If it is not passed, cluster name is same as ESME name. As the name suggests, its now possible to group different ESMEs in the same cluster. This is useful only when SMS is suppose to be routed out of &THIS.PLATFORM; &THIS.APPLICATION; to ESME. If there are multiple ESME's in a cluster, the load is shared in a round robin fashion to send out SMS. In case if one of the ESME is in <literal>UNBOUND</literal> state, the next <literal>BOUND</literal> smpp connection (within same cluster) will be used. 
+		<para>&THIS.PLATFORM; &THIS.APPLICATION; can now act as ESME (initiate bind to remote SMSC) or can also act as SMSC (accept bind from remote ESME). While defining an ESME (SMPP connection), you can optionally pass the Cluster name. If it is not passed, cluster name is same as ESME name. As the name suggests, its now possible to group different ESMEs in the same cluster. This is useful only when SMS is suppose to be routed out of &THIS.PLATFORM; &THIS.APPLICATION; to ESME. If there are multiple ESME's in a cluster, the load is shared in a round robin fashion to send out SMS. In case if one of the ESME is in <literal>UNBOUND</literal> state, the next <literal>BOUND</literal> smpp connection (within same cluster) will be used.
+ 			Below diagram explains the load-balancing between SMPP connections 
+			<figure>
+		  		<title>SMPP Load Balancing</title>
+		  		<mediaobject>
+		    		<imageobject>
+		      			<imagedata fileref="images/smsc-SMPP-Loadbalancing.png" format="PNG" align="center"/>
+		    		</imageobject>
+		  		</mediaobject>
+			</figure> 			
 		</para>
 		<para>
 You can define multiple ESMEs, each with a unique name but the same <literal>systemId</literal> and declare their <literal>host-ip</literal> and <literal>port</literal> values as -1 (only for SMPP type Server). The SMSC will now accept multiple incoming BIND requests from any <literal>IP</literal> and any <literal>port</literal> as far as the <literal>systemId</literal> and <literal>Password</literal> matches. 
