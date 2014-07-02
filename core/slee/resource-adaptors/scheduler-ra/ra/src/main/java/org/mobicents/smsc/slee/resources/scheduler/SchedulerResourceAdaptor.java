@@ -456,7 +456,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                 return;
         }
 
-        doInjectSms(smsSet);
+        doInjectSms(smsSet, true);
     }
 
 	protected boolean injectSmsDatabase(SmsSet smsSet, Date curDate) throws Exception {
@@ -586,10 +586,18 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 		return doInjectSms(smsSet);
 	}
+	
+	private boolean doInjectSms(SmsSet smsSet) throws NotSupportedException, SystemException, Exception, RollbackException, HeuristicMixedException,
+    HeuristicRollbackException {
+		return this.doInjectSms(smsSet, false);
+	}
 
-    private boolean doInjectSms(SmsSet smsSet) throws NotSupportedException, SystemException, Exception, RollbackException, HeuristicMixedException,
+    private boolean doInjectSms(SmsSet smsSet, boolean callFromSbb) throws NotSupportedException, SystemException, Exception, RollbackException, HeuristicMixedException,
             HeuristicRollbackException {
-        SleeTransaction sleeTx = this.sleeTransactionManager.beginSleeTransaction();
+    	if(!callFromSbb){
+    		//If this call is from SBB it comes with Transaction and no need to start one
+    		SleeTransaction sleeTx = this.sleeTransactionManager.beginSleeTransaction();
+    	}
 
 		try {
 
@@ -653,7 +661,10 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			throw e;
 		}
 
-		this.sleeTransactionManager.commit();
+		if(!callFromSbb){
+			//If this call is from SBB it comes with Transaction and no need to commit here
+			this.sleeTransactionManager.commit();
+		}
 
 		this.incrementActivityCount();
 		return true;
