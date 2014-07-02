@@ -55,6 +55,7 @@ import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmppExtraConstants;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
@@ -86,9 +87,12 @@ import com.cloudhopper.smpp.util.TlvUtil;
 public abstract class TxSmppServerSbb implements Sbb {
 	protected static SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
-	private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID(
-			"PersistenceResourceAdaptorType", "org.mobicents", "1.0");
-	private static final String LINK = "PersistenceResourceAdaptor";
+    private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID(
+            "PersistenceResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String PERSISTENCE_LINK = "PersistenceResourceAdaptor";
+    private static final ResourceAdaptorTypeID SCHEDULER_ID = new ResourceAdaptorTypeID(
+            "SchedulerResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String SCHEDULER_LINK = "SchedulerResourceAdaptor";
 
 	protected Tracer logger;
 	private SbbContextExt sbbContext;
@@ -96,6 +100,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 	private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
 	protected SmppSessions smppServerSessions = null;
 	protected PersistenceRAInterface persistence = null;
+	protected SchedulerRaSbbInterface scheduler = null;
 	private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 
 	private static Charset utf8Charset = Charset.forName("UTF-8");
@@ -504,8 +509,8 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 			this.logger = this.sbbContext.getTracer(getClass().getSimpleName());
 
-			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID,
-					LINK);
+            this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, PERSISTENCE_LINK);
+            this.scheduler = (SchedulerRaSbbInterface) this.sbbContext.getResourceAdaptorInterface(SCHEDULER_ID, SCHEDULER_LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
@@ -751,21 +756,24 @@ public abstract class TxSmppServerSbb implements Sbb {
 			ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
 			chargingSbb.setupChargingRequestInterface(ChargingMedium.TxSmppOrig, sms);
 		} else {
-			boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
+            boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
 
 			// TODO ...................... direct launch
-			storeAndForwMode = true;
+//			storeAndForwMode = true;
 			// TODO ...................... direct launch
+
 			if (!storeAndForwMode) {
-				// TODO ...................... direct launch
-
+			    try {
+		            // TODO ...................... direct launch
+                    this.scheduler.injectSmsOnFly(sms.getSmsSet());
+                    // TODO ...................... direct launch
+                } catch (Exception e) {
+                    throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
+                            MAPErrorCode.systemFailure, e);
+                }
 			} else {
 				// store and forward
 				try {
-					// TODO: we can make this some check will we send this
-					// message
-					// or not
-
 					sms.setStored(true);
 					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 						store.createLiveSms(sms);
@@ -775,7 +783,6 @@ public abstract class TxSmppServerSbb implements Sbb {
 						else
 							store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
 					} else {
-						sms.setStored(true);
 						store.c2_scheduleMessage(sms);
 					}
 				} catch (PersistenceException e) {

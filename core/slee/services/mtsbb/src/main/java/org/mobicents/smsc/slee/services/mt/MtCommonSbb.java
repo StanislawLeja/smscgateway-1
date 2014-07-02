@@ -603,6 +603,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                                     receipt = MessageUtil.createReceiptSms(sms, false);
                                     SmsSet backSmsSet = pers.obtainSmsSet(ta);
                                     receipt.setSmsSet(backSmsSet);
+                                    receipt.setStored(true);
                                     pers.createLiveSms(receipt);
                                     pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
                                 } else {

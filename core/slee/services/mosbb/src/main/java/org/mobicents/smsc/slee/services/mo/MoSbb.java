@@ -959,7 +959,6 @@ public abstract class MoSbb extends MoCommonSbb {
                     store.createLiveSms(sms);
                     store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
                 } else {
-                    sms.setStored(true);
                     store.c2_scheduleMessage(sms);
                 }
             } catch (PersistenceException e) {

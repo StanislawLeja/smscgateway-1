@@ -279,6 +279,7 @@ public abstract class RxSipServerSbb implements Sbb {
 									receipt = MessageUtil.createReceiptSms(sms, true);
 									SmsSet backSmsSet = pers.obtainSmsSet(ta);
 									receipt.setSmsSet(backSmsSet);
+                                    receipt.setStored(true);
 									pers.createLiveSms(receipt);
 									pers.setNewMessageScheduled(receipt.getSmsSet(),
 											MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
@@ -691,6 +692,7 @@ public abstract class RxSipServerSbb implements Sbb {
 									receipt = MessageUtil.createReceiptSms(sms, false);
 									SmsSet backSmsSet = pers.obtainSmsSet(ta);
 									receipt.setSmsSet(backSmsSet);
+                                    receipt.setStored(true);
 									pers.createLiveSms(receipt);
 									pers.setNewMessageScheduled(receipt.getSmsSet(),
 											MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));

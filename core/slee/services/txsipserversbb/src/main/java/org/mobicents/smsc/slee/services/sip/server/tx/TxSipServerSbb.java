@@ -472,7 +472,6 @@ public abstract class TxSipServerSbb implements Sbb {
 						else
 							store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
 					} else {
-						sms.setStored(true);
 						store.c2_scheduleMessage(sms);
 					}
 				} catch (PersistenceException e) {

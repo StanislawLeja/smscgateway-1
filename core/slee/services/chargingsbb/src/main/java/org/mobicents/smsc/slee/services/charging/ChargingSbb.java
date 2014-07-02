@@ -448,7 +448,6 @@ public abstract class ChargingSbb implements Sbb {
                     persistence.createLiveSms(sms);
                     persistence.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
                 } else {
-                    sms.setStored(true);
                     persistence.c2_scheduleMessage(sms);
                 }
             }

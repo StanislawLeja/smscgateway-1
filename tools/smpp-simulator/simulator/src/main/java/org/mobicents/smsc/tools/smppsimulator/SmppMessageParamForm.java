@@ -38,6 +38,7 @@ import javax.swing.JTextField;
 import javax.swing.JCheckBox;
 import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
+import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.MCDeliveryReceipt;
 
 /**
  * 
@@ -68,6 +69,7 @@ public class SmppMessageParamForm extends JDialog {
 	private JComboBox<SmppSimulatorParameters.MCDeliveryReceipt> cbMcDeliveryReceipt;
 	private JRadioButton rbUtf8;
 	private JRadioButton rbUnicode;
+	private JComboBox<SmppSimulatorParameters.MessagingMode> cbMessagingMode;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 
 	public SmppMessageParamForm(JDialog owner) {
@@ -255,6 +257,14 @@ public class SmppMessageParamForm extends JDialog {
 						buttonGroup.add(rbUnicode);
 						rbUnicode.setBounds(495, 307, 109, 25);
 						panel.add(rbUnicode);
+						
+						JLabel lblMessagingMode = new JLabel("Messaging mode");
+						lblMessagingMode.setBounds(10, 497, 329, 14);
+						panel.add(lblMessagingMode);
+
+						cbMessagingMode = new JComboBox<SmppSimulatorParameters.MessagingMode>();
+						cbMessagingMode.setBounds(349, 494, 255, 20);
+						panel.add(cbMessagingMode);
 	}
 
 	public void setData(SmppSimulatorParameters data) {
@@ -356,6 +366,17 @@ public class SmppMessageParamForm extends JDialog {
         if (dvSendingMessageType != null)
             this.cbSendingMessageType.setSelectedItem(dvSendingMessageType);
 
+        this.cbMessagingMode.removeAllItems();
+        SmppSimulatorParameters.MessagingMode[] vallMessagingMode = SmppSimulatorParameters.MessagingMode.values();
+        SmppSimulatorParameters.MessagingMode dvMessagingMode = null;
+        for (SmppSimulatorParameters.MessagingMode v : vallMessagingMode) {
+            this.cbMessagingMode.addItem(v);
+            if (v == data.getMessagingMode())
+                dvMessagingMode = v;
+        }
+        if (dvMessagingMode != null)
+            this.cbMessagingMode.setSelectedItem(dvMessagingMode);
+
         this.cbMcDeliveryReceipt.removeAllItems();
         SmppSimulatorParameters.MCDeliveryReceipt[] vallMcDeliveryReceipt = SmppSimulatorParameters.MCDeliveryReceipt.values();
         SmppSimulatorParameters.MCDeliveryReceipt dvMcDeliveryReceipt = null;
@@ -424,6 +445,7 @@ public class SmppMessageParamForm extends JDialog {
         this.data.setValidityType((SmppSimulatorParameters.ValidityType) cbValidityType.getSelectedItem());
         this.data.setSendingMessageType((SmppSimulatorParameters.SendingMessageType) cbSendingMessageType.getSelectedItem());
         this.data.setMcDeliveryReceipt((SmppSimulatorParameters.MCDeliveryReceipt) cbMcDeliveryReceipt.getSelectedItem());
+        this.data.setMessagingMode((SmppSimulatorParameters.MessagingMode) cbMessagingMode.getSelectedItem());
 
         this.data.setMessageClass(this.cbMessageClass.isSelected());
 
