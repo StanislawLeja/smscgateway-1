@@ -1,5 +1,5 @@
 package org.mobicents.smsc.smpp;
 
-public enum SmppEncodingForUCS2 {
+public enum SmppEncoding {
     Utf8, Unicode
 }

@@ -24,8 +24,6 @@ package org.mobicents.smsc.slee.services.mo;
 
 import static org.testng.Assert.*;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;
 
@@ -35,6 +33,8 @@ import javax.slee.SbbLocalObject;
 import javax.slee.TransactionRequiredLocalException;
 import javax.slee.TransactionRolledbackLocalException;
 
+import org.mobicents.protocols.asn.AsnInputStream;
+import org.mobicents.protocols.asn.AsnOutputStream;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
@@ -105,6 +105,8 @@ public class C2_MoSbbTest {
     private TT_PersistenceRAInterfaceProxy pers;
     private boolean cassandraDbInited;
 
+    private static Charset isoCharset = Charset.forName("ISO-8859-1");
+
     private TargetAddress ta1 = new TargetAddress(1, 1, "5555");
 
 //  private byte[] msg = { 11, 12, 13, 14, 15, 15 };
@@ -151,7 +153,6 @@ public class C2_MoSbbTest {
         DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(0);
         UserDataHeader decodedUserDataHeader = new UserDataHeaderImpl();
         UserDataHeaderElement informationElement = new ConcatenatedShortMessagesIdentifierImpl(false, 55, 3, 1);
-//      boolean referenceIs16bit, int reference, int mesageSegmentCount, int mesageSegmentNumber
         decodedUserDataHeader.addInformationElement(informationElement);
         UserData userData = new UserDataImpl(new String("0123456789"), dataCodingScheme, decodedUserDataHeader, null);
 //      userData.encode();
@@ -231,10 +232,8 @@ public class C2_MoSbbTest {
         assertEquals(sms.getDeliveryCount(), 0);
 
 //        assertDateEq(smsSet.getDueDate(), new Date(curDate.getTime() + 1 * 60 * 1000));
-
-        byte[] buf = new byte[10];
-        System.arraycopy(sms.getShortMessage(), sms.getShortMessage().length - 10, buf, 0, 10);
-        assertEquals(new String(buf), "0123456789");
+        assertEquals(sms.getShortMessageText(), "0123456789");
+        assertEquals(sms.getShortMessageBin(), decodedUserDataHeader.getEncodedData());
     }
 
     @Test(groups = { "Mo" })
@@ -341,7 +340,9 @@ public class C2_MoSbbTest {
 
 //        assertDateEq(smsSet.getDueDate(), new Date(curDate.getTime() + 1 * 60 * 1000));
 
-        assertEquals(new String(sms.getShortMessage()), "0123456789");
+//        assertEquals(new String(sms.getShortMessage()), "0123456789");
+        assertEquals(sms.getShortMessageText(), "0123456789");
+        assertNull(sms.getShortMessageBin());
     }
 
     @Test(groups = { "Mo" })
@@ -441,20 +442,21 @@ public class C2_MoSbbTest {
 
 //        assertDateEq(smsSet.getDueDate(), new Date(curDate.getTime() + 1 * 60 * 1000));
 
-        Charset ucs2Charset = Charset.forName("UTF-16BE");
-        ByteBuffer bb = ByteBuffer.wrap(sms.getShortMessage());
-        CharBuffer bf = ucs2Charset.decode(bb);
-        String s = bf.toString();
-        assertEquals(s, "������");
+//        Charset ucs2Charset = Charset.forName("UTF-16BE");
+//        ByteBuffer bb = ByteBuffer.wrap(sms.getShortMessage());
+//        CharBuffer bf = ucs2Charset.decode(bb);
+//        String s = bf.toString();
+//        assertEquals(s, "������");
+        assertEquals(sms.getShortMessageText(), "������");
+        assertNull(sms.getShortMessageBin());
     }
 
     @Test(groups = { "Mo" })
-    public void testMo4_BadEncScheme() throws Exception {
+    public void testMo4_Gsm8() throws Exception {
 
         if (!this.cassandraDbInited)
             return;
 
-//        this.clearDatabase();
         SmppSessionsProxy smppServerSessions = new SmppSessionsProxy();
         this.sbb.setSmppServerSessions(smppServerSessions);
 
@@ -466,24 +468,21 @@ public class C2_MoSbbTest {
         sm_RP_OA.setMsisdn(msisdn);
         AddressField destinationAddress = new AddressFieldImpl(TypeOfNumber.InternationalNumber, NumberingPlanIdentification.ISDNTelephoneNumberingPlan, "5555");
         ProtocolIdentifier protocolIdentifier = new ProtocolIdentifierImpl(12);
-//        DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(200);
         DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(4);
-        Charset ucs2Charset = Charset.forName("UTF-16BE");
-        UserData userData = new UserDataImpl(new String("������"), dataCodingScheme, null, ucs2Charset);
-//      String decodedMessage, DataCodingScheme dataCodingScheme, UserDataHeader decodedUserDataHeader, Charset gsm8Charset
+        UserDataHeader decodedUserDataHeader = new UserDataHeaderImpl();
+        UserDataHeaderElement informationElement = new ConcatenatedShortMessagesIdentifierImpl(false, 55, 3, 1);
+        decodedUserDataHeader.addInformationElement(informationElement);
+        UserData userData = new UserDataImpl("abc 01234567890", dataCodingScheme, decodedUserDataHeader, isoCharset);
         SmsTpdu tpdu = new SmsSubmitTpduImpl(false, false, false, 150, destinationAddress, protocolIdentifier, null, userData);
-        //      boolean rejectDuplicates, boolean replyPathExists, boolean statusReportRequest, int messageReference,
-        //      AddressField destinationAddress, ProtocolIdentifier protocolIdentifier, ValidityPeriod validityPeriod, UserData userData
-//      tpdu.encodeData();
-        SmsSignalInfo sm_RP_UI = new SmsSignalInfoImpl(tpdu, null);
-        ForwardShortMessageRequest event = new ForwardShortMessageRequestImpl(sm_RP_DA, sm_RP_OA, sm_RP_UI, false);
 
-//      ActivityContextInterface aci = new SmppTransactionProxy(esme);
-
-//      Date curDate = new Date();
-//      this.fillSm(event, curDate, true);
-//      event.setShortMessage(msg);
-
+        SmsSignalInfo sm_RP_UI_0 = new SmsSignalInfoImpl(tpdu, null); // isoCharset
+        ForwardShortMessageRequestImpl event0 = new ForwardShortMessageRequestImpl(sm_RP_DA, sm_RP_OA, sm_RP_UI_0, false);
+        AsnOutputStream aos = new AsnOutputStream();
+        event0.encodeAll(aos);
+        ForwardShortMessageRequestImpl event = new ForwardShortMessageRequestImpl();
+        AsnInputStream ais = new AsnInputStream(aos.toByteArray());
+        ais.readTag();
+        event.decodeAll(ais);
 
         long dueSlot = this.pers.c2_getDueSlotForTime(new Date());
         PreparedStatementCollection_C3 psc = this.pers.getStatementCollection(new Date());
@@ -498,13 +497,57 @@ public class C2_MoSbbTest {
         Date curDate = new Date();
         this.sbb.onForwardShortMessageRequest(event, null);
 
+
         b2 = this.pers.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
-        assertEquals(b2, 0);
+        dueSlot = b2;
+        b1 = this.pers.checkSmsExists(dueSlot, ta1.getTargetId());
+        assertEquals(b1, 1);
+        assertEquals(b2, dueSlot);
 
-        assertEquals(dialog.getResponseCount(), 0);
-        assertEquals(dialog.getErrorList().size(), 1);
-        assertEquals((long) dialog.getErrorList().get(0), MAPErrorCode.unexpectedDataValue);
+        assertEquals(dialog.getResponseCount(), 1);
+        assertEquals(dialog.getErrorList().size(), 0);
 
+        SmsSet smsSet = this.pers.c2_getRecordListForTargeId(dueSlot, ta1.getTargetId());
+
+        assertEquals(smsSet.getDestAddr(), "5555");
+        assertEquals(smsSet.getDestAddrTon(), SmppConstants.TON_INTERNATIONAL);
+        assertEquals(smsSet.getDestAddrNpi(), SmppConstants.NPI_E164);
+
+        assertEquals(smsSet.getInSystem(), 0);
+        assertEquals(smsSet.getDueDelay(), 0);
+        assertNull(smsSet.getStatus());
+        assertFalse(smsSet.isAlertingSupported());
+
+        Sms sms = smsSet.getSms(0);
+        assertNotNull(sms);
+        assertEquals(sms.getSourceAddr(), "4444");
+        assertEquals(sms.getSourceAddrTon(), SmppConstants.TON_INTERNATIONAL);
+        assertEquals(sms.getSourceAddrNpi(), SmppConstants.NPI_E164);
+        assertEquals(sms.getMessageId(), DBOperations_C2.MESSAGE_ID_LAG + 1);
+        assertEquals(sms.getMoMessageRef(), 150);
+
+        assertEquals(sms.getDataCoding(), 4);
+        assertNull(sms.getOrigEsmeName());
+        assertNull(sms.getOrigSystemId());
+
+        assertNull(sms.getServiceType());
+        assertEquals(sms.getEsmClass() & 0xFF, 67);
+        assertEquals(sms.getRegisteredDelivery(), 0);
+
+        assertEquals(sms.getProtocolId(), 12);
+        assertEquals(sms.getPriority(), 0);
+        assertEquals(sms.getReplaceIfPresent(), 0);
+        assertEquals(sms.getDefaultMsgId(), 0);
+
+        assertEquals(sms.getTlvSet().getOptionalParameterCount(), 0);
+
+        assertNull(sms.getScheduleDeliveryTime());
+        assertDateEq(sms.getValidityPeriod(), MessageUtil.addHours(curDate, 24 * 3));
+
+        assertEquals(sms.getDeliveryCount(), 0);
+
+        assertEquals(sms.getShortMessageText(), "abc 01234567890");
+        assertEquals(sms.getShortMessageBin(), decodedUserDataHeader.getEncodedData());
     }
 
 //    private void clearDatabase() throws PersistenceException, IOException {

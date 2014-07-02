@@ -61,8 +61,9 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
 
     private static final Logger logger = Logger.getLogger(TT_PersistenceRAInterfaceProxy.class);
 
-    String ip = "127.0.0.1";
-    String keyspace = "saturn";
+    private String ip = "127.0.0.1";
+    private String keyspace = "TelestaxSMSC";
+    private boolean oldShortMessageDbFormat = false;
 
     public Session getSession() {
         return session;
@@ -75,7 +76,11 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
     public void start() throws Exception {
         super.start(ip, 9042, keyspace, 60, 60, 60 * 10);
     }
-    
+
+    public void setOldShortMessageDbFormat(boolean val) {
+        oldShortMessageDbFormat = val;
+    }
+
     public boolean testCassandraAccess() {
 
         try {
@@ -204,7 +209,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
         ResultSet result = session.execute(boundStatement);
 
         Row row = result.one();
-        SmsSet smsSet = createSms(row, null);
+        SmsSet smsSet = createSms(row, null, true);
         if (smsSet == null)
             return null;
 
@@ -269,7 +274,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
             SmsSet smsSet = null;
             Row row2 = null;
             for (Row row : rs) {
-                smsSet = this.createSms(row, null);
+                smsSet = this.createSms(row, null, true);
                 row2 = row;
                 break;
             }
@@ -290,6 +295,62 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
 
     protected long c2_getCurrenrSlotTable(int key) throws PersistenceException {
         return super.c2_getCurrenrSlotTable(key);
+    }
+
+    @Override
+    protected void addSmsFields(StringBuilder sb) {
+        appendField(sb, Schema.COLUMN_ID, "uuid");
+        appendField(sb, Schema.COLUMN_TARGET_ID, "ascii");
+        appendField(sb, Schema.COLUMN_DUE_SLOT, "bigint");
+        appendField(sb, Schema.COLUMN_IN_SYSTEM, "int");
+        appendField(sb, Schema.COLUMN_SMSC_UUID, "uuid");
+
+        appendField(sb, Schema.COLUMN_ADDR_DST_DIGITS, "ascii");
+        appendField(sb, Schema.COLUMN_ADDR_DST_TON, "int");
+        appendField(sb, Schema.COLUMN_ADDR_DST_NPI, "int");
+
+        appendField(sb, Schema.COLUMN_ADDR_SRC_DIGITS, "ascii");
+        appendField(sb, Schema.COLUMN_ADDR_SRC_TON, "int");
+        appendField(sb, Schema.COLUMN_ADDR_SRC_NPI, "int");
+
+        appendField(sb, Schema.COLUMN_DUE_DELAY, "int");
+        appendField(sb, Schema.COLUMN_ALERTING_SUPPORTED, "boolean");
+
+        appendField(sb, Schema.COLUMN_MESSAGE_ID, "bigint");
+        appendField(sb, Schema.COLUMN_MO_MESSAGE_REF, "int");
+        appendField(sb, Schema.COLUMN_ORIG_ESME_NAME, "text");
+        appendField(sb, Schema.COLUMN_ORIG_SYSTEM_ID, "text");
+        appendField(sb, Schema.COLUMN_DEST_CLUSTER_NAME, "text");
+        appendField(sb, Schema.COLUMN_DEST_ESME_NAME, "text");
+        appendField(sb, Schema.COLUMN_DEST_SYSTEM_ID, "text");
+        appendField(sb, Schema.COLUMN_SUBMIT_DATE, "timestamp");
+        appendField(sb, Schema.COLUMN_DELIVERY_DATE, "timestamp");
+
+        appendField(sb, Schema.COLUMN_SERVICE_TYPE, "text");
+        appendField(sb, Schema.COLUMN_ESM_CLASS, "int");
+        appendField(sb, Schema.COLUMN_PROTOCOL_ID, "int");
+        appendField(sb, Schema.COLUMN_PRIORITY, "int");
+        appendField(sb, Schema.COLUMN_REGISTERED_DELIVERY, "int");
+        appendField(sb, Schema.COLUMN_REPLACE, "int");
+        appendField(sb, Schema.COLUMN_DATA_CODING, "int");
+        appendField(sb, Schema.COLUMN_DEFAULT_MSG_ID, "int");
+
+        appendField(sb, Schema.COLUMN_MESSAGE, "blob");
+        if (!oldShortMessageDbFormat) {
+            appendField(sb, Schema.COLUMN_MESSAGE_TEXT, "text");
+            appendField(sb, Schema.COLUMN_MESSAGE_BIN, "blob");
+        }
+        appendField(sb, Schema.COLUMN_OPTIONAL_PARAMETERS, "text");
+        appendField(sb, Schema.COLUMN_SCHEDULE_DELIVERY_TIME, "timestamp");
+        appendField(sb, Schema.COLUMN_VALIDITY_PERIOD, "timestamp");
+
+        appendField(sb, Schema.COLUMN_IMSI, "ascii");
+        appendField(sb, Schema.COLUMN_NNN_DIGITS, "ascii");
+        appendField(sb, Schema.COLUMN_NNN_AN, "int");
+        appendField(sb, Schema.COLUMN_NNN_NP, "int");
+        appendField(sb, Schema.COLUMN_SM_STATUS, "int");
+        appendField(sb, Schema.COLUMN_SM_TYPE, "int");
+        appendField(sb, Schema.COLUMN_DELIVERY_COUNT, "int");
     }
 
 //    @Override

@@ -27,11 +27,9 @@ import static org.testng.Assert.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
-import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
+import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.Test;
-
-import com.cloudhopper.smpp.SmppConstants;
 
 /**
  * 
@@ -45,6 +43,7 @@ public class RxSmppServerSbbTest {
         RxSmppServerSbbProxy proxy = new RxSmppServerSbbProxy();
 
         String s1 = "������Hel";
+        String s2 = "Hello bbs";
 
         Charset utf8Charset = Charset.forName("UTF-8");
         ByteBuffer bf = utf8Charset.encode(s1);
@@ -56,30 +55,34 @@ public class RxSmppServerSbbTest {
         byte[] msgUcs2 = new byte[bf.limit()];
         bf.get(msgUcs2);
 
-        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
-        byte[] res = proxy.recodeShortMessage(0, 0, msgUcs2);
-        assertEquals(res, msgUcs2);
-
-        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
-        res = proxy.recodeShortMessage(0, 8, msgUcs2);
+        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForGsm7(SmppEncoding.Utf8);
+        byte[] res = proxy.recodeShortMessage(0, s1, null);
         assertEquals(res, msgUtf8);
 
-        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Unicode);
-        res = proxy.recodeShortMessage(0, 8, msgUcs2);
+        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Utf8);
+        res = proxy.recodeShortMessage(8, s1, null);
+        assertEquals(res, msgUtf8);
+
+        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Unicode);
+        res = proxy.recodeShortMessage(8, s1, null);
         assertEquals(res, msgUcs2);
 
-        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncodingForUCS2.Utf8);
+        RxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForGsm7(SmppEncoding.Unicode);
         byte[] udh = new byte[] { 0x05, 0x00, 0x03, 0x29, 0x02, 0x02 };
         byte[] aMsgB = new byte[msgUcs2.length + udh.length];
         System.arraycopy(udh, 0, aMsgB, 0, udh.length);
         System.arraycopy(msgUcs2, 0, aMsgB, udh.length, msgUcs2.length);
-        res = proxy.recodeShortMessage(SmppConstants.ESM_CLASS_UDHI_MASK, 8, aMsgB);
-        byte[] bf1 = new byte[udh.length];
-        byte[] bf2 = new byte[res.length - udh.length];
-        System.arraycopy(res, 0, bf1, 0, udh.length);
-        System.arraycopy(res, udh.length, bf2, 0, bf2.length);
-        assertEquals(bf1, udh);
-        assertEquals(bf2, msgUtf8);
+        res = proxy.recodeShortMessage(0, s1, udh);
+        assertEquals(res, aMsgB);
+
+
+        Charset isoCharset = Charset.forName("ISO-8859-1");
+        byte[] msgAscii = s2.getBytes(isoCharset);
+        byte[] aMsgC = new byte[msgAscii.length + udh.length];
+        System.arraycopy(udh, 0, aMsgC, 0, udh.length);
+        System.arraycopy(msgAscii, 0, aMsgC, udh.length, msgAscii.length);
+        res = proxy.recodeShortMessage(4, s2, udh);
+        assertEquals(res, aMsgC);
     }
 
     public class RxSmppServerSbbProxy extends RxSmppServerSbb {
@@ -88,8 +91,8 @@ public class RxSmppServerSbbTest {
             RxSmppServerSbb.smscPropertiesManagement = SmscPropertiesManagement.getInstance("Test");
         }
 
-        protected byte[] recodeShortMessage(int esmeClass, int dataCoding, byte[] msg) {
-            return super.recodeShortMessage(esmeClass, dataCoding, msg);
+        protected byte[] recodeShortMessage(int dataCoding, String msg, byte[] udh) {
+            return super.recodeShortMessage(dataCoding, msg, udh);
         }
 
         @Override

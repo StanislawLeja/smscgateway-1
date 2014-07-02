@@ -88,6 +88,9 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         txsipcharging.addChild("Selected");
         txsipcharging.addChild("All");
 
+        Node smppencodingforgsm7 = set.addChild("smppencodingforgsm7");
+        smppencodingforgsm7.addChild("utf8");
+        smppencodingforgsm7.addChild("unicode");
         Node smppencodingforucs2 = set.addChild("smppencodingforucs2");
         smppencodingforucs2.addChild("utf8");
         smppencodingforucs2.addChild("unicode");
@@ -129,9 +132,12 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("removinglivetablesdays");
         get.addChild("removingarchivetablesdays");
 
-        smppencodingforucs2 = get.addChild("smppencodingforucs2");
-        smppencodingforucs2.addChild("utf8");
-        smppencodingforucs2.addChild("unicode");
+        Node smppencodingforgsm72 = get.addChild("smppencodingforgsm7");
+        smppencodingforgsm72.addChild("utf8");
+        smppencodingforgsm72.addChild("unicode");
+        Node smppencodingforucs22 = get.addChild("smppencodingforucs2");
+        smppencodingforucs22.addChild("utf8");
+        smppencodingforucs22.addChild("unicode");
         get.addChild("hosts");
         get.addChild("keyspacename");
         get.addChild("clustername");

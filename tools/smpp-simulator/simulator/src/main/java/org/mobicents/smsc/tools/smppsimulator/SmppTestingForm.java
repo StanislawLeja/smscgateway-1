@@ -74,8 +74,6 @@ import java.awt.event.ActionEvent;
 import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
@@ -121,6 +119,10 @@ public class SmppTestingForm extends JDialog {
 	protected AtomicInteger messagesSent = new AtomicInteger();
 	protected AtomicInteger segmentsSent = new AtomicInteger();
 	protected AtomicInteger responsesRcvd = new AtomicInteger();
+
+	private static Charset utf8Charset = Charset.forName("UTF-8");
+    private static Charset ucs2Charset = Charset.forName("UTF-16BE");
+    private static Charset isoCharset = Charset.forName("ISO-8859-1");
 
 	public SmppTestingForm(JFrame owner) {
 		super(owner, true);
@@ -316,6 +318,18 @@ public class SmppTestingForm extends JDialog {
 		return msgRef;
 	}
 
+    private byte[] encodeSegment(String msg, EncodingType encodingType) {
+        if (encodingType == EncodingType.GSM8) {
+            return msg.getBytes(isoCharset);
+        } else {
+            if (this.param.getSmppEncoding() == 0) {
+                return msg.getBytes(utf8Charset);
+            } else {
+                return msg.getBytes(ucs2Charset);
+            }
+        }
+    }
+
     private void submitMessage(EncodingType encodingType, boolean messageClass0, String messageText, SplittingType splittingType, ValidityType validityType,
             String destAddr) {
         if (session0 == null)
@@ -326,144 +340,247 @@ public class SmppTestingForm extends JDialog {
 			ArrayList<byte[]> msgLst = new ArrayList<byte[]>();
         	int msgRef = 0;
 
-            EncodingType et = encodingType;
-            byte[] buf = null;
-            boolean addSegmTlv = false;
-            int esmClass = 0;
-            int msgLenByte = 0;
-    		switch (et) {
-    		case GSM7:
+            switch (encodingType) {
+            case GSM7:
                 dcs = 0;
-                buf = messageText.getBytes();
-                msgLenByte = buf.length;
                 break;
-    		case UCS2:
-    			dcs = 8;
-    			ByteBuffer bb;
-//                if (this.param.getSmppEncodingForUCS2() == 0) {
-//                    Charset utf8Charset = Charset.forName("UTF-8");
-//                    bb = utf8Charset.encode(messageText);
-//                } else {
-                Charset ucs2Charset = Charset.forName("UTF-16BE");
-                bb = ucs2Charset.encode(messageText);
-//                }
-
-                msgLenByte = messageText.length() * 2;
-				buf = new byte[bb.limit()];
-				bb.get(buf);
+            case GSM8:
+                dcs = 4;
                 break;
-    		}
+            case UCS2:
+                dcs = 8;
+                break;
+            }
             if (messageClass0) {
                 dcs += 16;
             }
-    		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
-			int maxLen = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
-			int maxSplLen = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
+            DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
+            int maxLen = MessageUtil.getMaxSolidMessageCharsLength(dataCodingScheme);
+            int maxSplLen = MessageUtil.getMaxSegmentedMessageCharsLength(dataCodingScheme);
 
-    		int segmCnt = 0;
-			if (msgLenByte > maxLen) { // may be message splitting
-				SplittingType st = splittingType;
-				switch (st) {
-				case DoNotSplit:
-					// we do not split
-					msgLst.add(buf);
-					ArrayList<byte[]> r1 = this.splitByteArr(buf, maxSplLen);
-					segmCnt = r1.size();
-					break;
-				case SplitWithParameters:
-					msgRef = getNextMsgRef();
-					r1 = this.splitByteArr(buf, maxSplLen);
-					for (byte[] bf : r1) {
-						msgLst.add(bf);
-					}
-					segmCnt = msgLst.size();
-					addSegmTlv = true;
-					break;
-				case SplitWithUdh:
-					msgRef = getNextMsgRef();
-					r1 = this.splitByteArr(buf, maxSplLen);
-					byte[] bf1 = new byte[6];
-					bf1[0] = 5; // total UDH length
-					bf1[1] = 0; // UDH id
-					bf1[2] = 3; // UDH length
-					bf1[3] = (byte) msgRef; // refNum
-					bf1[4] = (byte) r1.size(); // segmCnt
-					int i1 = 0;
-					for (byte[] bf : r1) {
-						i1++;
-						bf1[5] = (byte) i1; // segmNum
-						byte[] bf2 = new byte[bf1.length + bf.length];
-						System.arraycopy(bf1, 0, bf2, 0, bf1.length);
-						System.arraycopy(bf, 0, bf2, bf1.length, bf.length);
-						msgLst.add(bf2);
-					}
-					segmCnt = msgLst.size();
-					esmClass = 0x40;
-					break;
-				}
-			} else {
-				msgLst.add(buf);
-				segmCnt = 1;
-			}
-
-            if (this.param.getSmppEncodingForUCS2() == 0) {
-                if (et == EncodingType.UCS2) {
-                    for (int i1 = 0; i1 < msgLst.size(); i1++) {
-                        byte[] udhData = null;
-                        byte[] textPart = msgLst.get(i1);
-                        if (esmClass != 0 && textPart.length > 2) {
-                            // UDH exists
-                            int udhLen = (textPart[0] & 0xFF) + 1;
-                            if (udhLen <= textPart.length) {
-                                textPart = new byte[textPart.length - udhLen];
-                                udhData = new byte[udhLen];
-                                System.arraycopy(msgLst.get(i1), udhLen, textPart, 0, textPart.length);
-                                System.arraycopy(msgLst.get(i1), 0, udhData, 0, udhLen);
-                            }
-                        }
-                        Charset ucs2Charset = Charset.forName("UTF-16BE");
-                        ByteBuffer bb = ByteBuffer.wrap(textPart);
-                        CharBuffer cb = ucs2Charset.decode(bb);
-                        Charset utf8Charset = Charset.forName("UTF-8");
-                        ByteBuffer bf2 = utf8Charset.encode(cb);
-
-                        byte[] buf2;
-                        if (udhData != null) {
-                            buf2 = new byte[udhData.length + bf2.limit()];
-                            bf2.get(buf2, udhData.length, bf2.limit());
-                            System.arraycopy(udhData, 0, buf2, 0, udhData.length);
-                        } else {
-                            buf2 = new byte[bf2.limit()];
-                            bf2.get(buf2);
-                        }
-                        msgLst.set(i1, buf2);
+            int segmCnt = 0;
+            int esmClass = 0;
+            boolean addSegmTlv = false;
+            if (messageText.length() > maxLen) { // may be message splitting
+                SplittingType st = splittingType;
+                switch (st) {
+                case DoNotSplit:
+                    // we do not split
+                    byte[] buf1 = encodeSegment(messageText, encodingType);
+                    byte[] buf2;
+                    if (encodingType == EncodingType.GSM8) {
+                        byte[] bf3 = new byte[7];
+                        bf3[0] = 6; // total UDH length
+                        bf3[1] = 5; // UDH id
+                        bf3[2] = 4; // UDH length
+                        bf3[3] = 0x3E;
+                        bf3[4] = (byte) 0x94;
+                        bf3[5] = 0;
+                        bf3[6] = 0;
+                        buf2 = new byte[bf3.length + buf1.length];
+                        System.arraycopy(bf3, 0, buf2, 0, bf3.length);
+                        System.arraycopy(buf1, 0, buf2, bf3.length, buf1.length);
+                    } else {
+                        buf2 = buf1;
                     }
+                    msgLst.add(buf2);
+                    ArrayList<String> r1 = this.splitStr(messageText, maxSplLen);
+                    segmCnt = r1.size();
+                    break;
+                case SplitWithParameters:
+                    msgRef = getNextMsgRef();
+                    r1 = this.splitStr(messageText, maxSplLen);
+                    for (String bf : r1) {
+                        msgLst.add(encodeSegment(bf, encodingType));
+                    }
+                    segmCnt = msgLst.size();
+                    addSegmTlv = true;
+                    break;
+                case SplitWithUdh:
+                    msgRef = getNextMsgRef();
+                    r1 = this.splitStr(messageText, maxSplLen);
+                    byte[] bf1 = new byte[6];
+                    bf1[0] = 5; // total UDH length
+                    bf1[1] = 0; // UDH id
+                    bf1[2] = 3; // UDH length
+                    bf1[3] = (byte) msgRef; // refNum
+                    bf1[4] = (byte) r1.size(); // segmCnt
+                    int i1 = 0;
+                    for (String bfStr : r1) {
+                        byte[] bf = encodeSegment(bfStr, encodingType);
+                        i1++;
+                        bf1[5] = (byte) i1; // segmNum
+                        byte[] bf2 = new byte[bf1.length + bf.length];
+                        System.arraycopy(bf1, 0, bf2, 0, bf1.length);
+                        System.arraycopy(bf, 0, bf2, bf1.length, bf.length);
+                        msgLst.add(bf2);
+                    }
+                    segmCnt = msgLst.size();
+                    esmClass = 0x40;
+                    break;
                 }
+            } else {
+                byte[] buf = encodeSegment(messageText, encodingType);
+                if (encodingType == EncodingType.GSM8) {
+                    byte[] bf1 = new byte[7];
+                    bf1[0] = 6; // total UDH length
+                    bf1[1] = 5; // UDH id
+                    bf1[2] = 4; // UDH length
+                    bf1[3] = 0x3e;
+                    bf1[4] = (byte) 0x94;
+                    bf1[5] = 0;
+                    bf1[6] = 0;
+
+                    byte[] bf2 = new byte[bf1.length + buf.length];
+                    System.arraycopy(bf1, 0, bf2, 0, bf1.length);
+                    System.arraycopy(buf, 0, bf2, bf1.length, buf.length);
+                    msgLst.add(bf2);
+                    esmClass = 0x40;
+                } else {
+                    msgLst.add(buf);
+                }
+                segmCnt = 1;
             }
 
-        	this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv, esmClass, validityType, segmCnt, destAddr);
+
+
+//            EncodingType et = encodingType;
+//            byte[] buf = null;
+//            boolean addSegmTlv = false;
+//            int esmClass = 0;
+//            int msgLenByte = 0;
+//    		switch (et) {
+//    		case GSM7:
+//                dcs = 0;
+//                buf = messageText.getBytes(utf8Charset);
+//                msgLenByte = buf.length;
+//                break;
+//    		case UCS2:
+//                dcs = 8;
+//                ByteBuffer bb;
+//                Charset ucs2Charset = Charset.forName("UTF-16BE");
+//                bb = ucs2Charset.encode(messageText);
+//
+//                msgLenByte = messageText.length() * 2;
+//				buf = new byte[bb.limit()];
+//				bb.get(buf);
+//                break;
+//    		}
+//            if (messageClass0) {
+//                dcs += 16;
+//            }
+//    		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
+//			int maxLen = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
+//			int maxSplLen = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
+//
+//    		int segmCnt = 0;
+//			if (msgLenByte > maxLen) { // may be message splitting
+//				SplittingType st = splittingType;
+//				switch (st) {
+//				case DoNotSplit:
+//					// we do not split
+//					msgLst.add(buf);
+//					ArrayList<byte[]> r1 = this.splitStr(buf, maxSplLen);
+//					segmCnt = r1.size();
+//					break;
+//				case SplitWithParameters:
+//					msgRef = getNextMsgRef();
+//					r1 = this.splitStr(buf, maxSplLen);
+//					for (byte[] bf : r1) {
+//						msgLst.add(bf);
+//					}
+//					segmCnt = msgLst.size();
+//					addSegmTlv = true;
+//					break;
+//				case SplitWithUdh:
+//					msgRef = getNextMsgRef();
+//					r1 = this.splitStr(buf, maxSplLen);
+//					byte[] bf1 = new byte[6];
+//					bf1[0] = 5; // total UDH length
+//					bf1[1] = 0; // UDH id
+//					bf1[2] = 3; // UDH length
+//					bf1[3] = (byte) msgRef; // refNum
+//					bf1[4] = (byte) r1.size(); // segmCnt
+//					int i1 = 0;
+//					for (byte[] bf : r1) {
+//						i1++;
+//						bf1[5] = (byte) i1; // segmNum
+//						byte[] bf2 = new byte[bf1.length + bf.length];
+//						System.arraycopy(bf1, 0, bf2, 0, bf1.length);
+//						System.arraycopy(bf, 0, bf2, bf1.length, bf.length);
+//						msgLst.add(bf2);
+//					}
+//					segmCnt = msgLst.size();
+//					esmClass = 0x40;
+//					break;
+//				}
+//			} else {
+//				msgLst.add(buf);
+//				segmCnt = 1;
+//			}
+//
+//            if (this.param.getSmppEncoding() == 0) {
+//                if (et == EncodingType.UCS2) {
+//                    for (int i1 = 0; i1 < msgLst.size(); i1++) {
+//                        byte[] udhData = null;
+//                        byte[] textPart = msgLst.get(i1);
+//                        if (esmClass != 0 && textPart.length > 2) {
+//                            // UDH exists
+//                            int udhLen = (textPart[0] & 0xFF) + 1;
+//                            if (udhLen <= textPart.length) {
+//                                textPart = new byte[textPart.length - udhLen];
+//                                udhData = new byte[udhLen];
+//                                System.arraycopy(msgLst.get(i1), udhLen, textPart, 0, textPart.length);
+//                                System.arraycopy(msgLst.get(i1), 0, udhData, 0, udhLen);
+//                            }
+//                        }
+//                        Charset ucs2Charset = Charset.forName("UTF-16BE");
+//                        ByteBuffer bb = ByteBuffer.wrap(textPart);
+//                        CharBuffer cb = ucs2Charset.decode(bb);
+//                        Charset utf8Charset = Charset.forName("UTF-8");
+//                        ByteBuffer bf2 = utf8Charset.encode(cb);
+//
+//                        byte[] buf2;
+//                        if (udhData != null) {
+//                            buf2 = new byte[udhData.length + bf2.limit()];
+//                            bf2.get(buf2, udhData.length, bf2.limit());
+//                            System.arraycopy(udhData, 0, buf2, 0, udhData.length);
+//                        } else {
+//                            buf2 = new byte[bf2.limit()];
+//                            bf2.get(buf2);
+//                        }
+//                        msgLst.set(i1, buf2);
+//                    }
+//                }
+//            }
+
+
+            this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv, esmClass, validityType, segmCnt, destAddr);
 		} catch (Exception e) {
 			this.addMessage("Failure to submit message", e.toString());
 			return;
 		}
 	}
 
-	private ArrayList<byte[]> splitByteArr(byte[] buf, int maxLen) {
-		ArrayList<byte[]> res = new ArrayList<byte[]>();
+	private ArrayList<String> splitStr(String buf, int maxLen) {
+		ArrayList<String> res = new ArrayList<String>();
 
-		byte[] prevBuf = buf;
+		String prevBuf = buf;
 
 		while (true) {
-			if (prevBuf.length <= maxLen) {
+			if (prevBuf.length() <= maxLen) {
 				res.add(prevBuf);
 				break;
 			}
 
-			byte[] segm = new byte[maxLen];
-			byte[] newBuf = new byte[prevBuf.length - maxLen];
+            String segm = prevBuf.substring(0, maxLen);
+            String newBuf = prevBuf.substring(maxLen, prevBuf.length());
 
-			System.arraycopy(prevBuf, 0, segm, 0, maxLen);
-			System.arraycopy(prevBuf, maxLen, newBuf, 0, prevBuf.length - maxLen);
+//			String segm = new byte[maxLen];
+//			String newBuf = new byte[prevBuf.length - maxLen];
+//
+//			System.arraycopy(prevBuf, 0, segm, 0, maxLen);
+//			System.arraycopy(prevBuf, maxLen, newBuf, 0, prevBuf.length - maxLen);
 			
 			res.add(segm);
 			prevBuf = newBuf;

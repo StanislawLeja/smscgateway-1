@@ -242,7 +242,7 @@ public class SmppMessageParamForm extends JDialog {
 						cbMcDeliveryReceipt.setBounds(349, 466, 255, 20);
 						panel.add(cbMcDeliveryReceipt);
 						
-						JLabel lblEncodingTypeAt = new JLabel("Encoding type at SMPP part for data coding schema==8 (UCS2)");
+						JLabel lblEncodingTypeAt = new JLabel("Encoding type at SMPP part for (GSM7/UCS2)");
 						lblEncodingTypeAt.setBounds(10, 312, 401, 14);
 						panel.add(lblEncodingTypeAt);
 						
@@ -370,7 +370,7 @@ public class SmppMessageParamForm extends JDialog {
 
         this.cbMessageClass.setSelected(data.isMessageClass());
 
-        if (data.getSmppEncodingForUCS2() == 0)
+        if (data.getSmppEncoding() == 0)
             this.rbUtf8.setSelected(true);
         else
             this.rbUnicode.setSelected(true);
@@ -428,9 +428,9 @@ public class SmppMessageParamForm extends JDialog {
         this.data.setMessageClass(this.cbMessageClass.isSelected());
 
         if (this.rbUtf8.isSelected())
-            this.data.setSmppEncodingForUCS2(0);
+            this.data.setSmppEncoding(0);
         else
-            this.data.setSmppEncodingForUCS2(1);
+            this.data.setSmppEncoding(1);
 
 		this.dispose();
 	}

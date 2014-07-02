@@ -29,6 +29,12 @@
 			<groupId>org.mobicents.protocols.ss7.map</groupId>
 			<version>${ss7.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.map</groupId>
+			<artifactId>map-impl</artifactId>
+			<version>${ss7.version}</version>
+		</dependency>
+
 		<!-- javolution -->
 		<dependency>
 			<groupId>javolution</groupId>

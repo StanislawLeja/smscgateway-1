@@ -22,9 +22,6 @@
 
 package org.mobicents.smsc.slee.resources.persistence;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -44,7 +41,6 @@ import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
-import com.cloudhopper.commons.charset.CharsetUtil;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.tlv.TlvConvertException;
@@ -53,6 +49,10 @@ import com.cloudhopper.smpp.tlv.TlvConvertException;
  * 
  * @author sergey vetyutnev
  * 
+ */
+/**
+ * @author bss
+ *
  */
 public class MessageUtil {
 
@@ -288,21 +288,83 @@ public class MessageUtil {
 		return d;
 	}
 
-	public static int getMaxSolidMessageBytesLength(DataCodingScheme dataCodingScheme) {
-		if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
-			return 160;
-		} else {
-			return 140;
-		}
-	}
+    public static int getMaxSolidMessageBytesLength(DataCodingScheme dataCodingScheme) {
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+            return 160;
+        } else {
+            return 140;
+        }
+    }
 
-	public static int getMaxSegmentedMessageBytesLength(DataCodingScheme dataCodingScheme) {
-		if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
-			return 152;
-		} else {
-			return 132;
-		}
-	}
+    public static int getMaxSegmentedMessageBytesLength(DataCodingScheme dataCodingScheme) {
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+            return 152;
+        } else {
+            return 132;
+        }
+    }
+
+    /**
+     * Returns max characters length for solid message (without UDH)
+     * @param dataCodingScheme
+     * @return
+     */
+    public static int getMaxSolidMessageCharsLength(DataCodingScheme dataCodingScheme) {
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+            return 160;
+        } else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
+            return 140;
+        } else {
+            return 70;
+        }
+    }
+
+    /**
+     * Returns max characters length for splitted message (with only UDH for multisegment message)
+     * @param dataCodingScheme
+     * @return
+     */
+    public static int getMaxSegmentedMessageCharsLength(DataCodingScheme dataCodingScheme) {
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+            return 152;
+        } else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
+            return 132;
+        } else {
+            return 66;
+        }
+    }
+
+    /**
+     * Returns max bytes length for solid message (without UDH)
+     * @return
+     */
+    public static int getMaxSolidMessageBytesLength() {
+        return 140;
+    }
+
+    /**
+     * Returns max bytes length for splitted message (with only UDH for multisegment message)
+     * @return
+     */
+    public static int getMaxSegmentedMessageBytesLength() {
+        return 132;
+    }
+
+    /**
+     * Returns now many bytes occupies this charCount
+     * @param dataCodingScheme
+     * @param charCount
+     * @return
+     */
+    public static int getMessageLengthInBytes(DataCodingScheme dataCodingScheme, int charCount) {
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+            return (charCount + 1) * 7 / 8;
+        } else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
+            return charCount;
+        } else {
+            return charCount * 2;
+        }
+    }
 
 	public static NumberingPlan getSccpNumberingPlan(int npi) {
 		NumberingPlan np = NumberingPlan.ISDN_TELEPHONY;
@@ -376,8 +438,9 @@ public class MessageUtil {
      */
     public static String checkDataCodingSchemeSupport(int dcs) {
         DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
-        if (dataCodingScheme.getCharacterSet() != CharacterSet.GSM7 && dataCodingScheme.getCharacterSet() != CharacterSet.UCS2)
-            return "Only GSM7 and USC2 are supported";
+        if (dataCodingScheme.getCharacterSet() != CharacterSet.GSM7 && dataCodingScheme.getCharacterSet() != CharacterSet.UCS2
+                && dataCodingScheme.getCharacterSet() != CharacterSet.GSM8)
+            return "Only GSM7, GSM8 and USC2 are supported";
         if (dataCodingScheme.getIsCompressed())
             return "Compressed message are not supported";
 
@@ -433,44 +496,30 @@ public class MessageUtil {
                     .append(DELIVERY_ACK_SUBMIT_DATE).append(DELIVERY_ACK_DATE_FORMAT.format(sms.getSubmitDate())).append(DELIVERY_ACK_DONE_DATE)
                     .append(DELIVERY_ACK_DATE_FORMAT.format(new Timestamp(System.currentTimeMillis()))).append(DELIVERY_ACK_STAT)
                     .append(DELIVERY_ACK_STATE_DELIVERED).append(DELIVERY_ACK_ERR).append("000").append(DELIVERY_ACK_TEXT)
-                    .append(getFirst20CharOfSMS(sms.getShortMessage(), dcs));
+                    .append(getFirst20CharOfSMS(sms.getShortMessageText()));
         } else {
             sb.append(DELIVERY_ACK_ID).append(sms.getMessageIdText()).append(DELIVERY_ACK_SUB).append("001").append(DELIVERY_ACK_DLVRD).append("001")
                     .append(DELIVERY_ACK_SUBMIT_DATE).append(DELIVERY_ACK_DATE_FORMAT.format(sms.getSubmitDate())).append(DELIVERY_ACK_DONE_DATE)
                     .append(DELIVERY_ACK_DATE_FORMAT.format(new Timestamp(System.currentTimeMillis()))).append(DELIVERY_ACK_STAT)
                     .append(DELIVERY_ACK_STATE_UNDELIVERABLE).append(DELIVERY_ACK_ERR).append(sms.getSmsSet().getStatus().getCodeText())
-                    .append(DELIVERY_ACK_TEXT).append(getFirst20CharOfSMS(sms.getShortMessage(), dcs));
+                    .append(DELIVERY_ACK_TEXT).append(getFirst20CharOfSMS(sms.getShortMessageText()));
         }
 
         byte[] textBytes;
         // TODO: now we are sending all in GSM7 encoding
         receipt.setDataCoding(0);
-        textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_GSM);
-        // TODO: here is the code for both GSM7-USC2 encoding
-//        if (dcs.getCharacterSet() == CharacterSet.UCS2) {
-//            receipt.setDataCoding(8);
-//            textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_UCS_2);
-//        } else {
-//            receipt.setDataCoding(0);
-//            textBytes = CharsetUtil.encode(sb.toString(), CharsetUtil.CHARSET_GSM);
-//        }
 
-        receipt.setShortMessage(textBytes);
+        receipt.setShortMessageText(sb.toString());
+
         receipt.setEsmClass(ESME_DELIVERY_ACK);
 
         return receipt;
     }
 
-    private static String getFirst20CharOfSMS(byte[] rawSms, DataCodingScheme dcs) {
-        String first20CharOfSms;
-        if (dcs.getCharacterSet() == CharacterSet.UCS2) {
-            Charset ucs2Charset = Charset.forName("UTF-16BE");
-            ByteBuffer bb = ByteBuffer.wrap(rawSms);
-            CharBuffer bf = ucs2Charset.decode(bb);
-            first20CharOfSms = bf.toString();
-        } else {
-            first20CharOfSms = new String(rawSms);
-        }
+//    private static String getFirst20CharOfSMS(byte[] rawSms, DataCodingScheme dcs) {
+    private static String getFirst20CharOfSMS(String first20CharOfSms) {
+        if (first20CharOfSms == null)
+            return "";
         if (first20CharOfSms.length() > 20) {
             first20CharOfSms = first20CharOfSms.substring(0, 20);
         }
@@ -485,8 +534,8 @@ public class MessageUtil {
         if ((sms.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0) {
             // message already contains UDH - checking for segment
             // number
-            byte[] shortMessage = sms.getShortMessage();
-            if (shortMessage.length > 2) {
+            byte[] shortMessage = sms.getShortMessageBin();
+            if (shortMessage != null && shortMessage.length > 2) {
                 // UDH exists
                 int udhLen = (shortMessage[0] & 0xFF) + 1;
                 if (udhLen <= shortMessage.length) {

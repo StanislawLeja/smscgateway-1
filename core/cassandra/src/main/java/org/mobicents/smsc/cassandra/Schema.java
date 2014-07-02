@@ -55,6 +55,8 @@ public class Schema {
     public static final String COLUMN_DATA_CODING = "DATA_CODING";
     public static final String COLUMN_DEFAULT_MSG_ID = "DEFAULT_MSG_ID";
     public static final String COLUMN_MESSAGE = "MESSAGE";
+    public static final String COLUMN_MESSAGE_TEXT = "MESSAGE_TEXT";
+    public static final String COLUMN_MESSAGE_BIN = "MESSAGE_BIN";
     public static final String COLUMN_OPTIONAL_PARAMETERS = "OPTIONAL_PARAMETERS";
     public static final String COLUMN_SUBMIT_DATE = "SUBMIT_DATE";
     public static final String COLUMN_SCHEDULE_DELIVERY_TIME = "SCHEDULE_DELIVERY_TIME";
@@ -161,7 +163,9 @@ public class Schema {
 		tmp.add(COLUMN_REPLACE);
 		tmp.add(COLUMN_DATA_CODING);
 		tmp.add(COLUMN_DEFAULT_MSG_ID);
-		tmp.add(COLUMN_MESSAGE);
+        tmp.add(COLUMN_MESSAGE);
+        tmp.add(COLUMN_MESSAGE_TEXT);
+        tmp.add(COLUMN_MESSAGE_BIN);
 		tmp.add(COLUMN_OPTIONAL_PARAMETERS);
 		tmp.add(COLUMN_SCHEDULE_DELIVERY_TIME);
 		tmp.add(COLUMN_VALIDITY_PERIOD);
@@ -198,6 +202,8 @@ public class Schema {
         tmp.add(COLUMN_DATA_CODING);
         tmp.add(COLUMN_DEFAULT_MSG_ID);
         tmp.add(COLUMN_MESSAGE);
+        tmp.add(COLUMN_MESSAGE_TEXT);
+        tmp.add(COLUMN_MESSAGE_BIN);
         tmp.add(COLUMN_OPTIONAL_PARAMETERS);
         tmp.add(COLUMN_SCHEDULE_DELIVERY_TIME);
         tmp.add(COLUMN_VALIDITY_PERIOD);

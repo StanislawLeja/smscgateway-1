@@ -53,7 +53,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 import org.mobicents.smsc.slee.services.smpp.server.tx.TxSmppServerSbb;
 import org.mobicents.smsc.smpp.Esme;
-import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
+import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.smsc.smpp.SmppInterfaceVersionType;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.AfterClass;

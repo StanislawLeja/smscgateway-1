@@ -22,8 +22,6 @@
 
 package org.mobicents.smsc.slee.services.smpp.server.rx;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
@@ -65,7 +63,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.EsmeManagement;
-import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
+import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -101,6 +99,10 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 	private PersistenceRAInterface persistence;
 	private SchedulerRaSbbInterface scheduler;
+
+	private static Charset utf8Charset = Charset.forName("UTF-8");
+    private static Charset ucs2Charset = Charset.forName("UTF-16BE");
+    private static Charset isoCharset = Charset.forName("ISO-8859-1");
 
 	public RxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -442,9 +444,10 @@ public abstract class RxSmppServerSbb implements Sbb {
 				submitSm.setReplaceIfPresent((byte) sms.getReplaceIfPresent());
 				submitSm.setDataCoding((byte) sms.getDataCoding());
 
-				byte[] msg = sms.getShortMessage();
-				if (msg != null) {
-					msg = recodeShortMessage(sms.getEsmClass(), sms.getDataCoding(), msg);
+                String msgStr = sms.getShortMessageText();
+                byte[] msgUdh = sms.getShortMessageBin();
+                if (msgStr != null || msgUdh != null) {
+                    byte[] msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
 
 					if (msg.length <= 255) {
 						submitSm.setShortMessage(msg);
@@ -486,9 +489,10 @@ public abstract class RxSmppServerSbb implements Sbb {
 				deliverSm.setReplaceIfPresent((byte) sms.getReplaceIfPresent());
 				deliverSm.setDataCoding((byte) sms.getDataCoding());
 
-				byte[] msg = sms.getShortMessage();
-				if (msg != null) {
-					msg = recodeShortMessage(sms.getEsmClass(), sms.getDataCoding(), msg);
+                String msgStr = sms.getShortMessageText();
+                byte[] msgUdh = sms.getShortMessageBin();
+                if (msgStr != null || msgUdh != null) {
+                    byte[] msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
 
 					if (msg.length <= 255) {
 						deliverSm.setShortMessage(msg);
@@ -520,39 +524,39 @@ public abstract class RxSmppServerSbb implements Sbb {
 		}
 	}
 
-	protected byte[] recodeShortMessage(int esmeClass, int dataCoding, byte[] msg) {
-		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dataCoding);
-		boolean udhPresent = (esmeClass & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
-		if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncodingForUCS2.Utf8
-				&& dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
-			byte[] textPart = msg;
-			byte[] udhData = null;
-			if (udhPresent && msg.length > 2) {
-				// UDH exists
-				int udhLen = (msg[0] & 0xFF) + 1;
-				if (udhLen <= msg.length) {
-					textPart = new byte[msg.length - udhLen];
-					udhData = new byte[udhLen];
-					System.arraycopy(msg, udhLen, textPart, 0, textPart.length);
-					System.arraycopy(msg, 0, udhData, 0, udhLen);
-				}
-			}
+	protected byte[] recodeShortMessage(int dataCoding, String msg, byte[] udhPart) {
+	    DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dataCoding);
 
-			Charset ucs2Charset = Charset.forName("UTF-16BE");
-			ByteBuffer bb = ByteBuffer.wrap(textPart);
-			CharBuffer cb = ucs2Charset.decode(bb);
-			Charset utf8Charset = Charset.forName("UTF-8");
-			ByteBuffer bf2 = utf8Charset.encode(cb);
-			if (udhData != null) {
-				msg = new byte[udhData.length + bf2.limit()];
-				System.arraycopy(udhData, 0, msg, 0, udhData.length);
-				bf2.get(msg, udhData.length, bf2.limit());
-			} else {
-				msg = new byte[bf2.limit()];
-				bf2.get(msg);
-			}
-		}
-		return msg;
+		byte[] textPart;
+        if (msg != null) {
+            if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
+                textPart = msg.getBytes(isoCharset);
+            } else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+                if (smscPropertiesManagement.getSmppEncodingForGsm7() == SmppEncoding.Utf8) {
+                    textPart = msg.getBytes(utf8Charset);
+                } else {
+                    textPart = msg.getBytes(ucs2Charset);
+                }
+            } else {
+                if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncoding.Utf8) {
+                    textPart = msg.getBytes(utf8Charset);
+                } else {
+                    textPart = msg.getBytes(ucs2Charset);
+                }
+            }
+        } else {
+            textPart = new byte[0];
+        }		
+
+        if (udhPart == null) {
+            return textPart;
+        } else {
+            byte[] res = new byte[textPart.length + udhPart.length];
+            System.arraycopy(udhPart, 0, res, 0, udhPart.length);
+            System.arraycopy(textPart, 0, res, udhPart.length, textPart.length);
+
+            return res;
+        }
 	}
 
 	/**

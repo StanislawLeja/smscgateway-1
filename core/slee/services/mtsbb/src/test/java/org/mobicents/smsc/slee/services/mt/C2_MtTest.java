@@ -701,7 +701,8 @@ public class C2_MtTest {
         assertEquals(set1.getDestAddr(), origDig);
         assertEquals(ss1.getSourceAddr(), msdnDig);
         assertEquals(ss1.getEsmClass(), 4);
-        String sx = new String(ss1.getShortMessage());
+//        String sx = new String(ss1.getShortMessage());
+        String sx = new String(ss1.getShortMessageText());
         assertTrue(sx.contains("err:000"));
 
         dlg = serviceRsds.getLastMAPDialogSms();
@@ -731,12 +732,14 @@ public class C2_MtTest {
         sd1.dataCodingScheme = 8;
         sd1.esmClass = 3 + 0x40;
         String msga1 = this.msgShort + "�";
-        Charset ucs2Charset = Charset.forName("UTF-16BE");
-        ByteBuffer bb = ucs2Charset.encode(msga1);
-        byte[] buf = new byte[udhTemp.length + bb.limit()];
-        System.arraycopy(udhTemp, 0, buf, 0, udhTemp.length);
-        bb.get(buf, udhTemp.length, bb.limit());
-        sd1.msg = buf;
+//        Charset ucs2Charset = Charset.forName("UTF-16BE");
+//        ByteBuffer bb = ucs2Charset.encode(msga1);
+//        byte[] buf = new byte[udhTemp.length + bb.limit()];
+//        System.arraycopy(udhTemp, 0, buf, 0, udhTemp.length);
+//        bb.get(buf, udhTemp.length, bb.limit());
+//        sd1.msg = buf;
+        sd1.msg = msga1;
+        sd1.msgUdh = udhTemp;
 
         SmsDef sd2 = new SmsDef();
         lst.add(sd2);
@@ -746,7 +749,7 @@ public class C2_MtTest {
             sb.append("1234567890");
         }
         String msga2 = sb.toString();
-        sd2.msg = msga2.getBytes();
+        sd2.msg = msga2;
 
         SmsSet smsSet = prepareDatabase(lst);
         Sms sms1 = smsSet.getSms(0);
@@ -1093,12 +1096,14 @@ public class C2_MtTest {
         sd1.dataCodingScheme = 8;
         sd1.esmClass = 3 + 0x40;
         String msga1 = this.msgShort + "�";
-        Charset ucs2Charset = Charset.forName("UTF-16BE");
-        ByteBuffer bb = ucs2Charset.encode(msga1);
-        byte[] buf = new byte[udhTemp.length + bb.limit()];
-        System.arraycopy(udhTemp, 0, buf, 0, udhTemp.length);
-        bb.get(buf, udhTemp.length, bb.limit());
-        sd1.msg = buf;
+//        Charset ucs2Charset = Charset.forName("UTF-16BE");
+//        ByteBuffer bb = ucs2Charset.encode(msga1);
+//        byte[] buf = new byte[udhTemp.length + bb.limit()];
+//        System.arraycopy(udhTemp, 0, buf, 0, udhTemp.length);
+//        bb.get(buf, udhTemp.length, bb.limit());
+//        sd1.msg = buf;
+        sd1.msg = msga1;
+        sd1.msgUdh = udhTemp;
 
         SmsDef sd2 = new SmsDef();
         lst.add(sd2);
@@ -1108,7 +1113,7 @@ public class C2_MtTest {
             sb.append("1234567890");
         }
         String msga2 = sb.toString();
-        sd2.msg = msga2.getBytes();
+        sd2.msg = msga2;
 
         SmsSet smsSet = prepareDatabase(lst);
         Sms sms1 = smsSet.getSms(0);
@@ -1465,7 +1470,7 @@ public class C2_MtTest {
         int segmlen = MessageUtil.getMaxSegmentedMessageBytesLength(new DataCodingSchemeImpl(0));
         String msga1 = totalMsg.substring(0, segmlen);
         String msga2 = totalMsg.substring(segmlen);
-        sd1.msg = totalMsg.getBytes();
+        sd1.msg = totalMsg;
         SmsSet smsSet = prepareDatabase(lst);
         Sms sms1 = smsSet.getSms(0);
 
@@ -1696,11 +1701,12 @@ public class C2_MtTest {
         String msga1 = totalMsg.substring(0, segmlen);
         String msga2 = totalMsg.substring(segmlen);
 
-        Charset ucs2Charset = Charset.forName("UTF-16BE");
-        ByteBuffer bb = ucs2Charset.encode(totalMsg);
-        byte[] buf = new byte[bb.limit()];
-        bb.get(buf);
-        sd1.msg = buf;
+//        Charset ucs2Charset = Charset.forName("UTF-16BE");
+//        ByteBuffer bb = ucs2Charset.encode(totalMsg);
+//        byte[] buf = new byte[bb.limit()];
+//        bb.get(buf);
+        sd1.msg = totalMsg;
+
         sd1.dataCodingScheme = 8;
 
         SmsSet smsSet = prepareDatabase(lst);
@@ -2005,6 +2011,154 @@ public class C2_MtTest {
         assertEquals(csm.getReference(), 266);
         assertEquals(csm.getMesageSegmentCount(), 4);
         assertEquals(csm.getMesageSegmentNumber(), 2);
+        String msg1 = ud.getDecodedMessage();
+        assertEquals(msg1, msgShort);
+
+        evt = lstEvt.get(1);
+        assertEquals(evt.testEventType, MAPTestEventType.send);
+
+        smsId = sms1.getDbId();
+        smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
+        assertNull(smsx1);
+        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        assertNotNull(smsSetX);
+        smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
+        assertEquals(smsX.getSmsSet().getInSystem(), 0);
+        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+
+        // Mt response
+        MtForwardShortMessageResponseImpl evt2 = new MtForwardShortMessageResponseImpl(null, null);
+        evt2.setMAPDialog(dlg);
+        DialogAccept daevt = new DialogAccept(dlg, null);
+        this.mtSbb.onDialogAccept(daevt, null);
+        this.mtSbb.onMtForwardShortMessageResponse(evt2, null);
+        DialogClose dcl = new DialogClose(dlg);
+        this.mtSbb.onDialogClose(dcl, null);
+
+        dlg = serviceRsds.getLastMAPDialogSms();
+        assertNull(dlg);
+        dlg = serviceSri.getLastMAPDialogSms();
+        lstEvt = dlg.getEventList();
+        assertEquals(lstEvt.size(), 2);
+
+        dlg = serviceMt.getLastMAPDialogSms();
+        lstEvt = dlg.getEventList();
+        assertEquals(lstEvt.size(), 2);
+
+        smsId = sms1.getDbId();
+        smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
+        assertNotNull(smsx1);
+        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        assertNull(smsSetX);
+        smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
+        assertNull(smsX);
+        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+    }
+
+    /**
+     * MAP V3, 1 message, GSM8
+     */
+    @Test(groups = { "Mt" })
+    public void SuccessDelivery6Test() throws Exception {
+
+        if (!this.cassandraDbInited)
+            return;
+
+        MAPServiceSmsProxy serviceSri = (MAPServiceSmsProxy)this.sriSbb.mapProvider.getMAPServiceSms();
+        MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
+        MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
+        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+
+        ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
+        SmsDef sd1 = new SmsDef();
+        sd1.dataCodingScheme = 4;
+        sd1.esmClass = 3 + 0x40;
+        sd1.msg = this.msgShort;
+        sd1.msgUdh = udhTemp;
+        lst.add(sd1);
+
+        SmsSet smsSet = prepareDatabase(lst);
+        Sms sms1 = smsSet.getSms(0);
+
+        UUID smsId = sms1.getDbId();
+        SmsProxy smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
+        assertNull(smsx1);
+        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        assertNotNull(smsSetX);
+        Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
+        assertEquals(smsX.getSmsSet().getInSystem(), 0);
+        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+
+        // initial onSms message
+        SmsSetEvent event = new SmsSetEvent();
+        event.setSmsSet(smsSet);
+        this.sriSbb.onSms(event, null, null);
+
+        MAPDialogSmsProxy dlg = serviceSri.getLastMAPDialogSms();
+        MAPApplicationContextVersion acv =  dlg.getApplicationContext().getApplicationContextVersion();
+        assertEquals(acv, MAPApplicationContextVersion.version3);
+        ArrayList<MAPTestEvent> lstEvt = dlg.getEventList();
+        assertEquals(lstEvt.size(), 2);
+        assertNull(serviceMt.getLastMAPDialogSms());
+
+        lstEvt = dlg.getEventList();
+        assertEquals(lstEvt.size(), 2);
+        assertEquals(dlg.getLocalAddress().getGlobalTitle().getDigits(), smscPropertiesManagement.getServiceCenterGt());
+        assertEquals(dlg.getRemoteAddress().getGlobalTitle().getDigits(), msdnDig);
+
+        MAPTestEvent evt = lstEvt.get(0);
+        assertEquals(evt.testEventType, MAPTestEventType.componentAdded);
+        SendRoutingInfoForSMRequest sriReq = (SendRoutingInfoForSMRequest) evt.event;
+        assertEquals(sriReq.getMsisdn().getAddress(), msdnDig);
+        assertEquals(sriReq.getServiceCentreAddress().getAddress(), smscPropertiesManagement.getServiceCenterGt());
+
+        evt = lstEvt.get(1);
+        assertEquals(evt.testEventType, MAPTestEventType.send);
+
+        // SRI response
+        IMSI imsi = new IMSIImpl(imsiDig);
+        ISDNAddressString networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
+                org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, nnnDig);
+        LocationInfoWithLMSI locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, null, null);
+        SendRoutingInfoForSMResponse evt1 = new SendRoutingInfoForSMResponseImpl(imsi, locationInfoWithLMSI, null, true);
+        evt1.setMAPDialog(dlg);
+        this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
+        this.sriSbb.onDialogDelimiter(null, null);
+
+        dlg = serviceMt.getLastMAPDialogSms();
+        acv =  dlg.getApplicationContext().getApplicationContextVersion();
+        assertEquals(acv, MAPApplicationContextVersion.version3);
+        lstEvt = dlg.getEventList();
+        assertEquals(lstEvt.size(), 2);
+
+        evt = lstEvt.get(0);
+        assertEquals(evt.testEventType, MAPTestEventType.componentAdded);
+
+        MtForwardShortMessageRequestImpl mtFsmReq = (MtForwardShortMessageRequestImpl) evt.event;
+        assertFalse(mtFsmReq.getMoreMessagesToSend());
+        SM_RP_DA sm_RP_DA = mtFsmReq.getSM_RP_DA();
+        IMSI daImsi = sm_RP_DA.getIMSI();
+        assertEquals(daImsi.getData(), imsiDig);
+        SM_RP_OA sm_RP_OA = mtFsmReq.getSM_RP_OA();
+        AddressString scas = sm_RP_OA.getServiceCentreAddressOA();
+        assertEquals(scas.getAddress(), smscPropertiesManagement.getServiceCenterGt());
+        SmsSignalInfo ssi = mtFsmReq.getSM_RP_UI();
+        SmsDeliverTpdu tpdu = (SmsDeliverTpdu) ssi.decodeTpdu(false);
+        assertEquals(tpdu.getDataCodingScheme().getCode(), 4);
+        assertFalse(tpdu.getForwardedOrSpawned());
+        assertFalse(tpdu.getMoreMessagesToSend());
+        assertEquals(tpdu.getOriginatingAddress().getAddressValue(), origDig);
+        assertFalse(tpdu.getReplyPathExists());
+        assertEquals(tpdu.getSmsTpduType(), SmsTpduType.SMS_DELIVER);
+        assertFalse(tpdu.getStatusReportIndication());
+        assertTrue(tpdu.getUserDataHeaderIndicator());
+        UserData ud = tpdu.getUserData();
+        ud.decode();
+        UserDataHeader udh = ud.getDecodedUserDataHeader();
+        ConcatenatedShortMessagesIdentifier csm = udh.getConcatenatedShortMessagesIdentifier();
+        assertEquals(csm.getReference(), 140);
+        assertEquals(csm.getMesageSegmentCount(), 2);
+        assertEquals(csm.getMesageSegmentNumber(), 1);
         String msg1 = ud.getDecodedMessage();
         assertEquals(msg1, msgShort);
 
@@ -3147,14 +3301,14 @@ public class C2_MtTest {
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
         sd1.valididtyPeriodIsOver = true;
-        sd1.msg = "a1".getBytes();
+        sd1.msg = "a1";
         lst.add(sd1);
         SmsDef sd2 = new SmsDef();
         sd2.valididtyPeriodIsOver = true;
-        sd2.msg = "a2".getBytes();
+        sd2.msg = "a2";
         lst.add(sd2);
         SmsDef sd3 = new SmsDef();
-        sd3.msg = "b1".getBytes();
+        sd3.msg = "b1";
         lst.add(sd3);
 
         SmsSet smsSet = prepareDatabase(lst);
@@ -3212,7 +3366,7 @@ public class C2_MtTest {
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
         assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
     }
-    
+
     @Test(groups = { "Mt" })
     public void Ucs2Test() throws Exception {
         
@@ -3352,7 +3506,8 @@ public class C2_MtTest {
             Date validityPeriod = MessageUtil.addHours(new Date(), 24);
             sms.setValidityPeriod(validityPeriod);
         }
-        sms.setShortMessage(smsDef.msg);
+        sms.setShortMessageText(smsDef.msg);
+        sms.setShortMessageBin(smsDef.msgUdh);
 
         if (smsDef.segmentTlv) {
             byte[] msg_ref_num = { 1, 10 };
@@ -3383,9 +3538,10 @@ public class C2_MtTest {
     }
 
     private class SmsDef {
-        public int dataCodingScheme = 0; // 0-GSM7, 8-UCS2
+        public int dataCodingScheme = 0; // 0-GSM7, 4-GSM8, 8-UCS2
         public int esmClass = 3; // 3 + 0x40 (UDH) + 0x80 (ReplyPath)
-        public byte[] msg = msgShort.getBytes();
+        public String msg = msgShort;
+        public byte[] msgUdh = null;
         public boolean segmentTlv = false;
         public boolean valididtyPeriodIsOver = false;
         public boolean receiptRequest = false;

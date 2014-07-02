@@ -22,8 +22,6 @@
 
 package org.mobicents.smsc.slee.services.smpp.server.tx;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -64,7 +62,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
 import org.mobicents.smsc.slee.services.charging.ChargingMedium;
 import org.mobicents.smsc.smpp.Esme;
-import org.mobicents.smsc.smpp.SmppEncodingForUCS2;
+import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.mobicents.smsc.smpp.SmscStatProvider;
 
@@ -97,6 +95,10 @@ public abstract class TxSmppServerSbb implements Sbb {
 	private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
 	protected SmppSessions smppServerSessions = null;
 	protected PersistenceRAInterface persistence = null;
+
+	private static Charset utf8Charset = Charset.forName("UTF-8");
+	private static Charset ucs2Charset = Charset.forName("UTF-16BE");
+    private static Charset isoCharset = Charset.forName("ISO-8859-1");
 
 	public TxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -331,32 +333,6 @@ public abstract class TxSmppServerSbb implements Sbb {
 	}
 
 	public void onDeliverSm(com.cloudhopper.smpp.pdu.DeliverSm event, ActivityContextInterface aci) {
-		// logger.severe(String.format("onDeliverSm : this must not be",
-		// event));
-		//
-		// SmppTransaction smppServerTransaction = (SmppTransaction)
-		// aci.getActivity();
-		// Esme esme = smppServerTransaction.getEsme();
-		// String esmeName = esme.getName();
-		//
-		// if (this.logger.isInfoEnabled()) {
-		// this.logger.info("Received DELIVER_SM = " + event +
-		// " from Esme name=" + esmeName);
-		// }
-
-		// SmsEvent smsEvent = this.createSmsEvent(event);
-		// this.processSms(smsEvent);
-		//
-		// DeliverSmResp response = event.createResponse();
-		// response.setMessageId(smsEvent.getMessageId());
-		// // Lets send the Response here
-		// try {
-		// this.smppServerSessions.sendResponsePdu(esme, event, response);
-		// } catch (Exception e) {
-		// this.logger.severe("Error while trying to send DeliverSmResp=" +
-		// response, e);
-		// }
-
 		SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
 		Esme esme = smppServerTransaction.getEsme();
 		String esmeName = esme.getName();
@@ -601,74 +577,80 @@ public abstract class TxSmppServerSbb implements Sbb {
 		sms.setReplaceIfPresent(event.getReplaceIfPresent());
 		sms.setDefaultMsgId(event.getDefaultMsgId());
 
-		// short message data
-		sms.setShortMessage(event.getShortMessage());
-
-		if (event.getShortMessageLength() == 0) {
-			// Probably the message_payload Optional Parameter is being used
-			Tlv messagePaylod = event.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
-			if (messagePaylod != null) {
-				sms.setShortMessage(messagePaylod.getValue());
-			}
-		}
-		if (sms.getShortMessage() == null) {
-			sms.setShortMessage(new byte[0]);
-		}
-
-		int lenSolid = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
-		int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
 		boolean udhPresent = (event.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
 		Tlv sarMsgRefNum = event.getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
 		Tlv sarTotalSegments = event.getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
 		Tlv sarSegmentSeqnum = event.getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
 		boolean segmentTlvFlag = (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null);
 
-		if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncodingForUCS2.Utf8
-				&& dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
-			// for UCS2 encoding we have to recode UTF-8 -> UCS2 here
+        // short message data
+        byte[] data = event.getShortMessage();
+        if (event.getShortMessageLength() == 0) {
+            // Probably the message_payload Optional Parameter is being used
+            Tlv messagePaylod = event.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
+            if (messagePaylod != null) {
+                data = messagePaylod.getValue();
+            }
+        }
+        if (data == null) {
+            data = new byte[0];
+        }
 
-			byte[] udhData = null;
-			byte[] textPart = sms.getShortMessage();
-			if (udhPresent && sms.getShortMessage().length > 2) {
-				// UDH exists
-				int udhLen = (textPart[0] & 0xFF) + 1;
-				if (udhLen <= textPart.length) {
-					textPart = new byte[textPart.length - udhLen];
-					udhData = new byte[udhLen];
-					System.arraycopy(sms.getShortMessage(), udhLen, textPart, 0, textPart.length);
-					System.arraycopy(sms.getShortMessage(), 0, udhData, 0, udhLen);
-				}
-			}
-			Charset utf8Charset = Charset.forName("UTF-8");
-			ByteBuffer bb = ByteBuffer.wrap(textPart);
-			CharBuffer cb = utf8Charset.decode(bb);
-			Charset ucs2Charset = Charset.forName("UTF-16BE");
-			ByteBuffer bf2 = ucs2Charset.encode(cb);
-			byte[] buf2;
-			if (udhData != null) {
-				buf2 = new byte[udhData.length + bf2.limit()];
-				bf2.get(buf2, udhData.length, bf2.limit());
-				System.arraycopy(udhData, 0, buf2, 0, udhData.length);
-			} else {
-				buf2 = new byte[bf2.limit()];
-				bf2.get(buf2);
-			}
-			sms.setShortMessage(buf2);
-		}
+        byte[] udhData;
+        byte[] textPart;
+        String msg;
+        int messageLen;
+        udhData = null;
+        textPart = data;
+        if (udhPresent && data.length > 2) {
+            // UDH exists
+            int udhLen = (textPart[0] & 0xFF) + 1;
+            if (udhLen <= textPart.length) {
+                textPart = new byte[textPart.length - udhLen];
+                udhData = new byte[udhLen];
+                System.arraycopy(data, udhLen, textPart, 0, textPart.length);
+                System.arraycopy(data, 0, udhData, 0, udhLen);
+            }
+        }
+
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
+            msg = new String(textPart, isoCharset);
+        } else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+            if (smscPropertiesManagement.getSmppEncodingForGsm7() == SmppEncoding.Utf8) {
+                msg = new String(textPart, utf8Charset);
+            } else {
+                msg = new String(textPart, ucs2Charset);
+            }
+        } else {
+            if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncoding.Utf8) {
+                msg = new String(textPart, utf8Charset);
+            } else {
+                msg = new String(textPart, ucs2Charset);
+            }
+        }
+
+        messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg.length());
+        if (udhData != null)
+            messageLen += udhData.length;
+
+        sms.setShortMessageText(msg);
+        sms.setShortMessageBin(udhData);
 
 		// checking max message length
-		if (udhPresent || segmentTlvFlag) {
+        int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
+        int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
+        if (udhPresent || segmentTlvFlag) {
 			// here splitting by SMSC is not supported
-			if (sms.getShortMessage().length > lenSolid) {
+			if (messageLen > lenSolid) {
 				throw new SmscProcessingException("Message length in bytes is too big for solid message: "
-						+ sms.getShortMessage().length + ">" + lenSolid, SmppConstants.STATUS_INVPARLEN,
+						+ messageLen + ">" + lenSolid, SmppConstants.STATUS_INVPARLEN,
 						MAPErrorCode.systemFailure, null);
 			}
 		} else {
 			// here splitting by SMSC is supported
-			if (sms.getShortMessage().length > lenSegmented * 255) {
+			if (messageLen > lenSegmented * 255) {
 				throw new SmscProcessingException("Message length in bytes is too big for segmented message: "
-						+ sms.getShortMessage().length + ">" + lenSolid, SmppConstants.STATUS_INVPARLEN,
+						+ messageLen + ">" + lenSegmented, SmppConstants.STATUS_INVPARLEN,
 						MAPErrorCode.systemFailure, null);
 			}
 		}

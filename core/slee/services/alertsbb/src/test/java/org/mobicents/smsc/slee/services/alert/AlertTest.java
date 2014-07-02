@@ -24,8 +24,6 @@ package org.mobicents.smsc.slee.services.alert;
 
 import static org.testng.Assert.*;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
@@ -40,7 +38,6 @@ import org.mobicents.protocols.ss7.map.api.service.sms.AlertServiceCentreRequest
 import org.mobicents.protocols.ss7.map.primitives.AddressStringImpl;
 import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.mobicents.protocols.ss7.map.service.sms.AlertServiceCentreRequestImpl;
-import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.SmType;
 import org.mobicents.smsc.cassandra.Sms;
@@ -52,13 +49,10 @@ import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPServiceSmsProxy;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
-import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -67,7 +61,7 @@ import org.testng.annotations.Test;
  * @author sergey vetyutnev
  * 
  */
-@Test(enabled=false)
+// @Test(enabled=false)
 public class AlertTest {
 
 	private AlertSbbProxy sbb;
@@ -102,7 +96,7 @@ public class AlertTest {
 		System.out.println("tearDownClass");
 	}
 
-	@Test(groups = { "Mo" })
+	@Test(groups = { "Alert" })
 	public void testAlert1_Gsm1() throws Exception {
 
 		if (!this.cassandraDbInited)
@@ -219,7 +213,7 @@ public class AlertTest {
 
 		Date validityPeriod = MessageUtil.addHours(new Date(), 24);
 		sms.setValidityPeriod(validityPeriod);
-		sms.setShortMessage("1234_1234".getBytes());
+		sms.setShortMessageText("1234_1234");
 
 		return sms;
 	}

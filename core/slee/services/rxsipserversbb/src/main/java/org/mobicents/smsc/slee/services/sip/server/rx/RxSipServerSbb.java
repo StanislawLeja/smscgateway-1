@@ -22,8 +22,6 @@
 
 package org.mobicents.smsc.slee.services.sip.server.rx;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,7 +53,6 @@ import javax.slee.resource.ResourceAdaptorTypeID;
 import net.java.slee.resource.sip.SipActivityContextInterfaceFactory;
 import net.java.slee.resource.sip.SleeSipProvider;
 
-import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.SbbContextExt;
@@ -78,8 +75,6 @@ import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.Sip;
 import org.mobicents.smsc.smpp.SipManagement;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
-
-import com.cloudhopper.smpp.SmppConstants;
 
 /**
  * 
@@ -487,9 +482,13 @@ public abstract class RxSipServerSbb implements Sbb {
 
 			CallIdHeader callId = this.sipRA.getNewCallId();
 
-			byte[] msg = sms.getShortMessage();
-            if (msg != null) {
-                msg = recodeShortMessage(sms.getEsmClass(), sms.getDataCoding(), msg);
+            String msgStr = sms.getShortMessageText();
+            byte[] msgUdh = sms.getShortMessageBin();
+            byte[] msg;
+            if (msgStr != null || msgUdh != null) {
+                msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
+            } else {
+                msg = new byte[0];
             }
 
 			// create request
@@ -510,37 +509,54 @@ public abstract class RxSipServerSbb implements Sbb {
 		}
 	}
 
-	private byte[] recodeShortMessage(int esmeClass, int dataCoding, byte[] msg) {
-		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dataCoding);
-		boolean udhPresent = (esmeClass & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
+	private byte[] recodeShortMessage(int dataCoding, String msg, byte[] udhPart) {
+        DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dataCoding);
 
-        byte[] textPart = msg;
-        byte[] udhData = null;
-        if (udhPresent && msg.length > 2) {
-            // UDH exists
-            int udhLen = (msg[0] & 0xFF) + 1;
-            if (udhLen <= msg.length) {
-                textPart = new byte[msg.length - udhLen];
-                udhData = new byte[udhLen];
-                System.arraycopy(msg, udhLen, textPart, 0, textPart.length);
-                System.arraycopy(msg, 0, udhData, 0, udhLen);
-            }
-        }
+        byte[] textPart = msg.getBytes(utf8Charset);
 
-        String mes;
-        if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
-            ByteBuffer bb = ByteBuffer.wrap(textPart);
-            CharBuffer bf = ucs2Charset.decode(bb);
-            mes = bf.toString();
+        if (udhPart == null) {
+            return textPart;
         } else {
-            mes = new String(textPart);
+            byte[] res = new byte[textPart.length + udhPart.length];
+            System.arraycopy(udhPart, 0, res, 0, udhPart.length);
+            System.arraycopy(textPart, 0, res, udhPart.length, textPart.length);
+
+            return res;
         }
 
-        CharBuffer cb = CharBuffer.wrap(mes.toCharArray());
-        ByteBuffer bf2 = utf8Charset.encode(cb);
-        byte[] msg2 = new byte[bf2.limit()];
-        bf2.get(msg2);
-        return msg2;
+	    
+	    
+	    
+//	    DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dataCoding);
+//		boolean udhPresent = (esmeClass & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
+//
+//        byte[] textPart = msg;
+//        byte[] udhData = null;
+//        if (udhPresent && msg.length > 2) {
+//            // UDH exists
+//            int udhLen = (msg[0] & 0xFF) + 1;
+//            if (udhLen <= msg.length) {
+//                textPart = new byte[msg.length - udhLen];
+//                udhData = new byte[udhLen];
+//                System.arraycopy(msg, udhLen, textPart, 0, textPart.length);
+//                System.arraycopy(msg, 0, udhData, 0, udhLen);
+//            }
+//        }
+//
+//        String mes;
+//        if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
+//            ByteBuffer bb = ByteBuffer.wrap(textPart);
+//            CharBuffer bf = ucs2Charset.decode(bb);
+//            mes = bf.toString();
+//        } else {
+//            mes = new String(textPart);
+//        }
+//
+//        CharBuffer cb = CharBuffer.wrap(mes.toCharArray());
+//        ByteBuffer bf2 = utf8Charset.encode(cb);
+//        byte[] msg2 = new byte[bf2.limit()];
+//        bf2.get(msg2);
+//        return msg2;
     }
 
 	/**
