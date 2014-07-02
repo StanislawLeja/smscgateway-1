@@ -188,7 +188,9 @@ public abstract class MoSbb extends MoCommonSbb {
 			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
-			try {
+            smscStatAggregator.updateMsgInFailedAll();
+
+            try {
 				MAPErrorMessage errorMessage;
 				switch (e1.getMapErrorCode()) {
 				case MAPErrorCode.unexpectedDataValue:
@@ -221,7 +223,9 @@ public abstract class MoSbb extends MoCommonSbb {
 			return;
 		} catch (Throwable e1) {
 			this.logger.severe("Exception while processing MO message: " + e1.getMessage(), e1);
-			try {
+            smscStatAggregator.updateMsgInFailedAll();
+
+            try {
 				MAPErrorMessage errorMessage = this.mapProvider.getMAPErrorMessageFactory()
 						.createMAPErrorMessageSystemFailure(
 								dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null,
@@ -270,7 +274,9 @@ public abstract class MoSbb extends MoCommonSbb {
 			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
-			try {
+            smscStatAggregator.updateMsgInFailedAll();
+
+            try {
 				MAPErrorMessage errorMessage;
 				switch (e1.getMapErrorCode()) {
 				case MAPErrorCode.unexpectedDataValue:
@@ -303,7 +309,9 @@ public abstract class MoSbb extends MoCommonSbb {
 			return;
 		} catch (Throwable e1) {
 			this.logger.severe("Exception while processing MO message: " + e1.getMessage(), e1);
-			try {
+            smscStatAggregator.updateMsgInFailedAll();
+
+            try {
 				MAPErrorMessage errorMessage = this.mapProvider.getMAPErrorMessageFactory()
 						.createMAPErrorMessageSystemFailure(
 								dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null,
@@ -501,6 +509,7 @@ public abstract class MoSbb extends MoCommonSbb {
 				SmsDeliverReportTpdu smsDeliverReportTpdu = (SmsDeliverReportTpdu) smsTpdu;
 				if (this.logger.isInfoEnabled()) {
 					this.logger.info("Received SMS_DELIVER_REPORT = " + smsDeliverReportTpdu);
+		            smscStatAggregator.updateMsgInFailedAll();
 				}
 				// TODO: implement it - processing of SMS_DELIVER_REPORT
 				// this.handleSmsDeliverReportTpdu(smsDeliverReportTpdu,
@@ -510,6 +519,7 @@ public abstract class MoSbb extends MoCommonSbb {
 				SmsCommandTpdu smsCommandTpdu = (SmsCommandTpdu) smsTpdu;
 				if (this.logger.isInfoEnabled()) {
 					this.logger.info("Received SMS_COMMAND = " + smsCommandTpdu);
+		            smscStatAggregator.updateMsgInFailedAll();
 				}
 				// TODO: implement it - processing of SMS_COMMAND
 				// this.handleSmsDeliverReportTpdu(smsDeliverReportTpdu,
@@ -521,6 +531,7 @@ public abstract class MoSbb extends MoCommonSbb {
 				break;
 			default:
 				this.logger.severe("Received non SMS_SUBMIT or SMS_DELIVER_REPORT or SMS_COMMAND or SMS_DELIVER = " + smsTpdu);
+	            smscStatAggregator.updateMsgInFailedAll();
 				break;
 			}
 		} catch (MAPException e1) {
@@ -828,6 +839,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		Sms sms = new Sms();
 		sms.setDbId(UUID.randomUUID());
+        sms.setOriginationType(Sms.OriginationType.SS7);
 
 		// checking parameters first
 		if (callingPartyAddress == null || callingPartyAddress.getAddressValue() == null
@@ -896,29 +908,6 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 		sms.setDataCoding(dcs);
 
-//		switch (dataCodingScheme.getCharacterSet()) {
-//		case GSM7:
-//			UserDataHeader udh = userData.getDecodedUserDataHeader();
-//			if (udh != null) {
-//				byte[] buf1 = udh.getEncodedData();
-//				if (buf1 != null) {
-//					byte[] buf2 = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
-//					smsPayload = new byte[buf1.length + buf2.length];
-//					System.arraycopy(buf1, 0, smsPayload, 0, buf1.length);
-//					System.arraycopy(buf2, 0, smsPayload, buf1.length, buf2.length);
-//				} else {
-//					smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
-//				}
-//			} else {
-//				smsPayload = CharsetUtil.encode(userData.getDecodedMessage(), CharsetUtil.CHARSET_GSM);
-//			}
-//			break;
-//		default:
-//			smsPayload = userData.getEncodedData();
-//			break;
-//		}
-//		sms.setShortMessage(smsPayload);
-
         sms.setShortMessageText(userData.getDecodedMessage());
         UserDataHeader udh = userData.getDecodedUserDataHeader();
         if (udh != null) {
@@ -970,13 +959,14 @@ public abstract class MoSbb extends MoCommonSbb {
                     store.createLiveSms(sms);
                     store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
                 } else {
-                    sms.setStored(true);
                     store.c2_scheduleMessage(sms);
                 }
             } catch (PersistenceException e) {
                 throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
                         MAPErrorCode.systemFailure, null, e);
             }
+            smscStatAggregator.updateMsgInReceivedAll();
+            smscStatAggregator.updateMsgInReceivedSs7();
         }
 	}
 

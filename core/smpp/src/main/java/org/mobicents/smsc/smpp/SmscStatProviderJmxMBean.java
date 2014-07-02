@@ -1,5 +1,5 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
+ * TeleStax, Open Source Cloud Communications  Copyright 2012.
  * and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,17 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.resources.scheduler;
-
-import org.mobicents.smsc.cassandra.SmsSet;
+package org.mobicents.smsc.smpp;
 
 /**
- * 
- * @author sergey vetyutnev
- * 
- */
-public interface SchedulerRaSbbInterface {
-
-    public void injectSmsOnFly(SmsSet smsSet) throws Exception;
+*
+* @author sergey vetyutnev
+*
+*/
+public interface SmscStatProviderJmxMBean {
 
 }

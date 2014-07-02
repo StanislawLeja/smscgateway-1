@@ -20,17 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.slee.resources.scheduler;
-
-import org.mobicents.smsc.cassandra.SmsSet;
+package org.mobicents.smsc.cassandra;
 
 /**
  * 
  * @author sergey vetyutnev
  * 
  */
-public interface SchedulerRaSbbInterface {
+public interface UpdateMessagesInProcessListener {
 
-    public void injectSmsOnFly(SmsSet smsSet) throws Exception;
+    void updateMinMessagesInProcess(long newVal);
+
+    void updateMaxMessagesInProcess(long newVal);
 
 }

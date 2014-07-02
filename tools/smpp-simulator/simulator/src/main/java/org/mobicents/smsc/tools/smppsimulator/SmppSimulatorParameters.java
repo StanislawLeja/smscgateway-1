@@ -61,6 +61,7 @@ public class SmppSimulatorParameters {
     private SendingMessageType sendingMessageType = SendingMessageType.SubmitSm;
     private SmppSession.Type smppSessionType = SmppSession.Type.CLIENT;
     private int smppEncoding = 0;
+    private MessagingMode messagingMode = MessagingMode.storeAndForward;
 
 	private int bulkDestAddressRangeStart = 500000;
 	private int bulkDestAddressRangeEnd = 600000;
@@ -299,17 +300,10 @@ public class SmppSimulatorParameters {
         this.sendingMessageType = sendingMessageType;
     }
 
-
-    /**
-     * @return the smppSessionType
-     */
     public SmppSession.Type getSmppSessionType() {
         return smppSessionType;
     }
 
-    /**
-     * @param smppSessionType the smppSessionType to set
-     */
     public void setSmppSessionType(SmppSession.Type smppSessionType) {
         this.smppSessionType = smppSessionType;
     }
@@ -320,6 +314,14 @@ public class SmppSimulatorParameters {
 
     public void setSmppEncoding(int smppEncoding) {
         this.smppEncoding = smppEncoding;
+    }
+
+    public MessagingMode getMessagingMode() {
+        return messagingMode;
+    }
+
+    public void setMessagingMode(MessagingMode messagingMode) {
+        this.messagingMode = messagingMode;
     }
 
 
@@ -379,6 +381,20 @@ public class SmppSimulatorParameters {
 
     public enum SendingMessageType {
         SubmitSm, DataSm, DeliverSm;
+    }
+
+    public enum MessagingMode {
+        defaultSmscMode(0), datagramm(1), transaction(2), storeAndForward(3);
+
+        private int code;
+
+        private MessagingMode(int val) {
+            this.code = val;
+        }
+
+        public int getCode() {
+            return this.code;
+        }
     }
 }
 

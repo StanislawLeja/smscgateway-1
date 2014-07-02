@@ -259,7 +259,7 @@ public class SmppTestingForm extends JDialog {
 		btSendMessage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
                 submitMessage(param.getEncodingType(), param.isMessageClass(), param.getMessageText(), param.getSplittingType(), param.getValidityType(),
-                        param.getDestAddress());
+                        param.getDestAddress(), param.getMessagingMode());
 			}
 		});
 		btSendMessage.setBounds(11, 80, 341, 23);
@@ -331,7 +331,7 @@ public class SmppTestingForm extends JDialog {
     }
 
     private void submitMessage(EncodingType encodingType, boolean messageClass0, String messageText, SplittingType splittingType, ValidityType validityType,
-            String destAddr) {
+            String destAddr, SmppSimulatorParameters.MessagingMode messagingMode) {
         if (session0 == null)
             return;
 
@@ -441,119 +441,7 @@ public class SmppTestingForm extends JDialog {
                 }
                 segmCnt = 1;
             }
-
-
-
-//            EncodingType et = encodingType;
-//            byte[] buf = null;
-//            boolean addSegmTlv = false;
-//            int esmClass = 0;
-//            int msgLenByte = 0;
-//    		switch (et) {
-//    		case GSM7:
-//                dcs = 0;
-//                buf = messageText.getBytes(utf8Charset);
-//                msgLenByte = buf.length;
-//                break;
-//    		case UCS2:
-//                dcs = 8;
-//                ByteBuffer bb;
-//                Charset ucs2Charset = Charset.forName("UTF-16BE");
-//                bb = ucs2Charset.encode(messageText);
-//
-//                msgLenByte = messageText.length() * 2;
-//				buf = new byte[bb.limit()];
-//				bb.get(buf);
-//                break;
-//    		}
-//            if (messageClass0) {
-//                dcs += 16;
-//            }
-//    		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
-//			int maxLen = MessageUtil.getMaxSolidMessageBytesLength(dataCodingScheme);
-//			int maxSplLen = MessageUtil.getMaxSegmentedMessageBytesLength(dataCodingScheme);
-//
-//    		int segmCnt = 0;
-//			if (msgLenByte > maxLen) { // may be message splitting
-//				SplittingType st = splittingType;
-//				switch (st) {
-//				case DoNotSplit:
-//					// we do not split
-//					msgLst.add(buf);
-//					ArrayList<byte[]> r1 = this.splitStr(buf, maxSplLen);
-//					segmCnt = r1.size();
-//					break;
-//				case SplitWithParameters:
-//					msgRef = getNextMsgRef();
-//					r1 = this.splitStr(buf, maxSplLen);
-//					for (byte[] bf : r1) {
-//						msgLst.add(bf);
-//					}
-//					segmCnt = msgLst.size();
-//					addSegmTlv = true;
-//					break;
-//				case SplitWithUdh:
-//					msgRef = getNextMsgRef();
-//					r1 = this.splitStr(buf, maxSplLen);
-//					byte[] bf1 = new byte[6];
-//					bf1[0] = 5; // total UDH length
-//					bf1[1] = 0; // UDH id
-//					bf1[2] = 3; // UDH length
-//					bf1[3] = (byte) msgRef; // refNum
-//					bf1[4] = (byte) r1.size(); // segmCnt
-//					int i1 = 0;
-//					for (byte[] bf : r1) {
-//						i1++;
-//						bf1[5] = (byte) i1; // segmNum
-//						byte[] bf2 = new byte[bf1.length + bf.length];
-//						System.arraycopy(bf1, 0, bf2, 0, bf1.length);
-//						System.arraycopy(bf, 0, bf2, bf1.length, bf.length);
-//						msgLst.add(bf2);
-//					}
-//					segmCnt = msgLst.size();
-//					esmClass = 0x40;
-//					break;
-//				}
-//			} else {
-//				msgLst.add(buf);
-//				segmCnt = 1;
-//			}
-//
-//            if (this.param.getSmppEncoding() == 0) {
-//                if (et == EncodingType.UCS2) {
-//                    for (int i1 = 0; i1 < msgLst.size(); i1++) {
-//                        byte[] udhData = null;
-//                        byte[] textPart = msgLst.get(i1);
-//                        if (esmClass != 0 && textPart.length > 2) {
-//                            // UDH exists
-//                            int udhLen = (textPart[0] & 0xFF) + 1;
-//                            if (udhLen <= textPart.length) {
-//                                textPart = new byte[textPart.length - udhLen];
-//                                udhData = new byte[udhLen];
-//                                System.arraycopy(msgLst.get(i1), udhLen, textPart, 0, textPart.length);
-//                                System.arraycopy(msgLst.get(i1), 0, udhData, 0, udhLen);
-//                            }
-//                        }
-//                        Charset ucs2Charset = Charset.forName("UTF-16BE");
-//                        ByteBuffer bb = ByteBuffer.wrap(textPart);
-//                        CharBuffer cb = ucs2Charset.decode(bb);
-//                        Charset utf8Charset = Charset.forName("UTF-8");
-//                        ByteBuffer bf2 = utf8Charset.encode(cb);
-//
-//                        byte[] buf2;
-//                        if (udhData != null) {
-//                            buf2 = new byte[udhData.length + bf2.limit()];
-//                            bf2.get(buf2, udhData.length, bf2.limit());
-//                            System.arraycopy(udhData, 0, buf2, 0, udhData.length);
-//                        } else {
-//                            buf2 = new byte[bf2.limit()];
-//                            bf2.get(buf2);
-//                        }
-//                        msgLst.set(i1, buf2);
-//                    }
-//                }
-//            }
-
+            esmClass |= messagingMode.getCode();
 
             this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv, esmClass, validityType, segmCnt, destAddr);
 		} catch (Exception e) {
@@ -929,7 +817,7 @@ public class SmppTestingForm extends JDialog {
 
 			
 
-			this.submitMessage(encodingType, false, msg, splittingType, param.getValidityType(), destAddrS);
+			this.submitMessage(encodingType, false, msg, splittingType, param.getValidityType(), destAddrS, param.getMessagingMode());
 		}
 	}
 

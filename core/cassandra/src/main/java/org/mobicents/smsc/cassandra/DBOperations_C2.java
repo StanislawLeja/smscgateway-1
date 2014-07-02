@@ -1076,16 +1076,6 @@ public class DBOperations_C2 {
 						SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2,
 								processingSmsSetTimeout);
 					}
-					// if (smsSet2 != null &&
-					// smsSet2.getCreationTime().after(timeOutDate)) {
-					// for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
-					// smsSet2.addSms(smsSet.getSms(i1));
-					// }
-					// } else {
-					// smsSet2 = smsSet;
-					// SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(),
-					// smsSet2);
-					// }
 				}
 				res2.add(smsSet2);
 			} finally {
@@ -1095,6 +1085,36 @@ public class DBOperations_C2 {
 
 		return res2;
 	}
+
+    public boolean c2_checkProcessingSmsSet(SmsSet smsSet) {
+        Date timeOutDate = new Date(new Date().getTime() - 1000 * 60 * 30);
+
+        TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
+        try {
+            synchronized (lock) {
+                SmsSet smsSet2 = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+                if (smsSet2 != null) {
+                    if (smsSet2.getCreationTime().after(timeOutDate)) {
+                        for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
+                            smsSet2.addSms(smsSet.getSms(i1));
+                            return false;
+                        }
+                    } else {
+                        logger.warn("Timeout of SmsSet in ProcessingSmsSet: targetId=" + smsSet2.getTargetId() + ", messageCount=" + smsSet2.getSmsCount());
+                        smsSet2 = smsSet;
+                        SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2, processingSmsSetTimeout);
+                    }
+                } else {
+                    smsSet2 = smsSet;
+                    SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2, processingSmsSetTimeout);
+                }
+            }
+        } finally {
+            SmsSetCashe.getInstance().removeSmsSet(lock);
+        }
+
+        return true;
+    }
 
 	public void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException {
 		PreparedStatementCollection_C3 psc = this.getStatementCollection(sms.getDueSlot());

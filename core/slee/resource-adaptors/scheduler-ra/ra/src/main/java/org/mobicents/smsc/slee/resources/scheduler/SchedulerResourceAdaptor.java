@@ -23,6 +23,11 @@ import javax.slee.resource.ResourceAdaptorContext;
 import javax.slee.resource.SleeEndpoint;
 import javax.slee.transaction.SleeTransaction;
 import javax.slee.transaction.SleeTransactionManager;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
 
 import org.mobicents.smsc.cassandra.CdrGenerator;
 import org.mobicents.smsc.cassandra.DBOperations_C1;
@@ -40,6 +45,7 @@ import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.SmsRouteManagement;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+import org.mobicents.smsc.smpp.SmscStatAggregator;
 import org.mobicents.smsc.smpp.SmscStatProvider;
 
 public class SchedulerResourceAdaptor implements ResourceAdaptor {
@@ -71,9 +77,15 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 	protected DBOperations_C2 dbOperations_C2 = null;
 
 	private Date garbageCollectionTime = new Date();
+    private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 
 	public SchedulerResourceAdaptor() {
 		this.schedulerRaSbbInterface = new SchedulerRaSbbInterface() {
+
+            @Override
+            public void injectSmsOnFly(SmsSet smsSet) throws Exception {
+                doInjectSmsOnFly(smsSet);
+            }
 
 		};
 	}
@@ -376,7 +388,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 						if (!smsSet.isProcessingStarted()) {
 							smsSet.setProcessingStarted();
 
-                            if (!injectSms(smsSet, curDate)) {
+                            if (!injectSmsDatabase(smsSet, curDate)) {
                                 return;
                             }
 						}
@@ -415,6 +427,18 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 					"Exception in SchedulerResourceAdaptor when fetching records and issuing events: "
 							+ e1.getMessage(), e1);
 		}
+
+		// stat update
+        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+        } else {
+            long processedDueSlot = dbOperations_C2.c2_getCurrentDueSlot();
+            long possibleDueSlot = dbOperations_C2.c2_getIntimeDueSlot();
+            Date processedDate = dbOperations_C2.c2_getTimeForDueSlot(processedDueSlot);
+            Date possibleDate = dbOperations_C2.c2_getTimeForDueSlot(possibleDueSlot);
+            int lag = (int) ((possibleDate.getTime() - processedDate.getTime()) / 1000);
+            smscStatAggregator.updateSmscDeliveringLag(lag);
+        }
 	}
 
 	protected void endAcitivity(SchedulerActivityHandle activityHandle) throws Exception {
@@ -422,7 +446,20 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		this.decrementActivityCount();
 	}
 
-	protected boolean injectSms(SmsSet smsSet, Date curDate) throws Exception {
+    public void doInjectSmsOnFly(SmsSet smsSet) throws Exception {
+        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            // TODO: implement it
+        } else {
+            if (!dbOperations_C2.c2_checkProcessingSmsSet(smsSet))
+                return;
+        }
+
+        doInjectSms(smsSet);
+    }
+
+	protected boolean injectSmsDatabase(SmsSet smsSet, Date curDate) throws Exception {
 	    // removing SMS that are out of validity period
 	    boolean withValidityTimeout = false;
         for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
@@ -488,9 +525,11 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                                 dbOperations_C1.archiveFailuredSms(sms);
                                 dbOperations_C1.deleteSmsSet(smsSet);
                             } else {
-                                dbOperations_C2.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-                                sms.setDeliveryDate(curDate);
-                                dbOperations_C2.c2_createRecordArchive(sms);
+                                if (sms.getStored()) {
+                                    dbOperations_C2.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                                    sms.setDeliveryDate(curDate);
+                                    dbOperations_C2.c2_createRecordArchive(sms);
+                                }
                             }
 
                             int registeredDelivery = sms.getRegisteredDelivery();
@@ -505,6 +544,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                                                 receipt = MessageUtil.createReceiptSms(sms, false);
                                                 SmsSet backSmsSet = dbOperations_C1.obtainSmsSet(ta);
                                                 receipt.setSmsSet(backSmsSet);
+                                                receipt.setStored(true);
                                                 dbOperations_C1.createLiveSms(receipt);
                                                 dbOperations_C1.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
                                             } else {
@@ -544,7 +584,12 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
             }
         }
 
-		SleeTransaction sleeTx = this.sleeTransactionManager.beginSleeTransaction();
+		return doInjectSms(smsSet);
+	}
+
+    private boolean doInjectSms(SmsSet smsSet) throws NotSupportedException, SystemException, Exception, RollbackException, HeuristicMixedException,
+            HeuristicRollbackException {
+        SleeTransaction sleeTx = this.sleeTransactionManager.beginSleeTransaction();
 
 		try {
 
@@ -612,7 +657,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 		this.incrementActivityCount();
 		return true;
-	}
+    }
 
 	protected OneWaySmsSetCollection fetchSchedulable(int maxRecordCount) throws PersistenceException {
 		SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();

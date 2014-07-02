@@ -54,6 +54,7 @@ import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+import org.mobicents.smsc.smpp.SmscStatAggregator;
 
 /**
  * 
@@ -75,6 +76,7 @@ public abstract class MoCommonSbb implements Sbb {
 	protected MAPContextInterfaceFactory mapAcif;
 	protected MAPProvider mapProvider;
 	protected MAPParameterFactory mapParameterFactory;
+    protected SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 	
 	protected SmppSessions smppServerSessions = null;
 

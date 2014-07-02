@@ -73,7 +73,7 @@ import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.SmsDeliverTpduImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataImpl;
-import org.mobicents.protocols.ss7.sccp.parameter.GT0100;
+import org.mobicents.protocols.ss7.sccp.parameter.GlobalTitle;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextName;
 import org.mobicents.slee.SbbLocalObjectExt;
@@ -871,6 +871,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			return;
 		}
 
+		smscStatAggregator.updateMsgOutSentAll();
+        smscStatAggregator.updateMsgOutSentSs7();
+
 		PersistenceRAInterface pers = this.getStore();
 		int currentMsgNum = this.doGetCurrentMsgNum();
 		Sms sms = smsSet.getSms(currentMsgNum);
@@ -886,7 +889,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			messageSegmentNumber++;
 			this.setMessageSegmentNumber(messageSegmentNumber);
 			try {
-				this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.nextSegmentSending,
+	            smscStatAggregator.updateMsgOutTryAll();
+	            smscStatAggregator.updateMsgOutTrySs7();
+
+	            this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.nextSegmentSending,
 						continueDialog ? mapDialogSms : null);
 				return;
 			} catch (SmscProcessingException e) {
@@ -933,6 +939,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 								receipt = MessageUtil.createReceiptSms(sms, true);
 								SmsSet backSmsSet = pers.obtainSmsSet(ta);
 								receipt.setSmsSet(backSmsSet);
+                                receipt.setStored(true);
 								pers.createLiveSms(receipt);
 								pers.setNewMessageScheduled(receipt.getSmsSet(),
 										MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
@@ -981,7 +988,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 					}
 
 					try {
-						this.sendMtSms(mapDialogSms.getApplicationContext(),
+		                smscStatAggregator.updateMsgOutTryAll();
+		                smscStatAggregator.updateMsgOutTrySs7();
+
+		                this.sendMtSms(mapDialogSms.getApplicationContext(),
 								MessageProcessingState.firstMessageSending, continueDialog ? mapDialogSms : null);
 						return;
 					} catch (SmscProcessingException e) {
@@ -1011,7 +1021,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 						this.doSetCurrentMsgNum(currentMsgNum);
 
 						try {
-							this.sendMtSms(mapDialogSms.getApplicationContext(),
+			                smscStatAggregator.updateMsgOutTryAll();
+			                smscStatAggregator.updateMsgOutTrySs7();
+
+			                this.sendMtSms(mapDialogSms.getApplicationContext(),
 									MessageProcessingState.firstMessageSending, continueDialog ? mapDialogSms : null);
 							return;
 						} catch (SmscProcessingException e) {
@@ -1258,9 +1271,13 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	private SccpAddress getMSCSccpAddress(ISDNAddressString networkNodeNumber) {
 		NumberingPlan np = MessageUtil.getSccpNumberingPlan(networkNodeNumber.getNumberingPlan().getIndicator());
 		NatureOfAddress na = MessageUtil.getSccpNatureOfAddress(networkNodeNumber.getAddressNature().getIndicator());
-		GT0100 gt = new GT0100(0, np, na, networkNodeNumber.getAddress());
-		return new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
-				smscPropertiesManagement.getMscSsn());
+
+        GlobalTitle gt = sccpParameterFact.createGlobalTitle(networkNodeNumber.getAddress(), 0, np, null, na);
+        return sccpParameterFact.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0, smscPropertiesManagement.getMscSsn());
+
+//		GT0100 gt = new GT0100(0, np, na, networkNodeNumber.getAddress());
+//		return new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
+//				smscPropertiesManagement.getMscSsn());
 	}
 
 	private AddressField getSmsTpduOriginatingAddress(int ton, int npi, String address) {

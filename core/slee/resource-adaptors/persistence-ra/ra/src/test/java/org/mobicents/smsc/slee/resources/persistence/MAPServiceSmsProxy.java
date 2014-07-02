@@ -64,6 +64,13 @@ public class MAPServiceSmsProxy extends MAPServiceBaseProxy implements MAPServic
         return lastMAPDialogSms;
     }
 
+    @Override
+    public MAPDialogSms createNewDialog(MAPApplicationContext appCntx, SccpAddress origAddress, AddressString origReference, SccpAddress destAddress,
+            AddressString destReference, Long localTrId) throws MAPException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 	@Override
 	public void addMAPServiceListener(MAPServiceSmsListener arg0) {
 		// TODO Auto-generated method stub

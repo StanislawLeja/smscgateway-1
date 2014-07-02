@@ -565,5 +565,14 @@ public class MessageUtil {
         return isPartial;
     }
 
+    public static boolean isStoreAndForward(Sms sms) {
+        int messagingMode = (sms.getEsmClass() & 0x03);
+        if (messagingMode == 0 || messagingMode == 3)
+            return true;
+        else
+            return false;
+        // boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
+    }
+
 }
 

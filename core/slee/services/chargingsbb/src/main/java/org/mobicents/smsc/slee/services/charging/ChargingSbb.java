@@ -70,6 +70,7 @@ import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+import org.mobicents.smsc.smpp.SmscStatAggregator;
 
 import com.cloudhopper.smpp.SmppConstants;
 
@@ -114,6 +115,7 @@ public abstract class ChargingSbb implements Sbb {
 	private NullActivityContextInterfaceFactory nullACIFactory;
 
 	private PersistenceRAInterface persistence;
+    private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 
 	private static final TimerOptions defaultTimerOptions = createDefaultTimerOptions();
 	private NullActivityContextInterfaceFactory nullActivityContextInterfaceFactory;
@@ -431,15 +433,37 @@ public abstract class ChargingSbb implements Sbb {
 		}
 
 		try {
-			sms.setStored(true);
-			if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-				persistence.createLiveSms(sms);
-				persistence.setNewMessageScheduled(sms.getSmsSet(),
-						MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
-			} else {
-				sms.setStored(true);
-				persistence.c2_scheduleMessage(sms);
-			}
+            boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
+
+            // TODO ...................... direct launch
+            storeAndForwMode = true;
+            // TODO ...................... direct launch
+            if (!storeAndForwMode) {
+                // TODO ...................... direct launch
+
+            } else {
+
+                sms.setStored(true);
+                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                    persistence.createLiveSms(sms);
+                    persistence.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                } else {
+                    persistence.c2_scheduleMessage(sms);
+                }
+            }
+
+            smscStatAggregator.updateMsgInReceivedAll();
+            switch (sms.getOriginationType()) {
+            case SMPP:
+                smscStatAggregator.updateMsgInReceivedSmpp();
+                break;
+            case SS7:
+                smscStatAggregator.updateMsgInReceivedSs7();
+                break;
+            case SIP:
+                smscStatAggregator.updateMsgInReceivedSip();
+                break;
+            }
 		} catch (PersistenceException e) {
 			throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(),
 					SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
@@ -455,14 +479,23 @@ public abstract class ChargingSbb implements Sbb {
 		}
 
 		try {
-			sms.getSmsSet().setStatus(ErrorCode.OCS_ACCESS_NOT_GRANTED);
-			sms.setStored(true);
-			if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-				persistence.archiveFailuredSms(sms);
-			} else {
-				sms.setStored(true);
-				persistence.c2_createRecordArchive(sms);
-			}
+            boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
+
+            // TODO ...................... direct launch
+            storeAndForwMode = true;
+            // TODO ...................... direct launch
+            if (storeAndForwMode) {
+                sms.getSmsSet().setStatus(ErrorCode.OCS_ACCESS_NOT_GRANTED);
+                sms.setStored(true);
+                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                    persistence.archiveFailuredSms(sms);
+                } else {
+                    sms.setStored(true);
+                    persistence.c2_createRecordArchive(sms);
+                }
+            }
+
+            smscStatAggregator.updateMsgInRejectedAll();
 
 			// TODO: if CCR gives some response verbal reject reason
 			// we need replace CdrGenerator.CDR_SUCCESS_NO_REASON with this

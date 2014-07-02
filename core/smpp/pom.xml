@@ -54,6 +54,17 @@
 			<artifactId>cassandra-support</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
+
+		<dependency>
+			<artifactId>statistics-oam-api</artifactId>
+			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
+			<version>${jss7.telscale.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>jmxss7</artifactId>
+			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
+			<version>${jss7.telscale.version}</version>
+		</dependency>
 	</dependencies>
 
 	<profiles>
