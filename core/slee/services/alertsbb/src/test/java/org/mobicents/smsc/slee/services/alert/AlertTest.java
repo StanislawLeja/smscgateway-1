@@ -114,6 +114,8 @@ public class AlertTest {
 //		assertEquals(smsSet.getInSystem(), 1);
 //		assertEquals(smsSet.getDueDate(), farDate);
 
+        Thread.sleep(1000);
+        
 		Date curDate = new Date();
 		ISDNAddressString msisdn = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "5555");
 		AddressString serviceCentreAddress = new AddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "1111");

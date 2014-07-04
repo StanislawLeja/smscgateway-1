@@ -84,6 +84,16 @@
 					<version>${testng.version}</version>
 					<scope>test</scope>
 				</dependency>
+                <dependency>
+                    <artifactId>statistics-api</artifactId>
+                    <groupId>org.mobicents.protocols.ss7.statistics</groupId>
+                    <version>${ss7.version}</version>
+                </dependency>       
+                <dependency>
+                    <artifactId>statistics-impl</artifactId>
+                    <groupId>org.mobicents.protocols.ss7.statistics</groupId>
+                    <version>${ss7.version}</version>
+                </dependency>       
 			</dependencies>
 		</profile>
 		<profile>
