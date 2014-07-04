@@ -287,8 +287,9 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 
 		// Lets first close the Dialog
 		MAPDialogSms mapDialogSms = event.getMAPDialog();
-
-		if (this.currentMapMessageCount % 7 == 0) {
+		boolean sendError = true;
+//		if (this.currentMapMessageCount % 7 == 0) {
+        if (sendError) {
 			// Send back AbsentSubscriber for every 7th MtSMS
 			try {
 				MAPErrorMessage mapErrorMessage = mAPErrorMessageFactory.createMAPErrorMessageAbsentSubscriberSM(AbsentSubscriberDiagnosticSM.IMSIDetached,
@@ -317,9 +318,18 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 	}
 
 	@Override
-	public void onReportSMDeliveryStatusRequest(ReportSMDeliveryStatusRequest arg0) {
-		// TODO Auto-generated method stub
+	public void onReportSMDeliveryStatusRequest(ReportSMDeliveryStatusRequest event) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Rx : ReportSMDeliveryStatusRequest=" + event);
+        }
 
+        try {
+            MAPDialogSms dialog = event.getMAPDialog();
+            dialog.addReportSMDeliveryStatusResponse(event.getInvokeId(), event.getMsisdn(), null);
+            dialog.close(false);
+        } catch (MAPException e) {
+            e.printStackTrace();
+        }
 	}
 
 	@Override
