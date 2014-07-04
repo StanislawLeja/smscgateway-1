@@ -74,7 +74,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
  * @author sergey vetyutnev
  * 
  */
-public abstract class SriSbb extends MtCommonSbb {
+public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStatusInterface2 {
 
 	private static final String className = SriSbb.class.getSimpleName();
 

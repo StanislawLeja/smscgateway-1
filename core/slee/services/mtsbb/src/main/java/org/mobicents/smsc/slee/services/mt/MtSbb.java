@@ -114,7 +114,7 @@ import com.cloudhopper.smpp.tlv.TlvConvertException;
  * @author sergey vetyutnev
  * 
  */
-public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface {
+public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface, ReportSMDeliveryStatusInterface2 {
 
 	private static final String className = MtSbb.class.getSimpleName();
 
