@@ -62,16 +62,10 @@ public class RsdsSbbProxy extends RsdsSbb implements ChildRelationExt, SbbLocalO
         this.sccpParameterFact = new ParameterFactoryImpl();
 	}
 
-	@Override
-	public TT_PersistenceRAInterfaceProxy getStore() {
-		return pers;
-	}
-
-	@Override
-	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi, SMDeliveryOutcome sMDeliveryOutcome, String targetId) {
-		// TODO Auto-generated method stub
-		
-	}
+//	@Override
+//	public TT_PersistenceRAInterfaceProxy getStore() {
+//		return pers;
+//	}
 
 	@Override
 	public void setTargetId(String targetId) {
@@ -81,42 +75,6 @@ public class RsdsSbbProxy extends RsdsSbb implements ChildRelationExt, SbbLocalO
 	@Override
 	public String getTargetId() {
 		return this.targetId;
-	}
-
-	@Override
-	public void doSetSmsSubmitData(SmsSubmitData smsDeliveryData) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public SmsSubmitData doGetSmsSubmitData() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void doSetCurrentMsgNum(int currentMsgNum) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public int doGetCurrentMsgNum() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void doSetInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public InformServiceCenterContainer doGetInformServiceCenterContainer() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

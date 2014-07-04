@@ -29,5 +29,5 @@ import javax.slee.SbbLocalObject;
  * @author amit bhayani
  *
  */
-public interface MtSbbLocalObject extends SbbLocalObject, MtForwardSmsInterface {
+public interface MtSbbLocalObject extends SbbLocalObject, MtForwardSmsInterface, ReportSMDeliveryStatusInterface2 {
 }
