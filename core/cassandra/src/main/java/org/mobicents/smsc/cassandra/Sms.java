@@ -83,6 +83,8 @@ public class Sms implements Serializable {
 
 	private TlvSet tlvSet = new TlvSet();
 
+    private MessageDeliveryResultResponseInterface messageDeliveryResultResponse;
+
 	public Sms() {
 	}
 
@@ -412,6 +414,14 @@ public class Sms implements Serializable {
      */
     public void setOriginationType(OriginationType originationType) {
         this.originationType = originationType;
+    }
+
+    public MessageDeliveryResultResponseInterface getMessageDeliveryResultResponse() {
+        return messageDeliveryResultResponse;
+    }
+
+    public void setMessageDeliveryResultResponse(MessageDeliveryResultResponseInterface messageDeliveryResultResponse) {
+        this.messageDeliveryResultResponse = messageDeliveryResultResponse;
     }
 
     public boolean isMcDeliveryReceipt() {

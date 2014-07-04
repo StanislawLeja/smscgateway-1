@@ -574,5 +574,13 @@ public class MessageUtil {
         // boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
     }
 
+    public static boolean isTransactional(Sms sms) {
+        int messagingMode = (sms.getEsmClass() & 0x03);
+        if (messagingMode == 2)
+            return true;
+        else
+            return false;
+    }
+
 }
 

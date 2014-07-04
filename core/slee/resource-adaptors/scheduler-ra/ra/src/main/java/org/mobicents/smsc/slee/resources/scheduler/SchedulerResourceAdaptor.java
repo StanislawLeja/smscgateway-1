@@ -586,11 +586,11 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 		return doInjectSms(smsSet);
 	}
-	
-	private boolean doInjectSms(SmsSet smsSet) throws NotSupportedException, SystemException, Exception, RollbackException, HeuristicMixedException,
-    HeuristicRollbackException {
-		return this.doInjectSms(smsSet, false);
-	}
+
+    private boolean doInjectSms(SmsSet smsSet) throws NotSupportedException, SystemException, Exception, RollbackException, HeuristicMixedException,
+            HeuristicRollbackException {
+        return this.doInjectSms(smsSet, false);
+    }
 
     private boolean doInjectSms(SmsSet smsSet, boolean callFromSbb) throws NotSupportedException, SystemException, Exception, RollbackException, HeuristicMixedException,
             HeuristicRollbackException {
@@ -600,7 +600,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
     	}
 
 		try {
-
 			// Step 1: Check first if this SMS is for SMPP
 			SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
 			String destClusterName = smsRouteManagement.getEsmeClusterName(smsSet.getDestAddrTon(),
@@ -645,7 +644,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			this.sleeEndpoint.startActivityTransacted(activity.getActivityHandle(), activity, ACTIVITY_FLAGS);
 
 			try {
-				this.sleeEndpoint.fireEventTransacted(activity.getActivityHandle(), eventTypeId, event, null, null);
+                this.sleeEndpoint.fireEventTransacted(activity.getActivityHandle(), eventTypeId, event, null, null);
 			} catch (Exception e) {
 				if (this.tracer.isSevereEnabled()) {
 					this.tracer.severe("Failed to fire SmsSet event Class=: " + eventTypeId.getEventClassName(), e);
@@ -657,8 +656,10 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			}
 			markAsInSystem(smsSet);
 		} catch (Exception e) {
-			this.sleeTransactionManager.rollback();
-			throw e;
+            if (!callFromSbb) {
+                this.sleeTransactionManager.rollback();
+            }
+            throw e;
 		}
 
 		if(!callFromSbb){
