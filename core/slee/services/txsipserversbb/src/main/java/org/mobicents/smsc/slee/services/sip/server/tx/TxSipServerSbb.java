@@ -60,6 +60,7 @@ import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
 import org.mobicents.smsc.slee.services.charging.ChargingMedium;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
@@ -79,13 +80,17 @@ public abstract class TxSipServerSbb implements Sbb {
 
 	private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID(
 			"PersistenceResourceAdaptorType", "org.mobicents", "1.0");
-	private static final String LINK = "PersistenceResourceAdaptor";
+	private static final String PERSISTENCE_LINK = "PersistenceResourceAdaptor";
+    private static final ResourceAdaptorTypeID SCHEDULER_ID = new ResourceAdaptorTypeID(
+            "SchedulerResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String SCHEDULER_LINK = "SchedulerResourceAdaptor";
 
 	// SIP RA
 	private static final ResourceAdaptorTypeID SIP_RA_TYPE_ID = new ResourceAdaptorTypeID("JAIN SIP", "javax.sip",
 			"1.2");
 	private static final String SIP_RA_LINK = "SipRA";
 	private SleeSipProvider sipRA;
+    protected SchedulerRaSbbInterface scheduler = null;
 
 	private MessageFactory messageFactory;
 	// private AddressFactory addressFactory;
@@ -308,8 +313,8 @@ public abstract class TxSipServerSbb implements Sbb {
 			// this.headerFactory = this.sipRA.getHeaderFactory();
 			// this.addressFactory = this.sipRA.getAddressFactory();
 
-			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID,
-					LINK);
+            this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, PERSISTENCE_LINK);
+            this.scheduler = (SchedulerRaSbbInterface) this.sbbContext.getResourceAdaptorInterface(SCHEDULER_ID, SCHEDULER_LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
@@ -421,6 +426,7 @@ public abstract class TxSipServerSbb implements Sbb {
 			smsSet.setDestAddr(ta.getAddr());
 			smsSet.setDestAddrNpi(ta.getAddrNpi());
 			smsSet.setDestAddrTon(ta.getAddrTon());
+			smsSet.addSms(sms);
 		}
 		sms.setSmsSet(smsSet);
 
@@ -448,40 +454,25 @@ public abstract class TxSipServerSbb implements Sbb {
 			ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
 			chargingSbb.setupChargingRequestInterface(ChargingMedium.TxSipOrig, sms);
 		} else {
-			boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
+            // store and forward
+            try {
+                sms.setStored(true);
+                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                    store.createLiveSms(sms);
+                    if (sms.getScheduleDeliveryTime() == null)
+                        store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                    else
+                        store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
+                } else {
+                    store.c2_scheduleMessage(sms);
+                }
+            } catch (PersistenceException e) {
+                throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
+                        MAPErrorCode.systemFailure, null, e);
+            }
 
-			// TODO ...................... direct launch
-			storeAndForwMode = true;
-			// TODO ...................... direct launch
-			if (!storeAndForwMode) {
-				// TODO ...................... direct launch
-
-			} else {
-				// store and forward
-				try {
-					// TODO: we can make this some check will we send this
-					// message
-					// or not
-
-					sms.setStored(true);
-					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-						store.createLiveSms(sms);
-						if (sms.getScheduleDeliveryTime() == null)
-							store.setNewMessageScheduled(sms.getSmsSet(),
-									MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
-						else
-							store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
-					} else {
-						store.c2_scheduleMessage(sms);
-					}
-				} catch (PersistenceException e) {
-					throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(),
-							SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
-				}
-
-				smscStatAggregator.updateMsgInReceivedAll();
-	            smscStatAggregator.updateMsgInReceivedSip();
-			}
+            smscStatAggregator.updateMsgInReceivedAll();
+            smscStatAggregator.updateMsgInReceivedSip();
 		}
 	}
 

@@ -906,6 +906,12 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		}
 
 		// current message is sent
+		// firstly sending of a positive response for transactional mode
+        if (sms.getMessageDeliveryResultResponse() != null) {
+            sms.getMessageDeliveryResultResponse().responseDeliverySuccess();
+            sms.setMessageDeliveryResultResponse(null);
+        }
+
 		// pushing current message into an archive
 		Date deliveryDate = new Date();
 		try {

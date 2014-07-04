@@ -61,6 +61,7 @@ import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.ErrorAction;
 import org.mobicents.smsc.cassandra.ErrorCode;
+import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
@@ -243,6 +244,12 @@ public abstract class RxSipServerSbb implements Sbb {
 			// current message is sent pushing current message into an archive
 			int currentMsgNum = this.getCurrentMsgNum();
 			Sms sms = smsSet.getSms(currentMsgNum);
+
+			// firstly sending of a positive response for transactional mode
+            if (sms.getMessageDeliveryResultResponse() != null) {
+                sms.getMessageDeliveryResultResponse().responseDeliverySuccess();
+                sms.setMessageDeliveryResultResponse(null);
+            }
 
 			PersistenceRAInterface pers = this.getStore();
 
@@ -603,6 +610,22 @@ public abstract class RxSipServerSbb implements Sbb {
 			CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED_SIP, s1,
 					smscPropertiesManagement.getGenerateReceiptCdr());
 		}
+
+        // sending of a failure response for transactional mode
+        MessageDeliveryResultResponseInterface.DeliveryFailureReason delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.destinationUnavalable;
+        if (errorAction == ErrorAction.temporaryFailure)
+            delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.temporaryNetworkError;
+        if (errorAction == ErrorAction.permanentFailure)
+            delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.permanentNetworkError;
+        for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
+            Sms sms = smsSet.getSms(i1);
+            if (sms != null) {
+                if (sms.getMessageDeliveryResultResponse() != null) {
+                    sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason);
+                    sms.setMessageDeliveryResultResponse(null);
+                }
+            }
+        }
 
 		PersistenceRAInterface pers = this.getStore();
 		ArrayList<Sms> lstFailured = new ArrayList<Sms>();

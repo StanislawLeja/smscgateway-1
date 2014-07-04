@@ -70,8 +70,10 @@ import org.mobicents.smsc.smpp.SmscStatProvider;
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.pdu.BaseSm;
+import com.cloudhopper.smpp.pdu.DataSm;
 import com.cloudhopper.smpp.pdu.DataSmResp;
 import com.cloudhopper.smpp.pdu.DeliverSmResp;
+import com.cloudhopper.smpp.pdu.SubmitSm;
 import com.cloudhopper.smpp.pdu.SubmitSmResp;
 import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.tlv.TlvConvertException;
@@ -79,10 +81,10 @@ import com.cloudhopper.smpp.type.RecoverablePduException;
 import com.cloudhopper.smpp.util.TlvUtil;
 
 /**
- * 
+ *
  * @author amit bhayani
  * @author servey vetyutnev
- * 
+ *
  */
 public abstract class TxSmppServerSbb implements Sbb {
 	protected static SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
@@ -144,7 +146,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			try {
 				synchronized (lock) {
 					sms = this.createSmsEvent(event, esme, ta, store);
-					this.processSms(sms, store, esme);
+					this.processSms(sms, store, esme, event, null);
 				}
 			} finally {
 				store.releaseSynchroObject(lock);
@@ -208,7 +210,9 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		// Lets send the Response with success here
 		try {
-			this.smppServerSessions.sendResponsePdu(esme, event, response);
+            if (sms.getMessageDeliveryResultResponse() == null) {
+                this.smppServerSessions.sendResponsePdu(esme, event, response);
+            }
 		} catch (Throwable e) {
 			this.logger.severe("Error while trying to send SubmitSmResponse=" + response, e);
 		}
@@ -239,7 +243,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			try {
 				synchronized (lock) {
 					sms = this.createSmsEvent(event, esme, ta, store);
-					this.processSms(sms, store, esme);
+					this.processSms(sms, store, esme, null, event);
 				}
 			} finally {
 				store.releaseSynchroObject(lock);
@@ -303,7 +307,9 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		// Lets send the Response with success here
 		try {
-			this.smppServerSessions.sendResponsePdu(esme, event, response);
+            if (sms.getMessageDeliveryResultResponse() == null) {
+                this.smppServerSessions.sendResponsePdu(esme, event, response);
+            }
 		} catch (Exception e) {
 			this.logger.severe("Error while trying to send DataSmResponse=" + response, e);
 		}
@@ -361,7 +367,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			try {
 				synchronized (lock) {
 					sms = this.createSmsEvent(event, esme, ta, store);
-					this.processSms(sms, store, esme);
+					this.processSms(sms, store, esme, null, null);
 				}
 			} finally {
 				store.releaseSynchroObject(lock);
@@ -726,6 +732,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			smsSet.setDestAddr(ta.getAddr());
 			smsSet.setDestAddrNpi(ta.getAddrNpi());
 			smsSet.setDestAddrTon(ta.getAddrTon());
+			smsSet.addSms(sms);
 		}
 		sms.setSmsSet(smsSet);
 
@@ -740,7 +747,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		return sms;
 	}
 
-	private void processSms(Sms sms, PersistenceRAInterface store, Esme esme) throws SmscProcessingException {
+    private void processSms(Sms sms, PersistenceRAInterface store, Esme esme, SubmitSm eventSubmit, DataSm eventData) throws SmscProcessingException {
 
 		boolean withCharging = false;
 		switch (smscPropertiesManagement.getTxSmppChargingType()) {
@@ -752,21 +759,21 @@ public abstract class TxSmppServerSbb implements Sbb {
 			break;
 		}
 
+        // transactional mode
+        if ((eventSubmit != null || eventData != null) && MessageUtil.isTransactional(sms)) {
+            MessageDeliveryResultResponseSmpp messageDeliveryResultResponse = new MessageDeliveryResultResponseSmpp(this.smppServerSessions, esme, eventSubmit,
+                    eventData, sms.getMessageId());
+            sms.setMessageDeliveryResultResponse(messageDeliveryResultResponse);
+        }
+
 		if (withCharging) {
 			ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
 			chargingSbb.setupChargingRequestInterface(ChargingMedium.TxSmppOrig, sms);
 		} else {
             boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
-
-			// TODO ...................... direct launch
-//			storeAndForwMode = true;
-			// TODO ...................... direct launch
-
 			if (!storeAndForwMode) {
 			    try {
-		            // TODO ...................... direct launch
                     this.scheduler.injectSmsOnFly(sms.getSmsSet());
-                    // TODO ...................... direct launch
                 } catch (Exception e) {
                     throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
                             MAPErrorCode.systemFailure, e);

@@ -64,11 +64,13 @@ import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.CdrGenerator;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.ErrorCode;
+import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.mobicents.smsc.smpp.SmscStatAggregator;
 
@@ -93,6 +95,9 @@ public abstract class ChargingSbb implements Sbb {
 	private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID(
 			"PersistenceResourceAdaptorType", "org.mobicents", "1.0");
 	private static final String LINK_PERS = "PersistenceResourceAdaptor";
+    private static final ResourceAdaptorTypeID SCHEDULER_ID = new ResourceAdaptorTypeID(
+            "SchedulerResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String SCHEDULER_LINK = "SchedulerResourceAdaptor";
 
 	// private static String originIP = "127.0.0.1";
 	// private static String originPort = "1812";
@@ -116,6 +121,7 @@ public abstract class ChargingSbb implements Sbb {
 
 	private PersistenceRAInterface persistence;
     private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
+    protected SchedulerRaSbbInterface scheduler = null;
 
 	private static final TimerOptions defaultTimerOptions = createDefaultTimerOptions();
 	private NullActivityContextInterfaceFactory nullActivityContextInterfaceFactory;
@@ -222,8 +228,8 @@ public abstract class ChargingSbb implements Sbb {
 			nullACIFactory = (NullActivityContextInterfaceFactory) ctx
 					.lookup("slee/nullactivity/activitycontextinterfacefactory");
 
-			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID,
-					LINK_PERS);
+            this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK_PERS);
+            this.scheduler = (SchedulerRaSbbInterface) this.sbbContext.getResourceAdaptorInterface(SCHEDULER_ID, SCHEDULER_LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
@@ -433,16 +439,15 @@ public abstract class ChargingSbb implements Sbb {
 		}
 
 		try {
-            boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
-
-            // TODO ...................... direct launch
-            storeAndForwMode = true;
-            // TODO ...................... direct launch
+            boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
             if (!storeAndForwMode) {
-                // TODO ...................... direct launch
-
+                try {
+                    this.scheduler.injectSmsOnFly(sms.getSmsSet());
+                } catch (Exception e) {
+                    throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
+                            MAPErrorCode.systemFailure, e);
+                }
             } else {
-
                 sms.setStored(true);
                 if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                     persistence.createLiveSms(sms);
@@ -479,20 +484,20 @@ public abstract class ChargingSbb implements Sbb {
 		}
 
 		try {
-            boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
+	        // sending of a failure response for transactional mode
+            MessageDeliveryResultResponseInterface.DeliveryFailureReason delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.invalidDestinationAddress;
+            if (sms.getMessageDeliveryResultResponse() != null) {
+                sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason);
+                sms.setMessageDeliveryResultResponse(null);
+            }
 
-            // TODO ...................... direct launch
-            storeAndForwMode = true;
-            // TODO ...................... direct launch
-            if (storeAndForwMode) {
-                sms.getSmsSet().setStatus(ErrorCode.OCS_ACCESS_NOT_GRANTED);
+	        sms.getSmsSet().setStatus(ErrorCode.OCS_ACCESS_NOT_GRANTED);
+            sms.setStored(true);
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                persistence.archiveFailuredSms(sms);
+            } else {
                 sms.setStored(true);
-                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                    persistence.archiveFailuredSms(sms);
-                } else {
-                    sms.setStored(true);
-                    persistence.c2_createRecordArchive(sms);
-                }
+                persistence.c2_createRecordArchive(sms);
             }
 
             smscStatAggregator.updateMsgInRejectedAll();
