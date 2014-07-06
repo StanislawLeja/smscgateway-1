@@ -36,7 +36,6 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbLocalObjectExt;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
-import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 
@@ -60,16 +59,7 @@ public class RsdsSbbProxy extends RsdsSbb implements ChildRelationExt, SbbLocalO
 		this.sbbContext = new SbbContextExtProxy(this);
 	}
 
-	@Override
-	public TT_PersistenceRAInterfaceProxy getStore() {
-		return pers;
-	}
 
-	@Override
-	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi, SMDeliveryOutcome sMDeliveryOutcome, String targetId) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public void setTargetId(String targetId) {
@@ -81,41 +71,7 @@ public class RsdsSbbProxy extends RsdsSbb implements ChildRelationExt, SbbLocalO
 		return this.targetId;
 	}
 
-	@Override
-	public void doSetSmsSubmitData(SmsSubmitData smsDeliveryData) {
-		// TODO Auto-generated method stub
-		
-	}
 
-	@Override
-	public SmsSubmitData doGetSmsSubmitData() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void doSetCurrentMsgNum(int currentMsgNum) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public int doGetCurrentMsgNum() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void doSetInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public InformServiceCenterContainer doGetInformServiceCenterContainer() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public boolean add(Object e) {
