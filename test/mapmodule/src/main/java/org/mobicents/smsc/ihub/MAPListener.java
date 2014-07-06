@@ -56,8 +56,12 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 
 	private final AtomicLong mapMessagesReceivedCounter = new AtomicLong(0);
 	private long currentMapMessageCount = 0;
+	private long now = System.currentTimeMillis();
 
 	private final MAPErrorMessageFactory mAPErrorMessageFactory;
+
+	// private final FastMap<Long, MAPDialog> liveDialogs = (new FastMap<Long,
+	// MAPDialog>()).shared();
 
 	protected MAPListener(MAPSimulator iHubManagement) {
 		this.iHubManagement = iHubManagement;
@@ -81,8 +85,22 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 	}
 
 	@Override
-	public void onDialogDelimiter(MAPDialog arg0) {
-		// TODO Auto-generated method stub
+	public void onDialogDelimiter(MAPDialog dialog) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("onDialogDelimiter " + dialog.getState());
+		}
+		Boolean falg = (Boolean) dialog.getUserObject();
+		try {
+			if (falg != null) {
+
+				dialog.close(false);
+			} else {
+				// Accept Dialog so other messages can come in
+				dialog.send();
+			}
+		} catch (MAPException e) {
+			logger.error("Error while trying to send or close dialog", e);
+		}
 
 	}
 
@@ -108,15 +126,22 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 	// }
 
 	@Override
-	public void onDialogRelease(MAPDialog arg0) {
+	public void onDialogRelease(MAPDialog dialog) {
 		// TODO Auto-generated method stub
+		// this.liveDialogs.remove(dialog.getLocalDialogId());
 
 	}
 
 	@Override
-	public void onDialogRequest(MAPDialog arg0, AddressString arg1, AddressString arg2, MAPExtensionContainer arg3) {
+	public void onDialogRequest(MAPDialog dialog, AddressString arg1, AddressString arg2, MAPExtensionContainer arg3) {
 		// TODO Auto-generated method stub
 		this.currentMapMessageCount = this.mapMessagesReceivedCounter.incrementAndGet();
+		// this.liveDialogs.put(dialog.getLocalDialogId(), dialog);
+		if ((this.mapMessagesReceivedCounter.get() % 400) == 0) {
+			long temp = System.currentTimeMillis();
+			logger.warn("Received 400 MAP Dialog requests in " + (temp - this.now));
+			this.now = temp;
+		}
 	}
 
 	@Override
@@ -197,27 +222,23 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 
 		// Lets first close the Dialog
 		MAPDialogSms mapDialogSms = event.getMAPDialog();
+		try {
+			if (this.currentMapMessageCount % 7 == 0) {
+				// Send back AbsentSubscriber for every 7th MtSMS
 
-		if (this.currentMapMessageCount % 7 == 0) {
-			// Send back AbsentSubscriber for every 7th MtSMS
-			try {
 				MAPErrorMessage mapErrorMessage = mAPErrorMessageFactory.createMAPErrorMessageAbsentSubscriberSM(
 						AbsentSubscriberDiagnosticSM.IMSIDetached, null, null);
 				mapDialogSms.sendErrorComponent(event.getInvokeId(), mapErrorMessage);
-				mapDialogSms.close(false);
-			} catch (MAPException e) {
-				logger.error("Error while sending MAPErrorMessageAbsentSubscriberSM ", e);
-			}
-		} else {
-
-			try {
+				// mapDialogSms.close(false);
+			} else {
 				mapDialogSms.addForwardShortMessageResponse(event.getInvokeId());
-				mapDialogSms.close(false);
-			} catch (MAPException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// mapDialogSms.close(false);
 			}
+		} catch (MAPException e) {
+			logger.error("Error while sending MAPErrorMessageAbsentSubscriberSM ", e);
 		}
+
+		mapDialogSms.setUserObject(true);
 	}
 
 	@Override
@@ -243,10 +264,12 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 		try {
 			// TODO Should we add PENDING SMS TPDU here itself?
 			dialog.addMoForwardShortMessageResponse(request.getInvokeId(), null, null);
-			dialog.close(false);
+			// dialog.close(false);
 		} catch (MAPException e) {
 			logger.error("Error while sending MoForwardShortMessageResponse ", e);
 		}
+
+		dialog.setUserObject(true);
 
 		try {
 			SmsSignalInfo smsSignalInfo = request.getSM_RP_UI();
@@ -284,28 +307,25 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 
 		// Lets first close the Dialog
 		MAPDialogSms mapDialogSms = event.getMAPDialog();
-		boolean sendError = true;
-		// if (this.currentMapMessageCount % 7 == 0) {
-		if (sendError) {
-			// Send back AbsentSubscriber for every 7th MtSMS
-			try {
+		// boolean sendError = true;
+		try {
+			if (this.currentMapMessageCount % 7 == 0) {
+				// if (sendError) {
+				// Send back AbsentSubscriber for every 7th MtSMS
+
 				MAPErrorMessage mapErrorMessage = mAPErrorMessageFactory.createMAPErrorMessageAbsentSubscriberSM(
 						AbsentSubscriberDiagnosticSM.IMSIDetached, null, null);
 				mapDialogSms.sendErrorComponent(event.getInvokeId(), mapErrorMessage);
-				mapDialogSms.close(false);
-			} catch (MAPException e) {
-				logger.error("Error while sending MAPErrorMessageAbsentSubscriberSM ", e);
-			}
-		} else {
+				// mapDialogSms.close(false);
 
-			try {
+			} else {
 				mapDialogSms.addMtForwardShortMessageResponse(event.getInvokeId(), null, null);
-				mapDialogSms.close(false);
-			} catch (MAPException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// mapDialogSms.close(false);
 			}
+		} catch (MAPException e) {
+			logger.error("Error while sending MAPErrorMessageAbsentSubscriberSM ", e);
 		}
+		mapDialogSms.setUserObject(true);
 	}
 
 	@Override
@@ -319,14 +339,14 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 		if (logger.isInfoEnabled()) {
 			logger.info("Rx : ReportSMDeliveryStatusRequest=" + event);
 		}
-
+		MAPDialogSms dialog = event.getMAPDialog();
 		try {
-			MAPDialogSms dialog = event.getMAPDialog();
 			dialog.addReportSMDeliveryStatusResponse(event.getInvokeId(), event.getMsisdn(), null);
-			dialog.close(false);
+			// dialog.close(false);
 		} catch (MAPException e) {
 			e.printStackTrace();
 		}
+		dialog.setUserObject(true);
 	}
 
 	@Override
@@ -351,10 +371,11 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 
 		try {
 			mapDialogSms.addSendRoutingInfoForSMResponse(event.getInvokeId(), imsi, li, null, null);
-			mapDialogSms.close(false);
+			// mapDialogSms.close(false);
 		} catch (MAPException e) {
 			e.printStackTrace();
 		}
+		mapDialogSms.setUserObject(true);
 	}
 
 	@Override
