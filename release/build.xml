@@ -20,8 +20,8 @@
 		<!-- Eg: 
 			ant -Dtelscale.smsc.git.tag=ts115ga -Dtelscale.smsc.release.version=6.1.5.GA-TelScale
 		-->
-		<property name="telscale.smsc.git.tag" value="master"/>
-		<property name="telscale.smsc.release.version" value="6.1.6-TelScale-SNAPSHOT"/>
+		<property name="telscale.smsc.git.tag" value="ts116ga"/>
+		<property name="telscale.smsc.release.version" value="6.1.6.GA-TelScale"/>
 		<!-- **//-->
 	
 	<property name="telscale-slee.version" value="6.1.2.GA" />
