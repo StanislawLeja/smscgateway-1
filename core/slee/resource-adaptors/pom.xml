@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>core</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.1.7-TelScale-SNAPSHOT</version>
+		<version>6.1.6.GA-TelScale</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
