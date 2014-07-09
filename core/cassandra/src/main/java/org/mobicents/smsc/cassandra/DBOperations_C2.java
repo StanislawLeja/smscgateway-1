@@ -872,7 +872,7 @@ public class DBOperations_C2 {
 			ResultSet res = session.execute(boundStatement);
 
 			for (Row row : res) {
-				result = this.createSms(row, result, psc.getShortMessageNewStringFormat());
+                result = this.createSms(row, result, psc.getShortMessageNewStringFormat());
 			}
 		} catch (Exception e1) {
 			String msg = "Failed getRecordListForTargeId()";
@@ -880,18 +880,19 @@ public class DBOperations_C2 {
 			throw new PersistenceException(msg, e1);
 		}
 
-		return result;
+        return result;
 	}
 
 	protected SmsSet createSms(final Row row, SmsSet smsSet, boolean shortMessageNewStringFormat) throws PersistenceException {
-		if (row == null)
-			return null;
+		if (row == null) {
+			return smsSet;
+		}
 
 		int inSystem = row.getInt(Schema.COLUMN_IN_SYSTEM);
 		UUID smscUuid = row.getUUID(Schema.COLUMN_SMSC_UUID);
 		if (inSystem == IN_SYSTEM_SENT || inSystem == IN_SYSTEM_INPROCESS && smscUuid.equals(currentSessionUUID)) {
-			// inSystem it is in processing or processed - skip this
-			return null;
+		    // inSystem it is in processing or processed - skip this
+			return smsSet;
 		}
 
 		Sms sms = new Sms();
@@ -1062,7 +1063,10 @@ public class DBOperations_C2 {
 					if (smsSet2 != null) {
 						if (smsSet2.getCreationTime().after(timeOutDate)) {
 							for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
-								smsSet2.addSms(smsSet.getSms(i1));
+                                Sms smsx = smsSet.getSms(i1);
+                                if (!smsSet2.checkSmsPresent(smsx)) {
+                                    smsSet2.addSms(smsx);
+                                }
 							}
 						} else {
 							logger.warn("Timeout of SmsSet in ProcessingSmsSet: targetId=" + smsSet2.getTargetId()
@@ -1096,9 +1100,12 @@ public class DBOperations_C2 {
                 if (smsSet2 != null) {
                     if (smsSet2.getCreationTime().after(timeOutDate)) {
                         for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
-                            smsSet2.addSms(smsSet.getSms(i1));
-                            return false;
+                            Sms smsx = smsSet.getSms(i1);
+                            if (!smsSet2.checkSmsPresent(smsx)) {
+                                smsSet2.addSms(smsx);
+                            }
                         }
+                        return false;
                     } else {
                         logger.warn("Timeout of SmsSet in ProcessingSmsSet: targetId=" + smsSet2.getTargetId() + ", messageCount=" + smsSet2.getSmsCount());
                         smsSet2 = smsSet;

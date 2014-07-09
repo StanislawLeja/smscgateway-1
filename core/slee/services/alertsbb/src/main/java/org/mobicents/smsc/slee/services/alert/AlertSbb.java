@@ -61,15 +61,14 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
 import org.mobicents.smsc.cassandra.SmsSetCashe;
 import org.mobicents.smsc.cassandra.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 /**
@@ -81,7 +80,9 @@ import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 public abstract class AlertSbb implements Sbb {
 
     private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
-    private static final String LINK = "PersistenceResourceAdaptor";
+    private static final String PERSISTENCE_LINK = "PersistenceResourceAdaptor";
+    private static final ResourceAdaptorTypeID SCHEDULER_ID = new ResourceAdaptorTypeID("SchedulerResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String SCHEDULER_LINK = "SchedulerResourceAdaptor";
 
 	protected Tracer logger;
 	protected SbbContextExt sbbContext;
@@ -91,6 +92,7 @@ public abstract class AlertSbb implements Sbb {
 	protected MAPParameterFactory mapParameterFactory;
 
 	protected PersistenceRAInterface persistence;
+    protected SchedulerRaSbbInterface scheduler = null;
 
 
 	public AlertSbb() {
@@ -199,18 +201,19 @@ public abstract class AlertSbb implements Sbb {
 	}
 
 	private void setupAlert(ISDNAddressString msisdn, AddressString serviceCentreAddress) {
-		PersistenceRAInterface pers = this.getStore();
+	    PersistenceRAInterface pers = this.getStore();
 		SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
 		int addrTon = msisdn.getAddressNature().getIndicator();
 		int addrNpi = msisdn.getNumberingPlan().getIndicator();
 		String addr = msisdn.getAddress();
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(addrTon, addrNpi, addr));
-		try {
+
+        try {
 			synchronized (lock) {
 
 				try {
-                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+			        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                         boolean b1 = pers.checkSmsSetExists(lock);
                         if (!b1) {
                             if (this.logger.isInfoEnabled()) {
@@ -266,18 +269,20 @@ public abstract class AlertSbb implements Sbb {
                                         ArrayList<SmsSet> lst = pers.c2_sortRecordList(lstS);
                                         if (lst.size() > 0) {
                                             smsSet = lst.get(0);
-                                            for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
-                                                Sms sms = smsSet.getSms(i1);
 
-                                                // TODO: issuing direct Activity here !!! - and skip messages with expired validity period
-//                                                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS);
-                                                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-                                                SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet0.getTargetId());
-                                                long newDueSlot = pers.c2_getDueSlotForNewSms();
-                                                pers.c2_updateDueSlotForTargetId_WithTableCleaning(smsSet0.getTargetId(), newDueSlot);
-                                                pers.c2_scheduleMessage(sms, newDueSlot, null);
-                                                // TODO: issuing direct Activity here !!!
-                                            }
+                                            smsSet.setProcessingStarted();
+                                            this.scheduler.injectSmsDatabase(smsSet);                                            
+
+
+//                                            for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
+//                                                Sms sms = smsSet.getSms(i1);
+//
+//                                                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+//                                                SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet0.getTargetId());
+//                                                long newDueSlot = pers.c2_getDueSlotForNewSms();
+//                                                pers.c2_updateDueSlotForTargetId_WithTableCleaning(smsSet0.getTargetId(), newDueSlot);
+//                                                pers.c2_scheduleMessage(sms, newDueSlot, null);
+//                                            }
                                         }
                                     }
                                 }
@@ -286,8 +291,10 @@ public abstract class AlertSbb implements Sbb {
                             }
                         }
                     }
-				} catch (PersistenceException e) {
-					this.logger.severe("PersistenceException when setupAlert()" + e.getMessage(), e);
+                } catch (PersistenceException e) {
+                    this.logger.severe("PersistenceException when setupAlert()" + e.getMessage(), e);
+                } catch (Exception e) {
+                    this.logger.severe("Exception when setupAlert()" + e.getMessage(), e);
 				}
 			}
 		} finally {
@@ -363,7 +370,8 @@ public abstract class AlertSbb implements Sbb {
 			this.mapParameterFactory = this.mapProvider.getMAPParameterFactory();
 
 			this.logger = this.sbbContext.getTracer(AlertSbb.class.getSimpleName());
-			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
+			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, PERSISTENCE_LINK);
+            this.scheduler = (SchedulerRaSbbInterface) this.sbbContext.getResourceAdaptorInterface(SCHEDULER_ID, SCHEDULER_LINK);
 
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);

@@ -87,6 +87,11 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                 doInjectSmsOnFly(smsSet);
             }
 
+            @Override
+            public void injectSmsDatabase(SmsSet smsSet) throws Exception {
+                doInjectSmsDatabase(smsSet);
+            }
+
 		};
 	}
 
@@ -183,20 +188,10 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 		SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
-		// this.dbOperations_C1 = DBOperations_C1.getInstance();
-		// if (!this.dbOperations_C1.isStarted()) {
-		// throw new RuntimeException("DBOperations_1 not started yet!");
-		// }
-
 		this.dbOperations_C2 = DBOperations_C2.getInstance();
 		if (!this.dbOperations_C2.isStarted()) {
 			throw new RuntimeException("DBOperations_2 not started yet!");
 		}
-
-		// this.dbOperations = DBOperations_C1.getInstance();
-		// if (!this.dbOperations.isStarted()) {
-		// throw new RuntimeException("DBOperations_1 not started yet!");
-		// }
 
 		scheduler = Executors.newScheduledThreadPool(1);
 
@@ -388,7 +383,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 						if (!smsSet.isProcessingStarted()) {
 							smsSet.setProcessingStarted();
 
-                            if (!injectSmsDatabase(smsSet, curDate)) {
+                            if (!doInjectSmsDatabase(smsSet, curDate, false)) {
                                 return;
                             }
 						}
@@ -459,7 +454,20 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
         doInjectSms(smsSet, true);
     }
 
-	protected boolean injectSmsDatabase(SmsSet smsSet, Date curDate) throws Exception {
+    public void doInjectSmsDatabase(SmsSet smsSet) throws Exception {
+        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+
+//        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+//            // TODO: implement it
+//        } else {
+//            if (!dbOperations_C2.c2_checkProcessingSmsSet(smsSet))
+//                return;
+//        }
+
+        doInjectSmsDatabase(smsSet, new Date(), true);
+    }
+
+	protected boolean doInjectSmsDatabase(SmsSet smsSet, Date curDate, boolean callFromSbb) throws Exception {
 	    // removing SMS that are out of validity period
 	    boolean withValidityTimeout = false;
         for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
@@ -584,13 +592,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
             }
         }
 
-		return doInjectSms(smsSet);
+		return doInjectSms(smsSet, callFromSbb);
 	}
-
-    private boolean doInjectSms(SmsSet smsSet) throws NotSupportedException, SystemException, Exception, RollbackException, HeuristicMixedException,
-            HeuristicRollbackException {
-        return this.doInjectSms(smsSet, false);
-    }
 
     private boolean doInjectSms(SmsSet smsSet, boolean callFromSbb) throws NotSupportedException, SystemException, Exception, RollbackException, HeuristicMixedException,
             HeuristicRollbackException {
@@ -681,8 +684,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		} else {
 			long processedDueSlot = dbOperations_C2.c2_getCurrentDueSlot();
 			long possibleDueSlot = dbOperations_C2.c2_getIntimeDueSlot();
-			// if (processedDueSlot >= possibleDueSlot || maxRecordCount <
-			// smscPropertiesManagement.getFetchMaxRows()) {
 			if (processedDueSlot >= possibleDueSlot) {
 				return new OneWaySmsSetCollection();
 			}

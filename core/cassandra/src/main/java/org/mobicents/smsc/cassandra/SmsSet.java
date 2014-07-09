@@ -309,6 +309,15 @@ public class SmsSet implements Serializable {
         return creationTime;
     }
 
+    public boolean checkSmsPresent(Sms sms) {
+        for (Sms smsa : smsList) {
+            if (smsa.getDbId().equals(sms.getDbId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
