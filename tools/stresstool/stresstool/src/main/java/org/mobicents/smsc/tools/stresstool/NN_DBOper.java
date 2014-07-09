@@ -112,7 +112,8 @@ public class NN_DBOper {
         if (!this.started)
             return;
 
-        cluster.shutdown();
+        cluster.close();
+//        cluster.shutdown();
         Metadata metadata = cluster.getMetadata();
         logger.info(String.format("Disconnected from cluster: %s\n", metadata.getClusterName()));
 

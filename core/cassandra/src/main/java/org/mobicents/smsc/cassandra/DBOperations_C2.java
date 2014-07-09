@@ -176,18 +176,17 @@ public class DBOperations_C2 {
 
 		Builder builder = Cluster.builder();
 
+        builder.addContactPoint(ip);
 		builder.withPort(port);
-		builder.addContactPoint(ip);
 
-		this.cluster = builder.build();
-		Metadata metadata = cluster.getMetadata();
+		this.cluster = builder.build().init();
 
-		logger.info(String.format("Connected to cluster: %s\n", metadata.getClusterName()));
-		for (Host host : metadata.getAllHosts()) {
-			logger.info(String.format("Datacenter: %s; Host: %s; Rack: %s\n", host.getDatacenter(), host.getAddress(),
-					host.getRack()));
-		}
-
+        Metadata metadata = cluster.getMetadata();
+        logger.info(String.format("Connected to cluster: %s\n", metadata.getClusterName()));
+        for (Host host : metadata.getAllHosts()) {
+            logger.info(String.format("Datacenter: %s; Host: %s; Rack: %s\n", host.getDatacenter(), host.getAddress(),
+                    host.getRack()));
+        }
 		session = cluster.connect();
 
 		session.execute("USE \"" + keyspace + "\"");
@@ -265,9 +264,11 @@ public class DBOperations_C2 {
 		if (!this.started)
 			return;
 
-		cluster.shutdown();
-		Metadata metadata = cluster.getMetadata();
-		logger.info(String.format("Disconnected from cluster: %s\n", metadata.getClusterName()));
+        if (!cluster.isClosed()) {
+            Metadata metadata = cluster.getMetadata();
+            cluster.close();
+            logger.info(String.format("Disconnected from cluster: %s\n", metadata.getClusterName()));
+        }
 
 		this.started = false;
 	}

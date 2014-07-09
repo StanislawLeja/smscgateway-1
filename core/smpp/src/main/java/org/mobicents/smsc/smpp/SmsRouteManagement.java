@@ -50,7 +50,7 @@ public class SmsRouteManagement {
 		this.smsRoutingRule = smsRoutingRule;
 	}
 
-    protected SmsRoutingRule getSmsRoutingRule() {
+	public SmsRoutingRule getSmsRoutingRule() {
         return this.smsRoutingRule;
     }
 

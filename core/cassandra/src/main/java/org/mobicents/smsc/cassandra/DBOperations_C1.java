@@ -230,7 +230,8 @@ public class DBOperations_C1 {
 		if (!this.started)
 			return;
 
-		cluster.shutdown();
+//        cluster.shutdown();
+        cluster.close();
 		Metadata metadata = cluster.getMetadata();
 		logger.info(String.format("Disconnected from cluster: %s\n", metadata.getClusterName()));
 

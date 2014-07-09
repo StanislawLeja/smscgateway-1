@@ -138,6 +138,9 @@ public class TT_CassandraTest {
         assertEquals(ly, DBOperations_C2.MESSAGE_ID_LAG * 2);
 
         sbb.stop();
+        
+//        Thread.sleep(1000);
+        
         sbb.start();
 
         long l4 = sbb.c2_getCurrentDueSlot();

@@ -323,6 +323,11 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				SmsSetCashe.getInstance().garbadeCollectProcessingSmsSet();
 			}
 
+			// checking if SmsRouteManagement is already started
+            SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
+            if (smsRouteManagement.getSmsRoutingRule() == null)
+                return;
+
 			OneWaySmsSetCollection schedulableSms;
 			int maxCnt;
 			SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();

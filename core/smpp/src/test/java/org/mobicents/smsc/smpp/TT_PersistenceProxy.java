@@ -94,7 +94,8 @@ public class TT_PersistenceProxy extends DBOperations_C2 {
 
                 return true;
             } finally {
-                cluster.shutdown();
+                cluster.close();
+//                cluster.shutdown();
             }
         } catch (Exception e) {
             return false;

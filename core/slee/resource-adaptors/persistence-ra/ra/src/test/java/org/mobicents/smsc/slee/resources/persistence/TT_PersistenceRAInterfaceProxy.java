@@ -193,7 +193,8 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
 
                 return true;
             } finally {
-                cluster.shutdown();
+                cluster.close();
+//                cluster.shutdown();
             }
         } catch (Exception e) {
             return false;

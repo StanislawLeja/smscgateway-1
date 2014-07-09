@@ -20,9 +20,13 @@
 				<!-- cassandra driver dep tree -->
 				<include>org.apache.cassandra:cassandra-all</include>
 				<include>org.xerial.snappy:snappy-java</include>
-				
-				<include>com.google.guava:guava</include>
+				<include>com.codahale.metrics:metrics-core</include>
+
+<!-- 
 				<include>com.yammer.metrics:metrics-core</include>
+ -->
+
+				<include>com.google.guava:guava</include>
 				<include>io.netty:netty</include>
 				<include>org.apache.cassandra:cassandra-thrift</include>
 				<include>org.apache.thrift:libthrift</include>

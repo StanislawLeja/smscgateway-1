@@ -53,11 +53,18 @@
 			<artifactId>guava</artifactId>
 			<version>${google-guava.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>com.codahale.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>${codahale-metrics.version}</version>
+        </dependency>
+<!-- 
 		<dependency>
 			<groupId>com.yammer.metrics</groupId>
 			<artifactId>metrics-core</artifactId>
 			<version>${yammer-metrics.version}</version>
 		</dependency>
+-->
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty</artifactId>

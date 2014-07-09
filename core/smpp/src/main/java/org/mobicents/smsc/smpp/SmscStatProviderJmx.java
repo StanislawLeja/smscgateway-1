@@ -163,7 +163,10 @@ public class SmscStatProviderJmx implements SmscStatProviderJmxMBean, CounterMed
     @Override
     public SourceValueSet getSourceValueSet(String counterDefSetName, String campaignName, int durationInSeconds) {
 
-        logger.info("getSourceValueSet() - starting - campaignName=" + campaignName);
+        if (durationInSeconds >= 60)
+            logger.info("getSourceValueSet() - starting - campaignName=" + campaignName);
+        else
+            logger.debug("getSourceValueSet() - starting - campaignName=" + campaignName);
 
         SourceValueSetImpl svs;
         try {
@@ -251,7 +254,10 @@ public class SmscStatProviderJmx implements SmscStatProviderJmxMBean, CounterMed
             return null;
         }
 
-        logger.info("getSourceValueSet() - return value - campaignName=" + campaignName);
+        if (durationInSeconds >= 60)
+            logger.info("getSourceValueSet() - return value - campaignName=" + campaignName);
+        else
+            logger.debug("getSourceValueSet() - return value - campaignName=" + campaignName);
 
         return svs;
     }

@@ -85,7 +85,8 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
 
                 return true;
             } finally {
-                cluster.shutdown();
+//                cluster.shutdown();
+                cluster.close();
             }
         } catch (Exception e) {
             return false;
