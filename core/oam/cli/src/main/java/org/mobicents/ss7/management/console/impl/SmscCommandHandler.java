@@ -70,7 +70,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("revisesecondsonsmscstart");
         set.addChild("processingsmssettimeout");
         set.addChild("generatereceiptcdr");
-        set.addChild("mocharging");
+        Node mocharging = set.addChild("mocharging");
         Node txsmppcharging = set.addChild("txsmppcharging");
         Node txsipcharging = set.addChild("txsipcharging");
         set.addChild("diameterdestrealm");
@@ -78,6 +78,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("diameterdestport");
         set.addChild("diameterusername");
         set.addChild("removinglivetablesdays");
+        set.addChild("removingarchivetablesdays");
+        set.addChild("removingarchivetablesdays");
         set.addChild("removingarchivetablesdays");
 
         txsmppcharging.addChild("None");
@@ -88,13 +90,18 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         txsipcharging.addChild("Selected");
         txsipcharging.addChild("All");
 
+        mocharging.addChild("accept");
+        mocharging.addChild("reject");
+        mocharging.addChild("diameter");
+
         Node smppencodingforgsm7 = set.addChild("smppencodingforgsm7");
         smppencodingforgsm7.addChild("utf8");
         smppencodingforgsm7.addChild("unicode");
         Node smppencodingforucs2 = set.addChild("smppencodingforucs2");
         smppencodingforucs2.addChild("utf8");
         smppencodingforucs2.addChild("unicode");
-        set.addChild("hosts");
+        set.addChild("dbhosts");
+        set.addChild("dbport");
         set.addChild("keyspacename");
         set.addChild("clustername");
         set.addChild("fetchperiod");
@@ -102,6 +109,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("maxactivitycount");
 //        set.addChild("cdrdatabaseexportduration");
         set.addChild("esmedefaultcluster");
+        set.addChild("deliverypause");
 
 		Node get = parent.addChild("get");
 		get.addChild("scgt");
@@ -138,7 +146,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         Node smppencodingforucs22 = get.addChild("smppencodingforucs2");
         smppencodingforucs22.addChild("utf8");
         smppencodingforucs22.addChild("unicode");
-        get.addChild("hosts");
+        get.addChild("dbhosts");
+        get.addChild("dbport");
         get.addChild("keyspacename");
         get.addChild("clustername");
         get.addChild("fetchperiod");
@@ -146,6 +155,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("maxactivitycount");
 //        get.addChild("cdrdatabaseexportduration");
         get.addChild("esmedefaultcluster");
+        get.addChild("deliverypause");
         
         Node remove = parent.addChild("remove");
         remove.addChild("esmedefaultcluster");

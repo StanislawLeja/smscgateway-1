@@ -204,6 +204,10 @@ public abstract class AlertSbb implements Sbb {
 	    PersistenceRAInterface pers = this.getStore();
 		SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
+        // checking if SMSC is paused
+        if (smscPropertiesManagement.isDeliveryPause())
+            return;
+
 		int addrTon = msisdn.getAddressNature().getIndicator();
 		int addrNpi = msisdn.getNumberingPlan().getIndicator();
 		String addr = msisdn.getAddress();

@@ -152,8 +152,10 @@ public abstract class TxSmppServerSbb implements Sbb {
 				store.releaseSynchroObject(lock);
 			}
 		} catch (SmscProcessingException e1) {
-			this.logger.severe(e1.getMessage(), e1);
-            smscStatAggregator.updateMsgInFailedAll();
+            if (!e1.isSkipErrorLogging()) {
+                this.logger.severe(e1.getMessage(), e1);
+                smscStatAggregator.updateMsgInFailedAll();
+            }
 
 			SubmitSmResp response = event.createResponse();
 			response.setCommandStatus(e1.getSmppErrorCode());
@@ -249,8 +251,10 @@ public abstract class TxSmppServerSbb implements Sbb {
 				store.releaseSynchroObject(lock);
 			}
 		} catch (SmscProcessingException e1) {
-			this.logger.severe(e1.getMessage(), e1);
-            smscStatAggregator.updateMsgInFailedAll();
+            if (!e1.isSkipErrorLogging()) {
+                this.logger.severe(e1.getMessage(), e1);
+                smscStatAggregator.updateMsgInFailedAll();
+            }
 
 			DataSmResp response = event.createResponse();
 			response.setCommandStatus(e1.getSmppErrorCode());
@@ -373,8 +377,10 @@ public abstract class TxSmppServerSbb implements Sbb {
 				store.releaseSynchroObject(lock);
 			}
 		} catch (SmscProcessingException e1) {
-			this.logger.severe(e1.getMessage(), e1);
-            smscStatAggregator.updateMsgInFailedAll();
+            if (!e1.isSkipErrorLogging()) {
+                this.logger.severe(e1.getMessage(), e1);
+                smscStatAggregator.updateMsgInFailedAll();
+            }
 
 			DeliverSmResp response = event.createResponse();
 			response.setCommandStatus(e1.getSmppErrorCode());
@@ -748,6 +754,12 @@ public abstract class TxSmppServerSbb implements Sbb {
 	}
 
     private void processSms(Sms sms, PersistenceRAInterface store, Esme esme, SubmitSm eventSubmit, DataSm eventData) throws SmscProcessingException {
+        // checking if SMSC is paused
+        if (smscPropertiesManagement.isDeliveryPause() && !MessageUtil.isStoreAndForward(sms)) {
+            SmscProcessingException e = new SmscProcessingException("SMSC is paused", SmppConstants.STATUS_SYSERR, 0, null);
+            e.setSkipErrorLogging(true);
+            throw e;
+        }
 
 		boolean withCharging = false;
 		switch (smscPropertiesManagement.getTxSmppChargingType()) {

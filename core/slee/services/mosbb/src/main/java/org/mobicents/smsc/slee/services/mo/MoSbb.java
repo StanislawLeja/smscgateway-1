@@ -80,6 +80,7 @@ import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
 import org.mobicents.smsc.slee.services.charging.ChargingMedium;
+import org.mobicents.smsc.smpp.MoChargingType;
 import org.mobicents.smsc.smpp.SmscStatProvider;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -184,6 +185,22 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		MAPDialogSms dialog = evt.getMAPDialog();
 
+        if (smscPropertiesManagement.getMoCharging() == MoChargingType.reject) {
+            try {
+                MAPErrorMessage errorMessage = this.mapProvider.getMAPErrorMessageFactory().createMAPErrorMessageFacilityNotSup(null, null, null);
+                dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+                if (this.logger.isInfoEnabled()) {
+                    this.logger.info("\nSent ErrorComponent = " + errorMessage);
+                }
+
+                dialog.close(false);
+                return;
+            } catch (Throwable e) {
+                logger.severe("Error while sending Error message", e);
+                return;
+            }
+        }
+
 		try {
 			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
 		} catch (SmscProcessingException e1) {
@@ -269,6 +286,22 @@ public abstract class MoSbb extends MoCommonSbb {
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
 
 		MAPDialogSms dialog = evt.getMAPDialog();
+
+        if (smscPropertiesManagement.getMoCharging() == MoChargingType.reject) {
+            try {
+                MAPErrorMessage errorMessage = this.mapProvider.getMAPErrorMessageFactory().createMAPErrorMessageFacilityNotSup(null, null, null);
+                dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+                if (this.logger.isInfoEnabled()) {
+                    this.logger.info("\nSent ErrorComponent = " + errorMessage);
+                }
+
+                dialog.close(false);
+                return;
+            } catch (Throwable e) {
+                logger.severe("Error while sending Error message", e);
+                return;
+            }
+        }
 
 		try {
 			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
@@ -949,10 +982,8 @@ public abstract class MoSbb extends MoCommonSbb {
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
         // TODO: we can make this some check will we send this message or not
 
-        if (smscPropertiesManagement.isMoCharging()) {
-            ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
-            chargingSbb.setupChargingRequestInterface(ChargingMedium.MoOrig, sms);
-        } else {
+	    switch(smscPropertiesManagement.getMoCharging()){
+        case accept:
             try {
                 sms.setStored(true);
                 if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
@@ -967,7 +998,15 @@ public abstract class MoSbb extends MoCommonSbb {
             }
             smscStatAggregator.updateMsgInReceivedAll();
             smscStatAggregator.updateMsgInReceivedSs7();
-        }
+            break;
+        case reject:
+            // this case is already processed
+            break;
+        case diameter:
+            ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
+            chargingSbb.setupChargingRequestInterface(ChargingMedium.MoOrig, sms);
+            break;
+	    }
 	}
 
 	public enum MoProcessingState {

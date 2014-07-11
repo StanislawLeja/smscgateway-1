@@ -98,9 +98,13 @@ public interface SmscPropertiesManagementMBean {
 
 	public void setSmppEncodingForUCS2(SmppEncoding smppEncodingForUCS2);
 
-	public String getHosts();
+    public String getDbHosts();
 
-	public void setHosts(String hosts);
+    public void setDbHosts(String dbHosts);
+
+    public int getDbPort();
+
+    public void setDbPort(int dbPort);
 
 	public String getKeyspaceName();
 
@@ -146,9 +150,9 @@ public interface SmscPropertiesManagementMBean {
 
 	public void setGenerateReceiptCdr(boolean generateReceiptCdr);
 
-	public boolean isMoCharging();
+	public MoChargingType getMoCharging();
 
-	public void setMoCharging(boolean moCharging);
+	public void setMoCharging(MoChargingType moCharging);
 
 	public ChargingType getTxSmppChargingType();
 
@@ -181,5 +185,9 @@ public interface SmscPropertiesManagementMBean {
     public int getRemovingArchiveTablesDays();
 
     public void setRemovingArchiveTablesDays(int removingArchiveTablesDays);
+
+    public boolean isDeliveryPause();
+
+    public void setDeliveryPause(boolean deliveryPause);
 
 }

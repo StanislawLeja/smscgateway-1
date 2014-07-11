@@ -33,7 +33,8 @@ public class SmscProcessingException extends Exception {
 
 	private int smppErrorCode = SmppConstants.STATUS_SYSERR;
 	private int mapErrorCode = 0;
-	private Object extraErrorData;
+    private Object extraErrorData;
+    private boolean skipErrorLogging = false;
 
 	public SmscProcessingException() {
     }
@@ -70,6 +71,14 @@ public class SmscProcessingException extends Exception {
 	public Object getExtraErrorData() {
 		return extraErrorData;
 	}
+
+    public boolean isSkipErrorLogging() {
+        return skipErrorLogging;
+    }
+
+    public void setSkipErrorLogging(boolean skipErrorLogging) {
+        this.skipErrorLogging = skipErrorLogging;
+    }
 
 }
 

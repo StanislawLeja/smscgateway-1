@@ -715,9 +715,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 		} else if (parName.equals("defaultwindowmonitorinterval")) {
 			int val = Integer.parseInt(options[4]);
 			smppServerManagement.setDefaultWindowMonitorInterval(val);
-		} else if (parName.equals("defaultsessioncountersenabled")) {
-			boolean val = Boolean.parseBoolean(options[4]);
-			smppServerManagement.setDefaultSessionCountersEnabled(val);
+        } else if (parName.equals("defaultsessioncountersenabled")) {
+            boolean val = Boolean.parseBoolean(options[4]);
+            smppServerManagement.setDefaultSessionCountersEnabled(val);
 		} else {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
@@ -797,9 +797,15 @@ public class SMSCShellExecutor implements ShellExecutor {
                     return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, "SmppEncodingForUCS2 value",
                             "UTF8 or UNICODE are possible");
                 }
-			} else if (parName.equals("hosts")) {
-				String val = options[3];
-				smscPropertiesManagement.setHosts(val);
+//            } else if (parName.equals("hosts")) {
+//                String val = options[3];
+//                smscPropertiesManagement.setHosts(val);
+            } else if (parName.equals("dbhosts")) {
+                String val = options[3];
+                smscPropertiesManagement.setDbHosts(val);
+            } else if (parName.equals("dbport")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setDbPort(val);
 			} else if (parName.equals("keyspacename")) {
 				String val = options[3];
 				smscPropertiesManagement.setKeyspaceName(val);
@@ -831,8 +837,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (parName.equals("generatereceiptcdr")) {
 				smscPropertiesManagement.setGenerateReceiptCdr(Boolean.parseBoolean(options[3]));
 
-			} else if (parName.equals("mocharging")) {
-				smscPropertiesManagement.setMoCharging(Boolean.parseBoolean(options[3]));
+            } else if (parName.equals("mocharging")) {
+                smscPropertiesManagement.setMoCharging(Enum.valueOf(MoChargingType.class, options[3]));
 			} else if (parName.equals("txsmppcharging")) {
 				smscPropertiesManagement.setTxSmppChargingType(Enum.valueOf(ChargingType.class, options[3]));
 			} else if (parName.equals("txsipcharging")) {
@@ -859,6 +865,9 @@ public class SMSCShellExecutor implements ShellExecutor {
                 if (val == 1 || val == 2 || val < 0)
                     return SMSCOAMMessages.REMOVING_LIVE_ARCHIVE_TABLES_DAYS_BAD_VALUES;
                 smscPropertiesManagement.setRemovingArchiveTablesDays(val);
+            } else if (parName.equals("deliverypause")) {
+                boolean val = Boolean.parseBoolean(options[3]);
+                smscPropertiesManagement.setDeliveryPause(val);
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -1025,8 +1034,12 @@ public class SMSCShellExecutor implements ShellExecutor {
                 sb.append(smscPropertiesManagement.getSmppEncodingForGsm7());
             } else if (parName.equals("smppencodingforucs2")) {
                 sb.append(smscPropertiesManagement.getSmppEncodingForUCS2());
-			} else if (parName.equals("hosts")) {
-				sb.append(smscPropertiesManagement.getHosts());
+//            } else if (parName.equals("hosts")) {
+//                sb.append(smscPropertiesManagement.getHosts());
+            } else if (parName.equals("dbhosts")) {
+                sb.append(smscPropertiesManagement.getDbHosts());
+            } else if (parName.equals("dbport")) {
+                sb.append(smscPropertiesManagement.getDbPort());
 			} else if (parName.equals("keyspacename")) {
 				sb.append(smscPropertiesManagement.getKeyspaceName());
 			} else if (parName.equals("clustername")) {
@@ -1051,7 +1064,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
 
 			} else if (parName.equals("mocharging")) {
-				sb.append(smscPropertiesManagement.isMoCharging());
+				sb.append(smscPropertiesManagement.getMoCharging());
 			} else if (parName.equals("txsmppcharging")) {
 				sb.append(smscPropertiesManagement.getTxSmppChargingType());
 			} else if (parName.equals("txsipcharging")) {
@@ -1068,6 +1081,8 @@ public class SMSCShellExecutor implements ShellExecutor {
                 sb.append(smscPropertiesManagement.getRemovingLiveTablesDays());
             } else if (parName.equals("removingarchivetablesdays")) {
                 sb.append(smscPropertiesManagement.getRemovingArchiveTablesDays());
+            } else if (parName.equals("deliverypause")) {
+                sb.append(smscPropertiesManagement.isDeliveryPause());
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -1144,9 +1159,17 @@ public class SMSCShellExecutor implements ShellExecutor {
             sb.append(smscPropertiesManagement.getSmppEncodingForUCS2());
             sb.append("\n");
 
-			sb.append("hosts = ");
-			sb.append(smscPropertiesManagement.getHosts());
-			sb.append("\n");
+//            sb.append("hosts = ");
+//            sb.append(smscPropertiesManagement.getHosts());
+//            sb.append("\n");
+
+            sb.append("dbhosts = ");
+            sb.append(smscPropertiesManagement.getDbHosts());
+            sb.append("\n");
+
+            sb.append("dbport = ");
+            sb.append(smscPropertiesManagement.getDbPort());
+            sb.append("\n");
 
 			sb.append("keyspaceName = ");
 			sb.append(smscPropertiesManagement.getKeyspaceName());
@@ -1193,7 +1216,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append("\n");
 
 			sb.append("mocharging = ");
-			sb.append(smscPropertiesManagement.isMoCharging());
+			sb.append(smscPropertiesManagement.getMoCharging());
 			sb.append("\n");
 
 			sb.append("txsmppcharging = ");
@@ -1224,8 +1247,8 @@ public class SMSCShellExecutor implements ShellExecutor {
             sb.append(smscPropertiesManagement.getRemovingLiveTablesDays());
             sb.append("\n");
 
-            sb.append("removingarchivetablesdays = ");
-            sb.append(smscPropertiesManagement.getRemovingArchiveTablesDays());
+            sb.append("deliverypause = ");
+            sb.append(smscPropertiesManagement.isDeliveryPause());
             sb.append("\n");
 
 			// private int defaultValidityPeriodHours = 3 * 24;

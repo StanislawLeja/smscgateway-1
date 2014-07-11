@@ -60,7 +60,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String MAX_DUE_DELAY = "maxDueDelay";
 	private static final String DUE_DELAY_MULTIPLICATOR = "dueDelayMultiplicator";
 	private static final String MAX_MESSAGE_LENGTH_REDUCER = "maxMessageLengthReducer";
-	private static final String HOSTS = "hosts";
+    private static final String HOSTS = "hosts";
+    private static final String DB_HOSTS = "dbHosts";
+    private static final String DB_PORT = "dbPort";
 	private static final String KEYSPACE_NAME = "keyspaceName";
 	private static final String CLUSTER_NAME = "clusterName";
 	private static final String FETCH_PERIOD = "fetchPeriod";
@@ -84,6 +86,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private static final String DIAMETER_USER_NAME = "diameterUserName";
     private static final String REMOVING_LIVE_TABLES_DAYS = "removingLiveTablesDays";
     private static final String REMOVING_ARCHIVE_TABLES_DAYS = "removingArchiveTablesDays";
+    private static final String DELIVERY_PAUSE = "deliveryPause";
 
 
 	private static final String TAB_INDENT = "\t";
@@ -140,7 +143,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// private int cdrDatabaseExportDuration = 0;
 
 	// parameters for cassandra database access
-	private String hosts = "127.0.0.1:9042";
+//    private String hosts = "127.0.0.1:9042";
+    private String dbHosts = "127.0.0.1";
+	private int dbPort = 9042;
 	private String keyspaceName = "TelestaxSMSC";
 	private String clusterName = "TelestaxSMSC";
 
@@ -172,9 +177,11 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// false: we generate CDR only for regular messages
 	private boolean generateReceiptCdr = false;
 
-	// true: all MO originated messages will be charged by OCS via Diameter
-	// before sending
-	private boolean moCharging = false; // true
+    // accept - all incoming messages are accepted
+    // reject - all incoming messages will be rejected
+    // diameter - all incoming messages are checked by Diameter peer before
+    // delivering
+    private MoChargingType moCharging = MoChargingType.accept; // true
 	// Defualt is None: none of SMPP originated messages will be charged by OCS
 	// via Diameter before sending
 	private ChargingType txSmppCharging = ChargingType.None;
@@ -202,6 +209,13 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // if less value is defined data tables will not be deleted
     // set this option to 0 to disable this option
     private int removingArchiveTablesDays = 3;
+
+    // if set to true:
+    // SMSC does not try to deliver any messages from cassandra database to SS7
+    // / ESMEs / SIP
+    // SMSC accepts any incoming messages from SS7 / ESMEs / SIP (and storing
+    // them into a database)
+    private boolean deliveryPause = false;
 
 
     private SmscPropertiesManagement(String name) {
@@ -399,16 +413,27 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// cluster will be used there will be more ip's. Hosts should be comma
 	// separated ip's
 
-	@Override
-	public String getHosts() {
-		return hosts;
-	}
+    @Override
+    public String getDbHosts() {
+        return dbHosts;
+    }
 
-	@Override
-	public void setHosts(String hosts) {
-		this.hosts = hosts;
-		this.store();
-	}
+    @Override
+    public void setDbHosts(String dbHosts) {
+        this.dbHosts = dbHosts;
+        this.store();
+    }
+
+    @Override
+    public int getDbPort() {
+        return dbPort;
+    }
+
+    @Override
+    public void setDbPort(int dbPort) {
+        this.dbPort = dbPort;
+        this.store();
+    }
 
 	@Override
 	public String getKeyspaceName() {
@@ -534,12 +559,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	}
 
 	@Override
-	public boolean isMoCharging() {
+	public MoChargingType getMoCharging() {
 		return moCharging;
 	}
 
 	@Override
-	public void setMoCharging(boolean moCharging) {
+	public void setMoCharging(MoChargingType moCharging) {
 		this.moCharging = moCharging;
         this.store();
 	}
@@ -628,6 +653,17 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         this.store();
     }
 
+    @Override
+    public boolean isDeliveryPause() {
+        return deliveryPause;
+    }
+
+    @Override
+    public void setDeliveryPause(boolean deliveryPause) {
+        this.deliveryPause = deliveryPause;
+        this.store();
+    }
+
 	public void start() throws Exception {
 
 		this.persistFile.clear();
@@ -687,13 +723,14 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.dueDelayMultiplicator, DUE_DELAY_MULTIPLICATOR, Integer.class);
 			writer.write(this.maxMessageLengthReducer, MAX_MESSAGE_LENGTH_REDUCER, Integer.class);
 
-			writer.write(this.hosts, HOSTS, String.class);
+            writer.write(this.dbHosts, DB_HOSTS, String.class);
+            writer.write(this.dbPort, DB_PORT, Integer.class);
 			writer.write(this.keyspaceName, KEYSPACE_NAME, String.class);
 			writer.write(this.clusterName, CLUSTER_NAME, String.class);
 			writer.write(this.fetchPeriod, FETCH_PERIOD, Long.class);
 			writer.write(this.fetchMaxRows, FETCH_MAX_ROWS, Integer.class);
-			// writer.write(this.cdrDatabaseExportDuration,
-			// CDR_DATABASE_EXPORT_DURATION, Integer.class);
+
+            writer.write(this.deliveryPause, DELIVERY_PAUSE, Boolean.class);
 
             writer.write(this.removingLiveTablesDays, REMOVING_LIVE_TABLES_DAYS, Integer.class);
             writer.write(this.removingArchiveTablesDays, REMOVING_ARCHIVE_TABLES_DAYS, Integer.class);
@@ -708,14 +745,15 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.processingSmsSetTimeout, PROCESSING_SMS_SET_TIMEOUT, Integer.class);
 			writer.write(this.generateReceiptCdr, GENERATE_RECEIPT_CDR, Boolean.class);
 
-			writer.write(this.moCharging, MO_CHARGING, Boolean.class);
+			writer.write(this.moCharging.toString(), MO_CHARGING, String.class);
 			writer.write(this.txSmppCharging.toString(), TX_SMPP_CHARGING, String.class);
 			writer.write(this.txSipCharging.toString(), TX_SIP_CHARGING, String.class);
 			writer.write(this.diameterDestRealm, DIAMETER_DEST_REALM, String.class);
 			writer.write(this.diameterDestHost, DIAMETER_DEST_HOST, String.class);
 			writer.write(this.diameterDestPort, DIAMETER_DEST_PORT, Integer.class);
 			writer.write(this.diameterUserName, DIAMETER_USER_NAME, String.class);
-
+			
+			
 			writer.close();
 		} catch (Exception e) {
 			logger.error("Error while persisting the SMSC state in file", e);
@@ -771,8 +809,24 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			if (val != null)
 				this.maxMessageLengthReducer = val;
 
-			this.hosts = reader.read(HOSTS, String.class);
-			this.keyspaceName = reader.read(KEYSPACE_NAME, String.class);
+            // for backup compatibility
+            String vals = reader.read(HOSTS, String.class);
+            if (vals != null) {
+                String[] hostsArr = vals.split(":");
+                if (hostsArr.length == 2) {
+                    this.dbHosts = hostsArr[0];
+                    this.dbPort = Integer.parseInt(hostsArr[1]);
+                }
+            }
+
+            vals = reader.read(DB_HOSTS, String.class);
+            if (vals != null)
+                this.dbHosts = vals;
+            val = reader.read(DB_PORT, Integer.class);
+            if (val != null)
+                this.dbPort = val;
+
+            this.keyspaceName = reader.read(KEYSPACE_NAME, String.class);
 			this.clusterName = reader.read(CLUSTER_NAME, String.class);
 			Long vall = reader.read(FETCH_PERIOD, Long.class);
 			if (vall != null)
@@ -780,6 +834,11 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			val = reader.read(FETCH_MAX_ROWS, Integer.class);
 			if (val != null)
 				this.fetchMaxRows = val;
+
+            Boolean valB = reader.read(DELIVERY_PAUSE, Boolean.class);
+            if (valB != null) {
+                this.deliveryPause = valB.booleanValue();
+            }
 
 			// val = reader.read(CDR_DATABASE_EXPORT_DURATION, Integer.class);
 			// if (val != null)
@@ -798,12 +857,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			if (val != null)
 				this.maxActivityCount = val;
 
-			Boolean valB = reader.read(SMS_HOME_ROUTING, Boolean.class);
+			valB = reader.read(SMS_HOME_ROUTING, Boolean.class);
 			if (valB != null) {
 				this.isSMSHomeRouting = valB.booleanValue();
 			}
 
-            String vals = reader.read(SMPP_ENCODING_FOR_GSM7, String.class);
+            vals = reader.read(SMPP_ENCODING_FOR_GSM7, String.class);
             if (vals != null)
                 this.smppEncodingForGsm7 = Enum.valueOf(SmppEncoding.class, vals);
 
@@ -823,10 +882,16 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 				this.generateReceiptCdr = valB.booleanValue();
 			}
 
-			valB = reader.read(MO_CHARGING, Boolean.class);
-			if (valB != null) {
-				this.moCharging = valB.booleanValue();
-			}
+			vals = reader.read(MO_CHARGING, String.class);
+            if (vals != null) {
+                if (vals.toLowerCase().equals("false")) {
+                    this.moCharging = MoChargingType.accept;
+                } else if (vals.toLowerCase().equals("true")) {
+                    this.moCharging = MoChargingType.diameter;
+                } else {
+                    this.moCharging = Enum.valueOf(MoChargingType.class, vals);
+                }
+            }
 			vals = reader.read(TX_SMPP_CHARGING, String.class);
 			if (vals != null)
 				this.txSmppCharging = Enum.valueOf(ChargingType.class, vals);
