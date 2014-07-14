@@ -468,7 +468,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
         int currentMsgNum = this.doGetCurrentMsgNum();
 		Sms smsa = smsSet.getSms(currentMsgNum);
         if (smsa != null) {
-            CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED, reason, smscPropertiesManagement.getGenerateReceiptCdr());
+            CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED, reason, smscPropertiesManagement.getGenerateReceiptCdr(),
+                    MessageUtil.isNeedWriteArchiveMessage(smsa, smscPropertiesManagement.getGenerateCdr()));
         }
 
 		StringBuilder sb = new StringBuilder();
@@ -594,20 +595,23 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		}
 
         for (Sms sms : lstFailured) {
-            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED, reason, smscPropertiesManagement.getGenerateReceiptCdr());
+            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED, reason, smscPropertiesManagement.getGenerateReceiptCdr(),
+                    MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
 
-            // adding an error receipt if it is needed
-            if (sms.getStored()) {
-                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                } else {
-                    sms.setDeliveryDate(new Date());
-                    try {
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            } else {
+                sms.setDeliveryDate(new Date());
+                try {
+                    if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
                         pers.c2_createRecordArchive(sms);
-                    } catch (PersistenceException e) {
-                        this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet) - c2_createRecordArchive(sms)" + e.getMessage(), e);
                     }
+                } catch (PersistenceException e) {
+                    this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet) - c2_createRecordArchive(sms)" + e.getMessage(), e);
                 }
+            }
 
+            if (sms.getStored()) {
+                // adding an error receipt if it is needed
                 int registeredDelivery = sms.getRegisteredDelivery();
                 if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
                     TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
@@ -728,9 +732,9 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                     } else {
                         for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
                             Sms sms = smsSet.getSms(i1);
-                            if (sms.getStored()) {
-                                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-                                sms.setDeliveryDate(new Date());
+                            pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                            sms.setDeliveryDate(new Date());
+                            if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
                                 pers.c2_createRecordArchive(sms);
                             }
                         }

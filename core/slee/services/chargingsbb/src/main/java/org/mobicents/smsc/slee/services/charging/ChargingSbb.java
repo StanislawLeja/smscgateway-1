@@ -492,12 +492,18 @@ public abstract class ChargingSbb implements Sbb {
             }
 
 	        sms.getSmsSet().setStatus(ErrorCode.OCS_ACCESS_NOT_GRANTED);
-            sms.setStored(true);
+
+            boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
+            if (storeAndForwMode) {
+                sms.setStored(true);
+            }
+
             if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                 persistence.archiveFailuredSms(sms);
             } else {
-                sms.setStored(true);
-                persistence.c2_createRecordArchive(sms);
+                if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
+                    persistence.c2_createRecordArchive(sms);
+                }
             }
 
             smscStatAggregator.updateMsgInRejectedAll();
@@ -505,8 +511,8 @@ public abstract class ChargingSbb implements Sbb {
 			// TODO: if CCR gives some response verbal reject reason
 			// we need replace CdrGenerator.CDR_SUCCESS_NO_REASON with this
 			// reason
-			CdrGenerator.generateCdr(sms, CdrGenerator.CDR_OCS_REJECTED, CdrGenerator.CDR_SUCCESS_NO_REASON,
-					smscPropertiesManagement.getGenerateReceiptCdr());
+            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_OCS_REJECTED, CdrGenerator.CDR_SUCCESS_NO_REASON, smscPropertiesManagement.getGenerateReceiptCdr(),
+                    MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
 		} catch (PersistenceException e) {
 			throw new SmscProcessingException(
 					"PersistenceException when storing into Archive rejected by OCS message : " + e.getMessage(),

@@ -207,19 +207,19 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 					// we need to find if it is the last or single segment
 					boolean isPartial = MessageUtil.isSmsNotLastSegment(sms);
-					CdrGenerator.generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL_ESME
-							: CdrGenerator.CDR_SUCCESS_ESME, CdrGenerator.CDR_SUCCESS_NO_REASON,
-							smscPropertiesManagement.getGenerateReceiptCdr());
+                    CdrGenerator.generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL_ESME : CdrGenerator.CDR_SUCCESS_ESME,
+                            CdrGenerator.CDR_SUCCESS_NO_REASON, smscPropertiesManagement.getGenerateReceiptCdr(),
+                            MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
 
 					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 						pers.archiveDeliveredSms(sms, deliveryDate);
 					} else {
-						if (sms.getStored()) {
-							pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-							sms.setDeliveryDate(deliveryDate);
-							sms.getSmsSet().setStatus(ErrorCode.SUCCESS);
-							pers.c2_createRecordArchive(sms);
-						}
+                        pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                        sms.setDeliveryDate(deliveryDate);
+                        sms.getSmsSet().setStatus(ErrorCode.SUCCESS);
+                        if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
+                            pers.c2_createRecordArchive(sms);
+                        }
 					}
 
 					// adding a success receipt if it is needed
@@ -606,8 +606,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 		Sms smsa = smsSet.getSms(currentMsgNum);
 		if (smsa != null) {
 			String s1 = reason.replace("\n", "\t");
-			CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED_ESME, s1,
-					smscPropertiesManagement.getGenerateReceiptCdr());
+            CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED_ESME, s1, smscPropertiesManagement.getGenerateReceiptCdr(),
+                    MessageUtil.isNeedWriteArchiveMessage(smsa, smscPropertiesManagement.getGenerateCdr()));
 		}
 
 		// sending of a failure response for transactional mode
@@ -696,8 +696,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 		}
 
 		for (Sms sms : lstFailured) {
-			CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED_ESME, reason,
-					smscPropertiesManagement.getGenerateReceiptCdr());
+            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED_ESME, reason, smscPropertiesManagement.getGenerateReceiptCdr(),
+                    MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
 
 			// adding an error receipt if it is needed
 			if (sms.getStored()) {
@@ -781,12 +781,12 @@ public abstract class RxSmppServerSbb implements Sbb {
 						pers.deleteSmsSet(smsSet);
 					} else {
 						for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
-							Sms sms = smsSet.getSms(i1);
-							if (sms.getStored()) {
-								pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-								sms.setDeliveryDate(new Date());
-								pers.c2_createRecordArchive(sms);
-							}
+                            Sms sms = smsSet.getSms(i1);
+                            pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                            sms.setDeliveryDate(new Date());
+                            if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
+                                pers.c2_createRecordArchive(sms);
+                            }
 						}
 					}
 				} catch (PersistenceException e) {

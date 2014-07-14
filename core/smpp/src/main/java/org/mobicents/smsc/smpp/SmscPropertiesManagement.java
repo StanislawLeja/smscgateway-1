@@ -76,8 +76,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String ESME_DEFAULT_CLUSTER_NAME = "esmeDefaultCluster";
 	private static final String REVISE_SECONDS_ON_SMSC_START = "reviseSecondsOnSmscStart";
 	private static final String PROCESSING_SMS_SET_TIMEOUT = "processingSmsSetTimeout";
-	private static final String GENERATE_RECEIPT_CDR = "generateReceiptCdr";
-	private static final String MO_CHARGING = "moCharging";
+    private static final String GENERATE_RECEIPT_CDR = "generateReceiptCdr";
+    private static final String GENERATE_CDR = "generateCdr";
+    private static final String GENERATE_ARCHIVE_TABLE = "generateArchiveTable";
+    private static final String MO_CHARGING = "moCharging";
 	private static final String TX_SMPP_CHARGING = "txSmppCharging";
 	private static final String TX_SIP_CHARGING = "txSipCharging";
 	private static final String DIAMETER_DEST_REALM = "diameterDestRealm";
@@ -175,7 +177,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private int processingSmsSetTimeout = 10 * 60;
 	// true: we generate CDR for both receipt and regular messages
 	// false: we generate CDR only for regular messages
-	private boolean generateReceiptCdr = false;
+    private boolean generateReceiptCdr = false;
+
+    // generating CDR's option
+    private GenerateType generateCdr = new GenerateType(true, true, true);
+    // generating archive table records option
+    private GenerateType generateArchiveTable = new GenerateType(true, true, true);
 
     // accept - all incoming messages are accepted
     // reject - all incoming messages will be rejected
@@ -664,6 +671,22 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         this.store();
     }
 
+    public GenerateType getGenerateCdr() {
+        return generateCdr;
+    }
+
+    public void setGenerateCdr(GenerateType generateCdr) {
+        this.generateCdr = generateCdr;
+    }
+
+    public GenerateType getGenerateArchiveTable() {
+        return generateArchiveTable;
+    }
+
+    public void setGenerateArchiveTable(GenerateType generateArchiveTable) {
+        this.generateArchiveTable = generateArchiveTable;
+    }
+
 	public void start() throws Exception {
 
 		this.persistFile.clear();
@@ -743,7 +766,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 			writer.write(this.reviseSecondsOnSmscStart, REVISE_SECONDS_ON_SMSC_START, Integer.class);
 			writer.write(this.processingSmsSetTimeout, PROCESSING_SMS_SET_TIMEOUT, Integer.class);
-			writer.write(this.generateReceiptCdr, GENERATE_RECEIPT_CDR, Boolean.class);
+            writer.write(this.generateReceiptCdr, GENERATE_RECEIPT_CDR, Boolean.class);
+            writer.write(this.generateCdr.getValue(), GENERATE_CDR, Integer.class);
+            writer.write(this.generateArchiveTable.getValue(), GENERATE_ARCHIVE_TABLE, Integer.class);
 
 			writer.write(this.moCharging.toString(), MO_CHARGING, String.class);
 			writer.write(this.txSmppCharging.toString(), TX_SMPP_CHARGING, String.class);
@@ -881,6 +906,13 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			if (valB != null) {
 				this.generateReceiptCdr = valB.booleanValue();
 			}
+
+            val = reader.read(GENERATE_CDR, Integer.class);
+            if (val != null)
+                this.generateCdr = new GenerateType(val);
+            val = reader.read(GENERATE_ARCHIVE_TABLE, Integer.class);
+            if (val != null)
+                this.generateArchiveTable = new GenerateType(val);
 
 			vals = reader.read(MO_CHARGING, String.class);
             if (vals != null) {

@@ -834,8 +834,14 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (parName.equals("processingsmssettimeout")) {
 				int val = Integer.parseInt(options[3]);
 				smscPropertiesManagement.setProcessingSmsSetTimeout(val);
-			} else if (parName.equals("generatereceiptcdr")) {
-				smscPropertiesManagement.setGenerateReceiptCdr(Boolean.parseBoolean(options[3]));
+            } else if (parName.equals("generatereceiptcdr")) {
+                smscPropertiesManagement.setGenerateReceiptCdr(Boolean.parseBoolean(options[3]));
+            } else if (parName.equals("generatecdr")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setGenerateCdr(new GenerateType(val));
+            } else if (parName.equals("generatearchivetable")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setGenerateArchiveTable(new GenerateType(val));
 
             } else if (parName.equals("mocharging")) {
                 smscPropertiesManagement.setMoCharging(Enum.valueOf(MoChargingType.class, options[3]));
@@ -1060,8 +1066,12 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sb.append(smscPropertiesManagement.getReviseSecondsOnSmscStart());
 			} else if (parName.equals("processingsmssettimeout")) {
 				sb.append(smscPropertiesManagement.getProcessingSmsSetTimeout());
-			} else if (parName.equals("generatereceiptcdr")) {
-				sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
+            } else if (parName.equals("generatereceiptcdr")) {
+                sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
+            } else if (parName.equals("generatecdr")) {
+                sb.append(smscPropertiesManagement.getGenerateCdr().getValue());
+            } else if (parName.equals("generatearchivetable")) {
+                sb.append(smscPropertiesManagement.getGenerateArchiveTable().getValue());
 
 			} else if (parName.equals("mocharging")) {
 				sb.append(smscPropertiesManagement.getMoCharging());
@@ -1211,9 +1221,17 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getProcessingSmsSetTimeout());
 			sb.append("\n");
 
-			sb.append("generatereceiptcdr = ");
-			sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
-			sb.append("\n");
+            sb.append("generatereceiptcdr = ");
+            sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
+            sb.append("\n");
+
+            sb.append("generatecdr = ");
+            sb.append(smscPropertiesManagement.getGenerateCdr().getValue());
+            sb.append("\n");
+
+            sb.append("generatearchivetable = ");
+            sb.append(smscPropertiesManagement.getGenerateArchiveTable().getValue());
+            sb.append("\n");
 
 			sb.append("mocharging = ");
 			sb.append(smscPropertiesManagement.getMoCharging());

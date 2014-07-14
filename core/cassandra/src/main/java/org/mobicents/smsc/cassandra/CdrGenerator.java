@@ -54,10 +54,13 @@ public class CdrGenerator {
 		logger.debug(message);
 	}
 
-	public static void generateCdr(Sms smsEvent, String status, String reason, boolean generateReceiptCdr) {
+	public static void generateCdr(Sms smsEvent, String status, String reason, boolean generateReceiptCdr, boolean generateCdr) {
         // Format is
         // SUBMIT_DATE,SOURCE_ADDRESS,SOURCE_TON,SOURCE_NPI,DESTINATION_ADDRESS,DESTINATION_TON,DESTINATION_NPI,STATUS,SYSTEM-ID,MESSAGE-ID,First
         // 20 char of SMS, REASON
+
+        if (!generateCdr)
+            return;
 
         if (!generateReceiptCdr && smsEvent.isMcDeliveryReceipt())
             // we do not generate CDR's for receipt if generateReceiptCdr option is off

@@ -39,6 +39,7 @@ import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.smsc.cassandra.Sms;
 import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.smpp.GenerateType;
 import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -580,6 +581,16 @@ public class MessageUtil {
             return true;
         else
             return false;
+    }
+
+    public static boolean isNeedWriteArchiveMessage(Sms sms, GenerateType generateType) {
+        if (isStoreAndForward(sms)) {
+            return generateType.isStoreAndForward();
+        } else if (isTransactional(sms)) {
+            return generateType.isTransactional();
+        } else {
+            return generateType.isDatagramm();
+        }
     }
 
 }

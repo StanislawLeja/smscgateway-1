@@ -534,7 +534,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                         if (this.tracer.isInfoEnabled())
                             this.tracer.info(sb.toString());
 
-                        CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED, reason, smscPropertiesManagement.getGenerateReceiptCdr());
+                        CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED, reason, smscPropertiesManagement.getGenerateReceiptCdr(),
+                                MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
 
                         // adding an error receipt if it is needed
                         if (sms.getStored()) {
@@ -545,7 +546,9 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                                 if (sms.getStored()) {
                                     dbOperations_C2.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
                                     sms.setDeliveryDate(curDate);
-                                    dbOperations_C2.c2_createRecordArchive(sms);
+                                    if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
+                                        dbOperations_C2.c2_createRecordArchive(sms);
+                                    }
                                 }
                             }
 

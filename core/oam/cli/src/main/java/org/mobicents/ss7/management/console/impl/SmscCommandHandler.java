@@ -70,6 +70,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("revisesecondsonsmscstart");
         set.addChild("processingsmssettimeout");
         set.addChild("generatereceiptcdr");
+        set.addChild("generatecdr");
+        set.addChild("generatearchivetable");
         Node mocharging = set.addChild("mocharging");
         Node txsmppcharging = set.addChild("txsmppcharging");
         Node txsipcharging = set.addChild("txsipcharging");
@@ -131,6 +133,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("revisesecondsonsmscstart");
         get.addChild("processingsmssettimeout");
         get.addChild("generatereceiptcdr");
+        get.addChild("generatecdr");
+        get.addChild("generatearchivetable");
         get.addChild("mocharging");
         get.addChild("txsmppcharging");
         get.addChild("diameterdestrealm");

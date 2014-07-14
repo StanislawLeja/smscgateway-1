@@ -882,8 +882,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		int messageSegmentNumber = this.getMessageSegmentNumber();
 		SmsSignalInfo[] segments = this.getSegments();
 		if (segments != null && messageSegmentNumber < segments.length - 1) {
-			CdrGenerator.generateCdr(sms, CdrGenerator.CDR_PARTIAL, CdrGenerator.CDR_SUCCESS_NO_REASON,
-					smscPropertiesManagement.getGenerateReceiptCdr());
+            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_PARTIAL, CdrGenerator.CDR_SUCCESS_NO_REASON, smscPropertiesManagement.getGenerateReceiptCdr(),
+                    MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
 
 			// we have more message parts to be sent yet
 			messageSegmentNumber++;
@@ -917,18 +917,18 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		try {
 			// we need to find if it is the last or single segment
 			boolean isPartial = MessageUtil.isSmsNotLastSegment(sms);
-			CdrGenerator.generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL : CdrGenerator.CDR_SUCCESS,
-					CdrGenerator.CDR_SUCCESS_NO_REASON, smscPropertiesManagement.getGenerateReceiptCdr());
+            CdrGenerator.generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL : CdrGenerator.CDR_SUCCESS, CdrGenerator.CDR_SUCCESS_NO_REASON,
+                    smscPropertiesManagement.getGenerateReceiptCdr(), MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
 
 			if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 				pers.archiveDeliveredSms(sms, deliveryDate);
 			} else {
-				if (sms.getStored()) {
-					pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-					sms.setDeliveryDate(deliveryDate);
-					sms.getSmsSet().setStatus(ErrorCode.SUCCESS);
-					pers.c2_createRecordArchive(sms);
-				}
+                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                sms.setDeliveryDate(deliveryDate);
+                sms.getSmsSet().setStatus(ErrorCode.SUCCESS);
+                if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
+                    pers.c2_createRecordArchive(sms);
+                }
 			}
 
 			// adding a success receipt if it is needed

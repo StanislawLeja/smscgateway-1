@@ -1125,18 +1125,19 @@ public class DBOperations_C2 {
     }
 
 	public void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException {
-		PreparedStatementCollection_C3 psc = this.getStatementCollection(sms.getDueSlot());
+        if (sms.getStored()) {
+            PreparedStatementCollection_C3 psc = this.getStatementCollection(sms.getDueSlot());
 
-		try {
-			PreparedStatement ps = psc.updateInSystem;
-			BoundStatement boundStatement = new BoundStatement(ps);
-			boundStatement.bind(isSystemStatus, currentSessionUUID, sms.getDueSlot(), sms.getSmsSet().getTargetId(),
-					sms.getDbId());
-			ResultSet res = session.execute(boundStatement);
-		} catch (Exception e1) {
-			String msg = "Failed to execute updateInSystem() !";
-			throw new PersistenceException(msg, e1);
-		}
+            try {
+                PreparedStatement ps = psc.updateInSystem;
+                BoundStatement boundStatement = new BoundStatement(ps);
+                boundStatement.bind(isSystemStatus, currentSessionUUID, sms.getDueSlot(), sms.getSmsSet().getTargetId(), sms.getDbId());
+                ResultSet res = session.execute(boundStatement);
+            } catch (Exception e1) {
+                String msg = "Failed to execute updateInSystem() !";
+                throw new PersistenceException(msg, e1);
+            }
+        }
 	}
 
 	public void c2_updateAlertingSupport(long dueSlot, String targetId, UUID dbId) throws PersistenceException {

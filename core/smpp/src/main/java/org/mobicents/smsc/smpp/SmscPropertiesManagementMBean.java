@@ -190,4 +190,12 @@ public interface SmscPropertiesManagementMBean {
 
     public void setDeliveryPause(boolean deliveryPause);
 
+    public GenerateType getGenerateCdr();
+
+    public void setGenerateCdr(GenerateType generateCdr);
+
+    public GenerateType getGenerateArchiveTable();
+
+    public void setGenerateArchiveTable(GenerateType generateArchiveTable);
+
 }
