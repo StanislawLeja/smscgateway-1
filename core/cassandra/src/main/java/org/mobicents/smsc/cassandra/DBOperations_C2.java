@@ -165,8 +165,8 @@ public class DBOperations_C2 {
 			throw new Exception("DBOperations already started");
 		}
 
-		if (secondsForwardStoring < 10)
-			secondsForwardStoring = 10;
+		if (secondsForwardStoring < 3)
+			secondsForwardStoring = 3;
 		this.dueSlotForwardStoring = secondsForwardStoring * 1000 / slotMSecondsTimeArea;
 		this.dueSlotReviseOnSmscStart = reviseSecondsOnSmscStart * 1000 / slotMSecondsTimeArea;
 		this.processingSmsSetTimeout = processingSmsSetTimeout;
