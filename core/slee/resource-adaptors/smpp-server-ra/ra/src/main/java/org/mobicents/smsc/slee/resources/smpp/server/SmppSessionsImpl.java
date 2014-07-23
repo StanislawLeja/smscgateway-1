@@ -227,7 +227,7 @@ public class SmppSessionsImpl implements SmppSessions {
 					sourceAddress = deliverSm.getSourceAddress();
 					if (!this.esme.isSourceAddressMatching(sourceAddress)) {
 						tracer.warning(String
-								.format("Incoming DATA_SM's sequence_number=%d source_addr_ton=%d source_addr_npi=%d source_addr=%s doesn't match with configured ESME name=%s source_addr_ton=%d source_addr_npi=%d source_addr=%s",
+								.format("Incoming DELIVER_SM's sequence_number=%d source_addr_ton=%d source_addr_npi=%d source_addr=%s doesn't match with configured ESME name=%s source_addr_ton=%d source_addr_npi=%d source_addr=%s",
 										deliverSm.getSequenceNumber(), sourceAddress.getTon(), sourceAddress.getNpi(),
 										sourceAddress.getAddress(), this.esme.getName(), this.esme.getSourceTon(),
 										this.esme.getSourceNpi(), this.esme.getSourceAddressRange()));
