@@ -44,7 +44,7 @@ import org.mobicents.protocols.ss7.sccp.impl.parameter.ParameterFactoryImpl;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbLocalObjectExt;
-import org.mobicents.smsc.cassandra.Sms;
+import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;

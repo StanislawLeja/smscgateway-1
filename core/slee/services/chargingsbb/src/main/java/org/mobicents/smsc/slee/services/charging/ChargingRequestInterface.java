@@ -22,7 +22,7 @@
 
 package org.mobicents.smsc.slee.services.charging;
 
-import org.mobicents.smsc.cassandra.Sms;
+import org.mobicents.smsc.library.Sms;
 
 /**
  * 

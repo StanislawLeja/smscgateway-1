@@ -188,8 +188,8 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 					.append(PERSIST_FILE_NAME);
 		} else {
 			persistFile
-					.append(System.getProperty(SmscManagement.SMSC_PERSIST_DIR_KEY,
-							System.getProperty(SmscManagement.USER_DIR_KEY))).append(File.separator).append(this.name)
+					.append(System.getProperty(SmppManagement.SMSC_PERSIST_DIR_KEY,
+							System.getProperty(SmppManagement.USER_DIR_KEY))).append(File.separator).append(this.name)
 					.append("_").append(PERSIST_FILE_NAME);
 		}
 

@@ -6,18 +6,17 @@
 	<parent>
 		<artifactId>core</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.1.7-TelScale-SNAPSHOT</version>
+		<version>6.2.0-TelScale-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>smpp</artifactId>
 	<name>Core : SMPP Server</name>
 
 	<dependencies>
-		<!-- SS7 Shell -->
 		<dependency>
-			<artifactId>shell-server-api</artifactId>
-			<groupId>org.mobicents.protocols.ss7.management</groupId>
-			<version>${ss7.version}</version>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${log4j.version}</version>
 		</dependency>
 		<!-- javolution -->
 		<dependency>
@@ -25,6 +24,7 @@
 			<artifactId>javolution</artifactId>
 			<version>${javolution.version}</version>
 		</dependency>
+
 		<!-- cloudhopper smpp -->
 		<dependency>
 			<groupId>com.cloudhopper</groupId>
@@ -32,38 +32,11 @@
 			<version>${ch.smpp.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>${log4j.version}</version>
-		</dependency>
-		<dependency>
 			<!-- This comes in container. -->
 			<groupId>org.jboss.jbossas</groupId>
 			<artifactId>jboss-as-system-jmx</artifactId>
 			<version>${jboss.version}</version>
 			<scope>compile</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.datastax.cassandra</groupId>
-			<artifactId>cassandra-driver-core</artifactId>
-			<version>${cassandra-driver-core.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${pom.groupId}</groupId>
-			<artifactId>cassandra-support</artifactId>
-			<version>${pom.version}</version>
-		</dependency>
-
-		<dependency>
-			<artifactId>statistics-oam-api</artifactId>
-			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
-			<version>${jss7.telscale.version}</version>
-		</dependency>
-		<dependency>
-			<artifactId>jmxss7</artifactId>
-			<groupId>com.telscale.protocols.ss7.oam.common</groupId>
-			<version>${jss7.telscale.version}</version>
 		</dependency>
 	</dependencies>
 

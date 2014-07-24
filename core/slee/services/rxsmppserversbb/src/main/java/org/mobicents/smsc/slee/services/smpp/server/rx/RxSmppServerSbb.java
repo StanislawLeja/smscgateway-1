@@ -41,20 +41,22 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.SbbContextExt;
-import org.mobicents.smsc.cassandra.CdrGenerator;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.DatabaseType;
-import org.mobicents.smsc.cassandra.ErrorAction;
-import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.SmsSetCashe;
-import org.mobicents.smsc.cassandra.TargetAddress;
-import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
+import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.domain.SmscStatAggregator;
+import org.mobicents.smsc.library.CdrGenerator;
+import org.mobicents.smsc.library.ErrorAction;
+import org.mobicents.smsc.library.ErrorCode;
+import org.mobicents.smsc.library.MessageUtil;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmscProcessingException;
+import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
-import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerActivity;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
@@ -65,8 +67,6 @@ import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.EsmeManagement;
 import org.mobicents.smsc.smpp.SmppEncoding;
-import org.mobicents.smsc.smpp.SmscPropertiesManagement;
-import org.mobicents.smsc.smpp.SmscStatAggregator;
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppSession.Type;
@@ -239,8 +239,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 										receipt.setSmsSet(backSmsSet);
                                         receipt.setStored(true);
 										pers.createLiveSms(receipt);
-										pers.setNewMessageScheduled(receipt.getSmsSet(),
-												MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                                        pers.setNewMessageScheduled(receipt.getSmsSet(),
+                                                MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
 										if (this.logger.isFineEnabled()) {
 											this.logger.fine("Adding a delivery receipt: source="
 													+ receipt.getSourceAddr() + ", dest="
@@ -414,8 +414,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 										receipt.setSmsSet(backSmsSet);
                                         receipt.setStored(true);
 										pers.createLiveSms(receipt);
-										pers.setNewMessageScheduled(receipt.getSmsSet(),
-												MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                                        pers.setNewMessageScheduled(receipt.getSmsSet(),
+                                                MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
 										if (this.logger.isFineEnabled()) {
 											this.logger.fine("Adding a delivery receipt: source="
 													+ receipt.getSourceAddr() + ", dest="
@@ -762,7 +762,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 				pers.setDeliverySuccess(smsSet, lastDelivery);
 
 				if (!pers.deleteSmsSet(smsSet)) {
-					pers.setNewMessageScheduled(smsSet, MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                    pers.setNewMessageScheduled(smsSet,
+                            MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
 				}
 			} else {
 				smsSet.setStatus(ErrorCode.SUCCESS);
@@ -892,8 +893,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 									receipt.setSmsSet(backSmsSet);
                                     receipt.setStored(true);
 									pers.createLiveSms(receipt);
-									pers.setNewMessageScheduled(receipt.getSmsSet(),
-											MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                                    pers.setNewMessageScheduled(receipt.getSmsSet(),
+                                            MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
 								} else {
 									receipt = MessageUtil.createReceiptSms(sms, false);
 									SmsSet backSmsSet = new SmsSet();
@@ -989,7 +990,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 				try {
 					int prevDueDelay = smsSet.getDueDelay();
-					int newDueDelay = MessageUtil.computeNextDueDelay(prevDueDelay);
+                    int newDueDelay = MessageUtil.computeNextDueDelay(prevDueDelay, smscPropertiesManagement.getSecondDueDelay(),
+                            smscPropertiesManagement.getDueDelayMultiplicator(), smscPropertiesManagement.getMaxDueDelay());
 
 					Date newDueDate = new Date(new Date().getTime() + newDueDelay * 1000);
 

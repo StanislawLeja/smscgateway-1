@@ -329,7 +329,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		this.store();
 	}
 
-	protected SmppBindType getSmppBindType() {
+	public SmppBindType getSmppBindType() {
 		return smppBindType;
 	}
 
@@ -666,7 +666,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		return false;
 	}
 
-	protected boolean isRoutingAddressMatching(int destTon, int destNpi, String destAddress) {
+	public boolean isRoutingAddressMatching(int destTon, int destNpi, String destAddress) {
 
 		// Check sourceTon
 		if (this.routingTon != -1 && this.routingTon != destTon) {
@@ -792,25 +792,25 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	};
 
 	public void show(StringBuffer sb) {
-		sb.append(SMSCOAMMessages.SHOW_ESME_NAME).append(this.name).append(SMSCOAMMessages.SHOW_ESME_SYSTEM_ID)
-				.append(this.systemId).append(SMSCOAMMessages.SHOW_ESME_STATE).append(this.getStateName())
-				.append(SMSCOAMMessages.SHOW_ESME_PASSWORD).append(this.password)
-				.append(SMSCOAMMessages.SHOW_ESME_HOST).append(this.host).append(SMSCOAMMessages.SHOW_ESME_PORT)
-				.append(this.port).append(SMSCOAMMessages.CHARGING_ENABLED).append(this.chargingEnabled)
-				.append(SMSCOAMMessages.SHOW_ESME_BIND_TYPE).append(this.smppBindType)
-				.append(SMSCOAMMessages.SHOW_ESME_SYSTEM_TYPE).append(this.systemType)
-				.append(SMSCOAMMessages.SHOW_ESME_INTERFACE_VERSION).append(this.smppVersion)
-				.append(SMSCOAMMessages.SHOW_ADDRESS_TON).append(this.esmeTon).append(SMSCOAMMessages.SHOW_ADDRESS_NPI)
-				.append(this.esmeNpi).append(SMSCOAMMessages.SHOW_ADDRESS).append(this.esmeAddressRange)
-				.append(SMSCOAMMessages.SHOW_CLUSTER_NAME).append(this.clusterName)
-				.append(SMSCOAMMessages.SHOW_SOURCE_ADDRESS_TON).append(this.sourceTon)
-				.append(SMSCOAMMessages.SHOW_SOURCE_ADDRESS_NPI).append(this.sourceNpi)
-				.append(SMSCOAMMessages.SHOW_SOURCE_ADDRESS).append(this.sourceAddressRange)
-				.append(SMSCOAMMessages.SHOW_ROUTING_ADDRESS_TON).append(this.routingTon)
-				.append(SMSCOAMMessages.SHOW_ROUTING_ADDRESS_NPI).append(this.routingNpi)
-				.append(SMSCOAMMessages.SHOW_ROUTING_ADDRESS).append(this.routingAddressRange);
+		sb.append(SmppOamMessages.SHOW_ESME_NAME).append(this.name).append(SmppOamMessages.SHOW_ESME_SYSTEM_ID)
+				.append(this.systemId).append(SmppOamMessages.SHOW_ESME_STATE).append(this.getStateName())
+				.append(SmppOamMessages.SHOW_ESME_PASSWORD).append(this.password)
+				.append(SmppOamMessages.SHOW_ESME_HOST).append(this.host).append(SmppOamMessages.SHOW_ESME_PORT)
+				.append(this.port).append(SmppOamMessages.CHARGING_ENABLED).append(this.chargingEnabled)
+				.append(SmppOamMessages.SHOW_ESME_BIND_TYPE).append(this.smppBindType)
+				.append(SmppOamMessages.SHOW_ESME_SYSTEM_TYPE).append(this.systemType)
+				.append(SmppOamMessages.SHOW_ESME_INTERFACE_VERSION).append(this.smppVersion)
+				.append(SmppOamMessages.SHOW_ADDRESS_TON).append(this.esmeTon).append(SmppOamMessages.SHOW_ADDRESS_NPI)
+				.append(this.esmeNpi).append(SmppOamMessages.SHOW_ADDRESS).append(this.esmeAddressRange)
+				.append(SmppOamMessages.SHOW_CLUSTER_NAME).append(this.clusterName)
+				.append(SmppOamMessages.SHOW_SOURCE_ADDRESS_TON).append(this.sourceTon)
+				.append(SmppOamMessages.SHOW_SOURCE_ADDRESS_NPI).append(this.sourceNpi)
+				.append(SmppOamMessages.SHOW_SOURCE_ADDRESS).append(this.sourceAddressRange)
+				.append(SmppOamMessages.SHOW_ROUTING_ADDRESS_TON).append(this.routingTon)
+				.append(SmppOamMessages.SHOW_ROUTING_ADDRESS_NPI).append(this.routingNpi)
+				.append(SmppOamMessages.SHOW_ROUTING_ADDRESS).append(this.routingAddressRange);
 
-		sb.append(SMSCOAMMessages.NEW_LINE);
+		sb.append(SmppOamMessages.NEW_LINE);
 	}
 
 	@Override

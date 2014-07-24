@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.telscale.smsc</groupId>
 		<artifactId>services-parent</artifactId>
-		<version>6.1.7-TelScale-SNAPSHOT</version>
+		<version>6.2.0-TelScale-SNAPSHOT</version>
 	</parent>
 	<artifactId>mt-sbb</artifactId>
 
@@ -33,8 +33,13 @@
 			<groupId>${pom.groupId}</groupId>
 		</dependency>
 		<dependency>
-			<artifactId>smsc-library</artifactId>
+			<artifactId>smsc-common-library</artifactId>
 			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>domain</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
 		<dependency>

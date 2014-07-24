@@ -26,9 +26,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.TargetAddress;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.library.TargetAddress;
 
 /**
 *

@@ -22,7 +22,8 @@ import javax.slee.resource.ResourceAdaptorContext;
 import javax.slee.resource.SleeEndpoint;
 import javax.slee.resource.StartActivityException;
 import javax.slee.resource.UnrecognizedActivityHandleException;
-import org.mobicents.smsc.smpp.SmscManagement;
+
+import org.mobicents.smsc.smpp.SmppManagement;
 
 public class SmppServerResourceAdaptor implements ResourceAdaptor {
 
@@ -128,11 +129,11 @@ public class SmppServerResourceAdaptor implements ResourceAdaptor {
 	@Override
 	public void raActive() {
 		try {
-			SmscManagement smscManagemet = SmscManagement.getInstance();
+			SmppManagement smscManagemet = SmppManagement.getInstance();
 
 			smscManagemet.setSmppSessionHandlerInterface(this.smppServerSession.getSmppSessionHandlerInterface());
 
-			smscManagemet.startSmscManagement();
+			smscManagemet.startSmppManagement();
 
 			if (tracer.isInfoEnabled()) {
 				tracer.info("Activated RA Entity " + this.raContext.getEntityName());
@@ -156,9 +157,9 @@ public class SmppServerResourceAdaptor implements ResourceAdaptor {
 
 	@Override
 	public void raInactive() {
-		SmscManagement smscManagemet = SmscManagement.getInstance();
+	    SmppManagement smscManagemet = SmppManagement.getInstance();
 		try {
-			smscManagemet.stopSmscManagement();
+			smscManagemet.stopSmppManagement();
 		} catch (Exception e) {
 			tracer.severe("Error while inactivating RA Entity " + this.raContext.getEntityName(), e);
 		}

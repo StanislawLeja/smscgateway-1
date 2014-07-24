@@ -24,7 +24,7 @@ package org.mobicents.smsc.slee.services.charging;
 
 import java.io.Serializable;
 
-import org.mobicents.smsc.cassandra.Sms;
+import org.mobicents.smsc.library.Sms;
 
 /**
  * 

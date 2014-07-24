@@ -24,10 +24,10 @@ package org.mobicents.smsc.slee.services.smpp.server.tx;
 
 import java.nio.charset.Charset;
 
-import org.mobicents.smsc.cassandra.TargetAddress;
+import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
-import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.Test;
 
 /**

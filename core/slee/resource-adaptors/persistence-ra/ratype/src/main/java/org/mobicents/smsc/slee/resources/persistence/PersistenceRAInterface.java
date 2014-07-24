@@ -32,13 +32,13 @@ import javax.slee.facilities.Tracer;
 
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
-import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
-import org.mobicents.smsc.cassandra.SmType;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.TargetAddress;
+import org.mobicents.smsc.library.ErrorCode;
+import org.mobicents.smsc.library.SmType;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.library.TargetAddress;
 
 /**
  * @author baranowb

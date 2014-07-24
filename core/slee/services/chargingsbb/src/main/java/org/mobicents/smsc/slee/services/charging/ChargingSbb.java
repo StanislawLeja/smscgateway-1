@@ -61,18 +61,18 @@ import net.java.slee.resource.diameter.ro.events.avp.ServiceInformation;
 
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.slee.SbbContextExt;
-import org.mobicents.smsc.cassandra.CdrGenerator;
 import org.mobicents.smsc.cassandra.DatabaseType;
-import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
+import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.domain.SmscStatAggregator;
+import org.mobicents.smsc.library.CdrGenerator;
+import org.mobicents.smsc.library.ErrorCode;
+import org.mobicents.smsc.library.MessageUtil;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
-import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
-import org.mobicents.smsc.smpp.SmscPropertiesManagement;
-import org.mobicents.smsc.smpp.SmscStatAggregator;
 
 import com.cloudhopper.smpp.SmppConstants;
 
@@ -451,7 +451,8 @@ public abstract class ChargingSbb implements Sbb {
                 sms.setStored(true);
                 if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                     persistence.createLiveSms(sms);
-                    persistence.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                    persistence.setNewMessageScheduled(sms.getSmsSet(),
+                            MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
                 } else {
                     persistence.c2_scheduleMessage(sms);
                 }

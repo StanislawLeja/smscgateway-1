@@ -59,13 +59,13 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.DatabaseType;
-import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.SmsSetCashe;
+import org.mobicents.smsc.library.ErrorCode;
+import org.mobicents.smsc.library.MessageUtil;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.library.SmsSetCashe;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
-import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 
 /**

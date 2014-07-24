@@ -29,24 +29,24 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 
-import org.mobicents.smsc.cassandra.CdrGenerator;
 import org.mobicents.smsc.cassandra.DBOperations_C1;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.DatabaseType;
-import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.SmType;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.SmsSetCashe;
-import org.mobicents.smsc.cassandra.TargetAddress;
+import org.mobicents.smsc.domain.SmsRouteManagement;
+import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.domain.SmscStatAggregator;
+import org.mobicents.smsc.domain.SmscStatProvider;
+import org.mobicents.smsc.library.CdrGenerator;
+import org.mobicents.smsc.library.ErrorCode;
+import org.mobicents.smsc.library.MessageUtil;
+import org.mobicents.smsc.library.SmType;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.common.ra.EventIDCache;
-import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
-import org.mobicents.smsc.smpp.SmsRouteManagement;
-import org.mobicents.smsc.smpp.SmscPropertiesManagement;
-import org.mobicents.smsc.smpp.SmscStatAggregator;
-import org.mobicents.smsc.smpp.SmscStatProvider;
 
 public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
@@ -566,7 +566,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                                                 receipt.setSmsSet(backSmsSet);
                                                 receipt.setStored(true);
                                                 dbOperations_C1.createLiveSms(receipt);
-                                                dbOperations_C1.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                                                dbOperations_C1.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil
+                                                        .computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
                                             } else {
                                                 receipt = MessageUtil.createReceiptSms(sms, false);
                                                 SmsSet backSmsSet = new SmsSet();

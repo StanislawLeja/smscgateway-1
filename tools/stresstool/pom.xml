@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>tools</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.1.7-TelScale-SNAPSHOT</version>
+		<version>6.2.0-TelScale-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>stresstool-parent</artifactId>
@@ -39,7 +39,7 @@
 
 		<dependency>
 			<groupId>${pom.groupId}</groupId>
-			<artifactId>cassandra-support</artifactId>
+			<artifactId>smsc-library</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
 	</dependencies>

@@ -27,8 +27,8 @@ import static org.testng.Assert.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
+import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.smpp.SmppEncoding;
-import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 import org.testng.annotations.Test;
 
 /**

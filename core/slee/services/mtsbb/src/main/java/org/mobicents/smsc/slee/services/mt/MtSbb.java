@@ -86,21 +86,21 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.cassandra.CdrGenerator;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.DatabaseType;
-import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.SmsSetCashe;
-import org.mobicents.smsc.cassandra.TargetAddress;
-import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
+import org.mobicents.smsc.domain.MapVersionCache;
+import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.library.CdrGenerator;
+import org.mobicents.smsc.library.ErrorCode;
+import org.mobicents.smsc.library.MessageUtil;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmscProcessingException;
+import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
-import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
-import org.mobicents.smsc.smpp.MapVersionCache;
-import org.mobicents.smsc.smpp.SmscPropertiesManagement;
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.tlv.Tlv;
@@ -947,8 +947,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 								receipt.setSmsSet(backSmsSet);
                                 receipt.setStored(true);
 								pers.createLiveSms(receipt);
-								pers.setNewMessageScheduled(receipt.getSmsSet(),
-										MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                                pers.setNewMessageScheduled(receipt.getSmsSet(),
+                                        MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
 							} else {
 								receipt = MessageUtil.createReceiptSms(sms, true);
 								SmsSet backSmsSet = new SmsSet();

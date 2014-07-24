@@ -4,8 +4,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
 
 public interface NN_DBOperInterface {
 

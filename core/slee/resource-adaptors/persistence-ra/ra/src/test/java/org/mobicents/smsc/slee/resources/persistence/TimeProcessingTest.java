@@ -28,8 +28,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
-import org.mobicents.smsc.smpp.SmscPropertiesManagement;
+import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.library.MessageUtil;
 import org.testng.annotations.Test;
 
 /**

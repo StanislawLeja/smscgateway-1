@@ -202,18 +202,18 @@
 	<!-- SMSC -->
 	<!-- SmscManagement is managing the all Smsc server commands -->
 	<!-- ==================================================================== -->
-	<bean name="SmscManagement" class="org.mobicents.smsc.smpp.SmscManagement">
-		<constructor factoryClass="org.mobicents.smsc.smpp.SmscManagement"
+	<bean name="SmscManagement" class="org.mobicents.smsc.domain.SmscManagement">
+		<constructor factoryClass="org.mobicents.smsc.domain.SmscManagement"
 			factoryMethod="getInstance">
 			<parameter>SmscManagement</parameter>
 		</constructor>
 		<property name="persistDir">${jboss.server.data.dir}</property>
 		<!-- 
-		<property name="smsRoutingRuleClass">org.mobicents.smsc.smpp.DatabaseSmsRoutingRule</property>
+		<property name="smsRoutingRuleClass">org.mobicents.smsc.domain.DatabaseSmsRoutingRule</property>
 		 -->
 	</bean>
 
-	<bean name="SMSCShellExecutor" class="org.mobicents.smsc.smpp.SMSCShellExecutor">
+	<bean name="SMSCShellExecutor" class="org.mobicents.smsc.domain.SMSCShellExecutor">
 		<property name="smscManagement">
 			<inject bean="SmscManagement" />
 		</property>
@@ -270,7 +270,7 @@
 		</constructor>
 	</bean>	
 
-	<bean name="SmscStatProviderJmx" class="org.mobicents.smsc.smpp.SmscStatProviderJmx">
+	<bean name="SmscStatProviderJmx" class="org.mobicents.smsc.domain.SmscStatProviderJmx">
 		<constructor>
 			<parameter><inject bean="Ss7Management" /></parameter>
 		</constructor>
