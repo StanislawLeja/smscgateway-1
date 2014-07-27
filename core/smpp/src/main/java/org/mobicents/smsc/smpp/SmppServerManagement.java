@@ -25,6 +25,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -498,6 +502,23 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 	 * @throws Exception
 	 */
 	public void load() throws FileNotFoundException {
+
+        // backward compatibility: rename old file name to new one
+        if (persistDir != null) {
+            TextBuilder oldFileName = new TextBuilder();
+            oldFileName.append(persistDir).append(File.separator).append("SmscManagement").append("_").append(PERSIST_FILE_NAME);
+
+            Path oldPath = FileSystems.getDefault().getPath(oldFileName.toString());
+            Path newPath = FileSystems.getDefault().getPath(persistFile.toString());
+
+            if (Files.exists(oldPath) && Files.notExists(newPath)) {
+                try {
+                    Files.move(oldPath, newPath);
+                } catch (IOException e) {
+                    logger.warn("Exception when trying to rename old config file", e);
+                }
+            }
+        }
 
 		XMLObjectReader reader = null;
 		try {

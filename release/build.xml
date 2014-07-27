@@ -346,12 +346,18 @@
 		        </fileset>
 		</copy>
     	<!--CLI-->
-        <copy file="${checkout.telscale-smsc.dir}/core/oam/cli/target/smsc-cli-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
+        <copy file="${checkout.telscale-smsc.dir}/core/oam/clismpp/target/smpp-cli-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
 		<copy todir="${release.dir}/jboss-5.1.0.GA/" failonerror="true">
 		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/ss7/shell">
 		                <include name="**/*" />
 		        </fileset>
 		</copy>
+        <copy file="${checkout.telscale-smsc.dir}/core/oam/cli/target/smsc-cli-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
+        <copy todir="${release.dir}/jboss-5.1.0.GA/" failonerror="true">
+                <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/ss7/shell">
+                        <include name="**/*" />
+                </fileset>
+        </copy>
     	
     	<!--logs-->
 		<echo>Copy jboss-log4j*.xml</echo>

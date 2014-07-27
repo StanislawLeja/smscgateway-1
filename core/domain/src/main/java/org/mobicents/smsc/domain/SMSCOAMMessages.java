@@ -45,14 +45,6 @@ public interface SMSCOAMMessages {
 	 * ;
 	 */
 
-	public static final String ESME_START_SUCCESSFULL = "Successfully started ESME name=%s";
-
-	public static final String ESME_STOP_SUCCESSFULL = "Successfully stopped ESME name=%s";
-
-	public static final String CREATE_ESME_SUCCESSFULL = "Successfully created ESME name=%s";
-	
-	public static final String MODIFY_ESME_SUCCESSFULL = "Successfully modified ESME name=%s";
-
 	public static final String CREATE_ROUTING_RULE_SUCCESSFULL = "Successfully created Routing rule name=%s";
 
 	public static final String CREATE_ROUTING_RULE_FAIL_ALREADY_EXIST = "Creation of Routing rule failed. Other Route with name=%s already exist"; // name
@@ -71,21 +63,13 @@ public interface SMSCOAMMessages {
 
 	public static final String NOT_SUPPORTED_YET = "Not supported yet";
 
-	public static final String NO_ESME_DEFINED_YET = "No ESME defined yet";
-
 	public static final String NO_ROUTING_RULE_DEFINED_YET = "No Routing rule defined yet for address %s and type %s";
-
-	public static final String DELETE_ESME_SUCCESSFUL = "Successfully deleted Esme with given name %s";
-
-	public static final String INVALID_SMPP_BIND_TYPE = "Invalid SMPP Bind Type %s. Allowed are TRANSCEIVER, TRANSMITTER or RECEIVER";
 
 	public static final String NULL_ESME_ADDRESS_RANGE = "esme-range is compulsory for TRANSCEIVER and RECEIVER";
 
 	public static final String PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set";
 
 	public static final String PARAMETER_SUCCESSFULLY_REMOVED = "Parameter has been successfully removed";
-
-	public static final String SMPP_SERVER_PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set. The changed value will take effect after SmppServer is restarted";
 
 	public static final String MAP_VERSION_CACHE_NOT_FOUND = "No map version found in the cache";
 

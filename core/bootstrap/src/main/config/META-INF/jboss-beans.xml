@@ -164,7 +164,8 @@
 					<inject bean="M3UAShellExecutor" />
 					<inject bean="SCTPShellExecutor" />
 					<inject bean="TcapExecutor" />
-					<inject bean="SMSCShellExecutor" />
+                    <inject bean="SmppShellExecutor" />
+                    <inject bean="SMSCShellExecutor" />
 				</list>
 			</parameter>
 		</constructor>
@@ -198,26 +199,47 @@
 		</property>
 	</bean>
 
-	<!-- ==================================================================== -->
-	<!-- SMSC -->
-	<!-- SmscManagement is managing the all Smsc server commands -->
-	<!-- ==================================================================== -->
-	<bean name="SmscManagement" class="org.mobicents.smsc.domain.SmscManagement">
-		<constructor factoryClass="org.mobicents.smsc.domain.SmscManagement"
-			factoryMethod="getInstance">
-			<parameter>SmscManagement</parameter>
-		</constructor>
-		<property name="persistDir">${jboss.server.data.dir}</property>
-		<!-- 
-		<property name="smsRoutingRuleClass">org.mobicents.smsc.domain.DatabaseSmsRoutingRule</property>
-		 -->
-	</bean>
+    <!-- ==================================================================== -->
+    <!-- SMPP -->
+    <!-- SmppManagement is managing SMPP part -->
+    <!-- ==================================================================== -->
+    <bean name="SmppManagement" class="org.mobicents.smsc.smpp.SmppManagement">
+        <constructor factoryClass="org.mobicents.smsc.smpp.SmppManagement"
+            factoryMethod="getInstance">
+            <parameter>SmppManagement</parameter>
+        </constructor>
+        <property name="persistDir">${jboss.server.data.dir}</property>
+    </bean>
 
-	<bean name="SMSCShellExecutor" class="org.mobicents.smsc.domain.SMSCShellExecutor">
-		<property name="smscManagement">
-			<inject bean="SmscManagement" />
-		</property>
-	</bean>
+    <bean name="SmppShellExecutor" class="org.mobicents.smsc.smpp.SmppShellExecutor">
+        <property name="smppManagement">
+            <inject bean="SmppManagement" />
+        </property>
+    </bean>
+
+    <!-- ==================================================================== -->
+    <!-- SMSC -->
+    <!-- SmscManagement is managing the all Smsc server commands -->
+    <!-- ==================================================================== -->
+    <bean name="SmscManagement" class="org.mobicents.smsc.domain.SmscManagement">
+        <constructor factoryClass="org.mobicents.smsc.domain.SmscManagement"
+            factoryMethod="getInstance">
+            <parameter>SmscManagement</parameter>
+        </constructor>
+        <property name="persistDir">${jboss.server.data.dir}</property>
+        <property name="smppManagement">
+            <inject bean="SmppManagement" />
+        </property>
+        <!-- 
+        <property name="smsRoutingRuleClass">org.mobicents.smsc.domain.DatabaseSmsRoutingRule</property>
+         -->
+    </bean>
+
+    <bean name="SMSCShellExecutor" class="org.mobicents.smsc.domain.SMSCShellExecutor">
+        <property name="smscManagement">
+            <inject bean="SmscManagement" />
+        </property>
+    </bean>
 
 	<!-- ==================================================================== -->
 	<!-- TelScale jSS7 Managemenet Service -->

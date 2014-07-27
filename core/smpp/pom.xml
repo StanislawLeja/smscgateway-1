@@ -38,6 +38,12 @@
 			<version>${jboss.version}</version>
 			<scope>compile</scope>
 		</dependency>
+
+        <dependency>
+            <artifactId>shell-server-api</artifactId>
+            <groupId>org.mobicents.protocols.ss7.management</groupId>
+            <version>${jss7.telscale.version}</version>
+        </dependency>
 	</dependencies>
 
 	<profiles>

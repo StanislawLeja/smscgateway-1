@@ -30,7 +30,32 @@ package org.mobicents.smsc.smpp;
  */
 public interface SmppOamMessages {
 
+    /**
+     * Pre defined messages
+     */
+    public static final String INVALID_COMMAND = "Invalid Command";
+
+    public static final String ILLEGAL_ARGUMENT = "Illegal argument %s: %s";
+
+
     public static final String NEW_LINE = "\n";
+
+
+    public static final String ESME_START_SUCCESSFULL = "Successfully started ESME name=%s";
+
+    public static final String ESME_STOP_SUCCESSFULL = "Successfully stopped ESME name=%s";
+
+    public static final String CREATE_ESME_SUCCESSFULL = "Successfully created ESME name=%s";
+    
+    public static final String MODIFY_ESME_SUCCESSFULL = "Successfully modified ESME name=%s";
+
+    public static final String DELETE_ESME_SUCCESSFUL = "Successfully deleted Esme with given name %s";
+
+    public static final String NO_ESME_DEFINED_YET = "No ESME defined yet";
+
+    public static final String SMPP_SERVER_PARAMETER_SUCCESSFULLY_SET = "Parameter has been successfully set. The changed value will take effect after SmppServer is restarted";
+
+    public static final String INVALID_SMPP_BIND_TYPE = "Invalid SMPP Bind Type %s. Allowed are TRANSCEIVER, TRANSMITTER or RECEIVER";
 
 
     public static final String CREATE_EMSE_FAIL_PORT_CANNOT_BE_LESS_THAN_ZERO = "Creation of EMSE failed. Port cannot be less than 0 for CLIENT Sessions";

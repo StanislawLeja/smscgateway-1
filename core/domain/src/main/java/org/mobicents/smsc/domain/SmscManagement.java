@@ -93,9 +93,9 @@ public class SmscManagement implements SmscManagementMBean {
 	private SmsRoutingRule smsRoutingRule = null;
 
 	private SmscManagement(String name) {
-		this.name = name;
+        this.name = name;
 
-        this.smppManagement = SmppManagement.getInstance(this.name);
+//        this.smppManagement = SmppManagement.getInstance("SmppManagement");
 	}
 
 	public static SmscManagement getInstance(String name) {
@@ -120,11 +120,15 @@ public class SmscManagement implements SmscManagementMBean {
 	public void setPersistDir(String persistDir) {
         this.persistDir = persistDir;
 
-        this.smppManagement.setPersistDir(persistDir);
+//        this.smppManagement.setPersistDir(persistDir);
 	}
 
     public SmppManagement getSmppManagement() {
         return smppManagement;
+    }
+
+    public void setSmppManagement(SmppManagement smppManagement) {
+        this.smppManagement = smppManagement;
     }
 
 	public SmsRoutingRule getSmsRoutingRule() {

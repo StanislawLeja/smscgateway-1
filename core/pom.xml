@@ -15,7 +15,8 @@
 	<modules>
 		<module>smpp</module>
 		<module>smsc-common-library</module>
-		<module>oam/cli</module>
+        <module>oam/clismpp</module>
+        <module>oam/cli</module>
 		<module>domain</module>
 		<module>slee</module>
 		<module>bootstrap</module>

@@ -42,14 +42,6 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 		sip.addChild("modify");
 		sip.addChild("show");
 
-		Node esme = parent.addChild("esme");
-		esme.addChild("create");
-		esme.addChild("modify");
-		esme.addChild("delete");
-		esme.addChild("start");
-		esme.addChild("stop");
-		esme.addChild("show");
-
 		Node set = parent.addChild("set");
 		set.addChild("scgt");
 		set.addChild("scssn");
@@ -165,32 +157,6 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         remove.addChild("esmedefaultcluster");
 
 		Node smppServer = parent.addChild("smppserver");
-
-		Node smppServerSet = smppServer.addChild("set");
-		smppServerSet.addChild("port");
-		smppServerSet.addChild("bindtimeout");
-		smppServerSet.addChild("systemid");
-		smppServerSet.addChild("autonegotiateversion");
-		smppServerSet.addChild("interfaceversion");
-		smppServerSet.addChild("maxconnectionsize");
-		smppServerSet.addChild("defaultwindowsize");
-		smppServerSet.addChild("defaultwindowwaittimeout");
-		smppServerSet.addChild("defaultrequestexpirytimeout");
-		smppServerSet.addChild("defaultwindowmonitorinterval");
-		smppServerSet.addChild("defaultsessioncountersenabled");
-
-		Node smppServerGet = smppServer.addChild("get");
-		smppServerGet.addChild("port");
-		smppServerGet.addChild("bindtimeout");
-		smppServerGet.addChild("systemid");
-		smppServerGet.addChild("autonegotiateversion");
-		smppServerGet.addChild("interfaceversion");
-		smppServerGet.addChild("maxconnectionsize");
-		smppServerGet.addChild("defaultwindowsize");
-		smppServerGet.addChild("defaultwindowwaittimeout");
-		smppServerGet.addChild("defaultrequestexpirytimeout");
-		smppServerGet.addChild("defaultwindowmonitorinterval");
-		smppServerGet.addChild("defaultsessioncountersenabled");
 
         Node databaseRule = parent.addChild("databaserule");
         databaseRule.addChild("update");
