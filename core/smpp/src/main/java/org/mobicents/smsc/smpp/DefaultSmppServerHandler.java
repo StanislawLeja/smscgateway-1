@@ -139,7 +139,7 @@ public class DefaultSmppServerHandler implements SmppServerHandler {
 	public void sessionCreated(Long sessionId, SmppServerSession session, BaseBindResp preparedBindResponse)
 			throws SmppProcessingException {
 		if (logger.isInfoEnabled()) {
-			logger.info(String.format("Session created: %s", session.getConfiguration().getSystemId()));
+			logger.info(String.format("Session created: Name=%s SystemId=%s", session.getConfiguration().getName(), session.getConfiguration().getSystemId()));
 		}
 
 		if (this.smppSessionHandlerInterface == null) {
