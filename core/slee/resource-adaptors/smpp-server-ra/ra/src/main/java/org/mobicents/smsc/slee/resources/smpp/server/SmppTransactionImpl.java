@@ -11,6 +11,7 @@ public class SmppTransactionImpl implements SmppTransaction {
 
 	private SmppTransactionHandle activityHandle;
 	private PduRequest wrappedPduRequest;
+	private final long startTime;
 
 	protected SmppTransactionImpl(PduRequest wrappedPduRequest, Esme esme,
 			SmppTransactionHandle smppServerTransactionHandle, SmppServerResourceAdaptor ra) {
@@ -20,6 +21,7 @@ public class SmppTransactionImpl implements SmppTransaction {
 		this.activityHandle = smppServerTransactionHandle;
 		this.activityHandle.setActivity(this);
 		this.ra = ra;
+		this.startTime = System.currentTimeMillis();
 	}
 
 	public Esme getEsme() {
@@ -32,6 +34,10 @@ public class SmppTransactionImpl implements SmppTransaction {
 
 	public PduRequest getWrappedPduRequest() {
 		return this.wrappedPduRequest;
+	}
+	
+	public long getStartTime() {
+		return startTime;
 	}
 
 	protected SmppServerResourceAdaptor getRa() {

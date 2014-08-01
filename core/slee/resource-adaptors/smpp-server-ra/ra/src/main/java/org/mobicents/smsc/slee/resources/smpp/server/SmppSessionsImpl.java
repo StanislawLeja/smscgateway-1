@@ -13,6 +13,7 @@ import org.mobicents.smsc.smpp.SmppSessionHandlerInterface;
 import com.cloudhopper.commons.util.windowing.WindowFuture;
 import com.cloudhopper.smpp.PduAsyncResponse;
 import com.cloudhopper.smpp.SmppConstants;
+import com.cloudhopper.smpp.SmppSessionCounters;
 import com.cloudhopper.smpp.SmppSessionHandler;
 import com.cloudhopper.smpp.impl.DefaultSmppSession;
 import com.cloudhopper.smpp.pdu.DataSm;
@@ -123,6 +124,12 @@ public class SmppSessionsImpl implements SmppSessions {
 			}
 			defaultSmppSession.sendResponsePdu(response);
 		} finally {
+			
+			SmppSessionCounters smppSessionCounters = esme.getSmppSession().getCounters();
+			SmppTransactionImpl smppTransactionImpl = (SmppTransactionImpl)request.getReferenceObject();
+			long responseTime = System.currentTimeMillis() - smppTransactionImpl.getStartTime();
+			this.countSendResponsePdu(smppSessionCounters, response, responseTime, responseTime);
+			
 			if (smppServerTransactionImpl == null) {
 				tracer.severe(String.format("SmppTransactionImpl Activity is null while trying to send PduResponse=%s",
 						response));
@@ -134,6 +141,37 @@ public class SmppSessionsImpl implements SmppSessions {
 		// TODO Should it catch UnrecoverablePduException and
 		// SmppChannelException and close underlying SmppSession?
 	}
+	
+    private void countSendResponsePdu(SmppSessionCounters counters, PduResponse pdu, long responseTime, long estimatedProcessingTime) {
+        if (pdu.isResponse()) {
+            switch (pdu.getCommandId()) {
+                case SmppConstants.CMD_ID_SUBMIT_SM_RESP:
+                    counters.getRxSubmitSM().incrementResponseAndGet();
+                    counters.getRxSubmitSM().addRequestResponseTimeAndGet(responseTime);
+                    counters.getRxSubmitSM().addRequestEstimatedProcessingTimeAndGet(estimatedProcessingTime);
+                    counters.getRxSubmitSM().getResponseCommandStatusCounter().incrementAndGet(pdu.getCommandStatus());
+                    break;
+                case SmppConstants.CMD_ID_DELIVER_SM_RESP:
+                    counters.getRxDeliverSM().incrementResponseAndGet();
+                    counters.getRxDeliverSM().addRequestResponseTimeAndGet(responseTime);
+                    counters.getRxDeliverSM().addRequestEstimatedProcessingTimeAndGet(estimatedProcessingTime);
+                    counters.getRxDeliverSM().getResponseCommandStatusCounter().incrementAndGet(pdu.getCommandStatus());
+                    break;
+                case SmppConstants.CMD_ID_DATA_SM_RESP:
+                    counters.getRxDataSM().incrementResponseAndGet();
+                    counters.getRxDataSM().addRequestResponseTimeAndGet(responseTime);
+                    counters.getRxDataSM().addRequestEstimatedProcessingTimeAndGet(estimatedProcessingTime);
+                    counters.getRxDataSM().getResponseCommandStatusCounter().incrementAndGet(pdu.getCommandStatus());
+                    break;
+                case SmppConstants.CMD_ID_ENQUIRE_LINK_RESP:
+                    counters.getRxEnquireLink().incrementResponseAndGet();
+                    counters.getRxEnquireLink().addRequestResponseTimeAndGet(responseTime);
+                    counters.getRxEnquireLink().addRequestEstimatedProcessingTimeAndGet(estimatedProcessingTime);
+                    counters.getRxEnquireLink().getResponseCommandStatusCounter().incrementAndGet(pdu.getCommandStatus());
+                    break;
+            }
+        }
+    }	
 
 	protected class SmppSessionHandlerInterfaceImpl implements SmppSessionHandlerInterface {
 
@@ -156,7 +194,7 @@ public class SmppSessionsImpl implements SmppSessions {
 
 		@Override
 		public PduResponse firePduRequestReceived(PduRequest pduRequest) {
-
+			
 			PduResponse response = pduRequest.createResponse();
 			try {
 				SmppTransactionImpl smppServerTransaction = null;

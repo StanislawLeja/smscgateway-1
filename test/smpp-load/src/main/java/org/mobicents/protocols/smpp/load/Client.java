@@ -51,16 +51,33 @@ import com.cloudhopper.smpp.type.Address;
 public class Client extends TestHarness {
 
 	private static final Logger logger = Logger.getLogger(Client.class);
-
+	
+	
+	
 	//
 	// performance testing options (just for this sample)
 	//
 	// total number of sessions (conns) to create
-	static public final int SESSION_COUNT = 5;
+	private int sessionCount = 5;
 	// size of window per session
-	static public final int WINDOW_SIZE = 50000;
+	private int windowSize = 50000;
 	// total number of submit to send total across all sessions
-	static public final int SUBMIT_TO_SEND = 100000;
+	private int submitToSend = 100000;
+	// total number of submit sent
+	private volatile AtomicInteger submitSent = new AtomicInteger(0);
+
+	private long startDestNumber = 9960200000l;
+	private int destNumberDiff = 10000;
+	private long endDestNumber = startDestNumber + destNumberDiff;
+
+	private String sourceNumber = "6666";
+
+	private String peerAddress = "127.0.0.1";
+	private int peerPort = 2775;
+	private String systemId = "test";
+	private String password = "test";
+	private String message = "Hello world!";
+
 	// total number of submit sent
 	static public final AtomicInteger SUBMIT_SENT = new AtomicInteger(0);
 
@@ -69,11 +86,79 @@ public class Client extends TestHarness {
 	static long max_dest_number = min_dest_number + dest_number_diff;
 
 	static public void main(String[] args) throws Exception {
+		
 		Client client = new Client();
-		client.test();
+		client.test(args);
 	}
 
-	private void test() throws Exception {
+	private void test(String[] args) throws Exception {
+		
+		this.sessionCount = Integer.parseInt(args[0]);
+		this.windowSize  = Integer.parseInt(args[1]);
+		this.submitToSend = Integer.parseInt(args[2]);
+		this.startDestNumber = Long.parseLong(args[3]);
+		this.destNumberDiff = Integer.parseInt(args[4]);
+		this.sourceNumber = args[5];
+		this.peerAddress = args[6];
+		this.peerPort = Integer.parseInt(args[7]);
+		this.systemId = args[8];
+		this.password = args[9];
+		this.message = args[10];
+		
+		if (sessionCount < 1) {
+			throw new Exception("Session count cannot be less than 1");
+		}
+		
+		if (windowSize < 1) {
+			throw new Exception("Windows size cannot be less than 1");
+		}
+		
+		if (submitToSend < 1) {
+			throw new Exception("Submit to send cannot be less than 1");
+		}		
+		
+		if (startDestNumber < 1) {
+			throw new Exception("Start Destination Number cannot be less than 1");
+		}
+
+		if (destNumberDiff < 1) {
+			throw new Exception("Destination Number difference cannot be less than 1");
+		}
+
+		if (this.sourceNumber == null || this.sourceNumber == "") {
+			throw new Exception("Source Number cannot be null");
+		}
+		
+		if (this.peerAddress == null || this.peerAddress == "") {
+			throw new Exception("Peer address cannot be null");
+		}
+		
+		if (this.peerPort < 1) {
+			throw new Exception("Peer port cannot be less than 1");
+		}		
+
+		if (this.message == null) {
+			throw new Exception("Message cannot be less than 1");
+		}
+
+		this.endDestNumber = startDestNumber + destNumberDiff;		
+		
+		logger.info("sessionCount=" + sessionCount);
+		logger.info("windowSize=" + windowSize);
+		logger.info("submitToSend=" + submitToSend);
+		logger.info("startDestNumber=" + startDestNumber);
+		logger.info("destNumberDiff=" + destNumberDiff);
+		logger.info("endDestNumber=" + endDestNumber);
+		logger.info("sourceNumber=" + sourceNumber);
+		logger.info("peerAddress=" + peerAddress);
+		logger.info("peerPort=" + peerPort);
+		logger.info("systemId=" + systemId);
+		logger.info("password=" + password);
+		logger.info("message=" + message);
+		
+		
+				
+		
 		//
 		// setup 3 things required for any session we plan on creating
 		//
@@ -117,20 +202,20 @@ public class Client extends TestHarness {
 		// used for NIO sockets essentially uses this value as the max number of
 		// threads it will ever use, despite the "max pool size", etc. set on
 		// the executor passed in here
-		DefaultSmppClient clientBootstrap = new DefaultSmppClient(Executors.newCachedThreadPool(), SESSION_COUNT,
+		DefaultSmppClient clientBootstrap = new DefaultSmppClient(Executors.newCachedThreadPool(), this.sessionCount,
 				monitorExecutor);
 
 		// same configuration for each client runner
 		SmppSessionConfiguration config = new SmppSessionConfiguration();
-		config.setWindowSize(WINDOW_SIZE);
+		config.setWindowSize(this.windowSize);
 		config.setName("Tester.Session.0");
 		config.setType(SmppBindType.TRANSCEIVER);
 		// config.setHost("107.178.220.137");
-		config.setHost("127.0.0.1");
-		config.setPort(2775);
+		config.setHost(this.peerAddress);
+		config.setPort(this.peerPort);
 		config.setConnectTimeout(10000);
-		config.setSystemId("test");
-		config.setPassword("test");
+		config.setSystemId(this.systemId);
+		config.setPassword(this.password);
 		config.getLoggingOptions().setLogBytes(false);
 		// to enable monitoring (request expiration)
 		config.setRequestExpiryTimeout(30000);
@@ -138,14 +223,14 @@ public class Client extends TestHarness {
 		config.setCountersEnabled(true);
 
 		// various latches used to signal when things are ready
-		CountDownLatch allSessionsBoundSignal = new CountDownLatch(SESSION_COUNT);
+		CountDownLatch allSessionsBoundSignal = new CountDownLatch(this.sessionCount);
 		CountDownLatch startSendingSignal = new CountDownLatch(1);
 
 		// create all session runners and executors to run them
 		ThreadPoolExecutor taskExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-		ClientSessionTask[] tasks = new ClientSessionTask[SESSION_COUNT];
-		for (int i = 0; i < SESSION_COUNT; i++) {
-			tasks[i] = new ClientSessionTask(allSessionsBoundSignal, startSendingSignal, clientBootstrap, config);
+		ClientSessionTask[] tasks = new ClientSessionTask[this.sessionCount];
+		for (int i = 0; i < this.sessionCount; i++) {
+			tasks[i] = new ClientSessionTask(allSessionsBoundSignal, startSendingSignal, clientBootstrap, config, this.submitToSend);
 			taskExecutor.submit(tasks[i]);
 		}
 
@@ -167,7 +252,7 @@ public class Client extends TestHarness {
 		// did everything succeed?
 		int actualSubmitSent = 0;
 		int sessionFailures = 0;
-		for (int i = 0; i < SESSION_COUNT; i++) {
+		for (int i = 0; i < this.sessionCount; i++) {
 			if (tasks[i].getCause() != null) {
 				sessionFailures++;
 				logger.error("Task #" + i + " failed with exception: " + tasks[i].getCause());
@@ -177,16 +262,16 @@ public class Client extends TestHarness {
 		}
 
 		logger.info("Performance client finished:");
-		logger.info("       Sessions: " + SESSION_COUNT);
-		logger.info("    Window Size: " + WINDOW_SIZE);
+		logger.info("       Sessions: " + this.sessionCount);
+		logger.info("    Window Size: " + this.windowSize);
 		logger.info("Sessions Failed: " + sessionFailures);
 		logger.info("           Time: " + (stopTimeMillis - startTimeMillis) + " ms");
-		logger.info("  Target Submit: " + SUBMIT_TO_SEND);
+		logger.info("  Target Submit: " + this.submitToSend);
 		logger.info("  Actual Submit: " + actualSubmitSent);
 		double throughput = (double) actualSubmitSent / ((double) (stopTimeMillis - startTimeMillis) / (double) 1000);
 		logger.info("     Throughput: " + DecimalUtil.toString(throughput, 3) + " per sec");
 
-		for (int i = 0; i < SESSION_COUNT; i++) {
+		for (int i = 0; i < this.sessionCount; i++) {
 			if (tasks[i].session != null && tasks[i].session.hasCounters()) {
 				logger.info(" Session " + i + ": submitSM " + tasks[i].session.getCounters().getTxSubmitSM());
 			}
@@ -215,9 +300,10 @@ public class Client extends TestHarness {
 		private AtomicBoolean sendingDone;
 		private Exception cause;
 		private Random r = new Random();
+		private int submitToSend;
 
 		public ClientSessionTask(CountDownLatch allSessionsBoundSignal, CountDownLatch startSendingSignal,
-				DefaultSmppClient clientBootstrap, SmppSessionConfiguration config) {
+				DefaultSmppClient clientBootstrap, SmppSessionConfiguration config, int submitToSend) {
 			this.allSessionsBoundSignal = allSessionsBoundSignal;
 			this.startSendingSignal = startSendingSignal;
 			this.clientBootstrap = clientBootstrap;
@@ -225,6 +311,8 @@ public class Client extends TestHarness {
 			this.submitRequestSent = 0;
 			this.submitResponseReceived = 0;
 			this.sendingDone = new AtomicBoolean(false);
+			this.submitToSend = submitToSend;
+			
 		}
 
 		public Exception getCause() {
@@ -257,7 +345,7 @@ public class Client extends TestHarness {
 				startSendingSignal.await();
 
 				// all threads compete for processing
-				while (SUBMIT_SENT.getAndIncrement() < SUBMIT_TO_SEND) {
+				while (SUBMIT_SENT.getAndIncrement() < this.submitToSend) {
 					SubmitSm submit = new SubmitSm();
 					submit.setSourceAddress(new Address((byte) 0x01, (byte) 0x01, "6666"));
 
@@ -275,6 +363,8 @@ public class Client extends TestHarness {
 				// an acknowledgement for all "inflight" though (synchronize
 				// against the window)
 				logger.info("before waiting sendWindow.size: " + session.getSendWindow().getSize());
+				logger.info("Final Session rx-submitSM" + session.getCounters().getRxSubmitSM());
+				logger.info("Final Session tx-submitSM" + session.getCounters().getTxSubmitSM());
 
 				allSubmitResponseReceivedSignal.await();
 

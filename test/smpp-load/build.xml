@@ -126,30 +126,38 @@
 		<mkdir dir="client" />
 		<java classname="${packageprefix}.Client" fork="true" maxmemory="2048m" classpathref="project.class.path" dir="client">
 			<jvmarg value="-Dlog.file.name=log4j-client.log" />
-			<arg value="10000000" />
-			<arg value="10" />
-			<arg value="sctp" />
-			<!-- socket type -->
+			<!-- Session Count -->
+			<arg value="5" />
+
+			<!-- Window Size -->
+			<arg value="500000" />
+
+			<!-- SUBMIT_SM to send -->
+			<arg value="50000" />
+
+			<!-- Start destination number -->
+			<arg value="9960200000" />
+
+			<!-- Destination number diff -->
+			<arg value="10000" />
+
+			<!-- Source number -->
+			<arg value="6666" />
+
+			<!-- Peer Address -->
 			<arg value="127.0.0.1" />
-			<!-- Client IP -->
-			<arg value="2345" />
-			<!-- Client Port -->
-			<arg value="127.0.0.1" />
-			<!-- Server Ip -->
-			<arg value="3434" />
-			<!-- Server Port -->
-			<arg value="1" />
-			<!-- Client PC -->
-			<arg value="2" />
-			<!-- Server PC -->
-			<arg value="2" />
-			<!-- NI -->
-			<arg value="3" />
-			<!-- SI -->
-			<arg value="8" />
-			<!-- SSN -->
-			<arg value="100" />
-			<!-- RC -->
+
+			<!-- Peer Port -->
+			<arg value="2775" />
+
+			<!-- System Id -->
+			<arg value="test" />
+
+			<!-- Password -->
+			<arg value="test" />
+
+			<!-- Message -->
+			<arg value="Hello World" />
 		</java>
 	</target>
 	<!-- -->
