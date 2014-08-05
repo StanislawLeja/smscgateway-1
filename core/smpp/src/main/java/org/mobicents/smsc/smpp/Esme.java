@@ -987,6 +987,10 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		}
 		return this.state;
 	}
+	
+	protected void setStateName(String name){
+		this.state = name;
+	}
 
 	@Override
 	public String getTxDataSMCounter() {

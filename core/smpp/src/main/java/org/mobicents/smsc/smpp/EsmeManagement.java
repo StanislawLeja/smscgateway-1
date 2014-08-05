@@ -150,14 +150,12 @@ public class EsmeManagement implements EsmeManagementMBean {
 
 	protected Esme getEsmeByPrimaryKey(String SystemId, String host, int port, SmppBindType smppBindType) {
 
-		Esme discoveredEsme = null;
-
 		// Check for actual SystemId, host and port
 		for (FastList.Node<Esme> n = esmes.head(), end = esmes.tail(); (n = n.getNext()) != end;) {
 			Esme esme = n.getValue();
 
 			if (esme.getSystemId().equals(SystemId) && esme.getSmppBindType() == smppBindType) {
-				discoveredEsme = esme;
+				//discoveredEsme = esme;
 				if (esme.getHost().equals(host) && esme.getPort() == port) {
 					// exact match found
 					return esme;
@@ -188,7 +186,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 				// smppBindType
 		}
 
-		return discoveredEsme;
+		return null;
 	}
 
 	public Esme createEsme(String name, String systemId, String password, String host, int port,

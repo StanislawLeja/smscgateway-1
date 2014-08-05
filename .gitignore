@@ -21,3 +21,4 @@ ${env.JBOSS_HOME}
 
 # maven versions plugin
 pom.xml.releaseBackup
+/001
