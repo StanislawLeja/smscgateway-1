@@ -33,6 +33,9 @@ import org.mobicents.protocols.ss7.map.api.service.sms.MoForwardShortMessageRequ
 import org.mobicents.protocols.ss7.map.api.service.sms.MoForwardShortMessageResponse;
 import org.mobicents.protocols.ss7.map.api.service.sms.MtForwardShortMessageRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.MtForwardShortMessageResponse;
+import org.mobicents.protocols.ss7.map.api.service.sms.NoteSubscriberPresentRequest;
+import org.mobicents.protocols.ss7.map.api.service.sms.ReadyForSMRequest;
+import org.mobicents.protocols.ss7.map.api.service.sms.ReadyForSMResponse;
 import org.mobicents.protocols.ss7.map.api.service.sms.ReportSMDeliveryStatusRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.ReportSMDeliveryStatusResponse;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMRequest;
@@ -365,7 +368,7 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 		ISDNAddressString nnn = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN,
 				"923330052001");
 
-		LocationInfoWithLMSI li = new LocationInfoWithLMSIImpl(nnn, null, null, null, null);
+		LocationInfoWithLMSI li = new LocationInfoWithLMSIImpl(nnn, null, null, false, null);
 
 		MAPDialogSms mapDialogSms = event.getMAPDialog();
 
@@ -396,4 +399,22 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 		// TODO Auto-generated method stub
 
 	}
+
+    @Override
+    public void onReadyForSMRequest(ReadyForSMRequest request) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void onReadyForSMResponse(ReadyForSMResponse response) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void onNoteSubscriberPresentRequest(NoteSubscriberPresentRequest request) {
+        // TODO Auto-generated method stub
+        
+    }
 }
