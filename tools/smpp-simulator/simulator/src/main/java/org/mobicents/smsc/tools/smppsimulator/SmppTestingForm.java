@@ -46,7 +46,7 @@ import javax.swing.JButton;
 
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
-import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
+import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.EncodingType;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.SplittingType;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.ValidityType;

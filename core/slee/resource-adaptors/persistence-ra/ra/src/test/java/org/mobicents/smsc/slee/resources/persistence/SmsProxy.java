@@ -24,7 +24,7 @@ package org.mobicents.smsc.slee.resources.persistence;
 
 import java.util.Date;
 
-import org.mobicents.smsc.cassandra.Sms;
+import org.mobicents.smsc.library.Sms;
 
 /**
  * 

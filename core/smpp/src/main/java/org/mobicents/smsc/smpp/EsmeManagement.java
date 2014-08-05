@@ -25,6 +25,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -215,11 +219,11 @@ public class EsmeManagement implements EsmeManagementMBean {
 
 		if (smppSessionTypeObj == SmppSession.Type.CLIENT) {
 			if (port < 1) {
-				throw new Exception(SMSCOAMMessages.CREATE_EMSE_FAIL_PORT_CANNOT_BE_LESS_THAN_ZERO);
+				throw new Exception(SmppOamMessages.CREATE_EMSE_FAIL_PORT_CANNOT_BE_LESS_THAN_ZERO);
 			}
 
 			if (host == null || host.equals("-1")) {
-				throw new Exception(SMSCOAMMessages.CREATE_EMSE_FAIL_HOST_CANNOT_BE_ANONYMOUS);
+				throw new Exception(SmppOamMessages.CREATE_EMSE_FAIL_HOST_CANNOT_BE_ANONYMOUS);
 			}
 		}
 
@@ -228,7 +232,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 
 			// Name should be unique
 			if (esme.getName().equals(name)) {
-				throw new Exception(String.format(SMSCOAMMessages.CREATE_EMSE_FAIL_ALREADY_EXIST, name));
+				throw new Exception(String.format(SmppOamMessages.CREATE_EMSE_FAIL_ALREADY_EXIST, name));
 			}
 
 			// SystemId:IP:Port:SmppBindType combination should be unique for
@@ -252,7 +256,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 			}
 
 			if (primaryKey.equals(existingPrimaryKey)) {
-				throw new Exception(String.format(SMSCOAMMessages.CREATE_EMSE_FAIL_PRIMARY_KEY_ALREADY_EXIST, systemId,
+				throw new Exception(String.format(SmppOamMessages.CREATE_EMSE_FAIL_PRIMARY_KEY_ALREADY_EXIST, systemId,
 						host, port, smppBindType));
 			}
 		}// for loop
@@ -289,11 +293,11 @@ public class EsmeManagement implements EsmeManagementMBean {
 	public Esme destroyEsme(String esmeName) throws Exception {
 		Esme esme = this.getEsmeByName(esmeName);
 		if (esme == null) {
-			throw new Exception(String.format(SMSCOAMMessages.DELETE_ESME_FAILED_NO_ESME_FOUND, esmeName));
+			throw new Exception(String.format(SmppOamMessages.DELETE_ESME_FAILED_NO_ESME_FOUND, esmeName));
 		}
 
 		if (esme.isStarted()) {
-			throw new Exception(String.format(SMSCOAMMessages.DELETE_ESME_FAILED_ESME_STARTED));
+			throw new Exception(String.format(SmppOamMessages.DELETE_ESME_FAILED_ESME_STARTED));
 		}
 
 		esmes.remove(esme);
@@ -316,11 +320,11 @@ public class EsmeManagement implements EsmeManagementMBean {
 	public void startEsme(String esmeName) throws Exception {
 		Esme esme = this.getEsmeByName(esmeName);
 		if (esme == null) {
-			throw new Exception(String.format(SMSCOAMMessages.DELETE_ESME_FAILED_NO_ESME_FOUND, esmeName));
+			throw new Exception(String.format(SmppOamMessages.DELETE_ESME_FAILED_NO_ESME_FOUND, esmeName));
 		}
 
 		if (esme.isStarted()) {
-			throw new Exception(String.format(SMSCOAMMessages.START_ESME_FAILED_ALREADY_STARTED, esmeName));
+			throw new Exception(String.format(SmppOamMessages.START_ESME_FAILED_ALREADY_STARTED, esmeName));
 		}
 
 		esme.setStarted(true);
@@ -336,7 +340,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 	public void stopEsme(String esmeName) throws Exception {
 		Esme esme = this.getEsmeByName(esmeName);
 		if (esme == null) {
-			throw new Exception(String.format(SMSCOAMMessages.DELETE_ESME_FAILED_NO_ESME_FOUND, esmeName));
+			throw new Exception(String.format(SmppOamMessages.DELETE_ESME_FAILED_NO_ESME_FOUND, esmeName));
 		}
 
 		esme.setStarted(false);
@@ -373,8 +377,8 @@ public class EsmeManagement implements EsmeManagementMBean {
 					.append(PERSIST_FILE_NAME);
 		} else {
 			persistFile
-					.append(System.getProperty(SmscManagement.SMSC_PERSIST_DIR_KEY,
-							System.getProperty(SmscManagement.USER_DIR_KEY))).append(File.separator).append(this.name)
+					.append(System.getProperty(SmppManagement.SMSC_PERSIST_DIR_KEY,
+							System.getProperty(SmppManagement.USER_DIR_KEY))).append(File.separator).append(this.name)
 					.append("_").append(PERSIST_FILE_NAME);
 		}
 
@@ -431,6 +435,23 @@ public class EsmeManagement implements EsmeManagementMBean {
 	 */
 	public void load() throws FileNotFoundException {
 
+	    // backward compatibility: rename old file name to new one
+        if (persistDir != null) {
+            TextBuilder oldFileName = new TextBuilder();
+            oldFileName.append(persistDir).append(File.separator).append("SmscManagement").append("_").append(PERSIST_FILE_NAME);
+
+            Path oldPath = FileSystems.getDefault().getPath(oldFileName.toString());
+            Path newPath = FileSystems.getDefault().getPath(persistFile.toString());
+
+            if (Files.exists(oldPath) && Files.notExists(newPath)) {
+                try {
+                    Files.move(oldPath, newPath);
+                } catch (IOException e) {
+                    logger.warn("Exception when trying to rename old config file", e);
+                }
+            }
+        }
+
 		XMLObjectReader reader = null;
 		try {
 			reader = XMLObjectReader.newInstance(new FileInputStream(persistFile.toString()));
@@ -462,7 +483,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 
 	private void registerEsmeMbean(Esme esme) {
 		try {
-			ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=Esme,name=" + esme.getName());
+			ObjectName esmeObjNname = new ObjectName(SmppManagement.JMX_DOMAIN + ":layer=Esme,name=" + esme.getName());
 			StandardMBean esmeMxBean = new StandardMBean(esme, EsmeMBean.class, true);
 
 			this.mbeanServer.registerMBean(esmeMxBean, esmeObjNname);
@@ -480,7 +501,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 	private void unregisterEsmeMbean(String esmeName) {
 
 		try {
-			ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=Esme,name=" + esmeName);
+			ObjectName esmeObjNname = new ObjectName(SmppManagement.JMX_DOMAIN + ":layer=Esme,name=" + esmeName);
 			this.mbeanServer.unregisterMBean(esmeObjNname);
 		} catch (MBeanRegistrationException e) {
 			logger.error(String.format("Error while unregistering MBean for ESME %s", esmeName), e);

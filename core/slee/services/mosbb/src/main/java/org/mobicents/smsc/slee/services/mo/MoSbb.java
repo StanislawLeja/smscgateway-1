@@ -72,16 +72,16 @@ import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.TargetAddress;
-import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
+import org.mobicents.smsc.domain.MoChargingType;
+import org.mobicents.smsc.domain.SmscStatProvider;
+import org.mobicents.smsc.library.MessageUtil;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.library.SmscProcessingException;
+import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
-import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
 import org.mobicents.smsc.slee.services.charging.ChargingMedium;
-import org.mobicents.smsc.smpp.MoChargingType;
-import org.mobicents.smsc.smpp.SmscStatProvider;
 
 import com.cloudhopper.smpp.SmppConstants;
 
@@ -828,7 +828,8 @@ public abstract class MoSbb extends MoCommonSbb {
 				break;
 			}
 		}
-		MessageUtil.applyValidityPeriod(sms, validityPeriod, false);
+        MessageUtil.applyValidityPeriod(sms, validityPeriod, false, smscPropertiesManagement.getMaxValidityPeriodHours(),
+                smscPropertiesManagement.getDefaultValidityPeriodHours());
 
         SmsSet smsSet;
         if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
@@ -948,7 +949,8 @@ public abstract class MoSbb extends MoCommonSbb {
         }
 		
 		// ValidityPeriod processing
-		MessageUtil.applyValidityPeriod(sms, null, false);
+        MessageUtil.applyValidityPeriod(sms, null, false, smscPropertiesManagement.getMaxValidityPeriodHours(),
+                smscPropertiesManagement.getDefaultValidityPeriodHours());
 
         SmsSet smsSet;
         if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
@@ -988,7 +990,8 @@ public abstract class MoSbb extends MoCommonSbb {
                 sms.setStored(true);
                 if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                     store.createLiveSms(sms);
-                    store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                    store.setNewMessageScheduled(sms.getSmsSet(),
+                            MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
                 } else {
                     store.c2_scheduleMessage(sms);
                 }

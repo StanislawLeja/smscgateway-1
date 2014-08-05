@@ -68,23 +68,23 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.cassandra.CdrGenerator;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.DatabaseType;
-import org.mobicents.smsc.cassandra.ErrorCode;
 import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.SmsSetCashe;
-import org.mobicents.smsc.cassandra.TargetAddress;
-import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
+import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.domain.SmscStatAggregator;
+import org.mobicents.smsc.library.CdrGenerator;
+import org.mobicents.smsc.library.ErrorCode;
+import org.mobicents.smsc.library.MessageUtil;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerActivity;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
-import org.mobicents.smsc.smpp.SmscPropertiesManagement;
-import org.mobicents.smsc.smpp.SmscStatAggregator;
 
 /**
  * 
@@ -626,7 +626,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                                     receipt.setSmsSet(backSmsSet);
                                     receipt.setStored(true);
                                     pers.createLiveSms(receipt);
-                                    pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                                    pers.setNewMessageScheduled(receipt.getSmsSet(),
+                                            MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
                                 } else {
                                     receipt = MessageUtil.createReceiptSms(sms, false);
                                     SmsSet backSmsSet = new SmsSet();
@@ -694,7 +695,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                 pers.setDeliverySuccess(smsSet, lastDelivery);
 
                 if (!pers.deleteSmsSet(smsSet)) {
-                    Date newDueDate = MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay());
+                    Date newDueDate = MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay()));
                     pers.fetchSchedulableSms(smsSet, false);
                     newDueDate = MessageUtil.checkScheduleDeliveryTime(smsSet, newDueDate);
                     pers.setNewMessageScheduled(smsSet, newDueDate);
@@ -764,9 +765,10 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 					int prevDueDelay = smsSet.getDueDelay();
 					int newDueDelay;
 					if (busySuscriber) {
-						newDueDelay = MessageUtil.computeDueDelaySubscriberBusy();
+                        newDueDelay = MessageUtil.computeDueDelaySubscriberBusy(smscPropertiesManagement.getSubscriberBusyDueDelay());
 					} else {
-						newDueDelay = MessageUtil.computeNextDueDelay(prevDueDelay);
+                        newDueDelay = MessageUtil.computeNextDueDelay(prevDueDelay, smscPropertiesManagement.getSecondDueDelay(),
+                                smscPropertiesManagement.getDueDelayMultiplicator(), smscPropertiesManagement.getMaxDueDelay());
 					}
 
 					Date newDueDate = new Date(new Date().getTime() + newDueDelay * 1000);

@@ -23,10 +23,10 @@
 package org.mobicents.smsc.slee.services.smpp.server.tx;
 
 import org.mobicents.slee.ChildRelationExt;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.TargetAddress;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmscProcessingException;
+import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
-import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.services.sip.server.tx.TxSipServerSbb;
 
 /**

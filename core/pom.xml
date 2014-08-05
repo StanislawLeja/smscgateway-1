@@ -6,16 +6,18 @@
 	<parent>
 		<artifactId>telscale-smsc-parent</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.1.7-TelScale-SNAPSHOT</version>
+		<version>6.2.0-TelScale-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>core</artifactId>
 	<name>Core</name>
 
 	<modules>
-		<module>cassandra</module>
 		<module>smpp</module>
-		<module>oam/cli</module>
+		<module>smsc-common-library</module>
+        <module>oam/clismpp</module>
+        <module>oam/cli</module>
+		<module>domain</module>
 		<module>slee</module>
 		<module>bootstrap</module>
 	</modules>

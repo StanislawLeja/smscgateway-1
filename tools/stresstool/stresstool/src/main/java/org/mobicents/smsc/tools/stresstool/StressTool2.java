@@ -12,8 +12,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.apache.log4j.Logger;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.Schema;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
 
 import com.cloudhopper.smpp.tlv.Tlv;
 import com.datastax.driver.core.BoundStatement;

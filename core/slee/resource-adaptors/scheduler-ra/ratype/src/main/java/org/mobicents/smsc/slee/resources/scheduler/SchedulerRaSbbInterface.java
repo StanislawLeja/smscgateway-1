@@ -22,7 +22,7 @@
 
 package org.mobicents.smsc.slee.resources.scheduler;
 
-import org.mobicents.smsc.cassandra.SmsSet;
+import org.mobicents.smsc.library.SmsSet;
 
 /**
  * 

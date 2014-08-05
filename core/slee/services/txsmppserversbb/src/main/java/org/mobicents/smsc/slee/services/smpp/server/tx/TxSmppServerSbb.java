@@ -48,13 +48,16 @@ import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.cassandra.Sms;
-import org.mobicents.smsc.cassandra.SmsSet;
-import org.mobicents.smsc.cassandra.TargetAddress;
-import org.mobicents.smsc.slee.resources.persistence.MessageUtil;
+import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.domain.SmscStatAggregator;
+import org.mobicents.smsc.domain.SmscStatProvider;
+import org.mobicents.smsc.library.MessageUtil;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.library.SmscProcessingException;
+import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmppExtraConstants;
-import org.mobicents.smsc.slee.resources.persistence.SmscProcessingException;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
@@ -64,9 +67,6 @@ import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
 import org.mobicents.smsc.slee.services.charging.ChargingMedium;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmppEncoding;
-import org.mobicents.smsc.smpp.SmscPropertiesManagement;
-import org.mobicents.smsc.smpp.SmscStatAggregator;
-import org.mobicents.smsc.smpp.SmscStatProvider;
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.pdu.BaseSm;
@@ -702,7 +702,8 @@ public abstract class TxSmppServerSbb implements Sbb {
 						SmppConstants.STATUS_INVEXPIRY, MAPErrorCode.systemFailure, null, e);
 			}
 		}
-		MessageUtil.applyValidityPeriod(sms, validityPeriod, true);
+        MessageUtil.applyValidityPeriod(sms, validityPeriod, true, smscPropertiesManagement.getMaxValidityPeriodHours(),
+                smscPropertiesManagement.getDefaultValidityPeriodHours());
 
 		// ScheduleDeliveryTime processing
 		Date scheduleDeliveryTime;
@@ -797,8 +798,8 @@ public abstract class TxSmppServerSbb implements Sbb {
 					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 						store.createLiveSms(sms);
 						if (sms.getScheduleDeliveryTime() == null)
-							store.setNewMessageScheduled(sms.getSmsSet(),
-									MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay()));
+                            store.setNewMessageScheduled(sms.getSmsSet(),
+                                    MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
 						else
 							store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
 					} else {
