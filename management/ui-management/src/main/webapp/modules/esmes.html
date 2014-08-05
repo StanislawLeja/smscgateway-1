@@ -365,7 +365,7 @@
 	}
 	
 	function updateEsmes() {
-		mbeanSearch="com.telscale.smsc:layer=Esme,name=*";
+		mbeanSearch="com.telscale.smpp:layer=Esme,name=*";
 		var mbeanVar;
 		$.ajax({
 			dataType: "json",
@@ -908,7 +908,7 @@
 		})
 	}
 	function disableLogBytes(esmeName){
-		mbeanSearch="com.telscale.smsc:layer=Esme,name="+esmeName;
+		mbeanSearch="com.telscale.smpp:layer=Esme,name="+esmeName;
 		jolokia.execute(mbeanSearch,"disableLogBytes",
 				{
 					success: function(value) {
@@ -922,7 +922,7 @@
 				});	
 	}
 	function disableLogPdu(esmeName){
-		mbeanSearch="com.telscale.smsc:layer=Esme,name="+esmeName;
+		mbeanSearch="com.telscale.smpp:layer=Esme,name="+esmeName;
 		jolokia.execute(mbeanSearch,"disableLogPdu",
 				{
 					success: function(value) {
@@ -936,7 +936,7 @@
 				});	
 	}	
 	function dumpWindow(esmeName){
-		mbeanSearch="com.telscale.smsc:layer=Esme,name="+esmeName;
+		mbeanSearch="com.telscale.smpp:layer=Esme,name="+esmeName;
 		jolokia.execute(mbeanSearch,"dumpWindow",
 				{
 					success: function(value) {
@@ -950,7 +950,7 @@
 				});	
 	}
 	function enableLogBytes(esmeName){
-		mbeanSearch="com.telscale.smsc:layer=Esme,name="+esmeName;
+		mbeanSearch="com.telscale.smpp:layer=Esme,name="+esmeName;
 		jolokia.execute(mbeanSearch,"enableLogBytes",
 				{
 					success: function(value) {
@@ -964,7 +964,7 @@
 				});	
 	}	
 	function enableLogPdu(esmeName){
-		mbeanSearch="com.telscale.smsc:layer=Esme,name="+esmeName;
+		mbeanSearch="com.telscale.smpp:layer=Esme,name="+esmeName;
 		jolokia.execute(mbeanSearch,"enableLogPdu",
 				{
 					success: function(value) {
@@ -978,7 +978,7 @@
 				});	
 	}	
 	function resetCounters(esmeName){
-		mbeanSearch="com.telscale.smsc:layer=Esme,name="+esmeName;
+		mbeanSearch="com.telscale.smpp:layer=Esme,name="+esmeName;
 		jolokia.execute(mbeanSearch,"resetCounters",
 				{
 					success: function(value) {
@@ -992,7 +992,7 @@
 				});	
 	}	
 	function esmeOperation(operation, name) {
-		mbeanSearch="com.telscale.smsc:layer=EsmeManagement,name=SmscManagement";
+		mbeanSearch="com.telscale.smpp:layer=EsmeManagement,name=SmppManagement";
 		jolokia.execute(mbeanSearch,operation,name,
 				{
 					success: function(value) {
@@ -1160,7 +1160,7 @@
 			$("#login-settings-error").hide();
 		}
 		
-		jolokia.execute("com.telscale.smsc:layer=EsmeManagement,name=SmscManagement","createEsme", esmeName,systemId,password,ipAddress,ipPort,chargingEnabled,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay,sourceTon,sourceNpi,sourceRange,routingTon,routingNpi,routingRange, 
+		jolokia.execute("com.telscale.smpp:layer=EsmeManagement,name=SmppManagement","createEsme", esmeName,systemId,password,ipAddress,ipPort,chargingEnabled,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay,sourceTon,sourceNpi,sourceRange,routingTon,routingNpi,routingRange, 
 				{
 					success: function(value) {
 						updateEsmes();
@@ -1208,7 +1208,7 @@
 			}
 		}
 		
-		var mbeanSearch="com.telscale.smsc:layer=Esme,name="+mbeanName;
+		var mbeanSearch="com.telscale.smpp:layer=Esme,name="+mbeanName;
 		jolokia.request(
 				[
 					{ type: "write", mbean: mbeanSearch, attribute: propertyName, value: inputTextEle.value },

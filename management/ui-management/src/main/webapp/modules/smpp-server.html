@@ -35,7 +35,7 @@
 
 <script type="text/javascript">
 				function updateServices() {
-					mbeanSearch="com.telscale.smsc:layer=SmppServerManagement,name=*";
+					mbeanSearch="com.telscale.smpp:layer=SmppServerManagement,name=*";
 					var mbeanVar;
 					$.ajax({
 						dataType: "json",
@@ -400,7 +400,7 @@
 				
 				}
 				function serviceOperation(operation, name) {
-					mbeanSearch="com.telscale.smsc:layer=SmppServerManagement,name="+name;
+					mbeanSearch="com.telscale.smpp:layer=SmppServerManagement,name="+name;
 					
 					alert(operation+' : '+mbeanSearch);
 					
@@ -438,7 +438,7 @@
 						$("#login-settings-error").hide();
 					}					
 					
-					var mbeanSearch="com.telscale.smsc:layer=SmppServerManagement,name="+mbeanName;
+					var mbeanSearch="com.telscale.smpp:layer=SmppServerManagement,name="+mbeanName;
 					jolokia.request(
 							[
 								{ type: "write", mbean: mbeanSearch, attribute: propertyName, value: inputTextEle.value },
@@ -464,7 +464,7 @@
 					
 				}
 				function resetCounters(mbeanName){
-					var mbeanSearch="com.telscale.smsc:layer=SmppServerManagement,name="+mbeanName;
+					var mbeanSearch="com.telscale.smpp:layer=SmppServerManagement,name="+mbeanName;
 					jolokia.execute(mbeanSearch,"resetCounters",
 							{
 								success: function(value) {
