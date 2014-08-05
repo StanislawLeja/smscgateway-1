@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:jboss:bean-deployer:2.0 bean-deployer_2_0.xsd"
+	xmlns="urn:jboss:bean-deployer:2.0">
+
+	<bean name="SMPP" class="org.mobicents.smsc.smpp.ihub.PerformanceClientMain">
+		<property name="sessionCount">5</property>
+		<property name="windowSize">50000</property>
+		<property name="submitToSend">100000</property>
+		<property name="startDestNumber">9960200000</property>
+		<property name="destNumberDiff">10000</property>
+		<property name="sourceNumber">6666</property>
+		<property name="peerAddress">127.0.0.1</property>
+		<property name="peerPort">2775</property>
+		<property name="systemId">test</property>
+		<property name="password">test</property>
+		<property name="message">Hello World!</property>
+	</bean>
+
+</deployment>
