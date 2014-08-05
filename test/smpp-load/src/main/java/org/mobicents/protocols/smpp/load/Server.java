@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 
+import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppServerConfiguration;
 import com.cloudhopper.smpp.SmppServerHandler;
 import com.cloudhopper.smpp.SmppServerSession;
@@ -50,18 +51,58 @@ public class Server extends TestHarness {
 
 	private static Logger logger = Logger.getLogger(Server.class);
 
+    private int port = 2775;
+    private int maxConnectionSize = 10;
+    private boolean nonBlockingSocketsEnabled = true;
+    private int defaultRequestExpiryTimeout = 30000;
+    private int defaultWindowMonitorInterval = 15000;
+    private int defaultWindowSize = 5;
+    private long defaultWindowWaitTimeout = SmppConstants.DEFAULT_WINDOW_MONITOR_INTERVAL;
+    private boolean defaultSessionCountersEnabled = true;
+    private boolean jmxEnabled = true;
+
 	// MAP
 
 	public static void main(String[] args) throws Exception {
 
 		final Server server = new Server();
-		server.test();
+		server.test(args);
 
 	}
-	
-	private void test() throws Exception {
-	       //
-        // setup 3 things required for a server
+
+	private void test(String[] args) throws Exception {
+        this.port = Integer.parseInt(args[0]);
+        this.maxConnectionSize = Integer.parseInt(args[1]);
+        this.nonBlockingSocketsEnabled = Boolean.parseBoolean(args[2]);
+        this.defaultRequestExpiryTimeout = Integer.parseInt(args[3]);
+        this.defaultWindowMonitorInterval = Integer.parseInt(args[4]);
+        this.defaultWindowSize = Integer.parseInt(args[5]);
+        this.defaultWindowWaitTimeout = Long.parseLong(args[6]);
+        this.defaultSessionCountersEnabled = Boolean.parseBoolean(args[7]);
+        this.jmxEnabled = Boolean.parseBoolean(args[8]);
+
+        if (port < 1) {
+            throw new Exception("port cannot be less than 1");
+        }
+        
+        if (maxConnectionSize < 1) {
+            throw new Exception("maxConnectionSize cannot be less than 1");
+        }
+        
+        if (defaultRequestExpiryTimeout < 1) {
+            throw new Exception("defaultRequestExpiryTimeout to send cannot be less than 1");
+        }       
+        
+        if (defaultWindowMonitorInterval < 1) {
+            throw new Exception("defaultWindowMonitorInterval cannot be less than 1");
+        }
+
+        if (defaultWindowSize < 1) {
+            throw new Exception("defaultWindowSize cannot be less than 1");
+        }
+
+
+	    // setup 3 things required for a server
         //
         
         // for monitoring thread use, it's preferable to create your own instance
@@ -86,15 +127,16 @@ public class Server extends TestHarness {
         
         // create a server configuration
         SmppServerConfiguration configuration = new SmppServerConfiguration();
-        configuration.setPort(2775);
-        configuration.setMaxConnectionSize(10);
-        configuration.setNonBlockingSocketsEnabled(true);
-        configuration.setDefaultRequestExpiryTimeout(30000);
-        configuration.setDefaultWindowMonitorInterval(15000);
-        configuration.setDefaultWindowSize(5);
-        configuration.setDefaultWindowWaitTimeout(configuration.getDefaultRequestExpiryTimeout());
-        configuration.setDefaultSessionCountersEnabled(true);
-        configuration.setJmxEnabled(true);
+
+        configuration.setPort(port);
+        configuration.setMaxConnectionSize(maxConnectionSize);
+        configuration.setNonBlockingSocketsEnabled(nonBlockingSocketsEnabled);
+        configuration.setDefaultRequestExpiryTimeout(defaultRequestExpiryTimeout);
+        configuration.setDefaultWindowMonitorInterval(defaultWindowMonitorInterval);
+        configuration.setDefaultWindowSize(defaultWindowSize);
+        configuration.setDefaultWindowWaitTimeout(defaultWindowWaitTimeout);
+        configuration.setDefaultSessionCountersEnabled(defaultSessionCountersEnabled);
+        configuration.setJmxEnabled(jmxEnabled);
         
         // create a server, start it up
         DefaultSmppServer smppServer = new DefaultSmppServer(configuration, new DefaultSmppServerHandler(), executor, monitorExecutor);

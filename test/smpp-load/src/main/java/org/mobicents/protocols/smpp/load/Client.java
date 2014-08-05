@@ -92,7 +92,7 @@ public class Client extends TestHarness {
 	}
 
 	private void test(String[] args) throws Exception {
-		
+
 		this.sessionCount = Integer.parseInt(args[0]);
 		this.windowSize  = Integer.parseInt(args[1]);
 		this.submitToSend = Integer.parseInt(args[2]);
@@ -353,6 +353,8 @@ public class Client extends TestHarness {
 
 					submit.setDestAddress(new Address((byte) 0x01, (byte) 0x01, Long.toString(destination)));
 					submit.setShortMessage(textBytes);
+                    submit.setEsmClass((byte) 1);
+
 					// asynchronous send
 					this.submitRequestSent++;
 					sendingDone.set(true);
