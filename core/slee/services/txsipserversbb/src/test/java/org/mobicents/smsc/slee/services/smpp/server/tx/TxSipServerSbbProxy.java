@@ -37,7 +37,7 @@ import org.mobicents.smsc.slee.services.sip.server.tx.TxSipServerSbb;
 public class TxSipServerSbbProxy extends TxSipServerSbb {
 
     public Sms createSmsEvent(String fromUser, byte[] message, TargetAddress ta, PersistenceRAInterface store) throws SmscProcessingException {
-        return super.createSmsEvent(fromUser, message, ta, store);
+        return super.createSmsEvent(fromUser, message, ta, store, null);
     }
 
     @Override

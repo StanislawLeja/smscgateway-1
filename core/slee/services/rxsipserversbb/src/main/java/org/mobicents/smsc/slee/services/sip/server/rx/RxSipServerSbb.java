@@ -35,6 +35,7 @@ import javax.sip.header.CSeqHeader;
 import javax.sip.header.CallIdHeader;
 import javax.sip.header.ContentTypeHeader;
 import javax.sip.header.FromHeader;
+import javax.sip.header.Header;
 import javax.sip.header.HeaderFactory;
 import javax.sip.header.MaxForwardsHeader;
 import javax.sip.header.ToHeader;
@@ -62,6 +63,7 @@ import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.Sip;
 import org.mobicents.smsc.domain.SipManagement;
+import org.mobicents.smsc.domain.SipXHeaders;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.library.CdrGenerator;
@@ -110,13 +112,12 @@ public abstract class RxSipServerSbb implements Sbb {
 
 	private PersistenceRAInterface persistence;
 	private SchedulerRaSbbInterface scheduler;
-    private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
+	private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 
 	private static final SipManagement sipManagement = SipManagement.getInstance();
 
-    private static Charset ucs2Charset = Charset.forName("UTF-16BE");
-    private static Charset utf8Charset = Charset.forName("UTF-8");
-
+	private static Charset ucs2Charset = Charset.forName("UTF-16BE");
+	private static Charset utf8Charset = Charset.forName("UTF-8");
 
 	public RxSipServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -238,18 +239,18 @@ public abstract class RxSipServerSbb implements Sbb {
 						+ targetId);
 				return;
 			}
-            smscStatAggregator.updateMsgOutSentAll();
-            smscStatAggregator.updateMsgOutSentSip();
+			smscStatAggregator.updateMsgOutSentAll();
+			smscStatAggregator.updateMsgOutSentSip();
 
 			// current message is sent pushing current message into an archive
 			int currentMsgNum = this.getCurrentMsgNum();
 			Sms sms = smsSet.getSms(currentMsgNum);
 
 			// firstly sending of a positive response for transactional mode
-            if (sms.getMessageDeliveryResultResponse() != null) {
-                sms.getMessageDeliveryResultResponse().responseDeliverySuccess();
-                sms.setMessageDeliveryResultResponse(null);
-            }
+			if (sms.getMessageDeliveryResultResponse() != null) {
+				sms.getMessageDeliveryResultResponse().responseDeliverySuccess();
+				sms.setMessageDeliveryResultResponse(null);
+			}
 
 			PersistenceRAInterface pers = this.getStore();
 
@@ -258,20 +259,19 @@ public abstract class RxSipServerSbb implements Sbb {
 
 				// we need to find if it is the last or single segment
 				boolean isPartial = MessageUtil.isSmsNotLastSegment(sms);
-                CdrGenerator
-                        .generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL_SIP : CdrGenerator.CDR_SUCCESS_SIP, CdrGenerator.CDR_SUCCESS_NO_REASON,
-                                smscPropertiesManagement.getGenerateReceiptCdr(),
-                                MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
+				CdrGenerator.generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL_SIP : CdrGenerator.CDR_SUCCESS_SIP,
+						CdrGenerator.CDR_SUCCESS_NO_REASON, smscPropertiesManagement.getGenerateReceiptCdr(),
+						MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
 
 				if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 					pers.archiveDeliveredSms(sms, deliveryDate);
 				} else {
-                    pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-                    sms.setDeliveryDate(deliveryDate);
-                    sms.getSmsSet().setStatus(ErrorCode.SUCCESS);
-                    if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
-                        pers.c2_createRecordArchive(sms);
-                    }
+					pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+					sms.setDeliveryDate(deliveryDate);
+					sms.getSmsSet().setStatus(ErrorCode.SUCCESS);
+					if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
+						pers.c2_createRecordArchive(sms);
+					}
 				}
 
 				// adding a success receipt if it is needed
@@ -288,10 +288,11 @@ public abstract class RxSipServerSbb implements Sbb {
 									receipt = MessageUtil.createReceiptSms(sms, true);
 									SmsSet backSmsSet = pers.obtainSmsSet(ta);
 									receipt.setSmsSet(backSmsSet);
-                                    receipt.setStored(true);
+									receipt.setStored(true);
 									pers.createLiveSms(receipt);
-                                    pers.setNewMessageScheduled(receipt.getSmsSet(),
-                                            MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+									pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil
+											.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement
+													.getFirstDueDelay())));
 									this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr()
 											+ ", dest=" + receipt.getSmsSet().getDestAddr());
 								} else {
@@ -460,8 +461,8 @@ public abstract class RxSipServerSbb implements Sbb {
 	 */
 	private void sendMessage(SmsSet smsSet) throws SmscProcessingException {
 
-        smscStatAggregator.updateMsgOutTryAll();
-        smscStatAggregator.updateMsgOutTrySip();
+		smscStatAggregator.updateMsgOutTryAll();
+		smscStatAggregator.updateMsgOutTrySip();
 
 		int currentMsgNum = this.getCurrentMsgNum();
 		Sms sms = smsSet.getSms(currentMsgNum);
@@ -499,18 +500,39 @@ public abstract class RxSipServerSbb implements Sbb {
 
 			CallIdHeader callId = this.sipRA.getNewCallId();
 
-            String msgStr = sms.getShortMessageText();
-            byte[] msgUdh = sms.getShortMessageBin();
-            byte[] msg;
-            if (msgStr != null || msgUdh != null) {
-                msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
-            } else {
-                msg = new byte[0];
-            }
+			String msgStr = sms.getShortMessageText();
+			byte[] msgUdh = sms.getShortMessageBin();
+			byte[] msg;
+			if (msgStr != null || msgUdh != null) {
+				msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
+			} else {
+				msg = new byte[0];
+			}
 
 			// create request
 			Request request = messageFactory.createRequest(toAddressUri, Request.MESSAGE, callId, cSeqHeader,
 					fromHeader, toHeader, viaHeaders, maxForwardsHeader, contentTypeHeader, msg);
+
+			// Custom X Headers
+
+			// SMSC-ID
+			String originEsmeName = sms.getOrigEsmeName();
+			if (originEsmeName != null) {
+				Header smsIdHeader = headerFactory.createHeader(SipXHeaders.XSmscId, originEsmeName);
+				request.addHeader(smsIdHeader);
+			}
+
+			// data-coding
+			DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(sms.getDataCoding());
+			Header smsIdHeader = headerFactory.createHeader(SipXHeaders.XSmsCoding,
+					Integer.toString(dataCodingScheme.getCharacterSet().getCode()));
+			request.addHeader(smsIdHeader);
+
+			// TODO X header message class
+
+			// TODO X header delivery time, use SUBMIT_DATE
+
+			// TODO X header UDH
 
 			// create client transaction and send request
 			ClientTransaction clientTransaction = sipRA.getNewClientTransaction(request);
@@ -527,54 +549,51 @@ public abstract class RxSipServerSbb implements Sbb {
 	}
 
 	private byte[] recodeShortMessage(int dataCoding, String msg, byte[] udhPart) {
-        DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dataCoding);
+		byte[] textPart = msg.getBytes(utf8Charset);
 
-        byte[] textPart = msg.getBytes(utf8Charset);
+		if (udhPart == null) {
+			return textPart;
+		} else {
+			byte[] res = new byte[textPart.length + udhPart.length];
+			System.arraycopy(udhPart, 0, res, 0, udhPart.length);
+			System.arraycopy(textPart, 0, res, udhPart.length, textPart.length);
 
-        if (udhPart == null) {
-            return textPart;
-        } else {
-            byte[] res = new byte[textPart.length + udhPart.length];
-            System.arraycopy(udhPart, 0, res, 0, udhPart.length);
-            System.arraycopy(textPart, 0, res, udhPart.length, textPart.length);
+			return res;
+		}
 
-            return res;
-        }
-
-	    
-	    
-	    
-//	    DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dataCoding);
-//		boolean udhPresent = (esmeClass & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
-//
-//        byte[] textPart = msg;
-//        byte[] udhData = null;
-//        if (udhPresent && msg.length > 2) {
-//            // UDH exists
-//            int udhLen = (msg[0] & 0xFF) + 1;
-//            if (udhLen <= msg.length) {
-//                textPart = new byte[msg.length - udhLen];
-//                udhData = new byte[udhLen];
-//                System.arraycopy(msg, udhLen, textPart, 0, textPart.length);
-//                System.arraycopy(msg, 0, udhData, 0, udhLen);
-//            }
-//        }
-//
-//        String mes;
-//        if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
-//            ByteBuffer bb = ByteBuffer.wrap(textPart);
-//            CharBuffer bf = ucs2Charset.decode(bb);
-//            mes = bf.toString();
-//        } else {
-//            mes = new String(textPart);
-//        }
-//
-//        CharBuffer cb = CharBuffer.wrap(mes.toCharArray());
-//        ByteBuffer bf2 = utf8Charset.encode(cb);
-//        byte[] msg2 = new byte[bf2.limit()];
-//        bf2.get(msg2);
-//        return msg2;
-    }
+		// DataCodingScheme dataCodingScheme = new
+		// DataCodingSchemeImpl(dataCoding);
+		// boolean udhPresent = (esmeClass & SmppConstants.ESM_CLASS_UDHI_MASK)
+		// != 0;
+		//
+		// byte[] textPart = msg;
+		// byte[] udhData = null;
+		// if (udhPresent && msg.length > 2) {
+		// // UDH exists
+		// int udhLen = (msg[0] & 0xFF) + 1;
+		// if (udhLen <= msg.length) {
+		// textPart = new byte[msg.length - udhLen];
+		// udhData = new byte[udhLen];
+		// System.arraycopy(msg, udhLen, textPart, 0, textPart.length);
+		// System.arraycopy(msg, 0, udhData, 0, udhLen);
+		// }
+		// }
+		//
+		// String mes;
+		// if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
+		// ByteBuffer bb = ByteBuffer.wrap(textPart);
+		// CharBuffer bf = ucs2Charset.decode(bb);
+		// mes = bf.toString();
+		// } else {
+		// mes = new String(textPart);
+		// }
+		//
+		// CharBuffer cb = CharBuffer.wrap(mes.toCharArray());
+		// ByteBuffer bf2 = utf8Charset.encode(cb);
+		// byte[] msg2 = new byte[bf2.limit()];
+		// bf2.get(msg2);
+		// return msg2;
+	}
 
 	/**
 	 * remove smsSet from LIVE database after all messages has been delivered
@@ -589,8 +608,8 @@ public abstract class RxSipServerSbb implements Sbb {
 				pers.setDeliverySuccess(smsSet, lastDelivery);
 
 				if (!pers.deleteSmsSet(smsSet)) {
-                    pers.setNewMessageScheduled(smsSet,
-                            MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+					pers.setNewMessageScheduled(smsSet, MessageUtil.computeDueDate(MessageUtil
+							.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
 				}
 			} else {
 				smsSet.setStatus(ErrorCode.SUCCESS);
@@ -604,31 +623,32 @@ public abstract class RxSipServerSbb implements Sbb {
 	}
 
 	private void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason) {
-        smscStatAggregator.updateMsgInFailedAll();
+		smscStatAggregator.updateMsgInFailedAll();
 
 		int currentMsgNum = this.getCurrentMsgNum();
 		Sms smsa = smsSet.getSms(currentMsgNum);
 		if (smsa != null) {
 			String s1 = reason.replace("\n", "\t");
-            CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED_SIP, s1, smscPropertiesManagement.getGenerateReceiptCdr(),
-                    MessageUtil.isNeedWriteArchiveMessage(smsa, smscPropertiesManagement.getGenerateCdr()));
+			CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED_SIP, s1,
+					smscPropertiesManagement.getGenerateReceiptCdr(),
+					MessageUtil.isNeedWriteArchiveMessage(smsa, smscPropertiesManagement.getGenerateCdr()));
 		}
 
-        // sending of a failure response for transactional mode
-        MessageDeliveryResultResponseInterface.DeliveryFailureReason delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.destinationUnavalable;
-        if (errorAction == ErrorAction.temporaryFailure)
-            delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.temporaryNetworkError;
-        if (errorAction == ErrorAction.permanentFailure)
-            delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.permanentNetworkError;
-        for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
-            Sms sms = smsSet.getSms(i1);
-            if (sms != null) {
-                if (sms.getMessageDeliveryResultResponse() != null) {
-                    sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason);
-                    sms.setMessageDeliveryResultResponse(null);
-                }
-            }
-        }
+		// sending of a failure response for transactional mode
+		MessageDeliveryResultResponseInterface.DeliveryFailureReason delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.destinationUnavalable;
+		if (errorAction == ErrorAction.temporaryFailure)
+			delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.temporaryNetworkError;
+		if (errorAction == ErrorAction.permanentFailure)
+			delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.permanentNetworkError;
+		for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
+			Sms sms = smsSet.getSms(i1);
+			if (sms != null) {
+				if (sms.getMessageDeliveryResultResponse() != null) {
+					sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason);
+					sms.setMessageDeliveryResultResponse(null);
+				}
+			}
+		}
 
 		PersistenceRAInterface pers = this.getStore();
 		ArrayList<Sms> lstFailured = new ArrayList<Sms>();
@@ -700,8 +720,9 @@ public abstract class RxSipServerSbb implements Sbb {
 		}
 
 		for (Sms sms : lstFailured) {
-            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED_SIP, reason, smscPropertiesManagement.getGenerateReceiptCdr(),
-                    MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
+			CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED_SIP, reason,
+					smscPropertiesManagement.getGenerateReceiptCdr(),
+					MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
 
 			// adding an error receipt if it is needed
 			if (sms.getStored()) {
@@ -718,10 +739,11 @@ public abstract class RxSipServerSbb implements Sbb {
 									receipt = MessageUtil.createReceiptSms(sms, false);
 									SmsSet backSmsSet = pers.obtainSmsSet(ta);
 									receipt.setSmsSet(backSmsSet);
-                                    receipt.setStored(true);
+									receipt.setStored(true);
 									pers.createLiveSms(receipt);
-                                    pers.setNewMessageScheduled(receipt.getSmsSet(),
-                                            MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+									pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil
+											.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement
+													.getFirstDueDelay())));
 								} else {
 									receipt = MessageUtil.createReceiptSms(sms, false);
 									SmsSet backSmsSet = new SmsSet();
@@ -785,12 +807,13 @@ public abstract class RxSipServerSbb implements Sbb {
 						pers.deleteSmsSet(smsSet);
 					} else {
 						for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
-                            Sms sms = smsSet.getSms(i1);
-                            pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-                            sms.setDeliveryDate(new Date());
-                            if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
-                                pers.c2_createRecordArchive(sms);
-                            }
+							Sms sms = smsSet.getSms(i1);
+							pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+							sms.setDeliveryDate(new Date());
+							if (MessageUtil.isNeedWriteArchiveMessage(sms,
+									smscPropertiesManagement.getGenerateArchiveTable())) {
+								pers.c2_createRecordArchive(sms);
+							}
 						}
 					}
 				} catch (PersistenceException e) {
@@ -817,8 +840,10 @@ public abstract class RxSipServerSbb implements Sbb {
 
 				try {
 					int prevDueDelay = smsSet.getDueDelay();
-                    int newDueDelay = MessageUtil.computeNextDueDelay(prevDueDelay, smscPropertiesManagement.getSecondDueDelay(),
-                            smscPropertiesManagement.getDueDelayMultiplicator(), smscPropertiesManagement.getMaxDueDelay());
+					int newDueDelay = MessageUtil.computeNextDueDelay(prevDueDelay,
+							smscPropertiesManagement.getSecondDueDelay(),
+							smscPropertiesManagement.getDueDelayMultiplicator(),
+							smscPropertiesManagement.getMaxDueDelay());
 
 					Date newDueDate = new Date(new Date().getTime() + newDueDelay * 1000);
 
