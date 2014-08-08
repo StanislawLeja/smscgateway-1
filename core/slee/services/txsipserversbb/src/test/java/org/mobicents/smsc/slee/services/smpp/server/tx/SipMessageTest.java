@@ -249,7 +249,14 @@ public class SipMessageTest implements SipListener {
 	}
 
 	private String getBody() {
-		return "1c7B?hvEz)C!9g@&qvFqm	#A{j~}ISap!Q))'Ayp@k_D\\+aWSYJp	,~WePa[Aq1\"WpkClQ+q&AQQBWP+#'qa[Rr c\"Lc(*lb6";
+		String s = "31631d370615423f687645077a032943210239674016267176461371106d0918230b4100037b6a7e7d49530161702151292927417970401b6b5f445c112b61575359184a1970090b132c7e5765500f15615b41107111110131112257706b43020e6c512b71264151514257502b23042771615b11520772200a0c6308224c63282a6c046236";
+
+		int len = s.length();
+		byte[] data = new byte[len / 2];
+		for (int i = 0; i < len; i += 2) {
+			data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + Character.digit(s.charAt(i + 1), 16));
+		}
+		return new String(data);
 	}
 
 }

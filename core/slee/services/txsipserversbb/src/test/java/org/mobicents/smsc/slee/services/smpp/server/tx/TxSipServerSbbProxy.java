@@ -22,6 +22,9 @@
 
 package org.mobicents.smsc.slee.services.smpp.server.tx;
 
+import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
+import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingGroup;
+import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmscProcessingException;
@@ -37,7 +40,9 @@ import org.mobicents.smsc.slee.services.sip.server.tx.TxSipServerSbb;
 public class TxSipServerSbbProxy extends TxSipServerSbb {
 
     public Sms createSmsEvent(String fromUser, byte[] message, TargetAddress ta, PersistenceRAInterface store) throws SmscProcessingException {
-        return super.createSmsEvent(fromUser, message, ta, store, null);
+    	DataCodingSchemeImpl dcsGsm7 = new DataCodingSchemeImpl(DataCodingGroup.GeneralGroup, null, null,
+    			null, CharacterSet.GSM7, false);
+    	return super.createSmsEvent(fromUser, message, ta, store, null, dcsGsm7);
     }
 
     @Override

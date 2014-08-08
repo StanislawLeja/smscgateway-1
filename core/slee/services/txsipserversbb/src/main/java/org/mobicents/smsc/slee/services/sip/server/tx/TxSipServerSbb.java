@@ -112,6 +112,9 @@ public abstract class TxSipServerSbb implements Sbb {
 	private static DataCodingSchemeImpl dcsUsc2 = new DataCodingSchemeImpl(DataCodingGroup.GeneralGroup, null, null,
 			null, CharacterSet.UCS2, false);
 
+	private static DataCodingSchemeImpl dcsGsm8 = new DataCodingSchemeImpl(DataCodingGroup.GeneralGroup, null, null,
+			null, CharacterSet.GSM8, false);
+
 	public TxSipServerSbb() {
 		// TODO Auto-generated constructor stub
 	}
@@ -149,10 +152,17 @@ public abstract class TxSipServerSbb implements Sbb {
 				udh = this.hexStringToByteArray(((SIPHeader) udhHeader).getValue());
 			}
 
+			Header codingHeader = request.getHeader(SipXHeaders.XSmsCoding);
+			DataCodingSchemeImpl codingSchme = dcsGsm7;
+			if (codingHeader != null) {
+				int dcs = Integer.parseInt(((SIPHeader) codingHeader).getValue());
+				codingSchme = this.createDataCodingScheme(dcs);
+			}
+
 			Sms sms;
 			try {
 				synchronized (lock) {
-					sms = this.createSmsEvent(fromUser, message, ta, store, udh);
+					sms = this.createSmsEvent(fromUser, message, ta, store, udh, codingSchme);
 					this.processSms(sms, store);
 				}
 			} catch (SmscProcessingException e1) {
@@ -195,11 +205,11 @@ public abstract class TxSipServerSbb implements Sbb {
 				res = (this.messageFactory.createResponse(200, serverTransaction.getRequest()));
 				event.getServerTransaction().sendResponse(res);
 			} catch (Exception e) {
-				this.logger.severe("Exception while trying to send Ok response to sip");
+				this.logger.severe("Exception while trying to send Ok response to sip", e);
 			}
 
 		} catch (Exception e) {
-			this.logger.severe("Error while trying to send the SMS");
+			this.logger.severe("Error while trying to send the SMS", e);
 		}
 
 	}
@@ -340,7 +350,7 @@ public abstract class TxSipServerSbb implements Sbb {
 	}
 
 	protected Sms createSmsEvent(String fromUser, byte[] message, TargetAddress ta, PersistenceRAInterface store,
-			byte[] udh) throws SmscProcessingException {
+			byte[] udh, DataCodingSchemeImpl dataCodingScheme) throws SmscProcessingException {
 
 		Sms sms = new Sms();
 		sms.setDbId(UUID.randomUUID());
@@ -408,13 +418,14 @@ public abstract class TxSipServerSbb implements Sbb {
 			esmClass = esmClass | 0x40;// Add UDH
 			sms.setEsmClass(esmClass);
 		}
-		boolean gsm7Encoding = GSMCharset.checkAllCharsCanBeEncoded(msg, GSMCharset.BYTE_TO_CHAR_DefaultAlphabet, null);
-		DataCodingScheme dataCodingScheme;
-		if (gsm7Encoding) {
-			dataCodingScheme = dcsGsm7;
-		} else {
-			dataCodingScheme = dcsUsc2;
-		}
+		// boolean gsm7Encoding = GSMCharset.checkAllCharsCanBeEncoded(msg,
+		// GSMCharset.BYTE_TO_CHAR_DefaultAlphabet, null);
+		// DataCodingScheme dataCodingScheme;
+		// if (gsm7Encoding) {
+		// dataCodingScheme = dcsGsm7;
+		// } else {
+		// dataCodingScheme = dcsUsc2;
+		// }
 		sms.setDataCoding(dataCodingScheme.getCode());
 
 		// checking max message length
@@ -534,5 +545,10 @@ public abstract class TxSipServerSbb implements Sbb {
 			data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + Character.digit(s.charAt(i + 1), 16));
 		}
 		return data;
+	}
+
+	private DataCodingSchemeImpl createDataCodingScheme(int dcs) {
+		CharacterSet chs = CharacterSet.getInstance(dcs);
+		return new DataCodingSchemeImpl(DataCodingGroup.GeneralGroup, null, null, null, chs, false);
 	}
 }
