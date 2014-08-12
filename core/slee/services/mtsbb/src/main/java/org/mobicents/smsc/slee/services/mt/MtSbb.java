@@ -91,6 +91,7 @@ import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.MapVersionCache;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.CdrGenerator;
 import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.MessageUtil;
@@ -923,7 +924,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 				pers.archiveDeliveredSms(sms, deliveryDate);
 			} else {
-                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
                 sms.setDeliveryDate(deliveryDate);
                 sms.getSmsSet().setStatus(ErrorCode.SUCCESS);
                 if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
@@ -956,8 +957,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 								backSmsSet.setDestAddrNpi(ta.getAddrNpi());
 								backSmsSet.setDestAddrTon(ta.getAddrTon());
 								receipt.setSmsSet(backSmsSet);
-								receipt.setStored(true);
-								pers.c2_scheduleMessage(receipt);
+                                receipt.setStored(true);
+                                pers.c2_scheduleMessage_ReschedDueSlot(receipt, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
 							}
 							this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr() + ", dest="
 									+ receipt.getSmsSet().getDestAddr());

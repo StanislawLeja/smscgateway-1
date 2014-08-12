@@ -74,6 +74,7 @@ import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
+import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.CdrGenerator;
 import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.MessageUtil;
@@ -443,14 +444,6 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                     NatureOfAddress.INTERNATIONAL);
             this.serviceCenterSCCPAddress = sccpParameterFact.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0,
                     smscPropertiesManagement.getServiceCenterSsn());
-
-//            GlobalTitle0100Impl gt = new GlobalTitle0100Impl(0, NumberingPlan.ISDN_TELEPHONY, NatureOfAddress.INTERNATIONAL,
-//                    smscPropertiesManagement.getServiceCenterGt());
-//		    int translationType, NumberingPlan numberingPlan, NatureOfAddress natureOfAddress, String digits
-//		    final String digits,final int translationType, final EncodingScheme encodingScheme,final NumberingPlan numberingPlan, final NatureOfAddress natureOfAddress
-//            this.serviceCenterSCCPAddress = new SccpAddressImpl(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
-//                    smscPropertiesManagement.getServiceCenterSsn());
-//			final RoutingIndicator ri, final GlobalTitle gt, final int dpc, final int ssn
 		}
 		return this.serviceCenterSCCPAddress;
 	}
@@ -636,7 +629,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                                     backSmsSet.setDestAddrTon(ta.getAddrTon());
                                     receipt.setSmsSet(backSmsSet);
                                     receipt.setStored(true);
-                                    pers.c2_scheduleMessage(receipt);
+                                    pers.c2_scheduleMessage_ReschedDueSlot(receipt, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
                                 }
                                 this.logger.info("Adding an error receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
                             } catch (PersistenceException e) {
@@ -733,7 +726,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                     } else {
                         for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
                             Sms sms = smsSet.getSms(i1);
-                            pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                            pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
+                                    smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
                             sms.setDeliveryDate(new Date());
                             if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
                                 pers.c2_createRecordArchive(sms);
@@ -782,11 +776,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                         long dueSlot = this.getStore().c2_getDueSlotForTime(newDueDate);
                         for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
                             Sms sms = smsSet.getSms(i1);
-                            if (sms.getStored()) {
-                                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-                                pers.c2_updateDueSlotForTargetId_WithTableCleaning(smsSet.getTargetId(), dueSlot);
-                                pers.c2_scheduleMessage(sms, dueSlot, lstFailured);
-                            }
+                            pers.c2_scheduleMessage_NewDueSlot(sms, dueSlot, lstFailured,
+                                    smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
                         }
                     }
 				} catch (PersistenceException e) {

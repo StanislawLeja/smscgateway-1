@@ -40,6 +40,7 @@ import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.mobicents.protocols.ss7.map.service.sms.AlertServiceCentreRequestImpl;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
@@ -143,7 +144,7 @@ public class AlertTest {
         SmsSet smsSet = createEmptySmsSet(ta1);
 
         Sms sms = this.prepareSms(smsSet);
-        this.pers.c2_scheduleMessage(sms);
+        this.pers.c2_scheduleMessage_ReschedDueSlot(sms, false);
         procDueSlot = sms.getDueSlot();
 
         procTargetId = ta1.getTargetId();

@@ -54,6 +54,7 @@ import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 
 /**
@@ -65,7 +66,10 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 public abstract class MoCommonSbb implements Sbb {
     
     private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
-    private static final String LINK = "PersistenceResourceAdaptor";
+    private static final String PERSISTENCE_LINK = "PersistenceResourceAdaptor";
+    private static final ResourceAdaptorTypeID SCHEDULER_ID = new ResourceAdaptorTypeID("SchedulerResourceAdaptorType",
+            "org.mobicents", "1.0");
+    private static final String SCHEDULER_LINK = "SchedulerResourceAdaptor";
     protected static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
 	private final String className;
@@ -77,7 +81,8 @@ public abstract class MoCommonSbb implements Sbb {
 	protected MAPProvider mapProvider;
 	protected MAPParameterFactory mapParameterFactory;
     protected SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
-	
+    protected SchedulerRaSbbInterface scheduler = null;
+
 	protected SmppSessions smppServerSessions = null;
 
 	protected PersistenceRAInterface persistence;
@@ -238,7 +243,9 @@ public abstract class MoCommonSbb implements Sbb {
 			this.smppServerSessions = (SmppSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
 
 			this.logger = this.sbbContext.getTracer(this.className);
-			this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, LINK);
+
+            this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, PERSISTENCE_LINK);
+            this.scheduler = (SchedulerRaSbbInterface) this.sbbContext.getResourceAdaptorInterface(SCHEDULER_ID, SCHEDULER_LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}

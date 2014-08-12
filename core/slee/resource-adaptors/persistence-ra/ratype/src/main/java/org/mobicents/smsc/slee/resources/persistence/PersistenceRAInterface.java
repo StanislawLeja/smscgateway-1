@@ -284,6 +284,8 @@ public interface PersistenceRAInterface {
      */
     long c2_getDueSlotForNewSms();
 
+    long c2_checkDueSlotWritingPossibility(long dueSlot);
+
     /**
      * Registering that thread starts writing to this due_slot
      */
@@ -325,9 +327,9 @@ public interface PersistenceRAInterface {
 
     void c2_createRecordArchive(Sms sms) throws PersistenceException;
 
-    void c2_scheduleMessage(Sms sms) throws PersistenceException;
+    void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode) throws PersistenceException;
 
-    boolean c2_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured) throws PersistenceException;
+    void c2_scheduleMessage_NewDueSlot(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode) throws PersistenceException;
 
     ArrayList<SmsSet> c2_getRecordList(long dueSlot) throws PersistenceException;
 
@@ -335,7 +337,7 @@ public interface PersistenceRAInterface {
 
     ArrayList<SmsSet> c2_sortRecordList(ArrayList<SmsSet> sourceLst);
 
-    void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException;
+    void c2_updateInSystem(Sms sms, int isSystemStatus, boolean fastStoreAndForwordMode) throws PersistenceException;
 
     void c2_updateAlertingSupport(long dueSlot, String targetId, UUID dbId) throws PersistenceException;
 

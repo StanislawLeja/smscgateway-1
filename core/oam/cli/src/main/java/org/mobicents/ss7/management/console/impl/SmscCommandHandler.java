@@ -64,6 +64,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("generatereceiptcdr");
         set.addChild("generatecdr");
         set.addChild("generatearchivetable");
+        Node storeAndForwordMode = set.addChild("storeandforwordmode");
         Node mocharging = set.addChild("mocharging");
         Node txsmppcharging = set.addChild("txsmppcharging");
         Node txsipcharging = set.addChild("txsipcharging");
@@ -87,6 +88,9 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         mocharging.addChild("accept");
         mocharging.addChild("reject");
         mocharging.addChild("diameter");
+
+        storeAndForwordMode.addChild("normal");
+        storeAndForwordMode.addChild("fast");
 
         Node smppencodingforgsm7 = set.addChild("smppencodingforgsm7");
         smppencodingforgsm7.addChild("utf8");
@@ -127,6 +131,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("generatereceiptcdr");
         get.addChild("generatecdr");
         get.addChild("generatearchivetable");
+        get.addChild("storeandforwordmode");
         get.addChild("mocharging");
         get.addChild("txsmppcharging");
         get.addChild("diameterdestrealm");

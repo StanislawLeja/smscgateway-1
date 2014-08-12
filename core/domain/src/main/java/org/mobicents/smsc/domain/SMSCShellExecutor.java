@@ -469,6 +469,8 @@ public class SMSCShellExecutor implements ShellExecutor {
                 int val = Integer.parseInt(options[3]);
                 smscPropertiesManagement.setGenerateArchiveTable(new GenerateType(val));
 
+            } else if (parName.equals("storeandforwordmode")) {
+                smscPropertiesManagement.setStoreAndForwordMode(Enum.valueOf(StoreAndForwordMode.class, options[3]));
             } else if (parName.equals("mocharging")) {
                 smscPropertiesManagement.setMoCharging(Enum.valueOf(MoChargingType.class, options[3]));
 			} else if (parName.equals("txsmppcharging")) {
@@ -605,8 +607,10 @@ public class SMSCShellExecutor implements ShellExecutor {
             } else if (parName.equals("generatearchivetable")) {
                 sb.append(smscPropertiesManagement.getGenerateArchiveTable().getValue());
 
-			} else if (parName.equals("mocharging")) {
-				sb.append(smscPropertiesManagement.getMoCharging());
+            } else if (parName.equals("storeandforwordmode")) {
+                sb.append(smscPropertiesManagement.getStoreAndForwordMode());
+            } else if (parName.equals("mocharging")) {
+                sb.append(smscPropertiesManagement.getMoCharging());
 			} else if (parName.equals("txsmppcharging")) {
 				sb.append(smscPropertiesManagement.getTxSmppChargingType());
 			} else if (parName.equals("txsipcharging")) {
@@ -765,9 +769,13 @@ public class SMSCShellExecutor implements ShellExecutor {
             sb.append(smscPropertiesManagement.getGenerateArchiveTable().getValue());
             sb.append("\n");
 
-			sb.append("mocharging = ");
-			sb.append(smscPropertiesManagement.getMoCharging());
-			sb.append("\n");
+            sb.append("storeandforwordmode = ");
+            sb.append(smscPropertiesManagement.getStoreAndForwordMode());
+            sb.append("\n");
+
+            sb.append("mocharging = ");
+            sb.append(smscPropertiesManagement.getMoCharging());
+            sb.append("\n");
 
 			sb.append("txsmppcharging = ");
 			sb.append(smscPropertiesManagement.getTxSmppChargingType());

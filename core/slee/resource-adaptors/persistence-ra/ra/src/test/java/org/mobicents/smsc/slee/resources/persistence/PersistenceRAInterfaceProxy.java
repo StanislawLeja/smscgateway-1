@@ -297,15 +297,14 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
     }
 
     @Override
-    public void c2_scheduleMessage(Sms sms) throws PersistenceException {
+    public void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode) throws PersistenceException {
         // TODO Auto-generated method stub
         
     }
 
     @Override
-    public boolean c2_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured) throws PersistenceException {
+    public void c2_scheduleMessage_NewDueSlot(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode) throws PersistenceException {
         // TODO Auto-generated method stub
-        return false;
     }
 
     @Override
@@ -327,7 +326,7 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
     }
 
     @Override
-    public void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException {
+    public void c2_updateInSystem(Sms sms, int isSystemStatus, boolean fastStoreAndForwordMode) throws PersistenceException {
         // TODO Auto-generated method stub
         
     }
@@ -354,6 +353,12 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
     public void c2_updateAlertingSupport(long dueSlot, String targetId, UUID dbId) throws PersistenceException {
         // TODO Auto-generated method stub
         
+    }
+
+    @Override
+    public long c2_checkDueSlotWritingPossibility(long dueSlot) {
+        // TODO Auto-generated method stub
+        return 0;
     }
 
 }

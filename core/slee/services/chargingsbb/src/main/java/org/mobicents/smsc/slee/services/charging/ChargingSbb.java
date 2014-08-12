@@ -66,6 +66,7 @@ import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
+import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.CdrGenerator;
 import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.MessageUtil;
@@ -448,13 +449,23 @@ public abstract class ChargingSbb implements Sbb {
                             MAPErrorCode.systemFailure, e);
                 }
             } else {
-                sms.setStored(true);
-                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                    persistence.createLiveSms(sms);
-                    persistence.setNewMessageScheduled(sms.getSmsSet(),
-                            MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+                if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+                    try {
+                        sms.setStoringAfterFailure(true);
+                        this.scheduler.injectSmsOnFly(sms.getSmsSet());
+                    } catch (Exception e) {
+                        throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
+                                MAPErrorCode.systemFailure, e);
+                    }
                 } else {
-                    persistence.c2_scheduleMessage(sms);
+                    sms.setStored(true);
+                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                        persistence.createLiveSms(sms);
+                        persistence.setNewMessageScheduled(sms.getSmsSet(),
+                                MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+                    } else {
+                        persistence.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+                    }
                 }
             }
 

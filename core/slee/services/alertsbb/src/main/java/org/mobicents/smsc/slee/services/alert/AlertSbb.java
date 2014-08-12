@@ -262,7 +262,7 @@ public abstract class AlertSbb implements Sbb {
 
                         dueSlot = pers.c2_getDueSlotForTargetId(smsSet0.getTargetId());
 
-                        if (dueSlot != 0 && dueSlot > pers.c2_getCurrentDueSlot()) {
+                        if (dueSlot != 0 && dueSlot > pers.c2_getCurrentDueSlot() && pers.c2_checkDueSlotWritingPossibility(dueSlot) == dueSlot) {
                             pers.c2_registerDueSlotWriting(dueSlot);
                             try {
                                 if (dueSlot != 0 && dueSlot > pers.c2_getCurrentDueSlot()) {
@@ -276,17 +276,6 @@ public abstract class AlertSbb implements Sbb {
 
                                             smsSet.setProcessingStarted();
                                             this.scheduler.injectSmsDatabase(smsSet);                                            
-
-
-//                                            for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
-//                                                Sms sms = smsSet.getSms(i1);
-//
-//                                                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-//                                                SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet0.getTargetId());
-//                                                long newDueSlot = pers.c2_getDueSlotForNewSms();
-//                                                pers.c2_updateDueSlotForTargetId_WithTableCleaning(smsSet0.getTargetId(), newDueSlot);
-//                                                pers.c2_scheduleMessage(sms, newDueSlot, null);
-//                                            }
                                         }
                                     }
                                 }

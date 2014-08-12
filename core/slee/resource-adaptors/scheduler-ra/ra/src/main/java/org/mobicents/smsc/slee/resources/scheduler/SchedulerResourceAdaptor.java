@@ -37,6 +37,7 @@ import org.mobicents.smsc.domain.SmsRouteManagement;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.domain.SmscStatProvider;
+import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.CdrGenerator;
 import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.MessageUtil;
@@ -323,12 +324,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				SmsSetCashe.getInstance().garbadeCollectProcessingSmsSet();
 			}
 
-            // checking if SMSC is paused
-            SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-            if (smscPropertiesManagement.isDeliveryPause())
-                return;
-
             // checking if SmsRouteManagement is already started
+            SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
             SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
             if (smsRouteManagement.getSmsRoutingRule() == null)
                 return;
@@ -343,7 +340,11 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			if (savedOneWaySmsSetCollection != null && savedOneWaySmsSetCollection.size() > 0) {
 				schedulableSms = savedOneWaySmsSetCollection;
 			} else {
-				try {
+	            // checking if SMSC is paused
+	            if (smscPropertiesManagement.isDeliveryPause())
+	                return;
+
+	            try {
 					if (this.tracer.isFineEnabled())
 						this.tracer.fine("Fetching: Starting fetching messages from database: fetchMaxRows="
 								+ fetchMaxRows + ", activityCount=" + activityCount + ", fetchAvailRows="
@@ -544,7 +545,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                                 dbOperations_C1.deleteSmsSet(smsSet);
                             } else {
                                 if (sms.getStored()) {
-                                    dbOperations_C2.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                                    dbOperations_C2.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
+                                            smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
                                     sms.setDeliveryDate(curDate);
                                     if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
                                         dbOperations_C2.c2_createRecordArchive(sms);
@@ -576,7 +578,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                                                 backSmsSet.setDestAddrTon(ta.getAddrTon());
                                                 receipt.setSmsSet(backSmsSet);
                                                 receipt.setStored(true);
-                                                dbOperations_C2.c2_scheduleMessage(receipt);
+                                                dbOperations_C2.c2_scheduleMessage_ReschedDueSlot(receipt,
+                                                        smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
                                             }
                                             this.tracer.info("Adding an error receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
                                         } catch (PersistenceException e) {

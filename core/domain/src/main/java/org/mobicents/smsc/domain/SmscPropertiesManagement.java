@@ -81,6 +81,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private static final String GENERATE_RECEIPT_CDR = "generateReceiptCdr";
     private static final String GENERATE_CDR = "generateCdr";
     private static final String GENERATE_ARCHIVE_TABLE = "generateArchiveTable";
+    private static final String STORE_AND_FORWORD_MODE = "storeAndForwordMode";
     private static final String MO_CHARGING = "moCharging";
 	private static final String TX_SMPP_CHARGING = "txSmppCharging";
 	private static final String TX_SIP_CHARGING = "txSipCharging";
@@ -186,6 +187,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // generating archive table records option
     private GenerateType generateArchiveTable = new GenerateType(true, true, true);
 
+    // options for storeAndForward mode: will messages be store into a database
+    // firstly (normal mode) or not
+    private StoreAndForwordMode storeAndForwordMode = StoreAndForwordMode.normal;
+
     // accept - all incoming messages are accepted
     // reject - all incoming messages will be rejected
     // diameter - all incoming messages are checked by Diameter peer before
@@ -194,7 +199,6 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// Defualt is None: none of SMPP originated messages will be charged by OCS
 	// via Diameter before sending
 	private ChargingType txSmppCharging = ChargingType.None;
-
 	// Defualt is None: none of SIP originated messages will be charged by OCS
 	// via Diameter before sending
 	private ChargingType txSipCharging = ChargingType.None;
@@ -567,16 +571,27 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.store();
 	}
 
-	@Override
-	public MoChargingType getMoCharging() {
-		return moCharging;
-	}
+    @Override
+    public MoChargingType getMoCharging() {
+        return moCharging;
+    }
 
-	@Override
-	public void setMoCharging(MoChargingType moCharging) {
-		this.moCharging = moCharging;
+    @Override
+    public void setMoCharging(MoChargingType moCharging) {
+        this.moCharging = moCharging;
         this.store();
-	}
+    }
+
+    @Override
+    public StoreAndForwordMode getStoreAndForwordMode() {
+        return storeAndForwordMode;
+    }
+
+    @Override
+    public void setStoreAndForwordMode(StoreAndForwordMode storeAndForwordMode) {
+        this.storeAndForwordMode = storeAndForwordMode;
+        this.store();
+    }
 
 	@Override
 	public ChargingType getTxSmppChargingType() {
@@ -772,7 +787,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             writer.write(this.generateCdr.getValue(), GENERATE_CDR, Integer.class);
             writer.write(this.generateArchiveTable.getValue(), GENERATE_ARCHIVE_TABLE, Integer.class);
 
-			writer.write(this.moCharging.toString(), MO_CHARGING, String.class);
+            writer.write(this.storeAndForwordMode.toString(), STORE_AND_FORWORD_MODE, String.class);
+            writer.write(this.moCharging.toString(), MO_CHARGING, String.class);
 			writer.write(this.txSmppCharging.toString(), TX_SMPP_CHARGING, String.class);
 			writer.write(this.txSipCharging.toString(), TX_SIP_CHARGING, String.class);
 			writer.write(this.diameterDestRealm, DIAMETER_DEST_REALM, String.class);
@@ -916,7 +932,11 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             if (val != null)
                 this.generateArchiveTable = new GenerateType(val);
 
-			vals = reader.read(MO_CHARGING, String.class);
+            vals = reader.read(STORE_AND_FORWORD_MODE, String.class);
+            if (vals != null)
+                this.storeAndForwordMode = Enum.valueOf(StoreAndForwordMode.class, vals);
+
+            vals = reader.read(MO_CHARGING, String.class);
             if (vals != null) {
                 if (vals.toLowerCase().equals("false")) {
                     this.moCharging = MoChargingType.accept;

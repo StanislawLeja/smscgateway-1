@@ -80,7 +80,8 @@ public class DBOperations_C2 {
 	public static final int CURRENT_DUE_SLOT = 0;
 	public static final int NEXT_MESSAGE_ID = 1;
 	public static final long MAX_MESSAGE_ID = 10000000000L;
-	public static final long MESSAGE_ID_LAG = 100;
+    public static final long MESSAGE_ID_LAG = 100;
+    public static final long DUE_SLOT_WRITING_POSSIBILITY_DELAY = 10;
 
 	private static final DBOperations_C2 instance = new DBOperations_C2();
 
@@ -246,7 +247,7 @@ public class DBOperations_C2 {
 			// break;
 			// }
 
-			currentDueSlot = c2_getCurrenrSlotTable(CURRENT_DUE_SLOT);
+			currentDueSlot = c2_getCurrentSlotTable(CURRENT_DUE_SLOT);
 			if (currentDueSlot == 0) {
 				// not yet set
 				long l1 = this.c2_getDueSlotForTime(new Date());
@@ -255,7 +256,7 @@ public class DBOperations_C2 {
 				this.c2_setCurrentDueSlot(currentDueSlot - dueSlotReviseOnSmscStart);
 			}
 
-			messageId = c2_getCurrenrSlotTable(NEXT_MESSAGE_ID);
+			messageId = c2_getCurrentSlotTable(NEXT_MESSAGE_ID);
 			messageId += MESSAGE_ID_LAG;
 			c2_setCurrenrSlotTable(NEXT_MESSAGE_ID, messageId);
 		} catch (Exception e1) {
@@ -279,12 +280,16 @@ public class DBOperations_C2 {
 		this.started = false;
 	}
 
+	/**
+	 * Returns length of the due_slot in milliseconds
+	 *
+	 */
 	public long getSlotMSecondsTimeArea() {
 		return slotMSecondsTimeArea;
 	}
 
 	/**
-	 * Return due_slot for the given time
+	 * Returns due_slot for the given time
 	 */
 	public long c2_getDueSlotForTime(Date time) {
 		long a2 = time.getTime();
@@ -295,7 +300,7 @@ public class DBOperations_C2 {
 	}
 
 	/**
-	 * Return time for the given due_slot
+	 * Returns time for the given due_slot
 	 */
 	public Date c2_getTimeForDueSlot(long dueSlot) {
 		long a1 = this.slotOrigDate.getTime() + dueSlot * this.slotMSecondsTimeArea;
@@ -304,14 +309,14 @@ public class DBOperations_C2 {
 	}
 
 	/**
-	 * Return due_slop that SMSC is processing now
+	 * Returns due_slop that SMSC is processing now
 	 */
 	public long c2_getCurrentDueSlot() {
 		return currentDueSlot;
 	}
 
 	/**
-	 * Set a new due_slop that SMSC is processing now and store it to the
+	 * Set a new due_slop that SMSC "is processing now" and store it into the
 	 * database
 	 */
 	public void c2_setCurrentDueSlot(long newDueSlot) throws PersistenceException {
@@ -320,6 +325,10 @@ public class DBOperations_C2 {
 		c2_setCurrenrSlotTable(CURRENT_DUE_SLOT, newDueSlot);
 	}
 
+	/**
+	 * Returns a next messageId
+	 * Every MESSAGE_ID_LAG messageId will be stored at cassandra database
+	 */
 	public synchronized long c2_getNextMessageId() {
 		messageId++;
 		if (messageId >= MAX_MESSAGE_ID)
@@ -335,7 +344,16 @@ public class DBOperations_C2 {
 		return messageId;
 	}
 
-	protected long c2_getCurrenrSlotTable(int key) throws PersistenceException {
+    /**
+     * Initial reading CURRENT_DUE_SLOT and NEXT_MESSAGE_ID when cassandra
+     * database access starting
+     * 
+     * @param CURRENT_DUE_SLOT
+     *            or NEXT_MESSAGE_ID
+     * @return dead value
+     * @throws PersistenceException
+     */
+	protected long c2_getCurrentSlotTable(int key) throws PersistenceException {
 		PreparedStatement ps = selectCurrentSlotTable;
 		BoundStatement boundStatement = new BoundStatement(ps);
 		boundStatement.bind(key);
@@ -378,6 +396,19 @@ public class DBOperations_C2 {
 		// TODO: we can add here code incrementing of due_slot if current
 		// due_slot is overloaded
 	}
+
+    /**
+     * Checking if dueSlot is possible to use for writing (it is not too soon).
+     * if possible - returns dueSlot
+     * if not - returns next possible dueSlot
+     */
+    public long c2_checkDueSlotWritingPossibility(long dueSlot) {
+        long first = this.c2_getCurrentDueSlot() + DUE_SLOT_WRITING_POSSIBILITY_DELAY;
+        if (dueSlot < first)
+            return first;
+        else
+            return dueSlot;
+    }
 
 	/**
 	 * Registering that thread starts writing to this due_slot
@@ -595,43 +626,70 @@ public class DBOperations_C2 {
 		c2_updateDueSlotForTargetId(targetId, newDueSlot);
 	}
 
-	public void c2_scheduleMessage(Sms sms) throws PersistenceException {
-		long dueSlot = 0;
-		PreparedStatementCollection_C3[] lstPsc = this.c2_getPscList();
-		boolean done = false;
-		int cnt = 0;
-		while (!done && cnt < 5) {
-			cnt++;
-			for (PreparedStatementCollection_C3 psc : lstPsc) {
-				dueSlot = this.c2_getDueSlotForTargetId(psc, sms.getSmsSet().getTargetId());
-				if (dueSlot != 0)
-					break;
-			}
+    /**
+     * scheduler a message into a dueSlot that is already scheduled for all
+     * messages for this targetId or for a next available if no dueSlot has been
+     * scheduled for targetId
+     */
+	public void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode) throws PersistenceException {
+        if (sms.getStored()) {
+            long dueSlot = 0;
+            PreparedStatementCollection_C3[] lstPsc = this.c2_getPscList();
+            boolean done = false;
+            int cnt = 0;
+            while (!done && cnt < 5) {
+                cnt++;
+                for (PreparedStatementCollection_C3 psc : lstPsc) {
+                    dueSlot = this.c2_getDueSlotForTargetId(psc, sms.getSmsSet().getTargetId());
+                    if (dueSlot != 0)
+                        break;
+                }
 
-			if (dueSlot == 0 || dueSlot <= this.c2_getCurrentDueSlot()) {
-				dueSlot = this.c2_getDueSlotForNewSms();
-				this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
-			}
-			sms.setDueSlot(dueSlot);
+                if (fastStoreAndForwordMode) {
+                    if (dueSlot != 0) {
+                        long dueSlot2 = c2_checkDueSlotWritingPossibility(dueSlot);
+                        if (dueSlot2 != dueSlot) {
+                            dueSlot = dueSlot2;
+                            this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
+                        }
+                    }
+                } 
 
-			done = this.c2_scheduleMessage(sms, dueSlot, null);
-		}
+                if (dueSlot == 0 || dueSlot <= this.c2_getCurrentDueSlot()) {
+                    dueSlot = this.c2_getDueSlotForNewSms();
+                    this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
+                }
+                sms.setDueSlot(dueSlot);
 
-		if (!done) {
-			logger.warn("5 retries of c2_scheduleMessage fails for targetId=" + sms.getSmsSet().getTargetId());
-		}
+                done = this.do_scheduleMessage(sms, dueSlot, null, fastStoreAndForwordMode);
+            }
+
+            if (!done) {
+                logger.warn("5 retries of c2_scheduleMessage fails for targetId=" + sms.getSmsSet().getTargetId());
+            }
+        }
 	}
 
-	/**
-	 * @param smsSet
-	 * @param dueSlot
-	 * @return return false if dueSlot is out <= ProcessingDueSlot
-	 * @throws PersistenceException
-	 */
-	public boolean c2_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured) throws PersistenceException {
+    /**
+     * scheduler a message for a predefined dueSlot (for a next schedule time)
+     */
+    public void c2_scheduleMessage_NewDueSlot(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode) throws PersistenceException {
+        if (sms.getStoringAfterFailure())
+            sms.setStored(true);
 
-		if (!sms.getStored())
-			return true;
+        if (sms.getStored()) {
+            if (fastStoreAndForwordMode) {
+                dueSlot = c2_checkDueSlotWritingPossibility(dueSlot);
+            }
+
+            this.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT, fastStoreAndForwordMode);
+            this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
+            this.do_scheduleMessage(sms, dueSlot, lstFailured, fastStoreAndForwordMode);
+        }
+    }
+
+	protected boolean do_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode)
+            throws PersistenceException {
 
 		sms.setDueSlot(dueSlot);
 
@@ -651,18 +709,26 @@ public class DBOperations_C2 {
 			return true;
 		}
 
-		this.c2_registerDueSlotWriting(dueSlot);
-		try {
-			if (dueSlot <= this.c2_getCurrentDueSlot()) {
-				return false;
-			} else {
-				this.c2_createRecordCurrent(sms);
-				return true;
-			}
-		} finally {
-			this.c2_unregisterDueSlotWriting(dueSlot);
-		}
+        if (fastStoreAndForwordMode) {
+            return doCreateRecordCurrent(sms, dueSlot);
+        } else {
+            this.c2_registerDueSlotWriting(dueSlot);
+            try {
+                return doCreateRecordCurrent(sms, dueSlot);
+            } finally {
+                this.c2_unregisterDueSlotWriting(dueSlot);
+            }
+        }
 	}
+
+    private boolean doCreateRecordCurrent(Sms sms, long dueSlot) throws PersistenceException {
+        if (dueSlot <= this.c2_getCurrentDueSlot()) {
+        	return false;
+        } else {
+        	this.c2_createRecordCurrent(sms);
+        	return true;
+        }
+    }
 
 	public void c2_createRecordCurrent(Sms sms) throws PersistenceException {
 		long dueSlot = sms.getDueSlot();
@@ -1130,8 +1196,8 @@ public class DBOperations_C2 {
         return true;
     }
 
-	public void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException {
-        if (sms.getStored()) {
+	public void c2_updateInSystem(Sms sms, int isSystemStatus, boolean fastStoreAndForwordMode) throws PersistenceException {
+        if (sms.getStored() && !fastStoreAndForwordMode) {
             PreparedStatementCollection_C3 psc = this.getStatementCollection(sms.getDueSlot());
 
             try {

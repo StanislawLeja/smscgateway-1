@@ -254,9 +254,9 @@ public class C2_MtDatabaseCassandraTest {
         SmsSet smsSet = createEmptySmsSet(ta1);
 
         Sms sms = this.prepareSms(smsSet, 1);
-        this.pers.c2_scheduleMessage(sms);
+        this.pers.c2_scheduleMessage_ReschedDueSlot(sms, false);
         sms = this.prepareSms(smsSet, 2);
-        this.pers.c2_scheduleMessage(sms);
+        this.pers.c2_scheduleMessage_ReschedDueSlot(sms, false);
 
         procDueSot = sms.getDueSlot();
 

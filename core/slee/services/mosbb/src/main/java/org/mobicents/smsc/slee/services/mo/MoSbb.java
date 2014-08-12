@@ -74,9 +74,11 @@ import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.MoChargingType;
 import org.mobicents.smsc.domain.SmscStatProvider;
+import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.library.SmsSetCashe;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
@@ -220,6 +222,13 @@ public abstract class MoSbb extends MoCommonSbb {
 									dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null,
 									null, null);
 					break;
+                case MAPErrorCode.resourceLimitation:
+                    errorMessage = this.mapProvider.getMAPErrorMessageFactory()
+                            .createMAPErrorMessageExtensionContainer((long) MAPErrorCode.resourceLimitation, null);
+                    break;
+                case MAPErrorCode.facilityNotSupported:
+                    errorMessage = this.mapProvider.getMAPErrorMessageFactory().createMAPErrorMessageFacilityNotSup(null, null, null);
+                    break;
 				default:
 					errorMessage = this.mapProvider.getMAPErrorMessageFactory()
 							.createMAPErrorMessageSystemFailure(
@@ -322,6 +331,13 @@ public abstract class MoSbb extends MoCommonSbb {
 									dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null,
 									null, null);
 					break;
+                case MAPErrorCode.resourceLimitation:
+                    errorMessage = this.mapProvider.getMAPErrorMessageFactory()
+                            .createMAPErrorMessageExtensionContainer((long) MAPErrorCode.resourceLimitation, null);
+                    break;
+                case MAPErrorCode.facilityNotSupported:
+                    errorMessage = this.mapProvider.getMAPErrorMessageFactory().createMAPErrorMessageFacilityNotSup(null, null, null);
+                    break;
 				default:
 					errorMessage = this.mapProvider.getMAPErrorMessageFactory()
 							.createMAPErrorMessageSystemFailure(
@@ -401,6 +417,13 @@ public abstract class MoSbb extends MoCommonSbb {
 							dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null,
 							null);
 					break;
+                case MAPErrorCode.resourceLimitation:
+                    errorMessage = this.mapProvider.getMAPErrorMessageFactory()
+                            .createMAPErrorMessageExtensionContainer((long) MAPErrorCode.resourceLimitation, null);
+                    break;
+                case MAPErrorCode.facilityNotSupported:
+                    errorMessage = this.mapProvider.getMAPErrorMessageFactory().createMAPErrorMessageFacilityNotSup(null, null, null);
+                    break;
 				default:
 					errorMessage = this.mapProvider.getMAPErrorMessageFactory().createMAPErrorMessageSystemFailure(
 							dialog.getApplicationContext().getApplicationContextVersion().getVersion(), null, null,
@@ -984,21 +1007,49 @@ public abstract class MoSbb extends MoCommonSbb {
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
         // TODO: we can make this some check will we send this message or not
 
+        if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+            // checking if SMSC is paused
+            if (smscPropertiesManagement.isDeliveryPause()) {
+                SmscProcessingException e = new SmscProcessingException("SMSC is paused", SmppConstants.STATUS_SYSERR, MAPErrorCode.facilityNotSupported, null);
+                e.setSkipErrorLogging(true);
+                throw e;
+            }
+            // checking if delivery query is overloaded
+            int fetchMaxRows = (int) (smscPropertiesManagement.getFetchMaxRows() * 1.4);
+            int activityCount = SmsSetCashe.getInstance().getProcessingSmsSetSize();
+            if (activityCount >= fetchMaxRows) {
+                SmscProcessingException e = new SmscProcessingException("SMSC is overloaded", SmppConstants.STATUS_THROTTLED, MAPErrorCode.resourceLimitation, null);
+                e.setSkipErrorLogging(true);
+                throw e;
+            }
+        }
+
 	    switch(smscPropertiesManagement.getMoCharging()){
         case accept:
-            try {
-                sms.setStored(true);
-                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                    store.createLiveSms(sms);
-                    store.setNewMessageScheduled(sms.getSmsSet(),
-                            MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
-                } else {
-                    store.c2_scheduleMessage(sms);
+            if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+                try {
+                    sms.setStoringAfterFailure(true);
+                    this.scheduler.injectSmsOnFly(sms.getSmsSet());
+                } catch (Exception e) {
+                    throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
+                            MAPErrorCode.systemFailure, e);
                 }
-            } catch (PersistenceException e) {
-                throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
-                        MAPErrorCode.systemFailure, null, e);
+            } else {
+                try {
+                    sms.setStored(true);
+                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                        store.createLiveSms(sms);
+                        store.setNewMessageScheduled(sms.getSmsSet(),
+                                MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+                    } else {
+                        store.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+                    }
+                } catch (PersistenceException e) {
+                    throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
+                            MAPErrorCode.systemFailure, null, e);
+                }
             }
+
             smscStatAggregator.updateMsgInReceivedAll();
             smscStatAggregator.updateMsgInReceivedSs7();
             break;

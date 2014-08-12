@@ -47,6 +47,7 @@ public class Sms implements Serializable {
     private UUID dbId;
     private long dueSlot;
     private boolean stored;
+    private boolean storingAfterFailure;
 
 	private int sourceAddrTon;
 	private int sourceAddrNpi;
@@ -123,6 +124,17 @@ public class Sms implements Serializable {
 
     public void setStored(boolean stored) {
         this.stored = stored;
+    }
+
+    /**
+     * If this message will be stored in the database if the delivery has failed
+     */
+    public boolean getStoringAfterFailure() {
+        return storingAfterFailure;
+    }
+
+    public void setStoringAfterFailure(boolean storingAfterFailure) {
+        this.storingAfterFailure = storingAfterFailure;
     }
 
 	/**

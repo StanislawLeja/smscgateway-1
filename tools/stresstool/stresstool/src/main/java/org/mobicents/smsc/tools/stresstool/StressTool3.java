@@ -424,7 +424,7 @@ public class StressTool3 {
 
                                                 for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
                                                     Sms sms = smsSet.getSms(i1);
-                                                    dbOperations.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS);
+                                                    dbOperations.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS, false);
                                                 }
 
                                                 this.numProcessed += smsSet.getSmsCount();
@@ -574,7 +574,7 @@ public class StressTool3 {
                                         Sms sms = smsSet.getSms(i1);
                                         sms.setDeliveryDate(new Date());
 
-                                        dbOperations.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                                        dbOperations.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT, false);
 
                                         // + 10 min
                                         sms.setDueSlot(dbOperations.c2_getDueSlotForTime(dt));
@@ -597,7 +597,7 @@ public class StressTool3 {
                                         Sms sms = smsSet.getSms(i1);
                                         sms.setDeliveryDate(new Date());
 
-                                        dbOperations.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                                        dbOperations.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT, false);
                                         dbOperations.c2_createRecordArchive(sms);
                                     }
                                 }

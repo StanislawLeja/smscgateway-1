@@ -289,8 +289,8 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             }
 
             @Override
-            public void c2_updateInSystem(Sms sms, int isSystemStatus) throws PersistenceException {
-                dbOperations_C2.c2_updateInSystem(sms, isSystemStatus);
+            public void c2_updateInSystem(Sms sms, int isSystemStatus, boolean fastStoreAndForwordMode) throws PersistenceException {
+                dbOperations_C2.c2_updateInSystem(sms, isSystemStatus, fastStoreAndForwordMode);
             }
 
             @Override
@@ -304,13 +304,18 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             }
 
             @Override
-            public void c2_scheduleMessage(Sms sms) throws PersistenceException {
-                dbOperations_C2.c2_scheduleMessage(sms);
+            public void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode) throws PersistenceException {
+                dbOperations_C2.c2_scheduleMessage_ReschedDueSlot(sms, fastStoreAndForwordMode);
             }
 
             @Override
-            public boolean c2_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured) throws PersistenceException {
-                return dbOperations_C2.c2_scheduleMessage(sms, dueSlot, lstFailured);
+            public void c2_scheduleMessage_NewDueSlot(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode) throws PersistenceException {
+                dbOperations_C2.c2_scheduleMessage_NewDueSlot(sms, dueSlot, lstFailured, fastStoreAndForwordMode);
+            }
+
+            @Override
+            public long c2_checkDueSlotWritingPossibility(long dueSlot) {
+                return dbOperations_C2.c2_checkDueSlotWritingPossibility(dueSlot);
             }
 
 		};

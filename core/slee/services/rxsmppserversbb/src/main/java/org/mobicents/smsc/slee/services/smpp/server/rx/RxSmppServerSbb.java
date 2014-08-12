@@ -47,6 +47,7 @@ import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
+import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.CdrGenerator;
 import org.mobicents.smsc.library.ErrorAction;
 import org.mobicents.smsc.library.ErrorCode;
@@ -215,7 +216,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 						pers.archiveDeliveredSms(sms, deliveryDate);
 					} else {
-                        pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                        pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
+                                smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
                         sms.setDeliveryDate(deliveryDate);
                         sms.getSmsSet().setStatus(ErrorCode.SUCCESS);
                         if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
@@ -254,7 +256,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 										backSmsSet.setDestAddrTon(ta.getAddrTon());
 										receipt.setSmsSet(backSmsSet);
 										receipt.setStored(true);
-										pers.c2_scheduleMessage(receipt);
+										pers.c2_scheduleMessage_ReschedDueSlot(receipt, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
 									}
 								}
 							} finally {
@@ -390,7 +392,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 						pers.archiveDeliveredSms(sms, deliveryDate);
 					} else {
-                        pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                        pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
+                                smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
                         sms.setDeliveryDate(deliveryDate);
                         sms.getSmsSet().setStatus(ErrorCode.SUCCESS);
                         if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
@@ -429,7 +432,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 										backSmsSet.setDestAddrTon(ta.getAddrTon());
 										receipt.setSmsSet(backSmsSet);
 										receipt.setStored(true);
-										pers.c2_scheduleMessage(receipt);
+										pers.c2_scheduleMessage_ReschedDueSlot(receipt, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
 									}
 								}
 							} finally {
@@ -903,7 +906,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 									backSmsSet.setDestAddrTon(ta.getAddrTon());
 									receipt.setSmsSet(backSmsSet);
 									receipt.setStored(true);
-									pers.c2_scheduleMessage(receipt);
+									pers.c2_scheduleMessage_ReschedDueSlot(receipt, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
 								}
 								this.logger.info("Adding an error receipt: source=" + receipt.getSourceAddr()
 										+ ", dest=" + receipt.getSmsSet().getDestAddr());
@@ -959,7 +962,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 					} else {
 						for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
                             Sms sms = smsSet.getSms(i1);
-                            pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
+                            pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
+                                    smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
                             sms.setDeliveryDate(new Date());
                             if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
                                 pers.c2_createRecordArchive(sms);
@@ -1003,11 +1007,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 						long dueSlot = this.getStore().c2_getDueSlotForTime(newDueDate);
 						for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
 							Sms sms = smsSet.getSms(i1);
-							if (sms.getStored()) {
-								pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT);
-								pers.c2_updateDueSlotForTargetId_WithTableCleaning(smsSet.getTargetId(), dueSlot);
-								pers.c2_scheduleMessage(sms, dueSlot, lstFailured);
-							}
+                            pers.c2_scheduleMessage_NewDueSlot(sms, dueSlot, lstFailured,
+                                    smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
 						}
 					}
 				} catch (PersistenceException e) {

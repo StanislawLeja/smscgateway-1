@@ -23,6 +23,7 @@
 package org.mobicents.smsc.slee.resources.persistence;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -79,6 +80,11 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
 
     public void setOldShortMessageDbFormat(boolean val) {
         oldShortMessageDbFormat = val;
+    }
+
+    public boolean do_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode)
+            throws PersistenceException {
+        return super.do_scheduleMessage(sms, dueSlot, lstFailured, fastStoreAndForwordMode);
     }
 
     public boolean testCassandraAccess() {
@@ -294,8 +300,8 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
         }
     }
 
-    protected long c2_getCurrenrSlotTable(int key) throws PersistenceException {
-        return super.c2_getCurrenrSlotTable(key);
+    protected long c2_getCurrentSlotTable(int key) throws PersistenceException {
+        return super.c2_getCurrentSlotTable(key);
     }
 
     @Override
@@ -353,13 +359,6 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
         appendField(sb, Schema.COLUMN_SM_TYPE, "int");
         appendField(sb, Schema.COLUMN_DELIVERY_COUNT, "int");
     }
-
-//    @Override
-//    public boolean checkSmsSetExists(TargetAddress ta) throws PersistenceException {
-//
-//        // TODO Auto-generated method stub
-//        return false;
-//    }
 
     @Override
     public SmsSet obtainSmsSet(TargetAddress ta) throws PersistenceException {

@@ -134,7 +134,7 @@ public class TT_CassandraTest {
             lx = sbb.c2_getNextMessageId();
         }
         assertEquals(lx, DBOperations_C2.MESSAGE_ID_LAG + len);
-        long ly = sbb.c2_getCurrenrSlotTable(DBOperations_C2.NEXT_MESSAGE_ID);
+        long ly = sbb.c2_getCurrentSlotTable(DBOperations_C2.NEXT_MESSAGE_ID);
         assertEquals(ly, DBOperations_C2.MESSAGE_ID_LAG * 2);
 
         sbb.stop();
@@ -249,9 +249,9 @@ public class TT_CassandraTest {
         assertEquals(l1, 0);
 
         // 1 - create with good date
-        sbb.c2_scheduleMessage(sms);
+        sbb.c2_scheduleMessage_ReschedDueSlot(sms, false);
         long newDueSlot = sms.getDueSlot();
-        boolean b1 = sbb.c2_scheduleMessage(sms, newDueSlot, null);
+        boolean b1 = sbb.do_scheduleMessage(sms, newDueSlot, null, false);
         assertTrue(b1);
 
         l1 = sbb.c2_getDueSlotForTargetId(targetId);
@@ -259,9 +259,9 @@ public class TT_CassandraTest {
         assertEquals(sms.getDueSlot(), newDueSlot);
 
         // 2 - update this good date
-        sbb.c2_scheduleMessage(sms);
+        sbb.c2_scheduleMessage_ReschedDueSlot(sms, false);
         assertEquals(sms.getDueSlot(), newDueSlot);
-        b1 = sbb.c2_scheduleMessage(sms, newDueSlot, null);
+        b1 = sbb.do_scheduleMessage(sms, newDueSlot, null, false);
         assertTrue(b1);
         assertEquals(sms.getDueSlot(), newDueSlot);
 
@@ -275,11 +275,11 @@ public class TT_CassandraTest {
         l1 = sbb.c2_getDueSlotForTargetId(targetId);
         assertEquals(l1, newDueSlot);
 
-        b1 = sbb.c2_scheduleMessage(sms, newDueSlot, null);
+        b1 = sbb.do_scheduleMessage(sms, newDueSlot, null, false);
         assertFalse(b1);
-        sbb.c2_scheduleMessage(sms);
+        sbb.c2_scheduleMessage_ReschedDueSlot(sms, false);
         long newDueSlot2 = sms.getDueSlot();
-        b1 = sbb.c2_scheduleMessage(sms, newDueSlot2, null);
+        b1 = sbb.do_scheduleMessage(sms, newDueSlot2, null, false);
 //        assertTrue(b1);
 
         l1 = sbb.c2_getDueSlotForTargetId(targetId);
@@ -292,10 +292,10 @@ public class TT_CassandraTest {
         l1 = sbb.c2_getDueSlotForTargetId(targetId);
         assertEquals(l1, newDueSlot2);
 
-        b1 = sbb.c2_scheduleMessage(sms, newDueSlot2, null);
+        b1 = sbb.do_scheduleMessage(sms, newDueSlot2, null, false);
         assertFalse(b1);
         long newDueSlot3 = newCurSlot2 + 10;
-        b1 = sbb.c2_scheduleMessage(sms, newDueSlot3, null);
+        b1 = sbb.do_scheduleMessage(sms, newDueSlot3, null, false);
 //        assertTrue(b1);
 
         sbb.c2_updateDueSlotForTargetId_WithTableCleaning(targetId, newDueSlot3);
@@ -602,7 +602,7 @@ public class TT_CassandraTest {
                 assertEquals(sms.getDueSlot(), dueSlot);
                 this.checkTestSms(4, sms, id4, false);
 
-                sbb.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS);
+                sbb.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_INPROCESS, false);
             }
         } finally {
             this.sbb.obtainSynchroObject(lock);
