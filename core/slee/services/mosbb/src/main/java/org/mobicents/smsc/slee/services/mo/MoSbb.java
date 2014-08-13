@@ -1007,6 +1007,13 @@ public abstract class MoSbb extends MoCommonSbb {
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
         // TODO: we can make this some check will we send this message or not
 
+        // checking if SMSC is stopped
+        if (smscPropertiesManagement.isSmscStopped()) {
+            SmscProcessingException e = new SmscProcessingException("SMSC is stopped", SmppConstants.STATUS_SYSERR, MAPErrorCode.facilityNotSupported, null);
+            e.setSkipErrorLogging(true);
+            throw e;
+        }
+
         if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
             // checking if SMSC is paused
             if (smscPropertiesManagement.isDeliveryPause()) {

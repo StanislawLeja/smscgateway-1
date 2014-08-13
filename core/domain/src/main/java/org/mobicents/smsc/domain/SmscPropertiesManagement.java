@@ -230,7 +230,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // them into a database)
     private boolean deliveryPause = false;
 
+    // this flag is not a storable option but a flag
+    // this flag is set to true when Schedule RA is inactivated or inactivating
+    // and is set to false when Schedule RA is activated
+    private boolean smscStopped = true;
 
+    
     private SmscPropertiesManagement(String name) {
 		this.name = name;
 		binding.setClassAttribute(CLASS_ATTRIBUTE);
@@ -686,6 +691,15 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     public void setDeliveryPause(boolean deliveryPause) {
         this.deliveryPause = deliveryPause;
         this.store();
+    }
+
+    @Override
+    public boolean isSmscStopped() {
+        return smscStopped;
+    }
+
+    public void setSmscStopped(boolean smscStopped) {
+        this.smscStopped = smscStopped;
     }
 
     public GenerateType getGenerateCdr() {
