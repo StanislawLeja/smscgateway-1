@@ -31,7 +31,7 @@
 		<junit.version>3.8.1</junit.version>
 		<!-- cloudhopper smpp -->
 		<ch.smpp.version>5.0.0</ch.smpp.version>
-		<slf4j.version>1.5.0</slf4j.version>
+		<slf4j.version>1.7.7</slf4j.version>
 		
 		<!-- Cassandra Driver and dependency 1.0.2 1.2.6 -->
 		<cassandra-driver-core.version>2.0.2</cassandra-driver-core.version>
