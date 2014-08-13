@@ -195,6 +195,8 @@ public interface SmscPropertiesManagementMBean {
 
     public boolean isDeliveryPause();
 
+    public boolean isSmscStopped();
+
     public void setDeliveryPause(boolean deliveryPause);
 
     public GenerateType getGenerateCdr();

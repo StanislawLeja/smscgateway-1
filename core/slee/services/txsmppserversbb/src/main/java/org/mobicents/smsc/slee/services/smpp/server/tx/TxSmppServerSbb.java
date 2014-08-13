@@ -757,6 +757,12 @@ public abstract class TxSmppServerSbb implements Sbb {
 	}
 
     private void processSms(Sms sms, PersistenceRAInterface store, Esme esme, SubmitSm eventSubmit, DataSm eventData) throws SmscProcessingException {
+        // checking if SMSC is stopped
+        if (smscPropertiesManagement.isSmscStopped()) {
+            SmscProcessingException e = new SmscProcessingException("SMSC is stopped", SmppConstants.STATUS_SYSERR, 0, null);
+            e.setSkipErrorLogging(true);
+            throw e;
+        }
         // checking if SMSC is paused
         if (smscPropertiesManagement.isDeliveryPause()
                 && (!MessageUtil.isStoreAndForward(sms) || smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast)) {

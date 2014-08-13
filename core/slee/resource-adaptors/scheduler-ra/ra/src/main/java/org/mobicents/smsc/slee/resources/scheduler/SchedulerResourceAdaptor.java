@@ -79,7 +79,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	private Date garbageCollectionTime = new Date();
     private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
-
+    
 	public SchedulerResourceAdaptor() {
 		this.schedulerRaSbbInterface = new SchedulerRaSbbInterface() {
 
@@ -206,7 +206,34 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			tracer.info("SchedulerResourceAdaptor " + raContext.getEntityName() + " Activated");
 		}
 
+		smscPropertiesManagement.setSmscStopped(false);
 	}
+
+    @Override
+    public void raInactive() {
+        if (tracer.isInfoEnabled()) {
+            tracer.info("Starting of inactivating SchedulerResourceAdaptor RA Entity " + this.raContext.getEntityName());
+        }
+
+        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        smscPropertiesManagement.setSmscStopped(true);
+
+        for (int i1 = 0; i1 < 60; i1++) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            if (SmsSetCashe.getInstance().getProcessingSmsSetSize() == 0)
+                break;
+        }
+
+        if (tracer.isInfoEnabled()) {
+            tracer.info("Finishing of inactivating SchedulerResourceAdaptor RA Entity " + this.raContext.getEntityName());
+        }
+    }
 
 	@Override
 	public void raConfigurationUpdate(ConfigProperties properties) {
@@ -218,14 +245,6 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		if (tracer.isFineEnabled()) {
 			tracer.fine("Configuring RA Entity " + this.raContext.getEntityName());
 		}
-	}
-
-	@Override
-	public void raInactive() {
-		if (tracer.isInfoEnabled()) {
-			tracer.info("Inactivated SchedulerResourceAdaptor RA Entity " + this.raContext.getEntityName());
-		}
-
 	}
 
 	@Override
@@ -340,9 +359,12 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			if (savedOneWaySmsSetCollection != null && savedOneWaySmsSetCollection.size() > 0) {
 				schedulableSms = savedOneWaySmsSetCollection;
 			} else {
-	            // checking if SMSC is paused
-	            if (smscPropertiesManagement.isDeliveryPause())
-	                return;
+	            // checking if SMSC is inactivated by SLEE
+                if (smscPropertiesManagement.isSmscStopped())
+                    return;
+                // checking if SMSC is paused by a used
+                if (smscPropertiesManagement.isDeliveryPause())
+                    return;
 
 	            try {
 					if (this.tracer.isFineEnabled())
