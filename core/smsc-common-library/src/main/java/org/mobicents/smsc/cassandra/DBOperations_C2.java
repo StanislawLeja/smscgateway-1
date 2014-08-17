@@ -44,6 +44,7 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.library.DbSmsRoutingRule;
+import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCashe;
@@ -685,6 +686,8 @@ public class DBOperations_C2 {
             this.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT, fastStoreAndForwordMode);
             this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
             this.do_scheduleMessage(sms, dueSlot, lstFailured, fastStoreAndForwordMode);
+        } else {
+            lstFailured.add(sms);
         }
     }
 

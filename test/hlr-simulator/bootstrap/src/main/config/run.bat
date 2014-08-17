@@ -1,9 +1,9 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem Mobicents Media Server Bootstrap Script for Win32
+rem Mobicents SMSC Test Server Bootstrap Script                             ##
 rem -------------------------------------------------------------------------
 
-rem $Id: run.bat,v 1.5 2007/08/07 10:15:40 baranowb Exp $
+rem $Id: run.sh abhayani@redhat.com $
 
 @if not "%ECHO%" == ""  echo %ECHO%
 @if "%OS%" == "Windows_NT"  setlocal
@@ -14,15 +14,15 @@ set PROGNAME=run.bat
 if "%OS%" == "Windows_NT" set PROGNAME=%~nx0%
 
 pushd %DIRNAME%..
-set MMS_HOME=%CD%
+set SMSC_HOME=%CD%
 echo ========
-echo %MMS_HOME%
+echo %SMSC_HOME%
 
 popd
 
 REM Add bin/native to the PATH if present
-if exist "%MMS_HOME%\native" set PATH=%MMS_HOME%\native;%PATH%
-if exist "%MMS_HOME%\native" set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path="%PATH%"
+if exist "%SMSC_HOME%\native" set PATH=%SMSC_HOME%\native;%PATH%
+if exist "%SMSC_HOME%\native" set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path="%PATH%"
 
 REM Run section  - here we define node and default ip
 set IP=127.0.0.1
@@ -55,7 +55,7 @@ set ARGS=""
 
 rem Find run.jar, or we can't continue
 
-set RUNJAR=%MMS_HOME%\bin\run.jar
+set RUNJAR=%SMSC_HOME%\bin\run.jar
 if exist "%RUNJAR%" goto FOUND_RUN_JAR
 echo Could not locate %RUNJAR%. Please check that you are in the
 echo bin directory when running this script.
@@ -89,10 +89,10 @@ rem If JBOSS_CLASSPATH or JAVAC_JAR is empty, don't include it, as this will
 rem result in including the local directory in the classpath, which makes
 rem error tracking harder.
 if not "%JAVAC_JAR%" == "" set RUNJAR=%JAVAC_JAR%;%RUNJAR%
-if "%MMS_CLASSPATH%" == "" set RUN_CLASSPATH=%RUNJAR%
-if "%RUN_CLASSPATH%" == "" set RUN_CLASSPATH=%MMS_CLASSPATH%;%RUNJAR%
+if "%SMSC_BOOT_CLASSPATH%" == "" set RUN_CLASSPATH=%RUNJAR%
+if "%RUN_CLASSPATH%" == "" set RUN_CLASSPATH=%SMSC_BOOT_CLASSPATH%;%RUNJAR%
 
-set MMS_CLASSPATH=%RUN_CLASSPATH%
+set SMSC_BOOT_CLASSPATH=%RUN_CLASSPATH%
 
 rem Setup JBoss specific properties
 set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name=%PROGNAME% 
@@ -115,28 +115,28 @@ rem JPDA options. Uncomment and modify as appropriate to enable remote debugging
 rem set JAVA_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y %JAVA_OPTS%
 
 rem Setup the java endorsed dirs
-set MMS_ENDORSED_DIRS=%MMS_HOME%\lib
+set SMSC_ENDORSED_DIRS=%SMSC_HOME%\lib
 
 
 echo ===============================================================================
 echo.
 echo   Mobicents SMSC Gateway Test Server Bootstrap Environment
 echo.
-echo   MMS_HOME: %MMS_HOME%
+echo   SMSC_HOME: %SMSC_HOME%
 echo.
 echo   JAVA: %JAVA%
 echo.
 echo   JAVA_OPTS: %JAVA_OPTS%
 echo.
-echo   CLASSPATH: %MMS_CLASSPATH%
+echo   CLASSPATH: %SMSC_BOOT_CLASSPATH%
 echo   
-echo   MMS_ENDORSED_DIRS: %MMS_ENDORSED_DIRS%
+echo   SMSC_ENDORSED_DIRS: %SMSC_ENDORSED_DIRS%
 echo.
 echo ===============================================================================
 echo.
 
 :RESTART
-"%JAVA%" %JAVA_OPTS% -Djava.ext.dirs="%MMS_ENDORSED_DIRS%" -Dmbrola.base="%MMS_HOME%/mbrola" -classpath "%MMS_CLASSPATH%" org.mobicents.media.server.bootstrap.Main %*
+"%JAVA%" %JAVA_OPTS% -Djava.ext.dirs="%SMSC_ENDORSED_DIRS%" -Dmbrola.base="%SMSC_HOME%/mbrola" -classpath "%SMSC_BOOT_CLASSPATH%" org.mobicents.smsc.server.bootstrap.Main %*
 rem if ERRORLEVEL 10 goto RESTART
 
 :END

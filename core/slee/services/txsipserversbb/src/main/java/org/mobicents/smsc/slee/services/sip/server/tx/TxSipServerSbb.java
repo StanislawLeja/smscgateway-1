@@ -484,7 +484,7 @@ public abstract class TxSipServerSbb implements Sbb {
                 throw e;
             }
             // checking if delivery query is overloaded
-            int fetchMaxRows = (int) (smscPropertiesManagement.getFetchMaxRows() * 1.2);
+            int fetchMaxRows = (int) (smscPropertiesManagement.getMaxActivityCount() * 1.2);
             int activityCount = SmsSetCashe.getInstance().getProcessingSmsSetSize();
             if (activityCount >= fetchMaxRows) {
                 SmscProcessingException e = new SmscProcessingException("SMSC is overloaded", SmppConstants.STATUS_THROTTLED, 0, null);

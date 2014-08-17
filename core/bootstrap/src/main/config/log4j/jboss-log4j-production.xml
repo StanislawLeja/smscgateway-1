@@ -45,7 +45,7 @@
 		<appender-ref ref="FILE"/> 
 	</category>
 	
-	<category name="org.mobicents.smsc.cassandra.CdrGenerator" additivity="false"> 
+	<category name="org.mobicents.smsc.library.CdrGenerator" additivity="false"> 
 	    <priority value="DEBUG" /> 
 	    <appender-ref ref="CDR"/> 
 	</category> 

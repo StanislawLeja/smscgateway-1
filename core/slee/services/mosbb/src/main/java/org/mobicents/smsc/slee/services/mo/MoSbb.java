@@ -1022,7 +1022,7 @@ public abstract class MoSbb extends MoCommonSbb {
                 throw e;
             }
             // checking if delivery query is overloaded
-            int fetchMaxRows = (int) (smscPropertiesManagement.getFetchMaxRows() * 1.4);
+            int fetchMaxRows = (int) (smscPropertiesManagement.getMaxActivityCount() * 1.4);
             int activityCount = SmsSetCashe.getInstance().getProcessingSmsSetSize();
             if (activityCount >= fetchMaxRows) {
                 SmscProcessingException e = new SmscProcessingException("SMSC is overloaded", SmppConstants.STATUS_THROTTLED, MAPErrorCode.resourceLimitation, null);

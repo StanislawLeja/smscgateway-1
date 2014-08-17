@@ -153,8 +153,11 @@
 			<!-- Password -->
 			<arg value="test" />
 
-			<!-- Message -->
-			<arg value="Hello World" />
+            <!-- Message -->
+            <arg value="Hello World" />
+
+            <!-- EsmClass -->
+            <arg value="3" />
 		</java>
 	</target>
 	<!-- -->
