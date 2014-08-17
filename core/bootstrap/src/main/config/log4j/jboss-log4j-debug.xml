@@ -120,7 +120,7 @@
 		<priority value="INFO" />
 	</category>
 
-	<category name="org.mobicents.smsc.cassandra.CdrGenerator"
+	<category name="org.mobicents.smsc.library.CdrGenerator"
 		additivity="false">
 		<priority value="DEBUG" />
 		<appender-ref ref="CDR" />
