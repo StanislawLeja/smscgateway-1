@@ -463,10 +463,8 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 								],
 								{ success: [
 									function(response) {
-										var hosts = response.value.Hosts;
-										var hostportarr = hosts.split(":");
-										var cassandrahost = hostportarr[0] 
-										var cassandraport = hostportarr[1]
+										var cassandrahost = response.value.DbHosts; 
+										var cassandraport = response.value.DbPort;
 										
 										
 										$("#cassandrahost").val(cassandrahost);
@@ -791,8 +789,6 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 			    			$("#div-cassandraport").removeClass("error");		
 			    		}
 						
-						var hosts = cassandrahost + ":" + cassandraport;
-						
 						var cassandrakeyspace = $("#cassandrakeyspace").val();
 						if(cassandrakeyspace.trim() == "") {
 			    			$("#div-cassandrakeyspace").addClass("error");					    			
@@ -833,7 +829,8 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
 						jolokia.request(
 								[
-									{ type: "write", mbean: mbeanSearch, attribute: "Hosts", value: hosts },
+									{ type: "write", mbean: mbeanSearch, attribute: "DbHosts", value: cassandrahost },
+									{ type: "write", mbean: mbeanSearch, attribute: "DbPort", value: cassandraport },
 									{ type: "write", mbean: mbeanSearch, attribute: "KeyspaceName", value: cassandrakeyspace },
 									{ type: "write", mbean: mbeanSearch, attribute: "ClusterName", value: cassandraclustername },
 									{ type: "write", mbean: mbeanSearch, attribute: "RemovingLiveTablesDays", value: removinglivetablesdays },
