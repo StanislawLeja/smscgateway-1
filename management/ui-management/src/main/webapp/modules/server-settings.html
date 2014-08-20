@@ -65,7 +65,16 @@
 										<option>Unicode</option>
 									</select>
 								</span>                         
-							</div>							
+							</div>
+							<div id="div-storeandforwardmode" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="every in-coming SMS will be processed as per Store And Forward Mode. If its set to fast, SMSC will attempt to deliver SMS first and only if it fails, it will persist for later re-try. If its normal, SMSC will persist SMS before delivery attempt. If incoming SMS is from SMPP connection, fast will be applied only when the message mode property is Store and Forward ">
+									<span class="add-on">Store And Forward Mode</span>
+									<select id="storeandforwardmode" >
+										<option>normal</option>
+										<option>fast</option>
+									</select>
+								</span>                         
+							</div>														
 							
 							&nbsp;
                         	<h5 style="border-bottom: 1px solid #DDD;">Delivery Delay Configuration</h5>
@@ -376,13 +385,21 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										
 										$("#esmedefaultclustername").val(response.value.EsmeDefaultClusterName);
 										
-										var smppEncodingForUCS2 = response.value.SmppEncodingForUCS2
+										var smppEncodingForUCS2 = response.value.SmppEncodingForUCS2;
 										
 										if(smppEncodingForUCS2 == "Utf8"){
 											smppencodingforucs2.options[0].selected = true;
 										} else {
 											smppencodingforucs2.options[1].selected = true;
 										}
+										
+										var storeAndForwordMode = response.value.StoreAndForwordMode;
+										
+										if(storeAndForwordMode == "normal"){
+											storeandforwardmode.options[0].selected = true;
+										} else {
+											storeandforwardmode.options[1].selected = true;
+										}										
 										
 										$("#propsubbusduedel").val(response.value.SubscriberBusyDueDelay);
 										$("#propfirduedel").val(response.value.FirstDueDelay);
@@ -584,6 +601,9 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						var e = document.getElementById("smppencodingforucs2");
 						var smppencodingforucs2 = e.options[e.selectedIndex].text;
 						
+						e = document.getElementById("storeandforwardmode");
+						var storeandforwardmode = e.options[e.selectedIndex].text;						
+						
 						var propsubbusduedel = $("#propsubbusduedel").val();
 						if(propsubbusduedel.trim() == "") {
 			    			$("#div-propsubbusduedel").addClass("error");					    			
@@ -649,6 +669,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									{ type: "write", mbean: mbeanSearch, attribute: "DefaultNpi", value: propdefaultnpi },
 									{ type: "write", mbean: mbeanSearch, attribute: "EsmeDefaultClusterName", value: propesmedefaultclustername },
 									{ type: "write", mbean: mbeanSearch, attribute: "SmppEncodingForUCS2", value: smppencodingforucs2 },
+									{ type: "write", mbean: mbeanSearch, attribute: "StoreAndForwordMode", value: storeandforwardmode },
 									{ type: "write", mbean: mbeanSearch, attribute: "SubscriberBusyDueDelay", value: propsubbusduedel },
 									{ type: "write", mbean: mbeanSearch, attribute: "FirstDueDelay", value: propfirduedel },
 									{ type: "write", mbean: mbeanSearch, attribute: "SecondDueDelay", value: propsecduedel },
