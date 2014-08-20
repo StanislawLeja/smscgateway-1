@@ -79,8 +79,6 @@
 				<include>org.mobicents.protocols.ss7.hardware:mobicents-dialogic</include>
 				<include>org.mobicents.protocols.ss7.congestion:congestion</include>
 				
-				<include>org.mobicents.protocols.ss7.statistics:statistics</include>
-
 				<!-- TelScale SS7 Libs -->
 				<include>com.telscale.protocols.ss7.oam.common:jmx</include>
 				<include>com.telscale.protocols.ss7.oam:shell-server-impl</include>
@@ -94,8 +92,12 @@
 				<include>com.telscale.protocols.ss7.oam.common:sccp-oam</include>
 				<include>com.telscale.protocols.ss7.oam.common:tcap-oam</include>
 
-				<!-- TelScale licensing lib -->
+			  	<!-- TelScale licensing lib -->
 			 	<include>com.telscale.licensing:lce-core</include>
+			    <include>com.telscale.licensing:lce-common</include>
+			    <include>com.telscale.licensing:lce-secret</include>
+			    <include>com.telscale.licensing:lce-notify</include>
+			    <include>org.apache.commons:commons-email</include>	
 			</includes>
 		</dependencySet>
 	</dependencySets>

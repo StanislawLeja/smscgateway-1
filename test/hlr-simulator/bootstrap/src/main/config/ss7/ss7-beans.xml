@@ -31,6 +31,7 @@
 	<bean name="Mtp3UserPart" class="org.mobicents.protocols.ss7.m3ua.impl.M3UAManagementImpl">
 		<constructor>
 			<parameter>Mtp3UserPart</parameter>
+			<parameter>TelScale-SMSC</parameter>
 		</constructor>
 		<property name="persistDir">${smsc.data.dir}</property>
 		<property name="transportManagement">
