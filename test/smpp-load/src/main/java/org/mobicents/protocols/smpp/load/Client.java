@@ -275,7 +275,7 @@ public class Client extends TestHarness {
 				actualSubmitSent += tasks[i].getSubmitRequestSent();
 			}
 		}
-        actualSubmitSent -= throttledMessageCount.get();
+//        actualSubmitSent -= throttledMessageCount.get();
 
 		logger.info("Performance client finished:");
 		logger.info("       Sessions: " + this.sessionCount);
@@ -283,7 +283,8 @@ public class Client extends TestHarness {
 		logger.info("Sessions Failed: " + sessionFailures);
 		logger.info("           Time: " + (stopTimeMillis - startTimeMillis) + " ms");
 		logger.info("  Target Submit: " + this.submitToSend);
-		logger.info("  Actual Submit: " + actualSubmitSent);
+        logger.info("  Actual Submit: " + actualSubmitSent);
+        logger.info("  Throttled Message count: " + throttledMessageCount);
 		double throughput = (double) actualSubmitSent / ((double) (stopTimeMillis - startTimeMillis) / (double) 1000);
 		logger.info("     Throughput: " + DecimalUtil.toString(throughput, 3) + " per sec");
 
@@ -371,13 +372,12 @@ public class Client extends TestHarness {
                         }
                     }
 
-                    if (SUBMIT_RESP.get() >= this.submitToSend) {
+                    if (SUBMIT_SENT.get() >= this.submitToSend) {
                         if (allSubmitResponseReceivedSignal.await(100, TimeUnit.MILLISECONDS)) {
                             break;
-                        } else {
-                            if (SUBMIT_SENT.getAndIncrement() >= this.submitToSend)
-                                continue;
                         }
+                        if (SUBMIT_SENT.getAndIncrement() >= this.submitToSend)
+                            continue;
                     }
 
 					SubmitSm submit = new SubmitSm();
@@ -441,8 +441,9 @@ public class Client extends TestHarness {
                     submitResponseReceived++;
                     SUBMIT_RESP.incrementAndGet();
                     // if the sending thread is finished, check if we're done
-                    if (sendingDone.get()) {
-                        if (submitResponseReceived >= submitRequestSent) { //  submitToSend
+//                    if (sendingDone.get()) {
+                    if (SUBMIT_SENT.get() >= submitToSend) {
+                        if (submitResponseReceived >= submitRequestSent) { // submitToSend
                             allSubmitResponseReceivedSignal.countDown();
                         }
                     }
