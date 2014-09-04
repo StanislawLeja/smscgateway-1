@@ -132,7 +132,8 @@ public class C2_TxSmppServerSbbTest {
 
 		this.sbb = new TxSmppServerSbbProxy(this.pers);
 
-		SmscPropertiesManagement.getInstance("Test");
+        SmscPropertiesManagement.getInstance("Test");
+        SmscPropertiesManagement.getInstance().setSmscStopped(false);
 	}
 
 	@AfterMethod

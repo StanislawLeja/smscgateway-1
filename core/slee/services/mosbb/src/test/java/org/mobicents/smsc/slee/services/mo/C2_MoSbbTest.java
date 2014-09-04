@@ -122,6 +122,7 @@ public class C2_MoSbbTest {
         this.pers.start();
 
         SmscPropertiesManagement.getInstance("Test");
+        SmscPropertiesManagement.getInstance().setSmscStopped(false);
 
         this.sbb = new MoSbbProxy(this.pers);
     }
