@@ -26,6 +26,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -73,6 +74,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -87,13 +89,16 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.ButtonGroup;
 
 /**
  * 
  * @author sergey vetyutnev
  * 
  */
-public class SmppTestingForm extends JDialog {
+public class SmppTestingForm extends JDialog implements SmppAccepter {
 
 	private static final long serialVersionUID = 4969830723671541575L;
 
@@ -108,6 +113,9 @@ public class SmppTestingForm extends JDialog {
 	private JButton btStopBulk;
 	private javax.swing.Timer tm;
 	private JLabel lbState;
+	private JRadioButton rbRandomBulkMessages;
+    private JRadioButton rbBulkMessagesFrom;
+    private JButton btPcapFileName;
 
 	private ThreadPoolExecutor executor;
 	private ScheduledThreadPoolExecutor monitorExecutor;
@@ -271,7 +279,7 @@ public class SmppTestingForm extends JDialog {
 				startBulkSending();
 			}
 		});
-		btStartBulk.setBounds(10, 116, 201, 23);
+		btStartBulk.setBounds(10, 172, 201, 23);
 		panel_2.add(btStartBulk);
 		
 		btStopBulk = new JButton("Stop bulk sending");
@@ -281,12 +289,81 @@ public class SmppTestingForm extends JDialog {
 			}
 		});
 		btStopBulk.setEnabled(false);
-		btStopBulk.setBounds(223, 116, 211, 23);
+		btStopBulk.setBounds(223, 172, 211, 23);
 		panel_2.add(btStopBulk);
 		
 		lbState = new JLabel("-");
-		lbState.setBounds(10, 152, 732, 16);
+		lbState.setBounds(14, 206, 732, 16);
 		panel_2.add(lbState);
+		
+		rbRandomBulkMessages = new JRadioButton("Random bulk messages");
+		rbRandomBulkMessages.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent arg0) {
+                tbPcapFileName.setEnabled(false);
+                btPcapFileName.setEnabled(false);
+                tbPcapPort.setEnabled(false);
+		    }
+		});
+		buttonGroup.add(rbRandomBulkMessages);
+		rbRandomBulkMessages.setSelected(true);
+		rbRandomBulkMessages.setBounds(10, 127, 197, 23);
+		panel_2.add(rbRandomBulkMessages);
+		
+		rbBulkMessagesFrom = new JRadioButton("Bulk messages from pcap file");
+		rbBulkMessagesFrom.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent arg0) {
+                tbPcapFileName.setEnabled(true);
+                btPcapFileName.setEnabled(true);
+                tbPcapPort.setEnabled(true);
+		    }
+		});
+		buttonGroup.add(rbBulkMessagesFrom);
+		rbBulkMessagesFrom.setBounds(10, 149, 204, 23);
+		panel_2.add(rbBulkMessagesFrom);
+		
+		tbPcapFileName = new JTextField();
+		tbPcapFileName.setEnabled(false);
+		tbPcapFileName.setBounds(251, 128, 439, 20);
+		panel_2.add(tbPcapFileName);
+		tbPcapFileName.setColumns(10);
+		
+		btPcapFileName = new JButton(". . .");
+		btPcapFileName.setEnabled(false);
+		btPcapFileName.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent arg0) {
+                JFileChooser chooser = new JFileChooser();
+                String filterName = null;
+                filterName = "Pcap";
+                TraceFileFilter filter = new TraceFileFilter(filterName);
+                chooser.setFileFilter(filter);
+                chooser.addChoosableFileFilter(filter);
+                File f = new File(tbPcapFileName.getText());
+                chooser.setSelectedFile(f);
+                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+                int returnVal = chooser.showOpenDialog(getJDialog());
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File f2 = chooser.getSelectedFile();
+                    if (f2 != null && f2.exists())
+                        tbPcapFileName.setText(f2.getPath());
+                    else
+                        JOptionPane.showMessageDialog(null, "File does not exists - try again");
+                }
+		    }
+		});
+		btPcapFileName.setBounds(693, 127, 53, 23);
+		panel_2.add(btPcapFileName);
+		
+		JLabel lblTcpPortFor = new JLabel("TCP Port for pcap parsing");
+		lblTcpPortFor.setBounds(251, 154, 240, 14);
+		panel_2.add(lblTcpPortFor);
+		
+		tbPcapPort = new JTextField();
+		tbPcapPort.setText("2775");
+		tbPcapPort.setEnabled(false);
+		tbPcapPort.setBounds(501, 150, 86, 20);
+		panel_2.add(tbPcapPort);
+		tbPcapPort.setColumns(10);
 
 		this.tm = new javax.swing.Timer(5000, new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -742,23 +819,36 @@ public class SmppTestingForm extends JDialog {
 	}
 
 	private int threadCount = 10;
-	
-	private void startBulkSending() {
-		this.doStopTimer();
 
-        this.timer = new Timer[threadCount];
-        for (int i1 = 0; i1 < threadCount; i1++) {
-            this.timer[i1] = new Timer();
-            this.timer[i1].scheduleAtFixedRate(new TimerTask() {
+	private void startBulkSending() {
+        if (this.rbRandomBulkMessages.isSelected()) {
+            this.doStopTimer();
+
+            this.timer = new Timer[threadCount];
+            for (int i1 = 0; i1 < threadCount; i1++) {
+                this.timer[i1] = new Timer();
+                this.timer[i1].scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        doSendSmppMessages();
+                    }
+                }, 1 * 1000, 1 * 1000);
+            }
+
+            this.btStartBulk.setEnabled(false);
+            this.btStopBulk.setEnabled(true);
+        } else {
+            this.doStopTimer();
+            this.btStartBulk.setEnabled(false);
+            this.btStopBulk.setEnabled(true);
+            
+            Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    doSendSmppMessages();
-                }
-            }, 1 * 1000, 1 * 1000);
+                    doParsePcapFile();
+                }} );
+            t.start();
         }
-
-		this.btStartBulk.setEnabled(false);
-		this.btStopBulk.setEnabled(true);
 	}
 
 	private void stopBulkSending() {
@@ -769,6 +859,9 @@ public class SmppTestingForm extends JDialog {
 	}
 
 	private String bigMessage = "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
+	private JTextField tbPcapFileName;
+	private final ButtonGroup buttonGroup = new ButtonGroup();
+	private JTextField tbPcapPort;
 	
 	private void doSendSmppMessages() {
 
@@ -805,21 +898,44 @@ public class SmppTestingForm extends JDialog {
             int j4 = rand.nextInt(5);
             String msg = this.param.getMessageText();
             if (j4 == 0)
-				msg = bigMessage;
+                msg = bigMessage;
 
-			
-			// .........................
-//			msg = bigMessage;
-//			splittingType = SplittingType.DoNotSplit;
-//			encodingType = EncodingType.UCS2;
-			// .........................
-			// TODO: ..................
-
-			
-
-			this.submitMessage(encodingType, false, msg, splittingType, param.getValidityType(), destAddrS, param.getMessagingMode());
-		}
+            this.submitMessage(encodingType, false, msg, splittingType, param.getValidityType(), destAddrS, param.getMessagingMode());
+        }
 	}
+
+    private void doParsePcapFile() {
+        try {
+            int port = Integer.parseInt(this.tbPcapPort.getText());
+            SmppPcapParser smppPcapParser = new SmppPcapParser(this, this.tbPcapFileName.getText(), port);
+
+            smppPcapParser.parse();
+
+        } catch (Throwable e) {
+            JOptionPane.showMessageDialog(getJDialog(), "General exception when pcap parsing: " + e.toString());
+            e.printStackTrace();
+        } finally {
+            this.btStartBulk.setEnabled(true);
+            this.btStopBulk.setEnabled(false);
+        }
+    }
+
+    @Override
+    public void onNewSmppRequest(BaseSm pdu) throws Exception {
+        if (session0 != null) {
+            WindowFuture<Integer, PduRequest, PduResponse> future0 = session0.sendRequestPdu(pdu, 10000, false);
+
+            this.messagesSent.incrementAndGet();
+        }
+    }
+
+    @Override
+    public boolean needContinue() {
+        if (!this.btStartBulk.isEnabled())
+            return true;
+        else
+            return false;
+    }
 
 	public synchronized void addMessage(String msg, String info) {
 		
