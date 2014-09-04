@@ -1255,7 +1255,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		} catch (MAPException e) {
 			if (mapDialogSms != null)
 				mapDialogSms.release();
-			throw new SmscProcessingException("MAPException when sending MtForwardSM", -1, -1, null, e);
+            throw new SmscProcessingException("MAPException when sending MtForwardSM. \nSms=" + sms, -1, -1, null, e);
 		} catch (TlvConvertException e) {
 			if (mapDialogSms != null)
 				mapDialogSms.release();

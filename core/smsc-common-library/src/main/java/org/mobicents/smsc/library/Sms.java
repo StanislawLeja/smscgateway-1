@@ -452,8 +452,14 @@ public class Sms implements Serializable {
 
 		sb.append("SmsEvent [SmsSet=");
 		sb.append(smsSet);
-		sb.append(", dbId=");
-		sb.append(dbId);
+        sb.append(", dbId=");
+        sb.append(dbId);
+        sb.append(", dueSlot=");
+        sb.append(dueSlot);
+        sb.append(", stored=");
+        sb.append(stored);
+        sb.append(", storingAfterFailure=");
+        sb.append(storingAfterFailure);
 		sb.append(", sourceAddrTon=");
 		sb.append(sourceAddrTon);
 		sb.append(", sourceAddrNpi=");
@@ -494,15 +500,20 @@ public class Sms implements Serializable {
 		sb.append(validityPeriod);
         sb.append(", deliveryCount=");
         sb.append(deliveryCount);
-        sb.append(", messageText=");
+        sb.append(", originationType=");
+        sb.append(originationType);
+        sb.append(", shortMessageText=");
         sb.append(shortMessageText);
+        if (shortMessageBin != null) {
+            sb.append(", shortMessageBin=\"");
+            sb.append(printArray(shortMessageBin));
+            sb.append("\"");
+        }
 
 		if (this.tlvSet != null) {
 			sb.append(", tlvSet=");
 			sb.append(this.tlvSet.toString());
 		}
-
-		// TODO: add printing shortMessage parameter
 
 		sb.append("]");
 
@@ -540,6 +551,19 @@ public class Sms implements Serializable {
 			return true;
 		else
 			return false;
+    }
+
+    private String printArray(byte[] bb) {
+        StringBuilder sb = new StringBuilder();
+        int i1 = 0;
+        for (byte b : bb) {
+            if (i1 == 0)
+                i1 = 1;
+            else
+                sb.append(", ");
+            sb.append((b & 0xFF));
+        }
+        return sb.toString();
     }
 
     public enum OriginationType {
