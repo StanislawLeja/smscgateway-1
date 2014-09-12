@@ -457,6 +457,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
                         buf2 = new byte[bf3.length + buf1.length];
                         System.arraycopy(bf3, 0, buf2, 0, bf3.length);
                         System.arraycopy(buf1, 0, buf2, bf3.length, buf1.length);
+                        esmClass = 0x40;
                     } else {
                         buf2 = buf1;
                     }

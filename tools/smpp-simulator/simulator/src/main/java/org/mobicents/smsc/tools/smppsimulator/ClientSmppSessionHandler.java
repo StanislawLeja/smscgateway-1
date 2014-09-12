@@ -34,6 +34,7 @@ import com.cloudhopper.smpp.impl.DefaultSmppSessionHandler;
 import com.cloudhopper.smpp.pdu.BaseSm;
 import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
+import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.type.RecoverablePduException;
 import com.cloudhopper.smpp.type.UnrecoverablePduException;
 
@@ -73,7 +74,16 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
 
             if (pduRequest instanceof BaseSm) {
                 BaseSm dev = (BaseSm) pduRequest;
+
                 byte[] data = dev.getShortMessage();
+                if (dev.getShortMessageLength() == 0) {
+                    // Probably the message_payload Optional Parameter is being used
+                    Tlv messagePaylod = dev.getOptionalParameter(SmppConstants.TAG_MESSAGE_PAYLOAD);
+                    if (messagePaylod != null) {
+                        data = messagePaylod.getValue();
+                    }
+                }
+
                 DataCodingScheme dcs = new DataCodingSchemeImpl(dev.getDataCoding());
 
                 boolean udhPresent = (dev.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
