@@ -460,7 +460,7 @@ public abstract class TxSipServerSbb implements Sbb {
 			smsSet.setDestAddrTon(ta.getAddrTon());
 			smsSet.addSms(sms);
 		}
-		sms.setSmsSet(smsSet);
+        smsSet.addSms(sms);
 
 		long messageId = store.c2_getNextMessageId();
 		SmscStatProvider.getInstance().setCurrentMessageId(messageId);
@@ -528,7 +528,7 @@ public abstract class TxSipServerSbb implements Sbb {
                         else
                             store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
                     } else {
-                        store.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+                        store.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, false);
                     }
                 } catch (PersistenceException e) {
                     throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,

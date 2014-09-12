@@ -48,10 +48,6 @@ import com.cloudhopper.smpp.tlv.TlvConvertException;
  * @author sergey vetyutnev
  * 
  */
-/**
- * @author bss
- *
- */
 public class MessageUtil {
 
 	/**
@@ -481,6 +477,17 @@ public class MessageUtil {
             return false;
     }
 
+    public static Sms createReceiptSms(Sms sms, boolean delivered, TargetAddress ta) {
+        Sms receipt = createReceiptSms(sms, delivered);
+        SmsSet backSmsSet = new SmsSet();
+        backSmsSet.setDestAddr(ta.getAddr());
+        backSmsSet.setDestAddrNpi(ta.getAddrNpi());
+        backSmsSet.setDestAddrTon(ta.getAddrTon());
+        backSmsSet.addSms(receipt);
+        receipt.setStored(true);
+        return receipt;
+    }
+
     public static Sms createReceiptSms(Sms sms, boolean delivered) {
         Sms receipt = new Sms();
         receipt.setDbId(UUID.randomUUID());
@@ -516,7 +523,7 @@ public class MessageUtil {
 
         receipt.setShortMessageText(sb.toString());
 
-        receipt.setEsmClass(ESME_DELIVERY_ACK);
+        receipt.setEsmClass(ESME_DELIVERY_ACK | (sms.getEsmClass() & 0x03));
 
         return receipt;
     }
@@ -576,7 +583,6 @@ public class MessageUtil {
             return true;
         else
             return false;
-        // boolean storeAndForwMode = (sms.getEsmClass() & 0x03) == 0x03;
     }
 
     public static boolean isTransactional(Sms sms) {

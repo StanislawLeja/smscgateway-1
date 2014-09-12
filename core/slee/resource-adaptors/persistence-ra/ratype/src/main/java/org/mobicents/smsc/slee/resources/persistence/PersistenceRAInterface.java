@@ -327,7 +327,7 @@ public interface PersistenceRAInterface {
 
     void c2_createRecordArchive(Sms sms) throws PersistenceException;
 
-    void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode) throws PersistenceException;
+    void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode, boolean removeExpiredValidityPeriod) throws PersistenceException;
 
     void c2_scheduleMessage_NewDueSlot(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode) throws PersistenceException;
 

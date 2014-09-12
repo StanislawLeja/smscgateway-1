@@ -464,7 +464,8 @@ public abstract class ChargingSbb implements Sbb {
                         persistence.setNewMessageScheduled(sms.getSmsSet(),
                                 MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
                     } else {
-                        persistence.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+                        persistence
+                                .c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, false);
                     }
                 }
             }

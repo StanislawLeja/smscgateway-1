@@ -304,8 +304,9 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             }
 
             @Override
-            public void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode) throws PersistenceException {
-                dbOperations_C2.c2_scheduleMessage_ReschedDueSlot(sms, fastStoreAndForwordMode);
+            public void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode, boolean removeExpiredValidityPeriod)
+                    throws PersistenceException {
+                dbOperations_C2.c2_scheduleMessage_ReschedDueSlot(sms, fastStoreAndForwordMode, removeExpiredValidityPeriod);
             }
 
             @Override

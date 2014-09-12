@@ -144,7 +144,7 @@ public class AlertTest {
         SmsSet smsSet = createEmptySmsSet(ta1);
 
         Sms sms = this.prepareSms(smsSet);
-        this.pers.c2_scheduleMessage_ReschedDueSlot(sms, false);
+        this.pers.c2_scheduleMessage_ReschedDueSlot(sms, false, true);
         procDueSlot = sms.getDueSlot();
 
         procTargetId = ta1.getTargetId();

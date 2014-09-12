@@ -754,9 +754,12 @@ public abstract class MoSbb extends MoCommonSbb {
 		case unknown:
 			sms.setSourceAddrTon(smscPropertiesManagement.getDefaultTon());
 			break;
-		case international_number:
-			sms.setSourceAddrTon(callingPartyAddress.getAddressNature().getIndicator());
-			break;
+        case international_number:
+            sms.setSourceAddrTon(callingPartyAddress.getAddressNature().getIndicator());
+            break;
+        case national_significant_number:
+            sms.setSourceAddrTon(callingPartyAddress.getAddressNature().getIndicator());
+            break;
 		default:
 			throw new SmscProcessingException("MO SourceAddress TON not supported: "
 					+ callingPartyAddress.getAddressNature(), SmppConstants.STATUS_SYSERR,
@@ -868,7 +871,7 @@ public abstract class MoSbb extends MoCommonSbb {
             smsSet.setDestAddrNpi(ta.getAddrNpi());
             smsSet.setDestAddrTon(ta.getAddrTon());
         }
-		sms.setSmsSet(smsSet);
+		smsSet.addSms(sms);
 
 //        long messageId = this.smppServerSessions.getNextMessageId();
         long messageId = store.c2_getNextMessageId();
@@ -1049,7 +1052,7 @@ public abstract class MoSbb extends MoCommonSbb {
                         store.setNewMessageScheduled(sms.getSmsSet(),
                                 MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
                     } else {
-                        store.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+                        store.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, false);
                     }
                 } catch (PersistenceException e) {
                     throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,

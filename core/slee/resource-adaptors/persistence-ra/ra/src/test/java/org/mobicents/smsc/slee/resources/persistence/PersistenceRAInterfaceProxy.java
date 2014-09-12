@@ -297,7 +297,7 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
     }
 
     @Override
-    public void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode) throws PersistenceException {
+    public void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode, boolean removeExpiredValidityPeriod) throws PersistenceException {
         // TODO Auto-generated method stub
         
     }

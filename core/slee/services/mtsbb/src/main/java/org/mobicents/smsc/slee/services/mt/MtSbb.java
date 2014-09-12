@@ -933,41 +933,53 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			}
 
 			// adding a success receipt if it is needed
-			if (sms.getStored()) {
-				int registeredDelivery = sms.getRegisteredDelivery();
-				if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
-					TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(),
-							sms.getSourceAddr());
-					TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(ta);
-					try {
-						synchronized (lock) {
-							Sms receipt;
-							if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-								receipt = MessageUtil.createReceiptSms(sms, true);
-								SmsSet backSmsSet = pers.obtainSmsSet(ta);
-								receipt.setSmsSet(backSmsSet);
-                                receipt.setStored(true);
-								pers.createLiveSms(receipt);
-                                pers.setNewMessageScheduled(receipt.getSmsSet(),
-                                        MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
-							} else {
-								receipt = MessageUtil.createReceiptSms(sms, true);
-								SmsSet backSmsSet = new SmsSet();
-								backSmsSet.setDestAddr(ta.getAddr());
-								backSmsSet.setDestAddrNpi(ta.getAddrNpi());
-								backSmsSet.setDestAddrTon(ta.getAddrTon());
-								receipt.setSmsSet(backSmsSet);
-                                receipt.setStored(true);
-                                pers.c2_scheduleMessage_ReschedDueSlot(receipt, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
-							}
-							this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr() + ", dest="
-									+ receipt.getSmsSet().getDestAddr());
-						}
-					} finally {
-						SmsSetCashe.getInstance().removeSmsSet(lock);
-					}
-				}
-			}
+//			if (sms.getStored()) {
+            int registeredDelivery = sms.getRegisteredDelivery();
+            if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
+                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
+                TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(ta);
+                try {
+                    synchronized (lock) {
+                        Sms receipt;
+                        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                            receipt = MessageUtil.createReceiptSms(sms, true);
+                            SmsSet backSmsSet = pers.obtainSmsSet(ta);
+                            receipt.setSmsSet(backSmsSet);
+                            receipt.setStored(true);
+                            pers.createLiveSms(receipt);
+                            pers.setNewMessageScheduled(receipt.getSmsSet(),
+                                    MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+                        } else {
+                            receipt = MessageUtil.createReceiptSms(sms, true, ta);
+                            boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
+                            if (!storeAndForwMode) {
+                                try {
+                                    this.scheduler.injectSmsOnFly(receipt.getSmsSet());
+                                } catch (Exception e) {
+                                    this.logger.severe("Exception when runnung injectSmsOnFly() for receipt in handleSmsResponse(): " + e.getMessage(), e);
+                                }
+                            } else {
+                                if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+                                    try {
+                                        receipt.setStoringAfterFailure(true);
+                                        this.scheduler.injectSmsOnFly(receipt.getSmsSet());
+                                    } catch (Exception e) {
+                                        this.logger.severe("Exception when runnung injectSmsOnFly() for receipt in handleSmsResponse(): " + e.getMessage(), e);
+                                    }
+                                } else {
+                                    receipt.setStored(true);
+                                    pers.c2_scheduleMessage_ReschedDueSlot(receipt,
+                                            smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, true);
+                                }
+                            }
+                        }
+                        this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
+                    }
+                } finally {
+                    SmsSetCashe.getInstance().removeSmsSet(lock);
+                }
+            }
+//			}
 
 		} catch (PersistenceException e1) {
 			this.logger.severe(

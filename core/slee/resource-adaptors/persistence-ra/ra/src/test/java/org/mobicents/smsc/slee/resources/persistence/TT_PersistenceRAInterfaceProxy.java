@@ -82,9 +82,9 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
         oldShortMessageDbFormat = val;
     }
 
-    public boolean do_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode)
+    public boolean do_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode, boolean removeExpiredValidityPeriod)
             throws PersistenceException {
-        return super.do_scheduleMessage(sms, dueSlot, lstFailured, fastStoreAndForwordMode);
+        return super.do_scheduleMessage(sms, dueSlot, lstFailured, fastStoreAndForwordMode, removeExpiredValidityPeriod);
     }
 
     public boolean testCassandraAccess() {

@@ -44,7 +44,6 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.library.DbSmsRoutingRule;
-import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCashe;
@@ -632,7 +631,12 @@ public class DBOperations_C2 {
      * messages for this targetId or for a next available if no dueSlot has been
      * scheduled for targetId
      */
-	public void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode) throws PersistenceException {
+    public void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode, boolean removeExpiredValidityPeriod) throws PersistenceException {
+        c2_scheduleMessage_ReschedDueSlot(sms, fastStoreAndForwordMode, 0, null, removeExpiredValidityPeriod);
+    }
+
+    private void c2_scheduleMessage_ReschedDueSlot(Sms sms, boolean fastStoreAndForwordMode, long preferredDueSlot, ArrayList<Sms> lstFailured,
+            boolean removeExpiredValidityPeriod) throws PersistenceException {
         if (sms.getStored()) {
             long dueSlot = 0;
             PreparedStatementCollection_C3[] lstPsc = this.c2_getPscList();
@@ -646,15 +650,18 @@ public class DBOperations_C2 {
                         break;
                 }
 
-                if (fastStoreAndForwordMode) {
-                    if (dueSlot != 0) {
-                        long dueSlot2 = c2_checkDueSlotWritingPossibility(dueSlot);
-                        if (dueSlot2 != dueSlot) {
-                            dueSlot = dueSlot2;
-                            this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
-                        }
+                if ((dueSlot == 0 || dueSlot <= this.c2_getCurrentDueSlot()) && preferredDueSlot > 0) {
+                    dueSlot = preferredDueSlot;
+                    this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
+                }
+
+                if (fastStoreAndForwordMode && dueSlot != 0) {
+                    long dueSlot2 = c2_checkDueSlotWritingPossibility(dueSlot);
+                    if (dueSlot2 != dueSlot) {
+                        dueSlot = dueSlot2;
+                        this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
                     }
-                } 
+                }
 
                 if (dueSlot == 0 || dueSlot <= this.c2_getCurrentDueSlot()) {
                     dueSlot = this.c2_getDueSlotForNewSms();
@@ -662,7 +669,7 @@ public class DBOperations_C2 {
                 }
                 sms.setDueSlot(dueSlot);
 
-                done = this.do_scheduleMessage(sms, dueSlot, null, fastStoreAndForwordMode);
+                done = this.do_scheduleMessage(sms, dueSlot, lstFailured, fastStoreAndForwordMode, removeExpiredValidityPeriod);
             }
 
             if (!done) {
@@ -675,23 +682,27 @@ public class DBOperations_C2 {
      * scheduler a message for a predefined dueSlot (for a next schedule time)
      */
     public void c2_scheduleMessage_NewDueSlot(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode) throws PersistenceException {
-        if (sms.getStoringAfterFailure())
+        if (sms.getStoringAfterFailure()) {
+            // the first store in ForwardAndStore mode - we store with other
+            // messages to this
             sms.setStored(true);
-
-        if (sms.getStored()) {
-            if (fastStoreAndForwordMode) {
-                dueSlot = c2_checkDueSlotWritingPossibility(dueSlot);
-            }
-
-            this.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT, fastStoreAndForwordMode);
-            this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
-            this.do_scheduleMessage(sms, dueSlot, lstFailured, fastStoreAndForwordMode);
+            c2_scheduleMessage_ReschedDueSlot(sms, fastStoreAndForwordMode, dueSlot, lstFailured, true);
         } else {
-            lstFailured.add(sms);
+            if (sms.getStored()) {
+                if (fastStoreAndForwordMode) {
+                    dueSlot = c2_checkDueSlotWritingPossibility(dueSlot);
+                }
+
+                this.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT, fastStoreAndForwordMode);
+                this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
+                this.do_scheduleMessage(sms, dueSlot, lstFailured, fastStoreAndForwordMode, true);
+            } else {
+                lstFailured.add(sms);
+            }
         }
     }
 
-	protected boolean do_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode)
+	protected boolean do_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode, boolean removeExpiredValidityPeriod)
             throws PersistenceException {
 
 		sms.setDueSlot(dueSlot);

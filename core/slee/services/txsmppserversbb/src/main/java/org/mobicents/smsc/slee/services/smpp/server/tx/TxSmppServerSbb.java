@@ -554,9 +554,12 @@ public abstract class TxSmppServerSbb implements Sbb {
 		case SmppConstants.TON_UNKNOWN:
 			sms.setSourceAddrTon(smscPropertiesManagement.getDefaultTon());
 			break;
-		case SmppConstants.TON_INTERNATIONAL:
-			sms.setSourceAddrTon(event.getSourceAddress().getTon());
-			break;
+        case SmppConstants.TON_INTERNATIONAL:
+            sms.setSourceAddrTon(event.getSourceAddress().getTon());
+            break;
+        case SmppConstants.TON_NATIONAL:
+            sms.setSourceAddrTon(event.getSourceAddress().getTon());
+            break;
 		case SmppConstants.TON_ALPHANUMERIC:
 			sms.setSourceAddrTon(event.getSourceAddress().getTon());
 			break;
@@ -812,7 +815,7 @@ public abstract class TxSmppServerSbb implements Sbb {
                 }
 			} else {
 				// store and forward
-                if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+                if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast && sms.getScheduleDeliveryTime() == null) {
                     try {
                         sms.setStoringAfterFailure(true);
                         this.scheduler.injectSmsOnFly(sms.getSmsSet());
@@ -831,7 +834,7 @@ public abstract class TxSmppServerSbb implements Sbb {
                             else
                                 store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
                         } else {
-                            store.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+                            store.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, false);
                         }
                     } catch (PersistenceException e) {
                         throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,

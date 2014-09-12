@@ -3361,7 +3361,7 @@ public class C2_MtTest {
         for (SmsDef smsDef : lst) {
             Sms sms = this.prepareSms(smsSet, i1, smsDef);
             if (sms.getStored()) {
-                this.pers.c2_scheduleMessage_ReschedDueSlot(sms, false);
+                this.pers.c2_scheduleMessage_ReschedDueSlot(sms, false, true);
                 procDueSlot = sms.getDueSlot();
             } else {
                 smsSet.addSms(sms);
