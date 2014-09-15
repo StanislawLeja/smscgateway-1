@@ -22,8 +22,8 @@
 			<scope>runtime</scope>
 			<includes>
 				<!-- simulator libraris -->
-				<include>com.telscale.smsc:smpp-simulator
-				</include>
+				<include>com.telscale.smsc:smpp-simulator</include>
+				<include>com.telscale.smsc:smsc-common-library</include>
 
 				<!-- Common libraries -->
 				<include>log4j:log4j</include>
