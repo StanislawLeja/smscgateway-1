@@ -21,6 +21,8 @@
  */
 package org.mobicents.smsc.library;
 
+import java.text.SimpleDateFormat;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -49,6 +51,8 @@ public class CdrGenerator {
     public static final String CDR_TEMP_FAILED_SIP = "temp_failed_sip";
 
     public static final String CDR_SUCCESS_NO_REASON = "";
+    
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS Z");
 
 	public static void generateCdr(String message) {
 		logger.debug(message);
@@ -67,7 +71,7 @@ public class CdrGenerator {
             return;
 
         StringBuffer sb = new StringBuffer();
-        sb.append(smsEvent.getSubmitDate()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddr())
+        sb.append(DATE_FORMAT.format(smsEvent.getSubmitDate())).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddr())
                 .append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrTon())
                 .append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrNpi())
                 .append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddr())
