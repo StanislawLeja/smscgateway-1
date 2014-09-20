@@ -332,9 +332,12 @@ public abstract class TxSmppServerSbb implements Sbb {
 		case SmppConstants.TON_UNKNOWN:
 			destTon = smscPropertiesManagement.getDefaultTon();
 			break;
-		case SmppConstants.TON_INTERNATIONAL:
-			destTon = event.getDestAddress().getTon();
-			break;
+        case SmppConstants.TON_INTERNATIONAL:
+            destTon = event.getDestAddress().getTon();
+            break;
+        case SmppConstants.TON_NATIONAL:
+            destTon = event.getDestAddress().getTon();
+            break;
 		default:
 			throw new SmscProcessingException("DestAddress TON not supported: " + event.getDestAddress().getTon(),
 					SmppConstants.STATUS_INVDSTTON, MAPErrorCode.systemFailure, null);

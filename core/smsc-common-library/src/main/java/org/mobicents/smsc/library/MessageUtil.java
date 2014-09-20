@@ -198,30 +198,18 @@ public class MessageUtil {
 
     public static void applyValidityPeriod(Sms sms, Date validityPeriod, boolean fromEsme, int maxValidityPeriodHours, int defaultValidityPeriodHours)
             throws SmscProcessingException {
-//		SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-//		int maxValidityPeriodHours = smscPropertiesManagement.getMaxValidityPeriodHours();
-//		int defaultValidityPeriodHours = smscPropertiesManagement.getDefaultValidityPeriodHours();
-
-		Date now = new Date();
-		if (validityPeriod == null) {
-			validityPeriod = addHours(now, defaultValidityPeriodHours);
-		} else {
-			Date maxValidityPeriod = addHours(now, maxValidityPeriodHours);
-			if (validityPeriod.after(maxValidityPeriod)) {
-				if (fromEsme)
-					throw new SmscProcessingException("Validity period is after than maxValidityPeriod", SmppConstants.STATUS_INVEXPIRY,
-							MAPErrorCode.systemFailure, null);
-				else
-					validityPeriod = maxValidityPeriod;
-			}
-			if (validityPeriod.before(now)) {
-				if (fromEsme)
-					throw new SmscProcessingException("Validity period is before than now", SmppConstants.STATUS_INVEXPIRY, MAPErrorCode.systemFailure, null);
-				else
-					validityPeriod = maxValidityPeriod;
-			}
-		}
-		sms.setValidityPeriod(validityPeriod);
+        Date now = new Date();
+        if (validityPeriod == null) {
+            validityPeriod = addHours(now, defaultValidityPeriodHours);
+        }
+        Date maxValidityPeriod = addHours(now, maxValidityPeriodHours);
+        if (validityPeriod.after(maxValidityPeriod)) {
+            validityPeriod = maxValidityPeriod;
+        }
+        if (validityPeriod.before(now)) {
+            validityPeriod = maxValidityPeriod;
+        }
+        sms.setValidityPeriod(validityPeriod);
 	}
 
 	public static void applyScheduleDeliveryTime(Sms sms, Date scheduleDeliveryTime) throws SmscProcessingException {

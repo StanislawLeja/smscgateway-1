@@ -621,9 +621,12 @@ public abstract class MoSbb extends MoCommonSbb {
 		case Unknown:
 			destTon = smscPropertiesManagement.getDefaultTon();
 			break;
-		case InternationalNumber:
-			destTon = af.getTypeOfNumber().getCode();
-			break;
+        case InternationalNumber:
+            destTon = af.getTypeOfNumber().getCode();
+            break;
+        case NationalNumber:
+            destTon = af.getTypeOfNumber().getCode();
+            break;
 		default:
 			throw new SmscProcessingException("MO DestAddress TON not supported: " + af.getTypeOfNumber().getCode(),
 					SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
