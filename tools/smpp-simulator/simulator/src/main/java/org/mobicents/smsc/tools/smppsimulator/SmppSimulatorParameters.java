@@ -362,7 +362,7 @@ public class SmppSimulatorParameters {
     }
 
     public enum ValidityType {
-		NoSpecial, ValidityPeriod_5min, ScheduleDeliveryTime_5min;
+		NoSpecial, ValidityPeriod_5min, ValidityPeriod_2hours, ScheduleDeliveryTime_5min;
     }
 
     public enum MCDeliveryReceipt {

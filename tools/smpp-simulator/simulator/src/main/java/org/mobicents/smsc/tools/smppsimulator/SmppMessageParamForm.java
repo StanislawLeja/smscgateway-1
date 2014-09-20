@@ -38,7 +38,6 @@ import javax.swing.JTextField;
 import javax.swing.JCheckBox;
 import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
-import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.MCDeliveryReceipt;
 
 /**
  * 

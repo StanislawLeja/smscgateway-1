@@ -584,9 +584,12 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
             pdu.setEsmClass((byte) esmClass);
 
 			switch (validityType) {
-			case ValidityPeriod_5min:
-			    pdu.setValidityPeriod(MessageUtil.printSmppRelativeDate(0, 0, 0, 0, 5, 0));
-				break;
+            case ValidityPeriod_5min:
+                pdu.setValidityPeriod(MessageUtil.printSmppRelativeDate(0, 0, 0, 0, 5, 0));
+                break;
+            case ValidityPeriod_2hours:
+                pdu.setValidityPeriod(MessageUtil.printSmppRelativeDate(0, 0, 0, 2, 0, 0));
+                break;
 			case ScheduleDeliveryTime_5min:
 			    pdu.setScheduleDeliveryTime(MessageUtil.printSmppRelativeDate(0, 0, 0, 0, 5, 0));
 				break;
