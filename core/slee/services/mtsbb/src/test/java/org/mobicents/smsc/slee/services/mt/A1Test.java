@@ -16,11 +16,23 @@ public class A1Test {
 
     @Test(groups = { "Base" })
     public void testA1() {
-        String s1 = "";
-        String s2 = "1111";
+        String s1 = "^45[0-9a-zA-Z]*";
+        String s21 = "45";
+        String s22 = "45222";
+        String s23 = "4";
+        String s24 = "46888888";
+        String s25 = "";
         Pattern pattern = Pattern.compile(s1);
-        Matcher m = pattern.matcher(s2);
+        Matcher m = pattern.matcher(s21);
         boolean res = m.matches();
+        m = pattern.matcher(s22);
+        res = m.matches();
+        m = pattern.matcher(s23);
+        res = m.matches();
+        m = pattern.matcher(s24);
+        res = m.matches();
+        m = pattern.matcher(s25);
+        res = m.matches();
 
 
 //        Map availcs = Charset.availableCharsets();

@@ -460,7 +460,7 @@ public abstract class TxSipServerSbb implements Sbb {
 			smsSet.setDestAddrTon(ta.getAddrTon());
 			smsSet.addSms(sms);
 		}
-        smsSet.addSms(sms);
+        sms.setSmsSet(smsSet);
 
 		long messageId = store.c2_getNextMessageId();
 		SmscStatProvider.getInstance().setCurrentMessageId(messageId);
