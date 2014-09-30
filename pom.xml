@@ -55,7 +55,7 @@
 		<jss7.telscale.version>6.2.0.GA-TelScale</jss7.telscale.version>
 		<ts.slee.version>6.1.2.GA-TelScale</ts.slee.version>
 		<jslee.ext.version>${ts.slee.version}</jslee.ext.version>
-		<mobicents.resources.map.version>6.1.4.GA-TelScale</mobicents.resources.map.version>
+		<mobicents.resources.map.version>6.2.0.GA-TelScale</mobicents.resources.map.version>
 		<mobicents.resources.sip.version>6.1.2.GA-TelScale</mobicents.resources.sip.version>
 		<jdiameter.version>6.1.2.GA-TelScale</jdiameter.version>
 		<telscale.license.version>1.5.0.Final</telscale.license.version>
