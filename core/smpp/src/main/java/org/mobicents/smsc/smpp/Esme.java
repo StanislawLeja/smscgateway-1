@@ -697,7 +697,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			esme.name = xml.getAttribute(ESME_NAME, "");
 			esme.clusterName = xml.getAttribute(ESME_CLUSTER_NAME, "");
 			esme.systemId = xml.getAttribute(ESME_SYSTEM_ID, "");
-			esme.password = xml.getAttribute(ESME_PASSWORD, "");
+			esme.password = xml.getAttribute(ESME_PASSWORD, null);
 			esme.host = xml.getAttribute(REMOTE_HOST_IP, "");
 			esme.port = xml.getAttribute(REMOTE_HOST_PORT, -1);
 

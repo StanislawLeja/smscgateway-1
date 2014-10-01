@@ -257,5 +257,7 @@ public interface EsmeMBean extends DefaultSmppSessionMXBean {
 	void setEnquireLinkDelay(int enquireLinkDelay);
 
 	int getEnquireLinkDelay();
+	
+	void setPassword(String password);
 
 }

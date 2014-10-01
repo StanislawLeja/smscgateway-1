@@ -92,9 +92,10 @@ public class DefaultSmppServerHandler implements SmppServerHandler {
 				throw new SmppProcessingException(SmppConstants.STATUS_ALYBND);
 			}
 
-			if (!(esme.getPassword().equals(bindRequest.getPassword()))) {
-				logger.error(String.format("Received BIND request but invalid password for SystemId=%s",
-						bindRequest.getSystemId()));
+			if (esme.getPassword() != null && !(esme.getPassword().equals(bindRequest.getPassword()))) {
+				logger.error(String.format(
+						"Received BIND request with password=%s but password set for ESME=%s for SystemId=%s",
+						bindRequest.getPassword(), esme.getPassword(), bindRequest.getSystemId()));
 				throw new SmppProcessingException(SmppConstants.STATUS_INVPASWD);
 			}
 
@@ -134,7 +135,7 @@ public class DefaultSmppServerHandler implements SmppServerHandler {
 			// test name change of sessions
 			// this name actually shows up as thread context....
 			sessionConfiguration.setName(esme.getName());
-			
+
 			esme.setStateName((com.cloudhopper.smpp.SmppSession.STATES[SmppSession.STATE_INITIAL]));
 
 			// throw new SmppProcessingException(SmppConstants.STATUS_BINDFAIL,
@@ -145,38 +146,39 @@ public class DefaultSmppServerHandler implements SmppServerHandler {
 	@Override
 	public void sessionCreated(Long sessionId, SmppServerSession session, BaseBindResp preparedBindResponse)
 			throws SmppProcessingException {
-        synchronized (this) {
-            if (logger.isInfoEnabled()) {
-                logger.info(String
-                        .format("Session created: Name=%s SysemId=%s", session.getConfiguration().getName(), session.getConfiguration().getSystemId()));
-            }
+		synchronized (this) {
+			if (logger.isInfoEnabled()) {
+				logger.info(String.format("Session created: Name=%s SysemId=%s", session.getConfiguration().getName(),
+						session.getConfiguration().getSystemId()));
+			}
 
-            if (this.smppSessionHandlerInterface == null) {
-                logger.error("No SmppSessionHandlerInterface registered yet! Will close SmppServerSession");
-                throw new SmppProcessingException(SmppConstants.STATUS_BINDFAIL);
-            }
+			if (this.smppSessionHandlerInterface == null) {
+				logger.error("No SmppSessionHandlerInterface registered yet! Will close SmppServerSession");
+				throw new SmppProcessingException(SmppConstants.STATUS_BINDFAIL);
+			}
 
-            SmppSessionConfiguration sessionConfiguration = session.getConfiguration();
+			SmppSessionConfiguration sessionConfiguration = session.getConfiguration();
 
-            Esme esme = this.esmeManagement.getEsmeByName(sessionConfiguration.getName());
+			Esme esme = this.esmeManagement.getEsmeByName(sessionConfiguration.getName());
 
-            if (esme == null) {
-                logger.error(String.format("No ESME for Name=%s SystemId=%s Host=%s Port=%d SmppBindType=%s", sessionConfiguration.getSystemId(),
-                        sessionConfiguration.getHost(), sessionConfiguration.getPort(), sessionConfiguration.getType()));
-                throw new SmppProcessingException(SmppConstants.STATUS_BINDFAIL);
-            }
+			if (esme == null) {
+				logger.error(String.format("No ESME for Name=%s SystemId=%s Host=%s Port=%d SmppBindType=%s",
+						sessionConfiguration.getSystemId(), sessionConfiguration.getHost(),
+						sessionConfiguration.getPort(), sessionConfiguration.getType()));
+				throw new SmppProcessingException(SmppConstants.STATUS_BINDFAIL);
+			}
 
-            esme.setSmppSession((DefaultSmppSession) session);
+			esme.setSmppSession((DefaultSmppSession) session);
 
-            if (!logger.isDebugEnabled()) {
-                session.getConfiguration().getLoggingOptions().setLogBytes(false);
-                session.getConfiguration().getLoggingOptions().setLogPdu(false);
-            }
+			if (!logger.isDebugEnabled()) {
+				session.getConfiguration().getLoggingOptions().setLogBytes(false);
+				session.getConfiguration().getLoggingOptions().setLogPdu(false);
+			}
 
-            SmppSessionHandler smppSessionHandler = this.smppSessionHandlerInterface.createNewSmppSessionHandler(esme);
-            // need to do something it now (flag we're ready)
-            session.serverReady(smppSessionHandler);
-        }
+			SmppSessionHandler smppSessionHandler = this.smppSessionHandlerInterface.createNewSmppSessionHandler(esme);
+			// need to do something it now (flag we're ready)
+			session.serverReady(smppSessionHandler);
+		}
 	}
 
 	@Override

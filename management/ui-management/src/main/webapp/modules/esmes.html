@@ -608,6 +608,23 @@
 																'<table class="table table-condensed table-striped">' + 
 																	'<thead><tr><th style="width: 40%;">Name</th><th style="width: 55%;">Value</th><th>&nbsp;</th></tr></thead>' +
 																	'<tbody>'+
+																	
+																		'<tr data-toggle="tooltip" title="is used by the SMSC to authenticate the identity of the binding ESME. The Service Provider may require ESME’s to provide a password when binding to the SMSC">'+
+																			'<td style="font-size: 0.9em;">Password</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'Password-input" class="control-group">'+
+																				'<span id="' + name +'Password-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + password + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'Password\', \'' + name+"Password" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"Password"+']\').toggle(); $(\'input[id^='+name+"Password"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'Password-text">' + password + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"Password"+']\').toggle(); $(\'input[id^='+name+"Password"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+																	
+																	
 																		'<tr data-toggle="tooltip" title="Defines ESME TON. if SMPP Session Type is CLIENT this TON will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same TON as configured here. If configured is null(-1), SMSC will ignore in both the cases. Value will take effect after SMPP is restarted.">'+
 																			'<td style="font-size: 0.9em;">ESME Ton</td>'+
 																			'<td style="font-size: 0.9em; padding: 0;">'+
@@ -870,7 +887,7 @@
 																				'<div id="div-' + name +'RoutingAddressRange-input" class="control-group">'+
 																				'<span id="' + name +'RoutingAddressRange-input" style="display: none;">'+
 																					'<input type="text" class="input-small" value="' + routingAddressRange + '" /> ' +
-																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RoutingAddressRange\', \'' + name+"RoutingAddressRange" + '\')"></i> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RoutingAddressRange\', \'' + name+"RoutingAddressRange" + '\', \'true\')"></i> ' +
 																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RoutingAddressRange"+']\').toggle(); $(\'input[id^='+name+"RoutingAddressRange"+']\').focus();"></i>' + 
 																				'</span>'+
 																				'</div>' +
@@ -1036,15 +1053,8 @@
 		}
 		
 		var password = $("#password").val();
-		if(password.trim() == "") {
-			$("#div-password").addClass("error");		
-			if(focusNotSet){
-				$("#password").focus();
-				focusNotSet = false;
-			}
-			formInvalid = true;
-		} else if($("#div-password").hasClass("error")) {
-			$("#div-password").removeClass("error");		
+		if(password == "") {
+			password = null;
 		}
 		
 		var ipAddress = $("#ipAddress").val();
@@ -1208,10 +1218,15 @@
 			}
 		}
 		
+		var propValue = inputTextEle.value;
+		if(propValue == ""){
+			propValue = null;
+		}
+		
 		var mbeanSearch="com.telscale.smpp:layer=Esme,name="+mbeanName;
 		jolokia.request(
 				[
-					{ type: "write", mbean: mbeanSearch, attribute: propertyName, value: inputTextEle.value },
+					{ type: "write", mbean: mbeanSearch, attribute: propertyName, value: propValue },
 				],
 				{
 					success: function(response) {

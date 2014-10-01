@@ -86,7 +86,7 @@ public class SmppShellExecutor implements ShellExecutor {
      * @return
      */
     private String modifyEsme(String[] args) throws Exception {
-        if (args.length < 10 || args.length > 40) {
+        if (args.length < 6 || args.length > 40) {
             return SmppOamMessages.INVALID_COMMAND;
         }
 
@@ -111,7 +111,9 @@ public class SmppShellExecutor implements ShellExecutor {
                 return SmppOamMessages.INVALID_COMMAND;
             }
 
-            if (key.equals("esme-ton")) {
+            if (key.equals("password")) {
+                esme.setPassword(args[count++]);
+            } else if (key.equals("esme-ton")) {
                 byte esmeTonType = Byte.parseByte(args[count++]);
                 esme.setEsmeTon(esmeTonType);
             } else if (key.equals("esme-npi")) {
@@ -172,8 +174,8 @@ public class SmppShellExecutor implements ShellExecutor {
     }
 
     /**
-     * Command is smpp esme create name <systemId> <Specify password> <host-ip>
-     * <port> <SmppBindType> <SmppSession.Type> system-type <sms | vms | ota >
+     * Command is smpp esme create name <systemId> <host-ip>
+     * <port> <SmppBindType> <SmppSession.Type> password <password> system-type <sms | vms | ota >
      * interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton> esme-npi
      * <esme address npi> esme-range <esme address range> cluster-name
      * <clusterName> window-size <windowSize> connect-timeout <connectTimeout>
@@ -189,7 +191,7 @@ public class SmppShellExecutor implements ShellExecutor {
      * @return
      */
     private String createEsme(String[] args) throws Exception {
-        if (args.length < 10 || args.length > 50) {
+        if (args.length < 9 || args.length > 51) {
             return SmppOamMessages.INVALID_COMMAND;
         }
 
@@ -203,15 +205,16 @@ public class SmppShellExecutor implements ShellExecutor {
         if (systemId == null) {
             return SmppOamMessages.INVALID_COMMAND;
         }
-        String password = args[5];
-        if (password == null) {
-            return SmppOamMessages.INVALID_COMMAND;
-        }
-        String host = args[6];
+        
+        //Password can be null
+        //if (password == null) {
+        //    return SmppOamMessages.INVALID_COMMAND;
+        //}
+        String host = args[5];
         if (host == null) {
             return SmppOamMessages.INVALID_COMMAND;
         }
-        String strPort = args[7];
+        String strPort = args[6];
         int intPort = -1;
         if (strPort == null) {
             return SmppOamMessages.INVALID_COMMAND;
@@ -223,13 +226,13 @@ public class SmppShellExecutor implements ShellExecutor {
             }
         }
 
-        String smppBindTypeStr = args[8];
+        String smppBindTypeStr = args[7];
 
         if (smppBindTypeStr == null) {
             return SmppOamMessages.INVALID_COMMAND;
         }
 
-        String smppSessionTypeStr = args[9];
+        String smppSessionTypeStr = args[8];
         if (smppSessionTypeStr == null) {
             return SmppOamMessages.INVALID_COMMAND;
         }
@@ -240,6 +243,7 @@ public class SmppShellExecutor implements ShellExecutor {
         byte esmeNpiType = -1;
         String esmeAddrRange = null;
         String clusterName = name;
+        String password = null;
 
         int count = 10;
 
@@ -268,7 +272,9 @@ public class SmppShellExecutor implements ShellExecutor {
                 return SmppOamMessages.INVALID_COMMAND;
             }
 
-            if (key.equals("system-type")) {
+            if (key.equals("password")) {
+                password = args[count++];
+            }else if (key.equals("system-type")) {
                 systemType = args[count++];
             } else if (key.equals("interface-version")) {
                 smppVersionType = args[count++];
