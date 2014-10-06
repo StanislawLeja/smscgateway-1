@@ -368,9 +368,12 @@ public class MessageUtil {
 	public static NatureOfAddress getSccpNatureOfAddress(int ton) {
 		NatureOfAddress na = NatureOfAddress.INTERNATIONAL;
 		switch (ton) {
-		case SmppConstants.TON_INTERNATIONAL:
-			na = NatureOfAddress.INTERNATIONAL;
-			break;
+        case SmppConstants.TON_INTERNATIONAL:
+            na = NatureOfAddress.INTERNATIONAL;
+            break;
+        case SmppConstants.TON_NATIONAL:
+            na = NatureOfAddress.NATIONAL;
+            break;
 		}
 		return na;
 	}
