@@ -22,6 +22,8 @@
 
 package org.mobicents.smsc.domain;
 
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 
 import javolution.util.FastMap;
@@ -106,7 +108,7 @@ public class SmscStatProviderJmx implements SmscStatProviderJmxMBean, CounterMed
         cds.addCounterDef(cd);
         cd = new CounterDefImpl(CounterType.Summary, "MsgInReceivedSip", "Messages received and accepted via SIP interface");
         cds.addCounterDef(cd);
-        cd = new CounterDefImpl(CounterType.Summary_Cumulative, "MsgInReceivedAllCumulative", "Messages received and accepted via all interfaces");
+        cd = new CounterDefImpl(CounterType.Summary_Cumulative, "MsgInReceivedAllCumulative", "Messages received and accepted via all interfaces cumulative");
         cds.addCounterDef(cd);
 
         cd = new CounterDefImpl(CounterType.Summary, "MsgOutTryAll", "Messages sending tries via all interfaces");
@@ -168,6 +170,8 @@ public class SmscStatProviderJmx implements SmscStatProviderJmxMBean, CounterMed
         else
             logger.debug("getSourceValueSet() - starting - campaignName=" + campaignName);
 
+        long curTimeSeconds = new Date().getTime() / 1000;
+        
         SourceValueSetImpl svs;
         try {
             String[] csl = this.getCounterDefSetList();
@@ -209,16 +213,14 @@ public class SmscStatProviderJmx implements SmscStatProviderJmxMBean, CounterMed
 
                 } else if (cd.getCounterName().equals("MsgOutTryAllPerSec")) {
                     long cnt = smscStatAggregator.getMsgOutTryAll();
-                    long dur = durationInSeconds;
                     svo = new SourceValueObjectImpl(this.getName(), 0);
                     svo.setValueA(cnt);
-                    svo.setValueB(dur);
+                    svo.setValueB(curTimeSeconds);
                 } else if (cd.getCounterName().equals("MsgOutSentAllPerSec")) {
                     long cnt = smscStatAggregator.getMsgOutSentAll();
-                    long dur = durationInSeconds;
                     svo = new SourceValueObjectImpl(this.getName(), 0);
                     svo.setValueA(cnt);
-                    svo.setValueB(dur);
+                    svo.setValueB(curTimeSeconds);
 
                 } else if (cd.getCounterName().equals("MsgOutTrySs7")) {
                     svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgOutTrySs7());
