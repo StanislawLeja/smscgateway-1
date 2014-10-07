@@ -2,17 +2,19 @@ Name
 	smsc set mocharging
 
 SYNOPSIS
-	smsc set mocharging <true|false>
+	smsc set mocharging <accept|reject|diameter>
 
 DESCRIPTION
 	This command is used to set the value of the parameter 'moCharging' to true
 	or false. This value is set to true by default.
 
-	If this is set to true, all Mobile Originated messages will be charged by OCS via
-	Diameter, prior to being sent.
+	If this is set to 
+	accept -all incoming messages are accepted without charging
+	reject - all incoming messages will be rejected
+	diameter - all incoming messages are checked by Diameter peer before delivering
 
 EXAMPLES
-	smsc set mocharging true
+	smsc set mocharging accept
 
 SEE ALSO
 	smsc set diameterdestrealm, smsc set diameterdesthost, smsc set diameterdestport, 
