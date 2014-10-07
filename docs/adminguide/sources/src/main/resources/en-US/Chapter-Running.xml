@@ -248,8 +248,15 @@ Using the button 'Configuring data for message submitting', you can configure di
 			</step>
 			<step>
 						<para>
-When the SMSC Gateway is running in a "simulator" profile it works with SMPP as ESME with the address "6666" (TON=1, NPI=1). So all messages with the destination address "6666" (TON=1, NPI=1) will be routed to SMPP Simulator. All other messages will be routed to SS7 Simulator.
+When the SMSC Gateway is running in a "simulator" profile it works with SMPP as ESME
+with the address "6666" (TON=1, NPI=1). So all messages with the destination address
+"6666" (TON=1, NPI=1) will be routed to SMPP Simulator. All other messages will be routed
+to SS7 Simulator (except messages for "5555" address that will be routed to SIP).
 						</para>
+                        <para>
+You can simulate by SMPP Simulator also a bulk message delivering into SMSC GW.
+This may be random bulk messages and bulk messages obtained from pcap file.
+                        </para>
 
 			</step>
 		</procedure>
@@ -257,13 +264,16 @@ When the SMSC Gateway is running in a "simulator" profile it works with SMPP as 
 
 
         <section id="Sip_Phone">
-        <title>Running Jisti SIP phone</title>
-<para>For testing SMSC features for interconnection with SIP servers you can use Jisti SIP phone which will play SIP server role.
-</para>
-<para>Firstly you need to download Jisti from "jitsi.org" site and run it.
+        <title>Running Jitsi or Linphone SIP phones</title>
+<para>For testing SMSC features for interconnection with SIP servers you can use Jisti or Linphone SIP phone which
+will play SIP server role.
 </para>
             <procedure>
                 <title>To configure Jitsi we need:</title>
+    <step>
+    <para>Firstly you need to download Jisti from "jitsi.org" site and run it.
+    </para>
+    </step>
     <step>
     <para>Create a registrarless account (don't provide password, registrar and proxy address) and enable PRESENSE (SIMPLE) at the forth tab for this account (Advanced). Identifier of this account must be "5555" because SMSC is configured to route all messages for subscriber "5555" to SIP.
     </para>
@@ -284,6 +294,27 @@ SMSC listerns 5060 port for incoming SIP messages. "1111" address we will use fo
     </para>
     </step>
             </procedure>
+
+            <procedure>
+                <title>To configure Linphone we need:</title>
+    <step>
+    <para>Firstly you need to download Linphone from "linphone.org" site and run it.
+    </para>
+    </step>
+    <step>
+    <para>Parameters - Network settings - Network protocols and ports - SIP UDP port and SIP UDP port set to 5066.
+    </para>
+    </step>
+    <step>
+    <para>Add a contact with "SIP address" - "sip:6666@127.0.0.1:5060" for a message exchange with SMPP simulator
+    </para>
+    </step>
+    <step>
+    <para>Add a contact with "SIP address" - "sip:1111@127.0.0.1:5060" for a message exchange with SS7 simulator
+    </para>
+    </step>
+            </procedure>
+
 <para>Then we can test:
 </para>
 <para>1) for sending messages from SIP phone we have to "Send message" to a concrete contact, type a message text and send. After about 1 minute you will receive the message on SS7 Simulator or SIP Simulator

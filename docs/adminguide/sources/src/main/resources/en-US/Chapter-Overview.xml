@@ -66,10 +66,32 @@
                 </varlistentry>    -->                                                
                 <varlistentry>
                     <term>Major Features:</term>
-                    <listitem> <para>&THIS.PLATFORM; &THIS.APPLICATION; enables mobile operators to provide core SMSC features like subscriber to subscriber SMS messaging, broadcasting campaigns and group messaging <footnoteref linkend='fnrestcomm'/>between subscribers.
-			<itemizedlist> 
-				<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; can handle mobile originated SMS and deliver to the intended recipient (mobile or ESME). It also provides a flexible routing mechanism to route messages to/from ESME over SMPP protocol. It can also act as ESME initiating connection to third party SMSC.</para></listitem> 
-				<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; supports SIP through JSLEE SIP RA.</para></listitem>
+                <listitem> <para>&THIS.PLATFORM; &THIS.APPLICATION; enables mobile operators to provide core SMSC features like subscriber to subscriber SMS messaging, broadcasting campaigns and group messaging <footnoteref linkend='fnrestcomm'/>between subscribers.
+            <itemizedlist> 
+				<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; can handle mobile originated SMS and deliver them to the intended recipient (mobile, ESME or SIP).
+				It also provides a flexible routing mechanism to route messages to/from ESME over SMPP protocol. It can also act as ESME initiating connection to third party SMSC.</para></listitem>
+                <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; supports SIP connection through JSLEE SIP RA.</para></listitem>
+                <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; supports StoreAndForward, Datagramm and Transactional modes (and also special ForwardAndStrore mode for reducing of database load)
+for incoming from SMPP ESME messages. When a message comes from SMPP SMSC GW checks EsmClass field from the SMPP message. For Datagramm and Transactional modes
+the SMSC will try to deliver immediately the message into a destination. For Transactional mode SMSC also returns to ESME a delivery result (success / failure).
+Such messages are not stored into a cassandra database.
+When delivery failure the message will be dropped and no more delivery attempts will be made.
+If EsmClass field contains StoreAndForward (or default) mode it is possible of several attempts of message delivering (if the first attempt has failed).
+For this purpose a message can be stored into a cassandra database.
+There are two possible SMSC configurable modes for processing of StoreAndForward messages: StoreAndForward (normal) and ForwardAndStore (fast).
+When StoreAndForward (normal) SMSC mode an incomimg "StoreAndForward" message will be always stored into a database and then (in some seconds) will be scheduled for delivering.
+This mode is fully compliant with SMPP specification. When ForwardAndStore (fast) SMSC mode an incomimg "StoreAndForward" message will be immidiately tried to deliver 
+without database storing and any delay. When delivery failure the message will be stored into a database for futher scheduling.</para></listitem> 
+                <listitem><para>Messages that come from SS7 or SIP are processed the same way as "StoreAndForward" messages that come from SMPP ESME</para></listitem> 
+                <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; SMSC GW has a congestion control by rejecting messages when a count of message in processing exceeds a configurable limit (MaxActivityCount).
+When SMSC is configured in ForwardAndStore (fast) mode SMPP originated messages will be firstly rejected,
+then after encreasing of a message in processing count SIP originated messages will be rejected
+and finally SS7 originated messages will be rejected. When SMSC is configured in StoreAndForward (normal) mode only datagramm and transactional SMPP originated messages
+will be rejected. StoreAndForward and all SS7 / SIP originated messages will be stored into cassandra database in any case but scheduling of messages for delivering will be
+stopped till a message in processing count will not exceed the limit.</para></listitem> 
+                <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; supports ReportSMDeliveryStatus and AlertServiceCentre requests after mobile delivery failures.</para></listitem> 
+                <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; supports GSM7, GSM8 and UCS2 message encodings.</para></listitem> 
+                <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; itself splits ESME and SIP originated long length messages before delivering to mobile phones if a message does not contain User data headers (UDH).</para></listitem> 
 				<listitem><para>Additionally, when enabled with proper administrator privileges, &THIS.PLATFORM; &THIS.APPLICATION; allows convenient group messaging <footnoteref linkend='fnrestcomm'/>between subscribers (e.g. family, friends, colleagues) .</para></listitem> 
 				<!--<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; offers “SMS Broadcasting” which enables marketing campaigns. Via
 convenient Web UI, campaign administrators can prioritize, schedule and monitor a
