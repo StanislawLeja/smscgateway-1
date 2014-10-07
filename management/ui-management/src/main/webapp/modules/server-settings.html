@@ -57,6 +57,15 @@
 									<input id="esmedefaultclustername" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
 								</span>                         
 							</div>
+							<div id="div-gsm7encoding" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the SMPP Encoding Scheme for GSM7. SMPP side messages with data coding == 0 [GSM7] accept two different encoding schemes [UTF8 and UNICODE] for both sending and receiving messages. SMSC can be configured to accept for one of them (the one that ESME supports). If this is not set, then the default encoding scheme is UTF8.">
+									<span class="add-on">SMPP Encoding for GSM7</span>
+									<select id="smppencodingforgsm7" >
+										<option>Utf8</option>
+										<option>Unicode</option>
+									</select>
+								</span>                         
+							</div>							
 							<div id="div-ucs2encoding" class="control-group">
 								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set the SMPP Encoding Scheme for UCS2. SMPP side messages with data coding == 8 [UCS2] accept two different encoding schemes [UTF8 and UNICODE] for both sending and receiving messages. SMSC can be configured to accept for one of them (the one that ESME supports). If this is not set, then the default encoding scheme is UTF8.">
 									<span class="add-on">SMPP Encoding for UCS2</span>
@@ -393,6 +402,14 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 											smppencodingforucs2.options[1].selected = true;
 										}
 										
+										var smppEncodingForGsm7 = response.value.SmppEncodingForGsm7;
+										
+										if(smppEncodingForGsm7 == "Utf8"){
+											smppencodingforgsm7.options[0].selected = true;
+										} else {
+											smppencodingforgsm7.options[1].selected = true;
+										}										
+										
 										var storeAndForwordMode = response.value.StoreAndForwordMode;
 										
 										if(storeAndForwordMode == "normal"){
@@ -599,6 +616,9 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						var e = document.getElementById("smppencodingforucs2");
 						var smppencodingforucs2 = e.options[e.selectedIndex].text;
 						
+						var e = document.getElementById("smppencodingforgsm7");
+						var smppencodingforgsm7 = e.options[e.selectedIndex].text;						
+						
 						e = document.getElementById("storeandforwardmode");
 						var storeandforwardmode = e.options[e.selectedIndex].text;						
 						
@@ -667,6 +687,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									{ type: "write", mbean: mbeanSearch, attribute: "DefaultNpi", value: propdefaultnpi },
 									{ type: "write", mbean: mbeanSearch, attribute: "EsmeDefaultClusterName", value: propesmedefaultclustername },
 									{ type: "write", mbean: mbeanSearch, attribute: "SmppEncodingForUCS2", value: smppencodingforucs2 },
+									{ type: "write", mbean: mbeanSearch, attribute: "SmppEncodingForGsm7", value: smppencodingforgsm7 },
 									{ type: "write", mbean: mbeanSearch, attribute: "StoreAndForwordMode", value: storeandforwardmode },
 									{ type: "write", mbean: mbeanSearch, attribute: "SubscriberBusyDueDelay", value: propsubbusduedel },
 									{ type: "write", mbean: mbeanSearch, attribute: "FirstDueDelay", value: propfirduedel },
