@@ -49,10 +49,13 @@
 		<para>
 			&THIS.PLATFORM; &THIS.APPLICATION; is configured to generate CDR in a plain text file located at <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/log/cdr.log</filename>. 
 		</para>
-		<para>&THIS.PLATFORM; &THIS.APPLICATION; can be configured to generate CDR for both receipt and regular messages or generate CDR only for regular messages. This is configurable by setting the parameter <literal>generateReceiptCdr</literal> to true/false using the CLI or the GUI. For more details refer to <xref linkend="generateReceiptCdr" />.
+		<para>&THIS.PLATFORM; &THIS.APPLICATION; can be configured to generate CDR for different message processing modes (datagramm, transactional, storeAndForward)
+        and also for both receipt and regular messages or generate CDR only for regular messages.
+		This is configurable by setting <literal>generateCdr</literal> and <literal>generateReceiptCdr</literal> using the CLI or the GUI.  
+		For more details refer to Sections <xref linkend="generateCdr"/> and <xref linkend="generateReceiptCdr"/>.
 		</para>
 		<para>
-The CDR generated in a text file is of a specific format. The details of the format and the possible values for the fields recorded in the CDR log file are explained in <xref linkend="monitoring-SMSC-CDR-log" />.
+        The CDR generated in a text file is of a specific format. The details of the format and the possible values for the fields recorded in the CDR log file are explained in <xref linkend="monitoring-SMSC-CDR-log" />.
 		</para>
 	</section>
 </chapter>
