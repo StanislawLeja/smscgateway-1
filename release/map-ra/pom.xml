@@ -4,7 +4,7 @@
 	
 	<artifactId>ts-mobicents-slee-ra-map</artifactId>
 	<groupId>org.mobicents.resources</groupId>
-	<version>6.1.4.GA-TelScale</version>
+	<version>6.2.0.GA-TelScale</version>
 
 	<name>Telscale :: Resources :: ${pom.artifactId}</name>
 	
