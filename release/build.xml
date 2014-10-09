@@ -286,6 +286,7 @@
         <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.telscale-smsc.dir}">
                 <arg line="${release.build.goals} -Dmaven.test.skip=true" />
         </exec>
+	<ant antfile="build.xml" dir="${checkout.telscale-smsc.dir}/test/smpp-load/" />
     </target>
 	
     <target name="build-map-ra">
@@ -346,6 +347,20 @@
 		                <include name="**" />
 		        </fileset>
 		</copy>
+    	<!-- tools : smpp-load -->
+		<copy todir="${release.dir}/tools/TelScale-smpp-load/target/load" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/test/smpp-load/target/load">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+		<copy todir="${release.dir}/tools/TelScale-smpp-load/src/main/resources" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/test/smpp-load/src/main/resources">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+    	<copy file="${checkout.telscale-smsc.dir}/test/smpp-load/build.xml" todir="${release.dir}/tools/TelScale-smpp-load" failonerror="true" />
+    	
+        	
     	<!--CLI-->
         <copy file="${checkout.telscale-smsc.dir}/core/oam/clismpp/target/smpp-cli-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
 		<copy todir="${release.dir}/jboss-5.1.0.GA/" failonerror="true">
