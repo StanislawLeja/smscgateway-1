@@ -61,28 +61,24 @@
 			<jvmarg value="-XX:+PrintGCDetails" />
 			<jvmarg value="-XX:+PrintGCTimeStamps" />
 			-->
-			<arg value="sctp" />
-			<!-- socket type -->
-			<arg value="127.0.0.1" />
-			<!-- Client IP -->
-			<arg value="2345" />
-			<!-- Client Port -->
-			<arg value="127.0.0.1" />
-			<!-- Server Ip -->
-			<arg value="3434" />
-			<!-- Server Port -->
-			<arg value="1" />
-			<!-- Client PC -->
-			<arg value="2" />
-			<!-- Server PC -->
-			<arg value="2" />
-			<!-- NI -->
-			<arg value="3" />
-			<!-- SI -->
-			<arg value="8" />
-			<!-- SSN -->
-			<arg value="100" />
-			<!-- RC -->
+			<arg value="2775" />
+			<!-- listerning port -->
+			<arg value="10" />
+			<!-- Max number of connections. Must be >= 1 -->
+			<arg value="true" />
+			<!-- nonBlockingSocketsEnabled -->
+			<arg value="30000" />
+			<!-- defaultRequestExpiryTimeout -->
+			<arg value="15000" />
+			<!-- defaultWindowMonitorInterval -->
+			<arg value="500" />
+			<!-- defaultWindowSize -->
+			<arg value="-1" />
+			<!-- defaultWindowWaitTimeout -->
+			<arg value="true" />
+			<!-- defaultSessionCountersEnabled -->
+			<arg value="true" />
+			<!-- jmxEnabled -->
 		</java>
 	</target>
 	<target name="server" description="run the Load Test Server.">

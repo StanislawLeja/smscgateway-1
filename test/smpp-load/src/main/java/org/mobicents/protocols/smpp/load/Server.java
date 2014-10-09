@@ -100,6 +100,16 @@ public class Server extends TestHarness {
         if (defaultWindowSize < 1) {
             throw new Exception("defaultWindowSize cannot be less than 1");
         }
+        
+		logger.info("port=" + port);
+		logger.info("maxConnectionSize=" + maxConnectionSize);
+		logger.info("nonBlockingSocketsEnabled=" + nonBlockingSocketsEnabled);
+		logger.info("defaultRequestExpiryTimeout=" + defaultRequestExpiryTimeout);
+		logger.info("defaultWindowMonitorInterval=" + defaultWindowMonitorInterval);
+		logger.info("defaultWindowSize=" + defaultWindowSize);
+		logger.info("defaultWindowWaitTimeout=" + defaultWindowWaitTimeout);
+		logger.info("defaultSessionCountersEnabled=" + defaultSessionCountersEnabled);
+		logger.info("jmxEnabled=" + jmxEnabled);
 
 
 	    // setup 3 things required for a server
