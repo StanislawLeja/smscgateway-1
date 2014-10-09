@@ -112,9 +112,9 @@ By default, the SMSC Simulator profile is configured for use in Linux systems. F
 			<para>The SMSC Gateway in a Simulator Profile is configured as if you have configured it by using of the following CLI commands:</para>
 <screen><![CDATA[
 
-sctp server create serv1 127.0.0.1 8012 TCP 
-sctp server start serv1 
-sctp association create ass1 SERVER serv1 127.0.0.1 8011 TCP
+sctp server create serv1 127.0.0.1 8012 sockettype SCTP
+sctp server start serv1
+sctp association create ass1 SERVER serv1 127.0.0.1 8011 sockettype SCTP
 
 m3ua as create as1 IPSP mode SE ipspType server rc 101 traffic-mode loadsharing network-appearance 102 
 m3ua asp create asp1 ass1 
@@ -137,8 +137,8 @@ smsc set hlrssn 8
 smsc set mscssn 8 
 smsc set maxmapv 3
 
-smsc esme create test test test 127.0.0.1 -1 TRANSCEIVER SERVER esme-ton 1 esme-npi 1 esme-range 6666 
-smsc esme start test
+smpp esme create test test test 127.0.0.1 -1 TRANSCEIVER esme-ton -1 esme-npi -1 esme-range [0-9a-zA-Z] source-range [0-9a-zA-Z] routing-range 6666 charging-enabled false
+smpp esme start test
 
 smsc sip modify SIP cluster-name SIP host 127.0.0.1 port 5065 routing-ton 1 routing-npi 1 routing-range 5555 counters-enabled false charging-enabled false
 ]]>
