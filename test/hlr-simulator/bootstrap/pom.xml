@@ -134,7 +134,7 @@
 					<descriptors>
 						<descriptor>src/main/assembly/descriptor.xml</descriptor>
 					</descriptors>
-					<finalName>smsc</finalName>
+					<finalName>hlr-simulator</finalName>
 				</configuration>
 				<executions>
 					<execution>

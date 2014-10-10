@@ -360,7 +360,13 @@
 		</copy>
     	<copy file="${checkout.telscale-smsc.dir}/test/smpp-load/build.xml" todir="${release.dir}/tools/TelScale-smpp-load" failonerror="true" />
     	
-        	
+    	<!-- tools : HLR Simulator -->
+		<copy todir="${release.dir}/tools/TelScale-hlr-simulator" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/test/hlr-simulator/bootstrap/target/hlr-simulator-server">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+		                	
     	<!--CLI-->
         <copy file="${checkout.telscale-smsc.dir}/core/oam/clismpp/target/smpp-cli-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
 		<copy todir="${release.dir}/jboss-5.1.0.GA/" failonerror="true">
