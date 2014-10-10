@@ -239,28 +239,36 @@ DESCRIPTION
 			</section>
 			</section>
 			<section id="SMPP_Encoding_for_UCS2">
-			<title>SMPP Encoding for UCS2</title>
+			<title>SMPP Encoding for GSM7/UCS2</title>
 			<section id="SMPP_Encoding_for_UCS2_CLI">
 			<title>Using CLI</title>
 <para>
-You can set the 'SMPP Encoding for UCS2' value by issuing the command <command>smsc set smppencodingforucs2</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get smppencodingforucs2</command> which will display the value set for this property.
+You can set the 'SMPP Encoding for Gsm7' and 'SMPP Encoding for UCS2' value by issuing the commands <command>smsc set smppencodingforgsm7</command> / <command>smsc set smppencodingforucs2</command> with appropriate parameters as described below.
+You can verify this by issuing the commands <command>smsc get smppencodingforgsm7</command> / <command>smsc get smppencodingforucs2</command> which will display the value set for these property.
+When GSM8 encoding type no recoding of message content is made.
 </para>
 <screen><![CDATA[
 Name
-	smsc set smppencodingforucs2
+    smsc set smppencodingforgsm7
+    smsc set smppencodingforucs2
 
 SYNOPSIS
+    smsc set smppencodingforgsm7 <UTF8|UNICODE>
 	smsc set smppencodingforucs2 <UTF8|UNICODE>
 
 DESCRIPTION
-	This command is used to set the SMPP Encoding Scheme for UCS2. SMPP side messages 
-	with data coding == 8 [UCS2] accept two different encoding schemes [UTF8 and 
-	UNICODE] for both sending and receiving messages. SMSC can be configured to 
-	accept for one of them (the one that ESME supports). If this is not set, 
-	then the default encoding scheme is UTF8.
+    These commands are used to set the an Encoding Scheme at SMPP side for
+    different GSM encoding types. When a message is marked as GSM7 encoded
+    (smppencodingforgsm7 command) and when a message is marked as UCS2
+    encoded (smppencodingforucs2 command) at the SMPP side messages accept
+    two different encoding schemes [UTF8 and UNICODE] for both sending and
+    receiving messages. SMSC can be configured to accept for one of them
+    (the one that ESME supports). If this is not set, then the default
+    encoding scheme is UTF8. For messages that are marked as GSM8 encoded
+    no charset recoding is made in SMSC.
 
 EXAMPLES
-	smsc set smppencodingforucs2 utf8 
+	smsc set smppencodingforgsm7 utf8 
 	or
 	smsc set smppencodingforucs2 unicode
 ]]></screen>
@@ -268,12 +276,12 @@ EXAMPLES
 			<section id="SMPP_Encoding_for_UCS2_GUI">
 			<title>Using GUI</title>
 			<procedure>
-				<title>Set SMPP Encoding for UCS2 using the GUI</title>
+				<title>Set SMPP Encoding for GSM7 and UCS2 using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
 				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
 				</para></step>
-				<step><para>You can specify the encoding scheme by choosing from the two values (UTF8 or UNICODE) in the list for 'SMPP Encoding for UCS2'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				<step><para>You can specify the encoding scheme by choosing from the two values (UTF8 or UNICODE) in the list for 'SMPP Encoding for GSM7' or 'SMPP Encoding for UCS2'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
 				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
 				</para></step>
