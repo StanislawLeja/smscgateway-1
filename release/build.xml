@@ -8,7 +8,7 @@
 	<property name="checkout.dir" value="${base.dir}/checkout" />	
 	<property name="checkout.telscale-slee.dir" value="${checkout.dir}/telscale-slee" />
 	<property name="checkout.telscale-jss7.dir" value="${checkout.dir}/telscale-jss7" />
-	<property name="checkout.telscale-smsc.dir" value="${checkout.dir}/telscale-smsc" />
+	<property name="checkout.telscale-smsc.dir" value="${base.dir}/.." />
 	<property name="checkout.telscale-jss7-build.dir" value="${checkout.dir}/telscale-jss7-build" />
 	<property name="checkout.telscale-diam.dir" value="${checkout.dir}/telscale-diam" />
 	<property name="checkout.telscale-slee.jss7-build.dir" value="${checkout.dir}/telscale-slee.jss7-build" />
@@ -68,7 +68,8 @@
 	</target>
 	
 	
-	<target name="release" depends="get-deps,extract-deps,clean-up-telscale-slee,build-map-ra,checkout-smsc-persistence,build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip,bundle-documentation" />
+	<!--target name="release" depends="get-deps,extract-deps,clean-up-telscale-slee,build-map-ra,checkout-smsc-persistence,build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip,bundle-documentation" /-->
+	<target name="release" depends="get-deps,extract-deps,clean-up-telscale-slee,build-smsc,copy-smsc, build-docs, copy-docs, make-final-zip,bundle-documentation" />
 
 	<target name="release-with-jss7-and-ras" depends="build-with-jss7-and-ras.ss7, build-with-jss7-and-ras.ras, release"/>
 	
