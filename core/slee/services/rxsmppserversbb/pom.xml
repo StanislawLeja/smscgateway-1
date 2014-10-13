@@ -38,6 +38,7 @@
 			<groupId>org.mobicents.servers.jainslee.api</groupId>
 			<artifactId>jain-slee-11-ext</artifactId>
 			<version>${jslee.ext.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>${pom.groupId}</groupId>
