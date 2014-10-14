@@ -708,6 +708,16 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     public void setGenerateCdr(GenerateType generateCdr) {
         this.generateCdr = generateCdr;
+        this.store();
+    }
+    
+    public int getGenerateCdrInt() {
+        return this.generateCdr.getValue();
+    }    
+    
+    public void setGenerateCdrInt(int generateCdr) {
+        this.generateCdr = new GenerateType(generateCdr);
+        this.store();
     }
 
     public GenerateType getGenerateArchiveTable() {
@@ -716,6 +726,16 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     public void setGenerateArchiveTable(GenerateType generateArchiveTable) {
         this.generateArchiveTable = generateArchiveTable;
+        this.store();
+    }
+    
+    public int getGenerateArchiveTableInt() {
+        return generateArchiveTable.getValue();
+    }    
+    
+    public void setGenerateArchiveTableInt(int generateArchiveTable) {
+    	this.generateArchiveTable = new GenerateType(generateArchiveTable);
+    	this.store();
     }
 
 	public void start() throws Exception {

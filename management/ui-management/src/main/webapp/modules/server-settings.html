@@ -19,6 +19,7 @@
   						<li><a href="#scheduler" data-toggle="tab">Scheduler</a></li>
   						<li><a href="#diameter" data-toggle="tab">Diameter</a></li>
   						<li><a href="#processing" data-toggle="tab">Processing</a></li>
+  						<li><a href="#cdr" data-toggle="tab">CDR</a></li>
 					</ul>	
 						
   				 	<div class="tab-content">
@@ -124,18 +125,7 @@ Delay after every consecutive delivery failure = prev-due-delay * due-delay-mult
 							</div>	
 							
 							&nbsp;
-                        	<h5 style="border-bottom: 1px solid #DDD;">CDR Configuration</h5>
-							<div id="div-generateReceiptCdr" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="The SMSC can be configured to generate CDR for both receipt and regular messages or generate CDR only for regular messages. By default the SMSC will generate CDR for regular messages only. However if you require the SMSC to generate CDR for receipt messages as well, you must set the parameter 'generatereceiptcdr' to true.">
-									<span class="add-on">Generate receipt CDR</span>
-									<select id="generateReceiptCdr" >
-										<option>true</option>
-										<option>false</option>
-									</select>
-								</span>                         
-							</div>	
 
-							&nbsp;
                         	<h5 style="border-bottom: 1px solid #DDD;">SMS Home Routing Configuration</h5>
 							<div id="div-smsHomeRouting" class="control-group">
 								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC can be configured to support SMS Home Routing by enabling the parameter smshomerouting. If this is set to true, the SMSC will accept MT messages and support Home Routing functionality.">
@@ -382,7 +372,57 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									&nbsp;<button class="btn btn-primary" onclick="applyProcessing();"><i class="icon-save"></i> Save</button>
 								</span>
 							</div>															
-                        </div>                        
+                        </div>
+                        
+           				<div class="tab-pane" id="cdr">
+                        	<h5 style="border-bottom: 1px solid #DDD;">CDR Configuration</h5>
+							<div id="div-generateReceiptCdr" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="The SMSC can be configured to generate CDR for both receipt and regular messages or generate CDR only for regular messages. By default the SMSC will generate CDR for regular messages only. However if you require the SMSC to generate CDR for receipt messages as well, you must set the parameter 'generatereceiptcdr' to true.">
+									<span class="add-on">Generate receipt CDR</span>
+									<select id="generateReceiptCdr" >
+										<option>true</option>
+										<option>false</option>
+									</select>
+								</span>                         
+							</div>	
+							&nbsp;
+							<div id="div-generateCdr" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC generates CDR's in simple .txt file and also adds detailed CDR in MESSAGES_YYYY_MM_DD table of Cassandra. Generate CDR defines which CDR's should be added in .txt file if at all. None means no CDR is added in text file. Datagram means CDR only for SMPP originated messages with datagram mode will logged. Transactional means CDR only for SMPP originated messages with transcation mode will logged. Store And Forward means CDR for SMPP originated with transcation mode, all SS7, all SIP messages will be logged. Select all three options to log all CDR's in .txt file">
+									<span class="add-on">Generate CDR in text file</span>
+									<br/>
+									<span class="add-on">None</span>
+									<input id="generateCdrNone" onClick="generateCdrCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>									
+									<span class="add-on">Datagram</span>
+									<input id="generateCdrDatagram" onClick="generateCdrCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>
+									<span class="add-on">Transactional</span>
+									<input id="generateCdrTransactional" onClick="generateCdrCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>
+									<span class="add-on">Store And Forward</span>
+									<input id="generateCdrSNF" onClick="generateCdrCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>							
+								</span>                         
+							</div>	
+							&nbsp;	
+							<div id="div-generateArchiveTable" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC generates CDR's in simple .txt file and also adds detailed CDR in MESSAGES_YYYY_MM_DD table of Cassandra. Generate Archive Table defines which CDR's should be added in Caasandra Table if at all. None means no CDR is added in Table. Datagram means CDR only for SMPP originated messages with datagram mode will inserted. Transactional means CDR only for SMPP originated messages with transcation mode will inserted. Store And Forward means CDR for SMPP originated with transcation mode, all SS7, all SIP messages will be inserted. Select all three options to insert all CDR's in Table">
+									<span class="add-on">Generate CDR in cassandra table</span>
+									<br/>
+									<span class="add-on">None</span>
+									<input id="generateArchiveTableNone" onClick="generateArchiveTableCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>									
+									<span class="add-on">Datagram</span>
+									<input id="generateArchiveTableDatagram" onClick="generateArchiveTableCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>
+									<span class="add-on">Transactional</span>
+									<input id="generateArchiveTableTransactional" onClick="generateArchiveTableCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>
+									<span class="add-on">Store And Forward</span>
+									<input id="generateArchiveTableSNF" onClick="generateArchiveTableCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>							
+								</span>                         
+							</div>
+							&nbsp;													
+							<div class="control-group">
+								<span class="span12" style="text-align: left;">
+									&nbsp;<button class="btn btn-danger" onclick="updateCdr();"><i class="icon-undo"></i> Revert</button>
+									&nbsp;<button class="btn btn-primary" onclick="applyCdr();"><i class="icon-save"></i> Save</button>
+								</span>
+							</div>															
+                        </div>                                                
                                                                         
 					</div>	
 					</span>					 
@@ -399,7 +439,31 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						updateCassandra();
 						updateScheduler();
 						updateDiameter();
-	    			});					
+						updateProcessing();
+						updateCdr();
+	    			});	
+					
+					function generateCdrCheckBox(){
+						var e = document.getElementById("generateCdrNone");
+						if(e.checked == true){
+							document.getElementById("generateCdrDatagram").checked = false;
+							document.getElementById("generateCdrTransactional").checked = false;
+							document.getElementById("generateCdrSNF").checked = false;
+						} else {
+							e.checked = false;
+						}
+					}
+					
+					function generateArchiveTableCheckBox(){
+						var e = document.getElementById("generateArchiveTableNone");
+						if(e.checked == true){
+							document.getElementById("generateArchiveTableDatagram").checked = false;
+							document.getElementById("generateArchiveTableTransactional").checked = false;
+							document.getElementById("generateArchiveTableSNF").checked = false;
+						} else {
+							e.checked = false;
+						}
+					}					
 					
 					function updateProperties(){
 						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
@@ -446,13 +510,6 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										$("#propmaxduedel").val(response.value.MaxDueDelay);
 										
 										$("#duedelaymultiplicator").val(response.value.DueDelayMultiplicator);
-										
-										var generateReceiptCdrTmp = response.value.GenerateReceiptCdr
-										if(generateReceiptCdrTmp){
-											generateReceiptCdr.options[0].selected = true;
-										} else {
-											generateReceiptCdr.options[1].selected = true;
-										}
 										
 										var smsHomeRoutingTmp = response.value.SMSHomeRouting
 										if(smsHomeRoutingTmp){
@@ -562,6 +619,83 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										} else {
 											deliveryPause.options[1].selected = true;
 										}
+									}],
+									error: function(value) {
+										errorUID = ("st" + new Date().getTime()).hashCode();
+										createStackTrace(errorUID, value.stacktrace);
+										logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");										
+									} 
+								}
+							);						
+					}	
+					
+					function updateCdr(){
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						jolokia.request(
+								[
+									{ type: "read", mbean: mbeanSearch },
+								],
+								{ success: [
+									function(response) {
+										var generateReceiptCdrTmp = response.value.GenerateReceiptCdr
+										if(generateReceiptCdrTmp){
+											generateReceiptCdr.options[0].selected = true;
+										} else {
+											generateReceiptCdr.options[1].selected = true;
+										}
+										
+										var FLAG_DATAGRAMM = 0x01;
+										var FLAG_TRANSACTIONAL = 0x02;
+										var FLAG_STORE_AND_FORWARD = 0x04;
+										
+										var generateCdrIntTmp = response.value.GenerateCdrInt;
+										
+										if(generateCdrIntTmp == 0){
+											document.getElementById("generateCdrNone").checked = true;
+											document.getElementById("generateCdrDatagram").checked = false;
+											document.getElementById("generateCdrTransactional").checked = false;
+											document.getElementById("generateCdrSNF").checked = false;
+										} else {
+											document.getElementById("generateCdrNone").checked = false;
+											
+											if((generateCdrIntTmp & FLAG_DATAGRAMM) != 0){
+												document.getElementById("generateCdrDatagram").checked = true;
+											}
+											
+											if((generateCdrIntTmp & FLAG_TRANSACTIONAL) != 0){
+												document.getElementById("generateCdrTransactional").checked = true;
+											}
+											
+											if((generateCdrIntTmp & FLAG_STORE_AND_FORWARD) != 0){
+												document.getElementById("generateCdrSNF").checked = true;
+											}
+											
+										}
+										
+										var generateArchiveTableIntTmp = response.value.GenerateArchiveTableInt;
+										
+										if(generateArchiveTableIntTmp == 0){
+											document.getElementById("generateArchiveTableNone").checked = true;
+											document.getElementById("generateArchiveTableDatagram").checked = false;
+											document.getElementById("generateArchiveTableTransactional").checked = false;
+											document.getElementById("generateArchiveTableSNF").checked = false;
+										} else {
+											document.getElementById("generateArchiveTableNone").checked = false;
+											
+											if((generateArchiveTableIntTmp & FLAG_DATAGRAMM) != 0){
+												document.getElementById("generateArchiveTableDatagram").checked = true;
+											}
+											
+											if((generateArchiveTableIntTmp & FLAG_TRANSACTIONAL) != 0){
+												document.getElementById("generateArchiveTableTransactional").checked = true;
+											}
+											
+											if((generateArchiveTableIntTmp & FLAG_STORE_AND_FORWARD) != 0){
+												document.getElementById("generateArchiveTableSNF").checked = true;
+											}
+											
+										}										
+										
 									}],
 									error: function(value) {
 										errorUID = ("st" + new Date().getTime()).hashCode();
@@ -711,9 +845,6 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 			    			$("#div-duedelaymultiplicator").removeClass("error");		
 			    		}
 						
-						var e1 = document.getElementById("generateReceiptCdr");
-						var generateReceiptCdr = e1.options[e1.selectedIndex].text;
-
 						var e2 = document.getElementById("smsHomeRouting");
 						var smsHomeRouting = e2.options[e2.selectedIndex].text;
 												
@@ -743,7 +874,6 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									{ type: "write", mbean: mbeanSearch, attribute: "SecondDueDelay", value: propsecduedel },
 									{ type: "write", mbean: mbeanSearch, attribute: "MaxDueDelay", value: propmaxduedel },
 									{ type: "write", mbean: mbeanSearch, attribute: "DueDelayMultiplicator", value: duedelaymultiplicator },
-									{ type: "write", mbean: mbeanSearch, attribute: "GenerateReceiptCdr", value: generateReceiptCdr },
 									{ type: "write", mbean: mbeanSearch, attribute: "SMSHomeRouting", value: smsHomeRouting },
 								],
 								{
@@ -1077,6 +1207,61 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						jolokia.request(
 								[
 									{ type: "write", mbean: mbeanSearch, attribute: "DeliveryPause", value: deliverypauseVar },
+								],
+								{
+									success: function(response) {
+										logToConsole("INFO", "SMSC Gateway Processing settings successfully updated.");
+									},
+									error: function(response) {
+										logToConsole("ERROR", "Failure trying to communicate with the Telscale SMSC Gateway. Please try again later.");
+									} 
+								}
+							);
+									
+					}
+					
+					function applyCdr() {
+						
+						var e1 = document.getElementById("generateReceiptCdr");
+						var generateReceiptCdr = e1.options[e1.selectedIndex].text;
+						
+						var FLAG_DATAGRAMM = 0x01;
+						var FLAG_TRANSACTIONAL = 0x02;
+						var FLAG_STORE_AND_FORWARD = 0x04;
+						
+						var generateCdrTmp = 0;
+						if(document.getElementById("generateCdrDatagram").checked == true){
+							generateCdrTmp = (generateCdrTmp | FLAG_DATAGRAMM);
+						}
+						
+						if(document.getElementById("generateCdrTransactional").checked == true){
+							generateCdrTmp = (generateCdrTmp | FLAG_TRANSACTIONAL);
+						}
+						
+						if(document.getElementById("generateCdrSNF").checked == true){
+							generateCdrTmp = (generateCdrTmp | FLAG_STORE_AND_FORWARD);
+						}
+						
+						var generateArchiveTableTmp = 0;
+						if(document.getElementById("generateArchiveTableDatagram").checked == true){
+							generateArchiveTableTmp = (generateArchiveTableTmp | FLAG_DATAGRAMM);
+						}
+						
+						if(document.getElementById("generateArchiveTableTransactional").checked == true){
+							generateArchiveTableTmp = (generateArchiveTableTmp | FLAG_TRANSACTIONAL);
+						}
+						
+						if(document.getElementById("generateArchiveTableSNF").checked == true){
+							generateArchiveTableTmp = (generateArchiveTableTmp | FLAG_STORE_AND_FORWARD);
+						}
+						
+						
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						jolokia.request(
+								[
+									{ type: "write", mbean: mbeanSearch, attribute: "GenerateReceiptCdr", value: generateReceiptCdr },
+									{ type: "write", mbean: mbeanSearch, attribute: "GenerateCdrInt", value: generateCdrTmp },
+									{ type: "write", mbean: mbeanSearch, attribute: "GenerateArchiveTableInt", value: generateArchiveTableTmp },
 								],
 								{
 									success: function(response) {

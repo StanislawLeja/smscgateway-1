@@ -203,8 +203,16 @@ public interface SmscPropertiesManagementMBean {
 
     public void setGenerateCdr(GenerateType generateCdr);
 
+    public int getGenerateCdrInt();
+    
+    public void setGenerateCdrInt(int generateCdr);
+    
     public GenerateType getGenerateArchiveTable();
 
     public void setGenerateArchiveTable(GenerateType generateArchiveTable);
+
+    public int getGenerateArchiveTableInt();
+    
+    public void setGenerateArchiveTableInt(int generateArchiveTable);    
 
 }

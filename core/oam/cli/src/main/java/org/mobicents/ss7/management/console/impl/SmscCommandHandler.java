@@ -134,6 +134,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("storeandforwordmode");
         get.addChild("mocharging");
         get.addChild("txsmppcharging");
+        get.addChild("txsipcharging");
         get.addChild("diameterdestrealm");
         get.addChild("diameterdesthost");
         get.addChild("diameterdestport");

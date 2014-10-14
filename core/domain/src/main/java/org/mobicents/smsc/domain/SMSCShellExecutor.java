@@ -464,10 +464,10 @@ public class SMSCShellExecutor implements ShellExecutor {
                 smscPropertiesManagement.setGenerateReceiptCdr(Boolean.parseBoolean(options[3]));
             } else if (parName.equals("generatecdr")) {
                 int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setGenerateCdr(new GenerateType(val));
+                smscPropertiesManagement.setGenerateCdrInt(val);
             } else if (parName.equals("generatearchivetable")) {
                 int val = Integer.parseInt(options[3]);
-                smscPropertiesManagement.setGenerateArchiveTable(new GenerateType(val));
+                smscPropertiesManagement.setGenerateArchiveTableInt(val);
 
             } else if (parName.equals("storeandforwordmode")) {
                 smscPropertiesManagement.setStoreAndForwordMode(Enum.valueOf(StoreAndForwordMode.class, options[3]));
