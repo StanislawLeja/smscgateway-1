@@ -334,6 +334,12 @@
                         <include name="**" />
                 </fileset>
         </copy>
+    	
+    	<rename src="${release.dir}/jboss-5.1.0.GA/server/simulator/data/SmscManagement_esme.xml" 
+    		    dest="${release.dir}/jboss-5.1.0.GA/server/simulator/data/SmppManagement_esme.xml"/>
+    	<rename src="${release.dir}/jboss-5.1.0.GA/server/simulator/data/SmscManagement_smppserver.xml" 
+    		    dest="${release.dir}/jboss-5.1.0.GA/server/simulator/data/SmppManagement_smppserver.xml"/>
+    	
 	    <copy file="${basedir}/telestax-license.xml" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/conf" failonerror="true" />
 	    <copy file="${basedir}/profile.xml" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/bootstrap" failonerror="true" overwrite="true"/>
 		<!--tools-->
