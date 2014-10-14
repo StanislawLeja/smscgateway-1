@@ -5,6 +5,7 @@
 	<property name="base.dir" location="${ant.file.telscale.smscgw.release}/.." />
 	<property name="docs.dir" location="${release.dir}/docs" />
 	<property name="bundle.docs.dir" location="${base.dir}/docs-bundle" />
+    <property name="cassandra.dir" value="${release.dir}/cassandra" />
 	<property name="checkout.dir" value="${base.dir}/checkout" />	
 	<property name="checkout.telscale-slee.dir" value="${checkout.dir}/telscale-slee" />
 	<property name="checkout.telscale-jss7.dir" value="${checkout.dir}/telscale-jss7" />
@@ -28,8 +29,10 @@
 	<property name="telscale-jss7.version" value="6.2.0.GA" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
 	<property name="telscale-diam.version" value="6.1.2.GA" />
+	<property name="dse-cassandra.version" value="4.5.2" />
+	<property name="checkout.dse-cassandra.dir" value="${cassandra.dir}/dse-${dse-cassandra.version}" />
 	
-	<!--GET Telscale-Slee & Telscale-jss7 & Telscale-diameter- properties-->
+	<!--GET Telscale-Slee & Telscale-jss7 & Telscale-diameter & DSE Cassandra - properties-->
 	<property name="telscale-slee.download.distro.file" value="telscale-slee-${telscale-slee.version}.zip" />
 	<property name="telscale-slee.download.url" value="ftp://ftp.box.com/TelScale%20JAIN-SLEE/${telscale-slee.version}/${telscale-slee.download.distro.file}" />
 	<property name="telscale-slee.distro.zip.path" value="${checkout.dir}/${telscale-slee.download.distro.file}" />
@@ -46,6 +49,10 @@
 	<property name="telscale-diam.download.distro.file" value="TelScale-diameter-mux-jboss5-${telscale-diam.version}.sar.zip" />
 	<property name="telscale-diam.download.url" value="ftp://ftp.box.com/TelScale%20jDiameter/${telscale-diam.version}/${telscale-diam.download.distro.file}" />
 	<property name="telscale-diam.distro.zip.path" value="${checkout.dir}/${telscale-diam.download.distro.file}" />
+	
+	<property name="dse-cassandra.download.distro.file" value="dse-cassandra-only-${dse-cassandra.version}.zip" />
+	<property name="dse-cassandra.download.url" value="ftp://ftp.box.com/TelScale%20SMSC%20Gateway/DSE/${dse-cassandra.download.distro.file}" />
+	<property name="dse-cassandra.distro.zip.path" value="${checkout.dir}/${dse-cassandra.download.distro.file}" />
 	
 	<property name="release.build.goals" value="clean install dependency:tree"/>
 	<property name="release.ts.deploy.goals" value="clean deploy -DaltDeploymentRepository=telscale-releases-repository::default::http://telestax.artifactoryonline.com/telestax/releases"/>
@@ -118,8 +125,8 @@
 	<!--GET Map & Telscale-Slee & Telscale-jss7 - downloads-->
 	
 	<!--target name="get-map" depends="checkout-ss7-map,build-ss7-map" /-->
-	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-management-hq,get-telscale-diam" />
-	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-management-hq,extract-telscale-diam" />
+	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-management-hq,get-telscale-diam, get-dse-cassandra" />
+	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-management-hq,extract-telscale-diam, extract-dse-cassandra" />
 	
 	<available file="${telscale-slee.distro.zip.path}" property="got.telscale-slee" />
 	<target name="get-telscale-slee" unless="got.telscale-slee">
@@ -186,6 +193,25 @@
 		<delete dir="${checkout.telscale-diam.dir}" failonerror="false" />
 		<unzip src="${telscale-diam.distro.zip.path}" dest="${checkout.telscale-diam.dir}"/>
 	</target>
+	
+	<!-- Cassandra DSE -->
+	<available file="${dse-cassandra.distro.zip.path}" property="got.dse-cassandra" />
+	<target name="get-dse-cassandra" unless="got.dse-cassandra">
+		<echo>Downloading DSE Cassandra only version: ${dse-cassandra.version}</echo>
+		<exec failonerror="true" executable="wget">
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${dse-cassandra.download.url}" />
+		</exec>
+		<move file="${base.dir}/${dse-cassandra.download.distro.file}" todir="${checkout.dir}"/>
+	</target>
+
+	<target name="extract-dse-cassandra" depends="get-dse-cassandra">
+		<delete dir="${checkout.dse-cassandra.dir}" failonerror="false" />
+		<unzip src="${dse-cassandra.distro.zip.path}" dest="${cassandra.dir}"/>
+	</target>
+	
+	
 	
 	<!-- NOT used bellow targets -->
 	<!--
@@ -416,7 +442,7 @@
     	
 		<!-- Cassandra -->
 		<echo>Copy Cassandra conf</echo>
-		<copy todir="${release.dir}/cassandra" failonerror="true">
+		<copy todir="${cassandra.dir}" failonerror="true">
 		        <fileset dir="${checkout.telscale-smsc.dir}/cassandra">
 		                <include name="**" />
 		        </fileset>
