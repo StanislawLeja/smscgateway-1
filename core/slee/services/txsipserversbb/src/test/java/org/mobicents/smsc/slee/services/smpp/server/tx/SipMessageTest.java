@@ -1,7 +1,5 @@
 package org.mobicents.smsc.slee.services.smpp.server.tx;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -34,8 +32,6 @@ import javax.sip.header.ToHeader;
 import javax.sip.header.ViaHeader;
 import javax.sip.message.MessageFactory;
 import javax.sip.message.Request;
-
-import org.mobicents.smsc.domain.SipXHeaders;
 
 public class SipMessageTest implements SipListener {
 

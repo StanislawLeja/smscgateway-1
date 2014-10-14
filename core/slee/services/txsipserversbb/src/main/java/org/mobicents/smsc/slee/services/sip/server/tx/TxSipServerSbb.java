@@ -27,6 +27,8 @@ import gov.nist.javax.sip.header.SIPHeader;
 
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.UUID;
 
 import javax.sip.ServerTransaction;
@@ -159,10 +161,40 @@ public abstract class TxSipServerSbb implements Sbb {
 				codingSchme = this.createDataCodingScheme(dcs);
 			}
 
+			Date validityPeriod = null;
+			Header validityHeader = request.getHeader(SipXHeaders.XSmsValidty);
+
+			if (validityHeader != null) {
+				try {
+					validityPeriod = MessageUtil.parseDate(((SIPHeader) validityHeader).getValue());
+				} catch (ParseException e) {
+					logger.severe("ParseException when parsing ValidityPeriod field: " + e.getMessage(), e);
+
+					ServerTransaction serverTransaction = event.getServerTransaction();
+					Response res;
+					try {
+						res = (this.messageFactory.createResponse(500, serverTransaction.getRequest()));
+						event.getServerTransaction().sendResponse(res);
+					} catch (Exception e1) {
+						this.logger.severe("Exception while trying to send 500 response to sip", e1);
+					}
+
+					return;
+				}
+			}
+
+			// Registered Delivery
+			int regDeliveryInt = 0;
+			Header regDeliveryHeader = request.getHeader(SipXHeaders.XRegDelivery);
+			if (regDeliveryHeader != null) {
+				regDeliveryInt = Integer.parseInt(((SIPHeader) regDeliveryHeader).getValue());
+			}
+
 			Sms sms;
 			try {
 				synchronized (lock) {
-					sms = this.createSmsEvent(fromUser, message, ta, store, udh, codingSchme);
+					sms = this.createSmsEvent(fromUser, message, ta, store, udh, codingSchme, validityPeriod,
+							regDeliveryInt);
 					this.processSms(sms, store);
 				}
 			} catch (SmscProcessingException e1) {
@@ -172,8 +204,7 @@ public abstract class TxSipServerSbb implements Sbb {
 				ServerTransaction serverTransaction = event.getServerTransaction();
 				Response res;
 				try {
-					// TODO: we possibly need to response ERROR message to sip
-					res = (this.messageFactory.createResponse(200, serverTransaction.getRequest()));
+					res = (this.messageFactory.createResponse(500, serverTransaction.getRequest()));
 					event.getServerTransaction().sendResponse(res);
 				} catch (Exception e) {
 					this.logger.severe("Exception while trying to send Ok response to sip", e);
@@ -209,7 +240,7 @@ public abstract class TxSipServerSbb implements Sbb {
 			}
 
 		} catch (Exception e) {
-			this.logger.severe("Error while trying to send the SMS", e);
+			this.logger.severe("Error while trying to process received the SMS " + event, e);
 		}
 
 	}
@@ -350,11 +381,13 @@ public abstract class TxSipServerSbb implements Sbb {
 	}
 
 	protected Sms createSmsEvent(String fromUser, byte[] message, TargetAddress ta, PersistenceRAInterface store,
-			byte[] udh, DataCodingSchemeImpl dataCodingScheme) throws SmscProcessingException {
+			byte[] udh, DataCodingSchemeImpl dataCodingScheme, Date validityPeriod, int regDeliveryInt)
+			throws SmscProcessingException {
 
 		Sms sms = new Sms();
 		sms.setDbId(UUID.randomUUID());
 		sms.setOriginationType(Sms.OriginationType.SIP);
+		sms.setRegisteredDelivery(regDeliveryInt);
 
 		// checking of source address
 		if (fromUser == null)
@@ -441,7 +474,8 @@ public abstract class TxSipServerSbb implements Sbb {
 		sms.setSubmitDate(new Timestamp(System.currentTimeMillis()));
 		sms.setPriority(0);
 
-		MessageUtil.applyValidityPeriod(sms, null, false, smscPropertiesManagement.getMaxValidityPeriodHours(),
+		MessageUtil.applyValidityPeriod(sms, validityPeriod, false,
+				smscPropertiesManagement.getMaxValidityPeriodHours(),
 				smscPropertiesManagement.getDefaultValidityPeriodHours());
 
 		SmsSet smsSet;
@@ -460,7 +494,7 @@ public abstract class TxSipServerSbb implements Sbb {
 			smsSet.setDestAddrTon(ta.getAddrTon());
 			smsSet.addSms(sms);
 		}
-        sms.setSmsSet(smsSet);
+		sms.setSmsSet(smsSet);
 
 		long messageId = store.c2_getNextMessageId();
 		SmscStatProvider.getInstance().setCurrentMessageId(messageId);
@@ -470,28 +504,31 @@ public abstract class TxSipServerSbb implements Sbb {
 	}
 
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
-        // checking if SMSC is stopped
-        if (smscPropertiesManagement.isSmscStopped()) {
-            SmscProcessingException e = new SmscProcessingException("SMSC is stopped", SmppConstants.STATUS_SYSERR, 0, null);
-            e.setSkipErrorLogging(true);
-            throw e;
-        }
-        if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
-            // checking if SMSC is paused
-            if (smscPropertiesManagement.isDeliveryPause()) {
-                SmscProcessingException e = new SmscProcessingException("SMSC is paused", SmppConstants.STATUS_SYSERR, 0, null);
-                e.setSkipErrorLogging(true);
-                throw e;
-            }
-            // checking if delivery query is overloaded
-            int fetchMaxRows = (int) (smscPropertiesManagement.getMaxActivityCount() * 1.2);
-            int activityCount = SmsSetCashe.getInstance().getProcessingSmsSetSize();
-            if (activityCount >= fetchMaxRows) {
-                SmscProcessingException e = new SmscProcessingException("SMSC is overloaded", SmppConstants.STATUS_THROTTLED, 0, null);
-                e.setSkipErrorLogging(true);
-                throw e;
-            }
-        }
+		// checking if SMSC is stopped
+		if (smscPropertiesManagement.isSmscStopped()) {
+			SmscProcessingException e = new SmscProcessingException("SMSC is stopped", SmppConstants.STATUS_SYSERR, 0,
+					null);
+			e.setSkipErrorLogging(true);
+			throw e;
+		}
+		if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+			// checking if SMSC is paused
+			if (smscPropertiesManagement.isDeliveryPause()) {
+				SmscProcessingException e = new SmscProcessingException("SMSC is paused", SmppConstants.STATUS_SYSERR,
+						0, null);
+				e.setSkipErrorLogging(true);
+				throw e;
+			}
+			// checking if delivery query is overloaded
+			int fetchMaxRows = (int) (smscPropertiesManagement.getMaxActivityCount() * 1.2);
+			int activityCount = SmsSetCashe.getInstance().getProcessingSmsSetSize();
+			if (activityCount >= fetchMaxRows) {
+				SmscProcessingException e = new SmscProcessingException("SMSC is overloaded",
+						SmppConstants.STATUS_THROTTLED, 0, null);
+				e.setSkipErrorLogging(true);
+				throw e;
+			}
+		}
 
 		boolean withCharging = false;
 		switch (smscPropertiesManagement.getTxSmppChargingType()) {
@@ -508,33 +545,34 @@ public abstract class TxSipServerSbb implements Sbb {
 			ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
 			chargingSbb.setupChargingRequestInterface(ChargingMedium.TxSipOrig, sms);
 		} else {
-            // store and forward
-            if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
-                try {
-                    sms.setStoringAfterFailure(true);
-                    this.scheduler.injectSmsOnFly(sms.getSmsSet());
-                } catch (Exception e) {
-                    throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
-                            MAPErrorCode.systemFailure, e);
-                }
-            } else {
-                try {
-                    sms.setStored(true);
-                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                        store.createLiveSms(sms);
-                        if (sms.getScheduleDeliveryTime() == null)
-                            store.setNewMessageScheduled(sms.getSmsSet(),
-                                    MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
-                        else
-                            store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
-                    } else {
-                        store.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, false);
-                    }
-                } catch (PersistenceException e) {
-                    throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
-                            MAPErrorCode.systemFailure, null, e);
-                }
-            }
+			// store and forward
+			if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+				try {
+					sms.setStoringAfterFailure(true);
+					this.scheduler.injectSmsOnFly(sms.getSmsSet());
+				} catch (Exception e) {
+					throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(),
+							SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, e);
+				}
+			} else {
+				try {
+					sms.setStored(true);
+					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+						store.createLiveSms(sms);
+						if (sms.getScheduleDeliveryTime() == null)
+							store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil
+									.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+						else
+							store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
+					} else {
+						store.c2_scheduleMessage_ReschedDueSlot(sms,
+								smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, false);
+					}
+				} catch (PersistenceException e) {
+					throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(),
+							SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
+				}
+			}
 
 			smscStatAggregator.updateMsgInReceivedAll();
 			smscStatAggregator.updateMsgInReceivedSip();

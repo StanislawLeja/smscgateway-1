@@ -54,6 +54,7 @@ import javax.slee.resource.ResourceAdaptorTypeID;
 import net.java.slee.resource.sip.SipActivityContextInterfaceFactory;
 import net.java.slee.resource.sip.SleeSipProvider;
 
+import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.SbbContextExt;
@@ -80,6 +81,7 @@ import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerActivity;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
+import org.mobicents.smsc.smpp.SmppEncoding;
 
 /**
  * 
@@ -87,6 +89,8 @@ import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
  * 
  */
 public abstract class RxSipServerSbb implements Sbb {
+	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+
 	protected static SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
 	private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID(
@@ -119,6 +123,7 @@ public abstract class RxSipServerSbb implements Sbb {
 
 	private static Charset ucs2Charset = Charset.forName("UTF-16BE");
 	private static Charset utf8Charset = Charset.forName("UTF-8");
+	private static Charset isoCharset = Charset.forName("ISO-8859-1");
 
 	public RxSipServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -267,7 +272,8 @@ public abstract class RxSipServerSbb implements Sbb {
 				if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 					pers.archiveDeliveredSms(sms, deliveryDate);
 				} else {
-                    pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+					pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
+							smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
 					sms.setDeliveryDate(deliveryDate);
 					sms.getSmsSet().setStatus(ErrorCode.SUCCESS);
 					if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
@@ -276,53 +282,59 @@ public abstract class RxSipServerSbb implements Sbb {
 				}
 
 				// adding a success receipt if it is needed
-                int registeredDelivery = sms.getRegisteredDelivery();
-                if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
-                    TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
-                    TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(ta);
-                    try {
-                        synchronized (lock) {
-                            Sms receipt;
-                            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                                receipt = MessageUtil.createReceiptSms(sms, true);
-                                SmsSet backSmsSet = pers.obtainSmsSet(ta);
-                                receipt.setSmsSet(backSmsSet);
-                                receipt.setStored(true);
-                                pers.createLiveSms(receipt);
-                                pers.setNewMessageScheduled(receipt.getSmsSet(),
-                                        MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
-                                this.logger
-                                        .info("Adding a delivery receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
-                            } else {
-                                receipt = MessageUtil.createReceiptSms(sms, true, ta);
-                                boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
-                                if (!storeAndForwMode) {
-                                    try {
-                                        this.scheduler.injectSmsOnFly(receipt.getSmsSet());
-                                    } catch (Exception e) {
-                                        this.logger.severe("Exception when runnung injectSmsOnFly() for receipt in handleSmsResponse(): " + e.getMessage(), e);
-                                    }
-                                } else {
-                                    if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
-                                        try {
-                                            receipt.setStoringAfterFailure(true);
-                                            this.scheduler.injectSmsOnFly(receipt.getSmsSet());
-                                        } catch (Exception e) {
-                                            this.logger.severe("Exception when runnung injectSmsOnFly() for receipt in handleSmsResponse(): " + e.getMessage(),
-                                                    e);
-                                        }
-                                    } else {
-                                        receipt.setStored(true);
-                                        pers.c2_scheduleMessage_ReschedDueSlot(receipt,
-                                                smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, true);
-                                    }
-                                }
-                            }
-                        }
-                    } finally {
-                        SmsSetCashe.getInstance().removeSmsSet(lock);
-                    }
-                }
+				int registeredDelivery = sms.getRegisteredDelivery();
+				if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
+					TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(),
+							sms.getSourceAddr());
+					TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(ta);
+					try {
+						synchronized (lock) {
+							Sms receipt;
+							if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+								receipt = MessageUtil.createReceiptSms(sms, true);
+								SmsSet backSmsSet = pers.obtainSmsSet(ta);
+								receipt.setSmsSet(backSmsSet);
+								receipt.setStored(true);
+								pers.createLiveSms(receipt);
+								pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil
+										.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+								this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr()
+										+ ", dest=" + receipt.getSmsSet().getDestAddr());
+							} else {
+								receipt = MessageUtil.createReceiptSms(sms, true, ta);
+								boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
+								if (!storeAndForwMode) {
+									try {
+										this.scheduler.injectSmsOnFly(receipt.getSmsSet());
+									} catch (Exception e) {
+										this.logger.severe(
+												"Exception when runnung injectSmsOnFly() for receipt in handleSmsResponse(): "
+														+ e.getMessage(), e);
+									}
+								} else {
+									if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+										try {
+											receipt.setStoringAfterFailure(true);
+											this.scheduler.injectSmsOnFly(receipt.getSmsSet());
+										} catch (Exception e) {
+											this.logger.severe(
+													"Exception when runnung injectSmsOnFly() for receipt in handleSmsResponse(): "
+															+ e.getMessage(), e);
+										}
+									} else {
+										receipt.setStored(true);
+										pers.c2_scheduleMessage_ReschedDueSlot(
+												receipt,
+												smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast,
+												true);
+									}
+								}
+							}
+						}
+					} finally {
+						SmsSetCashe.getInstance().removeSmsSet(lock);
+					}
+				}
 			} catch (PersistenceException e1) {
 				this.logger.severe(
 						"PersistenceException when archiveDeliveredSms() in RxSmppServerSbb.onDeliverSmResp(): "
@@ -478,12 +490,12 @@ public abstract class RxSipServerSbb implements Sbb {
 
 		int currentMsgNum = this.getCurrentMsgNum();
 		Sms sms = smsSet.getSms(currentMsgNum);
-        if (sms == null) {
-            // this means that no messages with good ScheduleDeliveryTime or
-            // no messages at all we have to reschedule
-            this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SUCCESS, "No messages for sending now");
-            return;
-        }
+		if (sms == null) {
+			// this means that no messages with good ScheduleDeliveryTime or
+			// no messages at all we have to reschedule
+			this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SUCCESS, "No messages for sending now");
+			return;
+		}
 
 		try {
 
@@ -521,11 +533,11 @@ public abstract class RxSipServerSbb implements Sbb {
 			String msgStr = sms.getShortMessageText();
 			byte[] msgUdh = sms.getShortMessageBin();
 			byte[] msg;
-			if (msgStr != null || msgUdh != null) {
-				msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
-			} else {
-				msg = new byte[0];
-			}
+			// if (msgStr != null || msgUdh != null) {
+			msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
+			// } else {
+			// msg = new byte[0];
+			// }
 
 			// create request
 			Request request = messageFactory.createRequest(toAddressUri, Request.MESSAGE, callId, cSeqHeader,
@@ -548,9 +560,28 @@ public abstract class RxSipServerSbb implements Sbb {
 
 			// TODO X header message class
 
-			// TODO X header delivery time, use SUBMIT_DATE
+			// X header delivery time, use SUBMIT_DATE
+			Date submitDate = sms.getSubmitDate();
+			if (submitDate != null) {
+				String submitDateStr = MessageUtil.formatDate(submitDate);
+				Header submitDateHeader = headerFactory.createHeader(SipXHeaders.XDeliveryTime, submitDateStr);
+				request.addHeader(submitDateHeader);
+			}
 
-			// TODO X header UDH
+			// Validity Period
+			Date validityPeriod = sms.getValidityPeriod();
+			if (validityPeriod != null) {
+				String validityPeriodStr = MessageUtil.formatDate(validityPeriod);
+				Header validityHeader = headerFactory.createHeader(SipXHeaders.XSmsValidty, validityPeriodStr);
+				request.addHeader(validityHeader);
+			}
+
+			// X header UDH
+			if (msgUdh != null) {
+				String udhString = hexStringToByteArray(msgUdh);
+				Header udhHeader = headerFactory.createHeader(SipXHeaders.XSmsUdh, udhString);
+				request.addHeader(udhHeader);
+			}
 
 			// create client transaction and send request
 			ClientTransaction clientTransaction = sipRA.getNewClientTransaction(request);
@@ -567,50 +598,38 @@ public abstract class RxSipServerSbb implements Sbb {
 	}
 
 	private byte[] recodeShortMessage(int dataCoding, String msg, byte[] udhPart) {
-		byte[] textPart = msg.getBytes(utf8Charset);
+		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dataCoding);
 
-		if (udhPart == null) {
-			return textPart;
+		byte[] textPart;
+		if (msg != null) {
+			if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
+				textPart = msg.getBytes(isoCharset);
+			} else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+				if (smscPropertiesManagement.getSmppEncodingForGsm7() == SmppEncoding.Utf8) {
+					textPart = msg.getBytes(utf8Charset);
+				} else {
+					textPart = msg.getBytes(ucs2Charset);
+				}
+			} else {
+				if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncoding.Utf8) {
+					textPart = msg.getBytes(utf8Charset);
+				} else {
+					textPart = msg.getBytes(ucs2Charset);
+				}
+			}
 		} else {
-			byte[] res = new byte[textPart.length + udhPart.length];
-			System.arraycopy(udhPart, 0, res, 0, udhPart.length);
-			System.arraycopy(textPart, 0, res, udhPart.length, textPart.length);
-
-			return res;
+			textPart = new byte[0];
 		}
 
-		// DataCodingScheme dataCodingScheme = new
-		// DataCodingSchemeImpl(dataCoding);
-		// boolean udhPresent = (esmeClass & SmppConstants.ESM_CLASS_UDHI_MASK)
-		// != 0;
-		//
-		// byte[] textPart = msg;
-		// byte[] udhData = null;
-		// if (udhPresent && msg.length > 2) {
-		// // UDH exists
-		// int udhLen = (msg[0] & 0xFF) + 1;
-		// if (udhLen <= msg.length) {
-		// textPart = new byte[msg.length - udhLen];
-		// udhData = new byte[udhLen];
-		// System.arraycopy(msg, udhLen, textPart, 0, textPart.length);
-		// System.arraycopy(msg, 0, udhData, 0, udhLen);
-		// }
-		// }
-		//
-		// String mes;
-		// if (dataCodingScheme.getCharacterSet() == CharacterSet.UCS2) {
-		// ByteBuffer bb = ByteBuffer.wrap(textPart);
-		// CharBuffer bf = ucs2Charset.decode(bb);
-		// mes = bf.toString();
+		// if (udhPart == null) {
+		return textPart;
 		// } else {
-		// mes = new String(textPart);
-		// }
+		// byte[] res = new byte[textPart.length + udhPart.length];
+		// System.arraycopy(udhPart, 0, res, 0, udhPart.length);
+		// System.arraycopy(textPart, 0, res, udhPart.length, textPart.length);
 		//
-		// CharBuffer cb = CharBuffer.wrap(mes.toCharArray());
-		// ByteBuffer bf2 = utf8Charset.encode(cb);
-		// byte[] msg2 = new byte[bf2.limit()];
-		// bf2.get(msg2);
-		// return msg2;
+		// return res;
+		// }
 	}
 
 	/**
@@ -743,56 +762,65 @@ public abstract class RxSipServerSbb implements Sbb {
 					MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
 
 			// adding an error receipt if it is needed
-            int registeredDelivery = sms.getRegisteredDelivery();
-            if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
-                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
-                lock = SmsSetCashe.getInstance().addSmsSet(ta);
-                try {
-                    synchronized (lock) {
-                        try {
-                            Sms receipt;
-                            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                                receipt = MessageUtil.createReceiptSms(sms, false);
-                                SmsSet backSmsSet = pers.obtainSmsSet(ta);
-                                receipt.setSmsSet(backSmsSet);
-                                receipt.setStored(true);
-                                pers.createLiveSms(receipt);
-                                pers.setNewMessageScheduled(receipt.getSmsSet(),
-                                        MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
-                            } else {
-                                receipt = MessageUtil.createReceiptSms(sms, false, ta);
-                                boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
-                                if (!storeAndForwMode) {
-                                    try {
-                                        this.scheduler.injectSmsOnFly(receipt.getSmsSet());
-                                    } catch (Exception e) {
-                                        this.logger.severe("Exception when runnung injectSmsOnFly() for receipt in onDeliveryError(): " + e.getMessage(), e);
-                                    }
-                                } else {
-                                    if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
-                                        try {
-                                            receipt.setStoringAfterFailure(true);
-                                            this.scheduler.injectSmsOnFly(receipt.getSmsSet());
-                                        } catch (Exception e) {
-                                            this.logger
-                                                    .severe("Exception when runnung injectSmsOnFly() for receipt in onDeliveryError(): " + e.getMessage(), e);
-                                        }
-                                    } else {
-                                        receipt.setStored(true);
-                                        pers.c2_scheduleMessage_ReschedDueSlot(receipt,
-                                                smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, true);
-                                    }
-                                }
-                            }
-                            this.logger.info("Adding an error receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
-                        } catch (PersistenceException e) {
-                            this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet) - adding delivery receipt" + e.getMessage(), e);
-                        }
-                    }
-                } finally {
-                    SmsSetCashe.getInstance().removeSmsSet(lock);
-                }
-            }
+			int registeredDelivery = sms.getRegisteredDelivery();
+			if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
+				TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(),
+						sms.getSourceAddr());
+				lock = SmsSetCashe.getInstance().addSmsSet(ta);
+				try {
+					synchronized (lock) {
+						try {
+							Sms receipt;
+							if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+								receipt = MessageUtil.createReceiptSms(sms, false);
+								SmsSet backSmsSet = pers.obtainSmsSet(ta);
+								receipt.setSmsSet(backSmsSet);
+								receipt.setStored(true);
+								pers.createLiveSms(receipt);
+								pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil
+										.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+							} else {
+								receipt = MessageUtil.createReceiptSms(sms, false, ta);
+								boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
+								if (!storeAndForwMode) {
+									try {
+										this.scheduler.injectSmsOnFly(receipt.getSmsSet());
+									} catch (Exception e) {
+										this.logger.severe(
+												"Exception when runnung injectSmsOnFly() for receipt in onDeliveryError(): "
+														+ e.getMessage(), e);
+									}
+								} else {
+									if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+										try {
+											receipt.setStoringAfterFailure(true);
+											this.scheduler.injectSmsOnFly(receipt.getSmsSet());
+										} catch (Exception e) {
+											this.logger.severe(
+													"Exception when runnung injectSmsOnFly() for receipt in onDeliveryError(): "
+															+ e.getMessage(), e);
+										}
+									} else {
+										receipt.setStored(true);
+										pers.c2_scheduleMessage_ReschedDueSlot(
+												receipt,
+												smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast,
+												true);
+									}
+								}
+							}
+							this.logger.info("Adding an error receipt: source=" + receipt.getSourceAddr() + ", dest="
+									+ receipt.getSmsSet().getDestAddr());
+						} catch (PersistenceException e) {
+							this.logger.severe(
+									"PersistenceException when freeSmsSetFailured(SmsSet smsSet) - adding delivery receipt"
+											+ e.getMessage(), e);
+						}
+					}
+				} finally {
+					SmsSetCashe.getInstance().removeSmsSet(lock);
+				}
+			}
 		}
 	}
 
@@ -834,8 +862,8 @@ public abstract class RxSipServerSbb implements Sbb {
 					} else {
 						for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
 							Sms sms = smsSet.getSms(i1);
-                            pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
-                                    smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+							pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
+									smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
 							sms.setDeliveryDate(new Date());
 							if (MessageUtil.isNeedWriteArchiveMessage(sms,
 									smscPropertiesManagement.getGenerateArchiveTable())) {
@@ -882,8 +910,8 @@ public abstract class RxSipServerSbb implements Sbb {
 						long dueSlot = this.getStore().c2_getDueSlotForTime(newDueDate);
 						for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
 							Sms sms = smsSet.getSms(i1);
-                            pers.c2_scheduleMessage_NewDueSlot(sms, dueSlot, lstFailured,
-                                    smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+							pers.c2_scheduleMessage_NewDueSlot(sms, dueSlot, lstFailured,
+									smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
 						}
 					}
 				} catch (PersistenceException e) {
@@ -1002,6 +1030,22 @@ public abstract class RxSipServerSbb implements Sbb {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Convert the byte[] representation of Hex to String
+	 * 
+	 * @param s
+	 * @return
+	 */
+	private String hexStringToByteArray(byte[] bytes) {
+		char[] hexChars = new char[bytes.length * 2];
+		for (int j = 0; j < bytes.length; j++) {
+			int v = bytes[j] & 0xFF;
+			hexChars[j * 2] = hexArray[v >>> 4];
+			hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+		}
+		return new String(hexChars);
 	}
 
 }

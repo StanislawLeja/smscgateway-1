@@ -17,7 +17,7 @@ public interface SipXHeaders {
 	// defaults to 8 bits (1). 2 is UCS2
 	String XSmsCoding = "X-SMS-CODING";
 
-	// SMS validity period in case of re-try
+	// SMS validity period in case of re-try. Format will be "yyyyy-mm-dd hh:mm:ss"
 	String XSmsValidty = "X-SMS-VALIDITY";
 
 	// message class bits of DCS: 0 (directly to display, flash), 1 (to mobile),
@@ -32,7 +32,7 @@ public interface SipXHeaders {
 	// the smsc-id of the connection that received the message
 	String XSmscId = "X-SMSC-ID";
 
-	// Time the message was delivered
+	// Time the message was delivered (received by SMSC). Format will be "yyyyy-mm-dd hh:mm:ss"
 	String XDeliveryTime = "X-DELIVERY_TIME";
 
 }

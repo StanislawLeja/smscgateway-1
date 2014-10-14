@@ -49,6 +49,16 @@ import com.cloudhopper.smpp.tlv.TlvConvertException;
  * 
  */
 public class MessageUtil {
+	
+	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyy-mm-dd hh:mm:ss");
+	
+	public static Date parseDate(String val) throws ParseException {
+		return DATE_FORMAT.parse(val);
+	}
+	
+	public static String formatDate(Date val) throws ParseException {
+		return DATE_FORMAT.format(val);
+	}
 
 	/**
 	 * Parsing SMPP date String into a Date
