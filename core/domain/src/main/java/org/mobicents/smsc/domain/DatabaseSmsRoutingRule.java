@@ -91,7 +91,7 @@ public class DatabaseSmsRoutingRule implements DatabaseSmsRoutingRuleMBean {
 	 * java.lang.String)
 	 */
 	@Override
-	public String getEsmeClusterName(int ton, int npi, String address) {
+	public String getEsmeClusterName(int ton, int npi, String address, String name) {
 
 		String clusterName = null;
 

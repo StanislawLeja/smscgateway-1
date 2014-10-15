@@ -662,8 +662,12 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 		try {
 			// Step 1: Check first if this SMS is for SMPP
 			SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
+			
+			//Quick and dirty fix for SMSC-171
+			String orignatingEsmeName = smsSet.getSms(0).getOrigEsmeName();
+			
 			String destClusterName = smsRouteManagement.getEsmeClusterName(smsSet.getDestAddrTon(),
-					smsSet.getDestAddrNpi(), smsSet.getDestAddr());
+					smsSet.getDestAddrNpi(), smsSet.getDestAddr(), orignatingEsmeName);
 
 			// Step 2: If no SMPP's found, check if its for SIP
 			if (destClusterName == null) {

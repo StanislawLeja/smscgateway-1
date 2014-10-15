@@ -67,7 +67,7 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 	 * java.lang.String)
 	 */
 	@Override
-	public String getEsmeClusterName(int ton, int npi, String address) {
+	public String getEsmeClusterName(int ton, int npi, String address, String name) {
 
 //        for (FastList.Node<Esme> n = this.esmeManagement.getEsmes().head(), end = this.esmeManagement.getEsmes().tail(); (n = n
 //                .getNext()) != end;) {
@@ -80,7 +80,7 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 					|| (sessionBindType == SmppBindType.RECEIVER && smppSessionType == SmppSession.Type.SERVER)
 					|| (sessionBindType == SmppBindType.TRANSMITTER && smppSessionType == SmppSession.Type.CLIENT)) {
 
-				if (esme.isRoutingAddressMatching(ton, npi, address)) {
+				if (!(esme.getName().equals(name)) && esme.isRoutingAddressMatching(ton, npi, address)) {
 					return esme.getClusterName();
 				}
 			}

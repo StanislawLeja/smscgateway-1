@@ -29,14 +29,25 @@ import org.mobicents.smsc.smpp.EsmeManagement;
  */
 public interface SmsRoutingRule {
 
-	public String getEsmeClusterName(int ton, int npi, String address);
-	
+	/**
+	 * Tries to match the TON, NPI, Address of SMS with underlying ESME. However
+	 * the name of underlying ESME shouldn't be same as one passed here. If all
+	 * the criteria match's, corresponding ESME Cluster name is returned
+	 * 
+	 * @param ton
+	 * @param npi
+	 * @param address
+	 * @param name
+	 * @return
+	 */
+	public String getEsmeClusterName(int ton, int npi, String address, String name);
+
 	public String getSipClusterName(int ton, int npi, String address);
 
-    public void setEsmeManagement(EsmeManagement em);
-    
-    public void setSipManagement(SipManagement sm);
+	public void setEsmeManagement(EsmeManagement em);
 
-    public void setSmscPropertiesManagement(SmscPropertiesManagement sm);
+	public void setSipManagement(SipManagement sm);
+
+	public void setSmscPropertiesManagement(SmscPropertiesManagement sm);
 
 }
