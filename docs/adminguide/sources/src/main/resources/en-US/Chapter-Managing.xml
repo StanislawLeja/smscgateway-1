@@ -64,7 +64,7 @@ EXAMPLES
 				<title>Set Default Validity Period using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the default validity period (in hours) by entering the value in the text field 'Default validity period hours (in hours)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -104,7 +104,7 @@ EXAMPLES
 				<title>Set Maximum Validity Period using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the maximum validity period (in hours) by entering the value in the text field 'Maximum validity period (in hours)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -143,7 +143,7 @@ EXAMPLES
 				<title>Set Default type of number (TON) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Default type of number (TON) by entering the value in the text field 'Default type of number (TON)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -182,7 +182,7 @@ EXAMPLES
 				<title>Set Default numbering plan indicator (NPI) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Default numbering plan indicator (NPI) by entering the value in the text field 'Default numbering plan indicator (NPI)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -229,7 +229,7 @@ DESCRIPTION
 				<title>Set Cluster Name using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Cluster Name by entering the value in the text field 'Cluster Name'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -279,7 +279,7 @@ EXAMPLES
 				<title>Set SMPP Encoding for GSM7 and UCS2 using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the encoding scheme by choosing from the two values (UTF8 or UNICODE) in the list for 'SMPP Encoding for GSM7' or 'SMPP Encoding for UCS2'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -289,6 +289,58 @@ EXAMPLES
 			</section>
 			</section>
 
+
+			<section id="storeandforwardmode">
+			<title>Store And Forward Mode</title>
+			<section id="storeandforwordmode_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'Store And Forward Mode' value by issuing the command <command>smsc set storeandforwordmode</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get storeandforwordmode</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set storeandforwordmode
+
+SYNOPSIS
+	smsc set storeandforwordmode <normal | fast>
+
+DESCRIPTION
+	This command is used to set the storeandforwordmode value.
+	storeandforwordmode has two possible values:
+	
+	normal (default) - StoreAndForward mode is used for incoming 
+	smpp StoreAndForward messages and all SS7 and SIP messages. All 
+	the incoming messages into SMSC will be persisted before trying
+	for delivery.
+
+	fast - ForwardAndStore mode is used for incoming smpp StoreAndForward 
+	messages and all SS7 and SIP messages. This option can be switched 
+	without SMSC restart. All the incoming messages into SMSC will be tried
+	for delivery first and only if delivery fails, it will be persisted for
+	later re-try.
+	
+	Datagramm and Transactional modes will work in the same way for both normal and fast modes. 
+
+EXAMPLES
+	smsc get storeandforwordmode fast
+]]></screen>
+
+			</section>
+			<section id="storeandforwordmode_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set Store And Forward Mode using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
+				</para></step>
+				<step><para>You can specify the Store And Forward Mode by selecting the value from the dropdown field 'Store And Forward Mode'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
 
 			<section id="subscriberbusyduedelay">
 			<title>Subscriber busy due delay (in sec)</title>
@@ -319,7 +371,7 @@ EXAMPLES
 				<title>Set Subscriber busy due delay (in sec) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Subscriber busy due delay by entering the value in the text field 'Subscriber busy due delay (in sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -357,7 +409,7 @@ EXAMPLES
 				<title>Set First due delay (in sec) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the First due delay by entering the value in the text field 'First due delay (in sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -395,7 +447,7 @@ EXAMPLES
 				<title>Set Second due delay (in sec) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Second due delay by entering the value in the text field 'Second due delay (in sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -433,7 +485,7 @@ EXAMPLES
 				<title>Set Max due delay (in sec) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Max due delay by entering the value in the text field 'Max due delay (in sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -506,147 +558,9 @@ EXAMPLES
 				<title>Set Due delay multiplicator using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Due delay multiplicator by entering the value in the text field 'Due delay multiplicator'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
-				</para></step>
-				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
-				</para></step>
-			</procedure>
-			</section>
-			</section>
-
-            <section id="generateCdr">
-            <title>CDR generation</title>
-            <section id="generateCdr_CLI">
-            <title>Using CLI</title>
-<para>
-SMSC GW can store CDR records for each delivered or failed for delivering messages into log file (see <xref linkend="CDR_logging_settings"/>).
-Which records will be stored is defined by 'generatecdr' SMSC option.
-You can set the 'generatecdr' option by issuing the command
-<command>smsc set generatecdr</command> with appropriate parameters as described below.
-You can verify this by issuing the command <command>smsc get generatecdr</command> which will display the value set for this property.
-</para>
-<screen><![CDATA[
-Name
-    smsc set generatecdr
-
-SYNOPSIS
-    smsc set generatecdr <digital option>
-
-DESCRIPTION
-    This command is used to set which messages (or none) will be stored into
-    CDR log file. Details of CDR log format can be found in "8.2. CDR Log"
-    Options will have following bits values:
-    bit 1 - records will be done for SMPP originated messages with datagramm
-            mode
-    bit 2 - records will be done for SMPP originated messages with
-            transactional mode
-    bit 4 - records will be done for SMPP originated messages with
-            storeAndForward mode and for all SS7 or SIP originated messages
-    Value 0 will mean store none and value 7 - store all.
-    Default value: 7 (store all)
-
-EXAMPLES
-    smsc set generatecdr 7
-]]></screen>
-            </section>
-            <section id="generateCdr_GUI">
-            <title>Using GUI</title>
-            <procedure>
-                <title>Set CDRs generation SMSC option using the GUI</title>
-                <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
-                </para></step>
-                <step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
-                </para></step>
-                <step><para>You can specify CDR generation option by selecting an appropriate value in the field "CDR generation". For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
-                </para></step>
-                <step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
-                </para></step>
-            </procedure>
-            </section>
-            </section>
-
-
-            <section id="generateArchiveTable">
-            <title>Archive table generation</title>
-            <section id="generateArchiveTable_CLI">
-            <title>Using CLI</title>
-<para>
-SMSC GW can store CDR records for each delivered or failed for delivering messages into special archive tables of cassandra database.
-Names of such tables have the following format: MESSAGES_yyyy_mm_dd.
-You can refer to fields definitions in <xref linkend="MESSAGES_yyyy_mm_dd" /> chapter.
-Which records will be stored is defined by 'generatearchivetable' SMSC option.
-You can set the 'generatearchivetable' option by issuing the command <command>smsc set generatearchivetable</command> with appropriate parameters as described below.
-You can verify this by issuing the command <command>smsc get generatearchivetable</command> which will display the value set for this property.
-</para>
-<screen><![CDATA[
-Name
-    smsc set generatearchivetable
-
-SYNOPSIS
-    smsc set generatearchivetable <digital option>
-
-DESCRIPTION
-    This command is used to set which messages (or none) will be stored into
-    archive tables. Options will have following bits values:
-    bit 1 - records will be done for SMPP originated messages with datagramm
-            mode
-    bit 2 - records will be done for SMPP originated messages with
-            transactional mode
-    bit 4 - records will be done for SMPP originated messages with
-            storeAndForward mode and for all SS7 or SIP originated messages
-    Value 0 will mean store none and value 7 - store all.
-    Default value: 7 (store all)
-EXAMPLES
-    smsc set generatearchivetable 7
-]]></screen>
-            </section>
-            <section id="generateArchiveTable_GUI">
-            <title>Using GUI</title>
-            <procedure>
-                <title>Set archive table CDRs generation SMSC option using the GUI</title>
-                <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
-                </para></step>
-                <step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
-                </para></step>
-                <step><para>You can specify archive table CDR generation option by selecting an appropriate value in the field "Archive table generation". For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
-                </para></step>
-                <step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
-                </para></step>
-            </procedure>
-            </section>
-            </section>
-
-			<section id="generateReceiptCdr">
-			<title>Generate CDR for Receipt Messages</title>
-			<section id="generateReceiptCdr_CLI">
-			<title>Using CLI</title>
-<para>You can set the 'generatereceiptcdr' value to true/false by issuing the command <command>smsc set generatereceiptcdr</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get generatereceiptcdr</command> which will display the value set for this property.
-</para>
-<screen><![CDATA[
-Name
-	smsc set generatereceiptcdr
-
-SYNOPSIS
-	smsc set generatereceiptcdr <true | false>
-
-DESCRIPTION
-	The SMSC can be configured to generate CDR for both receipt and regular messages 
-	or generate CDR only for regular messages. By default the SMSC will generate CDR
-	for regular messages only. However if you require the SMSC to generate CDR for
-	receipt messages as well, you must set the parameter 'generatereceiptcdr' to true.
-]]></screen>
-			</section>
-			<section id="generateReceiptCdr_GUI">
-			<title>Using GUI</title>
-			<procedure>
-				<title>Set 'generate CDR for receipt messages'  using the GUI</title>
-				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
-				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
-				</para></step>
-				<step><para>You can specify if the SMSC should generate CDR for receipt messages by choosing the value true for the field 'Generate receipt CDR'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
 				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
 				</para></step>
@@ -679,7 +593,7 @@ DESCRIPTION
 				<title>Enable/Disable SMS Home Routing using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Properties' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
 				</para></step>
 				<step><para>You can specify if the SMSC should accept MT messages (i.e if you want the SMSC to support SMS Home Routing) by setting the value for the field 'Home routing' to true or false accordingly. If this is enabled (set to true), the SMSC will support Home Routing. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -715,7 +629,7 @@ DESCRIPTION
 				<title>Set SMSC Global Title using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'SS7 Settings' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'SS7 Settings' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the SMSC Global Title by entering the value in the text field 'SMSC Gateway Global Title'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -752,7 +666,7 @@ DESCRIPTION
 				<title>Set SMSC Sub System Number (SSN) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'SS7 Settings' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'SS7 Settings' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the SMSC Sub System Number (SSN) by entering the value in the text field 'SMSC Gateway subsystem number'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -786,7 +700,7 @@ DESCRIPTION
 				<title>Set HLR Sub System Number (SSN) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'SS7 Settings' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'SS7 Settings' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the HLR Sub System Number (SSN) by entering the value in the text field 'HLR subsystem number'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -820,7 +734,7 @@ DESCRIPTION
 				<title>Set MSC Sub System Number (SSN) using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'SS7 Settings' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'SS7 Settings' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the MSC Sub System Number (SSN) by entering the value in the text field 'MSC subsystem number'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -860,7 +774,7 @@ DESCRIPTION
 				<title>Set MAP Application Context version using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'SS7 Settings' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'SS7 Settings' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the MAP Application Context version by entering the value in the text field 'MAP version supported'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -912,7 +826,7 @@ EXAMPLES
 				<title>Set Max Message Length Reducer using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'SS7 Settings' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'SS7 Settings' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Max Message Length Reducer by entering the value in the text field 'Max Message Length Reducer'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -955,7 +869,7 @@ EXAMPLES
 				<title>Set Cassandra Configuration - Host Addresses using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Cassandra' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Cassandra' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the host-ip address by entering appropriate values in the text field 'Host Address'. For more details of these parameters, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -992,7 +906,7 @@ EXAMPLES
                 <title>Set Cassandra Configuration - Port using the GUI</title>
                 <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
                 </para></step>
-                <step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Cassandra' tab in the GUI.
+                <step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Cassandra' tab in the GUI.
                 </para></step>
                 <step><para>You can specify the host-ip address and port by entering appropriate values in the text field 'Port'. For more details of these parameters, please refer to the description of the CLI command for the same in the preceding section. 
                 </para></step>
@@ -1028,7 +942,7 @@ DESCRIPTION
 				<title>Set Cassandra Configuration - Keyspace Name using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Cassandra' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Cassandra' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Keyspace Name by entering the value in the text field 'Keyspace Name'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1037,6 +951,7 @@ DESCRIPTION
 			</procedure>
 			</section>
 			</section>
+
 			<section id="db_cluster">
 			<title>Cassandra Configuration - Cluster Name</title>
 			<section id="db_cluster_CLI">
@@ -1066,7 +981,7 @@ EXAMPLES
 				<title>Set Cassandra Configuration - Cluster Name using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Cassandra' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Cassandra' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Cluster Name by entering the value in the text field 'Cluster Name'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1075,6 +990,117 @@ EXAMPLES
 			</procedure>
 			</section>
 			</section>
+			
+			<section id="db_removinglivetablesdays">
+			<title>Cassandra Configuration - Removing Live Tables Days</title>
+			<section id="db_removinglivetablesdays_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'Removing Live Tables Days' value by issuing the command <command>smsc set removinglivetabledays</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get removinglivetabledays</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set removinglivetablesdays
+
+SYNOPSIS
+	smsc set removinglivetablesdays <value>
+
+DESCRIPTION
+	This command is used to configure the SMSC to automatically drop LIVE tables from 
+	the Cassandra Database. The SMSC will attempt to delete tables just after
+	midnight and after every SMSC restart.
+
+PARAMETERS
+	removinglivetablesdays		- This parameter is used to specify the number
+					  of days the LIVE tables should be kept before 
+					  attempting to drop them automatically.
+
+					  If this value is specified as "0", the SMSC
+					  will not drop tables automatically. In this case
+					  you must manually drop tables.
+
+					  You must specify a value of 3 or more. You can
+					  not set this value to 1 or 2 days. This is to 
+					  ensure the tables will be kept for a minimum
+					  of 2 days after creation date.
+
+					  The SMSC wil attempt to delete tables for one 
+					  day. If the Cassandra Database keeps tables for 
+					  older days, then the administrator should drop 
+					  these manually.
+]]></screen>
+			</section>
+			<section id="db_removinglivetablesdays_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set Cassandra Configuration - Removing Live Tables Days</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Cassandra' tab in the GUI.
+				</para></step>
+				<step><para>You can specify the Removing Live Tables Days by entering the value in the text field 'Removing Live Tables Days'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>			
+			
+			<section id="db_removingarchivetabledays">
+			<title>Cassandra Configuration - Removing Live Tables Days</title>
+			<section id="db_removingarchivetabledays_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'Removing Live Tables Days' value by issuing the command <command>smsc set removingarchivetabledays</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get removingarchivetabledays</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set removingarchivetabledays
+
+SYNOPSIS
+	smsc set removingarchivetabledays <value>
+
+DESCRIPTION
+	This command is used to configure the SMSC to automatically drop ARCHIVE tables 
+	from the Cassandra Database. The SMSC will attempt to delete tables just after
+	midnight and after every SMSC restart.
+
+PARAMETERS
+	removingarchivetabledays	- This parameter is used to specify the number
+					  of days the ARCHIVE tables should be kept before 
+					  attempting to drop them automatically.
+
+					  If this value is specified as "0", the SMSC
+					  will not drop tables automatically. In this case
+					  you must manually drop tables.
+
+					  You must specify a value of 3 or more. You can
+					  not set this value to 1 or 2 days. This is to 
+					  ensure the tables will be kept for a minimum
+					  of 2 days after creation date.
+
+					  The SMSC wil attempt to delete tables for one 
+					  day. If the Cassandra Database keeps tables for 
+					  older days, then the administrator should drop 
+					  these manually.
+]]></screen>
+			</section>
+			<section id="db_removingarchivetabledays_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set Cassandra Configuration - Removing Archive Tables Days</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Cassandra' tab in the GUI.
+				</para></step>
+				<step><para>You can specify the Removing Archive Tables Days by entering the value in the text field 'Removing Archive Tables Days'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>			
+			
 		</section>
 		<section id="SMSC_scheduler_Settings">
 		<title>Scheduler Settings</title>
@@ -1109,7 +1135,7 @@ EXAMPLES
 				<title>Set Cassandra Configuration - Cluster Name using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Scheduler' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Scheduler' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Fetch Period by entering the value in the text field 'Fetch Period (in ms)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1147,7 +1173,7 @@ EXAMPLES
 				<title>Set Max Rows using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Scheduler' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Scheduler' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Max Rows by entering the value in the text field 'Max Rows'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1188,7 +1214,7 @@ EXAMPLES
 				<title>Set Max Activity Count using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Scheduler' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Scheduler' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Max Activity Count by entering the value in the text field 'Max Activity Count'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1226,7 +1252,7 @@ EXAMPLES
 				<title>Set Revise Period using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Scheduler' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Scheduler' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the revise period in seconds by entering the value in the text field 'Revise period after SMSC restart (sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1265,7 +1291,7 @@ EXAMPLES
 				<title>Set Cache timeout Period using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Scheduler' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Scheduler' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Cache timeout period in seconds by entering the value in the text field 'Processing Sms set cache timeout (sec)'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1306,7 +1332,7 @@ EXAMPLES
 				<title>Set Diameter Destination Realm using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Diameter' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Diameter' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Destination Realm by entering the value in the corresponding text field. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1344,7 +1370,7 @@ EXAMPLES
 				<title>Set Diameter Host using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Diameter' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Diameter' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Destination Host by entering the value in the corresponding text field. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1382,7 +1408,7 @@ EXAMPLES
 				<title>Set Diameter Port using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Diameter' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Diameter' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Destination Port by entering the value in the corresponding text field. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1419,7 +1445,7 @@ EXAMPLES
 				<title>Set Diameter Username using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Diameter' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Diameter' tab in the GUI.
 				</para></step>
 				<step><para>You can specify the Username by entering the value in the corresponding text field. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1461,7 +1487,7 @@ EXAMPLES
 				<title>Set MO Charge using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Diameter' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Diameter' tab in the GUI.
 				</para></step>
 				<step><para>You can set 'Mobile Originated SMS Charged' value to true or false, in the corresponding list. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1513,7 +1539,7 @@ EXAMPLES
 				<title>Set ESME Charge using the GUI</title>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Diameter' tab in the GUI.
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Diameter' tab in the GUI.
 				</para></step>
 				<step><para>You can set 'ESME Originated SMS Charged' value to none, selected or all, in the corresponding list. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
 				</para></step>
@@ -1563,7 +1589,7 @@ EXAMPLES
                 <title>Set SIP Charge using the GUI</title>
                 <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
                 </para></step>
-                <step><para>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Diameter' tab in the GUI.
+                <step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Diameter' tab in the GUI.
                 </para></step>
                 <step><para>You can set 'SIP Originated SMS Charged' value to none, selected or all, in the corresponding list. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
                 </para></step>
@@ -1574,9 +1600,199 @@ EXAMPLES
             </section>
 
         </section>
+
+
+
+		<section id="SMSC_Gateway_Server_CDR">
+					<title>CDR</title>
+            <section id="generateCdr">
+            <title>CDR generation</title>
+            <section id="generateCdr_CLI">
+            <title>Using CLI</title>
+<para>
+SMSC GW can store CDR records for each delivered or failed for delivering messages into log file (see <xref linkend="CDR_logging_settings"/>).
+Which records will be stored is defined by 'generatecdr' SMSC option.
+You can set the 'generatecdr' option by issuing the command
+<command>smsc set generatecdr</command> with appropriate parameters as described below.
+You can verify this by issuing the command <command>smsc get generatecdr</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+    smsc set generatecdr
+
+SYNOPSIS
+    smsc set generatecdr <digital option>
+
+DESCRIPTION
+    This command is used to set which messages (or none) will be stored into
+    CDR log file. Details of CDR log format can be found in "8.2. CDR Log"
+    Options will have following bits values:
+    bit 1 - records will be done for SMPP originated messages with datagramm
+            mode
+    bit 2 - records will be done for SMPP originated messages with
+            transactional mode
+    bit 4 - records will be done for SMPP originated messages with
+            storeAndForward mode and for all SS7 or SIP originated messages
+    Value 0 will mean store none and value 7 - store all.
+    Default value: 7 (store all)
+
+EXAMPLES
+    smsc set generatecdr 7
+]]></screen>
+            </section>
+            <section id="generateCdr_GUI">
+            <title>Using GUI</title>
+            <procedure>
+                <title>Set CDRs generation SMSC option using the GUI</title>
+                <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+                </para></step>
+                <step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
+                </para></step>
+                <step><para>You can specify CDR generation option by selecting an appropriate value in the field "CDR generation". For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+                </para></step>
+                <step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+                </para></step>
+            </procedure>
+            </section>
+            </section>
+
+
+            <section id="generateArchiveTable">
+            <title>Archive table generation</title>
+            <section id="generateArchiveTable_CLI">
+            <title>Using CLI</title>
+<para>
+SMSC GW can store CDR records for each delivered or failed for delivering messages into special archive tables of cassandra database.
+Names of such tables have the following format: MESSAGES_yyyy_mm_dd.
+You can refer to fields definitions in <xref linkend="MESSAGES_yyyy_mm_dd" /> chapter.
+Which records will be stored is defined by 'generatearchivetable' SMSC option.
+You can set the 'generatearchivetable' option by issuing the command <command>smsc set generatearchivetable</command> with appropriate parameters as described below.
+You can verify this by issuing the command <command>smsc get generatearchivetable</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+    smsc set generatearchivetable
+
+SYNOPSIS
+    smsc set generatearchivetable <digital option>
+
+DESCRIPTION
+    This command is used to set which messages (or none) will be stored into
+    archive tables. Options will have following bits values:
+    bit 1 - records will be done for SMPP originated messages with datagramm
+            mode
+    bit 2 - records will be done for SMPP originated messages with
+            transactional mode
+    bit 4 - records will be done for SMPP originated messages with
+            storeAndForward mode and for all SS7 or SIP originated messages
+    Value 0 will mean store none and value 7 - store all.
+    Default value: 7 (store all)
+EXAMPLES
+    smsc set generatearchivetable 7
+]]></screen>
+            </section>
+            <section id="generateArchiveTable_GUI">
+            <title>Using GUI</title>
+            <procedure>
+                <title>Set archive table CDRs generation SMSC option using the GUI</title>
+                <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+                </para></step>
+                <step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
+                </para></step>
+                <step><para>You can specify archive table CDR generation option by selecting an appropriate value in the field "Archive table generation". For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+                </para></step>
+                <step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+                </para></step>
+            </procedure>
+            </section>
+            </section>
+
+			<section id="generateReceiptCdr">
+			<title>Generate CDR for Receipt Messages</title>
+			<section id="generateReceiptCdr_CLI">
+			<title>Using CLI</title>
+<para>You can set the 'generatereceiptcdr' value to true/false by issuing the command <command>smsc set generatereceiptcdr</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get generatereceiptcdr</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set generatereceiptcdr
+
+SYNOPSIS
+	smsc set generatereceiptcdr <true | false>
+
+DESCRIPTION
+	The SMSC can be configured to generate CDR for both receipt and regular messages 
+	or generate CDR only for regular messages. By default the SMSC will generate CDR
+	for regular messages only. However if you require the SMSC to generate CDR for
+	receipt messages as well, you must set the parameter 'generatereceiptcdr' to true.
+]]></screen>
+			</section>
+			<section id="generateReceiptCdr_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set 'generate CDR for receipt messages'  using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Properties' tab in the GUI.
+				</para></step>
+				<step><para>You can specify if the SMSC should generate CDR for receipt messages by choosing the value true for the field 'Generate receipt CDR'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>					
+		</section>
+		
+		<section id="SMSC_Gateway_Server_Processing">
+					<title>Processing</title>
+            <section id="deliverypause">
+            <title>Delivery Pause</title>
+            <section id="deliverypause_CLI">
+            <title>Using CLI</title>
+<para>
+SMSC GW can pause delivery of SMS to all the medium. 
+You can set the 'deliverypause' option by issuing the command
+<command>smsc set deliverypause</command> with appropriate parameters as described below.
+You can verify this by issuing the command <command>smsc get deliverypause</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set deliverypause
+
+SYNOPSIS
+	smsc set deliverypause <true | false>
+
+DESCRIPTION
+	This command is used to set the deliverypause value. 
+	If true, delivery of all SMS is paused by SMSC. By
+	default its false. Use this option with extreme caution. 
+
+EXAMPLES
+	smsc set deliverypause true
+]]></screen>
+            </section>
+            <section id="deliverypause_GUI">
+            <title>Using GUI</title>
+            <procedure>
+                <title>Set pause option using the GUI</title>
+                <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+                </para></step>
+                <step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Processing' tab in the GUI.
+                </para></step>
+                <step><para>You can specify pause option by selecting an appropriate value in the field "Delivery Pause". For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+                </para></step>
+                <step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+                </para></step>
+            </procedure>
+            </section>
+            </section>
+		
+		</section>
+
     </section>
-
-
+    
+    
 	<section id="SMPP_Server_Settings">
 	<title>SMPP Server Settings</title>
 
@@ -2914,7 +3130,7 @@ EXAMPLES
                 <title>Pause SMSC using the GUI</title>
                 <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
                 </para></step>
-                <step>The main panel will display the existing Settings, segregated into five horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter and Processing. Switch to the 'Processing' tab in the GUI.<para>
+                <step>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'Processing' tab in the GUI.<para>
                 </para></step>
                 <step><para>You can select "yes" or "no" value. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
                 </para></step>
