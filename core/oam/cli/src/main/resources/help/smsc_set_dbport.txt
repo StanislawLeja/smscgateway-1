@@ -1,15 +1,15 @@
 Name
-	smsc set hosts
+	smsc set dbport
 
 SYNOPSIS
-	smsc set hosts <host-ip:port>
+	smsc get dbport <port>
 
 DESCRIPTION
-	This command is used to set the host-ip address and port for Cassandra Database
+	This command is used to set the port for Cassandra Database
 	access.
 
 EXAMPLES
-	smsc set hosts 127.0.0.1:9160
+	smsc set dbport 9042
 
 SEE ALSO
 	smsc esme_create, smsc get scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
