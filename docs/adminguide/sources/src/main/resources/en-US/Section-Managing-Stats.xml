@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "${ent.filename}">
+%BOOK_ENTITIES;
+]>
+<section id="managing_statistics">
+	<title>Statistics</title>
+	<para>
+		The GUI will allow you to create campaigns of fixed duration for gathering statistics data. Campaign allows to select time period over which these statistics have been gathered (in hours, minutes and
+		seconds). Once Campaign is defined, the statistics can be observed by clicking newly created campaign name or you can also navigate to Metrics (click Metrics on left panel) to get graph of statistics.
+	</para>
+	
+	<section id="managing_statistics_create">
+		<title>
+			Create Campaign
+		</title>
+	
+		<para>
+			To create new campaign open a Web Browser and navigate to http://localhost:8080/jss7-management-console/. 
+			Click on the 'Manage Campaigns' link in the left panel. The main panel will display the names of all existing campaigns and also button to create new campaign. 
+			The GUI will look similar to the figure below.
+		</para>
+		
+		<figure>
+	  		<title>GUI - Campaigns</title>
+	  		<mediaobject>
+	    		<imageobject>
+	      			<imagedata fileref="images/GUI_Campaign_Management.png" format="PNG" align="center"/>
+	    		</imageobject>
+	  		</mediaobject>
+		</figure>
+		
+		<para>
+			Click on 'Create Statistics Campaign' button to create new campaign. Select the stack from 'Counter Definition Set Name' drop down on which you want to define new campaign. 
+			Next select the time period from 'Duration' drop down and enter unique 'Campaign Name'.
+		</para>
+		<note>
+			<para>
+			  Please note drop down will also show SS7 counter definiton. You can create SS7 campaigns from SS7 managment console. For SMSC select 'SMSC GW-SMSC-Main'
+			</para>
+		</note>
+	</section>
+	
+	<section id="managing_statistics_manage">
+		<title>View Campaigns</title>
+		<para>
+			The GUI will allow you to view existing campaigns. On the main panel click campaign name. The GUI will look similar to the figure below and is divided into tabs. 
+		</para>
+		<para>
+			The first tab will display the properties of the campaign. Second tab explains all the counters in this campaigns and their definition. Last tab provides the values for each of these counters.
+			Last tab also displays the 'Start Time' and 'End Time' representing time duration for which sample was collected. 
+		</para>
+		<figure>
+  			<title>GUI - Campaigns View</title>
+  			<mediaobject>
+    			<imageobject>
+      				<imagedata fileref="images/GUI_Campaign_Management_View.png" format="PNG" align="center"/>
+    			</imageobject>
+  			</mediaobject>
+		</figure>		
+		<note>
+			<para>
+				&THIS.PLATFORM; &THIS.APPLICATION; doesn't persist the statistics, hence the data collected for campaign period refresh's every defined 'Duration'. User must refresh the page every 'Duration' 
+				period to gather statistics data for previous time period.
+			</para>
+			<para>
+				Nevertheless you can also click on 'Metrics' link on left panel, select the Campaign and observe the statistics graph. The metrics page gathers data from time page was loaded till user navigates 
+				away. Hence graph will show historic data from point page was loaded.
+			</para>
+		</note>
+		<para>
+			Metrics will show 3 graphs for Messages comming in, Messages tried for delivery and Messages successfully getting delivered
+		</para>
+		<figure>
+  			<title>GUI - Campaigns View</title>
+  			<mediaobject>
+    			<imageobject>
+      				<imagedata fileref="images/TelScaleSMSC-Graphs.png" format="PNG" align="center"/>
+    			</imageobject>
+  			</mediaobject>
+		</figure>	
+	</section>
+</section>
