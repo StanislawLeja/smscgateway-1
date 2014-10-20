@@ -29,14 +29,19 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
+import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
+import org.mobicents.protocols.ss7.indicator.RoutingIndicator;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ConcatenatedShortMessagesIdentifier;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
+import org.mobicents.protocols.ss7.sccp.parameter.GlobalTitle;
+import org.mobicents.protocols.ss7.sccp.parameter.ParameterFactory;
+import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.smsc.smpp.GenerateType;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -49,7 +54,7 @@ import com.cloudhopper.smpp.tlv.TlvConvertException;
  * 
  */
 public class MessageUtil {
-	
+
 	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyy-mm-dd hh:mm:ss");
 	
 	public static Date parseDate(String val) throws ParseException {
@@ -365,29 +370,6 @@ public class MessageUtil {
         }
     }
 
-	public static NumberingPlan getSccpNumberingPlan(int npi) {
-		NumberingPlan np = NumberingPlan.ISDN_TELEPHONY;
-		switch (npi) {
-		case SmppConstants.NPI_E164:
-			np = NumberingPlan.ISDN_TELEPHONY;
-			break;
-		}
-		return np;
-	}
-
-	public static NatureOfAddress getSccpNatureOfAddress(int ton) {
-		NatureOfAddress na = NatureOfAddress.INTERNATIONAL;
-		switch (ton) {
-        case SmppConstants.TON_INTERNATIONAL:
-            na = NatureOfAddress.INTERNATIONAL;
-            break;
-        case SmppConstants.TON_NATIONAL:
-            na = NatureOfAddress.NATIONAL;
-            break;
-		}
-		return na;
-	}
-
 	private static void addDateToStringBuilder(StringBuilder sb, int year, int month, int day, int hour, int min, int sec) {
 		if (year < 10)
 			sb.append("0");
@@ -604,5 +586,54 @@ public class MessageUtil {
         }
     }
 
+    public static NumberingPlan getSccpNumberingPlan(int npi) {
+        NumberingPlan np = NumberingPlan.ISDN_TELEPHONY;
+        switch (npi) {
+        case SmppConstants.NPI_E164:
+            np = NumberingPlan.ISDN_TELEPHONY;
+            break;
+        }
+        return np;
+    }
+
+    public static NatureOfAddress getSccpNatureOfAddress(int ton) {
+        NatureOfAddress na = NatureOfAddress.INTERNATIONAL;
+        switch (ton) {
+        case SmppConstants.TON_INTERNATIONAL:
+            na = NatureOfAddress.INTERNATIONAL;
+            break;
+        case SmppConstants.TON_NATIONAL:
+            na = NatureOfAddress.NATIONAL;
+            break;
+        }
+        return na;
+    }
+
+    public static SccpAddress getSccpAddress(ParameterFactory sccpParameterFact, String address, int ton, int npi, int ssn, GlobalTitleIndicator gti,
+            int translationType) {
+        NumberingPlan np = MessageUtil.getSccpNumberingPlan(npi);
+        NatureOfAddress na = MessageUtil.getSccpNatureOfAddress(ton);
+
+        GlobalTitle gt;
+        switch (gti) {
+        case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_ENCODING_SCHEME_AND_NATURE_OF_ADDRESS:
+            gt = sccpParameterFact.createGlobalTitle(address, translationType, np, null, na);
+            break;
+        case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_AND_ENCODING_SCHEME:
+            gt = sccpParameterFact.createGlobalTitle(address, translationType, np, null);
+            break;
+        case GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY:
+            gt = sccpParameterFact.createGlobalTitle(address, na);
+            break;
+        case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_ONLY:
+            gt = sccpParameterFact.createGlobalTitle(address, translationType);
+            break;
+        default:
+            gt = sccpParameterFact.createGlobalTitle(address, translationType, np, null, na);
+            break;
+        }
+
+        return sccpParameterFact.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0, ssn);
+    }
 }
 

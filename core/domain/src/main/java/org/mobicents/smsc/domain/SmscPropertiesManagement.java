@@ -34,6 +34,7 @@ import javolution.xml.XMLObjectWriter;
 import javolution.xml.stream.XMLStreamException;
 
 import org.apache.log4j.Logger;
+import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.smpp.GenerateType;
 import org.mobicents.smsc.smpp.SmppEncoding;
@@ -85,8 +86,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private static final String MO_CHARGING = "moCharging";
 	private static final String TX_SMPP_CHARGING = "txSmppCharging";
 	private static final String TX_SIP_CHARGING = "txSipCharging";
-	private static final String DIAMETER_DEST_REALM = "diameterDestRealm";
-	private static final String DIAMETER_DEST_HOST = "diameterDestHost";
+    private static final String GLOBAL_TITLE_INDICATOR = "globalTitleIndicator";
+    private static final String TRANSLATION_TYPE = "translationType";
+    private static final String DIAMETER_DEST_REALM = "diameterDestRealm";
+    private static final String DIAMETER_DEST_HOST = "diameterDestHost";
 	private static final String DIAMETER_DEST_PORT = "diameterDestPort";
     private static final String DIAMETER_USER_NAME = "diameterUserName";
     private static final String REMOVING_LIVE_TABLES_DAYS = "removingLiveTablesDays";
@@ -202,6 +205,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// Defualt is None: none of SIP originated messages will be charged by OCS
 	// via Diameter before sending
 	private ChargingType txSipCharging = ChargingType.None;
+    // Type of SCCP GlobalTytle for outgoing SCCP messages
+    private GlobalTitleIndicator globalTitleIndicator = GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_ENCODING_SCHEME_AND_NATURE_OF_ADDRESS;
+    // TranslationType value
+    private int translationType = 0;
 
 	// Diameter destination Realm for connection to OCS
 	private String diameterDestRealm = "mobicents.org";
@@ -235,7 +242,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // and is set to false when Schedule RA is activated
     private boolean smscStopped = true;
 
-    
+
     private SmscPropertiesManagement(String name) {
 		this.name = name;
 		binding.setClassAttribute(CLASS_ATTRIBUTE);
@@ -620,6 +627,22 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         this.store();
 	}
 
+    public GlobalTitleIndicator getGlobalTitleIndicator() {
+        return globalTitleIndicator;
+    }
+
+    public void setGlobalTitleIndicator(GlobalTitleIndicator globalTitleIndicator) {
+        this.globalTitleIndicator = globalTitleIndicator;
+    }
+
+    public int getTranslationType() {
+        return translationType;
+    }
+
+    public void setTranslationType(int translationType) {
+        this.translationType = translationType;
+    }
+
 	@Override
 	public String getDiameterDestRealm() {
 		return diameterDestRealm;
@@ -824,8 +847,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             writer.write(this.storeAndForwordMode.toString(), STORE_AND_FORWORD_MODE, String.class);
             writer.write(this.moCharging.toString(), MO_CHARGING, String.class);
 			writer.write(this.txSmppCharging.toString(), TX_SMPP_CHARGING, String.class);
-			writer.write(this.txSipCharging.toString(), TX_SIP_CHARGING, String.class);
-			writer.write(this.diameterDestRealm, DIAMETER_DEST_REALM, String.class);
+            writer.write(this.txSipCharging.toString(), TX_SIP_CHARGING, String.class);
+            writer.write(this.globalTitleIndicator.toString(), GLOBAL_TITLE_INDICATOR, String.class);
+            writer.write(this.translationType, TRANSLATION_TYPE, Integer.class);
+            writer.write(this.diameterDestRealm, DIAMETER_DEST_REALM, String.class);
 			writer.write(this.diameterDestHost, DIAMETER_DEST_HOST, String.class);
 			writer.write(this.diameterDestPort, DIAMETER_DEST_PORT, Integer.class);
 			writer.write(this.diameterUserName, DIAMETER_USER_NAME, String.class);
@@ -984,9 +1009,16 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			if (vals != null)
 				this.txSmppCharging = Enum.valueOf(ChargingType.class, vals);
 
-			vals = reader.read(TX_SIP_CHARGING, String.class);
-			if (vals != null)
-				this.txSipCharging = Enum.valueOf(ChargingType.class, vals);
+            vals = reader.read(TX_SIP_CHARGING, String.class);
+            if (vals != null)
+                this.txSipCharging = Enum.valueOf(ChargingType.class, vals);
+
+            vals = reader.read(GLOBAL_TITLE_INDICATOR, String.class);
+            if (vals != null)
+                this.globalTitleIndicator = Enum.valueOf(GlobalTitleIndicator.class, vals);
+            val = reader.read(TRANSLATION_TYPE, Integer.class);
+            if (val != null)
+                this.translationType = val;
 
 			this.diameterDestRealm = reader.read(DIAMETER_DEST_REALM, String.class);
 

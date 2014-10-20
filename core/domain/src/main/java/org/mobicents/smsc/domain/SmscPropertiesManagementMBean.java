@@ -22,6 +22,7 @@
 
 package org.mobicents.smsc.domain;
 
+import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.smsc.smpp.GenerateType;
 import org.mobicents.smsc.smpp.SmppEncoding;
 
@@ -168,6 +169,14 @@ public interface SmscPropertiesManagementMBean {
 	public ChargingType getTxSipChargingType();
 
 	public void setTxSipChargingType(ChargingType txSmppCharging);
+
+    public GlobalTitleIndicator getGlobalTitleIndicator();
+
+    public void setGlobalTitleIndicator(GlobalTitleIndicator globalTitleIndicator);
+
+    public int getTranslationType();
+
+    public void setTranslationType(int translationType);
 
 	public String getDiameterDestRealm();
 
