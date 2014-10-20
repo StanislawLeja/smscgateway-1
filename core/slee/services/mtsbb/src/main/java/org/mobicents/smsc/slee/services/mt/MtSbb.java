@@ -1288,15 +1288,15 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	}
 
 	private SccpAddress getMSCSccpAddress(ISDNAddressString networkNodeNumber) {
-		NumberingPlan np = MessageUtil.getSccpNumberingPlan(networkNodeNumber.getNumberingPlan().getIndicator());
-		NatureOfAddress na = MessageUtil.getSccpNatureOfAddress(networkNodeNumber.getAddressNature().getIndicator());
+        return MessageUtil.getSccpAddress(sccpParameterFact, networkNodeNumber.getAddress(), networkNodeNumber.getAddressNature().getIndicator(),
+                networkNodeNumber.getNumberingPlan().getIndicator(), smscPropertiesManagement.getMscSsn(), smscPropertiesManagement.getGlobalTitleIndicator(),
+                smscPropertiesManagement.getTranslationType());
 
-        GlobalTitle gt = sccpParameterFact.createGlobalTitle(networkNodeNumber.getAddress(), 0, np, null, na);
-        return sccpParameterFact.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0, smscPropertiesManagement.getMscSsn());
-
-//		GT0100 gt = new GT0100(0, np, na, networkNodeNumber.getAddress());
-//		return new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
-//				smscPropertiesManagement.getMscSsn());
+//		NumberingPlan np = MessageUtil.getSccpNumberingPlan(networkNodeNumber.getNumberingPlan().getIndicator());
+//		NatureOfAddress na = MessageUtil.getSccpNatureOfAddress(networkNodeNumber.getAddressNature().getIndicator());
+//
+//        GlobalTitle gt = sccpParameterFact.createGlobalTitle(networkNodeNumber.getAddress(), 0, np, null, na);
+//        return sccpParameterFact.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0, smscPropertiesManagement.getMscSsn());
 	}
 
 	private AddressField getSmsTpduOriginatingAddress(int ton, int npi, String address) {
