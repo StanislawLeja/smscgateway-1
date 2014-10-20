@@ -702,7 +702,7 @@ public class C2_MtTest {
         Sms ss1 = set1.getSms(0);
         assertEquals(set1.getDestAddr(), origDig);
         assertEquals(ss1.getSourceAddr(), msdnDig);
-        assertEquals(ss1.getEsmClass(), 4);
+        assertEquals(ss1.getEsmClass(), 7);
 //        String sx = new String(ss1.getShortMessage());
         String sx = new String(ss1.getShortMessageText());
         assertTrue(sx.contains("err:000"));
