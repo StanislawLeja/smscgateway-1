@@ -50,7 +50,7 @@
 			<version>${ch-commons-charset.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>slf4j</groupId>
+			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
 		</dependency>
