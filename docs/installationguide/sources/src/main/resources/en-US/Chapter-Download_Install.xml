@@ -40,7 +40,19 @@
 			<listitem><para>docs: Contains all relevant documentation in respective subfolders.</para></listitem>
 			<listitem><para>jboss-5.1.0.GA: The core server with two profiles "default" and "simulator". The "default" profile is a clean profile where you will have to start from scratch and configure the entire SS7 Stack and SMSC Gateway. The "simulator" profile is a pre-configured profile to work with jss7-simulator. Refer to the Admin Guide for instructions on how to start the server in either of the profiles.</para></listitem>
 			<listitem><para>resources: Contains SLEE MAP RA jars.</para></listitem>
-			<listitem><para>tools: Contains SLEE tools and jss7-simulator.</para></listitem>
+			<listitem>
+				<para>
+					tools: Contains SLEE tools and SMSC test tools as explained below.
+					<itemizedlist>
+						<listitem><para>TelScale-hlr-simulator: Command line HLR simulator used for load testing of SMSC. TelScale-hlr-simulator is pre-configured to integrate with SMSC run in simulator profile.</para></listitem>
+						<listitem>
+							<para>
+								TelScale-jss7-simulator: jSS7 Simulator that can be started in GUI or command line mode. This tool is useful to test MoForwardSM and other functionality of SMSC for example when subscriber absent etc. 
+								Please read Chapter 13.SS7 Simulator of TelScale_SS7Stack_User_Guide.pdf 
+							</para></listitem>
+					</itemizedlist>				
+				</para>
+			</listitem>
 		</itemizedlist>
 
 <screen><![CDATA[
@@ -64,13 +76,18 @@
 					|+ default	//clean profile to set up from scratch
 					|+ simulator	//pre-configured profile to work with the jss7-simulator
 		|- resources
+				|+ diameter-base
+				|+ diameter-ro
 				|+ map
+				|+ sip11 
 		|- tools
 				|+ eclipslee
 				|+ jopr-plugin
 				|+ remote-slee-connection
 				|+ snmp
+				|+ Telscale-hlr-simulator
 				|+ Telscale-jss7-simulator
+				|+ Telscale-smpp-load
 				|+ Telscale-smpp-simulator
 				|+ twiddle
 ]]>
