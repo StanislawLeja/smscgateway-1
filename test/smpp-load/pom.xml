@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+
+	<parent>
+		<artifactId>telscale-smsc-parent</artifactId>
+		<groupId>com.telscale.smsc</groupId>
+		<version>6.2.0-TelScale-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>smpp-load</artifactId>
+
+	<name>Test SMPP Load</name>
+	<packaging>jar</packaging>
+
+	<properties>
+		<assemble.dir>${pom.build.directory}/load</assemble.dir>
+		<ch-commons-util.version>6.0.1</ch-commons-util.version>
+		<ch-commons-charset.version>3.0.2</ch-commons-charset.version>
+		<ch-commons-gsm.version>3.0.0</ch-commons-gsm.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.cloudhopper</groupId>
+			<artifactId>ch-smpp</artifactId>
+			<version>${ch.smpp.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.cloudhopper</groupId>
+			<artifactId>ch-commons-util</artifactId>
+			<version>${ch-commons-util.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.cloudhopper</groupId>
+			<artifactId>ch-commons-charset</artifactId>
+			<version>${ch-commons-charset.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>joda</groupId>
+			<artifactId>joda-time</artifactId>
+			<version>1.6.2</version>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>assemble</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<finalName>${pom.artifactId}</finalName>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-dependency-jar</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>copy</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<!-- this artifact :) -->
+										<artifactItem>
+											<groupId>${pom.groupId}</groupId>
+											<artifactId>${pom.artifactId}</artifactId>
+											<version>${pom.version}</version>
+											<type>jar</type>
+											<overWrite>true</overWrite>
+											<outputDirectory>
+												${assemble.dir}
+											</outputDirectory>
+											<destFileName>
+												smpp-load.jar
+											</destFileName>
+										</artifactItem>
+
+										<!-- deps -->
+
+										<artifactItem>
+											<groupId>com.cloudhopper</groupId>
+											<artifactId>ch-smpp</artifactId>
+											<type>jar</type>
+											<overWrite>true</overWrite>
+											<outputDirectory>
+												${assemble.dir}
+											</outputDirectory>
+											<destFileName>
+												ch-smpp.jar
+											</destFileName>
+										</artifactItem>
+
+										<artifactItem>
+											<groupId>io.netty</groupId>
+											<artifactId>netty</artifactId>
+											<type>jar</type>
+											<overWrite>true</overWrite>
+											<outputDirectory>
+												${assemble.dir}
+											</outputDirectory>
+											<destFileName>
+												netty.jar
+											</destFileName>
+										</artifactItem>
+
+										<artifactItem>
+											<groupId>slf4j</groupId>
+											<artifactId>slf4j-api</artifactId>
+											<type>jar</type>
+											<overWrite>true</overWrite>
+											<outputDirectory>
+												${assemble.dir}
+											</outputDirectory>
+											<destFileName>
+												slf4j.jar
+											</destFileName>
+										</artifactItem>
+
+										<artifactItem>
+											<groupId>org.slf4j</groupId>
+											<artifactId>slf4j-log4j12</artifactId>
+											<type>jar</type>
+											<overWrite>true</overWrite>
+											<outputDirectory>
+												${assemble.dir}
+											</outputDirectory>
+											<destFileName>
+												slf4j-log4j12.jar
+											</destFileName>
+										</artifactItem>
+
+										<artifactItem>
+											<groupId>com.cloudhopper</groupId>
+											<artifactId>ch-commons-util</artifactId>
+											<type>jar</type>
+											<overWrite>true</overWrite>
+											<outputDirectory>
+												${assemble.dir}
+											</outputDirectory>
+											<destFileName>
+												ch-commons-util.jar
+											</destFileName>
+										</artifactItem>
+
+										<artifactItem>
+											<groupId>com.cloudhopper</groupId>
+											<artifactId>ch-commons-charset</artifactId>
+											<type>jar</type>
+											<overWrite>true</overWrite>
+											<outputDirectory>
+												${assemble.dir}
+											</outputDirectory>
+											<destFileName>
+												ch-commons-charset.jar
+											</destFileName>
+										</artifactItem>
+
+										<artifactItem>
+											<groupId>log4j</groupId>
+											<artifactId>log4j</artifactId>
+											<type>jar</type>
+											<overWrite>true</overWrite>
+											<outputDirectory>
+												${assemble.dir}
+											</outputDirectory>
+											<destFileName>
+												log4j.jar
+											</destFileName>
+										</artifactItem>
+
+										<artifactItem>
+											<groupId>joda</groupId>
+											<artifactId>joda-time</artifactId>
+											<type>jar</type>
+											<overWrite>true</overWrite>
+											<outputDirectory>
+												${assemble.dir}
+											</outputDirectory>
+											<destFileName>
+												joda-time.jar
+											</destFileName>
+										</artifactItem>
+
+									</artifactItems>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- <plugin> <artifactId>maven-antrun-plugin</artifactId> <executions> 
+						<execution> <id>deploy-DU</id> <phase>install</phase> <goals> <goal>run</goal> 
+						</goals> <configuration> <tasks> <copy overwrite="true" file="bin/run.sh" 
+						todir="${assemble.dir}" /> </tasks> </configuration> </execution> </executions> 
+						</plugin> -->
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+
+
+</project>
