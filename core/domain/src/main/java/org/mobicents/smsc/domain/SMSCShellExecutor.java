@@ -372,6 +372,31 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (parName.equals("maxmapv")) {
 				int val = Integer.parseInt(options[3]);
 				smscPropertiesManagement.setMaxMapVersion(val);
+            } else if (parName.equals("gti")) {
+                String val = options[3];
+                switch (val) {
+                case "0001":
+                    smscPropertiesManagement
+                            .setGlobalTitleIndicator(GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY);
+                    break;
+                case "0010":
+                    smscPropertiesManagement
+                            .setGlobalTitleIndicator(GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_ONLY);
+                    break;
+                case "0011":
+                    smscPropertiesManagement
+                            .setGlobalTitleIndicator(GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_AND_ENCODING_SCHEME);
+                    break;
+                case "0100":
+                    smscPropertiesManagement
+                            .setGlobalTitleIndicator(GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_ENCODING_SCHEME_AND_NATURE_OF_ADDRESS);
+                    break;
+                default:
+                    return SMSCOAMMessages.GLOBAL_TYTLE_INDICATOR_BAD_VALUES;
+                }
+            } else if (parName.equals("tt")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setTranslationType(val);
 
 			} else if (parName.equals("defaultvalidityperiodhours")) {
 				int val = Integer.parseInt(options[3]);
@@ -502,29 +527,6 @@ public class SMSCShellExecutor implements ShellExecutor {
             } else if (parName.equals("deliverypause")) {
                 boolean val = Boolean.parseBoolean(options[3]);
                 smscPropertiesManagement.setDeliveryPause(val);
-
-            } else if (parName.equals("gti")) {
-                String val = options[3];
-                switch (val) {
-                case "0001":
-                    smscPropertiesManagement
-                            .setGlobalTitleIndicator(GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY);
-                    break;
-                case "0010":
-                    smscPropertiesManagement
-                            .setGlobalTitleIndicator(GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_ONLY);
-                    break;
-                case "0011":
-                    smscPropertiesManagement
-                            .setGlobalTitleIndicator(GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_AND_ENCODING_SCHEME);
-                    break;
-                case "0100":
-                    smscPropertiesManagement
-                            .setGlobalTitleIndicator(GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_ENCODING_SCHEME_AND_NATURE_OF_ADDRESS);
-                    break;
-                default:
-                    return SMSCOAMMessages.GLOBAL_TYTLE_INDICATOR_BAD_VALUES;
-                }
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -572,6 +574,25 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sb.append(smscPropertiesManagement.getMscSsn());
 			} else if (parName.equals("maxmapv")) {
 				sb.append(smscPropertiesManagement.getMaxMapVersion());
+            } else if (parName.equals("gti")) {
+                switch (smscPropertiesManagement.getGlobalTitleIndicator()) {
+                case GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY:
+                    sb.append("0001");
+                    break;
+                case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_ONLY:
+                    sb.append("0010");
+                    break;
+                case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_AND_ENCODING_SCHEME:
+                    sb.append("0011");
+                    break;
+                case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_ENCODING_SCHEME_AND_NATURE_OF_ADDRESS:
+                    sb.append("0100");
+                    break;
+                }
+            } else if (parName.equals("tt")) {
+                sb.append(smscPropertiesManagement.getTranslationType());
+
+			
 			} else if (parName.equals("defaultvalidityperiodhours")) {
 				sb.append(smscPropertiesManagement.getDefaultValidityPeriodHours());
 			} else if (parName.equals("maxvalidityperiodhours")) {
@@ -651,21 +672,6 @@ public class SMSCShellExecutor implements ShellExecutor {
                 sb.append(smscPropertiesManagement.getRemovingArchiveTablesDays());
             } else if (parName.equals("deliverypause")) {
                 sb.append(smscPropertiesManagement.isDeliveryPause());
-            } else if (parName.equals("gti")) {
-                switch (smscPropertiesManagement.getGlobalTitleIndicator()) {
-                case GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY:
-                    sb.append("0001");
-                    break;
-                case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_ONLY:
-                    sb.append("0010");
-                    break;
-                case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_AND_ENCODING_SCHEME:
-                    sb.append("0011");
-                    break;
-                case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_ENCODING_SCHEME_AND_NATURE_OF_ADDRESS:
-                    sb.append("0100");
-                    break;
-                }
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -689,6 +695,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getMscSsn());
 			sb.append("\n");
 
+			sb.append("maxmapv = ");
+			sb.append(smscPropertiesManagement.getMaxMapVersion());
+			sb.append("\n");
+
             sb.append("gti = ");
             switch (smscPropertiesManagement.getGlobalTitleIndicator()) {
             case GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY:
@@ -706,9 +716,9 @@ public class SMSCShellExecutor implements ShellExecutor {
             }
             sb.append("\n");
 
-			sb.append("maxmapv = ");
-			sb.append(smscPropertiesManagement.getMaxMapVersion());
-			sb.append("\n");
+            sb.append("tt = ");
+            sb.append(smscPropertiesManagement.getTranslationType());
+            sb.append("\n");
 
 			sb.append("defaultvalidityperiodhours = ");
 			sb.append(smscPropertiesManagement.getDefaultValidityPeriodHours());
