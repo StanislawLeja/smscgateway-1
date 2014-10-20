@@ -30,10 +30,10 @@ import java.util.List;
 import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
+import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.smsc.cassandra.SmsRoutingRuleType;
 import org.mobicents.smsc.library.DbSmsRoutingRule;
-import org.mobicents.smsc.smpp.GenerateType;
 import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.ss7.management.console.ShellExecutor;
 
@@ -503,6 +503,28 @@ public class SMSCShellExecutor implements ShellExecutor {
                 boolean val = Boolean.parseBoolean(options[3]);
                 smscPropertiesManagement.setDeliveryPause(val);
 
+            } else if (parName.equals("gti")) {
+                String val = options[3];
+                switch (val) {
+                case "0001":
+                    smscPropertiesManagement
+                            .setGlobalTitleIndicator(GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY);
+                    break;
+                case "0010":
+                    smscPropertiesManagement
+                            .setGlobalTitleIndicator(GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_ONLY);
+                    break;
+                case "0011":
+                    smscPropertiesManagement
+                            .setGlobalTitleIndicator(GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_AND_ENCODING_SCHEME);
+                    break;
+                case "0100":
+                    smscPropertiesManagement
+                            .setGlobalTitleIndicator(GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_ENCODING_SCHEME_AND_NATURE_OF_ADDRESS);
+                    break;
+                default:
+                    return SMSCOAMMessages.GLOBAL_TYTLE_INDICATOR_BAD_VALUES;
+                }
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -629,7 +651,21 @@ public class SMSCShellExecutor implements ShellExecutor {
                 sb.append(smscPropertiesManagement.getRemovingArchiveTablesDays());
             } else if (parName.equals("deliverypause")) {
                 sb.append(smscPropertiesManagement.isDeliveryPause());
-
+            } else if (parName.equals("gti")) {
+                switch (smscPropertiesManagement.getGlobalTitleIndicator()) {
+                case GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY:
+                    sb.append("0001");
+                    break;
+                case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_ONLY:
+                    sb.append("0010");
+                    break;
+                case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_AND_ENCODING_SCHEME:
+                    sb.append("0011");
+                    break;
+                case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_ENCODING_SCHEME_AND_NATURE_OF_ADDRESS:
+                    sb.append("0100");
+                    break;
+                }
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
 			}
@@ -652,6 +688,23 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append("mscssn = ");
 			sb.append(smscPropertiesManagement.getMscSsn());
 			sb.append("\n");
+
+            sb.append("gti = ");
+            switch (smscPropertiesManagement.getGlobalTitleIndicator()) {
+            case GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY:
+                sb.append("0001");
+                break;
+            case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_ONLY:
+                sb.append("0010");
+                break;
+            case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_AND_ENCODING_SCHEME:
+                sb.append("0011");
+                break;
+            case GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_ENCODING_SCHEME_AND_NATURE_OF_ADDRESS:
+                sb.append("0100");
+                break;
+            }
+            sb.append("\n");
 
 			sb.append("maxmapv = ");
 			sb.append(smscPropertiesManagement.getMaxMapVersion());
@@ -808,26 +861,6 @@ public class SMSCShellExecutor implements ShellExecutor {
             sb.append("deliverypause = ");
             sb.append(smscPropertiesManagement.isDeliveryPause());
             sb.append("\n");
-
-			// private int defaultValidityPeriodHours = 3 * 24;
-			// private int maxValidityPeriodHours = 10 * 24;
-			// private int defaultTon = 1;
-			// private int defaultNpi = 1;
-
-			// private int subscriberBusyDueDelay = 60 * 2;
-			// private int firstDueDelay = 60;
-			// private int secondDueDelay = 60 * 5;
-			// private int maxDueDelay = 3600 * 24;
-			// private int dueDelayMultiplicator = 200;
-			// private int maxMessageLengthReducer = 6;
-
-			// private String hosts = "127.0.0.1:9160";
-			// private String keyspaceName = "TelestaxSMSC";
-			// private String clusterName = "TelestaxSMSC";
-
-			// private long fetchPeriod = 5000;
-			// private int fetchMaxRows = 100;
-			// private int maxActivityCount = 500;
 
 			return sb.toString();
 		}

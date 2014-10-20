@@ -66,6 +66,7 @@ import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 
 /**
@@ -348,10 +349,14 @@ public abstract class RsdsSbb implements Sbb, ReportSMDeliveryStatusInterface {
 
     private SccpAddress getServiceCenterSccpAddress() {
         if (this.serviceCenterSCCPAddress == null) {
-            GlobalTitle gt = sccpParameterFact.createGlobalTitle(smscPropertiesManagement.getServiceCenterGt(), 0, NumberingPlan.ISDN_TELEPHONY, null,
-                    NatureOfAddress.INTERNATIONAL);
-            this.serviceCenterSCCPAddress = sccpParameterFact.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0,
-                    smscPropertiesManagement.getServiceCenterSsn());
+            this.serviceCenterSCCPAddress = MessageUtil.getSccpAddress(sccpParameterFact, smscPropertiesManagement.getServiceCenterGt(),
+                    NatureOfAddress.INTERNATIONAL.getValue(), NumberingPlan.ISDN_TELEPHONY.getValue(), smscPropertiesManagement.getHlrSsn(),
+                    smscPropertiesManagement.getGlobalTitleIndicator(), smscPropertiesManagement.getTranslationType());
+
+//            GlobalTitle gt = sccpParameterFact.createGlobalTitle(smscPropertiesManagement.getServiceCenterGt(), 0, NumberingPlan.ISDN_TELEPHONY, null,
+//                    NatureOfAddress.INTERNATIONAL);
+//            this.serviceCenterSCCPAddress = sccpParameterFact.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0,
+//                    smscPropertiesManagement.getServiceCenterSsn());
         }
         return this.serviceCenterSCCPAddress;
     }

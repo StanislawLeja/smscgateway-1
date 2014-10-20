@@ -91,6 +91,8 @@ public interface SMSCOAMMessages {
 
     public static final String REMOVING_LIVE_ARCHIVE_TABLES_DAYS_BAD_VALUES = "Value of removingLiveTablesDays or removingArcjiveTablesDays must be 0 (disabling of the feature) or >=3";
 
+    public static final String GLOBAL_TYTLE_INDICATOR_BAD_VALUES = "Value of gti (global title indicator) is bad (possible values: 0001, 0010, 0011, 0010)";
+
 	/**
 	 * Generic constants
 	 */

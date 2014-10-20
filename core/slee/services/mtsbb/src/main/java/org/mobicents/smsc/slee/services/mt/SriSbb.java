@@ -661,17 +661,14 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 	}
 
     private SccpAddress convertAddressFieldToSCCPAddress(String address, int ton, int npi) {
-        NumberingPlan np = MessageUtil.getSccpNumberingPlan(npi);
-        NatureOfAddress na = MessageUtil.getSccpNatureOfAddress(ton);
+        return MessageUtil.getSccpAddress(sccpParameterFact, address, ton, npi, smscPropertiesManagement.getHlrSsn(),
+                smscPropertiesManagement.getGlobalTitleIndicator(), smscPropertiesManagement.getTranslationType());
 
-        GlobalTitle gt = sccpParameterFact.createGlobalTitle(address, 0, np, null, na);
-        return sccpParameterFact.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0, smscPropertiesManagement.getHlrSsn());
-
-//		GT0100 gt = new GT0100(0, np, na, address);
-//		return new SccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, 0, gt,
-//				smscPropertiesManagement.getHlrSsn());
-
-	
+//        NumberingPlan np = MessageUtil.getSccpNumberingPlan(npi);
+//        NatureOfAddress na = MessageUtil.getSccpNatureOfAddress(ton);
+//
+//        GlobalTitle gt = sccpParameterFact.createGlobalTitle(address, 0, np, null, na);
+//        return sccpParameterFact.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, gt, 0, smscPropertiesManagement.getHlrSsn());
 	}
 
 	private MAPApplicationContext getSRIMAPApplicationContext(MAPApplicationContextVersion applicationContextVersion) {
