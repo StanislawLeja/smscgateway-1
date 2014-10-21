@@ -9,7 +9,7 @@
 
 	<appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
 		<param name="Target" value="System.out" />
-		<param name="Threshold" value="INFO" />
+		<param name="Threshold" value="WARN" />
 
 		<layout class="org.apache.log4j.PatternLayout">
 			<!-- The default pattern: Date Priority [Category] Message\n -->
@@ -23,7 +23,7 @@
 		<!--  ADD HOME VAR HERE? -->
 		<param name="File" value="../log/server.log" />
 		<param name="Append" value="false" />
-		<param name="Threshold" value="INFO" />
+		<param name="Threshold" value="WARN" />
 		
 		<layout class="org.apache.log4j.PatternLayout">
 			<!--

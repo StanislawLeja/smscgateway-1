@@ -263,6 +263,105 @@ This may be random bulk messages and bulk messages obtained from pcap file.
 		</section>
 
 
+
+
+		<section id="running_the_simulator_hlr">
+			<title>Running the HLR Simulator</title>
+			<para>
+				Command line HLR Simulator is used for load testing of SMSC. TelScale-hlr-simulator is pre-configured to integrate with SMSC run in simulator profile.
+				HLR Simulator receives the MAP SRI request from SMSC and sends back response with random VLR and IMSI. SMSC will then forward MT_Forward_SM to HLR.
+				For every 7th MT_Forward_SM request, HLR Simulator will send back AbsentSubscriber error.
+			</para>
+			<para>
+				For every 400 messages processed by HLR Simulator, it shows below message (time in milli seconds)
+				<screen><![CDATA[
+				Received 400 MAP Dialog requests in 1000
+				]]>
+				</screen>				
+			</para>
+			<procedure>
+			<title>Running HLR Simulator</title>
+			<step><para>
+			Change the working directory to the bin folder for the HLR Simulator.
+<screen><![CDATA[
+[vinu@vinu-neha ~]$ cd TelScale-smsc-<version>/tools/TelScale-hlr-simulator/bin
+]]>
+</screen>
+			</para></step>
+			<step>
+						<para>
+							 Ensure that the
+							<filename>run.sh</filename>
+							start script is executable.
+<screen><![CDATA[
+bin$ chmod +x run.sh
+]]>
+</screen>
+					
+						</para>
+			</step>
+			<step>
+						<para>
+							Execute the
+							<filename>run.sh</filename>
+							
+<screen><![CDATA[
+bin$ ./run.sh
+]]>
+</screen>
+This will launch the HLR Simulator ready for processing SRI and MT_Forward_SM requests
+						</para>
+
+			</step>
+			<step>
+						<para>
+							<!--When the GUI shows up, select "main" (default) as host name and press the 'Start' button. -->The HLR Simulator is already pre-configured to connect to the SMSC Gateway (running in simulator profile).
+						</para>
+
+			</step>
+		</procedure>
+		</section>
+
+		<section id="running_the_simulator_smpp_load">
+			<title>Running the SMPP Load</title>
+			<para>
+				smpp-load tool is Command line simulator to generate SMPP load. It requires ant to be installed. smpp-load tool can be started as SMPP Server accepting in-coming connection
+				(BIND) from TelScale SMSC or can be started as SMPP Client to send BIND to TelScale SMSC. build.xml has configuration to define how many SMPP connections should be initiated and 
+				what kind of load should be generated
+			</para>
+			
+			<procedure>
+			<title>Running SMPP Load</title>
+			<step><para>
+			Change the working directory to the bin folder for the SMPP Load.
+<screen><![CDATA[
+[vinu@vinu-neha ~]$ cd TelScale-smsc-<version>/tools/TelScale-smpp-simulator/bin
+]]>
+</screen>
+			</para></step>
+
+			<step>
+						<para>
+							Execute the <filename>ant client</filename> command to start SMPP load as client or <filename>ant server</filename> to start SMPP load tool as SMPP Server
+							
+<screen><![CDATA[
+ant client
+]]>
+</screen>
+This will launch the SMPP load tool
+						</para>
+
+			</step>
+			<step>
+						<para>
+							<!--When the GUI shows up, select "main" (default) as host name and press the 'Start' button. -->The SMPP load client is already pre-configured to connect to the SMSC Gateway (running in simulator profile).
+						</para>
+
+			</step>
+		</procedure>
+		</section>
+
+
         <section id="Sip_Phone">
         <title>Running Jitsi or Linphone SIP phones</title>
 <para>For testing SMSC features for interconnection with SIP servers you can use Jisti or Linphone SIP phone which

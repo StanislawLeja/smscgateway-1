@@ -142,7 +142,7 @@ public class MAPListener implements MAPDialogListener, MAPServiceSmsListener {
 		// this.liveDialogs.put(dialog.getLocalDialogId(), dialog);
 		if ((this.mapMessagesReceivedCounter.get() % 400) == 0) {
 			long temp = System.currentTimeMillis();
-			logger.warn("Received 400 MAP Dialog requests in " + (temp - this.now));
+			logger.warn("Received 400 MAP Dialog requests in milli seconds " + (temp - this.now));
 			this.now = temp;
 		}
 	}
