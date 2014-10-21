@@ -5,14 +5,14 @@
 ]>
 <bookinfo id="doc-SS7_Stack_User_Guide">
 	<title>&THIS.PLATFORM; &THIS.APPLICATION;</title>
-	<subtitle>User Guide</subtitle>
+	<subtitle>Admin Guide</subtitle>
 	<productname>&THIS.PLATFORM; &THIS.APPLICATION; </productname>
 	<productnumber>&THIS.VERSION;</productnumber>
 	<edition>4.0</edition>
 	<pubsnumber>1</pubsnumber>
 
 	<abstract>
-		<para>This User Guide documents information regarding the usage and configuration of &THIS.PLATFORM; &THIS.APPLICATION;.</para>		
+		<para>This Amin Guide documents information regarding the usage and configuration of &THIS.PLATFORM; &THIS.APPLICATION;.</para>		
 	</abstract>
 	
 	
