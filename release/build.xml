@@ -319,6 +319,7 @@
         <exec failonerror="true" executable="${mvn.executable}" dir="${base.dir}/map-ra">
                 <arg line="clean install" />
         </exec>
+    	<move file="${base.dir}/map-ra/target/map-ts-ra.dir" tofile="${base.dir}/map-ra/target/map-ts-ra" failonerror="false"/>
     </target>
 	
 	
