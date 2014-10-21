@@ -125,8 +125,11 @@
 	<!--GET Map & Telscale-Slee & Telscale-jss7 - downloads-->
 	
 	<!--target name="get-map" depends="checkout-ss7-map,build-ss7-map" /-->
-	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-management-hq,get-telscale-diam, get-dse-cassandra" />
-	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-management-hq,extract-telscale-diam, extract-dse-cassandra" />
+	<!--commented out for dse...prepared for next release up to 6.2.0^ -->
+	<!--target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-management-hq,get-telscale-diam, get-dse-cassandra" />
+	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-management-hq,extract-telscale-diam, extract-dse-cassandra" /-->
+	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-management-hq,get-telscale-diam" />
+	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-management-hq,extract-telscale-diam" />
 	
 	<available file="${telscale-slee.distro.zip.path}" property="got.telscale-slee" />
 	<target name="get-telscale-slee" unless="got.telscale-slee">
