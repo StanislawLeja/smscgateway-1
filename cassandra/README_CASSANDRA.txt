@@ -12,14 +12,11 @@ This readme is about setting up DB for persistence mechanism.
     This will start DB with console in current terminal
 
 3. Create DB.
-    Execute in CQL3:
-CREATE KEYSPACE "saturn"
+    Execute in CQL3 the following commands:
+    
+CREATE KEYSPACE "TelestaxSMSC"
          WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1};
-USE "saturn";
+USE "TelestaxSMSC";
 
 
-
-
-Query Analysis
-
-
+File "cassandra.cql" contains a definition of database fields and does not contain a script for running from CQL3.  
