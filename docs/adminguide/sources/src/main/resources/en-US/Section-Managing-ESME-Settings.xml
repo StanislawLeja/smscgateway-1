@@ -37,12 +37,13 @@ Name
     smpp esme create
 
 SYNOPSIS
-    smpp esme create <name> <systemId> <Specify password> <host-ip> <port> 
-    <SmppBindType> <SmppSession.Type> system-type <sms | vms | ota > 
-    interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton> 
-    esme-npi <esme address npi> esme-range <esme address range> 
-    cluster-name <clusterName> window-size <windowSize> 
-    connect-timeout <connectTimeout> request-expiry-timeout <requestExpiryTimeout> 
+    smpp esme create <name> <systemId> <host-ip> <port> 
+    <SmppBindType> <SmppSession.Type> password <Specify password>
+    system-type <sms | vms | ota > interface-version <3.3 | 3.4 | 5.0>
+    esme-ton <esme address ton> esme-npi <esme address npi>
+    esme-range <esme address range> cluster-name <clusterName>
+    window-size <windowSize> connect-timeout <connectTimeout>
+    request-expiry-timeout <requestExpiryTimeout>
     window-monitor-interval <windowMonitorInterval> 
     window-wait-timeout <windowWaitTimeout> counters-enabled <true | false> 
     enquire-link-delay <30000> charging-enabled <true | false> 
@@ -70,10 +71,6 @@ PARAMETERS
                   <literal>systemId<literal> to allow anonymous incoming
                   binds and multiple binds from the same IP depending on
                   the values specified for host-ip and port.
-
-    Password        - It is used by the SMSC to authenticate the identity of 
-                  the binding ESME. The Service Provider may require 
-                  ESME’s to provide a password when binding to the SMSC.
 
     host-ip & port      - If the SMSC is acting as an ESME, the BIND request will 
                   be sent to the configured IP and Port. If the SMSC is 
@@ -106,6 +103,10 @@ PARAMETERS
                   SMPP bind to a remote Server.
 
     Optional Parameters
+
+    Password        - It is used by the SMSC to authenticate the identity of 
+                  the binding ESME. The Service Provider may require 
+                  ESME’s to provide a password when binding to the SMSC.
 
     system-type         - Default value is null. 
                   This is used to categorize the type of ESME that is 
