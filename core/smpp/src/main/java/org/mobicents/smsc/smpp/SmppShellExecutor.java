@@ -245,7 +245,7 @@ public class SmppShellExecutor implements ShellExecutor {
         String clusterName = name;
         String password = null;
 
-        int count = 10;
+        int count = 9;
 
         int windowSize = SmppConstants.DEFAULT_WINDOW_SIZE;
         long connectTimeout = SmppConstants.DEFAULT_CONNECT_TIMEOUT;

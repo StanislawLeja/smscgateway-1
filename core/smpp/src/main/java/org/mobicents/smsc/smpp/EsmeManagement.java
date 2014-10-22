@@ -484,7 +484,8 @@ public class EsmeManagement implements EsmeManagementMBean {
 			ObjectName esmeObjNname = new ObjectName(SmppManagement.JMX_DOMAIN + ":layer=Esme,name=" + esme.getName());
 			StandardMBean esmeMxBean = new StandardMBean(esme, EsmeMBean.class, true);
 
-			this.mbeanServer.registerMBean(esmeMxBean, esmeObjNname);
+            if (this.mbeanServer != null)
+                this.mbeanServer.registerMBean(esmeMxBean, esmeObjNname);
 		} catch (InstanceAlreadyExistsException e) {
 			logger.error(String.format("Error while registering MBean for ESME %s", esme.getName()), e);
 		} catch (MBeanRegistrationException e) {
@@ -500,7 +501,8 @@ public class EsmeManagement implements EsmeManagementMBean {
 
 		try {
 			ObjectName esmeObjNname = new ObjectName(SmppManagement.JMX_DOMAIN + ":layer=Esme,name=" + esmeName);
-			this.mbeanServer.unregisterMBean(esmeObjNname);
+            if (this.mbeanServer != null)
+                this.mbeanServer.unregisterMBean(esmeObjNname);
 		} catch (MBeanRegistrationException e) {
 			logger.error(String.format("Error while unregistering MBean for ESME %s", esmeName), e);
 		} catch (InstanceNotFoundException e) {
