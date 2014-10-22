@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<maxsequencenumber value="256"/>
+<maxasforroute value="2"/>
+<heartbeattime value="10000"/>
 <aspFactoryList>
-	<aspFactory name="asp1" assocName="ass1" started="true" maxseqnumber="256" aspid="4" heartbeat="false"/>
+	<aspFactory name="asp1" assocName="ass1" started="true" maxseqnumber="256" aspid="2" heartbeat="false"/>
 </aspFactoryList>
 <asList>
 	<as name="as1" minAspActiveForLb="1" functionality="IPSP" exchangeType="SE" ipspType="SERVER">
@@ -8,7 +11,6 @@
 			<rc value="101"/>
 		</routingContext>
 		<networkAppearance value="102"/>
-		<trafficMode mode="2"/>
 		<defTrafficMode mode="2"/>
 		<asps>
 			<asp name="asp1"/>

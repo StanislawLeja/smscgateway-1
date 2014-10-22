@@ -3,6 +3,7 @@
 <reassemblytimerdelay value="15000"/>
 <maxdatamessage value="2560"/>
 <removespc value="true"/>
+<previewMode value="false"/>
 <ssttimerduration_min value="10000"/>
 <ssttimerduration_max value="600000"/>
 <ssttimerduration_increasefactor value="1.5"/>
