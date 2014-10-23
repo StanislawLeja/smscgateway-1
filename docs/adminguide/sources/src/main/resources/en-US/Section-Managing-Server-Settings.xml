@@ -720,6 +720,7 @@ DESCRIPTION
 			</procedure>
 			</section>
 		</section>			
+
 		<section id="set_maxmapv">
 			<title>MAP Application Context version</title>
 			<section id="set_maxmapv_CLI">
@@ -760,6 +761,86 @@ DESCRIPTION
 			</procedure>
 			</section>
 		</section>
+
+        <section id="set_gti">
+            <title>SCCP Global Title type</title>
+            <section id="set_gti_CLI">
+            <title>Using CLI</title>
+<para>
+You can set the 'SCCP Global Title type' by issuing the command <command>smsc set gti</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get gti</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+        smsc set gti
+
+SYNOPSIS
+        smsc set gti 0001|0010|0011|0100
+
+DESCRIPTION
+        This command is used to set the value of SCCP Global Title type.
+        This Global Title type will be used for SCCP outgoing messages.
+        Default value for ITU-T is 0100.
+        Global title 0001 - Nature of address indicator included
+        Global title 0010 - Translation type included
+        Global title 0011 - Translation type, Numbering plan and Encoding
+                            scheme included
+        Global title 0100 - Translation type, Numbering plan, Encoding
+                            scheme and Nature of address indicator included
+        
+]]></screen>
+            </section>
+            <section id="set_gti_GUI">
+            <title>Using GUI</title>
+            <procedure>
+                <title>Set SCCP Global Title type using the GUI</title>
+                <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+                </para></step>
+                <step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'SS7 Settings' tab in the GUI.
+                </para></step>
+                <step><para>You can specify the SCCP Global Title type by entering the value in the text field 'SCCP Global Title'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+                </para></step>
+                <step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+                </para></step>
+            </procedure>
+            </section>
+        </section>
+
+        <section id="set_tt">
+            <title>SCCP translation type value</title>
+            <section id="set_tt_CLI">
+            <title>Using CLI</title>
+<para>
+You can set the 'SCCP translation type value' by issuing the command <command>smsc set tt</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get tt</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+        smsc set tt
+
+SYNOPSIS
+        smsc set tt <translation type value>
+
+DESCRIPTION
+        This command is used to set the value of SCCP translation type
+        value. Translation type value will be used for SCCP outgoing
+        messages. Default value for ITU-T is 0.
+]]></screen>
+            </section>
+            <section id="set_tt_GUI">
+            <title>Using GUI</title>
+            <procedure>
+                <title>Set SCCP translation type value using the GUI</title>
+                <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+                </para></step>
+                <step><para>The main panel will display the existing Settings, segregated into seven horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing and CDR. Switch to the 'SS7 Settings' tab in the GUI.
+                </para></step>
+                <step><para>You can specify the SCCP translation type value by entering the value in the text field 'SCCP translation type'. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+                </para></step>
+                <step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+                </para></step>
+            </procedure>
+            </section>
+        </section>
+		
 		<section id="set_maxmessagelengthreducer">
 			<title>Max Message Length Reducer</title>
 			<section id="set_maxmessagelengthreducer_CLI">
