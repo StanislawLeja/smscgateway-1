@@ -48,6 +48,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 		set.addChild("hlrssn");
 		set.addChild("mscssn");
         Node gti = set.addChild("gti");
+        set.addChild("tt");
         set.addChild("maxmapv");
         set.addChild("defaultvalidityperiodhours");
         set.addChild("maxvalidityperiodhours");
@@ -121,6 +122,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 		get.addChild("hlrssn");
 		get.addChild("mscssn");
         get.addChild("gti");
+        get.addChild("tt");
 		get.addChild("maxmapv");
         get.addChild("defaultvalidityperiodhours");
         get.addChild("maxvalidityperiodhours");

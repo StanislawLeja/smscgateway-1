@@ -633,6 +633,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     public void setGlobalTitleIndicator(GlobalTitleIndicator globalTitleIndicator) {
         this.globalTitleIndicator = globalTitleIndicator;
+        this.store();
     }
 
     public int getTranslationType() {
@@ -641,6 +642,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     public void setTranslationType(int translationType) {
         this.translationType = translationType;
+        this.store();
     }
 
 	@Override

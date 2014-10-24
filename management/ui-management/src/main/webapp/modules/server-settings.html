@@ -151,6 +151,23 @@ Delay after every consecutive delivery failure = prev-due-delay * due-delay-mult
 									<input id="ussdgt" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
 								</span>
 							</div>
+                        	<div id="div-gti" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC Gateway Global Title Indicator">
+									<span class="add-on">SMSC Gateway Global Title Indicator</span>
+									<select id="gti" >
+										<option value="GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY">0001 - Nature of address indicator included</option>
+										<option value="GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_ONLY">0010 - Translation type included</option>
+										<option value="GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_AND_ENCODING_SCHEME">0011 - Translation type, Numbering plan and Encoding scheme included</option>
+										<option value="GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_ENCODING_SCHEME_AND_NATURE_OF_ADDRESS">0100 - Translation type, Numbering plan, Encoding scheme and Nature of address indicator included</option>
+									</select>
+								</span>
+							</div>	
+                        	<div id="div-tt" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC Gateway Global Title - Translation Type">
+									<span class="add-on">SMSC Gateway Global Title - Translation Type</span>
+									<input id="tt" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
+								</span>
+							</div>													
 							&nbsp;
 							<h5 style="border-bottom: 1px solid #DDD;">Sub System Number Configuration</h5>
 							<div id="div-ussdssn" class="control-group">        
@@ -541,6 +558,19 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										$("#mscssn").val(response.value.MscSsn);
 										$("#maxmapv").val(response.value.MaxMapVersion);
 										$("#maxmessagelengthreducer").val(response.value.MaxMessageLengthReducer);
+										
+										var gtiVar = response.value.GlobalTitleIndicator;
+										if(gtiVar == "GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY"){
+											gti.options[0].selected = true;
+										} else if(gtiVar == "GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_ONLY"){
+											gti.options[1].selected = true;
+										} else if(gtiVar == "GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_AND_ENCODING_SCHEME"){
+											gti.options[2].selected = true;
+										} else if(gtiVar == "GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_ENCODING_SCHEME_AND_NATURE_OF_ADDRESS"){
+											gti.options[3].selected = true;
+										}
+										
+										$("#tt").val(response.value.TranslationType);
 									}],
 									error: function(value) {
 										errorUID = ("st" + new Date().getTime()).hashCode();
@@ -939,6 +969,11 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 			    			$("#div-maxmessagelengthreducer").removeClass("error");		
 			    		}
 						
+						var e = document.getElementById("gti");
+						var gtiVar = e.options[e.selectedIndex].value;
+						
+						var ttVar = $("#tt").val();
+						
 						if(formInvalid) {
 							$("#login-settings-error").show();
 							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
@@ -957,6 +992,8 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									{ type: "write", mbean: mbeanSearch, attribute: "MscSsn", value: mscssn },
 									{ type: "write", mbean: mbeanSearch, attribute: "MaxMapVersion", value: maxmapv },
 									{ type: "write", mbean: mbeanSearch, attribute: "MaxMessageLengthReducer", value: maxmessagelengthreducer },
+									{ type: "write", mbean: mbeanSearch, attribute: "GlobalTitleIndicator", value: gtiVar },
+									{ type: "write", mbean: mbeanSearch, attribute: "TranslationType", value: ttVar },
 								],
 								{
 									success: function(response) {
