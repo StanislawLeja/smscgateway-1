@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "${ent.filename}">
+%BOOK_ENTITIES;
+]>
+
+<chapter
+	id="smsc_RestComm">
+	<title>SMSC RestComm Integration</title>
+		<para> 
+			RestComm is a next generation cloud communications platform to rapidly build voice, video and realtime 
+			messaging applications, using mainstream development skills.		
+		</para>
+		<para>
+			TelScale RestComm is a turnkey Cloud Communications platform based on Open Source building
+			blocks from the team behind Mobicents. Restcomm offers a clean room implementation of the
+			Twilio.com APIs and much more.
+		</para>
+		<para>
+			Restcomm can be integrated with VoIP and legacy SS7 network providers either in the cloud or
+			via on-premise Resource Adaptors. Furthe details on RestComm please visit <ulink url="http://restcomm.com">restcomm.com</ulink>
+		</para>
+		<section>
+			<title>
+				&THIS.PLATFORM; Integration with RestComm Architecture
+			</title>
+			<para>
+				&THIS.PLATFORM; &THIS.APPLICATION; integrates with RestComm over SIP. Below sections describes flow of SMS messages between SMSC, RestComm and Applications over RestComm
+			</para>
+			<section>
+				<title>
+					Incoming SS7 message
+				</title>
+				<para>
+					Below diagram shows flow of message coming from SS7 and getting delivered to Application over RestComm 
+					<mediaobject>
+						<imageobject>
+							<imagedata align="center" fileref="images/SMSC-RestComm-Incoming-SS7.png" format="PNG" />
+						</imageobject>
+						<caption>
+							<para>&THIS.PLATFORM; &THIS.APPLICATION; incoming message from SS7
+							</para>
+						</caption>
+					</mediaobject>					
+				</para>
+			</section>
+			
+			<section>
+				<title>
+					Incoming SMPP message
+				</title>
+				<para>
+					Below diagram shows flow of message coming from SMPP and getting delivered to Application over RestComm 
+					<mediaobject>
+						<imageobject>
+							<imagedata align="center" fileref="images/SMSC-RestComm-Incoming-SMPP.png" format="PNG" />
+						</imageobject>
+						<caption>
+							<para>&THIS.PLATFORM; &THIS.APPLICATION; incoming message from SMPP
+							</para>
+						</caption>
+					</mediaobject>					
+				</para>
+			</section>	
+			
+			<section>
+				<title>
+					Incoming SIP message
+				</title>
+				<para>
+					Below diagram shows flow of message coming from SIP and getting delivered to Application over RestComm 
+					<mediaobject>
+						<imageobject>
+							<imagedata align="center" fileref="images/SMSC-RestComm-Incoming-SIP.png" format="PNG" />
+						</imageobject>
+						<caption>
+							<para>&THIS.PLATFORM; &THIS.APPLICATION; incoming message from SIP
+							</para>
+						</caption>
+					</mediaobject>					
+				</para>
+			</section>	
+			
+			<section>
+				<title>
+					Outgoing message from Application over RestComm
+				</title>
+				<para>
+					Below diagram shows flow of message from application over RestComm and getting delivered to &THIS.PLATFORM; &THIS.APPLICATION; 
+					<mediaobject>
+						<imageobject>
+							<imagedata align="center" fileref="images/SMSC-RestComm-Outgoing.png" format="PNG" />
+						</imageobject>
+						<caption>
+							<para>Message from application over RestComm to &THIS.PLATFORM; &THIS.APPLICATION;
+							</para>
+						</caption>
+					</mediaobject>					
+				</para>
+			</section>								
+			
+		</section>
+		<section>
+			<title>
+				Customized SIP Headers
+			</title>
+			<para>
+				SMS messages can be of UTF-8 or Unicode Characters, or there can be special SMS's with user data headers (UDH), binary SMS's, SMS that indicates delivery receipt etc. There is no one-to-one 
+				mapping for these information in SIP, hence &THIS.PLATFORM; and RestComm has introduced additional customized SIP Headers to convey this useful information as described below
+				<note>
+					To understand each of below optional parameters please read SMPP Specifictaion 
+				</note>
+				
+				<itemizedlist>
+					<listitem>
+						<para>
+							X-SMS-UDH : User Data Header. Carries the hex string of User Data Header. For example X-SMS-UDH=06050413011301. RestComm can include this header for out going SIP MESSAGE and SMSC will
+							include it in actual SMS. If incoming SMS has UDH, the SIP MESSAGE from SMSC will include this optional header.
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							X-SMS-CODING : Message coding. If unset, defaults to 0 (7 bits) if Content-Type is text/plain , text/html or text/vnd.wap.wml. On application/octet-stream, defaults to 8 bits (1). 2 is UCS2. 
+							RestComm can include this header for out going SIP MESSAGE and SMSC will include it in actual SMS. For incoming SMS, the SIP MESSAGE from SMSC will include this optional header.
+						</para>
+					</listitem>	
+					<listitem>
+						<para>
+							X-SMS-VALIDITY : SMS validity period in case of re-try. Validity Period is in format yyyyy-mm-dd hh:mm:ss. RestComm can include this header for out going SIP MESSAGE and SMSC will 
+							respect the validity period for failed delivery (re-try). For incoming SMS, the SIP MESSAGE from SMSC will include this optional header.
+						</para>
+					</listitem>	
+					<listitem>
+						<para>
+							X-M-CLASS : message class bits of DCS: 0 (directly to display, flash), 1 (to mobile), 2 (to SIM) or 3 (to SIM toolkit). This is yet not supported in current version of SMSC.
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							X-REG-DELIVERY : registered_delivery parameter is used to request an SMSC delivery receipt and/or SME originated acknowledgements. Set to 1 to get delivery receipt for success or failure.
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							X-SMSC-ID : the smsc-id of the connection that received the message. If the incoming SMS was from ESME, smsc-id will be the name of ESME. In case of message came-in from SIP or SS7, this 
+							value will be null.
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							X-DELIVERY_TIME : Time the message was received by SMSC. Format will be "yyyyy-mm-dd hh:mm:ss"
+						</para>
+					</listitem>																													
+				</itemizedlist>				 
+			</para>
+		</section>
+</chapter>
