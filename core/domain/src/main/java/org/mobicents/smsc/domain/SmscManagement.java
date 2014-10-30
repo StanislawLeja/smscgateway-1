@@ -179,6 +179,9 @@ public class SmscManagement implements SmscManagementMBean {
         DBOperations_C2.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName(), this.smscPropertiesManagement.getFirstDueDelay(),
                 this.smscPropertiesManagement.getReviseSecondsOnSmscStart(), this.smscPropertiesManagement.getProcessingSmsSetTimeout());
 
+        // Step 3 SmsSetCashe.start()
+        SmsSetCashe.start(this.smscPropertiesManagement.getCorrelationIdLiveTime());
+
 		// Step 4 Setup ArchiveSms
 		this.archiveSms = ArchiveSms.getInstance(this.name);
 		this.archiveSms.start();
@@ -296,6 +299,8 @@ public class SmscManagement implements SmscManagementMBean {
         ObjectName smscDatabaseManagementObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_SMSC_DATABASE_MANAGEMENT + ",name="
                 + this.getName());
         this.unregisterMbean(smscDatabaseManagementObjName);
+
+        SmsSetCashe.stop();
 
         this.isStarted = false;
 

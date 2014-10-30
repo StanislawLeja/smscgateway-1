@@ -88,6 +88,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String TX_SIP_CHARGING = "txSipCharging";
     private static final String GLOBAL_TITLE_INDICATOR = "globalTitleIndicator";
     private static final String TRANSLATION_TYPE = "translationType";
+    private static final String CORRELATION_ID_LIVE_TIME = "correlationIdLiveTime";
     private static final String DIAMETER_DEST_REALM = "diameterDestRealm";
     private static final String DIAMETER_DEST_HOST = "diameterDestHost";
 	private static final String DIAMETER_DEST_PORT = "diameterDestPort";
@@ -209,6 +210,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private GlobalTitleIndicator globalTitleIndicator = GlobalTitleIndicator.GLOBAL_TITLE_INCLUDES_TRANSLATION_TYPE_NUMBERING_PLAN_ENCODING_SCHEME_AND_NATURE_OF_ADDRESS;
     // TranslationType value
     private int translationType = 0;
+
+    // min lifetime of elements in correlationIdCache (in seconds)
+    private int correlationIdLiveTime = 60;
 
 	// Diameter destination Realm for connection to OCS
 	private String diameterDestRealm = "mobicents.org";
@@ -645,6 +649,15 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         this.store();
     }
 
+    public int getCorrelationIdLiveTime() {
+        return correlationIdLiveTime;
+    }
+
+    public void setCorrelationIdLiveTime(int correlationIdLiveTime) {
+        this.correlationIdLiveTime = correlationIdLiveTime;
+        this.store();
+    }
+
 	@Override
 	public String getDiameterDestRealm() {
 		return diameterDestRealm;
@@ -852,6 +865,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             writer.write(this.txSipCharging.toString(), TX_SIP_CHARGING, String.class);
             writer.write(this.globalTitleIndicator.toString(), GLOBAL_TITLE_INDICATOR, String.class);
             writer.write(this.translationType, TRANSLATION_TYPE, Integer.class);
+            writer.write(this.correlationIdLiveTime, CORRELATION_ID_LIVE_TIME, Integer.class);
             writer.write(this.diameterDestRealm, DIAMETER_DEST_REALM, String.class);
 			writer.write(this.diameterDestHost, DIAMETER_DEST_HOST, String.class);
 			writer.write(this.diameterDestPort, DIAMETER_DEST_PORT, Integer.class);
@@ -1021,7 +1035,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             val = reader.read(TRANSLATION_TYPE, Integer.class);
             if (val != null)
                 this.translationType = val;
-
+            val = reader.read(CORRELATION_ID_LIVE_TIME, Integer.class);
+            if (val != null)
+                this.correlationIdLiveTime = val;
+            
 			this.diameterDestRealm = reader.read(DIAMETER_DEST_REALM, String.class);
 
 			this.diameterDestHost = reader.read(DIAMETER_DEST_HOST, String.class);

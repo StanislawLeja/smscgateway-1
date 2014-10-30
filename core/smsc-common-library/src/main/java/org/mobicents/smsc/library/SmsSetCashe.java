@@ -25,6 +25,9 @@ package org.mobicents.smsc.library;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -38,13 +41,21 @@ import javolution.util.FastMap;
 public class SmsSetCashe {
 
     private int processingSmsSetTimeout;
-    
+    private int correlationIdLiveTime;
+
+    private boolean isStarted = false;
+
 	private FastMap<TargetAddress, TargetAddressContainer> lstSmsSetUnderAtomicOper = new FastMap<TargetAddress, TargetAddressContainer>();
 
 	private AtomicInteger activityCount = new AtomicInteger(0);
 
 	private FastMap<String, SmsSet> lstSmsSetInProcessing = new FastMap<String, SmsSet>();
     private UpdateMessagesInProcessListener smscStatAggregator;
+
+    private FastMap<String, CorrelationIdValue> correlationIdCache1 = new FastMap<String, CorrelationIdValue>();
+    private FastMap<String, CorrelationIdValue> correlationIdCache2 = new FastMap<String, CorrelationIdValue>();
+    private Object correlationIdCacheSync = new Object();
+    private ScheduledExecutorService executor;
 
 	private static SmsSetCashe singeltone;
 
@@ -58,6 +69,26 @@ public class SmsSetCashe {
 	public static SmsSetCashe getInstance() {
 		return singeltone;
 	}
+
+    public static void start(int correlationIdLiveTime) {
+        SmsSetCashe ssc = SmsSetCashe.getInstance();
+        ssc.correlationIdLiveTime = correlationIdLiveTime;
+
+        ssc.executor = Executors.newScheduledThreadPool(1);
+
+        ssc.isStarted = true;
+
+        CacheManTask t = ssc.new CacheManTask();
+        ssc.executor.schedule(t, correlationIdLiveTime, TimeUnit.SECONDS);
+    }
+
+    public static void stop() {
+        SmsSetCashe ssc = SmsSetCashe.getInstance();
+        ssc.isStarted = true;
+
+        ssc.executor.shutdown();
+    }
+
 
     public void setUpdateMessagesInProcessListener(UpdateMessagesInProcessListener smscStatAggregator) {
         this.smscStatAggregator = smscStatAggregator;
@@ -160,6 +191,37 @@ public class SmsSetCashe {
             if (smscStatAggregator != null) {
                 smscStatAggregator.updateMaxMessagesInProcess(lstSmsSetInProcessing.size());
                 smscStatAggregator.updateMinMessagesInProcess(lstSmsSetInProcessing.size());
+            }
+        }
+    }
+
+
+    public void putImsiCacheElement(CorrelationIdValue elem, int correlationIdLiveTime) throws Exception {
+        this.correlationIdLiveTime = correlationIdLiveTime;
+        synchronized (this.correlationIdCacheSync) {
+            this.correlationIdCache1.put(elem.getCorrelationID(), elem);
+        }
+    }
+
+    public CorrelationIdValue getImsiCacheElement(String correlationID) throws Exception {
+        synchronized (this.correlationIdCacheSync) {
+            CorrelationIdValue res = this.correlationIdCache1.get(correlationID);
+            if (res == null)
+                res = this.correlationIdCache2.get(correlationID);
+            return res;
+        }
+    }
+
+    private class CacheManTask implements Runnable {
+        public void run() {
+            try {
+                correlationIdCache2 = correlationIdCache1;
+                correlationIdCache1 = new FastMap<String, CorrelationIdValue>();
+            } finally {
+                if (isStarted) {
+                    CacheManTask t = new CacheManTask();
+                    executor.schedule(t, correlationIdLiveTime, TimeUnit.SECONDS);
+                }
             }
         }
     }

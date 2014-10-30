@@ -178,6 +178,10 @@ public interface SmscPropertiesManagementMBean {
 
     public void setTranslationType(int translationType);
 
+    public int getCorrelationIdLiveTime();
+
+    public void setCorrelationIdLiveTime(int correlationIdLiveTime);
+
 	public String getDiameterDestRealm();
 
 	public void setDiameterDestRealm(String diameterDestRealm);
