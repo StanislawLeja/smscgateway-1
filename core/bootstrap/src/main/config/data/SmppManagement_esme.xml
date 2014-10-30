@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <esmeList>
-	<esme name="test" clusterName="test" systemId="test" password="test" host="127.0.0.1" port="-1" smppBindType="TRANSCEIVER" smppSessionType="SERVER" started="true" smppVersion="3.4" ton="-1" npi="-1" addressRange="[0-9a-zA-Z]" windowSize="1" connectTimeout="10000" requestExpiryTimeout="-1" windowMonitorInterval="-1" windowWaitTimeout="60000" countersEnabled="true" enquireLinkDelay="30000" chargingEnabled="false" sourceTon="-1" sourceNpi="-1" sourceAddressRange="6666" routingTon="-1" routingNpi="-1" routingAddressRange="6666"/>
+	<esme name="test" clusterName="test" systemId="test" password="test" host="127.0.0.1" port="-1" smppBindType="TRANSCEIVER" smppSessionType="SERVER" started="true" smppVersion="3.4" ton="-1" npi="-1" addressRange="6666" windowSize="1" connectTimeout="10000" requestExpiryTimeout="-1" windowMonitorInterval="-1" windowWaitTimeout="60000" countersEnabled="true" enquireLinkDelay="30000" chargingEnabled="false" sourceTon="-1" sourceNpi="-1" sourceAddressRange="6666" routingTon="-1" routingNpi="-1" routingAddressRange="6666"/>
 </esmeList>
