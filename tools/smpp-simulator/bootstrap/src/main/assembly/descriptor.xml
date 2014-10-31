@@ -43,6 +43,7 @@
                 <!-- SS7 library -->
                 <include>org.mobicents.protocols.ss7.map:map-api</include>
                 <include>org.mobicents.protocols.ss7.map:map-impl</include>
+                <include>org.mobicents.protocols.ss7.sccp:sccp-api</include>
 
 
 

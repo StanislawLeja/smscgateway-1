@@ -35,7 +35,7 @@ public class SmppSimulatorParameters {
 	private int windowSize = 1;
 	private SmppBindType bindType = SmppBindType.TRANSCEIVER;
 	private String host = "127.0.0.1";
-	private int port = 2775;
+	private int port = 2776;
 	private long connectTimeout = 10000;
 	private String systemId = "test";
 	private String password = "test";
