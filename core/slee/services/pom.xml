@@ -26,6 +26,7 @@
 		<module>mosbb</module>
 		<module>txsipserversbb</module>
 		<module>rxsipserversbb</module>
+		<module>homeroutingsbb</module>
 		<module>du</module>
 	</modules>
 
