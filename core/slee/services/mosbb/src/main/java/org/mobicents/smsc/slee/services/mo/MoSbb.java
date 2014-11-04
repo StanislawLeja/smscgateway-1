@@ -659,7 +659,7 @@ public abstract class MoSbb extends MoCommonSbb {
 	}
 
 	/**
-	 * Initial event selector method to check if the Event should initalize the
+	 * Initial event selector method to check if the Event should initialize the
 	 */
 	public InitialEventSelector initialEventSelect(InitialEventSelector ies) {
 		Object event = ies.getEvent();

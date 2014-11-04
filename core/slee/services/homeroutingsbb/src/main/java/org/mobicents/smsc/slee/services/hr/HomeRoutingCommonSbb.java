@@ -30,10 +30,17 @@ import javax.slee.RolledBackContext;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
 import javax.slee.facilities.Tracer;
-import javax.slee.resource.ResourceAdaptorTypeID;
 
+import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
+import org.mobicents.protocols.ss7.indicator.NumberingPlan;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
+import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
+import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
+import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
+import org.mobicents.protocols.ss7.sccp.impl.parameter.ParameterFactoryImpl;
+import org.mobicents.protocols.ss7.sccp.parameter.ParameterFactory;
+import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.slee.resource.map.MAPContextInterfaceFactory;
 import org.mobicents.slee.resource.map.events.DialogAccept;
@@ -51,6 +58,7 @@ import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
+import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 
@@ -62,11 +70,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
  */
 public abstract class HomeRoutingCommonSbb implements Sbb {
 
-	private static final ResourceAdaptorTypeID SCHEDULER_ID = new ResourceAdaptorTypeID(
-			"SchedulerResourceAdaptorType", "org.mobicents", "1.0");
-	private static final String SCHEDULER_LINK = "SchedulerResourceAdaptor";
-	protected static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement
-			.getInstance();
+    protected static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
 	private final String className;
 
@@ -81,6 +85,9 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
 	protected SchedulerRaSbbInterface scheduler = null;
 
 	protected SmppSessions smppServerSessions = null;
+    protected ParameterFactory sccpParameterFact;
+    private SccpAddress serviceCenterSCCPAddress = null;
+    private AddressString serviceCenterAddress;
 
 	public HomeRoutingCommonSbb(String className) {
 		this.className = className;
@@ -237,14 +244,12 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
 					.lookup("slee/resources/map/2.0/provider");
 			this.mapParameterFactory = this.mapProvider
 					.getMAPParameterFactory();
+            this.sccpParameterFact = new ParameterFactoryImpl();
 
 			this.smppServerSessions = (SmppSessions) ctx
 					.lookup("slee/resources/smpp/server/1.0/provider");
 
 			this.logger = this.sbbContext.getTracer(this.className);
-
-			this.scheduler = (SchedulerRaSbbInterface) this.sbbContext
-					.getResourceAdaptorInterface(SCHEDULER_ID, SCHEDULER_LINK);
 		} catch (Exception ne) {
 			logger.severe("Could not set SBB context:", ne);
 		}
@@ -256,5 +261,48 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
 	public void unsetSbbContext() {
 
 	}
+
+//    /**
+//     * Get the MAP Dialog Activity
+//     * 
+//     * @return
+//     */
+//    protected ActivityContextInterface getMapActivityContextInterface() {
+//        ActivityContextInterface[] acis = this.sbbContext.getActivities();
+//        for (int count = 0; count < acis.length; count++) {
+//            ActivityContextInterface aci = acis[count];
+//            Object activity = aci.getActivity();
+//            if (activity.getClass().getCanonicalName().equals("org.mobicents.slee.resource.map.service.sms.wrappers.MAPDialogSmsWrapper")) {
+//                return aci;
+//            }
+//        }
+//
+//        return null;
+//    }
+
+    protected SccpAddress getServiceCenterSccpAddress() {
+        if (this.serviceCenterSCCPAddress == null) {
+            this.serviceCenterSCCPAddress = MessageUtil.getSccpAddress(sccpParameterFact, smscPropertiesManagement.getServiceCenterGt(),
+                    NatureOfAddress.INTERNATIONAL.getValue(), NumberingPlan.ISDN_TELEPHONY.getValue(), smscPropertiesManagement.getHlrSsn(),
+                    smscPropertiesManagement.getGlobalTitleIndicator(), smscPropertiesManagement.getTranslationType());
+        }
+        return this.serviceCenterSCCPAddress;
+    }
+
+    protected ISDNAddressString getCalledPartyISDNAddressString(String destinationAddress, int ton, int npi) {
+        return this.mapParameterFactory.createISDNAddressString(AddressNature.getInstance(ton),
+                org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.getInstance(npi), destinationAddress);
+    }
+
+    protected AddressString getServiceCenterAddressString() {
+
+        if (this.serviceCenterAddress == null) {
+            this.serviceCenterAddress = this.mapParameterFactory.createAddressString(
+                    AddressNature.international_number,
+                    org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN,
+                    smscPropertiesManagement.getServiceCenterGt());
+        }
+        return this.serviceCenterAddress;
+    }
 
 }

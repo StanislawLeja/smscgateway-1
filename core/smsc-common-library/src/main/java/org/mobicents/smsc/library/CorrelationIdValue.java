@@ -22,6 +22,8 @@
 
 package org.mobicents.smsc.library;
 
+import java.io.Serializable;
+
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
@@ -32,7 +34,7 @@ import org.mobicents.protocols.ss7.map.api.service.sms.MWStatus;
  * @author sergey vetyutnev
  *
  */
-public class CorrelationIdValue {
+public class CorrelationIdValue implements Serializable {
 
     private String correlationID;
 
@@ -86,4 +88,23 @@ public class CorrelationIdValue {
         this.mwStatus = mwStatus;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CorrelationIdValue=[");
+        sb.append("msisdn=");
+        sb.append(msisdn);
+        sb.append(", serviceCentreAddress=");
+        sb.append(serviceCentreAddress);
+        sb.append(", locationInfoWithLMSI=");
+        sb.append(locationInfoWithLMSI);
+        sb.append(", imsi=");
+        sb.append(imsi);
+        sb.append(", mwStatus=");
+        sb.append(mwStatus);
+        sb.append("]");
+
+        return sb.toString();
+    }
 }
