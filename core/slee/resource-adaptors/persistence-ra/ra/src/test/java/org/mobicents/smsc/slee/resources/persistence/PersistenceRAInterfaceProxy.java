@@ -361,4 +361,10 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
         return 0;
     }
 
+    @Override
+    public String c2_getNextCorrelationId(String msisdn) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

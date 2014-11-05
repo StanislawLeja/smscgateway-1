@@ -26,6 +26,7 @@ import java.io.Serializable;
 
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
+import org.mobicents.protocols.ss7.map.api.service.sms.InformServiceCentreRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.MWStatus;
 
@@ -44,6 +45,7 @@ public class CorrelationIdValue implements Serializable {
     private LocationInfoWithLMSI locationInfoWithLMSI;
     private String imsi;
     private MWStatus mwStatus;
+    private InformServiceCentreRequest informServiceCentreRequest;
 
     public CorrelationIdValue(String correlationID, ISDNAddressString msisdn, AddressString serviceCentreAddress) {
         this.correlationID = correlationID;
@@ -88,6 +90,14 @@ public class CorrelationIdValue implements Serializable {
         this.mwStatus = mwStatus;
     }
 
+    public InformServiceCentreRequest getInformServiceCentreRequest() {
+        return informServiceCentreRequest;
+    }
+
+    public void setInformServiceCentreRequest(InformServiceCentreRequest informServiceCentreRequest) {
+        this.informServiceCentreRequest = informServiceCentreRequest;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -101,8 +111,14 @@ public class CorrelationIdValue implements Serializable {
         sb.append(locationInfoWithLMSI);
         sb.append(", imsi=");
         sb.append(imsi);
-        sb.append(", mwStatus=");
-        sb.append(mwStatus);
+        if (mwStatus != null) {
+            sb.append(", mwStatus=");
+            sb.append(mwStatus);
+        }
+        if (informServiceCentreRequest != null) {
+            sb.append(", informServiceCentreRequest=");
+            sb.append(informServiceCentreRequest);
+        }
         sb.append("]");
 
         return sb.toString();

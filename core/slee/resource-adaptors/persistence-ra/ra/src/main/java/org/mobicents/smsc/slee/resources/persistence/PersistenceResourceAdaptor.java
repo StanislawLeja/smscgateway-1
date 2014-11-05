@@ -219,6 +219,11 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             }
 
             @Override
+            public String c2_getNextCorrelationId(String msisdn) {
+                return dbOperations_C2.c2_getNextCorrelationId(msisdn);
+            }
+
+            @Override
             public long c2_getIntimeDueSlot() {
                 return dbOperations_C2.c2_getIntimeDueSlot();
             }

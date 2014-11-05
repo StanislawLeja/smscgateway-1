@@ -18,6 +18,11 @@
 			<version>1.5.0</version>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <artifactId>sccp-impl</artifactId>
+            <groupId>org.mobicents.protocols.ss7.sccp</groupId>
+            <version>${ss7.version}</version>
+        </dependency>
 		<dependency>
 			<artifactId>persistence-ratype</artifactId>
 			<groupId>${pom.groupId}</groupId>

@@ -26,8 +26,16 @@ import javax.slee.ActivityContextInterface;
 import javax.slee.InitialEventSelector;
 
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
+import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
+import org.mobicents.protocols.ss7.map.api.MAPException;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
+import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
+import org.mobicents.protocols.ss7.map.api.primitives.NetworkResource;
+import org.mobicents.protocols.ss7.map.api.service.sms.InformServiceCentreRequest;
+import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
+import org.mobicents.protocols.ss7.map.api.service.sms.MWStatus;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMResponse;
 import org.mobicents.slee.ChildRelationExt;
@@ -41,6 +49,7 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.library.CorrelationIdValue;
+import org.mobicents.smsc.library.SmsSetCashe;
 
 /**
  * 
@@ -48,7 +57,7 @@ import org.mobicents.smsc.library.CorrelationIdValue;
  * @author servey vetyutnev
  * 
  */
-public abstract class HrSriServerSbb extends HomeRoutingCommonSbb {
+public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrSriResultInterface {
 
     private static final String className = HrSriServerSbb.class.getSimpleName();
 
@@ -140,6 +149,8 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb {
             this.logger.fine("\nReceived SEND_ROUTING_INFO_FOR_SM_REQUEST = " + evt + " Dialog=" + evt.getMAPDialog());
         }
 
+        this.setInvokeId(evt.getInvokeId());
+
         setupSriRequest(evt.getMsisdn(), evt.getServiceCentreAddress());
     }
 
@@ -161,15 +172,20 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb {
 //            aci.attach(hrSriClientSbbLocalObject);
 
 
-            // TODO: implement it
-            String correlationID = "000000000011111";
-            // TODO: implement it
+            String correlationID = this.persistence.c2_getNextCorrelationId(msisdn.getAddress());
 
             CorrelationIdValue correlationIdValue = new CorrelationIdValue(correlationID, msisdn, serviceCentreAddress);
 
             hrSriClientSbbLocalObject.setupSriRequest(correlationIdValue);
         }
     }
+
+    /**
+     * CMD
+     */
+    public abstract void setInvokeId(long invokeId);
+
+    public abstract long getInvokeId();
 
     /**
      * Get HrSriClientSbb child SBB
@@ -194,4 +210,120 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb {
         return ret;
     }
 
+    /**
+     * HrSriResultInterface
+     * 
+     */
+    @Override
+    public void onSriSuccess(CorrelationIdValue correlationIdValue) {
+        MAPDialogSms dlg = this.getActivity();
+
+        if (this.logger.isFineEnabled()) {
+            this.logger.fine("\nHome routing: Sri positive response = " + correlationIdValue + " Dialog=" + dlg);
+        }        
+
+        if (dlg == null) {
+            this.logger.severe("Home routing: can not get MAPDialog for sending SRI positive Response");
+            return;
+        }
+
+        // storing correlationId into a cache
+        try {
+            SmsSetCashe.getInstance().putImsiCacheElement(correlationIdValue, smscPropertiesManagement.getCorrelationIdLiveTime());
+        } catch (Exception e1) {
+            if (dlg != null) {
+                dlg.release();
+            }
+
+            String reason = "Exception when ImsiCacheElement (home routing): " + e1.toString();
+            this.logger.severe(reason, e1);
+            return;
+        }
+
+        // sending positive SRI response
+        try {
+            long invokeId = this.getInvokeId();
+            IMSI imsi = this.mapParameterFactory.createIMSI(correlationIdValue.getCorrelationID());
+            MWStatus mwStatus = correlationIdValue.getMwStatus();
+            Boolean mwdSet = null;
+
+            if (dlg.getApplicationContext().getApplicationContextVersion() == MAPApplicationContextVersion.version1) {
+                if (mwStatus != null) {
+                    if (mwStatus.getMnrfSet())
+                        mwdSet = true;
+                    mwStatus = null;
+                }
+            }
+
+            dlg.addSendRoutingInfoForSMResponse(invokeId, imsi, correlationIdValue.getLocationInfoWithLMSI(), null, mwdSet);
+
+            InformServiceCentreRequest isc = correlationIdValue.getInformServiceCentreRequest();
+            if (mwStatus != null && isc != null) {
+                dlg.addInformServiceCentreRequest(isc.getStoredMSISDN(), isc.getMwStatus(), null, isc.getAbsentSubscriberDiagnosticSM(),
+                        isc.getAdditionalAbsentSubscriberDiagnosticSM());
+            }
+
+            dlg.close(false);
+        } catch (MAPException e) {
+            if (dlg != null) {
+                dlg.release();
+            }
+
+            String reason = "MAPException when sending SRI positive Response (home routing): " + e.toString();
+            this.logger.severe(reason, e);
+        }
+    }
+
+    @Override
+    public void onSriFailure(CorrelationIdValue correlationIdValue, MAPErrorMessage errorResponse) {
+        MAPDialogSms dlg = this.getActivity();
+
+        if (this.logger.isFineEnabled()) {
+            this.logger.fine("\nHome routing: Sri negative response = " + correlationIdValue + " Dialog=" + dlg);
+        }        
+
+        if (dlg == null) {
+            this.logger.severe("Home routing: can not get MAPDialog for sending SRI negative Response");
+            return;
+        }
+
+        // sending negative SRI response
+        try {
+            // processing of error response
+            if (errorResponse == null) {
+                // no errorResponse obtained - we need to create SysteFailure
+                errorResponse = this.mapErrorMessageFactory.createMAPErrorMessageSystemFailure(dlg.getApplicationContext().getApplicationContextVersion()
+                        .getVersion(), NetworkResource.hlr, null, null);
+            } else {
+                // we have errorResponse from HLR
+
+                // TODO: we need to update values depending on MAP protocol version
+                // not all versions support all messages
+            }
+
+            long invokeId = this.getInvokeId();
+            dlg.sendErrorComponent(invokeId, errorResponse);
+
+            dlg.close(false);
+        } catch (MAPException e) {
+            if (dlg != null) {
+                dlg.release();
+            }
+
+            String reason = "MAPException when sending SRI negative Response (home routing): " + e.toString();
+            this.logger.severe(reason, e);
+        }
+    }
+
+    private MAPDialogSms getActivity() {
+        for (ActivityContextInterface aci : this.sbbContext.getActivities()) {
+            Object act = aci.getActivity();
+            if (act instanceof MAPDialogSms) {
+                MAPDialogSms dlg = (MAPDialogSms) act;
+                return dlg;
+            }
+        }
+
+        return null;
+    }
 }

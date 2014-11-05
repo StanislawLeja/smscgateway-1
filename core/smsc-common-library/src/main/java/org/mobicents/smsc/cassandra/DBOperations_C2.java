@@ -122,6 +122,7 @@ public class DBOperations_C2 {
 
 	private long currentDueSlot = 0;
 	private long messageId = 0;
+	private long correlationId = 0;
 	private UUID currentSessionUUID;
 
 	private FastMap<String, PreparedStatementCollection_C3> dataTableRead = new FastMap<String, PreparedStatementCollection_C3>();
@@ -343,6 +344,35 @@ public class DBOperations_C2 {
 
 		return messageId;
 	}
+
+    /**
+     * Returns a next correlationId for home routing mode
+     * Every MESSAGE_ID_LAG correlationId will be stored at cassandra database
+     */
+    public synchronized String c2_getNextCorrelationId(String msisdn) {
+        // TODO: properly implement it with provided MSISDN -> IMSI recoding table
+
+        correlationId++;
+        if (correlationId >= MAX_MESSAGE_ID)
+            correlationId = 1;
+
+//        if (messageId % MESSAGE_ID_LAG == 0) {
+//            try {
+//                c2_setCurrenrSlotTable(NEXT_MESSAGE_ID, messageId);
+//            } catch (PersistenceException e) {
+//                logger.error("Exception when storing next messageId to the database: " + e.getMessage(), e);
+//            }
+//        }
+
+        String res = ((Long) correlationId).toString();
+        StringBuilder sb = new StringBuilder();
+        for (int i1 = 0; i1 < 15 - res.length(); i1++) {
+            sb.append("0");
+        }
+        sb.append(res);
+
+        return sb.toString();
+    }
 
     /**
      * Initial reading CURRENT_DUE_SLOT and NEXT_MESSAGE_ID when cassandra

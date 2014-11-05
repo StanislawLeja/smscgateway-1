@@ -275,6 +275,11 @@ public interface PersistenceRAInterface {
     long c2_getNextMessageId();
 
     /**
+     * Returns a next correlationId for home routing mode
+     */
+    public String c2_getNextCorrelationId(String msisdn);
+
+    /**
      * Return due_slop for current time
      */
     long c2_getIntimeDueSlot();

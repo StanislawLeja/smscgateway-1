@@ -29,6 +29,6 @@ import org.mobicents.slee.SbbLocalObjectExt;
  * @author sergey vetyutnev
  *
  */
-public interface HrSriClientSbbLocalObject extends SbbLocalObjectExt, HrSriForwardInterface {
+public interface HrSriServerSbbLocalObject extends SbbLocalObjectExt, HrSriResultInterface {
 
 }

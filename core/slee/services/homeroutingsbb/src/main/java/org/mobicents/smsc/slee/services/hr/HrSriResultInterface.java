@@ -22,13 +22,18 @@
 
 package org.mobicents.smsc.slee.services.hr;
 
-import org.mobicents.slee.SbbLocalObjectExt;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
+import org.mobicents.smsc.library.CorrelationIdValue;
 
 /**
  * 
  * @author sergey vetyutnev
- *
+ * 
  */
-public interface HrSriClientSbbLocalObject extends SbbLocalObjectExt, HrSriForwardInterface {
+public interface HrSriResultInterface {
+
+    public void onSriSuccess(CorrelationIdValue correlationIdValue);
+
+    public void onSriFailure(CorrelationIdValue correlationIdValue, MAPErrorMessage errorResponse);
 
 }

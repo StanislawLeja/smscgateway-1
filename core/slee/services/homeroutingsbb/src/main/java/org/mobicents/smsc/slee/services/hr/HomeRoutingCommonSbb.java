@@ -30,17 +30,23 @@ import javax.slee.RolledBackContext;
 import javax.slee.Sbb;
 import javax.slee.SbbContext;
 import javax.slee.facilities.Tracer;
+import javax.slee.resource.ResourceAdaptorTypeID;
 
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
+import org.mobicents.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
+import org.mobicents.protocols.ss7.map.api.dialog.ProcedureCancellationReason;
+import org.mobicents.protocols.ss7.map.api.dialog.ResourceUnavailableReason;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessageFactory;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.sccp.impl.parameter.ParameterFactoryImpl;
 import org.mobicents.protocols.ss7.sccp.parameter.ParameterFactory;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
+import org.mobicents.protocols.ss7.tcap.asn.comp.Problem;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.slee.resource.map.MAPContextInterfaceFactory;
 import org.mobicents.slee.resource.map.events.DialogAccept;
@@ -59,7 +65,7 @@ import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.library.MessageUtil;
-import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 
 /**
@@ -70,6 +76,9 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
  */
 public abstract class HomeRoutingCommonSbb implements Sbb {
 
+    private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID("PersistenceResourceAdaptorType", "org.mobicents", "1.0");
+    private static final String PERSISTENCE_LINK = "PersistenceResourceAdaptor";
+
     protected static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
 	private final String className;
@@ -79,15 +88,20 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
 
 	protected MAPContextInterfaceFactory mapAcif;
 	protected MAPProvider mapProvider;
-	protected MAPParameterFactory mapParameterFactory;
+    protected MAPParameterFactory mapParameterFactory;
+    protected MAPErrorMessageFactory mapErrorMessageFactory;
 	protected SmscStatAggregator smscStatAggregator = SmscStatAggregator
 			.getInstance();
-	protected SchedulerRaSbbInterface scheduler = null;
+    protected PersistenceRAInterface persistence;
 
 	protected SmppSessions smppServerSessions = null;
     protected ParameterFactory sccpParameterFact;
     private SccpAddress serviceCenterSCCPAddress = null;
     private AddressString serviceCenterAddress;
+
+    protected static final String MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON = "userSpecificReason";
+    protected static final String MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION = "userResourceLimitation";
+    protected static final String MAP_USER_ABORT_CHOICE_UNKNOWN = "DialogUserAbort_Unknown";
 
 	public HomeRoutingCommonSbb(String className) {
 		this.className = className;
@@ -111,6 +125,54 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
 			ActivityContextInterface aci) {
 		this.logger.severe("\nRx :  onRejectComponent" + event);
 	}
+
+    protected String getRejectComponentReason(RejectComponent event) {
+        Problem problem = event.getProblem();
+        String reason = null;
+        switch (problem.getType()) {
+        case General:
+            reason = problem.getGeneralProblemType().toString();
+            break;
+        case Invoke:
+            reason = problem.getInvokeProblemType().toString();
+            break;
+        case ReturnResult:
+            reason = problem.getReturnResultProblemType().toString();
+            break;
+        case ReturnError:
+            reason = problem.getReturnErrorProblemType().toString();
+            break;
+        default:
+            reason = "RejectComponent_unknown_" + problem.getType();
+            break;
+        }
+
+        try {
+            event.getMAPDialog().close(false);
+        } catch (Exception e) {
+        }
+
+        return reason;
+    }
+
+    protected String getUserAbortReason(DialogUserAbort evt) {
+        MAPUserAbortChoice userReason = evt.getUserReason();
+        String reason = null;
+        if (userReason.isUserSpecificReason()) {
+            reason = MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON;
+        } else if (userReason.isUserResourceLimitation()) {
+            reason = MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION;
+        } else if (userReason.isResourceUnavailableReason()) {
+            ResourceUnavailableReason resourceUnavailableReason = userReason.getResourceUnavailableReason();
+            reason = resourceUnavailableReason.toString();
+        } else if (userReason.isProcedureCancellationReason()) {
+            ProcedureCancellationReason procedureCancellationReason = userReason.getProcedureCancellationReason();
+            reason = procedureCancellationReason.toString();
+        } else {
+            reason = MAP_USER_ABORT_CHOICE_UNKNOWN;
+        }
+        return reason;
+    }
 
 	/**
 	 * Dialog Events
@@ -242,12 +304,13 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
 					.lookup("slee/resources/map/2.0/acifactory");
 			this.mapProvider = (MAPProvider) ctx
 					.lookup("slee/resources/map/2.0/provider");
-			this.mapParameterFactory = this.mapProvider
-					.getMAPParameterFactory();
+            this.mapParameterFactory = this.mapProvider.getMAPParameterFactory();
+            this.mapErrorMessageFactory = this.mapProvider.getMAPErrorMessageFactory();
             this.sccpParameterFact = new ParameterFactoryImpl();
 
 			this.smppServerSessions = (SmppSessions) ctx
 					.lookup("slee/resources/smpp/server/1.0/provider");
+            this.persistence = (PersistenceRAInterface) this.sbbContext.getResourceAdaptorInterface(PERSISTENCE_ID, PERSISTENCE_LINK);
 
 			this.logger = this.sbbContext.getTracer(this.className);
 		} catch (Exception ne) {

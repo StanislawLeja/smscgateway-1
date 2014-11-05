@@ -29,6 +29,8 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPException;
+import org.mobicents.protocols.ss7.map.api.dialog.MAPAbortProviderReason;
+import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessageAbsentSubscriber;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
@@ -38,8 +40,9 @@ import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.protocols.ss7.map.api.service.sms.MWStatus;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMResponse;
-import org.mobicents.protocols.ss7.sccp.parameter.ParameterFactory;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
+import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextName;
+import org.mobicents.slee.resource.map.events.DialogClose;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogNotice;
 import org.mobicents.slee.resource.map.events.DialogProviderAbort;
@@ -52,10 +55,6 @@ import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.library.CorrelationIdValue;
 import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.MessageUtil;
-import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.slee.services.mt.InformServiceCenterContainer;
-import org.mobicents.smsc.slee.services.mt.MtSbbLocalObject;
-import org.mobicents.smsc.slee.services.mt.MtCommonSbb.ErrorAction;
 
 /**
  * 
@@ -82,29 +81,135 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
     public void onDialogDelimiter(DialogDelimiter evt,
             ActivityContextInterface aci) {
         super.onDialogDelimiter(evt, aci);
+
+        try {
+            this.onSriFullResponse();
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onDialogDelimiter (home routing) when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
+    }
+
+    public void onDialogClose(DialogClose evt, ActivityContextInterface aci) {
+        try {
+            super.onDialogClose(evt, aci);
+
+            this.onSriFullResponse();
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onDialogClose (home routing) when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
     }
 
     public void onRejectComponent(RejectComponent event,
             ActivityContextInterface aci) {
         super.onRejectComponent(event, aci);
 
+        String reason = this.getRejectComponentReason(event);
+
+        CorrelationIdValue correlationIdValue = this.getCorrelationIdValue();
+        if (correlationIdValue == null) {
+            this.logger.severe("CorrelationIdValue CMP missed");
+            return;
+        }
+        this.returnSriFailure(correlationIdValue, null);
+//        String targetId = smsDeliveryData.getTargetId();
+//        SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+//        if (smsSet == null) {
+//            this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onRejectComponent(), targetId=" + targetId);
+//            return;
+//        }
+//
+//        this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
+//                "onRejectComponent after SRI Request: " + reason != null ? reason.toString() : "", true);
     }
 
     public void onDialogReject(DialogReject evt, ActivityContextInterface aci) {
         super.onDialogReject(evt, aci);
 
+        try {
+            MAPRefuseReason mapRefuseReason = evt.getRefuseReason();
+            CorrelationIdValue correlationIdValue = this.getCorrelationIdValue();
+            if (correlationIdValue == null) {
+                this.logger.severe("CorrelationIdValue CMP missed");
+                return;
+            }
+
+            if (mapRefuseReason == MAPRefuseReason.PotentialVersionIncompatibility
+                    && evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1) {
+                if (logger.isWarningEnabled()) {
+                    this.logger.warning("Rx : Sri (home routing) onDialogReject / PotentialVersionIncompatibility=" + evt);
+                }
+                // possible a peer supports only MAP V1
+                // Now send new SRI with supported ACN (MAP V1)
+                this.sendSRI(correlationIdValue.getMsisdn().getAddress(), correlationIdValue.getMsisdn().getAddressNature().getIndicator(), correlationIdValue
+                        .getMsisdn().getNumberingPlan().getIndicator(), this.getSRIMAPApplicationContext(MAPApplicationContextVersion.version1), correlationIdValue);
+                return;
+            }
+
+            // If ACN not supported, lets use the new one suggested
+            if (mapRefuseReason == MAPRefuseReason.ApplicationContextNotSupported) {
+                if (logger.isWarningEnabled()) {
+                    this.logger.warning("Rx : Sri (home routing) onDialogReject / ApplicationContextNotSupported=" + evt);
+                }
+
+                // Now send new SRI with supported ACN
+                ApplicationContextName tcapApplicationContextName = evt.getAlternativeApplicationContext();
+                MAPApplicationContext supportedMAPApplicationContext = MAPApplicationContext.getInstance(tcapApplicationContextName.getOid());
+
+                this.sendSRI(correlationIdValue.getMsisdn().getAddress(), correlationIdValue.getMsisdn().getAddressNature().getIndicator(), correlationIdValue
+                        .getMsisdn().getNumberingPlan().getIndicator(),
+                        this.getSRIMAPApplicationContext(supportedMAPApplicationContext.getApplicationContextVersion()), correlationIdValue);
+                return;
+            }
+
+            this.returnSriFailure(correlationIdValue, null);
+//            super.onDialogReject(evt, aci);
+//            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogReject after SRI Request: "
+//                    + mapRefuseReason != null ? mapRefuseReason.toString() : "", true);
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onDialogReject() (home routing) when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
     }
 
     public void onDialogUserAbort(DialogUserAbort evt,
             ActivityContextInterface aci) {
-        super.onDialogUserAbort(evt, aci);
+        try {
+            super.onDialogUserAbort(evt, aci);
 
+            String reason = getUserAbortReason(evt);
+
+            CorrelationIdValue correlationIdValue = this.getCorrelationIdValue();
+            if (correlationIdValue == null) {
+                this.logger.severe("CorrelationIdValue CMP missed");
+                return;
+            }
+
+            this.returnSriFailure(correlationIdValue, null);
+//            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogUserAbort after SRI Request: "
+//                    + reason != null ? reason.toString() : "", true);
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onDialogUserAbort() (home routing) when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
     }
 
     public void onDialogProviderAbort(DialogProviderAbort evt,
             ActivityContextInterface aci) {
-        super.onDialogProviderAbort(evt, aci);
+        try {
+            super.onDialogProviderAbort(evt, aci);
 
+            MAPAbortProviderReason abortProviderReason = evt.getAbortProviderReason();
+
+            CorrelationIdValue correlationIdValue = this.getCorrelationIdValue();
+            if (correlationIdValue == null) {
+                this.logger.severe("CorrelationIdValue CMP missed");
+                return;
+            }
+
+            this.returnSriFailure(correlationIdValue, null);
+//            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogProviderAbort after SRI Request: "
+//                    + abortProviderReason != null ? abortProviderReason.toString() : "", true);
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onDialogProviderAbort() (home routing) when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
     }
 
     public void onDialogNotice(DialogNotice evt, ActivityContextInterface aci) {
@@ -113,8 +218,22 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
     }
 
     public void onDialogTimeout(DialogTimeout evt, ActivityContextInterface aci) {
-        super.onDialogTimeout(evt, aci);
+        // TODO: may be it is not a permanent failure case ???
 
+        try {
+            super.onDialogTimeout(evt, aci);
+
+            CorrelationIdValue correlationIdValue = this.getCorrelationIdValue();
+            if (correlationIdValue == null) {
+                this.logger.severe("CorrelationIdValue CMP missed");
+                return;
+            }
+
+            this.returnSriFailure(correlationIdValue, null);
+//            this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogTimeout after SRI Request", true);
+        } catch (Throwable e1) {
+            logger.severe("Exception in SriSbb.onDialogTimeout() (home routing) when fetching records and issuing events: " + e1.getMessage(), e1);
+        }
     }
 
     /**
@@ -143,16 +262,18 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
             this.logger.fine("\nReceived SEND_ROUTING_INFO_FOR_SM_RESPONSE = " + evt + " Dialog=" + evt.getMAPDialog());
         }
 
-//        if (evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() == MAPApplicationContextVersion.version1
-//                && evt.getMwdSet() != null && evt.getMwdSet()) {
-//            InformServiceCenterContainer informServiceCenterContainer = new InformServiceCenterContainer();
-//            MWStatus mwStatus = evt.getMAPDialog().getService().getMAPProvider().getMAPParameterFactory()
-//                    .createMWStatus(false, true, false, false);
-//            informServiceCenterContainer.setMwStatus(mwStatus);
-//            this.doSetInformServiceCenterContainer(informServiceCenterContainer);
-//        }
-//
-//        this.setSendRoutingInfoForSMResponse(evt);
+        if (evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() == MAPApplicationContextVersion.version1
+                && evt.getMwdSet() != null && evt.getMwdSet()) {
+            MWStatus mwStatus = evt.getMAPDialog().getService().getMAPProvider().getMAPParameterFactory()
+                    .createMWStatus(false, true, false, false);
+            CorrelationIdValue correlationIdValue = this.getCorrelationIdValue();
+            if (correlationIdValue != null) {
+                correlationIdValue.setMwStatus(mwStatus);
+                this.setCorrelationIdValue(correlationIdValue);
+            }
+        }
+
+        this.setSendRoutingInfoForSMResponse(evt);
     }
 
     public void onInformServiceCentreRequest(InformServiceCentreRequest evt, ActivityContextInterface aci) {
@@ -160,9 +281,11 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
             this.logger.info("\nReceived INFORM_SERVICE_CENTER_REQUEST = " + evt + " Dialog=" + evt.getMAPDialog());
         }
 
-//        InformServiceCenterContainer informServiceCenterContainer = new InformServiceCenterContainer();
-//        informServiceCenterContainer.setMwStatus(evt.getMwStatus());
-//        this.doSetInformServiceCenterContainer(informServiceCenterContainer);
+        CorrelationIdValue correlationIdValue = this.getCorrelationIdValue();
+        if (correlationIdValue != null) {
+            correlationIdValue.setMwStatus(evt.getMwStatus());
+            this.setCorrelationIdValue(correlationIdValue);
+        }
     }
 
     public void onErrorComponent(ErrorComponent event,
@@ -179,8 +302,11 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
                 Boolean mwdSet = errAs.getMwdSet();
                 if (mwdSet != null && mwdSet) {
                     MWStatus mwStatus = event.getMAPDialog().getService().getMAPProvider().getMAPParameterFactory().createMWStatus(false, true, false, false);
-                    CorrelationIdValue civ = this.getCorrelationIdValue();
-                    civ.setMwStatus(mwStatus);
+                    CorrelationIdValue correlationIdValue = this.getCorrelationIdValue();
+                    if (correlationIdValue != null) {
+                        correlationIdValue.setMwStatus(mwStatus);
+                        this.setCorrelationIdValue(correlationIdValue);
+                    }
                 }
             }
         } catch (Throwable e1) {
@@ -223,7 +349,7 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
         this.setCorrelationIdValue(correlationIdValue);
 
         this.sendSRI(correlationIdValue.getMsisdn().getAddress(), correlationIdValue.getMsisdn().getAddressNature().getIndicator(), correlationIdValue
-                .getMsisdn().getNumberingPlan().getIndicator(), this.getSRIMAPApplicationContext(this.maxMAPApplicationContextVersion));
+                .getMsisdn().getNumberingPlan().getIndicator(), this.getSRIMAPApplicationContext(this.maxMAPApplicationContextVersion), correlationIdValue);
     }
 
     @Override
@@ -234,7 +360,7 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
                 .getMaxMapVersion());
     }
 
-    private void sendSRI(String destinationAddress, int ton, int npi, MAPApplicationContext mapApplicationContext) {
+    private void sendSRI(String destinationAddress, int ton, int npi, MAPApplicationContext mapApplicationContext, CorrelationIdValue correlationIdValue) {
         // Send out SRI
         MAPDialogSms mapDialogSms = null;
         try {
@@ -256,7 +382,7 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
             String reason = "MAPException when sending SRI from sendSRI() (home routing): " + e.toString();
             this.logger.severe(reason, e);
             ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
-            this.returnSriFailure();
+            this.returnSriFailure(correlationIdValue, null);
 //            this.returnSriFailure(smsSet, ErrorAction.permanentFailure, smStatus, reason, true);
         }
     }
@@ -282,12 +408,86 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
         return mapDialogSms;
     }
 
-    private void returnSriSuccess() {
-        // TODO: implement it
+    private void onSriFullResponse() {
+
+        SendRoutingInfoForSMResponse sendRoutingInfoForSMResponse = this.getSendRoutingInfoForSMResponse();
+        MAPErrorMessage errorMessage = this.getErrorResponse();
+
+        CorrelationIdValue correlationIdValue = this.getCorrelationIdValue();
+        if (correlationIdValue == null) {
+            this.logger.severe("CorrelationIdValue CMP missed");
+            return;
+        }
+
+        if (sendRoutingInfoForSMResponse != null) {
+            // we have positive response to SRI request
+            correlationIdValue.setImsi(sendRoutingInfoForSMResponse.getIMSI().getData());
+            correlationIdValue.setLocationInfoWithLMSI(sendRoutingInfoForSMResponse.getLocationInfoWithLMSI());
+
+            this.returnSriSuccess(correlationIdValue);
+            return;
+        }
+
+        if (errorMessage != null) {
+            // we have a negative response
+            this.returnSriFailure(correlationIdValue, errorMessage);
+
+//            if (errorMessage.isEmAbsentSubscriber()) {
+//                this.onDeliveryError(smsSet, ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
+//                        "AbsentSubscriber response from HLR: " + errorMessage.toString(), true);
+//            } else if (errorMessage.isEmAbsentSubscriberSM()) {
+//                this.onDeliveryError(smsSet, ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
+//                        "AbsentSubscriberSM response from HLR: " + errorMessage.toString(), true);
+//            } else if (errorMessage.isEmCallBarred()) {
+//                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.CALL_BARRED,
+//                        "CallBarred response from HLR: " + errorMessage.toString(), true);
+//            } else if (errorMessage.isEmFacilityNotSup()) {
+//                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
+//                        "FacilityNotSuppored response from HLR: " + errorMessage.toString(), true);
+//            } else if (errorMessage.isEmSystemFailure()) {
+//                // TODO: may be systemFailure is not a permanent error case ?
+//                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
+//                        "SystemFailure response from HLR: " + errorMessage.toString(), true);
+//            } else if (errorMessage.isEmUnknownSubscriber()) {
+//                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNKNOWN_SUBSCRIBER,
+//                        "UnknownSubscriber response from HLR: " + errorMessage.toString(), true);
+//            } else if (errorMessage.isEmExtensionContainer()) {
+//                if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.dataMissing) {
+//                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.DATA_MISSING,
+//                            "DataMissing response from HLR", true);
+//                } else if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.unexpectedDataValue) {
+//                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA,
+//                            "UnexpectedDataValue response from HLR", true);
+//                } else if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.teleserviceNotProvisioned) {
+//                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.TELESERVICE_NOT_PROVISIONED,
+//                            "TeleserviceNotProvisioned response from HLR", true);
+//                } else {
+//                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA_FROM_HLR,
+//                            "Error response from HLR: " + errorMessage.toString(), true);
+//                }
+//            } else {
+//                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA_FROM_HLR,
+//                        "Error response from HLR: " + errorMessage.toString(), true);
+//            }
+        } else {
+            // we have no responses - this is an error behaviour
+            this.returnSriFailure(correlationIdValue, null);
+
+//            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
+//                    "Empty response after SRI Request", false);
+        }
     }
 
-    private void returnSriFailure() {
-        // TODO: implement it
+    private void returnSriSuccess(CorrelationIdValue correlationIdValue) {
+        HrSriClientSbbLocalObject local = (HrSriClientSbbLocalObject) super.sbbContext.getSbbLocalObject();
+        HrSriResultInterface parent = (HrSriResultInterface) local.getParent();
+        parent.onSriSuccess(correlationIdValue);
+    }
+
+    private void returnSriFailure(CorrelationIdValue correlationIdValue, MAPErrorMessage errorResponse) {
+        HrSriClientSbbLocalObject local = (HrSriClientSbbLocalObject) super.sbbContext.getSbbLocalObject();
+        HrSriResultInterface parent = (HrSriResultInterface) local.getParent();
+        parent.onSriFailure(correlationIdValue, errorResponse);
     }
 
     private SccpAddress convertAddressFieldToSCCPAddress(String address, int ton, int npi) {
