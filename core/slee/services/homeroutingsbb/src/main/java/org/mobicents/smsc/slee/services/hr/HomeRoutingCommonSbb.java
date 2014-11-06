@@ -98,6 +98,7 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
     protected ParameterFactory sccpParameterFact;
     private SccpAddress serviceCenterSCCPAddress = null;
     private AddressString serviceCenterAddress;
+    private ISDNAddressString networkNodeNumber;
 
     protected static final String MAP_USER_ABORT_CHOICE_USER_SPECIFIC_REASON = "userSpecificReason";
     protected static final String MAP_USER_ABORT_CHOICE_USER_RESOURCE_LIMITATION = "userResourceLimitation";
@@ -325,24 +326,6 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
 
 	}
 
-//    /**
-//     * Get the MAP Dialog Activity
-//     * 
-//     * @return
-//     */
-//    protected ActivityContextInterface getMapActivityContextInterface() {
-//        ActivityContextInterface[] acis = this.sbbContext.getActivities();
-//        for (int count = 0; count < acis.length; count++) {
-//            ActivityContextInterface aci = acis[count];
-//            Object activity = aci.getActivity();
-//            if (activity.getClass().getCanonicalName().equals("org.mobicents.slee.resource.map.service.sms.wrappers.MAPDialogSmsWrapper")) {
-//                return aci;
-//            }
-//        }
-//
-//        return null;
-//    }
-
     protected SccpAddress getServiceCenterSccpAddress() {
         if (this.serviceCenterSCCPAddress == null) {
             this.serviceCenterSCCPAddress = MessageUtil.getSccpAddress(sccpParameterFact, smscPropertiesManagement.getServiceCenterGt(),
@@ -358,14 +341,18 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
     }
 
     protected AddressString getServiceCenterAddressString() {
-
         if (this.serviceCenterAddress == null) {
-            this.serviceCenterAddress = this.mapParameterFactory.createAddressString(
-                    AddressNature.international_number,
-                    org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN,
-                    smscPropertiesManagement.getServiceCenterGt());
+            this.serviceCenterAddress = this.mapParameterFactory.createAddressString(AddressNature.international_number,
+                    org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, smscPropertiesManagement.getServiceCenterGt());
         }
         return this.serviceCenterAddress;
     }
 
+    protected ISDNAddressString getNetworkNodeNumber() {
+        if (this.networkNodeNumber == null) {
+            this.networkNodeNumber = this.mapParameterFactory.createISDNAddressString(AddressNature.international_number,
+                    org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, smscPropertiesManagement.getServiceCenterGt());
+        }
+        return this.networkNodeNumber;
+    }
 }

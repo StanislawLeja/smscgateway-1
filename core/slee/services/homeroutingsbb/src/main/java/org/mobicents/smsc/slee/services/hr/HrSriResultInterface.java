@@ -34,6 +34,6 @@ public interface HrSriResultInterface {
 
     public void onSriSuccess(CorrelationIdValue correlationIdValue);
 
-    public void onSriFailure(CorrelationIdValue correlationIdValue, MAPErrorMessage errorResponse);
+    public void onSriFailure(CorrelationIdValue correlationIdValue, MAPErrorMessage errorResponse, String cause);
 
 }

@@ -111,6 +111,13 @@ public class SmscStatProviderJmx implements SmscStatProviderJmxMBean, CounterMed
         cd = new CounterDefImpl(CounterType.Summary_Cumulative, "MsgInReceivedAllCumulative", "Messages received and accepted via all interfaces cumulative");
         cds.addCounterDef(cd);
 
+        cd = new CounterDefImpl(CounterType.Summary, "MsgInHrSriReq", "Home routing SRI messages received");
+        cds.addCounterDef(cd);
+        cd = new CounterDefImpl(CounterType.Summary, "MsgInHrSriPosReq", "Home routing SRI positive responses");
+        cds.addCounterDef(cd);
+        cd = new CounterDefImpl(CounterType.Summary, "MsgInHrSriNegReq", "Home routing SRI negative responses");
+        cds.addCounterDef(cd);
+
         cd = new CounterDefImpl(CounterType.Summary, "MsgOutTryAll", "Messages sending tries via all interfaces");
         cds.addCounterDef(cd);
         cd = new CounterDefImpl(CounterType.Summary, "MsgOutSentAll", "Messages sent via all interfaces");
@@ -199,6 +206,13 @@ public class SmscStatProviderJmx implements SmscStatProviderJmxMBean, CounterMed
                     svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInReceivedSip());
                 } else if (cd.getCounterName().equals("MsgInReceivedAllCumulative")) {
                     svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInReceivedAllCumulative());
+
+                } else if (cd.getCounterName().equals("MsgInHrSriReq")) {
+                    svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInHrSriReq());
+                } else if (cd.getCounterName().equals("MsgInHrSriPosReq")) {
+                    svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInHrSriPosReq());
+                } else if (cd.getCounterName().equals("MsgInHrSriNegReq")) {
+                    svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInHrSriNegReq());
 
                 } else if (cd.getCounterName().equals("MsgOutTryAll")) {
                     svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgOutTryAll());

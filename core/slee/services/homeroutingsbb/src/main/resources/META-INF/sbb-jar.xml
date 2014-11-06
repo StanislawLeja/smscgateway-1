@@ -247,6 +247,7 @@
                 <cmp-field><cmp-field-name>sriMapVersion</cmp-field-name></cmp-field>
                 <cmp-field><cmp-field-name>sendRoutingInfoForSMResponse</cmp-field-name></cmp-field>
                 <cmp-field><cmp-field-name>errorResponse</cmp-field-name></cmp-field>
+                <cmp-field><cmp-field-name>inProcess</cmp-field-name></cmp-field>
             </sbb-abstract-class>
             <sbb-local-interface>
                 <sbb-local-interface-name>

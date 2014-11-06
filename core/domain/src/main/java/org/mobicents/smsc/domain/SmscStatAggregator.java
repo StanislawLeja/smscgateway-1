@@ -138,6 +138,30 @@ public class SmscStatAggregator implements UpdateMessagesInProcessListener {
         statCollector.msgInReceivedSip.addAndGet(1);
     }
 
+    public long getMsgInHrSriReq() {
+        return statCollector.msgInHrSriReq.get();
+    }
+
+    public void updateMsgInHrSriReq() {
+        statCollector.msgInHrSriReq.addAndGet(1);
+    }
+
+    public long getMsgInHrSriPosReq() {
+        return statCollector.msgInHrSriPosReq.get();
+    }
+
+    public void updateMsgInHrSriPosReq() {
+        statCollector.msgInHrSriPosReq.addAndGet(1);
+    }
+
+    public long getMsgInHrSriNegReq() {
+        return statCollector.msgInHrSriNegReq.get();
+    }
+
+    public void updateMsgInHrSriNegReq() {
+        statCollector.msgInHrSriNegReq.addAndGet(1);
+    }
+
     public long getMsgInReceivedAllCumulative() {
         return statCollector.msgInReceivedAll.get();
     }
@@ -239,6 +263,11 @@ public class SmscStatAggregator implements UpdateMessagesInProcessListener {
         private AtomicLong msgInReceivedSs7 = new AtomicLong();
         private AtomicLong msgInReceivedSmpp = new AtomicLong();
         private AtomicLong msgInReceivedSip = new AtomicLong();
+
+        private AtomicLong msgInHrSriReq = new AtomicLong();
+        private AtomicLong msgInHrSriPosReq = new AtomicLong();
+        private AtomicLong msgInHrSriNegReq = new AtomicLong();
+
         private AtomicLong msgOutTryAll = new AtomicLong();
         private AtomicLong msgOutSentAll = new AtomicLong();
         private AtomicLong msgOutFailedAll = new AtomicLong();

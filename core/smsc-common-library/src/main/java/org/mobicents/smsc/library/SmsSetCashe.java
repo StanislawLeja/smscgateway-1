@@ -84,7 +84,7 @@ public class SmsSetCashe {
 
     public static void stop() {
         SmsSetCashe ssc = SmsSetCashe.getInstance();
-        ssc.isStarted = true;
+        ssc.isStarted = false;
 
         ssc.executor.shutdown();
     }
@@ -196,14 +196,14 @@ public class SmsSetCashe {
     }
 
 
-    public void putImsiCacheElement(CorrelationIdValue elem, int correlationIdLiveTime) throws Exception {
+    public void putCorrelationIdCacheElement(CorrelationIdValue elem, int correlationIdLiveTime) throws Exception {
         this.correlationIdLiveTime = correlationIdLiveTime;
         synchronized (this.correlationIdCacheSync) {
             this.correlationIdCache1.put(elem.getCorrelationID(), elem);
         }
     }
 
-    public CorrelationIdValue getImsiCacheElement(String correlationID) throws Exception {
+    public CorrelationIdValue getCorrelationIdCacheElement(String correlationID) throws Exception {
         synchronized (this.correlationIdCacheSync) {
             CorrelationIdValue res = this.correlationIdCache1.get(correlationID);
             if (res == null)

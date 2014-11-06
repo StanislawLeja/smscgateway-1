@@ -34,6 +34,7 @@ import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.NetworkResource;
 import org.mobicents.protocols.ss7.map.api.service.sms.InformServiceCentreRequest;
+import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.protocols.ss7.map.api.service.sms.MWStatus;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMRequest;
@@ -165,17 +166,12 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
     }
 
     private void setupSriRequest(ISDNAddressString msisdn, AddressString serviceCentreAddress) {
+        smscStatAggregator.updateMsgInHrSriReq();
+
         HrSriClientSbbLocalObject hrSriClientSbbLocalObject = this.getHrSriClientSbbLocalObject();
         if (hrSriClientSbbLocalObject != null) {
-//            // Attach MtSbb to Scheduler ActivityContextInterface
-//            ActivityContextInterface aci = this.getMapActivityContextInterface();
-//            aci.attach(hrSriClientSbbLocalObject);
-
-
             String correlationID = this.persistence.c2_getNextCorrelationId(msisdn.getAddress());
-
             CorrelationIdValue correlationIdValue = new CorrelationIdValue(correlationID, msisdn, serviceCentreAddress);
-
             hrSriClientSbbLocalObject.setupSriRequest(correlationIdValue);
         }
     }
@@ -217,19 +213,22 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
     @Override
     public void onSriSuccess(CorrelationIdValue correlationIdValue) {
         MAPDialogSms dlg = this.getActivity();
-
-        if (this.logger.isFineEnabled()) {
-            this.logger.fine("\nHome routing: Sri positive response = " + correlationIdValue + " Dialog=" + dlg);
-        }        
-
         if (dlg == null) {
             this.logger.severe("Home routing: can not get MAPDialog for sending SRI positive Response");
             return;
         }
 
+        smscStatAggregator.updateMsgInHrSriPosReq();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Home routing: positive SRI response from HLR: transaction: ");
+        sb.append(correlationIdValue);
+        if (this.logger.isInfoEnabled())
+            this.logger.info(sb.toString());
+
         // storing correlationId into a cache
         try {
-            SmsSetCashe.getInstance().putImsiCacheElement(correlationIdValue, smscPropertiesManagement.getCorrelationIdLiveTime());
+            SmsSetCashe.getInstance().putCorrelationIdCacheElement(correlationIdValue, smscPropertiesManagement.getCorrelationIdLiveTime());
         } catch (Exception e1) {
             if (dlg != null) {
                 dlg.release();
@@ -246,6 +245,8 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
             IMSI imsi = this.mapParameterFactory.createIMSI(correlationIdValue.getCorrelationID());
             MWStatus mwStatus = correlationIdValue.getMwStatus();
             Boolean mwdSet = null;
+            ISDNAddressString networkNodeNumber = getNetworkNodeNumber();
+            LocationInfoWithLMSI li = this.mapParameterFactory.createLocationInfoWithLMSI(networkNodeNumber, null, null, false, null);
 
             if (dlg.getApplicationContext().getApplicationContextVersion() == MAPApplicationContextVersion.version1) {
                 if (mwStatus != null) {
@@ -255,7 +256,7 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
                 }
             }
 
-            dlg.addSendRoutingInfoForSMResponse(invokeId, imsi, correlationIdValue.getLocationInfoWithLMSI(), null, mwdSet);
+            dlg.addSendRoutingInfoForSMResponse(invokeId, imsi, li, null, mwdSet);
 
             InformServiceCentreRequest isc = correlationIdValue.getInformServiceCentreRequest();
             if (mwStatus != null && isc != null) {
@@ -275,17 +276,22 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
     }
 
     @Override
-    public void onSriFailure(CorrelationIdValue correlationIdValue, MAPErrorMessage errorResponse) {
+    public void onSriFailure(CorrelationIdValue correlationIdValue, MAPErrorMessage errorResponse, String cause) {
         MAPDialogSms dlg = this.getActivity();
-
-        if (this.logger.isFineEnabled()) {
-            this.logger.fine("\nHome routing: Sri negative response = " + correlationIdValue + " Dialog=" + dlg);
-        }        
-
         if (dlg == null) {
             this.logger.severe("Home routing: can not get MAPDialog for sending SRI negative Response");
             return;
         }
+
+        smscStatAggregator.updateMsgInHrSriNegReq();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Home routing: negative SRI response from HLR: transaction: ");
+        sb.append(correlationIdValue);
+        sb.append(",\n cause=");
+        sb.append(cause);
+        if (this.logger.isInfoEnabled())
+            this.logger.info(sb.toString());
 
         // sending negative SRI response
         try {

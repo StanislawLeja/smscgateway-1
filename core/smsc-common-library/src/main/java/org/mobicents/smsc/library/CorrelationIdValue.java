@@ -103,7 +103,9 @@ public class CorrelationIdValue implements Serializable {
         StringBuilder sb = new StringBuilder();
 
         sb.append("CorrelationIdValue=[");
-        sb.append("msisdn=");
+        sb.append("correlationID=");
+        sb.append(correlationID);
+        sb.append(", msisdn=");
         sb.append(msisdn);
         sb.append(", serviceCentreAddress=");
         sb.append(serviceCentreAddress);
