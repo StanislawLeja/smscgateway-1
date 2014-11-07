@@ -595,6 +595,9 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 	}
 
+    private void processMtMessage2(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo) {
+    }
+
 	private TargetAddress createDestTargetAddress(IMSI imsi) throws SmscProcessingException {
 		if (imsi == null || imsi.getData() == null || imsi.getData().isEmpty()) {
 			throw new SmscProcessingException("Mt DA IMSI digits are absent", SmppConstants.STATUS_SYSERR,

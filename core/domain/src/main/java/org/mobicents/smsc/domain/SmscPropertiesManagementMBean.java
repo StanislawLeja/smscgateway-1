@@ -154,9 +154,13 @@ public interface SmscPropertiesManagementMBean {
 
 	public void setGenerateReceiptCdr(boolean generateReceiptCdr);
 
-	public MoChargingType getMoCharging();
+    public MoChargingType getMoCharging();
 
-	public void setMoCharging(MoChargingType moCharging);
+    public void setMoCharging(MoChargingType moCharging);
+
+    public MoChargingType getMtCharging();
+
+    public void setMtCharging(MoChargingType mtCharging);
 
     public StoreAndForwordMode getStoreAndForwordMode();
 
