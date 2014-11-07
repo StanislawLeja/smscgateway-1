@@ -9,8 +9,8 @@
         <useSSL>true</useSSL>
     </notification>
     <license>
-        <product>TelScale-SMSC</product>
-        <licenseKey>xxx</licenseKey>
+        <product>[Product name]</product>
+        <licenseKey>[license-key]</licenseKey>
         <active>true</active>
     </license>
 </licenseStorage>

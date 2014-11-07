@@ -92,12 +92,6 @@
 				<include>com.telscale.protocols.ss7.oam.common:sccp-oam</include>
 				<include>com.telscale.protocols.ss7.oam.common:tcap-oam</include>
 
-			  	<!-- TelScale licensing lib -->
-			 	<include>com.telscale.licensing:lce-core</include>
-			    <include>com.telscale.licensing:lce-common:jar:jar-with-dependencies</include>
-			    <include>com.telscale.licensing:lce-secret:jar:obfuscated</include>
-			    <include>com.telscale.licensing:lce-notify</include>
-			    <include>org.apache.commons:commons-email</include>	
 			</includes>
 		</dependencySet>
 	</dependencySets>

@@ -88,6 +88,7 @@
 		   <groupId>com.telscale.licensing</groupId>
 		   <artifactId>lce-core</artifactId>
 		   <version>${telscale.license.version}</version>
+		   <scope>provided</scope>
 		</dependency>
 		
   		<dependency>
@@ -95,6 +96,7 @@
 		   <artifactId>lce-common</artifactId>
 		   <version>${telscale.license.version}</version>
 		   <classifier>jar-with-dependencies</classifier>
+		   <scope>provided</scope>
   		</dependency>
 
 		<dependency>
@@ -102,18 +104,21 @@
 		   <artifactId>lce-secret</artifactId>
 		   <version>${telscale.license.version}</version>
 		   <classifier>obfuscated</classifier>
+		   <scope>provided</scope>
 		</dependency>	
 		
 		<dependency>
 		   <groupId>com.telscale.licensing</groupId>
 		   <artifactId>lce-notify</artifactId>
 		   <version>${telscale.license.version}</version>
+		   <scope>provided</scope>
 		</dependency>
 		
 		<dependency>
 		   <groupId>org.apache.commons</groupId>
 		   <artifactId>commons-email</artifactId>
 		   <version>1.3.2</version>
+		   <scope>provided</scope>
 		</dependency>	
 		
 	</dependencies>
