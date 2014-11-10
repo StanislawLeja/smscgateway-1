@@ -61,6 +61,19 @@
 					</simplelist>
 				</revdescription>
 			</revision>
+            <revision>
+                <revnumber>5.0</revnumber>
+                <date>October 10 2014</date>
+                <author>
+                    <firstname>Sergey</firstname>
+                    <surname>Vetyutnev</surname>
+                </author>
+                <revdescription>
+                    <simplelist>
+                        <member>Added Release Notes for 6.2.0.GA</member>
+                    </simplelist>
+                </revdescription>
+            </revision>
 		</revhistory>
 	</simpara>
 </appendix>
