@@ -320,6 +320,13 @@ This will launch the HLR Simulator ready for processing SRI and MT_Forward_SM re
 
 			</step>
 		</procedure>
+
+            <para>
+                Extra configuring of HLR Simulator is possible only by manual updating of configuration files in TelScale-hlr-simulator/data folder.
+                For example for running in Microsoft Windows you need to update SCTPManagement_sctp.xml file and set "ipChannelType" parameter to "1".
+            </para>
+
+
 		</section>
 
 		<section id="running_the_simulator_smpp_load">
