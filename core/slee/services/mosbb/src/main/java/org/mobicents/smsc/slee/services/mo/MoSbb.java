@@ -30,6 +30,7 @@ import java.util.UUID;
 import javax.slee.ActivityContextInterface;
 import javax.slee.InitialEventSelector;
 
+import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
 import org.mobicents.protocols.ss7.map.api.MAPDialog;
 import org.mobicents.protocols.ss7.map.api.MAPException;
@@ -292,11 +293,32 @@ public abstract class MoSbb extends MoCommonSbb {
 			this.logger.fine("Received FORWARD_SHORT_MESSAGE_REQUEST = " + evt);
 		}
 
+        MAPDialogSms dialog = evt.getMAPDialog();
+
+		// checking if it is MO or MT
+        boolean isMt;
+        MAPApplicationContext act = dialog.getApplicationContext();
+        if (act.getApplicationContextVersion().getVersion() > 1) {
+            if (act.getApplicationContextName() == MAPApplicationContextName.shortMsgMORelayContext)
+                isMt = false;
+            else
+                isMt = true;
+        } else {
+            if (evt.getSM_RP_OA().getMsisdn() != null)
+                isMt = false;
+            else
+                isMt = true;
+        }
+
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
 
-		MAPDialogSms dialog = evt.getMAPDialog();
-
-        if (smscPropertiesManagement.getMoCharging() == MoChargingType.reject) {
+		MoChargingType charging;
+        if (isMt) {
+            charging = smscPropertiesManagement.getHrCharging();
+        } else {
+            charging = smscPropertiesManagement.getMoCharging();
+        }
+        if (charging == MoChargingType.reject) {
             try {
                 MAPErrorMessage errorMessage = this.mapProvider.getMAPErrorMessageFactory().createMAPErrorMessageFacilityNotSup(null, null, null);
                 dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
@@ -313,7 +335,11 @@ public abstract class MoSbb extends MoCommonSbb {
         }
 
 		try {
-			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
+            if (isMt) {
+                this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
+            } else {
+                this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
+            }
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
             smscStatAggregator.updateMsgInFailedAll();
@@ -387,7 +413,6 @@ public abstract class MoSbb extends MoCommonSbb {
 	}
 
 	/**
-	 * Received MT SMS. This is error we should never receive this
 	 * 
 	 * @param evt
 	 * @param aci
@@ -400,6 +425,22 @@ public abstract class MoSbb extends MoCommonSbb {
 		this.setProcessingState(MoProcessingState.OtherDataRecieved);
 
 		MAPDialogSms dialog = evt.getMAPDialog();
+
+        if (smscPropertiesManagement.getHrCharging() == MoChargingType.reject) {
+            try {
+                MAPErrorMessage errorMessage = this.mapProvider.getMAPErrorMessageFactory().createMAPErrorMessageFacilityNotSup(null, null, null);
+                dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+                if (this.logger.isInfoEnabled()) {
+                    this.logger.info("\nSent ErrorComponent = " + errorMessage);
+                }
+
+                dialog.close(false);
+                return;
+            } catch (Throwable e) {
+                logger.severe("Error while sending Error message", e);
+                return;
+            }
+        }
 
 		try {
 			this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
@@ -482,7 +523,10 @@ public abstract class MoSbb extends MoCommonSbb {
 
 	private void processMtMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo)
 			throws SmscProcessingException {
-		IMSI destinationImsi = smRPDA.getIMSI();
+
+        smsSignalInfo.setGsm8Charset(isoCharset);
+
+        IMSI destinationImsi = smRPDA.getIMSI();
 
 		if (destinationImsi == null) {
 			throw new SmscProcessingException("Mt DA IMSI is absent", SmppConstants.STATUS_SYSERR,
@@ -594,9 +638,6 @@ public abstract class MoSbb extends MoCommonSbb {
 			logger.severe("Error while decoding SmsSignalInfo ", e1);
 		}
 	}
-
-    private void processMtMessage2(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo) {
-    }
 
 	private TargetAddress createDestTargetAddress(IMSI imsi) throws SmscProcessingException {
 		if (imsi == null || imsi.getData() == null || imsi.getData().isEmpty()) {

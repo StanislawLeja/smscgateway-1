@@ -84,7 +84,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private static final String GENERATE_ARCHIVE_TABLE = "generateArchiveTable";
     private static final String STORE_AND_FORWORD_MODE = "storeAndForwordMode";
     private static final String MO_CHARGING = "moCharging";
-    private static final String MT_CHARGING = "mtCharging";
+    private static final String HR_CHARGING = "hrCharging";
 	private static final String TX_SMPP_CHARGING = "txSmppCharging";
 	private static final String TX_SIP_CHARGING = "txSipCharging";
     private static final String GLOBAL_TITLE_INDICATOR = "globalTitleIndicator";
@@ -208,7 +208,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // reject - all incoming messages will be rejected
     // diameter - all incoming messages are checked by Diameter peer before
     // delivering
-    private MoChargingType mtCharging = MoChargingType.accept;
+    private MoChargingType hrCharging = MoChargingType.accept;
 	// Defualt is None: none of SMPP originated messages will be charged by OCS
 	// via Diameter before sending
 	private ChargingType txSmppCharging = ChargingType.None;
@@ -608,13 +608,13 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     }
 
     @Override
-    public MoChargingType getMtCharging() {
-        return mtCharging;
+    public MoChargingType getHrCharging() {
+        return hrCharging;
     }
 
     @Override
-    public void setMtCharging(MoChargingType mtCharging) {
-        this.mtCharging = mtCharging;
+    public void setHrCharging(MoChargingType mtCharging) {
+        this.hrCharging = mtCharging;
         this.store();
     }
 
@@ -881,7 +881,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
             writer.write(this.storeAndForwordMode.toString(), STORE_AND_FORWORD_MODE, String.class);
             writer.write(this.moCharging.toString(), MO_CHARGING, String.class);
-            writer.write(this.mtCharging.toString(), MT_CHARGING, String.class);
+            writer.write(this.hrCharging.toString(), HR_CHARGING, String.class);
 			writer.write(this.txSmppCharging.toString(), TX_SMPP_CHARGING, String.class);
             writer.write(this.txSipCharging.toString(), TX_SIP_CHARGING, String.class);
             writer.write(this.globalTitleIndicator.toString(), GLOBAL_TITLE_INDICATOR, String.class);
@@ -1042,14 +1042,14 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
                     this.moCharging = Enum.valueOf(MoChargingType.class, vals);
                 }
             }
-            vals = reader.read(MT_CHARGING, String.class);
+            vals = reader.read(HR_CHARGING, String.class);
             if (vals != null) {
                 if (vals.toLowerCase().equals("false")) {
-                    this.mtCharging = MoChargingType.accept;
+                    this.hrCharging = MoChargingType.accept;
                 } else if (vals.toLowerCase().equals("true")) {
-                    this.mtCharging = MoChargingType.diameter;
+                    this.hrCharging = MoChargingType.diameter;
                 } else {
-                    this.mtCharging = Enum.valueOf(MoChargingType.class, vals);
+                    this.hrCharging = Enum.valueOf(MoChargingType.class, vals);
                 }
             }
 			vals = reader.read(TX_SMPP_CHARGING, String.class);

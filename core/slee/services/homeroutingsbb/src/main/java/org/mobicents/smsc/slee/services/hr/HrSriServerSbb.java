@@ -49,6 +49,7 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.smsc.domain.MoChargingType;
 import org.mobicents.smsc.library.CorrelationIdValue;
 import org.mobicents.smsc.library.SmsSetCashe;
 
@@ -151,6 +152,24 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
         }
 
         this.setInvokeId(evt.getInvokeId());
+
+        MAPDialogSms dialog = evt.getMAPDialog();
+
+        if (smscPropertiesManagement.getHrCharging() == MoChargingType.reject) {
+            try {
+                MAPErrorMessage errorMessage = this.mapProvider.getMAPErrorMessageFactory().createMAPErrorMessageFacilityNotSup(null, null, null);
+                dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+                if (this.logger.isInfoEnabled()) {
+                    this.logger.info("\nSent ErrorComponent = " + errorMessage);
+                }
+
+                dialog.close(false);
+                return;
+            } catch (Throwable e) {
+                logger.severe("Error while sending Error message", e);
+                return;
+            }
+        }
 
         setupSriRequest(evt.getMsisdn(), evt.getServiceCentreAddress());
     }

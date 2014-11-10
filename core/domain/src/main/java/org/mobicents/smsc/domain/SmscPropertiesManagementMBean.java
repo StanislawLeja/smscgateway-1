@@ -158,9 +158,9 @@ public interface SmscPropertiesManagementMBean {
 
     public void setMoCharging(MoChargingType moCharging);
 
-    public MoChargingType getMtCharging();
+    public MoChargingType getHrCharging();
 
-    public void setMtCharging(MoChargingType mtCharging);
+    public void setHrCharging(MoChargingType hrCharging);
 
     public StoreAndForwordMode getStoreAndForwordMode();
 
