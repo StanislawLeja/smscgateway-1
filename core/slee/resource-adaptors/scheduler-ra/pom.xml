@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>resource-adaptors-parent</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.2.0-TelScale-SNAPSHOT</version>
+		<version>6.2.0.358</version>
 	</parent>
 
 	<artifactId>scheduler-ra-parent</artifactId>

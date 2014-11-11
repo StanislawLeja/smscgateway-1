@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>telscale-smsc-releasenotes</artifactId>
 		<groupId>com.telscale.smsc.docs.releasenotes</groupId>
-		<version>6.2.0-TelScale-SNAPSHOT</version>
+		<version>6.2.0.358</version>
 	</parent>
 
 	<artifactId>telscale-smsc-releasenotes-jdocbook-telscale</artifactId>
