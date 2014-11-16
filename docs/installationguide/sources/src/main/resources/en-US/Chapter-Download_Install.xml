@@ -47,21 +47,16 @@
 						<listitem><para>TelScale-hlr-simulator: Command line HLR simulator used for load testing of SMSC. TelScale-hlr-simulator is pre-configured to integrate with SMSC run in simulator profile.</para></listitem>
 						<listitem>
 							<para>
-								TelScale-jss7-simulator: jSS7 Simulator that can be started in GUI or command line mode. This tool is useful to test MoForwardSM and other functionality of SMSC for example when subscriber absent etc. 
-								Please read Chapter 13.SS7 Simulator of TelScale_SS7Stack_User_Guide.pdf. TelScale-jss7-simulator is pre-configured to integrate with SMSC run in simulator profile.
+								TelScale-jss7-simulator: jSS7 Simulator that can be run in GUI or command line mode. This tool is useful to test <literal>MoForwardSM</literal> and other such functionality of SMSC like "when subscriber absent", etc. For more details on using this tool, please refer to TelScale SS7Stack User Guide. TelScale-jss7-simulator is pre-configured to integrate with SMSC run in simulator profile.
 							</para>
 						</listitem>
 						<listitem>
 							<para>
-								TelScale-smpp-load: smpp-load tool is Command line simulator to generate SMPP load. It requires ant to be installed. smpp-load tool can be started as SMPP Server accepting in-coming connection
-								(BIND) from TelScale SMSC or can be started as SMPP Client to send BIND to TelScale SMSC. build.xml has configuration to define how many SMPP connections should be initiateed and 
-								what kind of load should be generated
-							</para>
+								TelScale-smpp-load: smpp-load tool is a Command line simulator to generate SMPP load. You must have <literal>ant</literal> installed to be able to run this tool. The smpp-load tool can be started to run as a SMPP Server accepting in-coming connection (BIND) from &THIS.PLATFORM; &THIS.APPLICATION; or run as a SMPP Client to send BIND to &THIS.PLATFORM; &THIS.APPLICATION;. You can confiugre this tool by editing the <filename>build.xml</filename> to define how many SMPP connections should be initiated, what kind of load should be generated, etc.				</para>
 						</listitem>						
 						<listitem>
 							<para>
-								TelScale-smpp-simulator: smpp-simulator is GUI tool to generate SMPP load (can only initiate BIND and acts as SMPP Client) and also to test other functionalities like UCS2, breaking SUBMIT_SM
-								into multiple SMS etc.
+								TelScale-smpp-simulator: smpp-simulator is a GUI tool to generate SMPP load. It can only initiate BIND and act as a SMPP Client. You can also use it to test other functionalities like <literal>UCS2</literal>, breaking <literal>SUBMIT_SM</literal> into multiple SMS etc.
 							</para>
 						</listitem>												
 					</itemizedlist>				
