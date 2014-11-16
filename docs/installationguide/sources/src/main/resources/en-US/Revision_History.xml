@@ -9,6 +9,19 @@
 	<simpara>
 		<revhistory>	
 			<revision>
+				<revnumber>4.0</revnumber>
+				<date>November 14, 2014</date>
+				<author>
+					<firstname>Vinu S</firstname>
+					<surname>Renish</surname>
+				</author>
+				<revdescription>
+					<simplelist>
+						<member>Document edited to incorporate changes for &THIS.VERSION; release. </member>
+					</simplelist>
+				</revdescription>
+			</revision>
+			<revision>
 				<revnumber>3.0</revnumber>
 				<date>January 13, 2014</date>
 				<author>
