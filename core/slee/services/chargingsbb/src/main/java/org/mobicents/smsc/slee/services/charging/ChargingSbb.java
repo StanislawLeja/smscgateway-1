@@ -475,8 +475,13 @@ public abstract class ChargingSbb implements Sbb {
             case SMPP:
                 smscStatAggregator.updateMsgInReceivedSmpp();
                 break;
-            case SS7:
+            case SS7_MO:
                 smscStatAggregator.updateMsgInReceivedSs7();
+                smscStatAggregator.updateMsgInReceivedSs7Mo();
+                break;
+            case SS7_HR:
+                smscStatAggregator.updateMsgInReceivedSs7();
+                smscStatAggregator.updateMsgInReceivedSs7Hr();
                 break;
             case SIP:
                 smscStatAggregator.updateMsgInReceivedSip();

@@ -29,6 +29,7 @@ public class PreparedStatementCollection_C3 {
     private DBOperations_C2 dbOperation;
     private String tName;
     private boolean shortMessageNewStringFormat;
+    private boolean addedCorrId;
 
     protected PreparedStatement createDueSlotForTargetId;
     protected PreparedStatement getDueSlotForTargetId;
@@ -51,10 +52,19 @@ public class PreparedStatementCollection_C3 {
             shortMessageNewStringFormat = true;
         } catch (Exception e) {
         }
+        try {
+            addedCorrId = false;
+            String s1 = "select \"" + Schema.COLUMN_CORR_ID + "\" FROM \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\" limit 1;";
+            dbOperation.session.execute(s1);
+            addedCorrId = true;
+        } catch (Exception e) {
+        }
 
         try {
             String s1 = getFillUpdateFields();
+            String s11 = getFillUpdateFields_Archive();
             String s2 = getFillUpdateFields2();
+            String s22 = getFillUpdateFields2_Archive();
             String s3a, s3b;
             if (ttlCurrent > 0) {
                 s3a = "USING TTL " + ttlCurrent;
@@ -88,9 +98,7 @@ public class PreparedStatementCollection_C3 {
             sa = "UPDATE \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\" " + s3a + " SET \"" + Schema.COLUMN_ALERTING_SUPPORTED + "\"=? where \""
                     + Schema.COLUMN_DUE_SLOT + "\"=? and \"" + Schema.COLUMN_TARGET_ID + "\"=? and \"" + Schema.COLUMN_ID + "\"=?;";
             updateAlertingSupport = dbOperation.session.prepare(sa);
-            sa = "INSERT INTO \"" + Schema.FAMILY_MESSAGES + tName + "\" (" + s1 + ", \"" + Schema.COLUMN_NNN_DIGITS + "\", \""
-                    + Schema.COLUMN_NNN_AN + "\", \"" + Schema.COLUMN_NNN_NP + "\", \"" + Schema.COLUMN_SM_TYPE + "\") VALUES (" + s2 + ", ?, ?, ?, ?) "
-                    + s3b + ";";
+            sa = "INSERT INTO \"" + Schema.FAMILY_MESSAGES + tName + "\" (" + s1 + s11 + ") VALUES (" + s2 + s22 + ") " + s3b + ";";
             createRecordArchive = dbOperation.session.prepare(sa);
         } catch (Throwable e) {
             e.printStackTrace();
@@ -103,6 +111,10 @@ public class PreparedStatementCollection_C3 {
 
     public boolean getShortMessageNewStringFormat() {
         return shortMessageNewStringFormat;
+    }
+
+    public boolean getAddedCorrId() {
+        return this.addedCorrId;
     }
 
     private String getFillUpdateFields() {
@@ -188,6 +200,26 @@ public class PreparedStatementCollection_C3 {
         sb.append(Schema.COLUMN_OPTIONAL_PARAMETERS);
         sb.append("\", \"");
         sb.append(Schema.COLUMN_IMSI);
+        if (this.addedCorrId) {
+            sb.append("\", \"");
+            sb.append(Schema.COLUMN_CORR_ID);
+        }
+        sb.append("\"");
+
+        return sb.toString();
+    }
+
+    private String getFillUpdateFields_Archive() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(", \"");
+        sb.append(Schema.COLUMN_NNN_DIGITS);
+        sb.append("\", \"");
+        sb.append(Schema.COLUMN_NNN_AN);
+        sb.append("\", \"");
+        sb.append(Schema.COLUMN_NNN_NP);
+        sb.append("\", \"");
+        sb.append(Schema.COLUMN_SM_TYPE);
         sb.append("\"");
 
         return sb.toString();
@@ -200,6 +232,9 @@ public class PreparedStatementCollection_C3 {
         } else {
             cnt = 34;
         }
+        if (this.addedCorrId) {
+            cnt++;
+        }
 
         StringBuilder sb = new StringBuilder();
         int i2 = 0;
@@ -209,6 +244,17 @@ public class PreparedStatementCollection_C3 {
             else
                 sb.append(", ");
             sb.append("?");
+        }
+        return sb.toString();
+    }
+
+    private String getFillUpdateFields2_Archive() {
+        int cnt;
+        cnt = 4;
+
+        StringBuilder sb = new StringBuilder();
+        for (int i1 = 0; i1 < cnt; i1++) {
+            sb.append(", ?");
         }
         return sb.toString();
     }

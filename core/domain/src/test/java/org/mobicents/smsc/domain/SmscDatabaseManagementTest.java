@@ -22,7 +22,7 @@ public class SmscDatabaseManagementTest {
 
         try {
             this.db = DBOperations_C2.getInstance();
-            this.db.start(ip, 9042, keyspace, 60, 60, 60 * 10);
+            this.db.start(ip, 9042, keyspace, 60, 60, 60 * 10, null);
             cassandraDbInited = true;
         } catch (Exception e) {
         }

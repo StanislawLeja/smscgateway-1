@@ -24,6 +24,9 @@ package org.mobicents.smsc.cassandra;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -35,6 +38,7 @@ import java.util.UUID;
 
 import javolution.util.FastList;
 import javolution.util.FastMap;
+import javolution.xml.XMLBinding;
 import javolution.xml.XMLObjectReader;
 import javolution.xml.XMLObjectWriter;
 import javolution.xml.stream.XMLStreamException;
@@ -78,12 +82,22 @@ public class DBOperations_C2 {
 	public static final int IN_SYSTEM_SENT = 2;
 
 	public static final int CURRENT_DUE_SLOT = 0;
-	public static final int NEXT_MESSAGE_ID = 1;
+    public static final int NEXT_MESSAGE_ID = 1;
+    public static final int NEXT_CORRELATION_ID = 2;
 	public static final long MAX_MESSAGE_ID = 10000000000L;
-    public static final long MESSAGE_ID_LAG = 100;
+    public static final long MESSAGE_ID_LAG = 1000;
     public static final long DUE_SLOT_WRITING_POSSIBILITY_DELAY = 10;
 
 	private static final DBOperations_C2 instance = new DBOperations_C2();
+
+    private int ccMccmnsTableVersionLoaded = 0;
+    private int ccMccmnsTableVersionActual = 1;
+    private CcMccmnsCollection ccMccmnsCollection;
+    private static final XMLBinding binding = new XMLBinding();
+    private static final String CLASS_ATTRIBUTE = "type";
+    private static final String CC_MCCMNC_PERSIST_FILE_NAME = "cc_mccmnc.xml";
+    private String persistDir;
+    private String persistFileCcMccmnc;
 
 	// cassandra access
 	private Cluster cluster;
@@ -168,7 +182,7 @@ public class DBOperations_C2 {
 	}
 
 	public void start(String ip, int port, String keyspace, int secondsForwardStoring, int reviseSecondsOnSmscStart,
-			int processingSmsSetTimeout) throws Exception {
+			int processingSmsSetTimeout, String persistDir) throws Exception {
 		if (this.started) {
 			throw new Exception("DBOperations already started");
 		}
@@ -177,7 +191,16 @@ public class DBOperations_C2 {
 			secondsForwardStoring = 3;
 		this.dueSlotForwardStoring = secondsForwardStoring * 1000 / slotMSecondsTimeArea;
 		this.dueSlotReviseOnSmscStart = reviseSecondsOnSmscStart * 1000 / slotMSecondsTimeArea;
-		this.processingSmsSetTimeout = processingSmsSetTimeout;
+        this.processingSmsSetTimeout = processingSmsSetTimeout;
+
+        this.persistDir = persistDir;
+        if (persistDir != null) {
+            persistFileCcMccmnc = persistDir + File.separator + CC_MCCMNC_PERSIST_FILE_NAME;
+        } else {
+            persistFileCcMccmnc = CC_MCCMNC_PERSIST_FILE_NAME;
+        }
+
+        binding.setClassAttribute(CLASS_ATTRIBUTE);
 
 		this.pcsDate = null;
 		currentSessionUUID = UUID.randomUUID();
@@ -257,9 +280,13 @@ public class DBOperations_C2 {
 				this.c2_setCurrentDueSlot(currentDueSlot - dueSlotReviseOnSmscStart);
 			}
 
-			messageId = c2_getCurrentSlotTable(NEXT_MESSAGE_ID);
-			messageId += MESSAGE_ID_LAG;
-			c2_setCurrenrSlotTable(NEXT_MESSAGE_ID, messageId);
+            messageId = c2_getCurrentSlotTable(NEXT_MESSAGE_ID);
+            messageId += MESSAGE_ID_LAG;
+            c2_setCurrenrSlotTable(NEXT_MESSAGE_ID, messageId);
+
+            correlationId = c2_getCurrentSlotTable(NEXT_CORRELATION_ID);
+            correlationId += MESSAGE_ID_LAG;
+            c2_setCurrenrSlotTable(NEXT_CORRELATION_ID, correlationId);
 		} catch (Exception e1) {
 			String msg = "Failed reading a currentDueSlot !";
 			throw new PersistenceException(msg, e1);
@@ -350,28 +377,84 @@ public class DBOperations_C2 {
      * Every MESSAGE_ID_LAG correlationId will be stored at cassandra database
      */
     public synchronized String c2_getNextCorrelationId(String msisdn) {
-        // TODO: properly implement it with provided MSISDN -> IMSI recoding table
+        long corrId = doGetNextCorrelationId();
+        String mccmns = getCcMccmnsValue(msisdn);
+        if (mccmns == null) {
+            logger.warn("Founf no entry in CcMccmnsCollection for msisdn: " + msisdn);
+            mccmns = "";
+        }
 
+        String corrIdS = String.valueOf(corrId);
+        StringBuilder sb = new StringBuilder();
+        int len = mccmns.length() + corrIdS.length();
+        if (len <= 15) {
+            sb.append(mccmns);
+            for (int i1 = len; i1 < 15; i1++) {
+                sb.append("0");
+            }
+            sb.append(corrIdS);
+        } else {
+            sb.append(mccmns);
+            sb.append(corrIdS.substring(corrIdS.length() - (15 - mccmns.length())));
+        }
+        String res = sb.toString();
+        return res;
+    }
+
+    protected synchronized long doGetNextCorrelationId() {
         correlationId++;
         if (correlationId >= MAX_MESSAGE_ID)
             correlationId = 1;
 
-//        if (messageId % MESSAGE_ID_LAG == 0) {
-//            try {
-//                c2_setCurrenrSlotTable(NEXT_MESSAGE_ID, messageId);
-//            } catch (PersistenceException e) {
-//                logger.error("Exception when storing next messageId to the database: " + e.getMessage(), e);
-//            }
-//        }
-
-        String res = ((Long) correlationId).toString();
-        StringBuilder sb = new StringBuilder();
-        for (int i1 = 0; i1 < 15 - res.length(); i1++) {
-            sb.append("0");
+        // TODO: properly implement it with provided MSISDN -> IMSI recoding table
+        if (correlationId % MESSAGE_ID_LAG == 0) {
+            try {
+                c2_setCurrenrSlotTable(NEXT_CORRELATION_ID, messageId);
+            } catch (PersistenceException e) {
+                logger.error("Exception when storing next correlationId to the database: " + e.getMessage(), e);
+            }
         }
-        sb.append(res);
 
-        return sb.toString();
+        return correlationId;
+    }
+
+    public void updateCcMccmnsTable() {
+        ccMccmnsTableVersionActual++;
+    }
+
+    protected String getCcMccmnsValue(String countryCode) {
+        checkCcMccmnsTable();
+        return ccMccmnsCollection.findMccmns(countryCode);
+    }
+
+    protected void checkCcMccmnsTable() {
+        if (ccMccmnsCollection != null && ccMccmnsTableVersionLoaded == ccMccmnsTableVersionActual)
+            return;
+        loadCcMccmnsTable();
+    }
+
+    protected synchronized void loadCcMccmnsTable() {
+        if (ccMccmnsCollection != null && ccMccmnsTableVersionLoaded == ccMccmnsTableVersionActual)
+            return;
+
+        ccMccmnsCollection = new CcMccmnsCollection();
+        XMLObjectReader reader = null;
+        try {
+            reader = XMLObjectReader.newInstance(new FileInputStream(persistFileCcMccmnc.toString()));
+            try {
+                reader.setBinding(binding);
+                ccMccmnsCollection = reader.read("CcMccmnsCollection", CcMccmnsCollection.class);
+
+                logger.info("Successfully loaded CcMccmnsCollection: " + persistFileCcMccmnc);
+            } finally {
+                reader.close();
+            }
+        } catch (FileNotFoundException ex) {
+            logger.warn("CcMccmnsCollection: file not found: " + persistFileCcMccmnc, ex);
+        } catch (XMLStreamException ex) {
+            logger.error("Error while loading CcMccmnsCollection from file" + persistFileCcMccmnc, ex);
+        }
+        ccMccmnsTableVersionLoaded = ccMccmnsTableVersionActual;
     }
 
     /**
@@ -782,7 +865,7 @@ public class DBOperations_C2 {
 			PreparedStatement ps = psc.createRecordCurrent;
 			BoundStatement boundStatement = new BoundStatement(ps);
 
-			setSmsFields(sms, dueSlot, boundStatement, false, psc.getShortMessageNewStringFormat());
+			setSmsFields(sms, dueSlot, boundStatement, false, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId());
 
 			ResultSet res = session.execute(boundStatement);
 		} catch (Exception e1) {
@@ -803,7 +886,7 @@ public class DBOperations_C2 {
 			PreparedStatement ps = psc.createRecordArchive;
 			BoundStatement boundStatement = new BoundStatement(ps);
 
-			setSmsFields(sms, dueSlot, boundStatement, true, psc.getShortMessageNewStringFormat());
+			setSmsFields(sms, dueSlot, boundStatement, true, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId());
 
 			ResultSet res = session.execute(boundStatement);
 		} catch (Exception e1) {
@@ -813,8 +896,8 @@ public class DBOperations_C2 {
 		}
 	}
 
-	private void setSmsFields(Sms sms, long dueSlot, BoundStatement boundStatement, boolean archive, boolean shortMessageNewStringFormat)
-			throws PersistenceException {
+    private void setSmsFields(Sms sms, long dueSlot, BoundStatement boundStatement, boolean archive, boolean shortMessageNewStringFormat, boolean addedCorrId)
+            throws PersistenceException {
 		boundStatement.setUUID(Schema.COLUMN_ID, sms.getDbId());
 		boundStatement.setString(Schema.COLUMN_TARGET_ID, sms.getSmsSet().getTargetId());
 		boundStatement.setLong(Schema.COLUMN_DUE_SLOT, dueSlot);
@@ -935,11 +1018,18 @@ public class DBOperations_C2 {
 			}
 		}
 
-        if (sms.getSmsSet().getImsi() != null) {
-            boundStatement.setString(Schema.COLUMN_IMSI, sms.getSmsSet().getImsi());
+        if (!archive) {
+            if (sms.getSmsSet().getCorrelationId() != null) {
+                if (addedCorrId) {
+                    boundStatement.setString(Schema.COLUMN_CORR_ID, sms.getSmsSet().getCorrelationId());
+                } else {
+                    boundStatement.setString(Schema.COLUMN_IMSI, sms.getSmsSet().getCorrelationId());
+                }
+            }
         }
+
         if (archive) {
-            if (sms.getSmsSet().getLocationInfoWithLMSI() != null					&& sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber() != null) {
+            if (sms.getSmsSet().getLocationInfoWithLMSI() != null && sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber() != null) {
 				boundStatement.setString(Schema.COLUMN_NNN_DIGITS, sms.getSmsSet().getLocationInfoWithLMSI()
 						.getNetworkNodeNumber().getAddress());
 				boundStatement.setInt(Schema.COLUMN_NNN_AN, sms.getSmsSet().getLocationInfoWithLMSI()
@@ -950,6 +1040,10 @@ public class DBOperations_C2 {
 			if (sms.getSmsSet().getType() != null) {
 				boundStatement.setInt(Schema.COLUMN_SM_TYPE, sms.getSmsSet().getType().getCode());
 			}
+            if (addedCorrId) {
+                boundStatement.setString(Schema.COLUMN_CORR_ID, sms.getSmsSet().getCorrelationId());
+            }
+            boundStatement.setString(Schema.COLUMN_IMSI, sms.getSmsSet().getImsi());
 		}
 	}
 
@@ -964,7 +1058,7 @@ public class DBOperations_C2 {
 			ResultSet res = session.execute(boundStatement);
 
 			for (Row row : res) {
-                SmsSet smsSet = this.createSms(row, null, psc.getShortMessageNewStringFormat());
+                SmsSet smsSet = this.createSms(row, null, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId());
 				if (smsSet != null)
 					result.add(smsSet);
 			}
@@ -988,7 +1082,7 @@ public class DBOperations_C2 {
 			ResultSet res = session.execute(boundStatement);
 
 			for (Row row : res) {
-                result = this.createSms(row, result, psc.getShortMessageNewStringFormat());
+                result = this.createSms(row, result, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId());
 			}
 		} catch (Exception e1) {
 			String msg = "Failed getRecordListForTargeId()";
@@ -999,10 +1093,10 @@ public class DBOperations_C2 {
         return result;
 	}
 
-	protected SmsSet createSms(final Row row, SmsSet smsSet, boolean shortMessageNewStringFormat) throws PersistenceException {
-		if (row == null) {
-			return smsSet;
-		}
+    protected SmsSet createSms(final Row row, SmsSet smsSet, boolean shortMessageNewStringFormat, boolean addedCorrId) throws PersistenceException {
+        if (row == null) {
+            return smsSet;
+        }
 
 		int inSystem = row.getInt(Schema.COLUMN_IN_SYSTEM);
 		UUID smscUuid = row.getUUID(Schema.COLUMN_SMSC_UUID);
@@ -1133,7 +1227,10 @@ public class DBOperations_C2 {
 			smsSet.setDestAddrTon(destAddrTon);
             smsSet.setDestAddrNpi(destAddrNpi);
 
-            smsSet.setImsi(row.getString(Schema.COLUMN_IMSI));
+            if (addedCorrId)
+                smsSet.setCorrelationId(row.getString(Schema.COLUMN_CORR_ID));
+            else
+                smsSet.setCorrelationId(row.getString(Schema.COLUMN_IMSI));
 		}
 		int dueDelay = row.getInt(Schema.COLUMN_DUE_DELAY);
 		if (dueDelay > smsSet.getDueDelay())
@@ -1161,9 +1258,9 @@ public class DBOperations_C2 {
 			}
 			if (smsSet2 != null) {
                 smsSet2.addSms(smsSet.getSms(0));
-                if (smsSet2.getImsi() == null) {
+                if (smsSet2.getCorrelationId() == null) {
                     // filling correcationId if not all SmsSet are filled
-                    smsSet2.setImsi(smsSet.getImsi());
+                    smsSet2.setCorrelationId(smsSet.getCorrelationId());
                 }
 			} else {
 				res.put(smsSet.getTargetId(), smsSet);
@@ -1427,7 +1524,8 @@ public class DBOperations_C2 {
 		appendField(sb, Schema.COLUMN_SCHEDULE_DELIVERY_TIME, "timestamp");
 		appendField(sb, Schema.COLUMN_VALIDITY_PERIOD, "timestamp");
 
-		appendField(sb, Schema.COLUMN_IMSI, "ascii");
+        appendField(sb, Schema.COLUMN_IMSI, "ascii");
+        appendField(sb, Schema.COLUMN_CORR_ID, "ascii");
 		appendField(sb, Schema.COLUMN_NNN_DIGITS, "ascii");
 		appendField(sb, Schema.COLUMN_NNN_AN, "int");
 		appendField(sb, Schema.COLUMN_NNN_NP, "int");

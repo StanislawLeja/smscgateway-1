@@ -66,6 +66,7 @@ CREATE TABLE "SLOT_MESSAGES_TABLE_YYYY_MM_DD" (
 	"VALIDITY_PERIOD" timestamp,
 
 	"IMSI" ascii,
+	"CORR_ID" ascii,
 	"NNN_DIGITS" ascii,
 	"NNN_AN" int,
 	"NNN_NP" int,
@@ -124,6 +125,7 @@ CREATE TABLE "MESSAGES_YYYY_MM_DD" (
 	"VALIDITY_PERIOD" timestamp,
 
 	"IMSI" ascii,
+	"CORR_ID" ascii,
 	"NNN_DIGITS" ascii,
 	"NNN_AN" int,
 	"NNN_NP" int,

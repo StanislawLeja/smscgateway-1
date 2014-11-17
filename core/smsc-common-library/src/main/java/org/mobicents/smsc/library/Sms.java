@@ -567,6 +567,6 @@ public class Sms implements Serializable {
     }
 
     public enum OriginationType {
-        SMPP, SS7, SIP
+        SMPP, SS7_MO, SS7_HR, SIP
     }
 }

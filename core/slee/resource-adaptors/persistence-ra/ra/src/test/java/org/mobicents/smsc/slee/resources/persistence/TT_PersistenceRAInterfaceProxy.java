@@ -75,7 +75,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
     }
 
     public void start() throws Exception {
-        super.start(ip, 9042, keyspace, 60, 60, 60 * 10);
+        super.start(ip, 9042, keyspace, 60, 60, 60 * 10, null);
     }
 
     public void setOldShortMessageDbFormat(boolean val) {
@@ -216,7 +216,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
         ResultSet result = session.execute(boundStatement);
 
         Row row = result.one();
-        SmsSet smsSet = createSms(row, null, true);
+        SmsSet smsSet = createSms(row, null, true, true);
         if (smsSet == null)
             return null;
 
@@ -232,6 +232,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
         res.destSystemId = row.getString(Schema.COLUMN_DEST_SYSTEM_ID);
 
         res.imsi = row.getString(Schema.COLUMN_IMSI);
+        res.corrId = row.getString(Schema.COLUMN_CORR_ID);
         res.nnnDigits = row.getString(Schema.COLUMN_NNN_DIGITS);
         res.smStatus = row.getInt(Schema.COLUMN_SM_STATUS);
         res.smType = row.getInt(Schema.COLUMN_SM_TYPE);
@@ -281,7 +282,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
             SmsSet smsSet = null;
             Row row2 = null;
             for (Row row : rs) {
-                smsSet = this.createSms(row, null, true);
+                smsSet = this.createSms(row, null, true, true);
                 row2 = row;
                 break;
             }
@@ -352,6 +353,9 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
         appendField(sb, Schema.COLUMN_VALIDITY_PERIOD, "timestamp");
 
         appendField(sb, Schema.COLUMN_IMSI, "ascii");
+        if (!oldShortMessageDbFormat) {
+            appendField(sb, Schema.COLUMN_CORR_ID, "ascii");
+        }
         appendField(sb, Schema.COLUMN_NNN_DIGITS, "ascii");
         appendField(sb, Schema.COLUMN_NNN_AN, "int");
         appendField(sb, Schema.COLUMN_NNN_NP, "int");

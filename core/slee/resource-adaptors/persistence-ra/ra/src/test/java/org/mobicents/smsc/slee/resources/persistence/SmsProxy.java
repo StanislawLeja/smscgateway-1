@@ -43,7 +43,8 @@ public class SmsProxy {
 	public String destEsmeName;
 	public String destSystemId;
 
-	public String imsi;
+    public String imsi;
+    public String corrId;
 	public String nnnDigits;
 	public int smStatus;
 	public int smType;

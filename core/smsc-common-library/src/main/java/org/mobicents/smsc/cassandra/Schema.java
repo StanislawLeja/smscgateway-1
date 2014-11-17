@@ -86,6 +86,7 @@ public class Schema {
 	public static final String COLUMN_DEST_SYSTEM_ID = "DEST_SYSTEM_ID";
 	public static final String COLUMN_DELIVERY_DATE = "DELIVERY_DATE";
 	public static final String COLUMN_IMSI = "IMSI";
+    public static final String COLUMN_CORR_ID = "CORR_ID";
 	public static final String COLUMN_NNN_DIGITS = "NNN_DIGITS";
 	public static final String COLUMN_NNN_AN = "NNN_AN";
     public static final String COLUMN_NNN_NP = "NNN_NP";
@@ -208,6 +209,7 @@ public class Schema {
         tmp.add(COLUMN_SCHEDULE_DELIVERY_TIME);
         tmp.add(COLUMN_VALIDITY_PERIOD);
         tmp.add(COLUMN_IMSI);
+        tmp.add(COLUMN_CORR_ID);
         tmp.add(COLUMN_NNN_DIGITS);
         tmp.add(COLUMN_NNN_AN);
         tmp.add(COLUMN_NNN_NP);

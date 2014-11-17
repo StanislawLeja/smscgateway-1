@@ -133,18 +133,13 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
             this.doSetSmsSubmitData(smsDeliveryData);
 
             // checking for correlationId - may be we do not need SRI
-            String correlationID = smsSet.getImsi();
-            smsSet.setImsi(null);
+            String correlationID = smsSet.getCorrelationId();
             CorrelationIdValue civ = null;
             if (correlationID != null) {
                 civ = SmsSetCache.getInstance().getCorrelationIdCacheElement(correlationID);
                 if (this.logger.isFineEnabled()) {
                     this.logger.fine("HomeRouting: correlationID=" + correlationID + ", found CorrelationIdValue=" + civ);
                 }
-                
-                // TODO: remove this ..............
-                this.logger.severe("HomeRouting: correlationID=" + correlationID + ", found CorrelationIdValue=" + civ);
-                // TODO: remove this ..............
             }
 
             if (civ == null) {

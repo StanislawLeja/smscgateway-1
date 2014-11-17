@@ -79,6 +79,7 @@ import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.CorrelationIdValue;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.Sms.OriginationType;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.SmscProcessingException;
@@ -542,6 +543,7 @@ public abstract class MoSbb extends MoCommonSbb {
             throw new SmscProcessingException("Error when getting of CorrelationIdCacheElement", SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, e);
         }
         if (civ == null) {
+            smscStatAggregator.updateHomeRoutingCorrIdFail();
             throw new SmscProcessingException("No data is found for: CorrelationId=" + correlationID, SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure,
                     null);
         }
@@ -790,7 +792,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		try {
 			synchronized (lock) {
 				Sms sms = this.createSmsEvent(smsSubmitTpdu, ta, store, callingPartyAddress);
-				this.processSms(sms, store);
+                this.processSms(sms, store, smscPropertiesManagement.getMoCharging());
 			}
 		} finally {
 			store.releaseSynchroObject(lock);
@@ -809,7 +811,7 @@ public abstract class MoSbb extends MoCommonSbb {
         try {
             synchronized (lock) {
                 Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, tpOAAddress);
-                this.processSms(sms, store);
+                this.processSms(sms, store, smscPropertiesManagement.getHrCharging());
             }
         } finally {
             store.releaseSynchroObject(lock);
@@ -826,7 +828,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		try {
 			synchronized (lock) {
 				Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, civ);
-				this.processSms(sms, store);
+				this.processSms(sms, store, smscPropertiesManagement.getHrCharging());
 			}
 		} finally {
 			store.releaseSynchroObject(lock);
@@ -846,6 +848,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		Sms sms = new Sms();
 		sms.setDbId(UUID.randomUUID());
+        sms.setOriginationType(Sms.OriginationType.SS7_MO);
 
 		// checking parameters first
 		if (callingPartyAddress == null || callingPartyAddress.getAddress() == null
@@ -1011,7 +1014,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		Sms sms = new Sms();
 		sms.setDbId(UUID.randomUUID());
-        sms.setOriginationType(Sms.OriginationType.SS7);
+        sms.setOriginationType(Sms.OriginationType.SS7_HR);
 
 		// checking parameters first
 		if (callingPartyAddress == null || callingPartyAddress.getAddressValue() == null
@@ -1132,7 +1135,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
         Sms sms = new Sms();
         sms.setDbId(UUID.randomUUID());
-        sms.setOriginationType(Sms.OriginationType.SS7);
+        sms.setOriginationType(Sms.OriginationType.SS7_HR);
 
         AddressField callingPartyAddress = smsDeliverTpdu.getOriginatingAddress();
         
@@ -1226,7 +1229,7 @@ public abstract class MoSbb extends MoCommonSbb {
             smsSet.setDestAddrNpi(ta.getAddrNpi());
             smsSet.setDestAddrTon(ta.getAddrTon());
 
-            smsSet.setImsi(civ.getCorrelationID());
+            smsSet.setCorrelationId(civ.getCorrelationID());
         }
         sms.setSmsSet(smsSet);
 
@@ -1241,7 +1244,7 @@ public abstract class MoSbb extends MoCommonSbb {
         return sms;
     }
 
-	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
+	private void processSms(Sms sms, PersistenceRAInterface store, MoChargingType chargingType) throws SmscProcessingException {
         // TODO: we can make this some check will we send this message or not
 
         // checking if SMSC is stopped
@@ -1268,7 +1271,7 @@ public abstract class MoSbb extends MoCommonSbb {
             }
         }
 
-	    switch(smscPropertiesManagement.getMoCharging()){
+	    switch(chargingType){
         case accept:
             if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
                 try {
@@ -1296,6 +1299,11 @@ public abstract class MoSbb extends MoCommonSbb {
 
             smscStatAggregator.updateMsgInReceivedAll();
             smscStatAggregator.updateMsgInReceivedSs7();
+            if (sms.getOriginationType() == OriginationType.SS7_MO) {
+                smscStatAggregator.updateMsgInReceivedSs7Mo();
+            } else {
+                smscStatAggregator.updateMsgInReceivedSs7Hr();
+            }
             break;
         case reject:
             // this case is already processed

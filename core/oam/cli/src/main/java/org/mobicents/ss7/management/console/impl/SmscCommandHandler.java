@@ -61,6 +61,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("duedelaymultiplicator");
         set.addChild("maxmessagelengthreducer");
         set.addChild("smshomerouting");
+        set.addChild("correlationidlivetime");
         set.addChild("revisesecondsonsmscstart");
         set.addChild("processingsmssettimeout");
         set.addChild("generatereceiptcdr");
@@ -68,6 +69,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("generatearchivetable");
         Node storeAndForwordMode = set.addChild("storeandforwordmode");
         Node mocharging = set.addChild("mocharging");
+        Node hrcharging = set.addChild("hrcharging");
         Node txsmppcharging = set.addChild("txsmppcharging");
         Node txsipcharging = set.addChild("txsipcharging");
         set.addChild("diameterdestrealm");
@@ -95,6 +97,10 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         mocharging.addChild("accept");
         mocharging.addChild("reject");
         mocharging.addChild("diameter");
+
+        hrcharging.addChild("accept");
+        hrcharging.addChild("reject");
+        hrcharging.addChild("diameter");
 
         storeAndForwordMode.addChild("normal");
         storeAndForwordMode.addChild("fast");
@@ -135,6 +141,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("duedelaymultiplicator");
         get.addChild("maxmessagelengthreducer");
         get.addChild("smshomerouting");
+        get.addChild("correlationidlivetime");
         get.addChild("revisesecondsonsmscstart");
         get.addChild("processingsmssettimeout");
         get.addChild("generatereceiptcdr");
@@ -142,6 +149,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("generatearchivetable");
         get.addChild("storeandforwordmode");
         get.addChild("mocharging");
+        get.addChild("hrcharging");
         get.addChild("txsmppcharging");
         get.addChild("txsipcharging");
         get.addChild("diameterdestrealm");
@@ -167,7 +175,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 //        get.addChild("cdrdatabaseexportduration");
         get.addChild("esmedefaultcluster");
         get.addChild("deliverypause");
-        
+
         Node remove = parent.addChild("remove");
         remove.addChild("esmedefaultcluster");
 
@@ -186,6 +194,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 
         Node stat = parent.addChild("stat");
         stat.addChild("get");
+
+        Node updateccmccmnstable = parent.addChild("updateccmccmnstable");
 
 	};
 

@@ -104,6 +104,12 @@ public class SmscStatProviderJmx implements SmscStatProviderJmxMBean, CounterMed
         cds.addCounterDef(cd);
         cd = new CounterDefImpl(CounterType.Summary, "MsgInReceivedSs7", "Messages received and accepted via SS7 interface");
         cds.addCounterDef(cd);
+        cd = new CounterDefImpl(CounterType.Summary, "MsgInReceivedSs7Mo", "Messages received and accepted via SS7 interface (mobile originated)");
+        cds.addCounterDef(cd);
+        cd = new CounterDefImpl(CounterType.Summary, "MsgInReceivedSs7Hr", "Messages received and accepted via SS7 interface (home routing)");
+        cds.addCounterDef(cd);
+        cd = new CounterDefImpl(CounterType.Summary, "HomeRoutingCorrIdFail", "Home douting failures because of absent  correlationId");
+        cds.addCounterDef(cd);
         cd = new CounterDefImpl(CounterType.Summary, "MsgInReceivedSmpp", "Messages received and accepted via SMPP interface");
         cds.addCounterDef(cd);
         cd = new CounterDefImpl(CounterType.Summary, "MsgInReceivedSip", "Messages received and accepted via SIP interface");
@@ -198,8 +204,16 @@ public class SmscStatProviderJmx implements SmscStatProviderJmxMBean, CounterMed
                     svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInRejectedAll());
                 } else if (cd.getCounterName().equals("MsgInFailedAll")) {
                     svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInFailedAll());
+
                 } else if (cd.getCounterName().equals("MsgInReceivedSs7")) {
                     svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInReceivedSs7());
+                } else if (cd.getCounterName().equals("MsgInReceivedSs7Mo")) {
+                    svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInReceivedSs7Mo());
+                } else if (cd.getCounterName().equals("MsgInReceivedSs7Hr")) {
+                    svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInReceivedSs7Hr());
+                } else if (cd.getCounterName().equals("HomeRoutingCorrIdFail")) {
+                    svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getHomeRoutingCorrIdFail());
+
                 } else if (cd.getCounterName().equals("MsgInReceivedSmpp")) {
                     svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInReceivedSmpp());
                 } else if (cd.getCounterName().equals("MsgInReceivedSip")) {

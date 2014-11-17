@@ -60,8 +60,8 @@ public class CdrGenerator {
 
 	public static void generateCdr(Sms smsEvent, String status, String reason, boolean generateReceiptCdr, boolean generateCdr) {
         // Format is
-        // SUBMIT_DATE,SOURCE_ADDRESS,SOURCE_TON,SOURCE_NPI,DESTINATION_ADDRESS,DESTINATION_TON,DESTINATION_NPI,STATUS,SYSTEM-ID,MESSAGE-ID,First
-        // 20 char of SMS, REASON
+        // SUBMIT_DATE,SOURCE_ADDRESS,SOURCE_TON,SOURCE_NPI,DESTINATION_ADDRESS,DESTINATION_TON,DESTINATION_NPI,STATUS,SYSTEM-ID,MESSAGE-ID,
+	    // VLR, IMSI, CorrelationID, First 20 char of SMS, REASON
 
         if (!generateCdr)
             return;
@@ -71,15 +71,29 @@ public class CdrGenerator {
             return;
 
         StringBuffer sb = new StringBuffer();
-        sb.append(DATE_FORMAT.format(smsEvent.getSubmitDate())).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddr())
-                .append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrTon())
-                .append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSourceAddrNpi())
-                .append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddr())
-                .append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddrTon())
-                .append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getDestAddrNpi())
-                .append(CdrGenerator.CDR_SEPARATOR).append(status).append(CdrGenerator.CDR_SEPARATOR)
-                .append(smsEvent.getOrigSystemId()).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getMessageId())
-                .append(CdrGenerator.CDR_SEPARATOR).append(getFirst20CharOfSMS(smsEvent.getShortMessageText()))
+        sb.append(DATE_FORMAT.format(smsEvent.getSubmitDate()))
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSourceAddr())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSourceAddrTon())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSourceAddrNpi())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSmsSet().getDestAddr())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSmsSet().getDestAddrTon())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSmsSet().getDestAddrNpi())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(status)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getOrigSystemId())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getMessageId())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSmsSet().getLocationInfoWithLMSI() != null ? smsEvent.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber()
+                        .getAddress() : null).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getImsi()).append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSmsSet().getCorrelationId()).append(CdrGenerator.CDR_SEPARATOR).append(getFirst20CharOfSMS(smsEvent.getShortMessageText()))
                 .append(CdrGenerator.CDR_SEPARATOR).append(reason);
 
         CdrGenerator.generateCdr(sb.toString());

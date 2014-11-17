@@ -55,6 +55,8 @@ public class SmsSet implements Serializable {
 	// routing info - not saved in LIVE table
 	private String imsi;
 	private LocationInfoWithLMSI locationInfoWithLMSI;
+	// correlationId for homeRouting mode
+    private String correlationId;
 
 	private Date dueDate;
 	// last interval between delivering (sec)
@@ -174,6 +176,17 @@ public class SmsSet implements Serializable {
 	public void setLocationInfoWithLMSI(LocationInfoWithLMSI locationInfoWithLMSI) {
 		this.locationInfoWithLMSI = locationInfoWithLMSI;
 	}
+
+    /**
+     * correlationId for homeRouting mode
+     */
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    public void setCorrelationId(String correlationId) {
+        this.correlationId = correlationId;
+    }
 
 	/**
 	 * last interval between delivering (sec)
@@ -338,6 +351,8 @@ public class SmsSet implements Serializable {
 		sb.append(imsi);
 		sb.append(", locationInfoWithLMSI=");
 		sb.append(locationInfoWithLMSI);
+        sb.append(", correlationId=");
+        sb.append(correlationId);
 		sb.append(", inSystem=");
 		sb.append(inSystem);
 		sb.append(", inSystemDate=");

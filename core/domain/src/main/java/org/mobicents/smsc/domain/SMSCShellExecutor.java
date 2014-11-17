@@ -32,6 +32,7 @@ import javolution.util.FastMap;
 import org.apache.log4j.Logger;
 import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
+import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.SmsRoutingRuleType;
 import org.mobicents.smsc.library.DbSmsRoutingRule;
 import org.mobicents.smsc.smpp.SmppEncoding;
@@ -255,6 +256,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 				}
 
 				return SMSCOAMMessages.INVALID_COMMAND;
+
+			} else if (args[1].toLowerCase().equals("updateccmccmnstable")) {
+                return this.updateCcMccmnstable(args);
 			}
 
 			return SMSCOAMMessages.INVALID_COMMAND;
@@ -477,8 +481,11 @@ public class SMSCShellExecutor implements ShellExecutor {
 				// smscPropertiesManagement.setCdrDatabaseExportDuration(val);
 			} else if (parName.equals("esmedefaultcluster")) {
 				smscPropertiesManagement.setEsmeDefaultClusterName(options[3]);
-			} else if (parName.equals("smshomerouting")) {
-				smscPropertiesManagement.setSMSHomeRouting(Boolean.parseBoolean(options[3]));
+            } else if (parName.equals("smshomerouting")) {
+                smscPropertiesManagement.setSMSHomeRouting(Boolean.parseBoolean(options[3]));
+            } else if (parName.equals("correlationidlivetime")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setCorrelationIdLiveTime(val);
 			} else if (parName.equals("revisesecondsonsmscstart")) {
 				int val = Integer.parseInt(options[3]);
 				smscPropertiesManagement.setReviseSecondsOnSmscStart(val);
@@ -498,7 +505,9 @@ public class SMSCShellExecutor implements ShellExecutor {
                 smscPropertiesManagement.setStoreAndForwordMode(Enum.valueOf(StoreAndForwordMode.class, options[3]));
             } else if (parName.equals("mocharging")) {
                 smscPropertiesManagement.setMoCharging(Enum.valueOf(MoChargingType.class, options[3]));
-			} else if (parName.equals("txsmppcharging")) {
+            } else if (parName.equals("hrcharging")) {
+                smscPropertiesManagement.setHrCharging(Enum.valueOf(MoChargingType.class, options[3]));
+            } else if (parName.equals("txsmppcharging")) {
 				smscPropertiesManagement.setTxSmppChargingType(Enum.valueOf(ChargingType.class, options[3]));
 			} else if (parName.equals("txsipcharging")) {
 				smscPropertiesManagement.setTxSipChargingType(Enum.valueOf(ChargingType.class, options[3]));
@@ -637,8 +646,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 				// sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
 			} else if (parName.equals("esmedefaultcluster")) {
 				sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
-			} else if (parName.equals("smshomerouting")) {
-				sb.append(smscPropertiesManagement.getSMSHomeRouting());
+            } else if (parName.equals("smshomerouting")) {
+                sb.append(smscPropertiesManagement.getSMSHomeRouting());
+            } else if (parName.equals("correlationidlivetime")) {
+                sb.append(smscPropertiesManagement.getCorrelationIdLiveTime());
 			} else if (parName.equals("revisesecondsonsmscstart")) {
 				sb.append(smscPropertiesManagement.getReviseSecondsOnSmscStart());
 			} else if (parName.equals("processingsmssettimeout")) {
@@ -654,6 +665,8 @@ public class SMSCShellExecutor implements ShellExecutor {
                 sb.append(smscPropertiesManagement.getStoreAndForwordMode());
             } else if (parName.equals("mocharging")) {
                 sb.append(smscPropertiesManagement.getMoCharging());
+            } else if (parName.equals("hrcharging")) {
+                sb.append(smscPropertiesManagement.getHrCharging());
 			} else if (parName.equals("txsmppcharging")) {
 				sb.append(smscPropertiesManagement.getTxSmppChargingType());
 			} else if (parName.equals("txsipcharging")) {
@@ -808,9 +821,13 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
 			sb.append("\n");
 
-			sb.append("smshomerouting = ");
-			sb.append(smscPropertiesManagement.getSMSHomeRouting());
-			sb.append("\n");
+            sb.append("smshomerouting = ");
+            sb.append(smscPropertiesManagement.getSMSHomeRouting());
+            sb.append("\n");
+
+            sb.append("correlationidlivetime = ");
+            sb.append(smscPropertiesManagement.getCorrelationIdLiveTime());
+            sb.append("\n");
 
 			sb.append("revisesecondsonsmscstart = ");
 			sb.append(smscPropertiesManagement.getReviseSecondsOnSmscStart());
@@ -838,6 +855,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 
             sb.append("mocharging = ");
             sb.append(smscPropertiesManagement.getMoCharging());
+            sb.append("\n");
+
+            sb.append("hrcharging = ");
+            sb.append(smscPropertiesManagement.getHrCharging());
             sb.append("\n");
 
 			sb.append("txsmppcharging = ");
@@ -1072,6 +1093,12 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		return sb.toString();
 	}
+
+    public String updateCcMccmnstable(String[] args) {
+        DBOperations_C2.getInstance().updateCcMccmnsTable();
+
+        return SMSCOAMMessages.CORRELATION_TABLE_WILL_BE_RELOADED;
+    }
 
 	public String execute(String[] args) {
 		if (args[0].equals("smsc")) {

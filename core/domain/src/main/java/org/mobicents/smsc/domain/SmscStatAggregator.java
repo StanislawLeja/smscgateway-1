@@ -122,6 +122,30 @@ public class SmscStatAggregator implements UpdateMessagesInProcessListener {
         statCollector.msgInReceivedSs7.addAndGet(1);
     }
 
+    public long getMsgInReceivedSs7Mo() {
+        return statCollector.msgInReceivedSs7Mo.get();
+    }
+
+    public void updateMsgInReceivedSs7Mo() {
+        statCollector.msgInReceivedSs7Mo.addAndGet(1);
+    }
+
+    public long getMsgInReceivedSs7Hr() {
+        return statCollector.msgInReceivedSs7Hr.get();
+    }
+
+    public void updateMsgInReceivedSs7Hr() {
+        statCollector.msgInReceivedSs7Hr.addAndGet(1);
+    }
+
+    public long getHomeRoutingCorrIdFail() {
+        return statCollector.homeRoutingCorrIdFail.get();
+    }
+
+    public void updateHomeRoutingCorrIdFail() {
+        statCollector.homeRoutingCorrIdFail.addAndGet(1);
+    }
+
     public long getMsgInReceivedSmpp() {
         return statCollector.msgInReceivedSmpp.get();
     }
@@ -260,7 +284,12 @@ public class SmscStatAggregator implements UpdateMessagesInProcessListener {
         private AtomicLong msgInReceivedAll = new AtomicLong();
         private AtomicLong msgInRejectedAll = new AtomicLong();
         private AtomicLong msgInFailedAll = new AtomicLong();
+
         private AtomicLong msgInReceivedSs7 = new AtomicLong();
+        private AtomicLong msgInReceivedSs7Mo = new AtomicLong();
+        private AtomicLong msgInReceivedSs7Hr = new AtomicLong();
+        private AtomicLong homeRoutingCorrIdFail = new AtomicLong();
+        
         private AtomicLong msgInReceivedSmpp = new AtomicLong();
         private AtomicLong msgInReceivedSip = new AtomicLong();
 

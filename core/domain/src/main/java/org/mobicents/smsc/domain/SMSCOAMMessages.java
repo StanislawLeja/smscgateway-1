@@ -93,6 +93,8 @@ public interface SMSCOAMMessages {
 
     public static final String GLOBAL_TYTLE_INDICATOR_BAD_VALUES = "Value of gti (global title indicator) is bad (possible values: 0001, 0010, 0011, 0010)";
 
+    public static final String CORRELATION_TABLE_WILL_BE_RELOADED = "cc_mccmnc correlation table will be reloaded after first correlationId request";
+
 	/**
 	 * Generic constants
 	 */

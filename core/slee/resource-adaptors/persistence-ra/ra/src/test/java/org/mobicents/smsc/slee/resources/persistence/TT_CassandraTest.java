@@ -422,6 +422,8 @@ public class TT_CassandraTest {
                 smsSet.setDestAddrNpi(ta.getAddrNpi());
                 smsSet.setDestAddrTon(ta.getAddrTon());
 
+                smsSet.setCorrelationId("CI=0000");
+
                 sms = new Sms();
                 sms.setSmsSet(smsSet);
 
@@ -483,12 +485,27 @@ public class TT_CassandraTest {
                             assertEquals(sms1.getShortMessageBin(), udh.getEncodedData());
                         else
                             assertNull(sms1.getShortMessageBin());
+                        assertEquals(smsSet.getCorrelationId(), "CI=0000");
                     }
                 }
             }
         } finally {
             this.sbb.obtainSynchroObject(lock);
         }
+    }
+
+    @Test(groups = { "cassandra" })
+    public void testingCorrelationId() throws Exception {
+
+        if (!this.cassandraDbInited)
+            return;
+
+        String s1 = sbb.c2_getNextCorrelationId("1111");
+        assertEquals(s1, "222000000001001");
+
+        String s2 = sbb.c2_getNextCorrelationId("3333");
+        assertEquals(s2, "444444444444402");
+
     }
 
     public long addingNewMessages() throws Exception {
@@ -636,7 +653,7 @@ public class TT_CassandraTest {
                     this.checkTestSms(1, sms1, id1, false);
                     this.checkTestSms(2, sms2, id2, false);
                     this.checkTestSms(3, sms3, id3, false);
-                    assertEquals(smsSet.getImsi(), "CI=100001000022222");
+                    assertEquals(smsSet.getCorrelationId(), "CI=100001000022222");
                 } else {
                     assertEquals(smsSet.getSmsCount(), 4);
 
@@ -689,7 +706,7 @@ public class TT_CassandraTest {
         smsSet.setDestAddrNpi(1);
         smsSet.setDestAddrTon(5);
         if (num == 1)
-            smsSet.setImsi("CI=100001000022222");
+            smsSet.setCorrelationId("CI=100001000022222");
 
         Sms sms = new Sms();
         sms.setSmsSet(smsSet);
