@@ -46,6 +46,7 @@ public class CorrelationIdValue implements Serializable {
     private String imsi;
     private MWStatus mwStatus;
     private InformServiceCentreRequest informServiceCentreRequest;
+    private int sriMapVersion = 3;
 
     public CorrelationIdValue(String correlationID, ISDNAddressString msisdn, AddressString serviceCentreAddress) {
         this.correlationID = correlationID;
@@ -98,6 +99,14 @@ public class CorrelationIdValue implements Serializable {
         this.informServiceCentreRequest = informServiceCentreRequest;
     }
 
+    public int getSriMapVersion() {
+        return sriMapVersion;
+    }
+
+    public void setSriMapVersion(int sriMapVersion) {
+        this.sriMapVersion = sriMapVersion;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -113,6 +122,8 @@ public class CorrelationIdValue implements Serializable {
         sb.append(locationInfoWithLMSI);
         sb.append(", imsi=");
         sb.append(imsi);
+        sb.append(", sriMapVersion=");
+        sb.append(sriMapVersion);
         if (mwStatus != null) {
             sb.append(", mwStatus=");
             sb.append(mwStatus);

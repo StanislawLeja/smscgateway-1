@@ -251,6 +251,7 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
             CorrelationIdValue correlationIdValue = this.getCorrelationIdValue();
             if (correlationIdValue != null) {
                 correlationIdValue.setMwStatus(mwStatus);
+                correlationIdValue.setSriMapVersion(evt.getMAPDialog().getApplicationContext().getApplicationContextVersion().getVersion());
                 this.setCorrelationIdValue(correlationIdValue);
             }
         }

@@ -446,7 +446,7 @@ public abstract class ChargingSbb implements Sbb {
                     this.scheduler.injectSmsOnFly(sms.getSmsSet());
                 } catch (Exception e) {
                     throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
-                            MAPErrorCode.systemFailure, e);
+                            MAPErrorCode.systemFailure, null, e);
                 }
             } else {
                 if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
@@ -455,7 +455,7 @@ public abstract class ChargingSbb implements Sbb {
                         this.scheduler.injectSmsOnFly(sms.getSmsSet());
                     } catch (Exception e) {
                         throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
-                                MAPErrorCode.systemFailure, e);
+                                MAPErrorCode.systemFailure, null, e);
                     }
                 } else {
                     sms.setStored(true);

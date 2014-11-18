@@ -540,7 +540,8 @@ public abstract class MoSbb extends MoCommonSbb {
 		try {
 		    civ = SmsSetCache.getInstance().getCorrelationIdCacheElement(correlationID);
         } catch (Exception e) {
-            throw new SmscProcessingException("Error when getting of CorrelationIdCacheElement", SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, e);
+            throw new SmscProcessingException("Error when getting of CorrelationIdCacheElement", SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null,
+                    e);
         }
         if (civ == null) {
             smscStatAggregator.updateHomeRoutingCorrIdFail();
@@ -1106,6 +1107,7 @@ public abstract class MoSbb extends MoCommonSbb {
             smsSet.setDestAddr(ta.getAddr());
             smsSet.setDestAddrNpi(ta.getAddrNpi());
             smsSet.setDestAddrTon(ta.getAddrTon());
+            smsSet.addSms(sms);
         }
 		sms.setSmsSet(smsSet);
 
@@ -1230,6 +1232,7 @@ public abstract class MoSbb extends MoCommonSbb {
             smsSet.setDestAddrTon(ta.getAddrTon());
 
             smsSet.setCorrelationId(civ.getCorrelationID());
+            smsSet.addSms(sms);
         }
         sms.setSmsSet(smsSet);
 
@@ -1279,7 +1282,7 @@ public abstract class MoSbb extends MoCommonSbb {
                     this.scheduler.injectSmsOnFly(sms.getSmsSet());
                 } catch (Exception e) {
                     throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
-                            MAPErrorCode.systemFailure, e);
+                            MAPErrorCode.systemFailure, null, e);
                 }
             } else {
                 try {

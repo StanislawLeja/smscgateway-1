@@ -552,7 +552,7 @@ public abstract class TxSipServerSbb implements Sbb {
 					this.scheduler.injectSmsOnFly(sms.getSmsSet());
 				} catch (Exception e) {
 					throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(),
-							SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, e);
+							SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e);
 				}
 			} else {
 				try {

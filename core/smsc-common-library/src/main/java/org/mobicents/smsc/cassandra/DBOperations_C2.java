@@ -380,7 +380,7 @@ public class DBOperations_C2 {
         long corrId = doGetNextCorrelationId();
         String mccmns = getCcMccmnsValue(msisdn);
         if (mccmns == null) {
-            logger.warn("Founf no entry in CcMccmnsCollection for msisdn: " + msisdn);
+            logger.warn("Found no entry in CcMccmnsCollection for msisdn: " + msisdn);
             mccmns = "";
         }
 

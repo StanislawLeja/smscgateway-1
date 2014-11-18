@@ -814,7 +814,7 @@ public abstract class TxSmppServerSbb implements Sbb {
                     this.scheduler.injectSmsOnFly(sms.getSmsSet());
                 } catch (Exception e) {
                     throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
-                            MAPErrorCode.systemFailure, e);
+                            MAPErrorCode.systemFailure, null, e);
                 }
 			} else {
 				// store and forward
@@ -824,7 +824,7 @@ public abstract class TxSmppServerSbb implements Sbb {
                         this.scheduler.injectSmsOnFly(sms.getSmsSet());
                     } catch (Exception e) {
                         throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
-                                MAPErrorCode.systemFailure, e);
+                                MAPErrorCode.systemFailure, null, e);
                     }
                 } else {
                     try {

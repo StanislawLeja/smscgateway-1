@@ -114,7 +114,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	private DatabaseType databaseType = DatabaseType.Cassandra_2;
 
-	private String serviceCenterGt = null;
+	private String serviceCenterGt = "0";
 	private int serviceCenterSsn = -1;
 	private int hlrSsn = -1;
 	private int mscSsn = -1;

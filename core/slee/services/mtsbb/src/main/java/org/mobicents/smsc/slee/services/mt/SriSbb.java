@@ -155,6 +155,8 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
                     this.doSetInformServiceCenterContainer(informServiceCenterContainer);
                 }
 
+                this.setSriMapVersion(civ.getSriMapVersion());
+
                 this.executeForwardSM(smsSet, civ.getLocationInfoWithLMSI(), civ.getImsi());
             }
         } catch (Throwable e1) {
@@ -695,10 +697,10 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 	}
 
 	private MAPApplicationContext getSRIMAPApplicationContext(MAPApplicationContextVersion applicationContextVersion) {
-		MAPApplicationContext mapApplicationContext = MAPApplicationContext.getInstance(
-				MAPApplicationContextName.shortMsgGatewayContext, applicationContextVersion);
-		this.setSriMapVersion(applicationContextVersion.getVersion());
-		return mapApplicationContext;
+        MAPApplicationContext mapApplicationContext = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgGatewayContext,
+                applicationContextVersion);
+        this.setSriMapVersion(applicationContextVersion.getVersion());
+        return mapApplicationContext;
 	}
 
 }
