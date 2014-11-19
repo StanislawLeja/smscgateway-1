@@ -47,12 +47,9 @@
 	<section id="CDR_logging_settings">
 		<title>CDR Logging Settings</title>
 		<para>
-			&THIS.PLATFORM; &THIS.APPLICATION; is configured to generate CDR in a plain text file located at <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/log/cdr.log</filename> 
-			and also detailed CDR in Cassandra table MESSAGES_yyyy_mm_dd. 
+			&THIS.PLATFORM; &THIS.APPLICATION; is configured to generate CDR in a plain text file located at <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/log/cdr.log</filename> and also detailed CDR in Cassandra table <literal>MESSAGES_yyyy_mm_dd</literal>. 
 		</para>
-		<para>&THIS.PLATFORM; &THIS.APPLICATION; can be configured to generate CDR for different message processing modes (datagramm, transactional, storeAndForward)
-        and also for both receipt and regular messages or generate CDR only for regular messages.
-		This is configurable by setting <literal>generateCdr</literal>, <literal>generateArchiveTable</literal> and <literal>generateReceiptCdr</literal> using the CLI or the GUI.  
+		<para>&THIS.PLATFORM; &THIS.APPLICATION; can be configured to generate CDR for different message processing modes (<literal>datagramm, transactional, storeAndForward</literal>) and also for both receipt and regular messages or generate CDR only for regular messages. This is configurable by setting <literal>generateCdr</literal>, <literal>generateArchiveTable</literal> and <literal>generateReceiptCdr</literal> using the CLI or the GUI.  
 		For more details refer to Sections <xref linkend="generateCdr"/>, <xref linkend="generateArchiveTable"/> and <xref linkend="generateReceiptCdr"/>.
 		</para>
 		<para>

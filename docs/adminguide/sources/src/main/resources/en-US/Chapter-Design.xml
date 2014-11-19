@@ -100,7 +100,7 @@ storing unsent messages, messages successfully sent and messages that failed to 
 		The &THIS.PLATFORM; &THIS.APPLICATION; creates three tables for every new day with the date suffixed to the names of the tables as <literal>DST_SLOT_TABLE_yyyy_mm_dd</literal>, <literal>SLOT_MESSAGES_TABLE_yyyy_mm_dd</literal> and <literal>MESSAGES_yyyy_mm_dd</literal> where <literal>yyyy_mm_dd</literal> is the date in that format. 
 		</para>
 		<para>
-		Apart from the above tables created everyday, the database also comprises of three other tables namely <literal>CURRENT_SLOT_TABLE</literal>, <literal>SMPP_SMS_ROUTING_RULE</literal> and <literal>SIP_SMS_ROUTING_RULE</literal> respectively, created when the SMSC is started for the first time. The former is used for storing system-wide data and the latter two for storing the routing rules.
+		Apart from the above tables created everyday, the database also comprises of three other tables namely <literal>CURRENT_SLOT_TABLE</literal>, <literal>SMPP_SMS_ROUTING_RULE</literal> and <literal>SIP_SMS_ROUTING_RULE</literal> created when the SMSC is started for the first time. The former is used for storing system-wide data and the latter two for storing the routing rules.
 		</para>
 		<section id="CURRENT_SLOT_TABLE">
 		<title>CURRENT_SLOT_TABLE</title>

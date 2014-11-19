@@ -109,7 +109,7 @@ By default, the SMSC Simulator profile is configured for use in Linux systems. F
 			</para>
 		<section id="configuring_the_gateway_simulator_profile">
 			<title>Configuring the Gateway in Simulator Profile</title>
-			<para>The SMSC Gateway in a Simulator Profile is configured as if you have configured it by using of the following CLI commands:</para>
+			<para>The SMSC Gateway in a Simulator Profile is configured as it would have been if configured with the following CLI commands:</para>
 <screen><![CDATA[
 
 sctp server create serv1 127.0.0.1 8012 sockettype SCTP
@@ -254,8 +254,7 @@ with the address "6666" (TON=1, NPI=1). So all messages with the destination add
 to SS7 Simulator (except messages for "5555" address that will be routed to SIP).
 						</para>
                         <para>
-You can simulate by SMPP Simulator also a bulk message delivering into SMSC GW.
-This may be random bulk messages and bulk messages obtained from pcap file.
+With the SMPP Simulator you can also simulate a bulk message delivery to &THIS.APPLICATION;. This may be random bulk messages and bulk messages obtained from a pcap file.
                         </para>
 
 			</step>
@@ -268,12 +267,10 @@ This may be random bulk messages and bulk messages obtained from pcap file.
 		<section id="running_the_simulator_hlr">
 			<title>Running the HLR Simulator</title>
 			<para>
-				Command line HLR Simulator is used for load testing of SMSC. TelScale-hlr-simulator is pre-configured to integrate with SMSC run in simulator profile.
-				HLR Simulator receives the MAP SRI request from SMSC and sends back response with random VLR and IMSI. SMSC will then forward MT_Forward_SM to HLR.
-				For every 7th MT_Forward_SM request, HLR Simulator will send back AbsentSubscriber error.
+				You can use the Command line HLR Simulator for load testing the &THIS.APPLICATION;. TelScale-hlr-simulator is pre-configured to integrate with SMSC run in simulator profile. The HLR Simulator receives the MAP SRI request from SMSC and returns response with random VLR and IMSI. SMSC will then forward <literal>MT_Forward_SM</literal> request to HLR. For every 7th <literal>MT_Forward_SM</literal> request, the HLR Simulator will return an <literal>AbsentSubscriber</literal> error.
 			</para>
 			<para>
-				For every 400 messages processed by HLR Simulator, it shows below message (time in milli seconds)
+				For every 400 messages processed by the HLR Simulator, it shows the below message (time in milli seconds)
 				<screen><![CDATA[
 				Received 400 MAP Dialog requests in 1000
 				]]>
@@ -322,25 +319,20 @@ This will launch the HLR Simulator ready for processing SRI and MT_Forward_SM re
 		</procedure>
 
             <para>
-                Extra configuring of HLR Simulator is possible only by manual updating of configuration files in TelScale-hlr-simulator/data folder.
-                For example for running in Microsoft Windows you need to update SCTPManagement_sctp.xml file and set "ipChannelType" parameter to "1".
+                Additional configuring of the HLR Simulator is possible only by manually updating the configuration files in the <filename>TelScale-hlr-simulator/data</filename> folder. For example, in order to run the HLR Simulator in Microsoft Windows you need to update the file <filename>SCTPManagement_sctp.xml</filename> and set the parameter <literal>ipChannelType</literal> to "1".
             </para>
-
-
 		</section>
 
 		<section id="running_the_simulator_smpp_load">
-			<title>Running the SMPP Load</title>
+			<title>Running the SMPP Load tool</title>
 			<para>
-				smpp-load tool is Command line simulator to generate SMPP load. It requires ant to be installed. smpp-load tool can be started as SMPP Server accepting in-coming connection
-				(BIND) from TelScale SMSC or can be started as SMPP Client to send BIND to TelScale SMSC. build.xml has configuration to define how many SMPP connections should be initiated and 
-				what kind of load should be generated
+				The smpp-load tool is a Command line simulator to generate SMPP load. You must have <literal>ant</literal> installed to be able to run this tool. The smpp-load tool can be started as a SMPP Server accepting in-coming connection (BIND) from &THIS.PLATFORM; &THIS.APPLICATION; or can be started as a SMPP Client to send BIND to &THIS.PLATFORM; &THIS.APPLICATION;. You can modify the configuration parameters in the <filename>build.xml</filename> to define how many SMPP connections should be initiated, what kind of load should be generated, etc.
 			</para>
 			
 			<procedure>
-			<title>Running SMPP Load</title>
+			<title>Running SMPP Load Tool</title>
 			<step><para>
-			Change the working directory to the bin folder for the SMPP Load.
+			Change the working directory to the bin folder for the SMPP Load Tool.
 <screen><![CDATA[
 [vinu@vinu-neha ~]$ cd TelScale-smsc-<version>/tools/TelScale-smpp-simulator/bin
 ]]>
@@ -349,19 +341,25 @@ This will launch the HLR Simulator ready for processing SRI and MT_Forward_SM re
 
 			<step>
 						<para>
-							Execute the <filename>ant client</filename> command to start SMPP load as client or <filename>ant server</filename> to start SMPP load tool as SMPP Server
+							Execute the <command>ant client</command> command to start the SMPP load tool as a client or execute the <command>ant server</command> command to start the SMPP load tool as a SMPP Server.
 							
 <screen><![CDATA[
 ant client
 ]]>
 </screen>
-This will launch the SMPP load tool
+This will launch the SMPP load tool as a SMPP Client.
+<screen><![CDATA[
+ant server
+]]>
+</screen>
+This will launch the SMPP load tool as a SMPP Server.
+
 						</para>
 
 			</step>
 			<step>
 						<para>
-							<!--When the GUI shows up, select "main" (default) as host name and press the 'Start' button. -->The SMPP load client is already pre-configured to connect to the SMSC Gateway (running in simulator profile).
+							<!--When the GUI shows up, select "main" (default) as host name and press the 'Start' button. -->The SMPP load client is already pre-configured to connect to the &THIS.PLATFORM; &THIS.APPLICATION; (running in simulator profile).
 						</para>
 
 			</step>
@@ -371,61 +369,68 @@ This will launch the SMPP load tool
 
         <section id="Sip_Phone">
         <title>Running Jitsi or Linphone SIP phones</title>
-<para>For testing SMSC features for interconnection with SIP servers you can use Jisti or Linphone SIP phone which
-will play SIP server role.
+<para>In order to test SMSC features for interconnection with SIP servers, you can use Jisti or Linphone SIP phones that can play the role of a SIP server.
 </para>
             <procedure>
-                <title>To configure Jitsi we need:</title>
+                <title>Configure Jitsi</title>
     <step>
-    <para>Firstly you need to download Jisti from "jitsi.org" site and run it.
+    <para>Download Jisti from the <ulink url="http://www.jitsi.org/">website</ulink> and run it.
     </para>
     </step>
     <step>
-    <para>Create a registrarless account (don't provide password, registrar and proxy address) and enable PRESENSE (SIMPLE) at the forth tab for this account (Advanced). Identifier of this account must be "5555" because SMSC is configured to route all messages for subscriber "5555" to SIP.
+    <para>Create a registrarless account (do not provide password, registrar and proxy address), enable PRESENSE (SIMPLE) at the forth tab for this account (Advanced). Identifier of this account must be "5555" because SMSC is configured to route all messages for subscriber "5555" to SIP.
     </para>
     </step>
     <step>
-    <para>At the general setting of Jitsi, go to Security -> Chat and enable all three options at the end
+    <para>In the menu, go to Tools -> Options -> Security -> Chat, and enable all three options at the end.
     </para>
     </step>
     <step>
-    <para>Tools -> Options -> Advanced -> SIP port define as "5065" (SMSC is configured for sending outgoing SIP messages to this port)
+    <para>Then go to Tools -> Options -> Advanced -> SIP and define SIP port as "5065" (SMSC is configured for sending outgoing SIP messages to this port).
     </para>
     </step>
     <step>
-    <para>In menu "File - Add contact" we need to add a new contact with definition to which subscriber we will send messages. SMSC is configured so all messages for "6666" will be routed to ESME (SMPP simulator) and others (except "5555" that is for SIP) to GSM network (to SS7 Simulator). So we can add two contacts:
-for SS7 Simulator: "sip:1111@127.0.0.1:5060"
-for SMPP Simulator: "sip:6666@127.0.0.1:5060"
-SMSC listerns 5060 port for incoming SIP messages. "1111" address we will use for addressing to / from SS7 Simulator.
+    <para>In the menu, go to File -> Add contact and add a new contact with definition to which subscriber you will send messages to. SMSC is configured such that all messages for "6666" will be routed to ESME (SMPP simulator) and others (except "5555" that is for SIP) to GSM network (to SS7 Simulator). Therefore you can add two new contacts as below:
+<itemizedlist>
+<listitem><para>for SS7 Simulator: "sip:1111@127.0.0.1:5060"</para></listitem>
+<listitem><para>for SMPP Simulator: "sip:6666@127.0.0.1:5060"</para></listitem>
+</itemizedlist>
+The SMSC listens to 5060 port for incoming SIP messages. For addressing to/from the SS7 Simulator, the address "1111" will be used.
     </para>
     </step>
             </procedure>
 
             <procedure>
-                <title>To configure Linphone we need:</title>
+                <title>Configure Linphone</title>
     <step>
-    <para>Firstly you need to download Linphone from "linphone.org" site and run it.
+    <para>Download Linphone from the <ulink url="http://www.linphone.org/">website</ulink> and run it.
     </para>
     </step>
     <step>
-    <para>Parameters - Network settings - Network protocols and ports - SIP UDP port and SIP UDP port set to 5066.
+    <para>Go to Parameters -> Network settings -> Network protocols and ports -> SIP UDP port and set the port to 5066.
     </para>
     </step>
     <step>
-    <para>Add a contact with "SIP address" - "sip:6666@127.0.0.1:5060" for a message exchange with SMPP simulator
+    <para>Add a contact with SIP address: "sip:6666@127.0.0.1:5060" for message exchange with SMPP simulator.
     </para>
     </step>
     <step>
-    <para>Add a contact with "SIP address" - "sip:1111@127.0.0.1:5060" for a message exchange with SS7 simulator
+    <para>Add a contact with SIP address: "sip:1111@127.0.0.1:5060" for message exchange with SS7 simulator.
     </para>
     </step>
             </procedure>
 
-<para>Then we can test:
+<para>Now you can run the following tests:
+<numberedlist>
+<listitem>
+<para>For testing sending messages from a SIP phone you can use the feature "Send message" to a concrete contact, type a message text and send. After about 1 minute you will receive the message on the SS7 Simulator or the SIP Simulator.
 </para>
-<para>1) for sending messages from SIP phone we have to "Send message" to a concrete contact, type a message text and send. After about 1 minute you will receive the message on SS7 Simulator or SIP Simulator
+</listitem>
+<listitem>
+<para>For testing sending messages to the SIP phone you just need to send a message from the SS7 Simulator or SMPP Simulator to the address "5555". You must put the originating address as "1111" for SS7 Simulator and "6666" for SMPP Simulator.
 </para>
-<para>2) for sending messages to SIP phone you just need to send a message from SS7 Simulator / SMPP Simulator to "5555" address. You need as an originated address put "1111" (for SS7 Simulator) and ("6666") for SMPP SImulator.
+</listitem>
+</numberedlist>
 </para>
         </section>
 

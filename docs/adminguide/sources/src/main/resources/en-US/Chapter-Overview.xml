@@ -65,33 +65,52 @@
                     </listitem>
                 </varlistentry>    -->                                                
                 <varlistentry>
-                    <term>Major Features:</term>
-                <listitem> <para>&THIS.PLATFORM; &THIS.APPLICATION; enables mobile operators to provide core SMSC features like subscriber to subscriber SMS messaging, broadcasting campaigns and group messaging <footnoteref linkend='fnrestcomm'/>between subscribers.
-            <itemizedlist> 
-				<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; can handle mobile originated SMS and deliver them to the intended recipient (mobile, ESME or SIP).
-				It also provides a flexible routing mechanism to route messages to/from ESME over SMPP protocol. It can also act as ESME initiating connection to third party SMSC.</para></listitem>
-                <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; supports SIP connection through JSLEE SIP RA.</para></listitem>
-                <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; supports StoreAndForward, Datagramm and Transactional modes (and also special ForwardAndStrore mode for reducing of database load)
-for incoming from SMPP ESME messages. When a message comes from SMPP SMSC GW checks EsmClass field from the SMPP message. For Datagramm and Transactional modes
-the SMSC will try to deliver immediately the message into a destination. For Transactional mode SMSC also returns to ESME a delivery result (success / failure).
-Such messages are not stored into a cassandra database.
-When delivery failure the message will be dropped and no more delivery attempts will be made.
-If EsmClass field contains StoreAndForward (or default) mode it is possible of several attempts of message delivering (if the first attempt has failed).
-For this purpose a message can be stored into a cassandra database.
-There are two possible SMSC configurable modes for processing of StoreAndForward messages: StoreAndForward (normal) and ForwardAndStore (fast).
-When StoreAndForward (normal) SMSC mode an incomimg "StoreAndForward" message will be always stored into a database and then (in some seconds) will be scheduled for delivering.
-This mode is fully compliant with SMPP specification. When ForwardAndStore (fast) SMSC mode an incomimg "StoreAndForward" message will be immidiately tried to deliver 
-without database storing and any delay. When delivery failure the message will be stored into a database for futher scheduling.</para></listitem> 
-                <listitem><para>Messages that come from SS7 or SIP are processed the same way as "StoreAndForward" messages that come from SMPP ESME</para></listitem> 
-                <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; SMSC GW has a congestion control by rejecting messages when a count of message in processing exceeds a configurable limit (MaxActivityCount).
-When SMSC is configured in ForwardAndStore (fast) mode SMPP originated messages will be firstly rejected,
-then after encreasing of a message in processing count SIP originated messages will be rejected
-and finally SS7 originated messages will be rejected. When SMSC is configured in StoreAndForward (normal) mode only datagramm and transactional SMPP originated messages
-will be rejected. StoreAndForward and all SS7 / SIP originated messages will be stored into cassandra database in any case but scheduling of messages for delivering will be
-stopped till a message in processing count will not exceed the limit.</para></listitem> 
-                <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; supports ReportSMDeliveryStatus and AlertServiceCentre requests after mobile delivery failures.</para></listitem> 
-                <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; supports GSM7, GSM8 and UCS2 message encodings.</para></listitem> 
-                <listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; itself splits ESME and SIP originated long length messages before delivering to mobile phones if a message does not contain User data headers (UDH).</para></listitem> 
+                    	<term>Major Features:</term>
+                	<listitem> <para>&THIS.PLATFORM; &THIS.APPLICATION; enables mobile operators to provide core SMSC features like subscriber to subscriber SMS messaging, broadcasting campaigns and group messaging <footnoteref linkend='fnrestcomm'/>between subscribers.
+            		<itemizedlist> 
+				<listitem>
+					<para>&THIS.PLATFORM; &THIS.APPLICATION; can handle mobile originated SMS and deliver them to the intended recipient (mobile, ESME or SIP). It also provides a flexible routing mechanism to route messages to/from ESME over SMPP protocol. It can also act as ESME initiating connection to third party SMSC.
+					</para>
+				</listitem>
+              	  		<listitem>
+					<para>&THIS.PLATFORM; &THIS.APPLICATION; supports SIP connection through JSLEE SIP RA.
+					</para>
+				</listitem>
+                		<listitem>
+					<para>For incoming from SMPP ESME messages, &THIS.PLATFORM; &THIS.APPLICATION; supports StoreAndForward, Datagramm and Transactional modes and a special ForwardAndStore mode for reducing the database load. </para>
+					<para>When a message comes from SMPP, the &THIS.APPLICATION; checks the <literal>EsmClass</literal> field in the SMPP message. For Datagramm and Transactional modes, the SMSC will try to immediately deliver the message to a destination. If it is in Transactional mode, the SMSC will also return a delivery result (success/failure) to the ESME. Such messages are not stored in the Cassandra database. In case of delivery failure the message will be dropped and no more delivery attempts will be made.</para>
+					<para>
+If the <literal>EsmClass</literal> field indicates StoreAndForward (or default) mode, more than one attempt will be made to deliver the message (if the first attempt fails). Such messages will be stored in the Cassandra database. The &THIS.APPLICATION; can be configured in two modes for processing of StoreAndForward messages as shown below:
+					<variablelist>
+						<varlistentry>
+						<term>StoreAndForward (normal) mode</term>
+						<listitem><para>In the StoreAndForward mode, an incomimg "StoreAndForward" message will always be stored in a database and scheduled for delivery after few seconds. This mode is fully compliant with SMPP specification. </para></listitem>
+						</varlistentry>
+					</variablelist>
+					<variablelist>
+						<varlistentry>
+						<term>ForwardAndStore (fast) mode</term>
+						<listitem><para>In the ForwardAndStore mode, an incomimg "StoreAndForward" message will be attempted for delivery immediately, without storing in the database and therefore without any delay. If this first delivery attempt fails, the message will be stored in a database for futher scheduling.
+</para></listitem>
+						</varlistentry>
+					</variablelist>
+					</para>
+				</listitem> 
+                		<listitem>
+					<para>Messages that come from SS7 or SIP are processed the same way as "StoreAndForward" messages that come from SMPP ESME.
+					</para>
+				</listitem> 
+                		<listitem>
+					<para>&THIS.PLATFORM; &THIS.APPLICATION; can be configured for congestion control to reject messages when the number of messages in processing exceeds a configurable limit (<literal>MaxActivityCount</literal>). </para>
+					<para>When the SMSC is configured in ForwardAndStore (fast) mode, SMPP originated messages will be first rejected. Then when the number of messages in processing further increases, SIP originated messages will be rejected and finally SS7 originated messages will be rejected. </para>
+					<para>When SMSC is configured in StoreAndForward (normal) mode, only datagramm and transactional SMPP originated messages will be rejected. However StoreAndForward messages and all SS7/SIP originated messages will be stored in the Cassandra database and the scheduling for delivery of these messages will be stopped until the number of messages in processing does not exceed the configured limit.
+					</para>
+				</listitem> 
+               			<listitem>
+					<para>&THIS.PLATFORM; &THIS.APPLICATION; supports ReportSMDeliveryStatus and AlertServiceCentre requests after mobile delivery failure.</para>
+				</listitem> 
+                		<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; supports GSM7, GSM8 and UCS2 message encoding.</para></listitem> 
+                		<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; itself splits ESME and SIP originated long length messages before delivering to mobile phones, if a message does not contain User Data headers (UDH).</para></listitem> 
 				<listitem><para>Additionally, when enabled with proper administrator privileges, &THIS.PLATFORM; &THIS.APPLICATION; allows convenient group messaging <footnoteref linkend='fnrestcomm'/>between subscribers (e.g. family, friends, colleagues) .</para></listitem> 
 				<!--<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; offers “SMS Broadcasting” which enables marketing campaigns. Via
 convenient Web UI, campaign administrators can prioritize, schedule and monitor a
@@ -122,12 +141,10 @@ A single &THIS.PLATFORM; SMSC node can process up to 1000 SMS/sec. Multiple SMSC
         <section id="smsc_gateway_sip">
             <title>Session Initiation Protocol (SIP) Support</title>
             <para>
-				IP Short Message Gateway (IP-SM-GW), which is in line with relevant 3GPP 23.824 specifications, acts as a bridge, managing the origination and termination of SMS messages between circuit-switched and IP-based networks (over SIP). With the solution, mobile operators can use existing messaging platforms such as short message service centers
-				(SMSCs) deliver IP-based messaging. The IP-SM-GW is also essential for rolling out rich communication services (RCS), which enable operators to deliver sticky messaging
-				services like presence-enabled address book, SIP-based chat services and mobile instant messaging.
+				IP Short Message Gateway (IP-SM-GW), which is in line with relevant 3GPP 23.824 specifications, acts as a bridge managing the origination and termination of SMS messages between circuit-switched and IP-based networks (over SIP). With this solution, mobile operators can make use of existing messaging platforms such as short message service centers (SMSCs) to deliver IP-based messaging. The IP-SM-GW is also essential for rolling out rich communication services (RCS), which enable operators to deliver sticky messaging services like presence-enabled address book, SIP-based chat services and mobile instant messaging.
 			</para>
 			<para>
-				TelScale SMSC has support for SIP messagaing and can send short messages from SIP to SS7 or ESME and vice-a-versa. TelScale SMSC can easily be integarted with TelScale RestComm via SIP to enable developers to rapidly build voice, video, WebRTC, USSD, SMS, fax and rich messaging applications. More details about RestComm can be obtained from <ulink url="http://www.telestax.com/restcomm/">here</ulink>            
+				TelScale SMSC has support for SIP messagaing and can send short messages from SIP to SS7 or ESME and vice-a-versa. TelScale SMSC can easily be integarted with TelScale RestComm via SIP to enable developers to rapidly build voice, video, WebRTC, USSD, SMS, fax and rich messaging applications. For more details about RestComm you may refer to, <ulink url="http://www.telestax.com/restcomm/">TeleStax website.</ulink>            
             </para>
         </section>        
 
