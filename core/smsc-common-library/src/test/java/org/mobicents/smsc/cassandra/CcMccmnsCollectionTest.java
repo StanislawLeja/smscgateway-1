@@ -44,30 +44,30 @@ public class CcMccmnsCollectionTest {
     public void testFunc() throws Exception {
 
         CcMccmnsCollection original = new CcMccmnsCollection();
-        original.addCcMccmns(new CcMccmns("1111", "222"));
-        original.addCcMccmns(new CcMccmns("3333", "444"));
-        original.addCcMccmns(new CcMccmns("", "555"));
+        original.addCcMccmns(new CcMccmns("1111", "222", "00001"));
+        original.addCcMccmns(new CcMccmns("3333", "444", null));
+        original.addCcMccmns(new CcMccmns("", "555", ""));
 
-        String s1 = original.findMccmns("111");
-        String s2 = original.findMccmns("1111");
-        String s3 = original.findMccmns("11111");
-        String s4 = original.findMccmns("3");
-        String s5 = original.findMccmns("4444");
+        CcMccmns s1 = original.findMccmns("111");
+        CcMccmns s2 = original.findMccmns("1111");
+        CcMccmns s3 = original.findMccmns("11111");
+        CcMccmns s4 = original.findMccmns("3");
+        CcMccmns s5 = original.findMccmns("4444");
 
-        assertEquals(s1, "222");
-        assertEquals(s2, "222");
-        assertEquals(s3, "555");
-        assertEquals(s4, "444");
-        assertEquals(s5, "555");
+        assertEquals(s1.getMccMnc(), "222");
+        assertEquals(s2.getMccMnc(), "222");
+        assertEquals(s3.getMccMnc(), "555");
+        assertEquals(s4.getMccMnc(), "444");
+        assertEquals(s5.getMccMnc(), "555");
     }
 
     @Test(groups = { "CcMccmnsCollection" })
     public void testSerialition() throws Exception {
 
         CcMccmnsCollection original = new CcMccmnsCollection();
-        original.addCcMccmns(new CcMccmns("1111", "222"));
-        original.addCcMccmns(new CcMccmns("3333", "444"));
-        original.addCcMccmns(new CcMccmns("", "555"));
+        original.addCcMccmns(new CcMccmns("1111", "222", "00001"));
+        original.addCcMccmns(new CcMccmns("3333", "444", null));
+        original.addCcMccmns(new CcMccmns("", "555", ""));
 
         // Writes the area to a file.
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -90,6 +90,11 @@ public class CcMccmnsCollectionTest {
         CcMccmns el = arr.get(0);
         assertEquals(el.getCountryCode(), "1111");
         assertEquals(el.getMccMnc(), "222");
+        assertEquals(el.getSmsc(), "00001");
+        el = arr.get(1);
+        assertNull(el.getSmsc());
+        el = arr.get(2);
+        assertEquals(el.getSmsc(), "");
     }
 
 }

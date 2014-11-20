@@ -21,6 +21,7 @@
 			<sbb-abstract-class>
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.hr.HrSriServerSbb</sbb-abstract-class-name>
                 <cmp-field><cmp-field-name>invokeId</cmp-field-name></cmp-field>
+                <cmp-field><cmp-field-name>smscAddressForCountryCode</cmp-field-name></cmp-field>
 
                 <get-child-relation-method>
                     <sbb-alias-ref>

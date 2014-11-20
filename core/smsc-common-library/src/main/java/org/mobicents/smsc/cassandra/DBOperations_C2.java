@@ -373,15 +373,18 @@ public class DBOperations_C2 {
 	}
 
     /**
-     * Returns a next correlationId for home routing mode
+     * Returns a next correlationId and corresponded data for home routing mode
      * Every MESSAGE_ID_LAG correlationId will be stored at cassandra database
      */
-    public synchronized String c2_getNextCorrelationId(String msisdn) {
+    public synchronized NextCorrelationIdResult c2_getNextCorrelationId(String msisdn) {
         long corrId = doGetNextCorrelationId();
-        String mccmns = getCcMccmnsValue(msisdn);
-        if (mccmns == null) {
+        CcMccmns ccMccmnsValue = getCcMccmnsValue(msisdn);
+        String mccmns;
+        if (ccMccmnsValue == null) {
             logger.warn("Found no entry in CcMccmnsCollection for msisdn: " + msisdn);
             mccmns = "";
+        } else {
+            mccmns = ccMccmnsValue.getMccMnc();
         }
 
         String corrIdS = String.valueOf(corrId);
@@ -397,7 +400,11 @@ public class DBOperations_C2 {
             sb.append(mccmns);
             sb.append(corrIdS.substring(corrIdS.length() - (15 - mccmns.length())));
         }
-        String res = sb.toString();
+
+        NextCorrelationIdResult res = new NextCorrelationIdResult();
+        res.setCorrelationId(sb.toString());
+        if (ccMccmnsValue != null)
+            res.setSmscAddress(ccMccmnsValue.getSmsc());
         return res;
     }
 
@@ -422,7 +429,7 @@ public class DBOperations_C2 {
         ccMccmnsTableVersionActual++;
     }
 
-    protected String getCcMccmnsValue(String countryCode) {
+    protected CcMccmns getCcMccmnsValue(String countryCode) {
         checkCcMccmnsTable();
         return ccMccmnsCollection.findMccmns(countryCode);
     }

@@ -40,6 +40,7 @@ import org.mobicents.protocols.ss7.map.smstpdu.ConcatenatedShortMessagesIdentifi
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
+import org.mobicents.smsc.cassandra.NextCorrelationIdResult;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
@@ -500,11 +501,13 @@ public class TT_CassandraTest {
         if (!this.cassandraDbInited)
             return;
 
-        String s1 = sbb.c2_getNextCorrelationId("1111");
-        assertEquals(s1, "222000000001001");
+        NextCorrelationIdResult s1 = sbb.c2_getNextCorrelationId("1111");
+        assertEquals(s1.getCorrelationId(), "222000000001001");
+        assertNull(s1.getSmscAddress());
 
-        String s2 = sbb.c2_getNextCorrelationId("3333");
-        assertEquals(s2, "444444444444402");
+        NextCorrelationIdResult s2 = sbb.c2_getNextCorrelationId("3333");
+        assertEquals(s2.getCorrelationId(), "444444444444402");
+        assertEquals(s2.getSmscAddress(), "00001");
 
     }
 

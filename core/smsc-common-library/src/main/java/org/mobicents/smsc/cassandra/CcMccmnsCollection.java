@@ -45,12 +45,12 @@ public class CcMccmnsCollection {
         this.arr.add(el);
     }
 
-    public String findMccmns(String countryCode) {
+    public CcMccmns findMccmns(String countryCode) {
         for (CcMccmns ccMccmns : this.arr) {
             if (ccMccmns.getCountryCode().equals(""))
-                return ccMccmns.getMccMnc();
+                return ccMccmns;
             if (ccMccmns.getCountryCode().startsWith(countryCode)) {
-                return ccMccmns.getMccMnc();
+                return ccMccmns;
             }
         }
         return null;

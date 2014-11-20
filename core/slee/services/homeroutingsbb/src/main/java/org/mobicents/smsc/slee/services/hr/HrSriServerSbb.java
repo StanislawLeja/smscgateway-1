@@ -29,10 +29,12 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPException;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
+import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.NetworkResource;
+import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
 import org.mobicents.protocols.ss7.map.api.service.sms.InformServiceCentreRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
@@ -49,6 +51,7 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.smsc.cassandra.NextCorrelationIdResult;
 import org.mobicents.smsc.domain.MoChargingType;
 import org.mobicents.smsc.library.CorrelationIdValue;
 import org.mobicents.smsc.library.SmsSetCache;
@@ -189,7 +192,10 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
 
         HrSriClientSbbLocalObject hrSriClientSbbLocalObject = this.getHrSriClientSbbLocalObject();
         if (hrSriClientSbbLocalObject != null) {
-            String correlationID = this.persistence.c2_getNextCorrelationId(msisdn.getAddress());
+            NextCorrelationIdResult correlationIDRes = this.persistence.c2_getNextCorrelationId(msisdn.getAddress());
+            if (correlationIDRes.getSmscAddress() != null && !correlationIDRes.getSmscAddress().equals(""))
+                this.setSmscAddressForCountryCode(correlationIDRes.getSmscAddress());
+            String correlationID = correlationIDRes.getCorrelationId();
             CorrelationIdValue correlationIdValue = new CorrelationIdValue(correlationID, msisdn, serviceCentreAddress);
             hrSriClientSbbLocalObject.setupSriRequest(correlationIdValue);
         }
@@ -201,6 +207,10 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
     public abstract void setInvokeId(long invokeId);
 
     public abstract long getInvokeId();
+
+    public abstract void setSmscAddressForCountryCode(String smscAddress);
+
+    public abstract String getSmscAddressForCountryCode();
 
     /**
      * Get HrSriClientSbb child SBB
@@ -264,9 +274,16 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
             IMSI imsi = this.mapParameterFactory.createIMSI(correlationIdValue.getCorrelationID());
             MWStatus mwStatus = correlationIdValue.getMwStatus();
             Boolean mwdSet = null;
-            ISDNAddressString networkNodeNumber = getNetworkNodeNumber();
-            LocationInfoWithLMSI li = this.mapParameterFactory.createLocationInfoWithLMSI(networkNodeNumber, null, null, false, null);
+            String smscAddressForCountryCode = this.getSmscAddressForCountryCode();
+            ISDNAddressString networkNodeNumber;
+            if (smscAddressForCountryCode != null) {
+                networkNodeNumber = this.mapParameterFactory.createISDNAddressString(AddressNature.international_number, NumberingPlan.ISDN,
+                        smscAddressForCountryCode);
+            } else {
+                networkNodeNumber = getNetworkNodeNumber();
+            }
 
+            LocationInfoWithLMSI li = this.mapParameterFactory.createLocationInfoWithLMSI(networkNodeNumber, null, null, false, null);
             if (dlg.getApplicationContext().getApplicationContextVersion() == MAPApplicationContextVersion.version1) {
                 if (mwStatus != null) {
                     if (mwStatus.getMnrfSet())

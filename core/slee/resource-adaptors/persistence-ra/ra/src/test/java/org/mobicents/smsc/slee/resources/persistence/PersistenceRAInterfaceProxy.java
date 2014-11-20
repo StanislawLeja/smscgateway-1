@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.mobicents.smsc.cassandra.DBOperations_C1;
+import org.mobicents.smsc.cassandra.NextCorrelationIdResult;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Schema;
@@ -362,7 +363,7 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
     }
 
     @Override
-    public String c2_getNextCorrelationId(String msisdn) {
+    public NextCorrelationIdResult c2_getNextCorrelationId(String msisdn) {
         // TODO Auto-generated method stub
         return null;
     }
