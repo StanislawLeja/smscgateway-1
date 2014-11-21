@@ -38,7 +38,7 @@ import javolution.util.FastMap;
  * @author sergey vetyutnev
  * 
  */
-public class SmsSetCashe {
+public class SmsSetCache {
 
     private int processingSmsSetTimeout;
     private int correlationIdLiveTime;
@@ -57,21 +57,21 @@ public class SmsSetCashe {
     private Object correlationIdCacheSync = new Object();
     private ScheduledExecutorService executor;
 
-	private static SmsSetCashe singeltone;
+	private static SmsSetCache singeltone;
 
 	static {
-		singeltone = new SmsSetCashe();
+		singeltone = new SmsSetCache();
 	}
 
-	private SmsSetCashe() {
+	private SmsSetCache() {
 	}
 
-	public static SmsSetCashe getInstance() {
+	public static SmsSetCache getInstance() {
 		return singeltone;
 	}
 
     public static void start(int correlationIdLiveTime) {
-        SmsSetCashe ssc = SmsSetCashe.getInstance();
+        SmsSetCache ssc = SmsSetCache.getInstance();
         ssc.correlationIdLiveTime = correlationIdLiveTime;
 
         ssc.executor = Executors.newScheduledThreadPool(1);
@@ -83,7 +83,7 @@ public class SmsSetCashe {
     }
 
     public static void stop() {
-        SmsSetCashe ssc = SmsSetCashe.getInstance();
+        SmsSetCache ssc = SmsSetCache.getInstance();
         ssc.isStarted = false;
 
         ssc.executor.shutdown();

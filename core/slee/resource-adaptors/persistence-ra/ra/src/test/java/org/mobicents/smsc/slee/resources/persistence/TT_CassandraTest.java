@@ -34,7 +34,6 @@ import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeaderElement;
-import org.mobicents.protocols.ss7.map.primitives.IMSIImpl;
 import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.mobicents.protocols.ss7.map.service.sms.LocationInfoWithLMSIImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.ConcatenatedShortMessagesIdentifierImpl;
@@ -45,7 +44,7 @@ import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -322,13 +321,13 @@ public class TT_CassandraTest {
 
         smsSet = this.readDueSlotMessage(dueSlot + 1, 2);
 
-        SmsSetCashe.getInstance().clearProcessingSmsSet();
+        SmsSetCache.getInstance().clearProcessingSmsSet();
         smsSet = this.readDueSlotMessage(dueSlot, 1);
         Sms sms = smsSet.getSms(0);
         assertFalse(smsSet.isAlertingSupported());
         sbb.c2_updateAlertingSupport(sms.getDueSlot(), sms.getSmsSet().getTargetId(), sms.getDbId());
 
-        SmsSetCashe.getInstance().clearProcessingSmsSet();
+        SmsSetCache.getInstance().clearProcessingSmsSet();
         smsSet = this.readDueSlotMessage(dueSlot, 1);
         assertTrue(smsSet.isAlertingSupported());
 
@@ -637,6 +636,7 @@ public class TT_CassandraTest {
                     this.checkTestSms(1, sms1, id1, false);
                     this.checkTestSms(2, sms2, id2, false);
                     this.checkTestSms(3, sms3, id3, false);
+                    assertEquals(smsSet.getImsi(), "CI=100001000022222");
                 } else {
                     assertEquals(smsSet.getSmsCount(), 4);
 
@@ -666,8 +666,7 @@ public class TT_CassandraTest {
             Sms sms = smsSet.getSms(i1);
             
             sms.getSmsSet().setType(SmType.SMS_FOR_SS7);
-            IMSIImpl imsi = new IMSIImpl("12345678900000");
-            sms.getSmsSet().setImsi(imsi);
+            sms.getSmsSet().setImsi("12345678900000");
             ISDNAddressStringImpl networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "2223334444");
             LocationInfoWithLMSIImpl locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
 
@@ -689,6 +688,8 @@ public class TT_CassandraTest {
         smsSet.setDestAddr(number);
         smsSet.setDestAddrNpi(1);
         smsSet.setDestAddrTon(5);
+        if (num == 1)
+            smsSet.setImsi("CI=100001000022222");
 
         Sms sms = new Sms();
         sms.setSmsSet(smsSet);

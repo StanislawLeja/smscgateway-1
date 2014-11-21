@@ -50,7 +50,7 @@ import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 
 public class PersistenceResourceAdaptor implements ResourceAdaptor {
@@ -78,12 +78,12 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
 
             @Override
             public TargetAddress obtainSynchroObject(TargetAddress ta) {
-                return SmsSetCashe.getInstance().addSmsSet(ta);
+                return SmsSetCache.getInstance().addSmsSet(ta);
             }
 
             @Override
             public void releaseSynchroObject(TargetAddress ta) {
-                SmsSetCashe.getInstance().removeSmsSet(ta);
+                SmsSetCache.getInstance().removeSmsSet(ta);
             }
 
 		    // C1

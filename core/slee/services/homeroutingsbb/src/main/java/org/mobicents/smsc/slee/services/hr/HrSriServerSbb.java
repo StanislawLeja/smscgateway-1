@@ -51,7 +51,7 @@ import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.domain.MoChargingType;
 import org.mobicents.smsc.library.CorrelationIdValue;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 
 /**
  * 
@@ -247,7 +247,7 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
 
         // storing correlationId into a cache
         try {
-            SmsSetCashe.getInstance().putCorrelationIdCacheElement(correlationIdValue, smscPropertiesManagement.getCorrelationIdLiveTime());
+            SmsSetCache.getInstance().putCorrelationIdCacheElement(correlationIdValue, smscPropertiesManagement.getCorrelationIdLiveTime());
         } catch (Exception e1) {
             if (dlg != null) {
                 dlg.release();

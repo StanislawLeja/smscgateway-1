@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.mobicents.smsc.cassandra.DBOperations_C1;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.smpp.SmppManagement;
 
 /**
@@ -160,7 +160,7 @@ public class SmscManagement implements SmscManagementMBean {
 		SmscStatProvider.getInstance().setSmscStartTime(new Date());
 
 		// Step 0 clear SmsSetCashe
-		SmsSetCashe.getInstance().clearProcessingSmsSet();
+		SmsSetCache.getInstance().clearProcessingSmsSet();
 
 		// Step 1 Get the MBeanServer
 		this.mbeanServer = MBeanServerLocator.locateJBoss();
@@ -180,7 +180,7 @@ public class SmscManagement implements SmscManagementMBean {
                 this.smscPropertiesManagement.getReviseSecondsOnSmscStart(), this.smscPropertiesManagement.getProcessingSmsSetTimeout());
 
         // Step 3 SmsSetCashe.start()
-        SmsSetCashe.start(this.smscPropertiesManagement.getCorrelationIdLiveTime());
+        SmsSetCache.start(this.smscPropertiesManagement.getCorrelationIdLiveTime());
 
 		// Step 4 Setup ArchiveSms
 		this.archiveSms = ArchiveSms.getInstance(this.name);
@@ -300,7 +300,7 @@ public class SmscManagement implements SmscManagementMBean {
                 + this.getName());
         this.unregisterMbean(smscDatabaseManagementObjName);
 
-        SmsSetCashe.stop();
+        SmsSetCache.stop();
 
         this.isStarted = false;
 

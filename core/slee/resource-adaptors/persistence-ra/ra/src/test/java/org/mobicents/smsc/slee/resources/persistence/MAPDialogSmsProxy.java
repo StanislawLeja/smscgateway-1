@@ -291,10 +291,14 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
 		
 	}
 
-	@Override
-	public MAPApplicationContext getApplicationContext() {
-		return this.appCntx;
-	}
+    @Override
+    public MAPApplicationContext getApplicationContext() {
+        return this.appCntx;
+    }
+
+    public void setApplicationContext(MAPApplicationContext act) {
+        this.appCntx = act;
+    }
 
 	@Override
 	public int getMaxUserDataLength() {

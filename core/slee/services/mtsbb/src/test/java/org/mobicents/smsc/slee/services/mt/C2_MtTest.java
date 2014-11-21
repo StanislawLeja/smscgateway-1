@@ -90,7 +90,7 @@ import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MAPDialogSmsProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPServiceSmsProxy;
@@ -157,7 +157,7 @@ public class C2_MtTest {
         this.rsdsSbb = new RsdsSbbProxy(this.pers);
         this.sriSbb = new SriSbbProxy(this.pers, this.mtSbb, this.rsdsSbb);
         this.mtSbb.setSriSbbProxy(this.sriSbb);
-        SmsSetCashe.getInstance().clearProcessingSmsSet();
+        SmsSetCache.getInstance().clearProcessingSmsSet();
         SmscPropertiesManagement.getInstance().setSmscStopped(false);
     }
 
@@ -239,7 +239,7 @@ public class C2_MtTest {
         SmsSet smsSet = prepareDatabase(lst);
 //        smsSet.clearSmsList();
 //        this.pers.setDeliveryStart(smsSet, curDate);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
@@ -276,7 +276,7 @@ public class C2_MtTest {
 
         evt = lstEvt.get(1);
         assertEquals(evt.testEventType, MAPTestEventType.send);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
@@ -339,7 +339,7 @@ public class C2_MtTest {
 
         evt = lstEvt.get(1);
         assertEquals(evt.testEventType, MAPTestEventType.send);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
@@ -356,7 +356,7 @@ public class C2_MtTest {
         this.mtSbb.onMtForwardShortMessageResponse(evt2, null);
         DialogClose dcl = new DialogClose(dlg);
         this.mtSbb.onDialogClose(dcl, null);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
@@ -400,7 +400,7 @@ public class C2_MtTest {
         SmsSetEvent event = new SmsSetEvent();
         event.setSmsSet(smsSet);
         this.sriSbb.onSms(event, null, null);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
@@ -443,7 +443,7 @@ public class C2_MtTest {
         evt1.setMAPDialog(dlg);
         this.sriSbb.onSendRoutingInfoForSMResponse(evt1, null);
         this.sriSbb.onDialogDelimiter(null, null);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
@@ -511,7 +511,7 @@ public class C2_MtTest {
         DialogDelimiter dcl = new DialogDelimiter(dlg);
         this.mtSbb.onDialogDelimiter(dcl, null);
 
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
@@ -554,7 +554,7 @@ public class C2_MtTest {
         sd1.receiptRequest = true;
         lst.add(sd1);
         SmsSet smsSet = prepareDatabase(lst);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
@@ -591,7 +591,7 @@ public class C2_MtTest {
 
         evt = lstEvt.get(1);
         assertEquals(evt.testEventType, MAPTestEventType.send);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
@@ -658,13 +658,13 @@ public class C2_MtTest {
         UUID smsId = smsSet.getSms(0).getDbId();
         SmsProxy smsx2 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx2);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
 
         // Mt response
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
         MtForwardShortMessageResponseImpl evt2 = new MtForwardShortMessageResponseImpl(null, null);
         evt2.setMAPDialog(dlg);
         DialogAccept daevt = new DialogAccept(dlg, null);
@@ -672,7 +672,7 @@ public class C2_MtTest {
         this.mtSbb.onMtForwardShortMessageResponse(evt2, null);
         DialogClose dcl = new DialogClose(dlg);
         this.mtSbb.onDialogClose(dcl, null);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
 
         dlg = serviceSri.getLastMAPDialogSms();
         lstEvt = dlg.getEventList();
@@ -682,7 +682,7 @@ public class C2_MtTest {
         lstEvt = dlg.getEventList();
         assertEquals(lstEvt.size(), 2);
 
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
@@ -756,14 +756,14 @@ public class C2_MtTest {
         SmsSet smsSet = prepareDatabase(lst);
         Sms sms1 = smsSet.getSms(0);
         Sms sms2 = smsSet.getSms(1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[1]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // initial onSms message
         SmsSetEvent event = new SmsSetEvent();
@@ -914,14 +914,14 @@ public class C2_MtTest {
         SmsProxy smsx2 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx2);
 
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[1]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // Mt response
         ForwardShortMessageResponseImpl evt2 = new ForwardShortMessageResponseImpl();
@@ -948,13 +948,13 @@ public class C2_MtTest {
         smsId = sms2.getDbId();
         smsx2 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx2);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[1]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // TC-CONTINUE after empty TC-BEGIN
         DialogDelimiter evt6 = new DialogDelimiter(dlg);
@@ -1014,13 +1014,13 @@ public class C2_MtTest {
         smsId = sms2.getDbId();
         smsx2 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx2);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[1]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // Mt response 2
         evt2 = new ForwardShortMessageResponseImpl();
@@ -1056,13 +1056,13 @@ public class C2_MtTest {
         smsId = sms2.getDbId();
         smsx2 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNotNull(smsx2);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[1]);
         assertNull(smsX);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
 
         // rsds response 2
         ReportSMDeliveryStatusResponseImpl evt7 = new ReportSMDeliveryStatusResponseImpl(2, null, null);
@@ -1127,14 +1127,14 @@ public class C2_MtTest {
         smsId = sms2.getDbId();
         SmsProxy smsx2 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx2);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[1]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // initial onSms message
         SmsSetEvent event = new SmsSetEvent();
@@ -1227,14 +1227,14 @@ public class C2_MtTest {
         smsId = sms2.getDbId();
         smsx2 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx2);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[1]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // MT "MAP only V2 supported" response
         acn = new ApplicationContextNameImpl();
@@ -1302,14 +1302,14 @@ public class C2_MtTest {
         smsId = sms2.getDbId();
         smsx2 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx2);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[1]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // Mt response
         ForwardShortMessageResponseImpl evt2 = new ForwardShortMessageResponseImpl();
@@ -1383,13 +1383,13 @@ public class C2_MtTest {
         smsId = sms2.getDbId();
         smsx2 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx2);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[1]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // Mt response 2
         evt2 = new ForwardShortMessageResponseImpl();
@@ -1425,13 +1425,13 @@ public class C2_MtTest {
         smsId = sms2.getDbId();
         smsx2 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNotNull(smsx2);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[1]);
         assertNull(smsX);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
 
         // rsds response 2
         ReportSMDeliveryStatusResponseImpl evt7 = new ReportSMDeliveryStatusResponseImpl(2, null, null);
@@ -1479,11 +1479,11 @@ public class C2_MtTest {
         UUID smsId = sms1.getDbId();
         SmsProxy smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // initial onSms message
         SmsSetEvent event = new SmsSetEvent();
@@ -1583,11 +1583,11 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // Mt response 1
         ForwardShortMessageResponseImpl evt2 = new ForwardShortMessageResponseImpl();
@@ -1641,11 +1641,11 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // Mt response 2
         evt2 = new ForwardShortMessageResponseImpl();
@@ -1669,11 +1669,11 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNotNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
     }
 
     /**
@@ -1717,11 +1717,11 @@ public class C2_MtTest {
         UUID smsId = sms1.getDbId();
         SmsProxy smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // initial onSms message
         SmsSetEvent event = new SmsSetEvent();
@@ -1819,11 +1819,11 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // Mt response 1
         MtForwardShortMessageResponseImpl evt2 = new MtForwardShortMessageResponseImpl(null, null);
@@ -1877,11 +1877,11 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // Mt response 2
         evt2 = new MtForwardShortMessageResponseImpl(null, null);
@@ -1905,11 +1905,11 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNotNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
     }
 
     /**
@@ -1937,11 +1937,11 @@ public class C2_MtTest {
         UUID smsId = sms1.getDbId();
         SmsProxy smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // initial onSms message
         SmsSetEvent event = new SmsSetEvent();
@@ -2022,11 +2022,11 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // Mt response
         MtForwardShortMessageResponseImpl evt2 = new MtForwardShortMessageResponseImpl(null, null);
@@ -2050,11 +2050,11 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNotNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
     }
 
     /**
@@ -2085,11 +2085,11 @@ public class C2_MtTest {
         UUID smsId = sms1.getDbId();
         SmsProxy smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // initial onSms message
         SmsSetEvent event = new SmsSetEvent();
@@ -2170,11 +2170,11 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // Mt response
         MtForwardShortMessageResponseImpl evt2 = new MtForwardShortMessageResponseImpl(null, null);
@@ -2198,11 +2198,11 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNotNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
     }
 
     /**
@@ -2229,11 +2229,11 @@ public class C2_MtTest {
         UUID smsId = sms1.getDbId();
         SmsProxy smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         assertNull(smsSet.getStatus());
         assertEquals(smsSet.getInSystem(), 0);
@@ -2310,13 +2310,13 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertNull(smsX);
         smsX = this.pers.obtainLiveSms(l1, procTargetId, procId[0]);
         assertNotNull(smsX);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
 
         dlg = serviceRsds.getLastMAPDialogSms();
         acv =  dlg.getApplicationContext().getApplicationContextVersion();
@@ -2387,11 +2387,11 @@ public class C2_MtTest {
         SmsProxy smsx1;
 //        smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
 //        assertNull(smsx1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = sms1;
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         assertNull(smsSet.getStatus());
         assertEquals(smsSet.getInSystem(), 0);
@@ -2466,13 +2466,13 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
 //        smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
 //        assertNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
 //        smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
 //        assertNull(smsX);
         smsX = this.pers.obtainLiveSms(l1, procTargetId, procId[0]);
         assertNotNull(smsX);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
 
         dlg = serviceRsds.getLastMAPDialogSms();
         acv =  dlg.getApplicationContext().getApplicationContextVersion();
@@ -2541,11 +2541,11 @@ public class C2_MtTest {
         UUID smsId = sms1.getDbId();
         SmsProxy smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         assertNull(smsSet.getStatus());
         assertEquals(smsSet.getInSystem(), 0);
@@ -2598,11 +2598,11 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(l1, smsSet.getDestAddr(), smsId);
         assertNotNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(l1, procTargetId, procId[0]);
         assertNull(smsX);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
 
         dlg = serviceRsds.getLastMAPDialogSms();
         assertNull(dlg);
@@ -2636,11 +2636,11 @@ public class C2_MtTest {
         UUID smsId = sms1.getDbId();
         SmsProxy smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         assertNull(smsSet.getStatus());
         assertEquals(smsSet.getInSystem(), 0);
@@ -2693,11 +2693,11 @@ public class C2_MtTest {
         smsId = sms1.getDbId();
         smsx1 = this.pers.obtainArchiveSms(l1, smsSet.getDestAddr(), smsId);
         assertNotNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(l1, procTargetId, procId[0]);
         assertNull(smsX);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
 
         for (PreparedStatementCollection_C3 psc : pscc) {
             l1 = this.pers.c2_getDueSlotForTargetId(psc, taR.getTargetId());
@@ -2740,11 +2740,11 @@ public class C2_MtTest {
         UUID smsId = sms1.getDbId();
         SmsProxy smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         assertNull(smsSet.getStatus());
         assertEquals(smsSet.getInSystem(), 0);
@@ -2779,11 +2779,11 @@ public class C2_MtTest {
         }
         smsx1 = this.pers.obtainArchiveSms(l1, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(l1, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
 
         assertEquals(smsSet.getStatus(), ErrorCode.ABSENT_SUBSCRIBER);
 //        assertEquals(smsSet.getInSystem(), 1);
@@ -2830,11 +2830,11 @@ public class C2_MtTest {
         }
         smsx1 = this.pers.obtainArchiveSms(l1, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(l1, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
 
         assertEquals(smsSet.getDueDelay(), 600);
         this.testDateEq(new Date(new Date().getTime() + 600  * 1000), smsSet.getDueDate());
@@ -2873,11 +2873,11 @@ public class C2_MtTest {
         UUID smsId = sms1.getDbId();
         SmsProxy smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         assertNull(smsSet.getStatus());
         assertEquals(smsSet.getInSystem(), 0);
@@ -2926,11 +2926,11 @@ public class C2_MtTest {
 
         smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         dlg = serviceMt.getLastMAPDialogSms();
         lstEvt = dlg.getEventList();
@@ -2951,11 +2951,11 @@ public class C2_MtTest {
         }
         smsx1 = this.pers.obtainArchiveSms(l1, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(l1, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
 
         assertEquals(smsSet.getStatus(), ErrorCode.MESSAGE_QUEUE_FULL);
 //        assertEquals(smsSet.getInSystem(), 1);
@@ -3025,11 +3025,11 @@ public class C2_MtTest {
         UUID smsId = sms1.getDbId();
         SmsProxy smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // initial onSms message
         SmsSetEvent event = new SmsSetEvent();
@@ -3117,11 +3117,11 @@ public class C2_MtTest {
         UUID smsId = sms1.getDbId();
         SmsProxy smsx1 = this.pers.obtainArchiveSms(procDueSlot, smsSet.getDestAddr(), smsId);
         assertNull(smsx1);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         // initial onSms message
         SmsSetEvent event = new SmsSetEvent();
@@ -3278,7 +3278,7 @@ public class C2_MtTest {
         assertNull(smsx1);
         assertNull(smsx2);
         assertNull(smsx3);
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNotNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[0]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
@@ -3286,7 +3286,7 @@ public class C2_MtTest {
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId[2]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 1);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 1);
 
         SmsSubmitData smsSubmitData = new SmsSubmitData();
 //        smsSubmitData.setSmsSet(smsSet);
@@ -3309,7 +3309,7 @@ public class C2_MtTest {
         assertNotNull(smsx1);
         assertNotNull(smsx2);
         assertNull(smsx3);
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         smsX = this.pers.obtainLiveSms(l1, procTargetId, procId[0]);
         assertNull(smsX);
@@ -3317,7 +3317,7 @@ public class C2_MtTest {
         assertNull(smsX);
         smsX = this.pers.obtainLiveSms(l1, procTargetId, procId[2]);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
-        assertEquals(SmsSetCashe.getInstance().getProcessingSmsSetSize(), 0);
+        assertEquals(SmsSetCache.getInstance().getProcessingSmsSetSize(), 0);
     }
 
     @Test(groups = { "Mt" })

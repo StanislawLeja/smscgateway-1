@@ -78,7 +78,7 @@ import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
@@ -510,7 +510,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                     } else {
                         smsSet.setStatus(smStatus);
                         if (removeSmsSet)
-                            SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
+                            SmsSetCache.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
                     }
 					this.decrementDeliveryActivityCount();
 
@@ -609,7 +609,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
             int registeredDelivery = sms.getRegisteredDelivery();
             if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
                 TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
-                lock = SmsSetCashe.getInstance().addSmsSet(ta);
+                lock = SmsSetCache.getInstance().addSmsSet(ta);
                 try {
                     synchronized (lock) {
                         try {
@@ -653,7 +653,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                         }
                     }
                 } finally {
-                    SmsSetCashe.getInstance().removeSmsSet(lock);
+                    SmsSetCache.getInstance().removeSmsSet(lock);
                 }
             }
 		}
@@ -710,7 +710,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                 }
             } else {
                 smsSet.setStatus(ErrorCode.SUCCESS);
-                SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
+                SmsSetCache.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
             }
         } catch (PersistenceException e) {
             this.logger.severe("PersistenceException when freeSmsSetSucceded(SmsSet smsSet)" + e.getMessage(), e);

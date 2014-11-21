@@ -35,6 +35,9 @@ import javax.slee.TransactionRolledbackLocalException;
 
 import org.mobicents.protocols.asn.AsnInputStream;
 import org.mobicents.protocols.asn.AsnOutputStream;
+import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
+import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
+import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
@@ -289,6 +292,8 @@ public class C2_MoSbbTest {
         MAPDialogSmsProxy dialog = new MAPDialogSmsProxy(new MAPServiceSmsProxy(proxy), null, null, null);
         event.setMAPDialog(dialog);
         Date curDate = new Date();
+        MAPApplicationContext act = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgMORelayContext, MAPApplicationContextVersion.version2);
+        dialog.setApplicationContext(act);
         this.sbb.onForwardShortMessageRequest(event, null);
 
         b2 = this.pers.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
@@ -391,6 +396,8 @@ public class C2_MoSbbTest {
         MAPDialogSmsProxy dialog = new MAPDialogSmsProxy(new MAPServiceSmsProxy(proxy), null, null, null);
         event.setMAPDialog(dialog);
         Date curDate = new Date();
+        MAPApplicationContext act = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgMORelayContext, MAPApplicationContextVersion.version2);
+        dialog.setApplicationContext(act);
         this.sbb.onForwardShortMessageRequest(event, null);
 
         b2 = this.pers.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
@@ -496,6 +503,8 @@ public class C2_MoSbbTest {
         MAPDialogSmsProxy dialog = new MAPDialogSmsProxy(new MAPServiceSmsProxy(proxy), null, null, null);
         event.setMAPDialog(dialog);
         Date curDate = new Date();
+        MAPApplicationContext act = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgMORelayContext, MAPApplicationContextVersion.version2);
+        dialog.setApplicationContext(act);
         this.sbb.onForwardShortMessageRequest(event, null);
 
 

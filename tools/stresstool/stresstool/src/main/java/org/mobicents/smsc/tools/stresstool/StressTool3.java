@@ -21,7 +21,7 @@ import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 
 import com.cloudhopper.smpp.tlv.Tlv;
@@ -328,7 +328,7 @@ public class StressTool3 {
                             }
 
                             long dueSlot;
-                            TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
+                            TargetAddress lock = SmsSetCache.getInstance().addSmsSet(new TargetAddress(smsSet));
                             try {
                                 synchronized (lock) {
                                     dueSlot = dbOperations.c2_getDueSlotForTargetId(psc, sms.getSmsSet().getTargetId());
@@ -339,7 +339,7 @@ public class StressTool3 {
                                     sms.setDueSlot(dueSlot);
                                 }
                             } finally {
-                                SmsSetCashe.getInstance().removeSmsSet(lock);
+                                SmsSetCache.getInstance().removeSmsSet(lock);
                             }
 
                             dbOperations.c2_registerDueSlotWriting(dueSlot);
@@ -408,7 +408,7 @@ public class StressTool3 {
                         smsSet0.setDestAddrNpi(1);
                         smsSet0.setDestAddrTon(1);
 
-                        TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet0));
+                        TargetAddress lock = SmsSetCache.getInstance().addSmsSet(new TargetAddress(smsSet0));
                         try {
                             synchronized (lock) {
                                 dueSlot = dbOperations.c2_getDueSlotForTargetId(psc, smsSet0.getTargetId());
@@ -442,7 +442,7 @@ public class StressTool3 {
                                 }
                             }
                         } finally {
-                            SmsSetCashe.getInstance().removeSmsSet(lock);
+                            SmsSetCache.getInstance().removeSmsSet(lock);
                         }
                     } catch (PersistenceException e) {
                         logger.error("Exception in task X2: " + e.toString(), e);
@@ -561,7 +561,7 @@ public class StressTool3 {
                 if (smsSet != null) {
                     j1++;
                     try {
-                        TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
+                        TargetAddress lock = SmsSetCache.getInstance().addSmsSet(new TargetAddress(smsSet));
                         try {
                             synchronized (lock) {
                                 int j2 = j1 % 3;
@@ -586,7 +586,7 @@ public class StressTool3 {
                                         smsSet.setStatus(ErrorCode.ABSENT_SUBSCRIBER);
                                     } else {
                                         smsSet.setStatus(ErrorCode.SUCCESS);
-                                        smsSet.setImsi(new IMSIImpl("123456789012324"));
+                                        smsSet.setImsi("123456789012324");
                                         ISDNAddressStringImpl networkNodeNumber = new ISDNAddressStringImpl(AddressNature.international_number,
                                                 NumberingPlan.ISDN, "1231223123");
                                         LocationInfoWithLMSIImpl locationInfoWithLMSI = new LocationInfoWithLMSIImpl(networkNodeNumber, null, null, false, null);
@@ -602,10 +602,10 @@ public class StressTool3 {
                                     }
                                 }
 
-                                SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
+                                SmsSetCache.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
                             }
                         } finally {
-                            SmsSetCashe.getInstance().removeSmsSet(lock);
+                            SmsSetCache.getInstance().removeSmsSet(lock);
                         }
                     } catch (PersistenceException e) {
                         logger.error("Exception in task X3: " + e.toString(), e);

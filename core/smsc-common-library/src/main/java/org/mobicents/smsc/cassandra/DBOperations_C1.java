@@ -45,7 +45,7 @@ import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.smpp.TlvSet;
 
@@ -267,7 +267,7 @@ public class DBOperations_C1 {
 
 	public SmsSet obtainSmsSet(final TargetAddress ta) throws PersistenceException {
 
-		TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(ta);
+		TargetAddress lock = SmsSetCache.getInstance().addSmsSet(ta);
 		try {
 			synchronized (lock) {
 				try {
@@ -299,7 +299,7 @@ public class DBOperations_C1 {
 				}
 			}
 		} finally {
-			SmsSetCashe.getInstance().removeSmsSet(lock);
+			SmsSetCache.getInstance().removeSmsSet(lock);
 		}
 	}
 
@@ -361,7 +361,7 @@ public class DBOperations_C1 {
 
 	public void setRoutingInfo(SmsSet smsSet, IMSI imsi, LocationInfoWithLMSI locationInfoWithLMSI) {
 
-		smsSet.setImsi(imsi);
+		smsSet.setImsi(imsi.getData());
 		smsSet.setLocationInfoWithLMSI(locationInfoWithLMSI);
 	}
 
@@ -443,7 +443,7 @@ public class DBOperations_C1 {
 	}
 
 	public boolean deleteSmsSet(final SmsSet smsSet) throws PersistenceException {
-		TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
+		TargetAddress lock = SmsSetCache.getInstance().addSmsSet(new TargetAddress(smsSet));
 		try {
 			synchronized (lock) {
 
@@ -470,7 +470,7 @@ public class DBOperations_C1 {
 				return true;
 			}
 		} finally {
-			SmsSetCashe.getInstance().removeSmsSet(lock);
+			SmsSetCache.getInstance().removeSmsSet(lock);
 		}
 	}
 
@@ -1025,7 +1025,7 @@ public class DBOperations_C1 {
 				boundStatement.setDate(Schema.COLUMN_DELIVERY_DATE, sms.getDeliverDate());
 			}
 			if (sms.getSmsSet().getImsi() != null) {
-				boundStatement.setString(Schema.COLUMN_IMSI, sms.getSmsSet().getImsi().getData());
+				boundStatement.setString(Schema.COLUMN_IMSI, sms.getSmsSet().getImsi());
 			}
 			if (sms.getSmsSet().getLocationInfoWithLMSI() != null) {
 				boundStatement.setString(Schema.COLUMN_NNN_DIGITS, sms.getSmsSet().getLocationInfoWithLMSI()

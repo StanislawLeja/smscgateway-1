@@ -34,7 +34,7 @@ import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Schema;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 
@@ -204,12 +204,12 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
 
     @Override
     public TargetAddress obtainSynchroObject(TargetAddress ta) {
-        return SmsSetCashe.getInstance().addSmsSet(ta);
+        return SmsSetCache.getInstance().addSmsSet(ta);
     }
 
     @Override
     public void releaseSynchroObject(TargetAddress ta) {
-        SmsSetCashe.getInstance().removeSmsSet(ta);
+        SmsSetCache.getInstance().removeSmsSet(ta);
     }
 
     @Override

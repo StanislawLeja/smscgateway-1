@@ -53,7 +53,7 @@ public class SmsSet implements Serializable {
 	private String destEsmeName;
 
 	// routing info - not saved in LIVE table
-	private IMSI imsi;
+	private String imsi;
 	private LocationInfoWithLMSI locationInfoWithLMSI;
 
 	private Date dueDate;
@@ -156,11 +156,11 @@ public class SmsSet implements Serializable {
 	/**
 	 * RoutingInfo: imsi
 	 */
-	public IMSI getImsi() {
+	public String getImsi() {
 		return imsi;
 	}
 
-	public void setImsi(IMSI imsi) {
+	public void setImsi(String imsi) {
 		this.imsi = imsi;
 	}
 

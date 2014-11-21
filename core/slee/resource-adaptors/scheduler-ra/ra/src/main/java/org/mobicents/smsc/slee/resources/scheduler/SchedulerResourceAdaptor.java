@@ -44,7 +44,7 @@ import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.common.ra.EventIDCache;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
@@ -226,7 +226,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                 e.printStackTrace();
             }
 
-            if (SmsSetCashe.getInstance().getProcessingSmsSetSize() == 0)
+            if (SmsSetCache.getInstance().getProcessingSmsSetSize() == 0)
                 break;
         }
 
@@ -340,7 +340,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			Date current = new Date(new Date().getTime() - 1000 * 60);
 			if (garbageCollectionTime.before(current)) {
 				garbageCollectionTime = new Date();
-				SmsSetCashe.getInstance().garbadeCollectProcessingSmsSet();
+				SmsSetCache.getInstance().garbadeCollectProcessingSmsSet();
 			}
 
             // checking if SmsRouteManagement is already started
@@ -352,7 +352,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			OneWaySmsSetCollection schedulableSms;
 			int maxCnt;
 			int fetchMaxRows = smscPropertiesManagement.getFetchMaxRows();
-			int activityCount = SmsSetCashe.getInstance().getProcessingSmsSetSize();
+			int activityCount = SmsSetCache.getInstance().getProcessingSmsSetSize();
 			int fetchAvailRows = smscPropertiesManagement.getMaxActivityCount() - activityCount;
 			maxCnt = Math.min(fetchMaxRows, fetchAvailRows);
 
@@ -515,7 +515,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
             ArrayList<Sms> good = new ArrayList<Sms>();
             ArrayList<Sms> expired = new ArrayList<Sms>();
-            TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
+            TargetAddress lock = SmsSetCache.getInstance().addSmsSet(new TargetAddress(smsSet));
             synchronized (lock) {
                 try {
                     for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
@@ -539,7 +539,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                             dbOperations_C1.setDeliveryFailure(smsSet, smStatus, curDate);
                         } else {
                             smsSet.setStatus(smStatus);
-                            SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
+                            SmsSetCache.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
                         }
                     }
 
@@ -580,7 +580,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                         int registeredDelivery = sms.getRegisteredDelivery();
                         if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
                             TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
-                            lock = SmsSetCashe.getInstance().addSmsSet(ta);
+                            lock = SmsSetCache.getInstance().addSmsSet(ta);
                             try {
                                 synchronized (lock) {
                                     try {
@@ -629,7 +629,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                                     }
                                 }
                             } finally {
-                                SmsSetCashe.getInstance().removeSmsSet(lock);
+                                SmsSetCache.getInstance().removeSmsSet(lock);
                             }
                         }
                     }
@@ -644,7 +644,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                         }
                     }
                 } finally {
-                    SmsSetCashe.getInstance().removeSmsSet(lock);
+                    SmsSetCache.getInstance().removeSmsSet(lock);
                 }
             }
         }
@@ -767,7 +767,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 		SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 		if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-			TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
+			TargetAddress lock = SmsSetCache.getInstance().addSmsSet(new TargetAddress(smsSet));
 
 			synchronized (lock) {
 				try {
@@ -779,7 +779,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 					dbOperations_C1.setDeliveryStart(smsSet, new Date());
 
 				} finally {
-					SmsSetCashe.getInstance().removeSmsSet(lock);
+					SmsSetCache.getInstance().removeSmsSet(lock);
 				}
 			}
 		} else {

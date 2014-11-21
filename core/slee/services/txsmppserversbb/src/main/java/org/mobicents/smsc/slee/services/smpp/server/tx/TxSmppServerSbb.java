@@ -55,7 +55,7 @@ import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
@@ -779,7 +779,7 @@ public abstract class TxSmppServerSbb implements Sbb {
         if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
             // checking if delivery query is overloaded
             int fetchMaxRows = (int) (smscPropertiesManagement.getMaxActivityCount() * 1.2);
-            int activityCount = SmsSetCashe.getInstance().getProcessingSmsSetSize();
+            int activityCount = SmsSetCache.getInstance().getProcessingSmsSetSize();
             if (activityCount >= fetchMaxRows) {
                 SmscProcessingException e = new SmscProcessingException("SMSC is overloaded", SmppConstants.STATUS_THROTTLED, 0, null);
                 e.setSkipErrorLogging(true);

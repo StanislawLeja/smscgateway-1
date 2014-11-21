@@ -46,7 +46,7 @@ import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.library.DbSmsRoutingRule;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.smpp.TlvSet;
 
@@ -935,12 +935,11 @@ public class DBOperations_C2 {
 			}
 		}
 
-		if (archive) {
-			if (sms.getSmsSet().getImsi() != null) {
-				boundStatement.setString(Schema.COLUMN_IMSI, sms.getSmsSet().getImsi().getData());
-			}
-			if (sms.getSmsSet().getLocationInfoWithLMSI() != null
-					&& sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber() != null) {
+        if (sms.getSmsSet().getImsi() != null) {
+            boundStatement.setString(Schema.COLUMN_IMSI, sms.getSmsSet().getImsi());
+        }
+        if (archive) {
+            if (sms.getSmsSet().getLocationInfoWithLMSI() != null					&& sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber() != null) {
 				boundStatement.setString(Schema.COLUMN_NNN_DIGITS, sms.getSmsSet().getLocationInfoWithLMSI()
 						.getNetworkNodeNumber().getAddress());
 				boundStatement.setInt(Schema.COLUMN_NNN_AN, sms.getSmsSet().getLocationInfoWithLMSI()
@@ -1132,7 +1131,9 @@ public class DBOperations_C2 {
 			}
 			smsSet.setDestAddr(destAddr);
 			smsSet.setDestAddrTon(destAddrTon);
-			smsSet.setDestAddrNpi(destAddrNpi);
+            smsSet.setDestAddrNpi(destAddrNpi);
+
+            smsSet.setImsi(row.getString(Schema.COLUMN_IMSI));
 		}
 		int dueDelay = row.getInt(Schema.COLUMN_DUE_DELAY);
 		if (dueDelay > smsSet.getDueDelay())
@@ -1159,7 +1160,11 @@ public class DBOperations_C2 {
 				int dd = 0;
 			}
 			if (smsSet2 != null) {
-				smsSet2.addSms(smsSet.getSms(0));
+                smsSet2.addSms(smsSet.getSms(0));
+                if (smsSet2.getImsi() == null) {
+                    // filling correcationId if not all SmsSet are filled
+                    smsSet2.setImsi(smsSet.getImsi());
+                }
 			} else {
 				res.put(smsSet.getTargetId(), smsSet);
 			}
@@ -1172,11 +1177,11 @@ public class DBOperations_C2 {
 		for (SmsSet smsSet : res.values()) {
 			smsSet.resortSms();
 
-			TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
+			TargetAddress lock = SmsSetCache.getInstance().addSmsSet(new TargetAddress(smsSet));
 			try {
 				SmsSet smsSet2;
 				synchronized (lock) {
-					smsSet2 = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+					smsSet2 = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
 					if (smsSet2 != null) {
 						if (smsSet2.getCreationTime().after(timeOutDate)) {
 							for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
@@ -1189,18 +1194,18 @@ public class DBOperations_C2 {
 							logger.warn("Timeout of SmsSet in ProcessingSmsSet: targetId=" + smsSet2.getTargetId()
 									+ ", messageCount=" + smsSet2.getSmsCount());
 							smsSet2 = smsSet;
-							SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2,
+							SmsSetCache.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2,
 									processingSmsSetTimeout);
 						}
 					} else {
 						smsSet2 = smsSet;
-						SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2,
+						SmsSetCache.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2,
 								processingSmsSetTimeout);
 					}
 				}
 				res2.add(smsSet2);
 			} finally {
-				SmsSetCashe.getInstance().removeSmsSet(lock);
+				SmsSetCache.getInstance().removeSmsSet(lock);
 			}
 		}
 
@@ -1210,10 +1215,10 @@ public class DBOperations_C2 {
     public boolean c2_checkProcessingSmsSet(SmsSet smsSet) {
         Date timeOutDate = new Date(new Date().getTime() - 1000 * 60 * 30);
 
-        TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(new TargetAddress(smsSet));
+        TargetAddress lock = SmsSetCache.getInstance().addSmsSet(new TargetAddress(smsSet));
         try {
             synchronized (lock) {
-                SmsSet smsSet2 = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet.getTargetId());
+                SmsSet smsSet2 = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
                 if (smsSet2 != null) {
                     if (smsSet2.getCreationTime().after(timeOutDate)) {
                         for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
@@ -1226,15 +1231,15 @@ public class DBOperations_C2 {
                     } else {
                         logger.warn("Timeout of SmsSet in ProcessingSmsSet: targetId=" + smsSet2.getTargetId() + ", messageCount=" + smsSet2.getSmsCount());
                         smsSet2 = smsSet;
-                        SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2, processingSmsSetTimeout);
+                        SmsSetCache.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2, processingSmsSetTimeout);
                     }
                 } else {
                     smsSet2 = smsSet;
-                    SmsSetCashe.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2, processingSmsSetTimeout);
+                    SmsSetCache.getInstance().addProcessingSmsSet(smsSet2.getTargetId(), smsSet2, processingSmsSetTimeout);
                 }
             }
         } finally {
-            SmsSetCashe.getInstance().removeSmsSet(lock);
+            SmsSetCache.getInstance().removeSmsSet(lock);
         }
 
         return true;

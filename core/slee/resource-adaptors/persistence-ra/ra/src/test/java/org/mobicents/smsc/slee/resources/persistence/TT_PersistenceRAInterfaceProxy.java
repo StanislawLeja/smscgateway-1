@@ -41,7 +41,7 @@ import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 
 import com.datastax.driver.core.BoundStatement;
@@ -247,11 +247,11 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
     }
 
     public TargetAddress obtainSynchroObject(TargetAddress ta) {
-        return SmsSetCashe.getInstance().addSmsSet(ta);
+        return SmsSetCache.getInstance().addSmsSet(ta);
     }
 
     public void releaseSynchroObject(TargetAddress ta) {
-        SmsSetCashe.getInstance().removeSmsSet(ta);
+        SmsSetCache.getInstance().removeSmsSet(ta);
     }
 
     public int checkSmsExists(long dueSlot, String targetId) throws PersistenceException {

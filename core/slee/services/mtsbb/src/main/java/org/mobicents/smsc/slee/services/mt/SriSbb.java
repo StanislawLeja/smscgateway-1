@@ -37,6 +37,7 @@ import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessageAbsentSubscriber;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
+import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.protocols.ss7.map.api.service.sms.MWStatus;
 import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
@@ -56,11 +57,12 @@ import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.library.CorrelationIdValue;
 import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 
@@ -130,8 +132,36 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
             smsDeliveryData.setTargetId(smsSet.getTargetId());
             this.doSetSmsSubmitData(smsDeliveryData);
 
-            this.sendSRI(smsSet, smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
-                    this.getSRIMAPApplicationContext(this.maxMAPApplicationContextVersion));
+            // checking for correlationId - may be we do not need SRI
+            String correlationID = smsSet.getImsi();
+            smsSet.setImsi(null);
+            CorrelationIdValue civ = null;
+            if (correlationID != null) {
+                civ = SmsSetCache.getInstance().getCorrelationIdCacheElement(correlationID);
+                if (this.logger.isFineEnabled()) {
+                    this.logger.fine("HomeRouting: correlationID=" + correlationID + ", found CorrelationIdValue=" + civ);
+                }
+                
+                // TODO: remove this ..............
+                this.logger.severe("HomeRouting: correlationID=" + correlationID + ", found CorrelationIdValue=" + civ);
+                // TODO: remove this ..............
+            }
+
+            if (civ == null) {
+                // no preloaded routing info
+                this.sendSRI(smsSet, smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
+                        this.getSRIMAPApplicationContext(this.maxMAPApplicationContextVersion));
+            } else {
+                // preloaded routing info is found - skip SRI request
+                MWStatus mwStatus = civ.getMwStatus();
+                if (mwStatus != null) {
+                    InformServiceCenterContainer informServiceCenterContainer = new InformServiceCenterContainer();
+                    informServiceCenterContainer.setMwStatus(mwStatus);
+                    this.doSetInformServiceCenterContainer(informServiceCenterContainer);
+                }
+
+                this.executeForwardSM(smsSet, civ.getLocationInfoWithLMSI(), civ.getImsi());
+            }
         } catch (Throwable e1) {
             logger.severe("Exception in SriSbb.onSms when fetching records and issuing events: " + e1.getMessage(), e1);
         }
@@ -176,7 +206,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
             return;
         }
         String targetId = smsDeliveryData.getTargetId();
-        SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+        SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
         if (smsSet == null) {
             this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onRejectComponent(), targetId=" + targetId);
             return;
@@ -201,7 +231,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
                 return;
             }
             String targetId = smsDeliveryData.getTargetId();
-            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
             if (smsSet == null) {
                 this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onDialogReject(), targetId=" + targetId);
                 return;
@@ -255,7 +285,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
                 return;
             }
             String targetId = smsDeliveryData.getTargetId();
-            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
             if (smsSet == null) {
                 this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onDialogProviderAbort(), targetId=" + targetId);
                 return;
@@ -281,7 +311,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
                 return;
             }
             String targetId = smsDeliveryData.getTargetId();
-            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
             if (smsSet == null) {
                 this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onDialogUserAbort(), targetId=" + targetId);
                 return;
@@ -307,7 +337,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
                 return;
             }
             String targetId = smsDeliveryData.getTargetId();
-            SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+            SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
             if (smsSet == null) {
                 this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onDialogTimeout(), targetId=" + targetId);
                 return;
@@ -580,7 +610,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
             return;
         }
         String targetId = smsDeliveryData.getTargetId();
-        SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+        SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
         if (smsSet == null) {
             if (sendRoutingInfoForSMResponse != null || errorMessage != null) {
                 this.logger.severe("In SmsDeliveryData CMP smsSet is missed - SriSbb.onSriFullResponse(), targetId=" + targetId);
@@ -593,20 +623,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
         if (sendRoutingInfoForSMResponse != null) {
             // we have positive response to SRI request -
             // we will try to send messages
-            smsSet.setImsi(sendRoutingInfoForSMResponse.getIMSI());
-            smsSet.setLocationInfoWithLMSI(sendRoutingInfoForSMResponse.getLocationInfoWithLMSI());
-
-			MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
-			if (mtSbbLocalObject != null) {
-				// Attach MtSbb to Scheduler ActivityContextInterface
-				ActivityContextInterface schedulerActivityContextInterface = this
-						.getSchedulerActivityContextInterface();
-				schedulerActivityContextInterface.attach(mtSbbLocalObject);
-
-				mtSbbLocalObject.setupMtForwardShortMessageRequest(sendRoutingInfoForSMResponse
-						.getLocationInfoWithLMSI().getNetworkNodeNumber(), sendRoutingInfoForSMResponse.getIMSI(),
-						sendRoutingInfoForSMResponse.getLocationInfoWithLMSI().getLMSI());
-            }
+            executeForwardSM(smsSet, sendRoutingInfoForSMResponse.getLocationInfoWithLMSI(), sendRoutingInfoForSMResponse.getIMSI().getData());
             return;
         }
 
@@ -655,6 +672,21 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 					"Empty response after SRI Request", false);
 		}
 	}
+
+    private void executeForwardSM(SmsSet smsSet, LocationInfoWithLMSI locationInfoWithLMSI, String imsi) {
+        smsSet.setImsi(imsi);
+        smsSet.setLocationInfoWithLMSI(locationInfoWithLMSI);
+
+        MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
+        if (mtSbbLocalObject != null) {
+        	// Attach MtSbb to Scheduler ActivityContextInterface
+        	ActivityContextInterface schedulerActivityContextInterface = this
+        			.getSchedulerActivityContextInterface();
+        	schedulerActivityContextInterface.attach(mtSbbLocalObject);
+
+            mtSbbLocalObject.setupMtForwardShortMessageRequest(locationInfoWithLMSI.getNetworkNodeNumber(), imsi, locationInfoWithLMSI.getLMSI());
+        }
+    }
 
     private SccpAddress convertAddressFieldToSCCPAddress(String address, int ton, int npi) {
         return MessageUtil.getSccpAddress(sccpParameterFact, address, ton, npi, smscPropertiesManagement.getHlrSsn(),

@@ -33,7 +33,7 @@ import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;
 import org.testng.annotations.AfterClass;
@@ -71,7 +71,7 @@ public class C2_MtDatabaseCassandraTest {
         this.pers.start();
 
         SmscPropertiesManagement.getInstance("Test");
-        SmsSetCashe.getInstance().clearProcessingSmsSet();
+        SmsSetCache.getInstance().clearProcessingSmsSet();
 
         this.sbb = new MtSbbProxy(this.pers);
     }

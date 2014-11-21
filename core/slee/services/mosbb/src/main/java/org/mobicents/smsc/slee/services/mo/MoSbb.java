@@ -76,10 +76,11 @@ import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.MoChargingType;
 import org.mobicents.smsc.domain.SmscStatProvider;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
+import org.mobicents.smsc.library.CorrelationIdValue;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
@@ -443,7 +444,7 @@ public abstract class MoSbb extends MoCommonSbb {
         }
 
 		try {
-			this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
+	        this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
 			try {
@@ -527,11 +528,23 @@ public abstract class MoSbb extends MoCommonSbb {
         smsSignalInfo.setGsm8Charset(isoCharset);
 
         IMSI destinationImsi = smRPDA.getIMSI();
-
 		if (destinationImsi == null) {
 			throw new SmscProcessingException("Mt DA IMSI is absent", SmppConstants.STATUS_SYSERR,
 					MAPErrorCode.unexpectedDataValue, null);
 		}
+
+		// obtaining correlationId
+		String correlationID = destinationImsi.getData();
+		CorrelationIdValue civ;
+		try {
+		    civ = SmsSetCache.getInstance().getCorrelationIdCacheElement(correlationID);
+        } catch (Exception e) {
+            throw new SmscProcessingException("Error when getting of CorrelationIdCacheElement", SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, e);
+        }
+        if (civ == null) {
+            throw new SmscProcessingException("No data is found for: CorrelationId=" + correlationID, SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure,
+                    null);
+        }
 
 		SmsTpdu smsTpdu = null;
 
@@ -547,7 +560,7 @@ public abstract class MoSbb extends MoCommonSbb {
 					this.logger.info("Received SMS_DELIVER = " + smsDeliverTpdu);
 				}
 				// AddressField af = smsSubmitTpdu.getDestinationAddress();
-				this.handleSmsDeliverTpdu(smsDeliverTpdu, destinationImsi);
+				this.handleSmsDeliverTpdu(smsDeliverTpdu, civ);
 				break;
 			default:
 				this.logger.severe("Received non SMS_DELIVER = " + smsTpdu);
@@ -692,6 +705,40 @@ public abstract class MoSbb extends MoCommonSbb {
 		return ta;
 	}
 
+    private TargetAddress createDestTargetAddress(ISDNAddressString isdn) throws SmscProcessingException {
+
+        int destTon, destNpi;
+        switch (isdn.getAddressNature()) {
+        case unknown:
+            destTon = smscPropertiesManagement.getDefaultTon();
+            break;
+        case international_number:
+            destTon = isdn.getAddressNature().getIndicator();
+            break;
+        case national_significant_number:
+            destTon = isdn.getAddressNature().getIndicator();
+            break;
+        default:
+            throw new SmscProcessingException("HomeRouting: DestAddress TON not supported: " + isdn.getAddressNature().getIndicator(),
+                    SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+        }
+        switch (isdn.getNumberingPlan()) {
+        case unknown:
+            destNpi = smscPropertiesManagement.getDefaultNpi();
+            break;
+        case ISDN:
+            destNpi = isdn.getNumberingPlan().getIndicator();
+            break;
+        default:
+            throw new SmscProcessingException("HomeRouting: DestAddress NPI not supported: "
+                    + isdn.getNumberingPlan().getIndicator(), SmppConstants.STATUS_SYSERR,
+                    MAPErrorCode.unexpectedDataValue, null);
+        }
+
+        TargetAddress ta = new TargetAddress(destTon, destNpi, isdn.getAddress());
+        return ta;
+    }
+
 	/**
 	 * Received Ack for MO SMS. But this is error we should never receive this
 	 * 
@@ -712,11 +759,12 @@ public abstract class MoSbb extends MoCommonSbb {
 		if (event instanceof DialogRequest) {
 			dialogRequest = (DialogRequest) event;
 
-			if (MAPApplicationContextName.shortMsgMORelayContext == dialogRequest.getMAPDialog()
-					.getApplicationContext().getApplicationContextName()
-					|| (smscPropertiesManagement.getSMSHomeRouting() && MAPApplicationContextName.shortMsgMTRelayContext == dialogRequest
-							.getMAPDialog().getApplicationContext().getApplicationContextName())) {
-				ies.setInitialEvent(true);
+//            if (MAPApplicationContextName.shortMsgMORelayContext == dialogRequest.getMAPDialog().getApplicationContext().getApplicationContextName()
+//                    || (smscPropertiesManagement.getSMSHomeRouting() && MAPApplicationContextName.shortMsgMTRelayContext == dialogRequest.getMAPDialog()
+//                            .getApplicationContext().getApplicationContextName())) {
+            if (MAPApplicationContextName.shortMsgMORelayContext == dialogRequest.getMAPDialog().getApplicationContext().getApplicationContextName()
+                    || MAPApplicationContextName.shortMsgMTRelayContext == dialogRequest.getMAPDialog().getApplicationContext().getApplicationContextName()) {
+                ies.setInitialEvent(true);
 				ies.setActivityContextSelected(true);
 			} else {
 				ies.setInitialEvent(false);
@@ -749,18 +797,35 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 	}
 
-	private void handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, IMSI destinationImsi)
+    private void handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, IMSI destinationImsi)
+            throws SmscProcessingException {
+
+        AddressField tpOAAddress = smsDeliverTpdu.getOriginatingAddress();
+
+        TargetAddress ta = createDestTargetAddress(destinationImsi);
+        PersistenceRAInterface store = obtainStore(ta);
+        TargetAddress lock = store.obtainSynchroObject(ta);
+
+        try {
+            synchronized (lock) {
+                Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, tpOAAddress);
+                this.processSms(sms, store);
+            }
+        } finally {
+            store.releaseSynchroObject(lock);
+        }
+    }
+
+	private void handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, CorrelationIdValue civ)
 			throws SmscProcessingException {
 
-		AddressField tpOAAddress = smsDeliverTpdu.getOriginatingAddress();
-
-		TargetAddress ta = createDestTargetAddress(destinationImsi);
+		TargetAddress ta = createDestTargetAddress(civ.getMsisdn());
 		PersistenceRAInterface store = obtainStore(ta);
 		TargetAddress lock = store.obtainSynchroObject(ta);
 
 		try {
 			synchronized (lock) {
-				Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, tpOAAddress);
+				Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, civ);
 				this.processSms(sms, store);
 			}
 		} finally {
@@ -1054,6 +1119,128 @@ public abstract class MoSbb extends MoCommonSbb {
 		return sms;
 	}
 
+    private Sms createSmsEvent(SmsDeliverTpdu smsDeliverTpdu, TargetAddress ta, PersistenceRAInterface store,
+            CorrelationIdValue civ) throws SmscProcessingException {
+
+        UserData userData = smsDeliverTpdu.getUserData();
+        try {
+            userData.decode();
+        } catch (MAPException e) {
+            throw new SmscProcessingException("MT MAPException when decoding user data", SmppConstants.STATUS_SYSERR,
+                    MAPErrorCode.unexpectedDataValue, null);
+        }
+
+        Sms sms = new Sms();
+        sms.setDbId(UUID.randomUUID());
+        sms.setOriginationType(Sms.OriginationType.SS7);
+
+        AddressField callingPartyAddress = smsDeliverTpdu.getOriginatingAddress();
+        
+        // checking parameters first
+        if (callingPartyAddress == null || callingPartyAddress.getAddressValue() == null
+                || callingPartyAddress.getAddressValue().isEmpty()) {
+            throw new SmscProcessingException("Home routing: TPDU OriginatingAddress digits are absent", SmppConstants.STATUS_SYSERR,
+                    MAPErrorCode.unexpectedDataValue, null);
+        }
+        if (callingPartyAddress.getTypeOfNumber() == null) {
+            throw new SmscProcessingException("Home routing: TPDU OriginatingAddress TypeOfNumber is absent", SmppConstants.STATUS_SYSERR,
+                    MAPErrorCode.unexpectedDataValue, null);
+        }
+        if (callingPartyAddress.getNumberingPlanIdentification() == null) {
+            throw new SmscProcessingException("Home routing: TPDU OriginatingAddress NumberingPlanIdentification is absent",
+                    SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+        }
+        sms.setSourceAddr(callingPartyAddress.getAddressValue());
+        switch (callingPartyAddress.getTypeOfNumber()) {
+        case Unknown:
+            sms.setSourceAddrTon(smscPropertiesManagement.getDefaultTon());
+            break;
+        case InternationalNumber:
+            sms.setSourceAddrTon(callingPartyAddress.getTypeOfNumber().getCode());
+            break;
+        case NationalNumber:
+            sms.setSourceAddrTon(callingPartyAddress.getTypeOfNumber().getCode());
+            break;          
+        default:
+            throw new SmscProcessingException("Home routing: TPDU OriginatingAddress TypeOfNumber not supported: "
+                    + callingPartyAddress.getTypeOfNumber(), SmppConstants.STATUS_SYSERR,
+                    MAPErrorCode.unexpectedDataValue, null);
+        }
+
+        switch (callingPartyAddress.getNumberingPlanIdentification()) {
+        case Unknown:
+            sms.setSourceAddrNpi(smscPropertiesManagement.getDefaultNpi());
+            break;
+        case ISDNTelephoneNumberingPlan:
+            sms.setSourceAddrNpi(callingPartyAddress.getNumberingPlanIdentification().getCode());
+            break;
+        default:
+            throw new SmscProcessingException("Home routing: TPDU OriginatingAddress NumberingPlanIdentification not supported: "
+                    + callingPartyAddress.getNumberingPlanIdentification(), SmppConstants.STATUS_SYSERR,
+                    MAPErrorCode.unexpectedDataValue, null);
+        }
+
+        sms.setSubmitDate(new Timestamp(System.currentTimeMillis()));
+
+        sms.setEsmClass(0x03 + (smsDeliverTpdu.getUserDataHeaderIndicator() ? SmppConstants.ESM_CLASS_UDHI_MASK : 0)
+                + (smsDeliverTpdu.getReplyPathExists() ? SmppConstants.ESM_CLASS_REPLY_PATH_MASK : 0));
+        sms.setProtocolId(smsDeliverTpdu.getProtocolIdentifier().getCode());
+        sms.setPriority(0);
+
+        // TODO: do we need somehow care with RegisteredDelivery ?
+        sms.setReplaceIfPresent(0);
+
+        // TODO: care with smsSubmitTpdu.getStatusReportRequest() parameter
+        // sending back SMS_STATUS_REPORT tpdu ?
+
+        DataCodingScheme dataCodingScheme = smsDeliverTpdu.getDataCodingScheme();
+        int dcs = dataCodingScheme.getCode();
+        String err = MessageUtil.checkDataCodingSchemeSupport(dcs);
+        if (err != null) {
+            throw new SmscProcessingException("Home routing: DataCoding scheme does not supported: " + dcs + " - " + err,
+                    SmppConstants.STATUS_SYSERR, MAPErrorCode.unexpectedDataValue, null);
+        }
+        sms.setDataCoding(dcs);
+
+        sms.setShortMessageText(userData.getDecodedMessage());
+        UserDataHeader udh = userData.getDecodedUserDataHeader();
+        if (udh != null) {
+            sms.setShortMessageBin(udh.getEncodedData());
+        }
+        
+        // ValidityPeriod processing
+        MessageUtil.applyValidityPeriod(sms, null, false, smscPropertiesManagement.getMaxValidityPeriodHours(),
+                smscPropertiesManagement.getDefaultValidityPeriodHours());
+
+        SmsSet smsSet;
+        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+            try {
+                smsSet = store.obtainSmsSet(ta);
+            } catch (PersistenceException e1) {
+                throw new SmscProcessingException("PersistenceException when reading SmsSet from a database: " + ta.toString() + "\n" + e1.getMessage(),
+                        SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e1);
+            }
+        } else {
+            smsSet = new SmsSet();
+            smsSet.setDestAddr(ta.getAddr());
+            smsSet.setDestAddrNpi(ta.getAddrNpi());
+            smsSet.setDestAddrTon(ta.getAddrTon());
+
+            smsSet.setImsi(civ.getCorrelationID());
+        }
+        sms.setSmsSet(smsSet);
+
+        long messageId = store.c2_getNextMessageId();
+        SmscStatProvider.getInstance().setCurrentMessageId(messageId);
+        sms.setMessageId(messageId);
+
+        // TODO: process case when smsSubmitTpdu.getRejectDuplicates()==true: we
+        // need reject message with same MessageId+same source and dest
+        // addresses ?
+
+        return sms;
+    }
+
 	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
         // TODO: we can make this some check will we send this message or not
 
@@ -1073,7 +1260,7 @@ public abstract class MoSbb extends MoCommonSbb {
             }
             // checking if delivery query is overloaded
             int fetchMaxRows = (int) (smscPropertiesManagement.getMaxActivityCount() * 1.4);
-            int activityCount = SmsSetCashe.getInstance().getProcessingSmsSetSize();
+            int activityCount = SmsSetCache.getInstance().getProcessingSmsSetSize();
             if (activityCount >= fetchMaxRows) {
                 SmscProcessingException e = new SmscProcessingException("SMSC is overloaded", SmppConstants.STATUS_THROTTLED, MAPErrorCode.resourceLimitation, null);
                 e.setSkipErrorLogging(true);

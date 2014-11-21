@@ -93,7 +93,7 @@ import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
@@ -150,7 +150,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				return;
 			}
 			String targetId = smsDeliveryData.getTargetId();
-			SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+			SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 			if (smsSet == null) {
 				this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onErrorComponent(), targetId="
 						+ targetId);
@@ -249,7 +249,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				return;
 			}
 			String targetId = smsDeliveryData.getTargetId();
-			SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+			SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 			if (smsSet == null) {
 				this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onRejectComponent(), targetId="
 						+ targetId);
@@ -279,7 +279,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				return;
 			}
 			String targetId = smsDeliveryData.getTargetId();
-			SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+			SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 			if (smsSet == null) {
 				this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogReject(), targetId="
 						+ targetId);
@@ -439,7 +439,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				return;
 			}
 			String targetId = smsDeliveryData.getTargetId();
-			SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+			SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 			if (smsSet == null) {
 				this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogProviderAbort(), targetId="
 						+ targetId);
@@ -472,7 +472,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				return;
 			}
 			String targetId = smsDeliveryData.getTargetId();
-			SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+			SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 			if (smsSet == null) {
 				this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogUserAbort(), targetId="
 						+ targetId);
@@ -501,7 +501,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				return;
 			}
 			String targetId = smsDeliveryData.getTargetId();
-			SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+			SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 			if (smsSet == null) {
 				this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogTimeout(), targetId="
 						+ targetId);
@@ -528,7 +528,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				return;
 			}
 			String targetId = smsDeliveryData.getTargetId();
-			SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+			SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 			if (smsSet == null) {
 				this.logger.warning("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogDelimiter(), targetId="
 						+ targetId);
@@ -613,7 +613,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 					return;
 				}
 				String targetId = smsDeliveryData.getTargetId();
-				SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+				SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 				if (smsSet == null) {
 					this.logger.info("In SmsDeliveryData CMP smsSet is missed - MtSbb.onDialogClose(), targetId="
 							+ targetId);
@@ -687,7 +687,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	 */
 
 	@Override
-	public void setupMtForwardShortMessageRequest(ISDNAddressString networkNode, IMSI imsi, LMSI lmsi) {
+	public void setupMtForwardShortMessageRequest(ISDNAddressString networkNode, String imsiData, LMSI lmsi) {
 		if (this.logger.isFineEnabled()) {
 			this.logger.fine("\nmperforming setupMtForwardShortMessageRequest ISDNAddressString= " + networkNode);
 		}
@@ -698,7 +698,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			return;
 		}
 		String targetId = smsDeliveryData.getTargetId();
-		SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+		SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 		if (smsSet == null) {
 			this.logger
 					.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.setupMtForwardShortMessageRequest(), targetId="
@@ -708,7 +708,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 		SccpAddress networkNodeSccpAddress = this.getMSCSccpAddress(networkNode);
 
-		SM_RP_DA sm_RP_DA = this.mapParameterFactory.createSM_RP_DA(imsi);
+        IMSI imsi = this.mapParameterFactory.createIMSI(imsiData);
+        SM_RP_DA sm_RP_DA = this.mapParameterFactory.createSM_RP_DA(imsi);
 		SM_RP_OA sm_RP_OA = this.mapParameterFactory.createSM_RP_OA_ServiceCentreAddressOA(this
 				.getServiceCenterAddressString());
 
@@ -861,7 +862,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			return;
 		}
 		String targetId = smsDeliveryData.getTargetId();
-		SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+		SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 		if (smsSet == null) {
 			this.logger.severe("In SmsDeliveryData CMP smsSet is missed - MtSbb.handleSmsResponse(), targetId="
 					+ targetId);
@@ -933,7 +934,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
             int registeredDelivery = sms.getRegisteredDelivery();
             if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
                 TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
-                TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(ta);
+                TargetAddress lock = SmsSetCache.getInstance().addSmsSet(ta);
                 try {
                     synchronized (lock) {
                         Sms receipt;
@@ -972,7 +973,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                         this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
                     }
                 } finally {
-                    SmsSetCashe.getInstance().removeSmsSet(lock);
+                    SmsSetCache.getInstance().removeSmsSet(lock);
                 }
             }
 //			}
@@ -1145,7 +1146,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			throw new SmscProcessingException("SmsDeliveryData CMP missed", -1, -1, null);
 		}
 		String targetId = smsDeliveryData.getTargetId();
-		SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+		SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 		if (smsSet == null) {
 			throw new SmscProcessingException("SmsSet is missed in ProcessingSmsSet cashe", -1, -1, null);
 		}

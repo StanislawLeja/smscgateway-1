@@ -45,7 +45,7 @@ import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.MAPDialogSmsProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
@@ -106,7 +106,7 @@ public class AlertTest {
 
 		this.prepareDatabase();
 
-        SmsSet smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        SmsSet smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
         assertNull(smsSetX);
         Sms smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId);
         assertEquals(smsX.getSmsSet().getInSystem(), 0);
@@ -129,7 +129,7 @@ public class AlertTest {
 		evt.setMAPDialog(dialog);
 		this.sbb.onAlertServiceCentreRequest(evt, null);
 
-        smsSetX = SmsSetCashe.getInstance().getProcessingSmsSet(procTargetId);
+        smsSetX = SmsSetCache.getInstance().getProcessingSmsSet(procTargetId);
 //        assertNotNull(smsSetX);  TODO: this will work after alert is with direct Activities sending 
         smsX = this.pers.obtainLiveSms(procDueSlot, procTargetId, procId);
 //        assertNull(smsX);

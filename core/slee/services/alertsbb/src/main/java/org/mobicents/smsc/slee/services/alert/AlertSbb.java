@@ -66,7 +66,7 @@ import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
@@ -254,7 +254,7 @@ public abstract class AlertSbb implements Sbb {
                         smsSet0.setDestAddrNpi(addrNpi);
                         smsSet0.setDestAddrTon(addrTon);
 
-                        SmsSet smsSet1 = SmsSetCashe.getInstance().getProcessingSmsSet(smsSet0.getTargetId());
+                        SmsSet smsSet1 = SmsSetCache.getInstance().getProcessingSmsSet(smsSet0.getTargetId());
                         if (smsSet1 != null) {
                             // message is already in process
                             return;

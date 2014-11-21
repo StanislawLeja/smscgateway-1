@@ -43,8 +43,8 @@ public class SmsSetCasheTest {
     public void testSmppShellExecutor() throws Exception {
 
         int correlationIdLiveTime = 2;
-        SmsSetCashe.start(correlationIdLiveTime);
-        SmsSetCashe ssc = SmsSetCashe.getInstance();
+        SmsSetCache.start(correlationIdLiveTime);
+        SmsSetCache ssc = SmsSetCache.getInstance();
 
         String correlationID = "000000000011111";
         ISDNAddressString msisdn = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "11111111");
@@ -60,7 +60,7 @@ public class SmsSetCasheTest {
         CorrelationIdValue v2 = ssc.getCorrelationIdCacheElement(correlationID);
         assertNull(v2);
 
-        SmsSetCashe.stop();
+        SmsSetCache.stop();
     }
 
 }

@@ -74,7 +74,7 @@ import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
@@ -193,7 +193,7 @@ public abstract class RxSipServerSbb implements Sbb {
 			this.logger.severe("onCLIENT_ERROR but there is no TargetId CMP!");
 			return;
 		}
-		SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+		SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 
 		if (smsSet == null) {
 			logger.severe("onCLIENT_ERROR but CMP smsSet is missed, targetId=" + targetId);
@@ -214,7 +214,7 @@ public abstract class RxSipServerSbb implements Sbb {
 			this.logger.severe("onSERVER_ERROR but there is no TargetId CMP!");
 			return;
 		}
-		SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+		SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 
 		if (smsSet == null) {
 			logger.severe("onSERVER_ERROR but CMP smsSet is missed, targetId=" + targetId);
@@ -239,7 +239,7 @@ public abstract class RxSipServerSbb implements Sbb {
 				logger.severe("RxSmppServerSbb.sendDeliverSm(): onDeliverSmResp CMP missed");
 				return;
 			}
-			SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+			SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 			if (smsSet == null) {
 				logger.severe("RxSmppServerSbb.sendDeliverSm(): In onDeliverSmResp CMP smsSet is missed, targetId="
 						+ targetId);
@@ -286,7 +286,7 @@ public abstract class RxSipServerSbb implements Sbb {
 				if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
 					TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(),
 							sms.getSourceAddr());
-					TargetAddress lock = SmsSetCashe.getInstance().addSmsSet(ta);
+					TargetAddress lock = SmsSetCache.getInstance().addSmsSet(ta);
 					try {
 						synchronized (lock) {
 							Sms receipt;
@@ -332,7 +332,7 @@ public abstract class RxSipServerSbb implements Sbb {
 							}
 						}
 					} finally {
-						SmsSetCashe.getInstance().removeSmsSet(lock);
+						SmsSetCache.getInstance().removeSmsSet(lock);
 					}
 				}
 			} catch (PersistenceException e1) {
@@ -437,7 +437,7 @@ public abstract class RxSipServerSbb implements Sbb {
 			this.logger.severe("onGLOBAL_FAILURE but there is no TargetId CMP!");
 			return;
 		}
-		SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+		SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 
 		if (smsSet == null) {
 			logger.severe("onGLOBAL_FAILURE but CMP smsSet is missed, targetId=" + targetId);
@@ -458,7 +458,7 @@ public abstract class RxSipServerSbb implements Sbb {
 			this.logger.severe("onTRANSACTION_TIMEOUT but there is no TargetId CMP!");
 			return;
 		}
-		SmsSet smsSet = SmsSetCashe.getInstance().getProcessingSmsSet(targetId);
+		SmsSet smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
 
 		if (smsSet == null) {
 			logger.severe("onTRANSACTION_TIMEOUT but CMP smsSet is missed, targetId=" + targetId);
@@ -650,7 +650,7 @@ public abstract class RxSipServerSbb implements Sbb {
 				}
 			} else {
 				smsSet.setStatus(ErrorCode.SUCCESS);
-				SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
+				SmsSetCache.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
 			}
 		} catch (PersistenceException e) {
 			this.logger.severe("PersistenceException when freeSmsSetSucceded(SmsSet smsSet)" + e.getMessage(), e);
@@ -699,7 +699,7 @@ public abstract class RxSipServerSbb implements Sbb {
 						pers.setDeliveryFailure(smsSet, smStatus, curDate);
 					} else {
 						smsSet.setStatus(smStatus);
-						SmsSetCashe.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
+						SmsSetCache.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
 					}
 					this.decrementDeliveryActivityCount();
 
@@ -766,7 +766,7 @@ public abstract class RxSipServerSbb implements Sbb {
 			if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
 				TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(),
 						sms.getSourceAddr());
-				lock = SmsSetCashe.getInstance().addSmsSet(ta);
+				lock = SmsSetCache.getInstance().addSmsSet(ta);
 				try {
 					synchronized (lock) {
 						try {
@@ -818,7 +818,7 @@ public abstract class RxSipServerSbb implements Sbb {
 						}
 					}
 				} finally {
-					SmsSetCashe.getInstance().removeSmsSet(lock);
+					SmsSetCache.getInstance().removeSmsSet(lock);
 				}
 			}
 		}

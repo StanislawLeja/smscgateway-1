@@ -29,7 +29,7 @@ import org.mobicents.protocols.ss7.statistics.StatDataCollectionImpl;
 import org.mobicents.protocols.ss7.statistics.api.StatDataCollection;
 import org.mobicents.protocols.ss7.statistics.api.StatDataCollectorType;
 import org.mobicents.protocols.ss7.statistics.api.StatResult;
-import org.mobicents.smsc.library.SmsSetCashe;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.UpdateMessagesInProcessListener;
 
 /**
@@ -43,12 +43,12 @@ public class SmscStatAggregator implements UpdateMessagesInProcessListener {
     private static String MAX_MESSAGES_IN_PROCESS = "MaxMessagesInProcess";
 
     private final static SmscStatAggregator instance = new SmscStatAggregator();
-    private final SmsSetCashe smsSetCashe = SmsSetCashe.getInstance();
+    private final SmsSetCache smsSetCashe = SmsSetCache.getInstance();
     private StatCollector statCollector = new StatCollector();
     private UUID sessionId = UUID.randomUUID();
 
     public SmscStatAggregator() {
-        SmsSetCashe.getInstance().setUpdateMessagesInProcessListener(this);
+        SmsSetCache.getInstance().setUpdateMessagesInProcessListener(this);
     }
 
     public static SmscStatAggregator getInstance() {

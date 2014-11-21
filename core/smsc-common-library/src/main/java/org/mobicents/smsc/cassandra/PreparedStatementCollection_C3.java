@@ -88,8 +88,8 @@ public class PreparedStatementCollection_C3 {
             sa = "UPDATE \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\" " + s3a + " SET \"" + Schema.COLUMN_ALERTING_SUPPORTED + "\"=? where \""
                     + Schema.COLUMN_DUE_SLOT + "\"=? and \"" + Schema.COLUMN_TARGET_ID + "\"=? and \"" + Schema.COLUMN_ID + "\"=?;";
             updateAlertingSupport = dbOperation.session.prepare(sa);
-            sa = "INSERT INTO \"" + Schema.FAMILY_MESSAGES + tName + "\" (" + s1 + ", \"" + Schema.COLUMN_IMSI + "\", \"" + Schema.COLUMN_NNN_DIGITS + "\", \""
-                    + Schema.COLUMN_NNN_AN + "\", \"" + Schema.COLUMN_NNN_NP + "\", \"" + Schema.COLUMN_SM_TYPE + "\") VALUES (" + s2 + ", ?, ?, ?, ?, ?) "
+            sa = "INSERT INTO \"" + Schema.FAMILY_MESSAGES + tName + "\" (" + s1 + ", \"" + Schema.COLUMN_NNN_DIGITS + "\", \""
+                    + Schema.COLUMN_NNN_AN + "\", \"" + Schema.COLUMN_NNN_NP + "\", \"" + Schema.COLUMN_SM_TYPE + "\") VALUES (" + s2 + ", ?, ?, ?, ?) "
                     + s3b + ";";
             createRecordArchive = dbOperation.session.prepare(sa);
         } catch (Throwable e) {
@@ -186,6 +186,8 @@ public class PreparedStatementCollection_C3 {
         sb.append(Schema.COLUMN_DELIVERY_COUNT);
         sb.append("\", \"");
         sb.append(Schema.COLUMN_OPTIONAL_PARAMETERS);
+        sb.append("\", \"");
+        sb.append(Schema.COLUMN_IMSI);
         sb.append("\"");
 
         return sb.toString();
@@ -194,9 +196,9 @@ public class PreparedStatementCollection_C3 {
     private String getFillUpdateFields2() {
         int cnt;
         if (shortMessageNewStringFormat) {
-            cnt = 35;
+            cnt = 36;
         } else {
-            cnt = 33;
+            cnt = 34;
         }
 
         StringBuilder sb = new StringBuilder();
