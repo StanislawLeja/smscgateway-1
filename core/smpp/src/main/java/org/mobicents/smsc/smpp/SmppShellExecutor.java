@@ -174,18 +174,18 @@ public class SmppShellExecutor implements ShellExecutor {
     }
 
     /**
-     * Command is smpp esme create name <systemId> <host-ip>
-     * <port> <SmppBindType> <SmppSession.Type> password <password> system-type <sms | vms | ota >
-     * interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton> esme-npi
-     * <esme address npi> esme-range <esme address range> cluster-name
-     * <clusterName> window-size <windowSize> connect-timeout <connectTimeout>
-     * request-expiry-timeout <requestExpiryTimeout> window-monitor-interval
-     * <windowMonitorInterval> window-wait-timeout <windowWaitTimeout>
-     * counters-enabled <true | false> enquire-link-delay <30000>
-     * charging-enabled <true | false> source-ton <source address ton>
-     * source-npi <source address npi> source-range <source address range>
-     * routing-ton <routing address ton> routing-npi <routing address npi>,
-     * routing-range <routing address range>
+     * Command is smpp esme create name <systemId> <host-ip> <port>
+     * <SmppBindType> <SmppSession.Type> password <password> networkid
+     * <networkid> system-type <sms | vms | ota > interface-version <3.3 | 3.4 |
+     * 5.0> esme-ton <esme address ton> esme-npi <esme address npi> esme-range
+     * <esme address range> cluster-name <clusterName> window-size <windowSize>
+     * connect-timeout <connectTimeout> request-expiry-timeout
+     * <requestExpiryTimeout> window-monitor-interval <windowMonitorInterval>
+     * window-wait-timeout <windowWaitTimeout> counters-enabled <true | false>
+     * enquire-link-delay <30000> charging-enabled <true | false> source-ton
+     * <source address ton> source-npi <source address npi> source-range <source
+     * address range> routing-ton <routing address ton> routing-npi <routing
+     * address npi>, routing-range <routing address range>
      * 
      * @param args
      * @return
@@ -244,6 +244,7 @@ public class SmppShellExecutor implements ShellExecutor {
         String esmeAddrRange = null;
         String clusterName = name;
         String password = null;
+        int networkId = 0;
 
         int count = 9;
 
@@ -274,6 +275,8 @@ public class SmppShellExecutor implements ShellExecutor {
 
             if (key.equals("password")) {
                 password = args[count++];
+            } else if (key.equals("networkid")) {
+                networkId = Integer.parseInt(args[count++]);
             }else if (key.equals("system-type")) {
                 systemType = args[count++];
             } else if (key.equals("interface-version")) {
@@ -324,7 +327,7 @@ public class SmppShellExecutor implements ShellExecutor {
                 chargingEnabled, smppBindTypeStr, systemType, smppVersionType, esmeTonType, esmeNpiType, esmeAddrRange,
                 smppSessionTypeStr, windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval,
                 windowWaitTimeout, clusterName, countersEnabled, enquireLinkDelay, sourceTon, sourceNpi,
-                sourceAddressRange, routinigTon, routingNpi, routingAddressRange);
+                sourceAddressRange, routinigTon, routingNpi, routingAddressRange, networkId);
         return String.format(SmppOamMessages.CREATE_ESME_SUCCESSFULL, esme.getSystemId());
     }
 

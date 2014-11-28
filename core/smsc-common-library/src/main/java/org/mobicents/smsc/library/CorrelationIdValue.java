@@ -41,6 +41,7 @@ public class CorrelationIdValue implements Serializable {
 
     private ISDNAddressString msisdn;
     private AddressString serviceCentreAddress;
+    private int networkId;
     
     private LocationInfoWithLMSI locationInfoWithLMSI;
     private String imsi;
@@ -48,10 +49,11 @@ public class CorrelationIdValue implements Serializable {
     private InformServiceCentreRequest informServiceCentreRequest;
     private int sriMapVersion = 3;
 
-    public CorrelationIdValue(String correlationID, ISDNAddressString msisdn, AddressString serviceCentreAddress) {
+    public CorrelationIdValue(String correlationID, ISDNAddressString msisdn, AddressString serviceCentreAddress, int networkId) {
         this.correlationID = correlationID;
         this.msisdn = msisdn;
         this.serviceCentreAddress = serviceCentreAddress;
+        this.networkId = networkId;
     }
 
     public String getCorrelationID() {
@@ -64,6 +66,10 @@ public class CorrelationIdValue implements Serializable {
 
     public AddressString getServiceCentreAddress() {
         return serviceCentreAddress;
+    }
+
+    public int getNetworkId() {
+        return networkId;
     }
 
 
@@ -118,6 +124,8 @@ public class CorrelationIdValue implements Serializable {
         sb.append(msisdn);
         sb.append(", serviceCentreAddress=");
         sb.append(serviceCentreAddress);
+        sb.append(", networkId=");
+        sb.append(networkId);
         sb.append(", locationInfoWithLMSI=");
         sb.append(locationInfoWithLMSI);
         sb.append(", imsi=");

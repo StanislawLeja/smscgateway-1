@@ -254,9 +254,9 @@ public abstract class RxSmppServerSbb implements Sbb {
 	/**
 	 * CMPs
 	 */
-	public abstract void setTargetId(String targetId);
+    public abstract void setTargetId(String targetId);
 
-	public abstract String getTargetId();
+    public abstract String getTargetId();
 
 	public abstract void setCurrentMsgNum(int currentMsgNum);
 
@@ -563,7 +563,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 			// adding an error receipt if it is needed
             int registeredDelivery = sms.getRegisteredDelivery();
             if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
-                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
+                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr(), smsSet.getNetworkId());
                 lock = SmsSetCache.getInstance().addSmsSet(ta);
                 try {
                     synchronized (lock) {
@@ -856,7 +856,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 				// adding a success receipt if it is needed
                 int registeredDelivery = sms.getRegisteredDelivery();
                 if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
-                    TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
+                    TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr(), smsSet.getNetworkId());
                     TargetAddress lock = SmsSetCache.getInstance().addSmsSet(ta);
                     try {
                         synchronized (lock) {

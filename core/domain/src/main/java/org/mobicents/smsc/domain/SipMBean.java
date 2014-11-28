@@ -3,9 +3,6 @@
  */
 package org.mobicents.smsc.domain;
 
-
-import com.cloudhopper.smpp.type.Address;
-
 /**
  * @author Amit Bhayani
  * 
@@ -42,6 +39,16 @@ public interface SipMBean {
 	int getPort();
 
 	void setPort(int port);
+
+    /**
+     * networkId
+     * default value is 0
+     * 
+     * @return
+     */
+    int getNetworkId();
+
+    void setNetworkId(int networkId);
 
 	/**
 	 * The {@link DefaultSmsRoutingRule} will try to match the dest_addr_ton of

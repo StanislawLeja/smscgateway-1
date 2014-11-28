@@ -110,7 +110,7 @@ public class C2_MoSbbTest {
 
     private static Charset isoCharset = Charset.forName("ISO-8859-1");
 
-    private TargetAddress ta1 = new TargetAddress(1, 1, "5555");
+    private TargetAddress ta1 = new TargetAddress(1, 1, "5555", 0);
 
 //  private byte[] msg = { 11, 12, 13, 14, 15, 15 };
 

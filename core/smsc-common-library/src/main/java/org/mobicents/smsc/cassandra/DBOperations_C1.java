@@ -861,7 +861,7 @@ public class DBOperations_C1 {
 		}
 
 		if (smsSet == null) {
-			TargetAddress ta = new TargetAddress(destAddrTon, destAddrNpi, destAddr);
+			TargetAddress ta = new TargetAddress(destAddrTon, destAddrNpi, destAddr, 0);
 			smsSet = obtainSmsSet(ta);
 		} else {
 			if (smsSet.getDestAddr() == null) {

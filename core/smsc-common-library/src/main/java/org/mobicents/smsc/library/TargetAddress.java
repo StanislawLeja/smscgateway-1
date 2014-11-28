@@ -34,14 +34,16 @@ public class TargetAddress {
 	private final int addrTon;
 	private final int addrNpi;
 	private final String addr;
+    private final int networkId;
 	
 	private final String targetId;
 
-	public TargetAddress(int addrTon, int addrNpi, String addr) {
+	public TargetAddress(int addrTon, int addrNpi, String addr, int networkId) {
 		this.addrTon = addrTon;
 		this.addrNpi = addrNpi;
-		this.addr = addr;
-		
+        this.addr = addr;
+        this.networkId = networkId;
+
 		this.targetId = formTargetId();
 	}
 
@@ -49,8 +51,9 @@ public class TargetAddress {
 		this.addrTon = smsSet.getDestAddrTon();
 		this.addrNpi = smsSet.getDestAddrNpi();
 		this.addr = smsSet.getDestAddr();
-		
-		this.targetId = formTargetId();		
+        this.networkId = smsSet.getNetworkId();
+
+        this.targetId = formTargetId();
 	}
 	
 	private String formTargetId(){
@@ -58,10 +61,12 @@ public class TargetAddress {
 		sb.append(this.addr);
 		sb.append("_");
 		sb.append(this.addrTon);
-		sb.append("_");
-		sb.append(this.addrNpi);
-		
-		return sb.toString();
+        sb.append("_");
+        sb.append(this.addrNpi);
+        sb.append("_");
+        sb.append(this.networkId);
+
+        return sb.toString();
 	}
 
 	public String getTargetId() {
@@ -80,6 +85,10 @@ public class TargetAddress {
 		return addr;
 	}
 
+    public int getNetworkId() {
+        return networkId;
+    }
+
     @Override
     public int hashCode() {
     	final int prime = 31;
@@ -87,6 +96,7 @@ public class TargetAddress {
 
         result = prime * result + addrTon;
         result = prime * result + addrNpi;
+        result = prime * result + networkId;
         result = prime * result + ((addr == null) ? 0 : addr.hashCode());
         return result;
     }
@@ -106,8 +116,10 @@ public class TargetAddress {
 
 		if (this.addrTon != other.addrTon)
 			return false;
-		if (this.addrNpi != other.addrNpi)
-			return false;
+        if (this.addrNpi != other.addrNpi)
+            return false;
+        if (this.networkId != other.networkId)
+            return false;
 
 		if (addr == null) {
 			if (other.addr != null)
@@ -128,8 +140,10 @@ public class TargetAddress {
 		sb.append(addr);
 		sb.append(", addrTon=");
 		sb.append(addrTon);
-		sb.append(", addrNpi=");
-		sb.append(addrNpi);
+        sb.append(", addrNpi=");
+        sb.append(addrNpi);
+        sb.append(", networkId=");
+        sb.append(networkId);
 
 		sb.append("]");
 

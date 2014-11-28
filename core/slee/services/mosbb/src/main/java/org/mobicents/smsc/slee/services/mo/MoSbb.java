@@ -207,7 +207,7 @@ public abstract class MoSbb extends MoCommonSbb {
         }
 
 		try {
-			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
+			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId());
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
             smscStatAggregator.updateMsgInFailedAll();
@@ -338,9 +338,9 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		try {
             if (isMt) {
-                this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
+                this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId());
             } else {
-                this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
+                this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId());
             }
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
@@ -445,7 +445,7 @@ public abstract class MoSbb extends MoCommonSbb {
         }
 
 		try {
-	        this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI());
+	        this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId());
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
 			try {
@@ -523,7 +523,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
 	}
 
-	private void processMtMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo)
+	private void processMtMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo, int networkId)
 			throws SmscProcessingException {
 
         smsSignalInfo.setGsm8Charset(isoCharset);
@@ -563,7 +563,7 @@ public abstract class MoSbb extends MoCommonSbb {
 					this.logger.info("Received SMS_DELIVER = " + smsDeliverTpdu);
 				}
 				// AddressField af = smsSubmitTpdu.getDestinationAddress();
-				this.handleSmsDeliverTpdu(smsDeliverTpdu, civ);
+				this.handleSmsDeliverTpdu(smsDeliverTpdu, civ, networkId);
 				break;
 			default:
 				this.logger.severe("Received non SMS_DELIVER = " + smsTpdu);
@@ -574,7 +574,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 	}
 
-	private void processMoMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo)
+	private void processMoMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo, int networkId)
 			throws SmscProcessingException {
 
 		// TODO: check if smRPDA contains local SMSC address and reject messages
@@ -619,7 +619,7 @@ public abstract class MoSbb extends MoCommonSbb {
 					this.logger.info("Received SMS_SUBMIT = " + smsSubmitTpdu);
 				}
 				// AddressField af = smsSubmitTpdu.getDestinationAddress();
-				this.handleSmsSubmitTpdu(smsSubmitTpdu, callingPartyAddress);
+				this.handleSmsSubmitTpdu(smsSubmitTpdu, callingPartyAddress, networkId);
 				break;
 			case SMS_DELIVER_REPORT:
 				SmsDeliverReportTpdu smsDeliverReportTpdu = (SmsDeliverReportTpdu) smsTpdu;
@@ -643,7 +643,7 @@ public abstract class MoSbb extends MoCommonSbb {
 				break;
 			case SMS_DELIVER:
 				SmsDeliverTpdu smsDeliverTpdu = (SmsDeliverTpdu) smsTpdu;
-				this.handleSmsDeliverTpdu(smsDeliverTpdu, destinationImsi);
+				this.handleSmsDeliverTpdu(smsDeliverTpdu, destinationImsi, networkId);
 				break;
 			default:
 				this.logger.severe("Received non SMS_SUBMIT or SMS_DELIVER_REPORT or SMS_COMMAND or SMS_DELIVER = " + smsTpdu);
@@ -655,7 +655,7 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 	}
 
-	private TargetAddress createDestTargetAddress(IMSI imsi) throws SmscProcessingException {
+	private TargetAddress createDestTargetAddress(IMSI imsi, int networkId) throws SmscProcessingException {
 		if (imsi == null || imsi.getData() == null || imsi.getData().isEmpty()) {
 			throw new SmscProcessingException("Mt DA IMSI digits are absent", SmppConstants.STATUS_SYSERR,
 					MAPErrorCode.unexpectedDataValue, null);
@@ -665,11 +665,11 @@ public abstract class MoSbb extends MoCommonSbb {
 		int destTon = 1;//International 
 		int destNpi = 6;//Land Mobile (E.212) 
 
-		TargetAddress ta = new TargetAddress(destTon, destNpi, imsi.getData());
+		TargetAddress ta = new TargetAddress(destTon, destNpi, imsi.getData(), networkId);
 		return ta;
 	}
 
-	private TargetAddress createDestTargetAddress(AddressField af) throws SmscProcessingException {
+	private TargetAddress createDestTargetAddress(AddressField af, int networkId) throws SmscProcessingException {
 
 		if (af == null || af.getAddressValue() == null || af.getAddressValue().isEmpty()) {
 			throw new SmscProcessingException("MO DestAddress digits are absent", SmppConstants.STATUS_SYSERR,
@@ -704,11 +704,11 @@ public abstract class MoSbb extends MoCommonSbb {
 					MAPErrorCode.unexpectedDataValue, null);
 		}
 
-		TargetAddress ta = new TargetAddress(destTon, destNpi, af.getAddressValue());
+		TargetAddress ta = new TargetAddress(destTon, destNpi, af.getAddressValue(), networkId);
 		return ta;
 	}
 
-    private TargetAddress createDestTargetAddress(ISDNAddressString isdn) throws SmscProcessingException {
+    private TargetAddress createDestTargetAddress(ISDNAddressString isdn, int networkId) throws SmscProcessingException {
 
         int destTon, destNpi;
         switch (isdn.getAddressNature()) {
@@ -738,7 +738,7 @@ public abstract class MoSbb extends MoCommonSbb {
                     MAPErrorCode.unexpectedDataValue, null);
         }
 
-        TargetAddress ta = new TargetAddress(destTon, destNpi, isdn.getAddress());
+        TargetAddress ta = new TargetAddress(destTon, destNpi, isdn.getAddress(), networkId);
         return ta;
     }
 
@@ -783,16 +783,16 @@ public abstract class MoSbb extends MoCommonSbb {
 	 * @throws MAPException
 	 */
 
-	private void handleSmsSubmitTpdu(SmsSubmitTpdu smsSubmitTpdu, AddressString callingPartyAddress)
+	private void handleSmsSubmitTpdu(SmsSubmitTpdu smsSubmitTpdu, AddressString callingPartyAddress, int networkId)
 			throws SmscProcessingException {
 
-		TargetAddress ta = createDestTargetAddress(smsSubmitTpdu.getDestinationAddress());
+		TargetAddress ta = createDestTargetAddress(smsSubmitTpdu.getDestinationAddress(), networkId);
 		PersistenceRAInterface store = obtainStore(ta);
 		TargetAddress lock = store.obtainSynchroObject(ta);
 
 		try {
 			synchronized (lock) {
-				Sms sms = this.createSmsEvent(smsSubmitTpdu, ta, store, callingPartyAddress);
+				Sms sms = this.createSmsEvent(smsSubmitTpdu, ta, store, callingPartyAddress, networkId);
                 this.processSms(sms, store, smscPropertiesManagement.getMoCharging());
 			}
 		} finally {
@@ -800,18 +800,18 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 	}
 
-    private void handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, IMSI destinationImsi)
+    private void handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, IMSI destinationImsi, int networkId)
             throws SmscProcessingException {
 
         AddressField tpOAAddress = smsDeliverTpdu.getOriginatingAddress();
 
-        TargetAddress ta = createDestTargetAddress(destinationImsi);
+        TargetAddress ta = createDestTargetAddress(destinationImsi, networkId);
         PersistenceRAInterface store = obtainStore(ta);
         TargetAddress lock = store.obtainSynchroObject(ta);
 
         try {
             synchronized (lock) {
-                Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, tpOAAddress);
+                Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, tpOAAddress, networkId);
                 this.processSms(sms, store, smscPropertiesManagement.getHrCharging());
             }
         } finally {
@@ -819,16 +819,16 @@ public abstract class MoSbb extends MoCommonSbb {
         }
     }
 
-	private void handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, CorrelationIdValue civ)
+	private void handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, CorrelationIdValue civ, int networkId)
 			throws SmscProcessingException {
 
-		TargetAddress ta = createDestTargetAddress(civ.getMsisdn());
+		TargetAddress ta = createDestTargetAddress(civ.getMsisdn(), networkId);
 		PersistenceRAInterface store = obtainStore(ta);
 		TargetAddress lock = store.obtainSynchroObject(ta);
 
 		try {
 			synchronized (lock) {
-				Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, civ);
+				Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, civ, networkId);
 				this.processSms(sms, store, smscPropertiesManagement.getHrCharging());
 			}
 		} finally {
@@ -837,7 +837,7 @@ public abstract class MoSbb extends MoCommonSbb {
 	}
 
 	private Sms createSmsEvent(SmsSubmitTpdu smsSubmitTpdu, TargetAddress ta, PersistenceRAInterface store,
-			AddressString callingPartyAddress) throws SmscProcessingException {
+			AddressString callingPartyAddress, int networkId) throws SmscProcessingException {
 
 		UserData userData = smsSubmitTpdu.getUserData();
 		try {
@@ -986,6 +986,8 @@ public abstract class MoSbb extends MoCommonSbb {
             smsSet.setDestAddr(ta.getAddr());
             smsSet.setDestAddrNpi(ta.getAddrNpi());
             smsSet.setDestAddrTon(ta.getAddrTon());
+
+            smsSet.setNetworkId(networkId);
         }
 		smsSet.addSms(sms);
 
@@ -1003,7 +1005,7 @@ public abstract class MoSbb extends MoCommonSbb {
 	}
 
 	private Sms createSmsEvent(SmsDeliverTpdu smsDeliverTpdu, TargetAddress ta, PersistenceRAInterface store,
-			AddressField callingPartyAddress) throws SmscProcessingException {
+			AddressField callingPartyAddress, int networkId) throws SmscProcessingException {
 
 		UserData userData = smsDeliverTpdu.getUserData();
 		try {
@@ -1107,6 +1109,7 @@ public abstract class MoSbb extends MoCommonSbb {
             smsSet.setDestAddr(ta.getAddr());
             smsSet.setDestAddrNpi(ta.getAddrNpi());
             smsSet.setDestAddrTon(ta.getAddrTon());
+            smsSet.setNetworkId(networkId);
             smsSet.addSms(sms);
         }
 		sms.setSmsSet(smsSet);
@@ -1125,7 +1128,7 @@ public abstract class MoSbb extends MoCommonSbb {
 	}
 
     private Sms createSmsEvent(SmsDeliverTpdu smsDeliverTpdu, TargetAddress ta, PersistenceRAInterface store,
-            CorrelationIdValue civ) throws SmscProcessingException {
+            CorrelationIdValue civ, int networkId) throws SmscProcessingException {
 
         UserData userData = smsDeliverTpdu.getUserData();
         try {
@@ -1231,6 +1234,7 @@ public abstract class MoSbb extends MoCommonSbb {
             smsSet.setDestAddrNpi(ta.getAddrNpi());
             smsSet.setDestAddrTon(ta.getAddrTon());
 
+            smsSet.setNetworkId(networkId);
             smsSet.setCorrelationId(civ.getCorrelationID());
             smsSet.addSms(sms);
         }

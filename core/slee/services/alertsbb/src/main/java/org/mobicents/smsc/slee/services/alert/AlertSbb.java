@@ -194,13 +194,13 @@ public abstract class AlertSbb implements Sbb {
 				mapDialogSms.release();
 			}
 
-			this.setupAlert(evt.getMsisdn(), evt.getServiceCentreAddress());
+            this.setupAlert(evt.getMsisdn(), evt.getServiceCentreAddress(), mapDialogSms.getNetworkId());
 		} catch (MAPException e) {
 			logger.severe("Exception while trying to send back AlertServiceCentreResponse", e);
 		}
 	}
 
-	private void setupAlert(ISDNAddressString msisdn, AddressString serviceCentreAddress) {
+	private void setupAlert(ISDNAddressString msisdn, AddressString serviceCentreAddress, int networkId) {
 	    PersistenceRAInterface pers = this.getStore();
 		SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
@@ -211,7 +211,7 @@ public abstract class AlertSbb implements Sbb {
 		int addrTon = msisdn.getAddressNature().getIndicator();
 		int addrNpi = msisdn.getNumberingPlan().getIndicator();
 		String addr = msisdn.getAddress();
-		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(addrTon, addrNpi, addr));
+		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(addrTon, addrNpi, addr, networkId));
 
         try {
 			synchronized (lock) {
@@ -253,6 +253,7 @@ public abstract class AlertSbb implements Sbb {
                         smsSet0.setDestAddr(addr);
                         smsSet0.setDestAddrNpi(addrNpi);
                         smsSet0.setDestAddrTon(addrTon);
+                        smsSet0.setNetworkId(networkId);
 
                         SmsSet smsSet1 = SmsSetCache.getInstance().getProcessingSmsSet(smsSet0.getTargetId());
                         if (smsSet1 != null) {

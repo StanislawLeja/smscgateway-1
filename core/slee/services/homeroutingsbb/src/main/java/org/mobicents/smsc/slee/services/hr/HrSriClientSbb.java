@@ -352,7 +352,7 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
         try {
             // 1. Create Dialog first and add the SRI request to it
             mapDialogSms = this.setupRoutingInfoForSMRequestIndication(destinationAddress, ton, npi,
-                    mapApplicationContext);
+                    mapApplicationContext, correlationIdValue.getNetworkId());
 
             // 2. Create the ACI and attach this SBB
             ActivityContextInterface sriDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);
@@ -372,13 +372,14 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
     }
 
     private MAPDialogSms setupRoutingInfoForSMRequestIndication(String destinationAddress, int ton, int npi,
-            MAPApplicationContext mapApplicationContext) throws MAPException {
+            MAPApplicationContext mapApplicationContext, int networkId) throws MAPException {
         // this.mapParameterFactory.creat
 
         SccpAddress destinationAddr = this.convertAddressFieldToSCCPAddress(destinationAddress, ton, npi);
 
         MAPDialogSms mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,
                 this.getServiceCenterSccpAddress(), null, destinationAddr, null);
+        mapDialogSms.setNetworkId(networkId);
 
         ISDNAddressString isdn = this.getCalledPartyISDNAddressString(destinationAddress, ton, npi);
         AddressString serviceCenterAddress = this.getServiceCenterAddressString();

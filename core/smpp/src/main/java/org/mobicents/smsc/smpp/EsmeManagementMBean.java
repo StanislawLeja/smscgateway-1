@@ -40,7 +40,7 @@ public interface EsmeManagementMBean {
 			String smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
 			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
 			int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange, int routingTon,
-			int routingNpi, String routingAddressRange) throws Exception;
+			int routingNpi, String routingAddressRange, int networkId) throws Exception;
 
 	Esme destroyEsme(String esmeName) throws Exception;
 

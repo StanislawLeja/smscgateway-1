@@ -579,7 +579,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
                         int registeredDelivery = sms.getRegisteredDelivery();
                         if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
-                            TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
+                            TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr(), smsSet.getNetworkId());
                             lock = SmsSetCache.getInstance().addSmsSet(ta);
                             try {
                                 synchronized (lock) {
@@ -667,12 +667,12 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 			String orignatingEsmeName = smsSet.getSms(0).getOrigEsmeName();
 			
 			String destClusterName = smsRouteManagement.getEsmeClusterName(smsSet.getDestAddrTon(),
-					smsSet.getDestAddrNpi(), smsSet.getDestAddr(), orignatingEsmeName);
+					smsSet.getDestAddrNpi(), smsSet.getDestAddr(), orignatingEsmeName, smsSet.getNetworkId());
 
 			// Step 2: If no SMPP's found, check if its for SIP
 			if (destClusterName == null) {
 				destClusterName = smsRouteManagement.getSipClusterName(smsSet.getDestAddrTon(),
-						smsSet.getDestAddrNpi(), smsSet.getDestAddr());
+						smsSet.getDestAddrNpi(), smsSet.getDestAddr(), smsSet.getNetworkId());
 
 				if (destClusterName == null) {
 					// Step 2: If no SIP's found, its for SS7

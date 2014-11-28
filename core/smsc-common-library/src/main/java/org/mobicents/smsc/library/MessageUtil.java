@@ -466,6 +466,7 @@ public class MessageUtil {
         backSmsSet.setDestAddr(ta.getAddr());
         backSmsSet.setDestAddrNpi(ta.getAddrNpi());
         backSmsSet.setDestAddrTon(ta.getAddrTon());
+        backSmsSet.setNetworkId(sms.getSmsSet().getNetworkId());
         backSmsSet.addSms(receipt);
         receipt.setStored(true);
         return receipt;

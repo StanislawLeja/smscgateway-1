@@ -57,7 +57,8 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	private static final String ESME_SYSTEM_ID = "systemId";
 	private static final String ESME_PASSWORD = "password";
 	private static final String REMOTE_HOST_IP = "host";
-	private static final String REMOTE_HOST_PORT = "port";
+    private static final String REMOTE_HOST_PORT = "port";
+    private static final String NETWORK_ID = "networkId";
 	private static final String SMPP_BIND_TYPE = "smppBindType";
 
 	private static final String SMPP_SESSION_TYPE = "smppSessionType";
@@ -97,6 +98,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	private int port;
 	private String systemType;
 	private SmppInterfaceVersionType smppVersion = null;
+    private int networkId;
 
 	// These are configured ESME TON, NPI and Address Range. If ESME is acting
 	// as Server, incoming BIND request should match there TON, NPI and address
@@ -187,7 +189,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			SmppBindType smppBindType, Type smppSessionType, int windowSize, long connectTimeout,
 			long requestExpiryTimeout, long windowMonitorInterval, long windowWaitTimeout, String clusterName,
 			boolean countersEnabled, int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange,
-			int routingTon, int routingNpi, String routingAddressRange) {
+			int routingTon, int routingNpi, String routingAddressRange, int networkId) {
 
 		this.name = name;
 
@@ -236,6 +238,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			this.routingAddressRangePattern = Pattern.compile(this.routingAddressRange);
 		}
 
+        this.networkId = networkId;
 	}
 
 	/**
@@ -328,6 +331,16 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		this.port = port;
 		this.store();
 	}
+
+    @Override
+    public int getNetworkId() {
+        return networkId;
+    }
+
+    public void setNetworkId(int networkId) {
+        this.networkId = networkId;
+        this.store();
+    }
 
 	public SmppBindType getSmppBindType() {
 		return smppBindType;
@@ -699,7 +712,8 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			esme.systemId = xml.getAttribute(ESME_SYSTEM_ID, "");
 			esme.password = xml.getAttribute(ESME_PASSWORD, null);
 			esme.host = xml.getAttribute(REMOTE_HOST_IP, "");
-			esme.port = xml.getAttribute(REMOTE_HOST_PORT, -1);
+            esme.port = xml.getAttribute(REMOTE_HOST_PORT, -1);
+            esme.networkId = xml.getAttribute(NETWORK_ID, 0);
 
 			String smppBindTypeStr = xml.getAttribute(SMPP_BIND_TYPE, "TRANSCEIVER");
 
@@ -757,8 +771,9 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			xml.setAttribute(ESME_SYSTEM_ID, esme.systemId);
 			xml.setAttribute(ESME_PASSWORD, esme.password);
 			xml.setAttribute(REMOTE_HOST_IP, esme.host);
-			xml.setAttribute(REMOTE_HOST_PORT, esme.port);
-			xml.setAttribute(SMPP_BIND_TYPE, esme.smppBindType.toString());
+            xml.setAttribute(REMOTE_HOST_PORT, esme.port);
+            xml.setAttribute(NETWORK_ID, esme.networkId);
+            xml.setAttribute(SMPP_BIND_TYPE, esme.smppBindType.toString());
 			xml.setAttribute(SMPP_SESSION_TYPE, esme.smppSessionType.toString());
 
 			xml.setAttribute(STARTED, esme.started);
@@ -795,8 +810,10 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		sb.append(SmppOamMessages.SHOW_ESME_NAME).append(this.name).append(SmppOamMessages.SHOW_ESME_SYSTEM_ID)
 				.append(this.systemId).append(SmppOamMessages.SHOW_ESME_STATE).append(this.getStateName())
 				.append(SmppOamMessages.SHOW_ESME_PASSWORD).append(this.password)
-				.append(SmppOamMessages.SHOW_ESME_HOST).append(this.host).append(SmppOamMessages.SHOW_ESME_PORT)
-				.append(this.port).append(SmppOamMessages.CHARGING_ENABLED).append(this.chargingEnabled)
+				.append(SmppOamMessages.SHOW_ESME_HOST).append(this.host)
+                .append(SmppOamMessages.SHOW_ESME_PORT).append(this.port)
+                .append(SmppOamMessages.SHOW_NETWORK_ID).append(this.networkId)
+				.append(SmppOamMessages.CHARGING_ENABLED).append(this.chargingEnabled)
 				.append(SmppOamMessages.SHOW_ESME_BIND_TYPE).append(this.smppBindType)
 				.append(SmppOamMessages.SHOW_ESME_SYSTEM_TYPE).append(this.systemType)
 				.append(SmppOamMessages.SHOW_ESME_INTERFACE_VERSION).append(this.smppVersion)

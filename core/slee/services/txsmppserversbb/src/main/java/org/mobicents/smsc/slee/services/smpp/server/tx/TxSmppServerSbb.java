@@ -141,7 +141,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		Sms sms;
 		try {
-			TargetAddress ta = createDestTargetAddress(event);
+			TargetAddress ta = createDestTargetAddress(event, esme.getNetworkId());
 			PersistenceRAInterface store = getStore();
 			TargetAddress lock = store.obtainSynchroObject(ta);
 
@@ -240,7 +240,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		Sms sms;
 		try {
-			TargetAddress ta = createDestTargetAddress(event);
+			TargetAddress ta = createDestTargetAddress(event, esme.getNetworkId());
 			PersistenceRAInterface store = getStore();
 			TargetAddress lock = store.obtainSynchroObject(ta);
 
@@ -321,7 +321,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 		}
 	}
 
-	private TargetAddress createDestTargetAddress(BaseSm event) throws SmscProcessingException {
+	private TargetAddress createDestTargetAddress(BaseSm event, int networkId) throws SmscProcessingException {
 		if (event.getDestAddress() == null || event.getDestAddress().getAddress() == null
 				|| event.getDestAddress().getAddress().isEmpty()) {
 			throw new SmscProcessingException("DestAddress digits are absent", SmppConstants.STATUS_INVDSTADR,
@@ -354,7 +354,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 					SmppConstants.STATUS_INVDSTNPI, MAPErrorCode.systemFailure, null);
 		}
 
-		TargetAddress ta = new TargetAddress(destTon, destNpi, event.getDestAddress().getAddress());
+		TargetAddress ta = new TargetAddress(destTon, destNpi, event.getDestAddress().getAddress(), networkId);
 		return ta;
 	}
 
@@ -369,7 +369,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		Sms sms;
 		try {
-			TargetAddress ta = createDestTargetAddress(event);
+			TargetAddress ta = createDestTargetAddress(event, esme.getNetworkId());
 			PersistenceRAInterface store = getStore();
 			TargetAddress lock = store.obtainSynchroObject(ta);
 
@@ -747,6 +747,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 			smsSet.setDestAddr(ta.getAddr());
 			smsSet.setDestAddrNpi(ta.getAddrNpi());
 			smsSet.setDestAddrTon(ta.getAddrTon());
+            smsSet.setNetworkId(origEsme.getNetworkId());
 			smsSet.addSms(sms);
 		}
 		sms.setSmsSet(smsSet);

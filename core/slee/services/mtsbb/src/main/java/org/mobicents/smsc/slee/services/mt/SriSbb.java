@@ -418,9 +418,9 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 	 * SBB Local Object Methods
 	 * 
 	 */
-
+	@Override
 	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi,
-			SMDeliveryOutcome sMDeliveryOutcome, String targetId) {
+			SMDeliveryOutcome sMDeliveryOutcome, String targetId, int networkId) {
 		RsdsSbbLocalObject rsdsSbbLocalObject = this.getRsdsSbbObject();
 		if (rsdsSbbLocalObject != null) {
 			ISDNAddressString isdn = this.getCalledPartyISDNAddressString(destinationAddress, ton, npi);
@@ -429,7 +429,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 			rsdsSbbLocalObject
 					.setupReportSMDeliveryStatusRequest(isdn, serviceCentreAddress, sMDeliveryOutcome, destAddress,
 							this.getSRIMAPApplicationContext(MAPApplicationContextVersion.getInstance(this
-									.getSriMapVersion())), targetId);
+									.getSriMapVersion())), targetId, networkId);
 		}
 	}
 
@@ -555,7 +555,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 		try {
 			// 1. Create Dialog first and add the SRI request to it
 			mapDialogSms = this.setupRoutingInfoForSMRequestIndication(destinationAddress, ton, npi,
-					mapApplicationContext);
+					mapApplicationContext, smsSet.getNetworkId());
 
 			// 2. Create the ACI and attach this SBB
 			ActivityContextInterface sriDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);
@@ -576,13 +576,14 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 	}
 
 	private MAPDialogSms setupRoutingInfoForSMRequestIndication(String destinationAddress, int ton, int npi,
-			MAPApplicationContext mapApplicationContext) throws MAPException {
+			MAPApplicationContext mapApplicationContext, int networkId) throws MAPException {
 		// this.mapParameterFactory.creat
 
 		SccpAddress destinationAddr = this.convertAddressFieldToSCCPAddress(destinationAddress, ton, npi);
 
 		MAPDialogSms mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,
 				this.getServiceCenterSccpAddress(), null, destinationAddr, null);
+		mapDialogSms.setNetworkId(networkId);
 
 		ISDNAddressString isdn = this.getCalledPartyISDNAddressString(destinationAddress, ton, npi);
 		AddressString serviceCenterAddress = this.getServiceCenterAddressString();

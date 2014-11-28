@@ -126,8 +126,8 @@ public class C2_MtTest {
     private String origDig = "4444";
     private String imsiDig = "11111222225555";
     private String nnnDig = "2222";
-    private TargetAddress ta1 = new TargetAddress(1, 1, msdnDig);
-    private TargetAddress taR = new TargetAddress(1, 1, origDig);
+    private TargetAddress ta1 = new TargetAddress(1, 1, msdnDig, 0);
+    private TargetAddress taR = new TargetAddress(1, 1, origDig, 0);
     private byte[] udhTemp = new byte[] { 5, 0, 3, -116, 2, 1 };
 
     private String msgShort = "01230123";

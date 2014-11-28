@@ -153,7 +153,7 @@ public abstract class RsdsSbb implements Sbb, ReportSMDeliveryStatusInterface {
     @Override
     public void setupReportSMDeliveryStatusRequest(ISDNAddressString msisdn, AddressString serviceCentreAddress,
             SMDeliveryOutcome smDeliveryOutcome, SccpAddress destAddress, MAPApplicationContext mapApplicationContext,
-            String targetId) {
+            String targetId, int networkId) {
         if (this.logger.isInfoEnabled()) {
             this.logger.info("\nReceived setupReportSMDeliveryStatus request msisdn= " + msisdn
                     + ", serviceCentreAddress=" + serviceCentreAddress + ", sMDeliveryOutcome=" + smDeliveryOutcome
@@ -167,6 +167,7 @@ public abstract class RsdsSbb implements Sbb, ReportSMDeliveryStatusInterface {
         try {
             mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,
                     this.getServiceCenterSccpAddress(), null, destAddress, null);
+            mapDialogSms.setNetworkId(networkId);
 
             ActivityContextInterface mtFOSmsDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);
             mtFOSmsDialogACI.attach(this.sbbContext.getSbbLocalObject());

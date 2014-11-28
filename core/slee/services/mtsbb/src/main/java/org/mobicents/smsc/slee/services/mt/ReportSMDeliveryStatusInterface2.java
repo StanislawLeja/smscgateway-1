@@ -31,6 +31,7 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SMDeliveryOutcome;
  */
 public interface ReportSMDeliveryStatusInterface2 {
 
-	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi, SMDeliveryOutcome sMDeliveryOutcome, String targetId);
+    public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi, SMDeliveryOutcome sMDeliveryOutcome, String targetId,
+            int networkId);
 
 }

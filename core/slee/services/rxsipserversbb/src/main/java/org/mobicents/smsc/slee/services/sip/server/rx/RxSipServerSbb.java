@@ -168,8 +168,8 @@ public abstract class RxSipServerSbb implements Sbb {
 				}
 			}
 
-			this.setCurrentMsgNum(curMsg);
-			this.setTargetId(smsSet.getTargetId());
+            this.setCurrentMsgNum(curMsg);
+            this.setTargetId(smsSet.getTargetId());
 
 			try {
 				this.sendMessage(smsSet);
@@ -285,7 +285,7 @@ public abstract class RxSipServerSbb implements Sbb {
 				int registeredDelivery = sms.getRegisteredDelivery();
 				if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
 					TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(),
-							sms.getSourceAddr());
+							sms.getSourceAddr(), smsSet.getNetworkId());
 					TargetAddress lock = SmsSetCache.getInstance().addSmsSet(ta);
 					try {
 						synchronized (lock) {
@@ -765,7 +765,7 @@ public abstract class RxSipServerSbb implements Sbb {
 			int registeredDelivery = sms.getRegisteredDelivery();
 			if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
 				TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(),
-						sms.getSourceAddr());
+						sms.getSourceAddr(), smsSet.getNetworkId());
 				lock = SmsSetCache.getInstance().addSmsSet(ta);
 				try {
 					synchronized (lock) {

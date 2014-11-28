@@ -42,7 +42,7 @@ public class TxSipServerSbbProxy extends TxSipServerSbb {
     public Sms createSmsEvent(String fromUser, byte[] message, TargetAddress ta, PersistenceRAInterface store) throws SmscProcessingException {
     	DataCodingSchemeImpl dcsGsm7 = new DataCodingSchemeImpl(DataCodingGroup.GeneralGroup, null, null,
     			null, CharacterSet.GSM7, false);
-    	return super.createSmsEvent(fromUser, message, ta, store, null, dcsGsm7, null, 0);
+    	return super.createSmsEvent(fromUser, message, ta, store, null, dcsGsm7, null, 0, 0);
     }
 
     @Override

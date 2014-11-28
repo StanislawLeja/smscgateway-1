@@ -30,6 +30,7 @@ public class PreparedStatementCollection_C3 {
     private String tName;
     private boolean shortMessageNewStringFormat;
     private boolean addedCorrId;
+    private boolean addedNetworkId;
 
     protected PreparedStatement createDueSlotForTargetId;
     protected PreparedStatement getDueSlotForTargetId;
@@ -57,6 +58,13 @@ public class PreparedStatementCollection_C3 {
             String s1 = "select \"" + Schema.COLUMN_CORR_ID + "\" FROM \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\" limit 1;";
             dbOperation.session.execute(s1);
             addedCorrId = true;
+        } catch (Exception e) {
+        }
+        try {
+            addedNetworkId = false;
+            String s1 = "select \"" + Schema.COLUMN_NETWORK_ID + "\" FROM \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\" limit 1;";
+            dbOperation.session.execute(s1);
+            addedNetworkId = true;
         } catch (Exception e) {
         }
 
@@ -117,6 +125,10 @@ public class PreparedStatementCollection_C3 {
         return this.addedCorrId;
     }
 
+    public boolean getAddedNetworkId() {
+        return this.addedNetworkId;
+    }
+
     private String getFillUpdateFields() {
         StringBuilder sb = new StringBuilder();
 
@@ -124,6 +136,10 @@ public class PreparedStatementCollection_C3 {
         sb.append(Schema.COLUMN_ID);
         sb.append("\", \"");
         sb.append(Schema.COLUMN_TARGET_ID);
+        if (addedNetworkId) {
+            sb.append("\", \"");
+            sb.append(Schema.COLUMN_NETWORK_ID);
+        }
         sb.append("\", \"");
         sb.append(Schema.COLUMN_DUE_SLOT);
         sb.append("\", \"");
@@ -232,9 +248,10 @@ public class PreparedStatementCollection_C3 {
         } else {
             cnt = 34;
         }
-        if (this.addedCorrId) {
+        if (this.addedCorrId)
             cnt++;
-        }
+        if (this.addedNetworkId)
+            cnt++;
 
         StringBuilder sb = new StringBuilder();
         int i2 = 0;

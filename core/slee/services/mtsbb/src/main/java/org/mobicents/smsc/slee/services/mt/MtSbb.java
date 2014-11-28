@@ -320,7 +320,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 							newMAPApplicationContextVersion);
 
 					this.sendMtSms(this.getMtFoSMSMAPApplicationContext(MAPApplicationContextVersion.version1),
-							MessageProcessingState.resendAfterMapProtocolNegotiation, null);
+							MessageProcessingState.resendAfterMapProtocolNegotiation, null, smsSet.getNetworkId());
 					return;
 				} catch (SmscProcessingException e) {
 					String reason = "SmscPocessingException when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: "
@@ -390,7 +390,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 				try {
 					this.sendMtSms(this.getMtFoSMSMAPApplicationContext(newMAPApplicationContextVersion),
-							MessageProcessingState.resendAfterMapProtocolNegotiation, null);
+							MessageProcessingState.resendAfterMapProtocolNegotiation, null, smsSet.getNetworkId());
 					return;
 				} catch (SmscProcessingException e) {
 					String reason = "SmscPocessingException when invoking sendMtSms() from onDialogReject()-resendAfterMapProtocolNegotiation: "
@@ -730,7 +730,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 		try {
 			this.sendMtSms(this.getMtFoSMSMAPApplicationContext(mapApplicationContextVersion),
-					MessageProcessingState.firstMessageSending, null);
+					MessageProcessingState.firstMessageSending, null, smsSet.getNetworkId());
 		} catch (SmscProcessingException e) {
 			String reason = "SmscPocessingException when invoking sendMtSms() from setupMtForwardShortMessageRequest()-firstMessageSending: "
 					+ e.toString();
@@ -751,11 +751,11 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	}
 
 	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi,
-			SMDeliveryOutcome sMDeliveryOutcome, String targetId) {
+			SMDeliveryOutcome sMDeliveryOutcome, String targetId, int networkId) {
 
 		SbbLocalObjectExt sbbLocalObject = this.sbbContext.getSbbLocalObject().getParent();
 		SriSbbLocalObject sriSbb = (SriSbbLocalObject) sbbLocalObject;
-		sriSbb.setupReportSMDeliveryStatusRequest(destinationAddress, ton, npi, sMDeliveryOutcome, targetId);
+        sriSbb.setupReportSMDeliveryStatusRequest(destinationAddress, ton, npi, sMDeliveryOutcome, targetId, networkId);
 	}
 
 	/**
@@ -891,7 +891,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	            smscStatAggregator.updateMsgOutTrySs7();
 
 	            this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.nextSegmentSending,
-						continueDialog ? mapDialogSms : null);
+						continueDialog ? mapDialogSms : null, smsSet.getNetworkId());
 				return;
 			} catch (SmscProcessingException e) {
 				this.logger.severe(
@@ -933,7 +933,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 //			if (sms.getStored()) {
             int registeredDelivery = sms.getRegisteredDelivery();
             if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
-                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr());
+                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr(), smsSet.getNetworkId());
                 TargetAddress lock = SmsSetCache.getInstance().addSmsSet(ta);
                 try {
                     synchronized (lock) {
@@ -1007,8 +1007,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		                smscStatAggregator.updateMsgOutTryAll();
 		                smscStatAggregator.updateMsgOutTrySs7();
 
-		                this.sendMtSms(mapDialogSms.getApplicationContext(),
-								MessageProcessingState.firstMessageSending, continueDialog ? mapDialogSms : null);
+                        this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.firstMessageSending, continueDialog ? mapDialogSms : null,
+                                smsSet.getNetworkId());
 						return;
 					} catch (SmscProcessingException e) {
 						this.logger.severe(
@@ -1040,8 +1040,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			                smscStatAggregator.updateMsgOutTryAll();
 			                smscStatAggregator.updateMsgOutTrySs7();
 
-			                this.sendMtSms(mapDialogSms.getApplicationContext(),
-									MessageProcessingState.firstMessageSending, continueDialog ? mapDialogSms : null);
+                            this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.firstMessageSending, continueDialog ? mapDialogSms
+                                    : null, smsSet.getNetworkId());
 							return;
 						} catch (SmscProcessingException e) {
 							this.logger.severe(
@@ -1074,8 +1074,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				&& informServiceCenterContainer.getMwStatus().getScAddressNotIncluded() == false
 				&& mapDialogSms.getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1) {
 			// sending a report to HLR of a success delivery
-			this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(),
-					smsSet.getDestAddrNpi(), SMDeliveryOutcome.successfulTransfer, smsSet.getTargetId());
+            this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
+                    SMDeliveryOutcome.successfulTransfer, smsSet.getTargetId(), smsSet.getNetworkId());
 		}
 	}
 
@@ -1139,7 +1139,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	}
 
 	private void sendMtSms(MAPApplicationContext mapApplicationContext, MessageProcessingState messageProcessingState,
-			MAPDialogSms mapDialogSms) throws SmscProcessingException {
+			MAPDialogSms mapDialogSms, int networkId) throws SmscProcessingException {
 
 		SmsSubmitData smsDeliveryData = this.doGetSmsSubmitData();
 		if (smsDeliveryData == null) {
@@ -1167,6 +1167,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				newDialog = true;
 				mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,
 						this.getServiceCenterSccpAddress(), null, this.getNetworkNode(), null);
+                mapDialogSms.setNetworkId(networkId);
 
 				ActivityContextInterface mtFOSmsDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);
 				mtFOSmsDialogACI.attach(this.sbbContext.getSbbLocalObject());

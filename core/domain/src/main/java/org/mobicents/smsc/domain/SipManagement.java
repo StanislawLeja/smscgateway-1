@@ -140,7 +140,7 @@ public class SipManagement implements SipManagementMBean {
 	}
 
 	public synchronized Sip createSip(String name, String clusterName, String host, int port, boolean chargingEnabled,
-			byte addressTon, byte addressNpi, String addressRange, boolean countersEnabled) throws Exception {
+			byte addressTon, byte addressNpi, String addressRange, boolean countersEnabled, int networkId) throws Exception {
 
 		for (FastList.Node<Sip> n = sips.head(), end = sips.tail(); (n = n.getNext()) != end;) {
 			Sip esme = n.getValue();
@@ -156,7 +156,7 @@ public class SipManagement implements SipManagementMBean {
 		}
 
 		Sip sip = new Sip(name, clusterName, host, port, chargingEnabled, addressTon, addressNpi, addressRange,
-				countersEnabled);
+				countersEnabled, networkId);
 		sip.sipManagement = this;
 
 		sips.add(sip);
@@ -224,7 +224,7 @@ public class SipManagement implements SipManagementMBean {
 
 			this.createSip(SIP_NAME, SIP_NAME, "127.0.0.1", 5065, false,
 					(byte) smscPropertiesManagement.getDefaultTon(), (byte) smscPropertiesManagement.getDefaultNpi(),
-					null, false);
+					null, false, 0);
 		}
 
 	}

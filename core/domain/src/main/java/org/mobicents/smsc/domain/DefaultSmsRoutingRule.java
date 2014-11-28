@@ -67,7 +67,7 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 	 * java.lang.String)
 	 */
 	@Override
-	public String getEsmeClusterName(int ton, int npi, String address, String name) {
+	public String getEsmeClusterName(int ton, int npi, String address, String name, int networkId) {
 
 //        for (FastList.Node<Esme> n = this.esmeManagement.getEsmes().head(), end = this.esmeManagement.getEsmes().tail(); (n = n
 //                .getNext()) != end;) {
@@ -80,9 +80,9 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 					|| (sessionBindType == SmppBindType.RECEIVER && smppSessionType == SmppSession.Type.SERVER)
 					|| (sessionBindType == SmppBindType.TRANSMITTER && smppSessionType == SmppSession.Type.CLIENT)) {
 
-				if (!(esme.getName().equals(name)) && esme.isRoutingAddressMatching(ton, npi, address)) {
-					return esme.getClusterName();
-				}
+                if (!(esme.getName().equals(name)) && esme.getNetworkId() == networkId && esme.isRoutingAddressMatching(ton, npi, address)) {
+                    return esme.getClusterName();
+                }
 			}
 		}
 
@@ -90,14 +90,14 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 	}
 
 	@Override
-	public String getSipClusterName(int ton, int npi, String address) {
+	public String getSipClusterName(int ton, int npi, String address, int networkId) {
 		for (FastList.Node<Sip> n = this.sipManagement.sips.head(), end = this.sipManagement.sips.tail(); (n = n
 				.getNext()) != end;) {
 			Sip sip = n.getValue();
 
-			if (sip.isRoutingAddressMatching(ton, npi, address)) {
-				return sip.getClusterName();
-			}
+            if (sip.getNetworkId() == networkId && sip.isRoutingAddressMatching(ton, npi, address)) {
+                return sip.getClusterName();
+            }
 		}
 		return null;
 	}

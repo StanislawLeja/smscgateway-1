@@ -36,6 +36,6 @@ import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 public interface ReportSMDeliveryStatusInterface {
 
 	public void setupReportSMDeliveryStatusRequest(ISDNAddressString msisdn, AddressString serviceCentreAddress, SMDeliveryOutcome sMDeliveryOutcome,
-			SccpAddress destAddress, MAPApplicationContext mapApplicationContext, String targetId);
+			SccpAddress destAddress, MAPApplicationContext mapApplicationContext, String targetId, int networkId);
 
 }

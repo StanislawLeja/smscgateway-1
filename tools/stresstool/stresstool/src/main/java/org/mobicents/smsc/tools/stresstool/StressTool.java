@@ -413,7 +413,7 @@ public class StressTool {
                 while (true) {
                     Integer ii1 = this.curNum;
                     String s1 = ii1.toString();
-                    TargetAddress ta = new TargetAddress(1, 1, s1);
+                    TargetAddress ta = new TargetAddress(1, 1, s1, 0);
 
                     try {
                         SmsSet smsSet = dbOperations.obtainSmsSet(ta);

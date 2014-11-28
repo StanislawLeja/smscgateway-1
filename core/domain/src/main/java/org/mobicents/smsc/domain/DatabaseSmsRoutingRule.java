@@ -91,7 +91,7 @@ public class DatabaseSmsRoutingRule implements DatabaseSmsRoutingRuleMBean {
 	 * java.lang.String)
 	 */
 	@Override
-	public String getEsmeClusterName(int ton, int npi, String address, String name) {
+	public String getEsmeClusterName(int ton, int npi, String address, String name, int networkId) {
 
 		String clusterName = null;
 
@@ -124,7 +124,7 @@ public class DatabaseSmsRoutingRule implements DatabaseSmsRoutingRuleMBean {
 	}
 
 	@Override
-	public String getSipClusterName(int ton, int npi, String address) {
+	public String getSipClusterName(int ton, int npi, String address, int networkId) {
 		String clusterName = null;
 
 		try {

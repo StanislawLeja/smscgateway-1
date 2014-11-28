@@ -168,14 +168,14 @@ public class EsmeManagement implements EsmeManagementMBean {
 					}
 				}
 
-				if (esme.getHost().equals("-1") & esme.getPort() == port) {
+				if (esme.getHost().equals("-1") && esme.getPort() == port) {
 					// Host is any but port matches
 					if (esme.getStateName().equals(com.cloudhopper.smpp.SmppSession.STATES[SmppSession.STATE_CLOSED])) {
 						return esme;
 					}
 				}
 
-				if (esme.getHost().equals("-1") & esme.getPort() == -1) {
+				if (esme.getHost().equals("-1") && esme.getPort() == -1) {
 					// Host is any and port is also any
 					if (esme.getStateName().equals(com.cloudhopper.smpp.SmppSession.STATES[SmppSession.STATE_CLOSED])) {
 						return esme;
@@ -194,7 +194,7 @@ public class EsmeManagement implements EsmeManagementMBean {
 			String address, String smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
 			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
 			int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange, int routingTon,
-			int routingNpi, String routingAddressRange) throws Exception {
+			int routingNpi, String routingAddressRange, int networkId) throws Exception {
 
 		SmppBindType smppBindTypeOb = SmppBindType.valueOf(smppBindType);
 
@@ -259,6 +259,13 @@ public class EsmeManagement implements EsmeManagementMBean {
 			}
 		}// for loop
 
+		EsmeCluster esmeCluster = this.esmeClusters.get(clusterName);
+        if (esmeCluster != null) {
+            if (esmeCluster.getNetworkId() != networkId) {
+                throw new Exception(String.format(SmppOamMessages.CREATE_EMSE_FAIL_WRONG_NETWORKID_IN_ESMECLUSTER, esmeCluster.getNetworkId(), networkId));
+            }
+        }
+
 		if (clusterName == null) {
 			clusterName = name;
 		}
@@ -267,15 +274,14 @@ public class EsmeManagement implements EsmeManagementMBean {
 				smppInterfaceVersionTypeObj, ton, npi, address, smppBindTypeOb, smppSessionTypeObj, windowSize,
 				connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName,
 				countersEnabled, enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange, routingTon, routingNpi,
-				routingAddressRange);
+				routingAddressRange, networkId);
 		
 		esme.esmeManagement = this;
 
 		esmes.add(esme);
 
-		EsmeCluster esmeCluster = this.esmeClusters.get(clusterName);
 		if (esmeCluster == null) {
-			esmeCluster = new EsmeCluster(clusterName);
+			esmeCluster = new EsmeCluster(clusterName, networkId);
 			this.esmeClusters.put(clusterName, esmeCluster);
 		}
 
@@ -466,10 +472,12 @@ public class EsmeManagement implements EsmeManagementMBean {
 				String esmeClusterName = esme.getClusterName();
 				EsmeCluster esmeCluster = this.esmeClusters.get(esmeClusterName);
 				if (esmeCluster == null) {
-					esmeCluster = new EsmeCluster(esmeClusterName);
+					esmeCluster = new EsmeCluster(esmeClusterName, esme.getNetworkId());
 					this.esmeClusters.put(esmeClusterName, esmeCluster);
-				}
-				esmeCluster.addEsme(esme);
+                } else {
+                    esme.setNetworkId(esmeCluster.getNetworkId());
+                }
+                esmeCluster.addEsme(esme);
 			}
 
 			reader.close();

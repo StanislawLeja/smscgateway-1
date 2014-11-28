@@ -56,6 +56,8 @@ import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.domain.Sip;
+import org.mobicents.smsc.domain.SipManagement;
 import org.mobicents.smsc.domain.SipXHeaders;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
@@ -107,6 +109,8 @@ public abstract class TxSipServerSbb implements Sbb {
 	protected PersistenceRAInterface persistence = null;
 	private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 
+	private static final SipManagement sipManagement = SipManagement.getInstance();
+
 	private static Charset utf8 = Charset.forName("UTF-8");
 	// private static Charset ucs2 = Charset.forName("UTF-16BE");
 	private static DataCodingSchemeImpl dcsGsm7 = new DataCodingSchemeImpl(DataCodingGroup.GeneralGroup, null, null,
@@ -130,6 +134,8 @@ public abstract class TxSipServerSbb implements Sbb {
 			this.logger.fine("onMESSAGE " + event);
 		}
 
+		Sip sip = sipManagement.getSipByName(SipManagement.SIP_NAME);
+
 		try {
 			final Request request = event.getRequest();
 
@@ -142,7 +148,7 @@ public abstract class TxSipServerSbb implements Sbb {
 			final String fromUser = ((SipUri) fromHeader.getAddress().getURI()).getUser();
 
 			// Persist this message
-			TargetAddress ta = this.createDestTargetAddress(toUser);
+			TargetAddress ta = this.createDestTargetAddress(toUser, sip.getNetworkId());
 			PersistenceRAInterface store = getStore();
 			TargetAddress lock = store.obtainSynchroObject(ta);
 
@@ -193,8 +199,7 @@ public abstract class TxSipServerSbb implements Sbb {
 			Sms sms;
 			try {
 				synchronized (lock) {
-					sms = this.createSmsEvent(fromUser, message, ta, store, udh, codingSchme, validityPeriod,
-							regDeliveryInt);
+                    sms = this.createSmsEvent(fromUser, message, ta, store, udh, codingSchme, validityPeriod, regDeliveryInt, sip.getNetworkId());
 					this.processSms(sms, store);
 				}
 			} catch (SmscProcessingException e1) {
@@ -287,13 +292,13 @@ public abstract class TxSipServerSbb implements Sbb {
 		return this.persistence;
 	}
 
-	private TargetAddress createDestTargetAddress(String address) {
+	private TargetAddress createDestTargetAddress(String address, int networkId) {
 
 		int destTon, destNpi;
 		destTon = smscPropertiesManagement.getDefaultTon();
 		destNpi = smscPropertiesManagement.getDefaultNpi();
 
-		TargetAddress ta = new TargetAddress(destTon, destNpi, address);
+		TargetAddress ta = new TargetAddress(destTon, destNpi, address, networkId);
 		return ta;
 	}
 
@@ -381,7 +386,7 @@ public abstract class TxSipServerSbb implements Sbb {
 	}
 
 	protected Sms createSmsEvent(String fromUser, byte[] message, TargetAddress ta, PersistenceRAInterface store,
-			byte[] udh, DataCodingSchemeImpl dataCodingScheme, Date validityPeriod, int regDeliveryInt)
+			byte[] udh, DataCodingSchemeImpl dataCodingScheme, Date validityPeriod, int regDeliveryInt, int networkId)
 			throws SmscProcessingException {
 
 		Sms sms = new Sms();
@@ -492,6 +497,7 @@ public abstract class TxSipServerSbb implements Sbb {
 			smsSet.setDestAddr(ta.getAddr());
 			smsSet.setDestAddrNpi(ta.getAddrNpi());
 			smsSet.setDestAddrTon(ta.getAddrTon());
+            smsSet.setNetworkId(networkId);
 			smsSet.addSms(sms);
 		}
 		sms.setSmsSet(smsSet);

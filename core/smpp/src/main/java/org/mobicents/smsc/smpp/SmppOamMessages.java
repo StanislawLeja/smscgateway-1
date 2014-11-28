@@ -66,6 +66,8 @@ public interface SmppOamMessages {
 
     public static final String CREATE_EMSE_FAIL_PRIMARY_KEY_ALREADY_EXIST = "Creation of EMSE failed. Other ESME with same SystemId=%s host=%s port=%d and SmppBindType=%s already exist";
 
+    public static final String CREATE_EMSE_FAIL_WRONG_NETWORKID_IN_ESMECLUSTER = "Creation of EMSE failed. NetworkId of the ESME cluster is %d and not equal inserted NetworkId for a new ESME %d";
+
     public static final String DELETE_ESME_FAILED_NO_ESME_FOUND = "No Esme found with given name %s";
 
     public static final String DELETE_ESME_FAILED_ESME_STARTED = "Cannot remove ESME. Please stop ESME before removing";
@@ -84,6 +86,8 @@ public interface SmppOamMessages {
     public static final String SHOW_ESME_HOST = " host=";
 
     public static final String SHOW_ESME_PORT = " port=";
+
+    public static final String SHOW_NETWORK_ID = " networkId=";
 
     public static final String CHARGING_ENABLED = " chargingEnabled=";
 

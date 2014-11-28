@@ -136,9 +136,12 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (command.equals("host")) {
 				sip.setHost(value);
 				success = true;
-			} else if (command.equals("port")) {
-				sip.setPort(Integer.parseInt(value));
-				success = true;
+            } else if (command.equals("port")) {
+                sip.setPort(Integer.parseInt(value));
+                success = true;
+            } else if (command.equals("networkid")) {
+                sip.setNetworkId(Integer.parseInt(value));
+                success = true;
 			} else if (command.equals("routing-ton")) {
 				sip.setRoutingTon(Integer.parseInt(value));
 				success = true;

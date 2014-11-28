@@ -872,7 +872,7 @@ public class DBOperations_C2 {
 			PreparedStatement ps = psc.createRecordCurrent;
 			BoundStatement boundStatement = new BoundStatement(ps);
 
-			setSmsFields(sms, dueSlot, boundStatement, false, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId());
+			setSmsFields(sms, dueSlot, boundStatement, false, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(), psc.getAddedNetworkId());
 
 			ResultSet res = session.execute(boundStatement);
 		} catch (Exception e1) {
@@ -893,7 +893,7 @@ public class DBOperations_C2 {
 			PreparedStatement ps = psc.createRecordArchive;
 			BoundStatement boundStatement = new BoundStatement(ps);
 
-			setSmsFields(sms, dueSlot, boundStatement, true, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId());
+			setSmsFields(sms, dueSlot, boundStatement, true, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(), psc.getAddedNetworkId());
 
 			ResultSet res = session.execute(boundStatement);
 		} catch (Exception e1) {
@@ -903,10 +903,13 @@ public class DBOperations_C2 {
 		}
 	}
 
-    private void setSmsFields(Sms sms, long dueSlot, BoundStatement boundStatement, boolean archive, boolean shortMessageNewStringFormat, boolean addedCorrId)
-            throws PersistenceException {
+    private void setSmsFields(Sms sms, long dueSlot, BoundStatement boundStatement, boolean archive, boolean shortMessageNewStringFormat, boolean addedCorrId,
+            boolean addedNetworkId) throws PersistenceException {
 		boundStatement.setUUID(Schema.COLUMN_ID, sms.getDbId());
-		boundStatement.setString(Schema.COLUMN_TARGET_ID, sms.getSmsSet().getTargetId());
+        boundStatement.setString(Schema.COLUMN_TARGET_ID, sms.getSmsSet().getTargetId());
+        if (addedNetworkId) {
+            boundStatement.setInt(Schema.COLUMN_NETWORK_ID, sms.getSmsSet().getNetworkId());
+        }
 		boundStatement.setLong(Schema.COLUMN_DUE_SLOT, dueSlot);
 		boundStatement.setInt(Schema.COLUMN_IN_SYSTEM, IN_SYSTEM_UNSENT);
 		boundStatement.setUUID(Schema.COLUMN_SMSC_UUID, emptyUuid);
@@ -1065,7 +1068,7 @@ public class DBOperations_C2 {
 			ResultSet res = session.execute(boundStatement);
 
 			for (Row row : res) {
-                SmsSet smsSet = this.createSms(row, null, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId());
+                SmsSet smsSet = this.createSms(row, null, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(), psc.getAddedNetworkId());
 				if (smsSet != null)
 					result.add(smsSet);
 			}
@@ -1089,7 +1092,7 @@ public class DBOperations_C2 {
 			ResultSet res = session.execute(boundStatement);
 
 			for (Row row : res) {
-                result = this.createSms(row, result, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId());
+                result = this.createSms(row, result, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(), psc.getAddedNetworkId());
 			}
 		} catch (Exception e1) {
 			String msg = "Failed getRecordListForTargeId()";
@@ -1100,7 +1103,8 @@ public class DBOperations_C2 {
         return result;
 	}
 
-    protected SmsSet createSms(final Row row, SmsSet smsSet, boolean shortMessageNewStringFormat, boolean addedCorrId) throws PersistenceException {
+    protected SmsSet createSms(final Row row, SmsSet smsSet, boolean shortMessageNewStringFormat, boolean addedCorrId, boolean addedNetworkId)
+            throws PersistenceException {
         if (row == null) {
             return smsSet;
         }
@@ -1233,6 +1237,23 @@ public class DBOperations_C2 {
 			smsSet.setDestAddr(destAddr);
 			smsSet.setDestAddrTon(destAddrTon);
             smsSet.setDestAddrNpi(destAddrNpi);
+
+            if (addedNetworkId) {
+                smsSet.setNetworkId(row.getInt(Schema.COLUMN_NETWORK_ID));
+            } else {
+                String tagId = row.getString(Schema.COLUMN_TARGET_ID);
+                if (tagId != null) {
+                    String[] ss = tagId.split("_");
+                    if (ss.length == 4) {
+                        String s1 = ss[3];
+                        try {
+                            int networkId = Integer.parseInt(s1);
+                            smsSet.setNetworkId(networkId);
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+            }
 
             if (addedCorrId)
                 smsSet.setCorrelationId(row.getString(Schema.COLUMN_CORR_ID));
@@ -1490,6 +1511,7 @@ public class DBOperations_C2 {
 	protected void addSmsFields(StringBuilder sb) {
 		appendField(sb, Schema.COLUMN_ID, "uuid");
 		appendField(sb, Schema.COLUMN_TARGET_ID, "ascii");
+        appendField(sb, Schema.COLUMN_NETWORK_ID, "int");
 		appendField(sb, Schema.COLUMN_DUE_SLOT, "bigint");
 		appendField(sb, Schema.COLUMN_IN_SYSTEM, "int");
 		appendField(sb, Schema.COLUMN_SMSC_UUID, "uuid");

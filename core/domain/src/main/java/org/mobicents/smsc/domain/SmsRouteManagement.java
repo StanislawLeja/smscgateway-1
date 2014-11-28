@@ -54,12 +54,12 @@ public class SmsRouteManagement {
         return this.smsRoutingRule;
     }
 
-	public String getEsmeClusterName(int ton, int npi, String address, String name) {
-		return this.smsRoutingRule.getEsmeClusterName(ton, npi, address, name);
+	public String getEsmeClusterName(int ton, int npi, String address, String name, int networkId) {
+		return this.smsRoutingRule.getEsmeClusterName(ton, npi, address, name, networkId);
 	}
 	
-	public String getSipClusterName(int ton, int npi, String address){
-		return this.smsRoutingRule.getSipClusterName(ton, npi, address);
+	public String getSipClusterName(int ton, int npi, String address, int networkId){
+		return this.smsRoutingRule.getSipClusterName(ton, npi, address, networkId);
 	}
 
 }

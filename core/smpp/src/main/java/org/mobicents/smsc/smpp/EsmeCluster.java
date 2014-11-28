@@ -34,19 +34,25 @@ import com.cloudhopper.smpp.SmppSession;
 public class EsmeCluster {
 	private final String clusterName;
 	private final FastList<Esme> esmes = new FastList<Esme>();
+    private final int networkId;
 
 	// These are the ESME's that will be used to transmit PDU to remote side
 	private final FastList<Esme> esmesToSendPdu = new FastList<Esme>();
 
 	private volatile int index = 0;
 
-	protected EsmeCluster(String clusterName) {
-		this.clusterName = clusterName;
-	}
+	protected EsmeCluster(String clusterName, int networkId) {
+        this.clusterName = clusterName;
+        this.networkId = networkId;
+    }
 
-	String getClusterName() {
-		return clusterName;
-	}
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public int getNetworkId() {
+        return networkId;
+    }
 
 	void addEsme(Esme esme) {
 		synchronized (this.esmes) {

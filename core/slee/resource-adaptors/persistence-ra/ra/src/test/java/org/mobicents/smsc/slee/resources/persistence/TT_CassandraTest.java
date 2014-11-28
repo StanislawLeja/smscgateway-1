@@ -70,8 +70,8 @@ public class TT_CassandraTest {
     private UUID id4 = UUID.fromString("c3bd98c2-355d-4572-8915-c6d0c767cae1");
     private UUID id5 = UUID.fromString("59e815dc-49ad-4539-8cff-beb710a7de04");
 
-    private TargetAddress ta1 = new TargetAddress(5, 1, "1111");
-    private TargetAddress ta2 = new TargetAddress(5, 1, "1112");
+    private TargetAddress ta1 = new TargetAddress(5, 1, "1111", 9);
+    private TargetAddress ta2 = new TargetAddress(5, 1, "1112", 9);
 
     @BeforeMethod
     public void setUpClass() throws Exception {
@@ -352,7 +352,7 @@ public class TT_CassandraTest {
         // mesageSegmentNumber
         udh.addInformationElement(informationElement);
 
-        TargetAddress ta = new TargetAddress(1, 1, "1111");
+        TargetAddress ta = new TargetAddress(1, 1, "1111", 9);
 
         // GSM7 + UDH
         this.testOldFormatMessage(ta, dcsGsm7, "Test eng", udh);
@@ -424,6 +424,7 @@ public class TT_CassandraTest {
                 smsSet.setDestAddrTon(ta.getAddrTon());
 
                 smsSet.setCorrelationId("CI=0000");
+                smsSet.setNetworkId(9);
 
                 sms = new Sms();
                 sms.setSmsSet(smsSet);
@@ -475,6 +476,7 @@ public class TT_CassandraTest {
 
                 assertEquals(lst.size(), 1);
                 SmsSet smsSet = lst.get(0);
+                assertEquals(smsSet.getNetworkId(), 9);
                 for (Sms sms1 : smsSet.getRawList()) {
                     if (sms1.getDbId().equals(sms.getDbId())) {
                         assertEquals(sms1.getDataCoding(), dcs.getCode());
@@ -708,6 +710,7 @@ public class TT_CassandraTest {
         smsSet.setDestAddr(number);
         smsSet.setDestAddrNpi(1);
         smsSet.setDestAddrTon(5);
+        smsSet.setNetworkId(9);
         if (num == 1)
             smsSet.setCorrelationId("CI=100001000022222");
 
@@ -763,6 +766,7 @@ public class TT_CassandraTest {
         assertTrue(sms.getDbId().equals(id));
 
         assertEquals(sms.getSmsSet().getDueDelay(), 510);
+        assertEquals(sms.getSmsSet().getNetworkId(), 9);
         assertEquals(sms.getDeliveryCount(), 9);
 
         assertEquals(sms.getSourceAddr(), "11112_" + num);

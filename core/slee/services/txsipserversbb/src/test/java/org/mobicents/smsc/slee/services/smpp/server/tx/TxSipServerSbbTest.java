@@ -67,7 +67,7 @@ public class TxSipServerSbbTest {
         String fromUser = "abcdefghijklmnoprst";
         String toUser = "000001";
         String msg = "Hello 0001";
-        TargetAddress ta = new TargetAddress(1, 1, toUser);
+        TargetAddress ta = new TargetAddress(1, 1, toUser, 0);
         PersistenceRAInterface store = new PersistenceRAInterfaceProxy();
 
         sbb.createSmsEvent(fromUser, msg.getBytes(Charset.forName("UTF-8")), ta, store);

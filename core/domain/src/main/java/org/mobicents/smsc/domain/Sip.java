@@ -23,7 +23,8 @@ public class Sip implements SipMBean {
 	private static final String SIP_CLUSTER_NAME = "clusterName";
 
 	private static final String REMOTE_HOST_IP = "host";
-	private static final String REMOTE_HOST_PORT = "port";
+    private static final String REMOTE_HOST_PORT = "port";
+    private static final String NETWORK_ID = "networkId";
 
 	private static final String ROUTING_TON = "routingTon";
 	private static final String ROUTING_NPI = "routingNpi";
@@ -37,7 +38,8 @@ public class Sip implements SipMBean {
 	private String name;
 	private String clusterName;
 	private String host;
-	private int port;
+    private int port;
+    private int networkId;
 
 	// Outgoing SMS should match these TON, NPI and addressRange. TON and NPI
 	// can be -1 which means SMSC doesn't care for these fields and only
@@ -64,7 +66,7 @@ public class Sip implements SipMBean {
 	 * 
 	 */
 	public Sip(String name, String clusterName, String host, int port, boolean chargingEnabled, byte addressTon,
-			byte addressNpi, String addressRange, boolean countersEnabled) {
+			byte addressNpi, String addressRange, boolean countersEnabled, int networkId) {
 		this.name = name;
 		this.clusterName = clusterName;
 
@@ -79,6 +81,8 @@ public class Sip implements SipMBean {
 		this.routingTon = addressTon;
 		this.routingNpi = addressNpi;
 		this.routingAddressRange = addressRange;
+
+        this.networkId = networkId;
 
 		resetPattern();
 	}
@@ -156,6 +160,17 @@ public class Sip implements SipMBean {
 		this.resetSipAddress();
 		this.store();
 	}
+
+    @Override
+    public int getNetworkId() {
+        return networkId;
+    }
+
+    @Override
+    public void setNetworkId(int networkId) {
+        this.networkId = networkId;
+        this.store();
+    }
 
 	@Override
 	public int getRoutingNpi() {
@@ -241,7 +256,9 @@ public class Sip implements SipMBean {
 	public void show(StringBuffer sb) {
 		sb.append(SMSCOAMMessages.SHOW_SIP_NAME).append(this.name).append(SmppOamMessages.SHOW_CLUSTER_NAME)
 				.append(this.clusterName).append(SmppOamMessages.SHOW_ESME_HOST).append(this.host)
-				.append(SmppOamMessages.SHOW_ESME_PORT).append(this.port).append(SMSCOAMMessages.SHOW_STARTED)
+                .append(SmppOamMessages.SHOW_ESME_PORT).append(this.port)
+                .append(SmppOamMessages.SHOW_NETWORK_ID).append(this.networkId)
+				.append(SMSCOAMMessages.SHOW_STARTED)
 				.append(this.isStarted).append(SmppOamMessages.SHOW_ROUTING_ADDRESS_TON).append(this.routingTon)
 				.append(SmppOamMessages.SHOW_ROUTING_ADDRESS_NPI).append(this.routingNpi)
 				.append(SmppOamMessages.SHOW_ROUTING_ADDRESS).append(this.routingAddressRange)
@@ -262,7 +279,8 @@ public class Sip implements SipMBean {
 			sip.clusterName = xml.getAttribute(SIP_CLUSTER_NAME, "");
 
 			sip.host = xml.getAttribute(REMOTE_HOST_IP, "");
-			sip.port = xml.getAttribute(REMOTE_HOST_PORT, -1);
+            sip.port = xml.getAttribute(REMOTE_HOST_PORT, -1);
+            sip.networkId = xml.getAttribute(NETWORK_ID, 0);
 
 			sip.resetSipAddress();
 
@@ -284,7 +302,8 @@ public class Sip implements SipMBean {
 			xml.setAttribute(SIP_CLUSTER_NAME, sip.clusterName);
 
 			xml.setAttribute(REMOTE_HOST_IP, sip.host);
-			xml.setAttribute(REMOTE_HOST_PORT, sip.port);
+            xml.setAttribute(REMOTE_HOST_PORT, sip.port);
+            xml.setAttribute(NETWORK_ID, sip.networkId);
 
 			xml.setAttribute(STARTED, sip.isStarted);
 

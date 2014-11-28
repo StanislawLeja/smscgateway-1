@@ -216,7 +216,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
         ResultSet result = session.execute(boundStatement);
 
         Row row = result.one();
-        SmsSet smsSet = createSms(row, null, true, true);
+        SmsSet smsSet = createSms(row, null, true, true, true);
         if (smsSet == null)
             return null;
 
@@ -233,6 +233,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
 
         res.imsi = row.getString(Schema.COLUMN_IMSI);
         res.corrId = row.getString(Schema.COLUMN_CORR_ID);
+        res.networkId = row.getInt(Schema.COLUMN_NETWORK_ID);
         res.nnnDigits = row.getString(Schema.COLUMN_NNN_DIGITS);
         res.smStatus = row.getInt(Schema.COLUMN_SM_STATUS);
         res.smType = row.getInt(Schema.COLUMN_SM_TYPE);
@@ -282,7 +283,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
             SmsSet smsSet = null;
             Row row2 = null;
             for (Row row : rs) {
-                smsSet = this.createSms(row, null, true, true);
+                smsSet = this.createSms(row, null, true, true, true);
                 row2 = row;
                 break;
             }
@@ -309,6 +310,9 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
     protected void addSmsFields(StringBuilder sb) {
         appendField(sb, Schema.COLUMN_ID, "uuid");
         appendField(sb, Schema.COLUMN_TARGET_ID, "ascii");
+        if (!oldShortMessageDbFormat) {
+            appendField(sb, Schema.COLUMN_NETWORK_ID, "int");
+        }
         appendField(sb, Schema.COLUMN_DUE_SLOT, "bigint");
         appendField(sb, Schema.COLUMN_IN_SYSTEM, "int");
         appendField(sb, Schema.COLUMN_SMSC_UUID, "uuid");

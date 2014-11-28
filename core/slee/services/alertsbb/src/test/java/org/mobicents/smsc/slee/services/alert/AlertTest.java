@@ -70,7 +70,7 @@ public class AlertTest {
 	private TT_PersistenceRAInterfaceProxy pers;
 	private boolean cassandraDbInited;
 
-	private TargetAddress ta1 = new TargetAddress(1, 1, "5555");
+	private TargetAddress ta1 = new TargetAddress(1, 1, "5555", 0);
 
 	private Date farDate = new Date(2099, 1, 1);
 

@@ -10,12 +10,30 @@ import java.util.regex.Pattern;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;
+import org.mobicents.smsc.smpp.Esme;
+import org.mobicents.smsc.smpp.EsmeManagement;
 import org.testng.annotations.Test;
 
 public class A1Test {
 
+    private class EsmeProxy extends Esme {
+
+        public EsmeProxy() {
+            esmeManagement = EsmeManagement.getInstance();
+        }
+    }
+    
     @Test(groups = { "Base" })
     public void testA1() {
+
+//        EsmeProxy esme = new EsmeProxy();
+//        esme.setPort(-1);
+//        esme.setHost("-1");
+        int port = -1;
+//        boolean bb1 = (esme.getHost().equals("-1") & esme.getPort() == port);
+        boolean bb1 = ("-1".equals("-1") & (-1) == port);
+        
+        
         String s1 = "^45[0-9a-zA-Z]*";
         String s21 = "45";
         String s22 = "45222";

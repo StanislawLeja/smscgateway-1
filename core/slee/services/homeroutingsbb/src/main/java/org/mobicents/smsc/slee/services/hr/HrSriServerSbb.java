@@ -174,7 +174,7 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
             }
         }
 
-        setupSriRequest(evt.getMsisdn(), evt.getServiceCentreAddress());
+        setupSriRequest(evt.getMsisdn(), evt.getServiceCentreAddress(), dialog.getNetworkId());
     }
 
     /**
@@ -187,7 +187,7 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
         this.logger.severe("Received SEND_ROUTING_INFO_FOR_SM_RESPONSE = " + evt);
     }
 
-    private void setupSriRequest(ISDNAddressString msisdn, AddressString serviceCentreAddress) {
+    private void setupSriRequest(ISDNAddressString msisdn, AddressString serviceCentreAddress, int networkId) {
         smscStatAggregator.updateMsgInHrSriReq();
 
         HrSriClientSbbLocalObject hrSriClientSbbLocalObject = this.getHrSriClientSbbLocalObject();
@@ -196,7 +196,7 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
             if (correlationIDRes.getSmscAddress() != null && !correlationIDRes.getSmscAddress().equals(""))
                 this.setSmscAddressForCountryCode(correlationIDRes.getSmscAddress());
             String correlationID = correlationIDRes.getCorrelationId();
-            CorrelationIdValue correlationIdValue = new CorrelationIdValue(correlationID, msisdn, serviceCentreAddress);
+            CorrelationIdValue correlationIdValue = new CorrelationIdValue(correlationID, msisdn, serviceCentreAddress, networkId);
             hrSriClientSbbLocalObject.setupSriRequest(correlationIdValue);
         }
     }

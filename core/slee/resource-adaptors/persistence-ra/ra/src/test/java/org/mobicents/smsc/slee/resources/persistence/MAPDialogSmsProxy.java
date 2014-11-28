@@ -536,5 +536,17 @@ public class MAPDialogSmsProxy implements MAPDialogSms {
             return "MAPTestEvent[" + testEventType + "]";
         }
     }
+
+    @Override
+    public int getNetworkId() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void setNetworkId(int arg0) {
+        // TODO Auto-generated method stub
+        
+    }
 }
 

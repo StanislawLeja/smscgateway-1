@@ -29,7 +29,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 
 
@@ -46,6 +45,7 @@ public class SmsSet implements Serializable {
 	private int destAddrTon;
 	private int destAddrNpi;
 	private String destAddr;
+    private int networkId;
 
 	// destination info - not saved in LIVE table
 	private String destClusterName;
@@ -84,8 +84,10 @@ public class SmsSet implements Serializable {
 		sb.append(this.destAddr);
 		sb.append("_");
 		sb.append(this.destAddrTon);
-		sb.append("_");
-		sb.append(this.destAddrNpi);
+        sb.append("_");
+        sb.append(this.destAddrNpi);
+        sb.append("_");
+        sb.append(this.networkId);
 		return sb.toString();
 	}
 
@@ -114,13 +116,24 @@ public class SmsSet implements Serializable {
     /**
      * destination address
      */
-	public String getDestAddr() {
-		return destAddr;
-	}
+    public String getDestAddr() {
+        return destAddr;
+    }
 
-	public void setDestAddr(String destAddr) {
-		this.destAddr = destAddr;
-	}
+    public void setDestAddr(String destAddr) {
+        this.destAddr = destAddr;
+    }
+
+    /**
+     * networkId
+     */
+    public int getNetworkId() {
+        return networkId;
+    }
+
+    public void setNetworkId(int networkId) {
+        this.networkId = networkId;
+    }
 
 	/**
 	 * name of cluster for destination ESME terminated massages (�� for MT messages)
@@ -339,8 +352,10 @@ public class SmsSet implements Serializable {
 		sb.append(destAddrTon);
 		sb.append(", destAddrNpi=");
 		sb.append(destAddrNpi);
-		sb.append(", destAddr=");
-		sb.append(destAddr);
+        sb.append(", destAddr=");
+        sb.append(destAddr);
+        sb.append(", networkId=");
+        sb.append(networkId);
 		sb.append(", destClusterName=");
 		sb.append(destClusterName);
 		sb.append(", destSystemId=");
@@ -385,6 +400,7 @@ public class SmsSet implements Serializable {
 
         result = prime * result + destAddrTon;
         result = prime * result + destAddrNpi;
+        result = prime * result + networkId;
         result = prime * result + ((destAddr == null) ? 0 : destAddr.hashCode());
         return result;
     }
@@ -404,8 +420,10 @@ public class SmsSet implements Serializable {
 
 		if (this.destAddrTon != other.destAddrTon)
 			return false;
-		if (this.destAddrNpi != other.destAddrNpi)
-			return false;
+        if (this.destAddrNpi != other.destAddrNpi)
+            return false;
+        if (this.networkId != other.networkId)
+            return false;
 
 		if (destAddr == null) {
 			if (other.destAddr != null)

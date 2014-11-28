@@ -40,9 +40,9 @@ public interface SmsRoutingRule {
 	 * @param name
 	 * @return
 	 */
-	public String getEsmeClusterName(int ton, int npi, String address, String name);
+	public String getEsmeClusterName(int ton, int npi, String address, String name, int networkId);
 
-	public String getSipClusterName(int ton, int npi, String address);
+	public String getSipClusterName(int ton, int npi, String address, int networkId);
 
 	public void setEsmeManagement(EsmeManagement em);
 

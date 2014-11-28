@@ -45,6 +45,7 @@ public class SmsProxy {
 
     public String imsi;
     public String corrId;
+    public int networkId;
 	public String nnnDigits;
 	public int smStatus;
 	public int smType;

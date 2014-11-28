@@ -55,7 +55,7 @@ public class MtDatabaseCassandraTest {
 	private boolean cassandraDbInited;
 	private Date curDate;
 
-	private TargetAddress ta1 = new TargetAddress(1, 1, "5555");
+	private TargetAddress ta1 = new TargetAddress(1, 1, "5555", 0);
 
 	private String msg = "01230123";
 
