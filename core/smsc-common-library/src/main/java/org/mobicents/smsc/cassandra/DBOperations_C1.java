@@ -909,7 +909,7 @@ public class DBOperations_C1 {
 		return smsSet;
 	}
 
-	public DbSmsRoutingRule getSmsRoutingRule(final String address) throws PersistenceException {
+	public DbSmsRoutingRule getSmsRoutingRule(final String address, int networkId) throws PersistenceException {
 
 		try {
 			BoundStatement boundStatement = new BoundStatement(getSmsRoutingRule);
@@ -921,7 +921,7 @@ public class DBOperations_C1 {
 				return null;
 			} else {
 				String name = row.getString(Schema.COLUMN_CLUSTER_NAME);
-				DbSmsRoutingRule res = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP, address, name);
+				DbSmsRoutingRule res = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP, address, networkId, name);
 				return res;
 			}
 		} catch (Exception e) {
@@ -973,7 +973,8 @@ public class DBOperations_C1 {
 			for (Row row : result) {
 				String name = row.getString(Schema.COLUMN_CLUSTER_NAME);
 				String address = row.getString(Schema.COLUMN_ADDRESS);
-				DbSmsRoutingRule res = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP, address, name);
+				int networkId = row.getInt(Schema.COLUMN_NETWORK_ID);
+				DbSmsRoutingRule res = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP, address, networkId, name);
 
 				if (i1 == 0) {
 					i1 = 1;

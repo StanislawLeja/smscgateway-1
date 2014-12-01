@@ -265,9 +265,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 			}
 
 			return SMSCOAMMessages.INVALID_COMMAND;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			logger.error(String.format("Error while executing comand %s", Arrays.toString(args)), e);
-			return e.getMessage();
+			return e.toString();
 		}
 	}
 
@@ -909,7 +909,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 	private String databaseRuleUpdate(String[] args) throws Exception {
 		DatabaseSmsRoutingRule smsRoutingRule = (DatabaseSmsRoutingRule) this.smscManagement.getSmsRoutingRule();
 
-		if (args.length < 5 || args.length > 6) {
+		if (args.length < 5 || args.length > 8) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -923,16 +923,23 @@ public class SMSCShellExecutor implements ShellExecutor {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.SMPP;
-		if (args.length == 6) {
-			smsRoutingRuleType = SmsRoutingRuleType.valueOf(args[5]);
-		}
+        int count = 5;
+        String command;
+        SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.SMPP;
+        int networkId = 0;
+        while (count < args.length && ((command = args[count++]) != null)) {
+            if (command.equals("SMPP") || command.equals("SIP")) {
+                smsRoutingRuleType = SmsRoutingRuleType.valueOf(command);
+            } else if (command.equals("networkid")) {
+                if (count < args.length) {
+                    String value = args[count++];
+                    networkId = Integer.parseInt(value);
+                }
+            }
+        }// while
 
-		if (smsRoutingRuleType == null) {
-			return SMSCOAMMessages.INVALID_COMMAND;
-		}
-		smsRoutingRule.updateDbSmsRoutingRule(smsRoutingRuleType, address, systemId);
-		return String.format(SMSCOAMMessages.UPDATE_DATABASE_RULE_SUCCESSFULL, address);
+        smsRoutingRule.updateDbSmsRoutingRule(smsRoutingRuleType, address, networkId, systemId);
+        return String.format(SMSCOAMMessages.UPDATE_DATABASE_RULE_SUCCESSFULL, smsRoutingRuleType.toString(), address, networkId);
 	}
 
 	/**
@@ -944,7 +951,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 	private String databaseRuleDelete(String[] args) throws Exception {
 		DatabaseSmsRoutingRule smsRoutingRule = (DatabaseSmsRoutingRule) this.smscManagement.getSmsRoutingRule();
 
-		if (args.length < 4 || args.length > 5) {
+		if (args.length < 4 || args.length > 7) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -953,18 +960,24 @@ public class SMSCShellExecutor implements ShellExecutor {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.SMPP;
-		if (args.length == 5) {
-			smsRoutingRuleType = SmsRoutingRuleType.valueOf(args[4]);
-		}
+        int count = 4;
+        String command;
+        SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.SMPP;
+        int networkId = 0;
+        while (count < args.length && ((command = args[count++]) != null)) {
+            if (command.equals("SMPP") || command.equals("SIP")) {
+                smsRoutingRuleType = SmsRoutingRuleType.valueOf(command);
+            } else if (command.equals("networkid")) {
+                if (count < args.length) {
+                    String value = args[count++];
+                    networkId = Integer.parseInt(value);
+                }
+            }
+        }// while
 
-		if (smsRoutingRuleType == null) {
-			return SMSCOAMMessages.INVALID_COMMAND;
-		}
-
-		smsRoutingRule.deleteDbSmsRoutingRule(smsRoutingRuleType, address);
-		return String.format(SMSCOAMMessages.DELETE_DATABASE_RULE_SUCCESSFULL, address);
-	}
+        smsRoutingRule.deleteDbSmsRoutingRule(smsRoutingRuleType, address, networkId);
+        return String.format(SMSCOAMMessages.DELETE_DATABASE_RULE_SUCCESSFULL, smsRoutingRuleType.toString(), address, networkId);
+    }
 
 	/**
 	 * smsc databaseRule get <address> <SMPP|SIP>
@@ -975,7 +988,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 	private String databaseRuleGet(String[] args) throws Exception {
 		DatabaseSmsRoutingRule smsRoutingRule = (DatabaseSmsRoutingRule) this.smscManagement.getSmsRoutingRule();
 
-		if (args.length < 4 || args.length > 5) {
+		if (args.length < 4 || args.length > 7) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -984,19 +997,25 @@ public class SMSCShellExecutor implements ShellExecutor {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
-		SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.SMPP;
-		if (args.length == 5) {
-			smsRoutingRuleType = SmsRoutingRuleType.valueOf(args[4]);
-		}
+        int count = 4;
+        String command;
+        SmsRoutingRuleType smsRoutingRuleType = SmsRoutingRuleType.SMPP;
+        int networkId = 0;
+        while (count < args.length && ((command = args[count++]) != null)) {
+            if (command.equals("SMPP") || command.equals("SIP")) {
+                smsRoutingRuleType = SmsRoutingRuleType.valueOf(command);
+            } else if (command.equals("networkid")) {
+                if (count < args.length) {
+                    String value = args[count++];
+                    networkId = Integer.parseInt(value);
+                }
+            }
+        }// while
 
-		if (smsRoutingRuleType == null) {
-			return SMSCOAMMessages.INVALID_COMMAND;
-		}
-
-		DbSmsRoutingRule res = smsRoutingRule.getSmsRoutingRule(smsRoutingRuleType, address);
-		if (res == null) {
-			return String.format(SMSCOAMMessages.NO_ROUTING_RULE_DEFINED_YET, address, smsRoutingRuleType.name());
-		}
+		DbSmsRoutingRule res = smsRoutingRule.getSmsRoutingRule(smsRoutingRuleType, address, networkId);
+        if (res == null) {
+            return String.format(SMSCOAMMessages.NO_ROUTING_RULE_DEFINED_YET, smsRoutingRuleType.name(), address, networkId);
+        }
 		return res.toString();
 	}
 

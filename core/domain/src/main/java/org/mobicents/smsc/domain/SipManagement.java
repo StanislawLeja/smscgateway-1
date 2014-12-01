@@ -190,7 +190,11 @@ public class SipManagement implements SipManagementMBean {
 
 	public void start() throws Exception {
 
-		this.mbeanServer = MBeanServerLocator.locateJBoss();
+        try {
+            this.mbeanServer = MBeanServerLocator.locateJBoss();
+        } catch (Exception e) {
+            this.logger.error("Exception when obtaining of MBeanServer: " + e.getMessage(), e);
+        }
 
 		this.persistFile.clear();
 
@@ -293,7 +297,8 @@ public class SipManagement implements SipManagementMBean {
 			ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=Sip,name=" + esme.getName());
 			StandardMBean esmeMxBean = new StandardMBean(esme, SipMBean.class, true);
 
-			this.mbeanServer.registerMBean(esmeMxBean, esmeObjNname);
+            if (this.mbeanServer != null)
+                this.mbeanServer.registerMBean(esmeMxBean, esmeObjNname);
 		} catch (InstanceAlreadyExistsException e) {
 			logger.error(String.format("Error while registering MBean for SIP %s", esme.getName()), e);
 		} catch (MBeanRegistrationException e) {

@@ -163,7 +163,11 @@ public class SmscManagement implements SmscManagementMBean {
 		SmsSetCache.getInstance().clearProcessingSmsSet();
 
 		// Step 1 Get the MBeanServer
-		this.mbeanServer = MBeanServerLocator.locateJBoss();
+        try {
+            this.mbeanServer = MBeanServerLocator.locateJBoss();
+        } catch (Exception e) {
+            this.logger.error("Exception when obtaining of MBeanServer: " + e.getMessage(), e);
+        }
 
 		// Step 2 Setup SMSC Properties
 		this.smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.name);
@@ -333,7 +337,8 @@ public class SmscManagement implements SmscManagementMBean {
 
 	protected <T> void registerMBean(T implementation, Class<T> mbeanInterface, boolean isMXBean, ObjectName name) {
 		try {
-			this.mbeanServer.registerMBean(implementation, name);
+            if (this.mbeanServer != null)
+                this.mbeanServer.registerMBean(implementation, name);
 		} catch (InstanceAlreadyExistsException e) {
 			logger.error(String.format("Error while registering MBean %s", mbeanInterface.getName()), e);
 		} catch (MBeanRegistrationException e) {

@@ -68,55 +68,61 @@ public class TT_DbSmsRoutingRuleTest {
 
         this.clearDatabase();
 
-        DbSmsRoutingRule rl1 = this.sbb.c2_getSmppSmsRoutingRule("1111");
-        DbSmsRoutingRule rl2 = this.sbb.c2_getSmppSmsRoutingRule("2222");
+        DbSmsRoutingRule rl1 = this.sbb.c2_getSmppSmsRoutingRule("1111", 0);
+        DbSmsRoutingRule rl2 = this.sbb.c2_getSmppSmsRoutingRule("2222", 2);
         assertNull(rl1);
         assertNull(rl2);
 
-        DbSmsRoutingRule rla = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP, "1111", "AAA");
+        DbSmsRoutingRule rla = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP, "1111", 0, "AAA");
 
         this.sbb.c2_updateSmppSmsRoutingRule(rla);
-        rl1 = this.sbb.c2_getSmppSmsRoutingRule("1111");
-        rl2 = this.sbb.c2_getSmppSmsRoutingRule("2222");
+        rl1 = this.sbb.c2_getSmppSmsRoutingRule("1111", 0);
+        rl2 = this.sbb.c2_getSmppSmsRoutingRule("2222", 2);
         assertNotNull(rl1);
         assertNull(rl2);
         assertEquals(rl1.getAddress(), "1111");
         assertEquals(rl1.getClusterName(), "AAA");
+        assertEquals(rl1.getNetworkId(), 0);
 
 
-        rla = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP,"2222","BBB");
+        rla = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP,"2222", 2,"BBB");
 
         this.sbb.c2_updateSmppSmsRoutingRule(rla);
-        rl1 = this.sbb.c2_getSmppSmsRoutingRule("1111");
-        rl2 = this.sbb.c2_getSmppSmsRoutingRule("2222");
+        rl1 = this.sbb.c2_getSmppSmsRoutingRule("1111", 0);
+        rl2 = this.sbb.c2_getSmppSmsRoutingRule("2222", 2);
         assertNotNull(rl1);
         assertNotNull(rl2);
         assertEquals(rl1.getAddress(), "1111");
         assertEquals(rl1.getClusterName(), "AAA");
+        assertEquals(rl1.getNetworkId(), 0);
         assertEquals(rl2.getAddress(), "2222");
         assertEquals(rl2.getClusterName(), "BBB");
+        assertEquals(rl2.getNetworkId(), 2);
 
         List<DbSmsRoutingRule> lst = this.sbb.c2_getSmppSmsRoutingRulesRange();        
         assertEquals(lst.size(), 2);
         DbSmsRoutingRule rl = lst.get(0);
         assertEquals(rl.getAddress(), "1111");
         assertEquals(rl.getClusterName(), "AAA");
+        assertEquals(rl.getNetworkId(), 0);
         rl = lst.get(1);
         assertEquals(rl2.getAddress(), "2222");
         assertEquals(rl2.getClusterName(), "BBB");
+        assertEquals(rl2.getNetworkId(), 2);
 
         lst = this.sbb.c2_getSmppSmsRoutingRulesRange("1111");        
         assertEquals(lst.size(), 1);
         rl = lst.get(0);
         assertEquals(rl2.getAddress(), "2222");
         assertEquals(rl2.getClusterName(), "BBB");
+        assertEquals(rl2.getNetworkId(), 2);
 
         lst = this.sbb.c2_getSmppSmsRoutingRulesRange("2222");        
         assertEquals(lst.size(), 0);
 
-        this.sbb.c2_deleteSmppSmsRoutingRule("1111");
-        rl1 = this.sbb.c2_getSmppSmsRoutingRule("1111");
-        rl2 = this.sbb.c2_getSmppSmsRoutingRule("2222");
+        this.sbb.c2_deleteSmppSmsRoutingRule("1111", 0);
+        rl1 = this.sbb.c2_getSmppSmsRoutingRule("1111", 0);
+        rl2 = this.sbb.c2_getSmppSmsRoutingRule("2222", 2);
         assertNull(rl1);
         assertNotNull(rl2);
         assertEquals(rl2.getAddress(), "2222");
@@ -125,8 +131,8 @@ public class TT_DbSmsRoutingRuleTest {
     }
 
     private void clearDatabase() throws Exception {
-        this.sbb.c2_deleteSmppSmsRoutingRule("1111");
-        this.sbb.c2_deleteSmppSmsRoutingRule("2222");
+        this.sbb.c2_deleteSmppSmsRoutingRule("1111", 0);
+        this.sbb.c2_deleteSmppSmsRoutingRule("2222", 2);
     }
 
 }

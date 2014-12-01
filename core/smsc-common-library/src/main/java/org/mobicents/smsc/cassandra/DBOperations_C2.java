@@ -231,22 +231,20 @@ public class DBOperations_C2 {
 				+ Schema.COLUMN_NEXT_SLOT + "\") VALUES (?, ?);";
 		updateCurrentSlotTable = session.prepare(sa);
 
-		getSmppSmsRoutingRule = session.prepare("select * from \"" + Schema.FAMILY_SMPP_SMS_ROUTING_RULE
-				+ "\" where \"" + Schema.COLUMN_ADDRESS + "\"=?;");
+        getSmppSmsRoutingRule = session.prepare("select * from \"" + Schema.FAMILY_SMPP_SMS_ROUTING_RULE + "\" where \"" + Schema.COLUMN_ADDRESS
+                + "\"=? and \"" + Schema.COLUMN_NETWORK_ID + "\"=?;");
+        getSipSmsRoutingRule = session.prepare("select * from \"" + Schema.FAMILY_SIP_SMS_ROUTING_RULE + "\" where \"" + Schema.COLUMN_ADDRESS + "\"=? and \""
+                + Schema.COLUMN_NETWORK_ID + "\"=?;");
 
-		getSipSmsRoutingRule = session.prepare("select * from \"" + Schema.FAMILY_SIP_SMS_ROUTING_RULE + "\" where \""
-				+ Schema.COLUMN_ADDRESS + "\"=?;");
+        updateSmppSmsRoutingRule = session.prepare("INSERT INTO \"" + Schema.FAMILY_SMPP_SMS_ROUTING_RULE + "\" (\"" + Schema.COLUMN_ADDRESS + "\", \""
+                + Schema.COLUMN_NETWORK_ID + "\", \"" + Schema.COLUMN_CLUSTER_NAME + "\") VALUES (?, ?, ?);");
+        updateSipSmsRoutingRule = session.prepare("INSERT INTO \"" + Schema.FAMILY_SIP_SMS_ROUTING_RULE + "\" (\"" + Schema.COLUMN_ADDRESS + "\", \""
+                + Schema.COLUMN_NETWORK_ID + "\", \"" + Schema.COLUMN_CLUSTER_NAME + "\") VALUES (?, ?, ?);");
 
-		updateSmppSmsRoutingRule = session.prepare("INSERT INTO \"" + Schema.FAMILY_SMPP_SMS_ROUTING_RULE + "\" (\""
-				+ Schema.COLUMN_ADDRESS + "\", \"" + Schema.COLUMN_CLUSTER_NAME + "\") VALUES (?, ?);");
-
-		updateSipSmsRoutingRule = session.prepare("INSERT INTO \"" + Schema.FAMILY_SIP_SMS_ROUTING_RULE + "\" (\""
-				+ Schema.COLUMN_ADDRESS + "\", \"" + Schema.COLUMN_CLUSTER_NAME + "\") VALUES (?, ?);");
-
-		deleteSmppSmsRoutingRule = session.prepare("delete from \"" + Schema.FAMILY_SMPP_SMS_ROUTING_RULE
-				+ "\" where \"" + Schema.COLUMN_ADDRESS + "\"=?;");
-		deleteSipSmsRoutingRule = session.prepare("delete from \"" + Schema.FAMILY_SIP_SMS_ROUTING_RULE + "\" where \""
-				+ Schema.COLUMN_ADDRESS + "\"=?;");
+        deleteSmppSmsRoutingRule = session.prepare("delete from \"" + Schema.FAMILY_SMPP_SMS_ROUTING_RULE + "\" where \"" + Schema.COLUMN_ADDRESS
+                + "\"=? and \"" + Schema.COLUMN_NETWORK_ID + "\"=?;");
+        deleteSipSmsRoutingRule = session.prepare("delete from \"" + Schema.FAMILY_SIP_SMS_ROUTING_RULE + "\" where \"" + Schema.COLUMN_ADDRESS + "\"=? and \""
+                + Schema.COLUMN_NETWORK_ID + "\"=?;");
 
 		int row_count = 100;
 
@@ -261,16 +259,6 @@ public class DBOperations_C2 {
 				+ "\"  LIMIT " + row_count + ";");
 
 		try {
-			// PreparedStatement ps = selectCurrentSlotTable;
-			// BoundStatement boundStatement = new BoundStatement(ps);
-			// boundStatement.bind(0);
-			// ResultSet res = session.execute(boundStatement);
-			//
-			// for (Row row : res) {
-			// currentDueSlot = row.getLong(0);
-			// break;
-			// }
-
 			currentDueSlot = c2_getCurrentSlotTable(CURRENT_DUE_SLOT);
 			if (currentDueSlot == 0) {
 				// not yet set
@@ -1596,21 +1584,24 @@ public class DBOperations_C2 {
 
 		try {
 			try {
-				// checking of SMS_ROUTING_RULE existence
-				String sa = "SELECT \"" + Schema.COLUMN_ADDRESS + "\" FROM \"" + Schema.FAMILY_SMPP_SMS_ROUTING_RULE
-						+ "\" where \"" + Schema.COLUMN_ADDRESS + "\"='';";
-				PreparedStatement ps = session.prepare(sa);
+				// checking of SMPP_SMS_ROUTING_RULE_2 existence
+                String sa = "SELECT \"" + Schema.COLUMN_ADDRESS + "\" FROM \"" + Schema.FAMILY_SMPP_SMS_ROUTING_RULE + "\" where \"" + Schema.COLUMN_ADDRESS
+                        + "\"='' and \"" + Schema.COLUMN_NETWORK_ID + "\"=0;";
+                PreparedStatement ps = session.prepare(sa);
 			} catch (InvalidQueryException e) {
 				StringBuilder sb = new StringBuilder();
 				sb.append("CREATE TABLE \"");
 				sb.append(Schema.FAMILY_SMPP_SMS_ROUTING_RULE);
 				sb.append("\" (");
 
-				appendField(sb, Schema.COLUMN_ADDRESS, "text");
+                appendField(sb, Schema.COLUMN_ADDRESS, "text");
+                appendField(sb, Schema.COLUMN_NETWORK_ID, "int");
 				appendField(sb, Schema.COLUMN_CLUSTER_NAME, "text");
 
 				sb.append("PRIMARY KEY (\"");
-				sb.append(Schema.COLUMN_ADDRESS);
+                sb.append(Schema.COLUMN_ADDRESS);
+                sb.append("\", \"");
+                sb.append(Schema.COLUMN_NETWORK_ID);
 				sb.append("\"");
 				sb.append("));");
 
@@ -1626,9 +1617,9 @@ public class DBOperations_C2 {
 
 		try {
 			try {
-				// checking of SIP_SMS_ROUTING_RULE existence
-				String sa = "SELECT \"" + Schema.COLUMN_ADDRESS + "\" FROM \"" + Schema.FAMILY_SIP_SMS_ROUTING_RULE
-						+ "\" where \"" + Schema.COLUMN_ADDRESS + "\"='';";
+				// checking of SIP_SMS_ROUTING_RULE_2 existence
+                String sa = "SELECT \"" + Schema.COLUMN_ADDRESS + "\" FROM \"" + Schema.FAMILY_SIP_SMS_ROUTING_RULE + "\" where \"" + Schema.COLUMN_ADDRESS
+                        + "\"='' and \"" + Schema.COLUMN_NETWORK_ID + "\"=0;";
 				PreparedStatement ps = session.prepare(sa);
 			} catch (InvalidQueryException e) {
 				StringBuilder sb = new StringBuilder();
@@ -1637,10 +1628,13 @@ public class DBOperations_C2 {
 				sb.append("\" (");
 
 				appendField(sb, Schema.COLUMN_ADDRESS, "text");
+                appendField(sb, Schema.COLUMN_NETWORK_ID, "int");
 				appendField(sb, Schema.COLUMN_CLUSTER_NAME, "text");
 
 				sb.append("PRIMARY KEY (\"");
 				sb.append(Schema.COLUMN_ADDRESS);
+                sb.append("\", \"");
+                sb.append(Schema.COLUMN_NETWORK_ID);
 				sb.append("\"");
 				sb.append("));");
 
@@ -1685,11 +1679,11 @@ public class DBOperations_C2 {
 	 * @return
 	 * @throws PersistenceException
 	 */
-	public DbSmsRoutingRule c2_getSmppSmsRoutingRule(final String address) throws PersistenceException {
+	public DbSmsRoutingRule c2_getSmppSmsRoutingRule(final String address, int networkId) throws PersistenceException {
 
 		try {
 			BoundStatement boundStatement = new BoundStatement(getSmppSmsRoutingRule);
-			boundStatement.bind(address);
+			boundStatement.bind(address, networkId);
 			ResultSet result = session.execute(boundStatement);
 
 			Row row = result.one();
@@ -1697,12 +1691,11 @@ public class DBOperations_C2 {
 				return null;
 			} else {
 				String name = row.getString(Schema.COLUMN_CLUSTER_NAME);
-				DbSmsRoutingRule res = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP, address, name);
+				DbSmsRoutingRule res = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP, address, networkId, name);
 				return res;
 			}
 		} catch (Exception e) {
-			String msg = "Failed to getSmppSmsRoutingRule for id='" + address + "'!";
-
+            String msg = "Failed to getSmppSmsRoutingRule for address=" + address + " networkId=" + networkId + " !";
 			throw new PersistenceException(msg, e);
 		}
 	}
@@ -1714,11 +1707,11 @@ public class DBOperations_C2 {
 	 * @return
 	 * @throws PersistenceException
 	 */
-	public DbSmsRoutingRule c2_getSipSmsRoutingRule(final String address) throws PersistenceException {
+	public DbSmsRoutingRule c2_getSipSmsRoutingRule(final String address, int networkId) throws PersistenceException {
 
 		try {
 			BoundStatement boundStatement = new BoundStatement(getSipSmsRoutingRule);
-			boundStatement.bind(address);
+			boundStatement.bind(address, networkId);
 			ResultSet result = session.execute(boundStatement);
 
 			Row row = result.one();
@@ -1726,12 +1719,11 @@ public class DBOperations_C2 {
 				return null;
 			} else {
 				String name = row.getString(Schema.COLUMN_CLUSTER_NAME);
-				DbSmsRoutingRule res = new DbSmsRoutingRule(SmsRoutingRuleType.SIP, address, name);
+				DbSmsRoutingRule res = new DbSmsRoutingRule(SmsRoutingRuleType.SIP, address, networkId, name);
 				return res;
 			}
 		} catch (Exception e) {
-			String msg = "Failed to getSipSmsRoutingRule for id='" + address + "'!";
-
+            String msg = "Failed to getSipSmsRoutingRule for address=" + address + " networkId=" + networkId + " !";
 			throw new PersistenceException(msg, e);
 		}
 	}
@@ -1746,11 +1738,10 @@ public class DBOperations_C2 {
 	public void c2_updateSmppSmsRoutingRule(DbSmsRoutingRule dbSmsRoutingRule) throws PersistenceException {
 		try {
 			BoundStatement boundStatement = new BoundStatement(updateSmppSmsRoutingRule);
-			boundStatement.bind(dbSmsRoutingRule.getAddress(), dbSmsRoutingRule.getClusterName());
+			boundStatement.bind(dbSmsRoutingRule.getAddress(), dbSmsRoutingRule.getNetworkId(), dbSmsRoutingRule.getClusterName());
 			session.execute(boundStatement);
 		} catch (Exception e) {
-			String msg = "Failed to updateSmppSmsRoutingRule for '" + dbSmsRoutingRule.getAddress() + "'!";
-
+            String msg = "Failed to updateSmppSmsRoutingRule for address=" + dbSmsRoutingRule.getAddress() + " networkId=" + dbSmsRoutingRule.getNetworkId() + " !";
 			throw new PersistenceException(msg, e);
 		}
 	}
@@ -1765,11 +1756,10 @@ public class DBOperations_C2 {
 	public void c2_updateSipSmsRoutingRule(DbSmsRoutingRule dbSmsRoutingRule) throws PersistenceException {
 		try {
 			BoundStatement boundStatement = new BoundStatement(updateSipSmsRoutingRule);
-			boundStatement.bind(dbSmsRoutingRule.getAddress(), dbSmsRoutingRule.getClusterName());
+            boundStatement.bind(dbSmsRoutingRule.getAddress(), dbSmsRoutingRule.getNetworkId(), dbSmsRoutingRule.getClusterName());
 			session.execute(boundStatement);
 		} catch (Exception e) {
-			String msg = "Failed to updateSipSmsRoutingRule for '" + dbSmsRoutingRule.getAddress() + "'!";
-
+            String msg = "Failed to updateSipSmsRoutingRule for address=" + dbSmsRoutingRule.getAddress() + " networkId=" + dbSmsRoutingRule.getNetworkId() + " !";
 			throw new PersistenceException(msg, e);
 		}
 	}
@@ -1780,13 +1770,13 @@ public class DBOperations_C2 {
 	 * @param address
 	 * @throws PersistenceException
 	 */
-	public void c2_deleteSmppSmsRoutingRule(final String address) throws PersistenceException {
+	public void c2_deleteSmppSmsRoutingRule(final String address, int networkId) throws PersistenceException {
 		try {
 			BoundStatement boundStatement = new BoundStatement(deleteSmppSmsRoutingRule);
-			boundStatement.bind(address);
+			boundStatement.bind(address, networkId);
 			session.execute(boundStatement);
 		} catch (Exception e) {
-			String msg = "Failed to deleteSmppSmsRoutingRule for '" + address + "'!";
+            String msg = "Failed to deleteSmppSmsRoutingRule for '" + address + "-" + networkId + "'!";
 			throw new PersistenceException(msg, e);
 		}
 	}
@@ -1797,13 +1787,13 @@ public class DBOperations_C2 {
 	 * @param address
 	 * @throws PersistenceException
 	 */
-	public void c2_deleteSipSmsRoutingRule(final String address) throws PersistenceException {
+	public void c2_deleteSipSmsRoutingRule(final String address, int networkId) throws PersistenceException {
 		try {
 			BoundStatement boundStatement = new BoundStatement(deleteSipSmsRoutingRule);
-			boundStatement.bind(address);
+			boundStatement.bind(address, networkId);
 			session.execute(boundStatement);
 		} catch (Exception e) {
-			String msg = "Failed to deleteSipSmsRoutingRule for '" + address + "'!";
+            String msg = "Failed to deleteSipSmsRoutingRule for '" + address + "-" + networkId + "'!";
 			throw new PersistenceException(msg, e);
 		}
 	}
@@ -1840,9 +1830,10 @@ public class DBOperations_C2 {
 			int i1 = 0;
 			for (Row row : result) {
 				String address = row.getString(Schema.COLUMN_ADDRESS);
-				String name = row.getString(Schema.COLUMN_CLUSTER_NAME);
+                String name = row.getString(Schema.COLUMN_CLUSTER_NAME);
+                int networkId = row.getInt(Schema.COLUMN_NETWORK_ID);
 
-				DbSmsRoutingRule res = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP, address, name);
+				DbSmsRoutingRule res = new DbSmsRoutingRule(SmsRoutingRuleType.SMPP, address, networkId, name);
 
 				if (i1 == 0) {
 					i1 = 1;
@@ -1894,8 +1885,9 @@ public class DBOperations_C2 {
 			for (Row row : result) {
 				String address = row.getString(Schema.COLUMN_ADDRESS);
 				String name = row.getString(Schema.COLUMN_CLUSTER_NAME);
+                int networkId = row.getInt(Schema.COLUMN_NETWORK_ID);
 
-				DbSmsRoutingRule res = new DbSmsRoutingRule(SmsRoutingRuleType.SIP, address, name);
+				DbSmsRoutingRule res = new DbSmsRoutingRule(SmsRoutingRuleType.SIP, address, networkId, name);
 
 				if (i1 == 0) {
 					i1 = 1;

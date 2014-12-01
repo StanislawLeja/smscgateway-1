@@ -50,9 +50,9 @@ public interface SMSCOAMMessages {
 	public static final String CREATE_ROUTING_RULE_FAIL_ALREADY_EXIST = "Creation of Routing rule failed. Other Route with name=%s already exist"; // name
 																																					// =
 
-	public static final String UPDATE_DATABASE_RULE_SUCCESSFULL = "Successfully updated databaseRule address=%s";
+	public static final String UPDATE_DATABASE_RULE_SUCCESSFULL = "Successfully updated databaseRule %s address=%s networkId=%d";
 
-	public static final String DELETE_DATABASE_RULE_SUCCESSFULL = "Successfully deleted databaseRule address=%s";
+	public static final String DELETE_DATABASE_RULE_SUCCESSFULL = "Successfully deleted databaseRule %s address=%s networkId=%d";
 
 	public static final String ACCEPTED_ARCHIVE_GENERATE_CDR_SUCCESSFULL = "Successfully accepted request to generate CDR";
 
@@ -63,7 +63,7 @@ public interface SMSCOAMMessages {
 
 	public static final String NOT_SUPPORTED_YET = "Not supported yet";
 
-	public static final String NO_ROUTING_RULE_DEFINED_YET = "No Routing rule defined yet for address %s and type %s";
+	public static final String NO_ROUTING_RULE_DEFINED_YET = "No Routing rule defined yet for %s address %s networkId %d";
 
 	public static final String NULL_ESME_ADDRESS_RANGE = "esme-range is compulsory for TRANSCEIVER and RECEIVER";
 

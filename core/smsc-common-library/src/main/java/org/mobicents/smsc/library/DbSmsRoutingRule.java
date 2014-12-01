@@ -37,22 +37,28 @@ public class DbSmsRoutingRule implements Serializable {
 	private static final long serialVersionUID = -4693280752311155768L;
 
 	private final String address;
-	private final String clusterName;
+    private final String clusterName;
+    private final int networkId;
 	private final SmsRoutingRuleType dbSmsRoutingRuleType;
 
-	public DbSmsRoutingRule(SmsRoutingRuleType dbSmsRoutingRuleType, String address, String clusterName) {
+	public DbSmsRoutingRule(SmsRoutingRuleType dbSmsRoutingRuleType, String address, int networkId, String clusterName) {
 		this.dbSmsRoutingRuleType = dbSmsRoutingRuleType;
 		this.address = address;
-		this.clusterName = clusterName;
+        this.clusterName = clusterName;
+        this.networkId = networkId;
 	}
 
 	public String getAddress() {
 		return address;
 	}
 
-	public String getClusterName() {
-		return clusterName;
-	}
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public int getNetworkId() {
+        return networkId;
+    }
 
 	public SmsRoutingRuleType getSmsRoutingRuleType() {
 		return dbSmsRoutingRuleType;
@@ -62,8 +68,8 @@ public class DbSmsRoutingRule implements Serializable {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("DbSmsRoutingRule [address=").append(address).append(", clusterName=").append(clusterName)
-				.append(", DbSmsRoutingRuleType=").append(dbSmsRoutingRuleType).append("]");
+        sb.append("DbSmsRoutingRule [address=").append(address).append(", clusterName=").append(clusterName).append(", networkId=").append(networkId)
+                .append(", DbSmsRoutingRuleType=").append(dbSmsRoutingRuleType).append("]");
 
 		return sb.toString();
 	}

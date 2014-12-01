@@ -72,12 +72,6 @@ public class DatabaseSmsRoutingRule implements DatabaseSmsRoutingRuleMBean {
 
 	private void init() {
 		try {
-			// if (smscPropertiesManagement.getDatabaseType() ==
-			// DatabaseType.Cassandra_1) {
-			// dbOperations_C1 = DBOperations_C1.getInstance();
-			// } else {
-			// dbOperations_C2 = DBOperations_C2.getInstance();
-			// }
 			dbOperations_C2 = DBOperations_C2.getInstance();
 		} catch (Exception e) {
 			logger.error("Error initializing cassandra database for DatabaseSmsRoutingRule", e);
@@ -98,9 +92,9 @@ public class DatabaseSmsRoutingRule implements DatabaseSmsRoutingRuleMBean {
 		try {
 			DbSmsRoutingRule rr;
 			if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-				rr = dbOperations_C1.getSmsRoutingRule(address);
+				rr = dbOperations_C1.getSmsRoutingRule(address, networkId);
 			} else {
-				rr = dbOperations_C2.c2_getSmppSmsRoutingRule(address);
+				rr = dbOperations_C2.c2_getSmppSmsRoutingRule(address, networkId);
 			}
 			if (rr != null) {
 				clusterName = rr.getClusterName();
@@ -133,7 +127,7 @@ public class DatabaseSmsRoutingRule implements DatabaseSmsRoutingRuleMBean {
 				return null;
 			}
 
-			rr = dbOperations_C2.c2_getSipSmsRoutingRule(address);
+			rr = dbOperations_C2.c2_getSipSmsRoutingRule(address, networkId);
 
 			if (rr != null) {
 				clusterName = rr.getClusterName();
@@ -146,9 +140,9 @@ public class DatabaseSmsRoutingRule implements DatabaseSmsRoutingRuleMBean {
 	}
 
 	@Override
-	public void updateDbSmsRoutingRule(SmsRoutingRuleType dbSmsRoutingRuleType, String address, String clusterName)
+	public void updateDbSmsRoutingRule(SmsRoutingRuleType dbSmsRoutingRuleType, String address, int networkId, String clusterName)
 			throws PersistenceException {
-		DbSmsRoutingRule dbSmsRoutingRule = new DbSmsRoutingRule(dbSmsRoutingRuleType, address, clusterName);
+		DbSmsRoutingRule dbSmsRoutingRule = new DbSmsRoutingRule(dbSmsRoutingRuleType, address, networkId, clusterName);
 
 		if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 			dbOperations_C1.updateDbSmsRoutingRule(dbSmsRoutingRule);
@@ -167,17 +161,17 @@ public class DatabaseSmsRoutingRule implements DatabaseSmsRoutingRuleMBean {
 	}
 
 	@Override
-	public void deleteDbSmsRoutingRule(SmsRoutingRuleType dbSmsRoutingRuleType, String address)
+	public void deleteDbSmsRoutingRule(SmsRoutingRuleType dbSmsRoutingRuleType, String address, int networkId)
 			throws PersistenceException {
 		if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 			dbOperations_C1.deleteDbSmsRoutingRule(address);
 		} else {
 			switch (dbSmsRoutingRuleType) {
 			case SMPP:
-				dbOperations_C2.c2_deleteSmppSmsRoutingRule(address);
+				dbOperations_C2.c2_deleteSmppSmsRoutingRule(address, networkId);
 				break;
 			case SIP:
-				dbOperations_C2.c2_deleteSipSmsRoutingRule(address);
+				dbOperations_C2.c2_deleteSipSmsRoutingRule(address, networkId);
 				break;
 			default:
 				throw new PersistenceException("Unknown DbSmsRoutingRuleType=" + dbSmsRoutingRuleType);
@@ -186,16 +180,16 @@ public class DatabaseSmsRoutingRule implements DatabaseSmsRoutingRuleMBean {
 	}
 
 	@Override
-	public DbSmsRoutingRule getSmsRoutingRule(SmsRoutingRuleType dbSmsRoutingRuleType, String address)
+	public DbSmsRoutingRule getSmsRoutingRule(SmsRoutingRuleType dbSmsRoutingRuleType, String address, int networkId)
 			throws PersistenceException {
 		if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-			return dbOperations_C1.getSmsRoutingRule(address);
-		} else {
-			switch (dbSmsRoutingRuleType) {
-			case SMPP:
-				return dbOperations_C2.c2_getSmppSmsRoutingRule(address);
-			case SIP:
-				return dbOperations_C2.c2_getSipSmsRoutingRule(address);
+            return dbOperations_C1.getSmsRoutingRule(address, networkId);
+        } else {
+            switch (dbSmsRoutingRuleType) {
+            case SMPP:
+                return dbOperations_C2.c2_getSmppSmsRoutingRule(address, networkId);
+            case SIP:
+                return dbOperations_C2.c2_getSipSmsRoutingRule(address, networkId);
 			default:
 				throw new PersistenceException("Unknown DbSmsRoutingRuleType=" + dbSmsRoutingRuleType);
 			}

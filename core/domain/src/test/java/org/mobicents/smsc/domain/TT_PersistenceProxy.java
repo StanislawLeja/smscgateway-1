@@ -44,13 +44,13 @@ public class TT_PersistenceProxy extends DBOperations_C2 {
     private static final Logger logger = Logger.getLogger(TT_PersistenceProxy.class);
 
     public void start() throws Exception {
-        super.start("127.0.0.1", 9042, "saturn", 60, 60, 60 * 10, null);
+        super.start("127.0.0.1", 9042, "TelestaxSMSC", 60, 60, 60 * 10, null);
     }
 
     public boolean testCassandraAccess() {
 
         String ip = "127.0.0.1";
-        String keyspace = "saturn";
+        String keyspace = "TelestaxSMSC";
 
         try {
             Cluster cluster = Cluster.builder().addContactPoint(ip).build();

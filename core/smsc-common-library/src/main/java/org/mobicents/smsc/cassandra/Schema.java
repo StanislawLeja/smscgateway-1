@@ -102,10 +102,9 @@ public class Schema {
     public static final String FAMILY_LIVE_SMS = "LIVE_SMS";
     public static final String FAMILY_ARCHIVE = "ARCHIVE";
     public static final String FAMILY_LIVE = "LIVE";
-    public static final String FAMILY_SMPP_SMS_ROUTING_RULE = "SMPP_SMS_ROUTING_RULE";
-    
-    public static final String FAMILY_SIP_SMS_ROUTING_RULE = "SIP_SMS_ROUTING_RULE";
-    
+    public static final String FAMILY_SMPP_SMS_ROUTING_RULE = "SMPP_SMS_ROUTING_RULE_2";
+    public static final String FAMILY_SIP_SMS_ROUTING_RULE = "SIP_SMS_ROUTING_RULE_2";
+
     public static final String FAMILY_DATA = "DATA";
     public static final String FAMILY_SLOTS = "SLOTS";
     public static final String FAMILY_DESTS = "DESTS";
@@ -118,7 +117,8 @@ public class Schema {
     public static final List<String> COLUMNS_LIVE;
     public static final List<String> COLUMNS_LIVE_SMS;
     public static final List<String> COLUMNS_ARCHIVE;
-    public static final List<String> COLUMNS_SMS_ROUTING_RULE;
+    public static final List<String> COLUMNS_SMPP_SMS_ROUTING_RULE;
+    public static final List<String> COLUMNS_SIP_SMS_ROUTING_RULE;
 
     public static final String COLUMN_SYSTEM_KEYSPACE_NAME = "keyspace_name";
     public static final String COLUMN_SYSTEM_COLUMNFAMILY_NAME = "columnfamily_name";
@@ -220,11 +220,16 @@ public class Schema {
         COLUMNS_ARCHIVE = Collections.unmodifiableList(tmp);
 
         tmp = new ArrayList<String>();
-
         tmp.add(COLUMN_ADDRESS);
+        tmp.add(COLUMN_NETWORK_ID);
         tmp.add(COLUMN_CLUSTER_NAME);
+        COLUMNS_SMPP_SMS_ROUTING_RULE = Collections.unmodifiableList(tmp);
 
-        COLUMNS_SMS_ROUTING_RULE = Collections.unmodifiableList(tmp);
+        tmp = new ArrayList<String>();
+        tmp.add(COLUMN_ADDRESS);
+        tmp.add(COLUMN_NETWORK_ID);
+        tmp.add(COLUMN_CLUSTER_NAME);
+        COLUMNS_SIP_SMS_ROUTING_RULE = Collections.unmodifiableList(tmp);
     }
 
 }

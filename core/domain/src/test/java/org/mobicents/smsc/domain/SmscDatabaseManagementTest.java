@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 public class SmscDatabaseManagementTest {
 
     private String ip = "127.0.0.1";
-    private String keyspace = "saturn";
+    private String keyspace = "TelestaxSMSC";
     private DBOperations_C2 db;
     private boolean cassandraDbInited;
 
