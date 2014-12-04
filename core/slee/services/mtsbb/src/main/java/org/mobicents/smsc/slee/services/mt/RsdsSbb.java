@@ -351,7 +351,7 @@ public abstract class RsdsSbb implements Sbb, ReportSMDeliveryStatusInterface {
     private SccpAddress getServiceCenterSccpAddress() {
         if (this.serviceCenterSCCPAddress == null) {
             this.serviceCenterSCCPAddress = MessageUtil.getSccpAddress(sccpParameterFact, smscPropertiesManagement.getServiceCenterGt(),
-                    NatureOfAddress.INTERNATIONAL.getValue(), NumberingPlan.ISDN_TELEPHONY.getValue(), smscPropertiesManagement.getHlrSsn(),
+                    NatureOfAddress.INTERNATIONAL.getValue(), NumberingPlan.ISDN_TELEPHONY.getValue(), smscPropertiesManagement.getServiceCenterSsn(),
                     smscPropertiesManagement.getGlobalTitleIndicator(), smscPropertiesManagement.getTranslationType());
 
 //            GlobalTitle gt = sccpParameterFact.createGlobalTitle(smscPropertiesManagement.getServiceCenterGt(), 0, NumberingPlan.ISDN_TELEPHONY, null,
