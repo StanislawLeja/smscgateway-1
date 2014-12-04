@@ -51,12 +51,12 @@ public class CcMccmnsCollectionTest {
         CcMccmns s1 = original.findMccmns("111");
         CcMccmns s2 = original.findMccmns("1111");
         CcMccmns s3 = original.findMccmns("11111");
-        CcMccmns s4 = original.findMccmns("3");
+        CcMccmns s4 = original.findMccmns("33333");
         CcMccmns s5 = original.findMccmns("4444");
 
-        assertEquals(s1.getMccMnc(), "222");
+        assertEquals(s1.getMccMnc(), "555");
         assertEquals(s2.getMccMnc(), "222");
-        assertEquals(s3.getMccMnc(), "555");
+        assertEquals(s3.getMccMnc(), "222");
         assertEquals(s4.getMccMnc(), "444");
         assertEquals(s5.getMccMnc(), "555");
     }

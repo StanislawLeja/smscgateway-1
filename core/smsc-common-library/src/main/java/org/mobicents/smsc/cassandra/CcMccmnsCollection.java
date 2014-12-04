@@ -49,7 +49,7 @@ public class CcMccmnsCollection {
         for (CcMccmns ccMccmns : this.arr) {
             if (ccMccmns.getCountryCode().equals(""))
                 return ccMccmns;
-            if (ccMccmns.getCountryCode().startsWith(countryCode)) {
+            if (countryCode.startsWith(ccMccmns.getCountryCode())) {
                 return ccMccmns;
             }
         }

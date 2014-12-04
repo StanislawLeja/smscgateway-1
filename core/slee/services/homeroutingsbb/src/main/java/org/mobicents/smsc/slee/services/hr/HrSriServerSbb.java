@@ -192,13 +192,34 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
 
         HrSriClientSbbLocalObject hrSriClientSbbLocalObject = this.getHrSriClientSbbLocalObject();
         if (hrSriClientSbbLocalObject != null) {
-            NextCorrelationIdResult correlationIDRes = this.persistence.c2_getNextCorrelationId(msisdn.getAddress());
+            // NextCorrelationIdResult correlationIDRes =
+            // this.persistence.c2_getNextCorrelationId(msisdn.getAddress());
+            String sca = serviceCentreAddress.getAddress();
+            NextCorrelationIdResult correlationIDRes = this.persistence.c2_getNextCorrelationId(sca);
             if (correlationIDRes.getSmscAddress() != null && !correlationIDRes.getSmscAddress().equals(""))
                 this.setSmscAddressForCountryCode(correlationIDRes.getSmscAddress());
             String correlationID = correlationIDRes.getCorrelationId();
             CorrelationIdValue correlationIdValue = new CorrelationIdValue(correlationID, msisdn, serviceCentreAddress, networkId);
             hrSriClientSbbLocalObject.setupSriRequest(correlationIdValue);
+
+            if (this.logger.isFineEnabled()) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Created correlationId=");
+                sb.append(correlationID);
+                sb.append(" for received ServiceCentedAddress=");
+                sb.append(sca);
+                this.logger.severe(sb.toString());
+            }
         }
+
+//        if (hrSriClientSbbLocalObject != null) {
+//            NextCorrelationIdResult correlationIDRes = this.persistence.c2_getNextCorrelationId(msisdn.getAddress());
+//            if (correlationIDRes.getSmscAddress() != null && !correlationIDRes.getSmscAddress().equals(""))
+//                this.setSmscAddressForCountryCode(correlationIDRes.getSmscAddress());
+//            String correlationID = correlationIDRes.getCorrelationId();
+//            CorrelationIdValue correlationIdValue = new CorrelationIdValue(correlationID, msisdn, serviceCentreAddress, networkId);
+//            hrSriClientSbbLocalObject.setupSriRequest(correlationIdValue);
+//        }
     }
 
     /**
