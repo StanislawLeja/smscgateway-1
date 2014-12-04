@@ -49,6 +49,7 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.EncodingType;
+import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.SendingMessageType;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.SplittingType;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.ValidityType;
 
@@ -585,7 +586,22 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 			}
 
             pdu.setSourceAddress(new Address((byte)this.param.getSourceTON().getCode(), (byte)this.param.getSourceNPI().getCode(), this.param.getSourceAddress()));
-            pdu.setDestAddress(new Address((byte)this.param.getDestTON().getCode(), (byte)this.param.getDestNPI().getCode(), destAddr));
+
+            if (this.param.getSendingMessageType() == SendingMessageType.SubmitMulti) {
+                long daOrig = 1;
+                try {
+                    daOrig = Long.parseLong(destAddr);
+                } catch (Exception e) {
+
+                }
+                for (int i2 = 0; i2 < this.param.getSubmitMultiMessageCnt(); i2++) {
+                    ((SubmitMulti) pdu).addDestAddresses(new Address((byte) this.param.getDestTON().getCode(), (byte) this.param.getDestNPI().getCode(), String
+                            .valueOf(daOrig + i2)));
+                }
+            } else {
+                pdu.setDestAddress(new Address((byte) this.param.getDestTON().getCode(), (byte) this.param.getDestNPI().getCode(), destAddr));
+            }
+
             pdu.setEsmClass((byte) esmClass);
 
 			switch (validityType) {
