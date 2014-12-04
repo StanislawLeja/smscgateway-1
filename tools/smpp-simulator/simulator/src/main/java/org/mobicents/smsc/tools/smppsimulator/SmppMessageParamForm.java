@@ -39,6 +39,13 @@ import javax.swing.JCheckBox;
 import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
 
+import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.SendingMessageType;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
+
 /**
  * 
  * @author sergey vetyutnev
@@ -70,6 +77,7 @@ public class SmppMessageParamForm extends JDialog {
 	private JRadioButton rbUnicode;
 	private JComboBox<SmppSimulatorParameters.MessagingMode> cbMessagingMode;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
+	private JTextField tbSubmitMultiMessageCnt;
 
 	public SmppMessageParamForm(JDialog owner) {
 		super(owner, true);
@@ -77,7 +85,7 @@ public class SmppMessageParamForm extends JDialog {
 		setTitle("SMPP message parameters");
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 620, 755);
+		setBounds(100, 100, 620, 772);
 
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.CENTER);
@@ -101,7 +109,7 @@ public class SmppMessageParamForm extends JDialog {
 				doOK();
 			}
 		});
-		button.setBounds(327, 686, 136, 23);
+		button.setBounds(327, 712, 136, 23);
 		panel.add(button);
 		
 		JButton button_1 = new JButton("Cancel");
@@ -110,7 +118,7 @@ public class SmppMessageParamForm extends JDialog {
 				doCancel();
 			}
 		});
-		button_1.setBounds(468, 686, 136, 23);
+		button_1.setBounds(468, 712, 136, 23);
 		panel.add(button_1);
 
 		cbSplittingType = new JComboBox<SmppSimulatorParameters.SplittingType>();
@@ -188,7 +196,7 @@ public class SmppMessageParamForm extends JDialog {
 						panel.add(cbValidityType);
 						
 						JPanel panel_1 = new JPanel();
-						panel_1.setBounds(10, 521, 592, 152);
+						panel_1.setBounds(10, 547, 592, 152);
 						panel.add(panel_1);
 						panel_1.setLayout(null);
 						
@@ -232,15 +240,23 @@ public class SmppMessageParamForm extends JDialog {
 						panel.add(lblSendingMessageType);
 						
 						cbSendingMessageType = new JComboBox<SmppSimulatorParameters.SendingMessageType>();
+						cbSendingMessageType.addItemListener(new ItemListener() {
+						    public void itemStateChanged(ItemEvent arg0) {
+                if (cbSendingMessageType.getSelectedItem().toString().equals(SendingMessageType.SubmitMulti.toString())) {
+                    tbSubmitMultiMessageCnt.setEnabled(true);
+                } else {
+                    tbSubmitMultiMessageCnt.setEnabled(false);
+                }
+						}});
 						cbSendingMessageType.setBounds(349, 436, 255, 20);
 						panel.add(cbSendingMessageType);
 						
 						JLabel lblMcdeliveryreceiptRequestin = new JLabel("MCDeliveryReceipt request (in registered_delivery)");
-						lblMcdeliveryreceiptRequestin.setBounds(10, 469, 329, 14);
+						lblMcdeliveryreceiptRequestin.setBounds(10, 495, 329, 14);
 						panel.add(lblMcdeliveryreceiptRequestin);
 
 						cbMcDeliveryReceipt = new JComboBox<SmppSimulatorParameters.MCDeliveryReceipt>();
-						cbMcDeliveryReceipt.setBounds(349, 466, 255, 20);
+						cbMcDeliveryReceipt.setBounds(349, 492, 255, 20);
 						panel.add(cbMcDeliveryReceipt);
 						
 						JLabel lblEncodingTypeAt = new JLabel("Encoding type at SMPP part for (GSM7/UCS2)");
@@ -258,12 +274,21 @@ public class SmppMessageParamForm extends JDialog {
 						panel.add(rbUnicode);
 						
 						JLabel lblMessagingMode = new JLabel("Messaging mode");
-						lblMessagingMode.setBounds(10, 497, 329, 14);
+						lblMessagingMode.setBounds(10, 523, 329, 14);
 						panel.add(lblMessagingMode);
 
 						cbMessagingMode = new JComboBox<SmppSimulatorParameters.MessagingMode>();
-						cbMessagingMode.setBounds(349, 494, 255, 20);
+						cbMessagingMode.setBounds(349, 520, 255, 20);
 						panel.add(cbMessagingMode);
+						
+						JLabel lblSubmitmultimessagecnt = new JLabel("Message count for SubmitMulti message (addresses are for 0, 1, 2,... more then a \"Dest.address\")");
+						lblSubmitmultimessagecnt.setBounds(10, 467, 498, 14);
+						panel.add(lblSubmitmultimessagecnt);
+						
+						tbSubmitMultiMessageCnt = new JTextField();
+						tbSubmitMultiMessageCnt.setColumns(10);
+						tbSubmitMultiMessageCnt.setBounds(518, 464, 86, 20);
+						panel.add(tbSubmitMultiMessageCnt);
 	}
 
 	public void setData(SmppSimulatorParameters data) {
@@ -276,6 +301,8 @@ public class SmppMessageParamForm extends JDialog {
 		this.tbBulkDestAddressRangeStart.setText(((Integer)data.getBulkDestAddressRangeStart()).toString());
 		this.tbBulkDestAddressRangeEnd.setText(((Integer)data.getBulkDestAddressRangeEnd()).toString());
 		this.tbBulkMessagePerSecond.setText(((Integer)data.getBulkMessagePerSecond()).toString());
+
+		this.tbSubmitMultiMessageCnt.setText(((Integer)data.getSubmitMultiMessageCnt()).toString());
 
 		this.cbEncodingType.removeAllItems();
 		SmppSimulatorParameters.EncodingType[] vallET = SmppSimulatorParameters.EncodingType.values();
@@ -413,7 +440,7 @@ public class SmppMessageParamForm extends JDialog {
 				throw new NumberFormatException();
 			data.setBulkDestAddressRangeStart(val);
 		} catch (NumberFormatException e) {
-			JOptionPane.showMessageDialog(this, "Error in BulkDestAddressRangeStart filed - it must be digital and positive");
+			JOptionPane.showMessageDialog(this, "Error in BulkDestAddressRangeStart field - it must be digital and positive");
 			return;
 		}
 		try {
@@ -422,7 +449,7 @@ public class SmppMessageParamForm extends JDialog {
 				throw new NumberFormatException();
 			data.setBulkDestAddressRangeEnd(val);
 		} catch (NumberFormatException e) {
-			JOptionPane.showMessageDialog(this, "Error in BulkDestAddressRangeEnd filed - it must be digital and positive");
+			JOptionPane.showMessageDialog(this, "Error in BulkDestAddressRangeEnd field - it must be digital and positive");
 			return;
 		}
 		try {
@@ -431,9 +458,18 @@ public class SmppMessageParamForm extends JDialog {
 				throw new NumberFormatException();
 			data.setBulkMessagePerSecond(val);
 		} catch (NumberFormatException e) {
-			JOptionPane.showMessageDialog(this, "Error in BulkMessagePerSecond filed - it must be digital and positive");
+			JOptionPane.showMessageDialog(this, "Error in BulkMessagePerSecond field - it must be digital and positive");
 			return;
 		}
+        try {
+            int val = Integer.parseInt(this.tbSubmitMultiMessageCnt.getText());
+            if (val < 0 || val > 255)
+                throw new NumberFormatException();
+            data.setSubmitMultiMessageCnt(val);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Error in SubmitMultiMessageCnt field - it must be digital, positive and less then 255");
+            return;
+        }
 
 		this.data.setEncodingType((SmppSimulatorParameters.EncodingType) cbEncodingType.getSelectedItem());
 		this.data.setSplittingType((SmppSimulatorParameters.SplittingType) cbSplittingType.getSelectedItem());

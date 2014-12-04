@@ -65,6 +65,7 @@ import com.cloudhopper.smpp.pdu.DataSm;
 import com.cloudhopper.smpp.pdu.DeliverSm;
 import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
+import com.cloudhopper.smpp.pdu.SubmitMulti;
 import com.cloudhopper.smpp.pdu.SubmitSm;
 import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.type.Address;
@@ -574,6 +575,10 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
             case DeliverSm:
                 DeliverSm deliverPdu = new DeliverSm();
                 pdu = deliverPdu;
+                break;
+            case SubmitMulti:
+                SubmitMulti submitMulti = new SubmitMulti();
+                pdu = submitMulti;
                 break;
             default:
                 return;

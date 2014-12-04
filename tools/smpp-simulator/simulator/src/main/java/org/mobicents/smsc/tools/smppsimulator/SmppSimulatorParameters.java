@@ -59,6 +59,7 @@ public class SmppSimulatorParameters {
     private ValidityType validityType = ValidityType.NoSpecial;
     private MCDeliveryReceipt mcDeliveryReceipt = MCDeliveryReceipt.No;
     private SendingMessageType sendingMessageType = SendingMessageType.SubmitSm;
+    private int submitMultiMessageCnt = 2;
     private SmppSession.Type smppSessionType = SmppSession.Type.CLIENT;
     private int smppEncoding = 0;
     private MessagingMode messagingMode = MessagingMode.storeAndForward;
@@ -300,6 +301,14 @@ public class SmppSimulatorParameters {
         this.sendingMessageType = sendingMessageType;
     }
 
+    public int getSubmitMultiMessageCnt() {
+        return submitMultiMessageCnt;
+    }
+
+    public void setSubmitMultiMessageCnt(int submitMultiMessageCnt) {
+        this.submitMultiMessageCnt = submitMultiMessageCnt;
+    }
+
     public SmppSession.Type getSmppSessionType() {
         return smppSessionType;
     }
@@ -380,7 +389,7 @@ public class SmppSimulatorParameters {
     }
 
     public enum SendingMessageType {
-        SubmitSm, DataSm, DeliverSm;
+        SubmitSm, DataSm, DeliverSm, SubmitMulti;
     }
 
     public enum MessagingMode {
