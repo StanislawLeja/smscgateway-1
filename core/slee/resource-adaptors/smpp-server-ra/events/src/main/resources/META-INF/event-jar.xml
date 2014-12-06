@@ -58,6 +58,22 @@
 		</event-class-name>
 	</event-definition>
 
+    <event-definition>
+        <description>This operation is used by an ESME to submit a short
+            message to the SMSC (several destination addresses) 
+            for onward transmission to a specified short
+            message entity (SME)
+        </description>
+        <event-type-name>
+            org.mobicents.resources.smpp.server.SUBMIT_MULTI
+        </event-type-name>
+        <event-type-vendor>org.mobicents</event-type-vendor>
+        <event-type-version>1.0</event-type-version>
+        <event-class-name>
+            com.cloudhopper.smpp.pdu.SubmitMulti
+        </event-class-name>
+    </event-definition>
+
 
 	<!-- transaction Response events -->
 
@@ -74,6 +90,20 @@
 			com.cloudhopper.smpp.pdu.SubmitSmResp
 		</event-class-name>
 	</event-definition>
+
+    <event-definition>
+        <description>This operation is used by an SMSC to respond to SUBMIT_MULTI
+            request received
+        </description>
+        <event-type-name>
+            org.mobicents.resources.smpp.server.SUBMIT_MULTI_RESP
+        </event-type-name>
+        <event-type-vendor>org.mobicents</event-type-vendor>
+        <event-type-version>1.0</event-type-version>
+        <event-class-name>
+            com.cloudhopper.smpp.pdu.SubmitMultiResp
+        </event-class-name>
+    </event-definition>
 
 	<event-definition>
 		<description>This operation is used by an SMSC to respond to SUBMIT_SM

@@ -23,6 +23,8 @@ import com.cloudhopper.smpp.pdu.DeliverSmResp;
 import com.cloudhopper.smpp.pdu.Pdu;
 import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
+import com.cloudhopper.smpp.pdu.SubmitMulti;
+import com.cloudhopper.smpp.pdu.SubmitMultiResp;
 import com.cloudhopper.smpp.pdu.SubmitSm;
 import com.cloudhopper.smpp.pdu.SubmitSmResp;
 import com.cloudhopper.smpp.type.Address;
@@ -169,6 +171,8 @@ public class SmppSessionsImpl implements SmppSessions {
                     counters.getRxEnquireLink().addRequestEstimatedProcessingTimeAndGet(estimatedProcessingTime);
                     counters.getRxEnquireLink().getResponseCommandStatusCounter().incrementAndGet(pdu.getCommandStatus());
                     break;
+
+            // TODO: adding here statistics for SUBMIT_MULTI ?
             }
         }
     }	
@@ -206,12 +210,6 @@ public class SmppSessionsImpl implements SmppSessions {
 				case SmppConstants.CMD_ID_UNBIND:
 					break;
 				case SmppConstants.CMD_ID_SUBMIT_SM:
-					// // TODO remove it ...........................
-					// SubmitSm submitSm = (SubmitSm) pduRequest;
-					// Date dt = new Date();
-					// submitSm.setServiceType(dt.toGMTString());
-					// // TODO remove it ...........................
-
 					SubmitSm submitSm = (SubmitSm) pduRequest;
 					sourceAddress = submitSm.getSourceAddress();
 					if (!this.esme.isSourceAddressMatching(sourceAddress)) {
@@ -282,7 +280,34 @@ public class SmppSessionsImpl implements SmppSessions {
 					smppServerResourceAdaptor.fireEvent(EventsType.DELIVER_SM,
 							smppServerTransaction.getActivityHandle(), (DeliverSm) pduRequest);
 					return null;
-				default:
+
+                case SmppConstants.CMD_ID_SUBMIT_MULTI:
+                    SubmitMulti submitMulti = (SubmitMulti) pduRequest;
+                    sourceAddress = submitMulti.getSourceAddress();
+                    if (!this.esme.isSourceAddressMatching(sourceAddress)) {
+                        tracer.warning(String
+                                .format("Incoming SUBMIT_MULTI's sequence_number=%d source_addr_ton=%d source_addr_npi=%d source_addr=%s doesn't match with configured ESME name=%s source_addr_ton=%d source_addr_npi=%d source_addr=%s",
+                                        submitMulti.getSequenceNumber(), sourceAddress.getTon(), sourceAddress.getNpi(),
+                                        sourceAddress.getAddress(), this.esme.getName(), this.esme.getSourceTon(),
+                                        this.esme.getSourceNpi(), this.esme.getSourceAddressRange()));
+
+                        response.setCommandStatus(SmppConstants.STATUS_INVSRCADR);
+                        return response;
+                    }
+
+                    smppServerTransactionHandle = new SmppTransactionHandle(this.esme.getName(),
+                            pduRequest.getSequenceNumber(), SmppTransactionType.INCOMING);
+                    smppServerTransaction = new SmppTransactionImpl(pduRequest, this.esme, smppServerTransactionHandle,
+                            smppServerResourceAdaptor);
+
+                    smppServerResourceAdaptor.startNewSmppServerTransactionActivity(smppServerTransaction);
+                    smppServerResourceAdaptor.fireEvent(EventsType.SUBMIT_MULTI,
+                            smppServerTransaction.getActivityHandle(), submitMulti);
+
+                    // Return null. Let SBB send response back
+                    return null;
+
+                default:
 					tracer.severe(String.format("Rx : Non supported PduRequest=%s. Will not fire event", pduRequest));
 					break;
 				}
@@ -336,10 +361,14 @@ public class SmppSessionsImpl implements SmppSessions {
 					smppServerResourceAdaptor.fireEvent(EventsType.DATA_SM_RESP,
 							smppServerTransaction.getActivityHandle(), (DataSmResp) pduResponse);
 					break;
-				case SmppConstants.CMD_ID_SUBMIT_SM_RESP:
-					smppServerResourceAdaptor.fireEvent(EventsType.SUBMIT_SM_RESP,
-							smppServerTransaction.getActivityHandle(), (SubmitSmResp) pduResponse);
-					break;
+                case SmppConstants.CMD_ID_SUBMIT_SM_RESP:
+                    smppServerResourceAdaptor.fireEvent(EventsType.SUBMIT_SM_RESP,
+                            smppServerTransaction.getActivityHandle(), (SubmitSmResp) pduResponse);
+                    break;
+                case SmppConstants.CMD_ID_SUBMIT_MULTI_RESP:
+                    smppServerResourceAdaptor.fireEvent(EventsType.SUBMIT_MULTI_RESP,
+                            smppServerTransaction.getActivityHandle(), (SubmitMultiResp) pduResponse);
+                    break;
 				default:
 					tracer.severe(String
 							.format("Rx : fireExpectedPduResponseReceived for SmppSessionImpl=%s PduAsyncResponse=%s but PduResponse is unidentified. Event will not be fired ",
