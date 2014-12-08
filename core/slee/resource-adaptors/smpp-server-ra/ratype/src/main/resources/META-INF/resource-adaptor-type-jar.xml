@@ -55,6 +55,11 @@
 			<event-type-vendor>org.mobicents</event-type-vendor>
 			<event-type-version>1.0</event-type-version>
 		</event-type-ref>		
+        <event-type-ref>
+            <event-type-name>org.mobicents.resources.smpp.server.SUBMIT_MULTI</event-type-name>
+            <event-type-vendor>org.mobicents</event-type-vendor>
+            <event-type-version>1.0</event-type-version>
+        </event-type-ref>
 		
 		<!-- SMPP Response -->
 		<event-type-ref>
@@ -72,6 +77,11 @@
 			<event-type-vendor>org.mobicents</event-type-vendor>
 			<event-type-version>1.0</event-type-version>
 		</event-type-ref>		
+        <event-type-ref>
+            <event-type-name>org.mobicents.resources.smpp.server.SUBMIT_MULTI_RESP</event-type-name>
+            <event-type-vendor>org.mobicents</event-type-vendor>
+            <event-type-version>1.0</event-type-version>
+        </event-type-ref>
 		
 		<!-- SMPP Error -->
 		<event-type-ref>
