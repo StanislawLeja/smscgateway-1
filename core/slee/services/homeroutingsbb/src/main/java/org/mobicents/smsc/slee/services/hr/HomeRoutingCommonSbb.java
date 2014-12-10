@@ -329,7 +329,7 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
     protected SccpAddress getServiceCenterSccpAddress() {
         if (this.serviceCenterSCCPAddress == null) {
             this.serviceCenterSCCPAddress = MessageUtil.getSccpAddress(sccpParameterFact, smscPropertiesManagement.getServiceCenterGt(),
-                    NatureOfAddress.INTERNATIONAL.getValue(), NumberingPlan.ISDN_TELEPHONY.getValue(), smscPropertiesManagement.getHlrSsn(),
+                    NatureOfAddress.INTERNATIONAL.getValue(), NumberingPlan.ISDN_TELEPHONY.getValue(), smscPropertiesManagement.getServiceCenterSsn(),
                     smscPropertiesManagement.getGlobalTitleIndicator(), smscPropertiesManagement.getTranslationType());
         }
         return this.serviceCenterSCCPAddress;

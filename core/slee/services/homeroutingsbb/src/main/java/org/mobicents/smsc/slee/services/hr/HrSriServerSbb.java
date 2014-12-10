@@ -41,6 +41,7 @@ import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
 import org.mobicents.protocols.ss7.map.api.service.sms.MWStatus;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMRequest;
 import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMResponse;
+import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogNotice;
@@ -158,6 +159,15 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
 
         MAPDialogSms dialog = evt.getMAPDialog();
 
+        // we are changing here SSN in CallingPartyAddress of a SRI response to HLR SSN
+        // because it is possible that this address has been updated inside SCCP routing procedure
+        // when a message came to SMSC
+        // TODO: check if it is a proper solution ?
+        SccpAddress locAddr = dialog.getLocalAddress();
+        SccpAddress locAddr2 = sccpParameterFact.createSccpAddress(locAddr.getAddressIndicator().getRoutingIndicator(), locAddr.getGlobalTitle(),
+                locAddr.getSignalingPointCode(), smscPropertiesManagement.getHlrSsn());
+        dialog.setLocalAddress(locAddr2);
+
         if (smscPropertiesManagement.getHrCharging() == MoChargingType.reject) {
             try {
                 MAPErrorMessage errorMessage = this.mapProvider.getMAPErrorMessageFactory().createMAPErrorMessageFacilityNotSup(null, null, null);
@@ -192,9 +202,8 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
 
         HrSriClientSbbLocalObject hrSriClientSbbLocalObject = this.getHrSriClientSbbLocalObject();
         if (hrSriClientSbbLocalObject != null) {
-            // NextCorrelationIdResult correlationIDRes =
-            // this.persistence.c2_getNextCorrelationId(msisdn.getAddress());
-            String sca = serviceCentreAddress.getAddress();
+            String sca = msisdn.getAddress();
+//          String sca = serviceCentreAddress.getAddress();
             NextCorrelationIdResult correlationIDRes = this.persistence.c2_getNextCorrelationId(sca);
             if (correlationIDRes.getSmscAddress() != null && !correlationIDRes.getSmscAddress().equals(""))
                 this.setSmscAddressForCountryCode(correlationIDRes.getSmscAddress());

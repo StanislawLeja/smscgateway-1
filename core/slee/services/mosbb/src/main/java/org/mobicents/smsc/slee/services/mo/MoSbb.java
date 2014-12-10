@@ -1169,6 +1169,9 @@ public abstract class MoSbb extends MoCommonSbb {
         case NationalNumber:
             sms.setSourceAddrTon(callingPartyAddress.getTypeOfNumber().getCode());
             break;          
+        case Alphanumeric:
+            sms.setSourceAddrTon(callingPartyAddress.getTypeOfNumber().getCode());
+            break;          
         default:
             throw new SmscProcessingException("Home routing: TPDU OriginatingAddress TypeOfNumber not supported: "
                     + callingPartyAddress.getTypeOfNumber(), SmppConstants.STATUS_SYSERR,
@@ -1177,7 +1180,9 @@ public abstract class MoSbb extends MoCommonSbb {
 
         switch (callingPartyAddress.getNumberingPlanIdentification()) {
         case Unknown:
-            sms.setSourceAddrNpi(smscPropertiesManagement.getDefaultNpi());
+            // we stay here "Unknown" code for home routing originated messages
+            sms.setSourceAddrNpi(callingPartyAddress.getNumberingPlanIdentification().getCode());
+//            sms.setSourceAddrNpi(smscPropertiesManagement.getDefaultNpi());
             break;
         case ISDNTelephoneNumberingPlan:
             sms.setSourceAddrNpi(callingPartyAddress.getNumberingPlanIdentification().getCode());
