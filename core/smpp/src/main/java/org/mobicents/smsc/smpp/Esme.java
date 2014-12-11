@@ -41,7 +41,7 @@ import com.cloudhopper.smpp.type.Address;
  * @author amit bhayani
  * 
  */
-public class Esme implements XMLSerializable, EsmeMBean {
+public class Esme extends SslConfigurationWrapper implements XMLSerializable, EsmeMBean {
 
 	/**
 	 * 
@@ -57,8 +57,8 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	private static final String ESME_SYSTEM_ID = "systemId";
 	private static final String ESME_PASSWORD = "password";
 	private static final String REMOTE_HOST_IP = "host";
-    private static final String REMOTE_HOST_PORT = "port";
-    private static final String NETWORK_ID = "networkId";
+	private static final String REMOTE_HOST_PORT = "port";
+	private static final String NETWORK_ID = "networkId";
 	private static final String SMPP_BIND_TYPE = "smppBindType";
 
 	private static final String SMPP_SESSION_TYPE = "smppSessionType";
@@ -98,7 +98,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 	private int port;
 	private String systemType;
 	private SmppInterfaceVersionType smppVersion = null;
-    private int networkId;
+	private int networkId;
 
 	// These are configured ESME TON, NPI and Address Range. If ESME is acting
 	// as Server, incoming BIND request should match there TON, NPI and address
@@ -238,7 +238,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			this.routingAddressRangePattern = Pattern.compile(this.routingAddressRange);
 		}
 
-        this.networkId = networkId;
+		this.networkId = networkId;
 	}
 
 	/**
@@ -332,15 +332,15 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		this.store();
 	}
 
-    @Override
-    public int getNetworkId() {
-        return networkId;
-    }
+	@Override
+	public int getNetworkId() {
+		return networkId;
+	}
 
-    public void setNetworkId(int networkId) {
-        this.networkId = networkId;
-        this.store();
-    }
+	public void setNetworkId(int networkId) {
+		this.networkId = networkId;
+		this.store();
+	}
 
 	public SmppBindType getSmppBindType() {
 		return smppBindType;
@@ -712,8 +712,8 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			esme.systemId = xml.getAttribute(ESME_SYSTEM_ID, "");
 			esme.password = xml.getAttribute(ESME_PASSWORD, null);
 			esme.host = xml.getAttribute(REMOTE_HOST_IP, "");
-            esme.port = xml.getAttribute(REMOTE_HOST_PORT, -1);
-            esme.networkId = xml.getAttribute(NETWORK_ID, 0);
+			esme.port = xml.getAttribute(REMOTE_HOST_PORT, -1);
+			esme.networkId = xml.getAttribute(NETWORK_ID, 0);
 
 			String smppBindTypeStr = xml.getAttribute(SMPP_BIND_TYPE, "TRANSCEIVER");
 
@@ -762,6 +762,39 @@ public class Esme implements XMLSerializable, EsmeMBean {
 				esme.routingAddressRangePattern = Pattern.compile(esme.routingAddressRange);
 			}
 
+			// SSL
+			esme.useSsl = xml.getAttribute(USE_SSL, false);
+			esme.wrappedSslConfig.setCertAlias(xml.getAttribute(CERT_ALIAS, null));
+			esme.wrappedSslConfig.setCrlPath(xml.getAttribute(CRL_PATH, null));
+			esme.wrappedSslConfig.setKeyManagerFactoryAlgorithm(xml.getAttribute(KEY_MANAGER_FACTORY_ALGORITHM,
+					"SunX509"));
+			esme.wrappedSslConfig.setKeyManagerPassword(xml.getAttribute(KEY_MANAGER_PASSWORD, null));
+			esme.wrappedSslConfig.setKeyStorePassword(xml.getAttribute(KEY_STORE_PASSWORD, null));
+			esme.wrappedSslConfig.setKeyStoreProvider(xml.getAttribute(KEY_STORE_PROVIDER, null));
+			esme.wrappedSslConfig.setKeyStorePath(xml.getAttribute(KEY_STORE_PATH, null));
+			esme.wrappedSslConfig.setKeyStoreType(xml.getAttribute(KEY_STORE_TYPE, "JKS"));
+			esme.wrappedSslConfig.setMaxCertPathLength(xml.getAttribute(MAX_CERT_PATH_LENGTH, -1));
+			esme.wrappedSslConfig.setNeedClientAuth(xml.getAttribute(NEED_CLIENT_AUTH, false));
+			esme.wrappedSslConfig.setOcspResponderURL(xml.getAttribute(OCS_RESPONDER_URL, null));
+			esme.wrappedSslConfig.setProtocol(xml.getAttribute(PROTOCOL, "TLS"));
+			esme.wrappedSslConfig.setProvider(xml.getAttribute(PROVIDER, null));
+			esme.wrappedSslConfig.setSecureRandomAlgorithm(xml.getAttribute(SECURE_RANDOM_ALGORITHM, null));
+			esme.wrappedSslConfig.setSslSessionCacheSize(xml.getAttribute(SSL_SESSION_CACHE_SIZE, 0));
+			esme.wrappedSslConfig.setSslSessionTimeout(xml.getAttribute(SSL_SESSION_TIMEOUT, 0));
+			esme.wrappedSslConfig.setTrustManagerFactoryAlgorithm(xml.getAttribute(TRUST_MANAGER_FACTORY_ALGORITHM,
+					"PKIX"));
+			esme.wrappedSslConfig.setTrustStorePassword(xml.getAttribute(TRUST_STORE_PASSWORD, null));
+			esme.wrappedSslConfig.setTrustStorePath(xml.getAttribute(TRUST_STORE_PATH, null));
+			esme.wrappedSslConfig.setTrustStoreProvider(xml.getAttribute(TRUST_STORE_PROVIDER, null));
+			esme.wrappedSslConfig.setTrustStoreType(xml.getAttribute(TRUST_STORE_TYPE, "JKS"));
+			esme.wrappedSslConfig.setWantClientAuth(xml.getAttribute(WANT_CLIENT_AUTH, false));
+			esme.wrappedSslConfig.setAllowRenegotiate(xml.getAttribute(ALLOW_RENEGOTIATE, true));
+			esme.wrappedSslConfig.setEnableCRLDP(xml.getAttribute(ENABLE_CRLDP, false));
+			esme.wrappedSslConfig.setSessionCachingEnabled(xml.getAttribute(SESSION_CACHING_ENABLED, true));
+			esme.wrappedSslConfig.setTrustAll(xml.getAttribute(TRUST_ALL, true));
+			esme.wrappedSslConfig.setValidateCerts(xml.getAttribute(VALIDATE_CERTS, false));
+			esme.wrappedSslConfig.setValidatePeerCerts(xml.getAttribute(VALIDATE_PEER_CERTS, false));
+
 		}
 
 		@Override
@@ -771,9 +804,9 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			xml.setAttribute(ESME_SYSTEM_ID, esme.systemId);
 			xml.setAttribute(ESME_PASSWORD, esme.password);
 			xml.setAttribute(REMOTE_HOST_IP, esme.host);
-            xml.setAttribute(REMOTE_HOST_PORT, esme.port);
-            xml.setAttribute(NETWORK_ID, esme.networkId);
-            xml.setAttribute(SMPP_BIND_TYPE, esme.smppBindType.toString());
+			xml.setAttribute(REMOTE_HOST_PORT, esme.port);
+			xml.setAttribute(NETWORK_ID, esme.networkId);
+			xml.setAttribute(SMPP_BIND_TYPE, esme.smppBindType.toString());
 			xml.setAttribute(SMPP_SESSION_TYPE, esme.smppSessionType.toString());
 
 			xml.setAttribute(STARTED, esme.started);
@@ -803,6 +836,37 @@ public class Esme implements XMLSerializable, EsmeMBean {
 			xml.setAttribute(ROUTING_TON, esme.routingTon);
 			xml.setAttribute(ROUTING_NPI, esme.routingNpi);
 			xml.setAttribute(ROUTING_ADDRESS_RANGE, esme.routingAddressRange);
+
+			// SSl
+			xml.setAttribute(USE_SSL, esme.useSsl);
+			xml.setAttribute(CERT_ALIAS, esme.wrappedSslConfig.getCertAlias());
+			xml.setAttribute(CRL_PATH, esme.wrappedSslConfig.getCrlPath());
+			xml.setAttribute(KEY_MANAGER_FACTORY_ALGORITHM, esme.wrappedSslConfig.getKeyManagerFactoryAlgorithm());
+			xml.setAttribute(KEY_MANAGER_PASSWORD, esme.wrappedSslConfig.getKeyManagerPassword());
+			xml.setAttribute(KEY_STORE_PASSWORD, esme.wrappedSslConfig.getKeyStorePassword());
+			xml.setAttribute(KEY_STORE_PROVIDER, esme.wrappedSslConfig.getKeyStoreProvider());
+			xml.setAttribute(KEY_STORE_PATH, esme.wrappedSslConfig.getKeyStorePath());
+			xml.setAttribute(KEY_STORE_TYPE, esme.wrappedSslConfig.getKeyStoreType());
+			xml.setAttribute(MAX_CERT_PATH_LENGTH, esme.wrappedSslConfig.getMaxCertPathLength());
+			xml.setAttribute(NEED_CLIENT_AUTH, esme.wrappedSslConfig.getNeedClientAuth());
+			xml.setAttribute(OCS_RESPONDER_URL, esme.wrappedSslConfig.getOcspResponderURL());
+			xml.setAttribute(PROTOCOL, esme.wrappedSslConfig.getProtocol());
+			xml.setAttribute(PROVIDER, esme.wrappedSslConfig.getProvider());
+			xml.setAttribute(SECURE_RANDOM_ALGORITHM, esme.wrappedSslConfig.getSecureRandomAlgorithm());
+			xml.setAttribute(SSL_SESSION_CACHE_SIZE, esme.wrappedSslConfig.getSslSessionCacheSize());
+			xml.setAttribute(SSL_SESSION_TIMEOUT, esme.wrappedSslConfig.getSslSessionTimeout());
+			xml.setAttribute(TRUST_MANAGER_FACTORY_ALGORITHM, esme.wrappedSslConfig.getTrustManagerFactoryAlgorithm());
+			xml.setAttribute(TRUST_STORE_PASSWORD, esme.wrappedSslConfig.getTrustStorePassword());
+			xml.setAttribute(TRUST_STORE_PATH, esme.wrappedSslConfig.getTrustStorePath());
+			xml.setAttribute(TRUST_STORE_PROVIDER, esme.wrappedSslConfig.getTrustStoreProvider());
+			xml.setAttribute(TRUST_STORE_TYPE, esme.wrappedSslConfig.getTrustStoreType());
+			xml.setAttribute(WANT_CLIENT_AUTH, esme.wrappedSslConfig.getWantClientAuth());
+			xml.setAttribute(ALLOW_RENEGOTIATE, esme.wrappedSslConfig.isAllowRenegotiate());
+			xml.setAttribute(ENABLE_CRLDP, esme.wrappedSslConfig.isEnableCRLDP());
+			xml.setAttribute(SESSION_CACHING_ENABLED, esme.wrappedSslConfig.isSessionCachingEnabled());
+			xml.setAttribute(TRUST_ALL, esme.wrappedSslConfig.isTrustAll());
+			xml.setAttribute(VALIDATE_CERTS, esme.wrappedSslConfig.isValidateCerts());
+			xml.setAttribute(VALIDATE_PEER_CERTS, esme.wrappedSslConfig.isValidatePeerCerts());
 		}
 	};
 
@@ -810,9 +874,8 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		sb.append(SmppOamMessages.SHOW_ESME_NAME).append(this.name).append(SmppOamMessages.SHOW_ESME_SYSTEM_ID)
 				.append(this.systemId).append(SmppOamMessages.SHOW_ESME_STATE).append(this.getStateName())
 				.append(SmppOamMessages.SHOW_ESME_PASSWORD).append(this.password)
-				.append(SmppOamMessages.SHOW_ESME_HOST).append(this.host)
-                .append(SmppOamMessages.SHOW_ESME_PORT).append(this.port)
-                .append(SmppOamMessages.SHOW_NETWORK_ID).append(this.networkId)
+				.append(SmppOamMessages.SHOW_ESME_HOST).append(this.host).append(SmppOamMessages.SHOW_ESME_PORT)
+				.append(this.port).append(SmppOamMessages.SHOW_NETWORK_ID).append(this.networkId)
 				.append(SmppOamMessages.CHARGING_ENABLED).append(this.chargingEnabled)
 				.append(SmppOamMessages.SHOW_ESME_BIND_TYPE).append(this.smppBindType)
 				.append(SmppOamMessages.SHOW_ESME_SYSTEM_TYPE).append(this.systemType)
@@ -1004,8 +1067,8 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		}
 		return this.state;
 	}
-	
-	protected void setStateName(String name){
+
+	protected void setStateName(String name) {
 		this.state = name;
 	}
 
@@ -1129,7 +1192,7 @@ public class Esme implements XMLSerializable, EsmeMBean {
 		return true;
 	}
 
-	private void store() {
+	public void store() {
 		this.esmeManagement.store();
 	}
 }

@@ -47,13 +47,14 @@ import org.apache.log4j.Logger;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppServerConfiguration;
 import com.cloudhopper.smpp.impl.DefaultSmppServer;
+import com.cloudhopper.smpp.ssl.SslConfiguration;
 
 /**
  * 
  * @author Amit Bhayani
  * 
  */
-public class SmppServerManagement implements SmppServerManagementMBean {
+public class SmppServerManagement extends SslConfigurationWrapper implements SmppServerManagementMBean {
 
 	private static final Logger logger = Logger.getLogger(SmppServerManagement.class);
 
@@ -110,6 +111,8 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 
 	public SmppServerManagement(String name, EsmeManagement esmeManagement,
 			SmppSessionHandlerInterface smppSessionHandlerInterface) {
+		super();
+
 		this.name = name;
 		this.esmeManagement = esmeManagement;
 		this.smppSessionHandlerInterface = smppSessionHandlerInterface;
@@ -237,6 +240,14 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 		// We bind to JBoss MBean
 		configuration.setJmxEnabled(false);
 
+		// SSL settings
+		if (this.isUseSsl()) {
+			logger.info(String.format("%s SmppServer will use SSL Configuration", this.name));
+			SslConfiguration sslConfiguration = this.getWrappedSslConfig();
+
+			configuration.setUseSsl(true);
+			configuration.setSslConfiguration(sslConfiguration);
+		}
 
 		// for monitoring thread use, it's preferable to create your own
 		// instance of an executor and cast it to a ThreadPoolExecutor from
@@ -274,12 +285,12 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 		logger.info("Stopping SMPP server...");
 		this.defaultSmppServer.stop();
 
-//        this.executor.shutdownNow();
-        this.monitorExecutor.shutdownNow();
+		// this.executor.shutdownNow();
+		this.monitorExecutor.shutdownNow();
 
-        this.executor.awaitTermination(10, TimeUnit.SECONDS);
-        this.executor.shutdown();
-//        this.monitorExecutor.shutdown();
+		this.executor.awaitTermination(10, TimeUnit.SECONDS);
+		this.executor.shutdown();
+		// this.monitorExecutor.shutdown();
 
 		logger.info("SMPP server stopped");
 		logger.info(String.format("Server counters: %s", this.defaultSmppServer.getCounters()));
@@ -490,6 +501,39 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 			writer.write(this.defaultWindowMonitorInterval, DEFAULT_WINDOW_MONITOR_INTERVAL, Long.class);
 			writer.write(this.defaultSessionCountersEnabled, DEFAULT_SESSION_COUNTERS_ENABLED, Boolean.class);
 
+			// SSL
+			writer.write(this.useSsl, USE_SSL, Boolean.class);
+			writer.write(this.wrappedSslConfig.getCertAlias(), CERT_ALIAS, String.class);
+			writer.write(this.wrappedSslConfig.getCrlPath(), CRL_PATH, String.class);
+			writer.write(this.wrappedSslConfig.getKeyManagerFactoryAlgorithm(), KEY_MANAGER_FACTORY_ALGORITHM,
+					String.class);
+			writer.write(this.wrappedSslConfig.getKeyManagerPassword(), KEY_MANAGER_PASSWORD, String.class);
+			writer.write(this.wrappedSslConfig.getKeyStorePassword(), KEY_STORE_PASSWORD, String.class);
+			writer.write(this.wrappedSslConfig.getKeyStoreProvider(), KEY_STORE_PROVIDER, String.class);
+			writer.write(this.wrappedSslConfig.getKeyStorePath(), KEY_STORE_PATH, String.class);
+			writer.write(this.wrappedSslConfig.getKeyStoreType(), KEY_STORE_TYPE, String.class);
+			writer.write(this.wrappedSslConfig.getMaxCertPathLength(), MAX_CERT_PATH_LENGTH, Integer.class);
+			writer.write(this.wrappedSslConfig.getNeedClientAuth(), NEED_CLIENT_AUTH, Boolean.class);
+			writer.write(this.wrappedSslConfig.getOcspResponderURL(), OCS_RESPONDER_URL, String.class);
+			writer.write(this.wrappedSslConfig.getProtocol(), PROTOCOL, String.class);
+			writer.write(this.wrappedSslConfig.getProvider(), PROVIDER, String.class);
+			writer.write(this.wrappedSslConfig.getSecureRandomAlgorithm(), SECURE_RANDOM_ALGORITHM, String.class);
+			writer.write(this.wrappedSslConfig.getSslSessionCacheSize(), SSL_SESSION_CACHE_SIZE, Integer.class);
+			writer.write(this.wrappedSslConfig.getSslSessionTimeout(), SSL_SESSION_TIMEOUT, Integer.class);
+			writer.write(this.wrappedSslConfig.getTrustManagerFactoryAlgorithm(), TRUST_MANAGER_FACTORY_ALGORITHM,
+					String.class);
+			writer.write(this.wrappedSslConfig.getTrustStorePassword(), TRUST_STORE_PASSWORD, String.class);
+			writer.write(this.wrappedSslConfig.getTrustStorePath(), TRUST_STORE_PATH, String.class);
+			writer.write(this.wrappedSslConfig.getTrustStoreProvider(), TRUST_STORE_PROVIDER, String.class);
+			writer.write(this.wrappedSslConfig.getTrustStoreType(), TRUST_STORE_TYPE, String.class);
+			writer.write(this.wrappedSslConfig.getWantClientAuth(), WANT_CLIENT_AUTH, Boolean.class);
+			writer.write(this.wrappedSslConfig.isAllowRenegotiate(), ALLOW_RENEGOTIATE, Boolean.class);
+			writer.write(this.wrappedSslConfig.isEnableCRLDP(), ENABLE_CRLDP, Boolean.class);
+			writer.write(this.wrappedSslConfig.isSessionCachingEnabled(), SESSION_CACHING_ENABLED, Boolean.class);
+			writer.write(this.wrappedSslConfig.isTrustAll(), TRUST_ALL, Boolean.class);
+			writer.write(this.wrappedSslConfig.isValidateCerts(), VALIDATE_CERTS, Boolean.class);
+			writer.write(this.wrappedSslConfig.isValidatePeerCerts(), VALIDATE_PEER_CERTS, Boolean.class);
+
 			writer.close();
 		} catch (Exception e) {
 			logger.error("Error while persisting the Rule state in file", e);
@@ -503,22 +547,23 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 	 */
 	public void load() throws FileNotFoundException {
 
-        // backward compatibility: rename old file name to new one
-        if (persistDir != null) {
-            TextBuilder oldFileName = new TextBuilder();
-            oldFileName.append(persistDir).append(File.separator).append("SmscManagement").append("_").append(PERSIST_FILE_NAME);
+		// backward compatibility: rename old file name to new one
+		if (persistDir != null) {
+			TextBuilder oldFileName = new TextBuilder();
+			oldFileName.append(persistDir).append(File.separator).append("SmscManagement").append("_")
+					.append(PERSIST_FILE_NAME);
 
-            Path oldPath = FileSystems.getDefault().getPath(oldFileName.toString());
-            Path newPath = FileSystems.getDefault().getPath(persistFile.toString());
+			Path oldPath = FileSystems.getDefault().getPath(oldFileName.toString());
+			Path newPath = FileSystems.getDefault().getPath(persistFile.toString());
 
-            if (Files.exists(oldPath) && Files.notExists(newPath)) {
-                try {
-                    Files.move(oldPath, newPath);
-                } catch (IOException e) {
-                    logger.warn("Exception when trying to rename old config file", e);
-                }
-            }
-        }
+			if (Files.exists(oldPath) && Files.notExists(newPath)) {
+				try {
+					Files.move(oldPath, newPath);
+				} catch (IOException e) {
+					logger.warn("Exception when trying to rename old config file", e);
+				}
+			}
+		}
 
 		XMLObjectReader reader = null;
 		try {
@@ -536,6 +581,39 @@ public class SmppServerManagement implements SmppServerManagementMBean {
 			this.defaultRequestExpiryTimeout = reader.read(DEFAULT_REQUEST_EXPIRY_TIMEOUT, Integer.class);
 			this.defaultWindowMonitorInterval = reader.read(DEFAULT_WINDOW_MONITOR_INTERVAL, Integer.class);
 			this.defaultSessionCountersEnabled = reader.read(DEFAULT_SESSION_COUNTERS_ENABLED, Boolean.class);
+
+			// SSL
+			this.useSsl = reader.read(USE_SSL, Boolean.class);
+			this.wrappedSslConfig.setCertAlias(reader.read(CERT_ALIAS, String.class));
+			this.wrappedSslConfig.setCrlPath(reader.read(CRL_PATH, String.class));
+			this.wrappedSslConfig.setKeyManagerFactoryAlgorithm(reader
+					.read(KEY_MANAGER_FACTORY_ALGORITHM, String.class));
+			this.wrappedSslConfig.setKeyManagerPassword(reader.read(KEY_MANAGER_PASSWORD, String.class));
+			this.wrappedSslConfig.setKeyStorePassword(reader.read(KEY_STORE_PASSWORD, String.class));
+			this.wrappedSslConfig.setKeyStoreProvider(reader.read(KEY_STORE_PROVIDER, String.class));
+			this.wrappedSslConfig.setKeyStorePath(reader.read(KEY_STORE_PATH, String.class));
+			this.wrappedSslConfig.setKeyStoreType(reader.read(KEY_STORE_TYPE, String.class));
+			this.wrappedSslConfig.setMaxCertPathLength(reader.read(MAX_CERT_PATH_LENGTH, Integer.class));
+			this.wrappedSslConfig.setNeedClientAuth(reader.read(NEED_CLIENT_AUTH, Boolean.class));
+			this.wrappedSslConfig.setOcspResponderURL(reader.read(OCS_RESPONDER_URL, String.class));
+			this.wrappedSslConfig.setProtocol(reader.read(PROTOCOL, String.class));
+			this.wrappedSslConfig.setProvider(reader.read(PROVIDER, String.class));
+			this.wrappedSslConfig.setSecureRandomAlgorithm(reader.read(SECURE_RANDOM_ALGORITHM, String.class));
+			this.wrappedSslConfig.setSslSessionCacheSize(reader.read(SSL_SESSION_CACHE_SIZE, Integer.class));
+			this.wrappedSslConfig.setSslSessionTimeout(reader.read(SSL_SESSION_TIMEOUT, Integer.class));
+			this.wrappedSslConfig.setTrustManagerFactoryAlgorithm(reader.read(TRUST_MANAGER_FACTORY_ALGORITHM,
+					String.class));
+			this.wrappedSslConfig.setTrustStorePassword(reader.read(TRUST_STORE_PASSWORD, String.class));
+			this.wrappedSslConfig.setTrustStorePath(reader.read(TRUST_STORE_PATH, String.class));
+			this.wrappedSslConfig.setTrustStoreProvider(reader.read(TRUST_STORE_PROVIDER, String.class));
+			this.wrappedSslConfig.setTrustStoreType(reader.read(TRUST_STORE_TYPE, String.class));
+			this.wrappedSslConfig.setWantClientAuth(reader.read(WANT_CLIENT_AUTH, Boolean.class));
+			this.wrappedSslConfig.setAllowRenegotiate(reader.read(ALLOW_RENEGOTIATE, Boolean.class));
+			this.wrappedSslConfig.setEnableCRLDP(reader.read(ENABLE_CRLDP, Boolean.class));
+			this.wrappedSslConfig.setSessionCachingEnabled(reader.read(SESSION_CACHING_ENABLED, Boolean.class));
+			this.wrappedSslConfig.setTrustAll(reader.read(TRUST_ALL, Boolean.class));
+			this.wrappedSslConfig.setValidateCerts(reader.read(VALIDATE_CERTS, Boolean.class));
+			this.wrappedSslConfig.setValidatePeerCerts(reader.read(VALIDATE_PEER_CERTS, Boolean.class));
 
 			reader.close();
 		} catch (XMLStreamException ex) {

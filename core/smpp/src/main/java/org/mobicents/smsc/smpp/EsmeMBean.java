@@ -28,7 +28,7 @@ import com.cloudhopper.smpp.jmx.DefaultSmppSessionMXBean;
  * @author Amit Bhayani
  * 
  */
-public interface EsmeMBean extends DefaultSmppSessionMXBean {
+public interface EsmeMBean extends DefaultSmppSessionMXBean, SslConfigurationWrapperMBean {
 	boolean isStarted();
 
 	String getClusterName();

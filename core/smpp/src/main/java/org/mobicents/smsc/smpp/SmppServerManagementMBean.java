@@ -27,7 +27,7 @@ package org.mobicents.smsc.smpp;
  * @author sergey vetyutnev
  * 
  */
-public interface SmppServerManagementMBean {
+public interface SmppServerManagementMBean extends SslConfigurationWrapperMBean {
 
 	public void start() throws Exception;
 

@@ -37,6 +37,7 @@ import com.cloudhopper.smpp.pdu.EnquireLink;
 import com.cloudhopper.smpp.pdu.EnquireLinkResp;
 import com.cloudhopper.smpp.pdu.PduRequest;
 import com.cloudhopper.smpp.pdu.PduResponse;
+import com.cloudhopper.smpp.ssl.SslConfiguration;
 import com.cloudhopper.smpp.type.Address;
 import com.cloudhopper.smpp.type.RecoverablePduException;
 import com.cloudhopper.smpp.type.UnrecoverablePduException;
@@ -241,6 +242,15 @@ public class SmppClientOpsThread implements Runnable {
 
 			SmppSessionHandler sessionHandler = new ClientSmppSessionHandler(esme,
 					this.smppSessionHandlerInterface.createNewSmppSessionHandler(esme));
+			
+			// SSL settings
+			if (esme.isUseSsl()) {
+				logger.info(String.format("%s ESME will use SSL Configuration", esme.getName()));
+				SslConfiguration sslConfiguration = esme.getWrappedSslConfig();
+
+				config0.setUseSsl(true);
+				config0.setSslConfiguration(sslConfiguration);
+			}
 
 			session0 = clientBootstrap.bind(config0, sessionHandler);
 
