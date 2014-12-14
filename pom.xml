@@ -44,7 +44,7 @@
 <!--         
 		<yammer-metrics.version>2.2.0</yammer-metrics.version>
 -->
-		<netty.version>3.6.3.Final</netty.version>
+		<netty.version>3.9.0.Final</netty.version>  <!-- 3.6.3.Final -->
 		<cassandra-thrift.version>1.2.6</cassandra-thrift.version>
 		<apache-thrift.version>0.7.0</apache-thrift.version>
 		<jackson.version>1.9.2</jackson.version>
