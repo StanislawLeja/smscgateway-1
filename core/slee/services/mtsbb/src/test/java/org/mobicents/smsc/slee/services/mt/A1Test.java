@@ -3,13 +3,9 @@ package org.mobicents.smsc.slee.services.mt;
 import static org.testng.Assert.*;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
-import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
-import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.EsmeManagement;
 import org.testng.annotations.Test;
@@ -50,6 +46,29 @@ public class A1Test {
         m = pattern.matcher(s24);
         res = m.matches();
         m = pattern.matcher(s25);
+        res = m.matches();
+
+        // orig
+        s1 = "^1\\d*";
+        s21 = "14156122923";
+        pattern = Pattern.compile(s1);
+        m = pattern.matcher(s21);
+        res = m.matches();
+        // dest
+        s1 = "^91\\d*";
+        s21 = "919884037879";
+        pattern = Pattern.compile(s1);
+        m = pattern.matcher(s21);
+        res = m.matches();
+        s1 = "^91\\d*";
+        s21 = "929884037879";
+        pattern = Pattern.compile(s1);
+        m = pattern.matcher(s21);
+        res = m.matches();
+        s1 = "";
+        s21 = "929884037879";
+        pattern = Pattern.compile(s1);
+        m = pattern.matcher(s21);
         res = m.matches();
 
 
