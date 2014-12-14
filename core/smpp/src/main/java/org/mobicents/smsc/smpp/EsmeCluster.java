@@ -87,7 +87,7 @@ public class EsmeCluster {
 		// TODO synchronized is correct here?
 		for (int i = 0; i < this.esmesToSendPdu.size(); i++) {
 			this.index++;
-			if (this.index == this.esmesToSendPdu.size()) {
+			if (this.index >= this.esmesToSendPdu.size()) {
 				this.index = 0;
 			}
 
