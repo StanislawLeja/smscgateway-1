@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -123,10 +122,10 @@ public class EsmeManagement implements EsmeManagementMBean {
 		this.smppClient = smppClient;
 	}
 
-	@Override
-	public List<Esme> getEsmes() {
-		return esmes.unmodifiable();
-	}
+    @Override
+    public FastList<Esme> getEsmes() {
+        return esmes;
+    }
 
 	@Override
 	public Esme getEsmeByName(String esmeName) {

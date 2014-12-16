@@ -310,7 +310,7 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
                 networkNodeNumber = this.mapParameterFactory.createISDNAddressString(AddressNature.international_number, NumberingPlan.ISDN,
                         smscAddressForCountryCode);
             } else {
-                networkNodeNumber = getNetworkNodeNumber();
+                networkNodeNumber = getNetworkNodeNumber(correlationIdValue.getNetworkId());
             }
 
             LocationInfoWithLMSI li = this.mapParameterFactory.createLocationInfoWithLMSI(networkNodeNumber, null, null, false, null);

@@ -11,15 +11,17 @@ public class SmscPropertiesManagementTest {
     public void testPropertiesLoad() throws Exception {
         SmscPropertiesManagement man = SmscPropertiesManagement.getInstance("SmscPropertiesManagementTest");
         man.start();
-        
+
         man.setSMSHomeRouting(true);
-        
+        man.setServiceCenterGtNetworkId(1, "22229");
+       
         man.stop();
         
         man.start();
         
         assertTrue(man.getSMSHomeRouting());
-        
+        assertEquals(man.getServiceCenterGt(1), "22229");        
+        assertNull(man.getServiceCenterGt(2));        
         
     }
 }

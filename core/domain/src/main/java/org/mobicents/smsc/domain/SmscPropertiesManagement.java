@@ -26,8 +26,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javolution.text.TextBuilder;
+import javolution.util.FastMap;
 import javolution.xml.XMLBinding;
 import javolution.xml.XMLObjectReader;
 import javolution.xml.XMLObjectWriter;
@@ -35,6 +39,7 @@ import javolution.xml.stream.XMLStreamException;
 
 import org.apache.log4j.Logger;
 import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
+import org.mobicents.protocols.ss7.map.primitives.ArrayListSerializingBase;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.smpp.GenerateType;
 import org.mobicents.smsc.smpp.SmppEncoding;
@@ -48,7 +53,8 @@ import org.mobicents.smsc.smpp.SmppEncoding;
 public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final Logger logger = Logger.getLogger(SmscPropertiesManagement.class);
 
-	private static final String SC_GT = "scgt";
+    private static final String SC_GT = "scgt";
+    private static final String SC_GT_LIST = "scgtList";
 	private static final String SC_SSN = "scssn";
 	private static final String HLR_SSN = "hlrssn";
 	private static final String MSC_SSN = "mscssn";
@@ -114,7 +120,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	private DatabaseType databaseType = DatabaseType.Cassandra_2;
 
-	private String serviceCenterGt = "0";
+    private String serviceCenterGt = "0";
+    private FastMap<Integer, String> serviceCenterGtNetworkId = new FastMap<Integer, String>();
 	private int serviceCenterSsn = -1;
 	private int hlrSsn = -1;
 	private int mscSsn = -1;
@@ -292,10 +299,31 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		return serviceCenterGt;
 	}
 
-	public void setServiceCenterGt(String serviceCenterGt) {
-		this.serviceCenterGt = serviceCenterGt;
-		this.store();
-	}
+    public String getServiceCenterGt(int networkId) {
+        return serviceCenterGtNetworkId.get(networkId);
+    }
+
+    public Map<Integer, String> getServiceCenterGt_NetworkIdList() {
+        return serviceCenterGtNetworkId.unmodifiable();
+    }
+
+    public void setServiceCenterGt(String serviceCenterGt) {
+        this.setServiceCenterGtNetworkId(0, serviceCenterGt);
+    }
+
+    public void setServiceCenterGtNetworkId(int networkId, String serviceCenterGt) {
+        if (networkId == 0) {
+            this.serviceCenterGt = serviceCenterGt;
+        } else {
+            if (serviceCenterGt == null || serviceCenterGt.equals("") || serviceCenterGt.equals("0")) {
+                this.serviceCenterGtNetworkId.remove(networkId);
+            } else {
+                this.serviceCenterGtNetworkId.put(networkId, serviceCenterGt);
+            }
+        }
+
+        this.store();
+    }
 
 	public int getServiceCenterSsn() {
 		return serviceCenterSsn;
@@ -839,7 +867,19 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.setIndentation(TAB_INDENT);
 
 			writer.write(this.serviceCenterGt, SC_GT, String.class);
-			writer.write(this.serviceCenterSsn, SC_SSN, Integer.class);
+            if (serviceCenterGtNetworkId.size() > 0) {
+                ArrayList<ServiceCenterGtNetworkIdElement> al = new ArrayList<ServiceCenterGtNetworkIdElement>();
+                for (Entry<Integer, String> val : serviceCenterGtNetworkId.entrySet()) {
+                    ServiceCenterGtNetworkIdElement el = new ServiceCenterGtNetworkIdElement();
+                    el.networkId = val.getKey();
+                    el.serviceCenterGt = val.getValue();
+                    al.add(el);
+                }
+                SmscPropertiesManagement_serviceCenterGtNetworkId al2 = new SmscPropertiesManagement_serviceCenterGtNetworkId(al);
+                writer.write(al2, SC_GT_LIST, SmscPropertiesManagement_serviceCenterGtNetworkId.class);
+            }
+
+            writer.write(this.serviceCenterSsn, SC_SSN, Integer.class);
 			writer.write(this.hlrSsn, HLR_SSN, Integer.class);
 			writer.write(this.mscSsn, MSC_SSN, Integer.class);
 			writer.write(this.maxMapVersion, MAX_MAP_VERSION, Integer.class);
@@ -891,8 +931,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.diameterDestHost, DIAMETER_DEST_HOST, String.class);
 			writer.write(this.diameterDestPort, DIAMETER_DEST_PORT, Integer.class);
 			writer.write(this.diameterUserName, DIAMETER_USER_NAME, String.class);
-			
-			
+
 			writer.close();
 		} catch (Exception e) {
 			logger.error("Error while persisting the SMSC state in file", e);
@@ -912,8 +951,15 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 			reader.setBinding(binding);
 			this.serviceCenterGt = reader.read(SC_GT, String.class);
+            SmscPropertiesManagement_serviceCenterGtNetworkId al = reader.read(SC_GT_LIST, SmscPropertiesManagement_serviceCenterGtNetworkId.class);
+            serviceCenterGtNetworkId.clear();
+            if (al != null) {
+                for (ServiceCenterGtNetworkIdElement elem : al.getData()) {
+                    serviceCenterGtNetworkId.put(elem.networkId, elem.serviceCenterGt);
+                }
+            }
 
-			this.serviceCenterSsn = reader.read(SC_SSN, Integer.class);
+            this.serviceCenterSsn = reader.read(SC_SSN, Integer.class);
 			this.hlrSsn = reader.read(HLR_SSN, Integer.class);
 			this.mscSsn = reader.read(MSC_SSN, Integer.class);
 			this.maxMapVersion = reader.read(MAX_MAP_VERSION, Integer.class);
@@ -1085,4 +1131,16 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			logger.error("Error while loading the SMSC state from file", ex);
 		}
 	}
+
+    public static class SmscPropertiesManagement_serviceCenterGtNetworkId extends ArrayListSerializingBase<ServiceCenterGtNetworkIdElement> {
+
+        public SmscPropertiesManagement_serviceCenterGtNetworkId() {
+            super(SC_GT_LIST, ServiceCenterGtNetworkIdElement.class);
+        }
+
+        public SmscPropertiesManagement_serviceCenterGtNetworkId(ArrayList<ServiceCenterGtNetworkIdElement> data) {
+            super(SC_GT_LIST, ServiceCenterGtNetworkIdElement.class, data);
+        }
+
+    }
 }

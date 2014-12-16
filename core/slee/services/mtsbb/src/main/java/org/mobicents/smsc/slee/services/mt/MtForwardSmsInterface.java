@@ -34,7 +34,7 @@ import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
  */
 public interface MtForwardSmsInterface {
 
-	public void setupMtForwardShortMessageRequest(ISDNAddressString networkNode, String imsi, LMSI lmci);
+	public void setupMtForwardShortMessageRequest(ISDNAddressString networkNode, String imsi, LMSI lmci, int networkId);
 
 	public void doSetSmsSubmitData(SmsSubmitData smsDeliveryData);
 

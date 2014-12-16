@@ -157,7 +157,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 
                 this.setSriMapVersion(civ.getSriMapVersion());
 
-                this.executeForwardSM(smsSet, civ.getLocationInfoWithLMSI(), civ.getImsi());
+                this.executeForwardSM(smsSet, civ.getLocationInfoWithLMSI(), civ.getImsi(), smsSet.getNetworkId());
             }
         } catch (Throwable e1) {
             logger.severe("Exception in SriSbb.onSms when fetching records and issuing events: " + e1.getMessage(), e1);
@@ -424,7 +424,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 		RsdsSbbLocalObject rsdsSbbLocalObject = this.getRsdsSbbObject();
 		if (rsdsSbbLocalObject != null) {
 			ISDNAddressString isdn = this.getCalledPartyISDNAddressString(destinationAddress, ton, npi);
-			AddressString serviceCentreAddress = getServiceCenterAddressString();
+			AddressString serviceCentreAddress = getServiceCenterAddressString(networkId);
 			SccpAddress destAddress = this.convertAddressFieldToSCCPAddress(destinationAddress, ton, npi);
 			rsdsSbbLocalObject
 					.setupReportSMDeliveryStatusRequest(isdn, serviceCentreAddress, sMDeliveryOutcome, destAddress,
@@ -582,11 +582,11 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 		SccpAddress destinationAddr = this.convertAddressFieldToSCCPAddress(destinationAddress, ton, npi);
 
 		MAPDialogSms mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,
-				this.getServiceCenterSccpAddress(), null, destinationAddr, null);
+				this.getServiceCenterSccpAddress(networkId), null, destinationAddr, null);
 		mapDialogSms.setNetworkId(networkId);
 
 		ISDNAddressString isdn = this.getCalledPartyISDNAddressString(destinationAddress, ton, npi);
-		AddressString serviceCenterAddress = this.getServiceCenterAddressString();
+		AddressString serviceCenterAddress = this.getServiceCenterAddressString(networkId);
 		boolean sm_RP_PRI = true;
 		mapDialogSms.addSendRoutingInfoForSMRequest(isdn, sm_RP_PRI, serviceCenterAddress, null, false, null, null,
 				null);
@@ -621,7 +621,8 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
         if (sendRoutingInfoForSMResponse != null) {
             // we have positive response to SRI request -
             // we will try to send messages
-            executeForwardSM(smsSet, sendRoutingInfoForSMResponse.getLocationInfoWithLMSI(), sendRoutingInfoForSMResponse.getIMSI().getData());
+            executeForwardSM(smsSet, sendRoutingInfoForSMResponse.getLocationInfoWithLMSI(), sendRoutingInfoForSMResponse.getIMSI().getData(),
+                    smsSet.getNetworkId());
             return;
         }
 
@@ -671,7 +672,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 		}
 	}
 
-    private void executeForwardSM(SmsSet smsSet, LocationInfoWithLMSI locationInfoWithLMSI, String imsi) {
+    private void executeForwardSM(SmsSet smsSet, LocationInfoWithLMSI locationInfoWithLMSI, String imsi, int networkId) {
         smsSet.setImsi(imsi);
         smsSet.setLocationInfoWithLMSI(locationInfoWithLMSI);
 
@@ -682,7 +683,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
         			.getSchedulerActivityContextInterface();
         	schedulerActivityContextInterface.attach(mtSbbLocalObject);
 
-            mtSbbLocalObject.setupMtForwardShortMessageRequest(locationInfoWithLMSI.getNetworkNodeNumber(), imsi, locationInfoWithLMSI.getLMSI());
+            mtSbbLocalObject.setupMtForwardShortMessageRequest(locationInfoWithLMSI.getNetworkNodeNumber(), imsi, locationInfoWithLMSI.getLMSI(), networkId);
         }
     }
 

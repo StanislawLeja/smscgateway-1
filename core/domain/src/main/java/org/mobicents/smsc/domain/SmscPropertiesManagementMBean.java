@@ -36,6 +36,8 @@ public interface SmscPropertiesManagementMBean {
 
 	public String getServiceCenterGt();
 
+    public String getServiceCenterGt(int networkId);
+
 	public void setServiceCenterGt(String serviceCenterGt);
 
 	public int getServiceCenterSsn();
