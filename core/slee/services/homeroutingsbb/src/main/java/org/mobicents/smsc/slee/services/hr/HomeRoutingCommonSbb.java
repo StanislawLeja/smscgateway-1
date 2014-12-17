@@ -326,13 +326,19 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
 
 	}
 
-    protected SccpAddress getServiceCenterSccpAddress() {
-        if (this.serviceCenterSCCPAddress == null) {
-            this.serviceCenterSCCPAddress = MessageUtil.getSccpAddress(sccpParameterFact, smscPropertiesManagement.getServiceCenterGt(),
+    protected SccpAddress getServiceCenterSccpAddress(int networkId) {
+        if (networkId == 0) {
+            if (this.serviceCenterSCCPAddress == null) {
+                this.serviceCenterSCCPAddress = MessageUtil.getSccpAddress(sccpParameterFact, smscPropertiesManagement.getServiceCenterGt(),
+                        NatureOfAddress.INTERNATIONAL.getValue(), NumberingPlan.ISDN_TELEPHONY.getValue(), smscPropertiesManagement.getServiceCenterSsn(),
+                        smscPropertiesManagement.getGlobalTitleIndicator(), smscPropertiesManagement.getTranslationType());
+            }
+            return this.serviceCenterSCCPAddress;
+        } else {
+            return MessageUtil.getSccpAddress(sccpParameterFact, smscPropertiesManagement.getServiceCenterGt(networkId),
                     NatureOfAddress.INTERNATIONAL.getValue(), NumberingPlan.ISDN_TELEPHONY.getValue(), smscPropertiesManagement.getServiceCenterSsn(),
                     smscPropertiesManagement.getGlobalTitleIndicator(), smscPropertiesManagement.getTranslationType());
         }
-        return this.serviceCenterSCCPAddress;
     }
 
     protected ISDNAddressString getCalledPartyISDNAddressString(String destinationAddress, int ton, int npi) {
@@ -340,19 +346,29 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
                 org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.getInstance(npi), destinationAddress);
     }
 
-    protected AddressString getServiceCenterAddressString() {
-        if (this.serviceCenterAddress == null) {
-            this.serviceCenterAddress = this.mapParameterFactory.createAddressString(AddressNature.international_number,
-                    org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, smscPropertiesManagement.getServiceCenterGt());
+    protected AddressString getServiceCenterAddressString(int networkId) {
+        if (networkId == 0) {
+            if (this.serviceCenterAddress == null) {
+                this.serviceCenterAddress = this.mapParameterFactory.createAddressString(AddressNature.international_number,
+                        org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, smscPropertiesManagement.getServiceCenterGt());
+            }
+            return this.serviceCenterAddress;
+        } else {
+            return this.mapParameterFactory.createAddressString(AddressNature.international_number,
+                    org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, smscPropertiesManagement.getServiceCenterGt(networkId));
         }
-        return this.serviceCenterAddress;
     }
 
-    protected ISDNAddressString getNetworkNodeNumber() {
-        if (this.networkNodeNumber == null) {
-            this.networkNodeNumber = this.mapParameterFactory.createISDNAddressString(AddressNature.international_number,
-                    org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, smscPropertiesManagement.getServiceCenterGt());
+    protected ISDNAddressString getNetworkNodeNumber(int networkId) {
+        if (networkId == 0) {
+            if (this.networkNodeNumber == null) {
+                this.networkNodeNumber = this.mapParameterFactory.createISDNAddressString(AddressNature.international_number,
+                        org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, smscPropertiesManagement.getServiceCenterGt());
+            }
+            return this.networkNodeNumber;
+        } else {
+            return this.mapParameterFactory.createISDNAddressString(AddressNature.international_number,
+                    org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.ISDN, smscPropertiesManagement.getServiceCenterGt(networkId));
         }
-        return this.networkNodeNumber;
     }
 }

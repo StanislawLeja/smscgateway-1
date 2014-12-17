@@ -21,7 +21,7 @@
  */
 package org.mobicents.smsc.smpp;
 
-import java.util.List;
+import javolution.util.FastList;
 
 /**
  * 
@@ -29,7 +29,7 @@ import java.util.List;
  * 
  */
 public interface EsmeManagementMBean {
-	List<Esme> getEsmes();
+    FastList<Esme> getEsmes();
 
 	Esme getEsmeByName(String esmeName);
 

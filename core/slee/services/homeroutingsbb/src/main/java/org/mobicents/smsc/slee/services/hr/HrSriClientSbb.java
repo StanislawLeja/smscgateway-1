@@ -378,11 +378,11 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
         SccpAddress destinationAddr = this.convertAddressFieldToSCCPAddress(destinationAddress, ton, npi);
 
         MAPDialogSms mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,
-                this.getServiceCenterSccpAddress(), null, destinationAddr, null);
+                this.getServiceCenterSccpAddress(networkId), null, destinationAddr, null);
         mapDialogSms.setNetworkId(networkId);
 
         ISDNAddressString isdn = this.getCalledPartyISDNAddressString(destinationAddress, ton, npi);
-        AddressString serviceCenterAddress = this.getServiceCenterAddressString();
+        AddressString serviceCenterAddress = this.getServiceCenterAddressString(networkId);
         boolean sm_RP_PRI = true;
         mapDialogSms.addSendRoutingInfoForSMRequest(isdn, sm_RP_PRI, serviceCenterAddress, null, false, null, null,
                 null);

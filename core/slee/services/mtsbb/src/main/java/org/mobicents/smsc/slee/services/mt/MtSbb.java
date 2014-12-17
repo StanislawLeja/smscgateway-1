@@ -687,8 +687,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	 */
 
 	@Override
-	public void setupMtForwardShortMessageRequest(ISDNAddressString networkNode, String imsiData, LMSI lmsi) {
-		if (this.logger.isFineEnabled()) {
+    public void setupMtForwardShortMessageRequest(ISDNAddressString networkNode, String imsiData, LMSI lmsi, int networkId) {
+        if (this.logger.isFineEnabled()) {
 			this.logger.fine("\nmperforming setupMtForwardShortMessageRequest ISDNAddressString= " + networkNode);
 		}
 
@@ -711,7 +711,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
         IMSI imsi = this.mapParameterFactory.createIMSI(imsiData);
         SM_RP_DA sm_RP_DA = this.mapParameterFactory.createSM_RP_DA(imsi);
 		SM_RP_OA sm_RP_OA = this.mapParameterFactory.createSM_RP_OA_ServiceCentreAddressOA(this
-				.getServiceCenterAddressString());
+				.getServiceCenterAddressString(networkId));
 
 		this.setNetworkNode(networkNodeSccpAddress);
 		this.setSmRpDa(sm_RP_DA);
@@ -1166,7 +1166,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			if (mapDialogSms == null) {
 				newDialog = true;
 				mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,
-						this.getServiceCenterSccpAddress(), null, this.getNetworkNode(), null);
+						this.getServiceCenterSccpAddress(networkId), null, this.getNetworkNode(), null);
                 mapDialogSms.setNetworkId(networkId);
 
 				ActivityContextInterface mtFOSmsDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);

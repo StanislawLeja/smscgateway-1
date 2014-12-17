@@ -70,6 +70,11 @@ public class A1Test {
         pattern = Pattern.compile(s1);
         m = pattern.matcher(s21);
         res = m.matches();
+        s1 = "^\\+777\\d*";
+        s21 = "+7777";
+        pattern = Pattern.compile(s1);
+        m = pattern.matcher(s21);
+        res = m.matches();
 
 
 //        Map availcs = Charset.availableCharsets();

@@ -69,10 +69,9 @@ public class DefaultSmsRoutingRule implements SmsRoutingRule {
 	@Override
 	public String getEsmeClusterName(int ton, int npi, String address, String name, int networkId) {
 
-//        for (FastList.Node<Esme> n = this.esmeManagement.getEsmes().head(), end = this.esmeManagement.getEsmes().tail(); (n = n
-//                .getNext()) != end;) {
-//      Esme esme = n.getValue();
-        for (Esme esme : this.esmeManagement.getEsmes()) {
+        // for (Esme esme : this.esmeManagement.getEsmes()) {
+        for (FastList.Node<Esme> n = this.esmeManagement.getEsmes().head(), end = this.esmeManagement.getEsmes().tail(); (n = n.getNext()) != end;) {
+            Esme esme = n.getValue();
             SmppBindType sessionBindType = esme.getSmppBindType();
             SmppSession.Type smppSessionType = esme.getSmppSessionType();
 
