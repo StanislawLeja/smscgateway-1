@@ -369,7 +369,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 			if (parName.equals("scgt")) {
 			    String gt = options[3];
                 if (options.length >= 6 && options[4].equals("networkid")) {
-                    int val = Integer.parseInt(options[3]);
+                    int val = Integer.parseInt(options[5]);
                     smscPropertiesManagement.setServiceCenterGtNetworkId(val, gt);
                 } else {
                     smscPropertiesManagement.setServiceCenterGt(gt);
@@ -585,12 +585,12 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(" = ");
 			if (parName.equals("scgt")) {
                 sb.append("networkId=0 - GT=");
-				sb.append(smscPropertiesManagement.getServiceCenterGt());
-                for (Entry<Integer, String> el : smscPropertiesManagement.getServiceCenterGt_NetworkIdList().entrySet()) {
+                sb.append(smscPropertiesManagement.getServiceCenterGt());
+                for (Integer key : smscPropertiesManagement.getServiceCenterGt_NetworkIdList().keySet()) {
                     sb.append("\nnetworkId=");
-                    sb.append(el.getKey());
+                    sb.append(key);
                     sb.append(" - GT=");
-                    sb.append(el.getValue());
+                    sb.append(smscPropertiesManagement.getServiceCenterGt_NetworkIdList().get(key));
                 }
 			} else if (parName.equals("scssn")) {
 			    sb.append(smscPropertiesManagement.getServiceCenterSsn());
@@ -710,14 +710,15 @@ public class SMSCShellExecutor implements ShellExecutor {
 		} else {
 			StringBuilder sb = new StringBuilder();
 			sb.append("scgt : ");
-			sb.append(smscPropertiesManagement.getServiceCenterGt());
             sb.append("networkId=0 - GT=");
             sb.append(smscPropertiesManagement.getServiceCenterGt());
-            for (Entry<Integer, String> el : smscPropertiesManagement.getServiceCenterGt_NetworkIdList().entrySet()) {
-                sb.append("\nnetworkId=");
-                sb.append(el.getKey());
-                sb.append(" - GT=");
-                sb.append(el.getValue());
+            for (Integer key : smscPropertiesManagement.getServiceCenterGt_NetworkIdList().keySet()) {
+                if (key != null) {
+                    sb.append("\nnetworkId=");
+                    sb.append(key);
+                    sb.append(" - GT=");
+                    sb.append(smscPropertiesManagement.getServiceCenterGt_NetworkIdList().get(key));
+                }
             }
 			sb.append("\n");
 
