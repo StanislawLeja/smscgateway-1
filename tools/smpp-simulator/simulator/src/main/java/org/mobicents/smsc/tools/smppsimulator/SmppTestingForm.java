@@ -595,6 +595,19 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 
                 }
                 for (int i2 = 0; i2 < this.param.getSubmitMultiMessageCnt(); i2++) {
+                    // this code can be used for testing of address rejections
+                    // if(i2 == 0){
+                    // ((SubmitMulti) pdu).addDestAddresses(new Address((byte)
+                    // 8, (byte) this.param.getDestNPI().getCode(), String
+                    // .valueOf(daOrig + i2)));
+                    // }else {
+                    // ((SubmitMulti) pdu).addDestAddresses(new Address((byte)
+                    // this.param.getDestTON().getCode(), (byte)
+                    // this.param.getDestNPI().getCode(), String
+                    // .valueOf(daOrig + i2)));
+                    // }
+                    
+                    
                     ((SubmitMulti) pdu).addDestAddresses(new Address((byte) this.param.getDestTON().getCode(), (byte) this.param.getDestNPI().getCode(), String
                             .valueOf(daOrig + i2)));
                 }
