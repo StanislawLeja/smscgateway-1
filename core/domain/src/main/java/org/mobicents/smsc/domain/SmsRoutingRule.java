@@ -38,6 +38,7 @@ public interface SmsRoutingRule {
 	 * @param npi
 	 * @param address
 	 * @param name
+	 * @param networkId NetworkId on which this SMS is received
 	 * @return
 	 */
 	public String getEsmeClusterName(int ton, int npi, String address, String name, int networkId);
