@@ -331,6 +331,34 @@
 						<input id="enqLinkDelay" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Enquire Link Delay" value="30000"/>
 					</span>	
 				</div>
+				
+				<div id="div-ratelimitSec" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="throttling of SMS per second for this connection. 0 means no limit">
+						<span class="add-on">Rate Limit Per Seconds</span>
+						<input id="rateLimitPerSecond" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Rate Limit Per Second" value="0"/>
+					</span>	
+				</div>				
+				
+				<div id="div-ratelimitMin" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="throttling of SMS per minute for this connection. 0 means no limit">
+						<span class="add-on">Rate Limit Per Minute</span>
+						<input id="rateLimitPerMinute" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Rate Limit Per Minute" value="0"/>
+					</span>	
+				</div>
+				
+				<div id="div-ratelimitHr" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="throttling of SMS per hour for this connection. 0 means no limit">
+						<span class="add-on">Rate Limit Per Hour</span>
+						<input id="rateLimitPerHour" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Rate Limit Per Hour" value="0"/>
+					</span>	
+				</div>	
+				
+				<div id="div-ratelimitDay" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="throttling of SMS per day for this connection. 0 means no limit">
+						<span class="add-on">Rate Limit Per Day</span>
+						<input id="rateLimitPerDay" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Rate Limit Per Day" value="0"/>
+					</span>	
+				</div>															
 																																																																				
 				<button id="add-entity-button" class="btn btn btn-primary" onclick="createEsme()">Create</button>
 			</span>
@@ -489,7 +517,12 @@
 									var sessionCachingEnabled = response.value.SessionCachingEnabled;
 									var trustAll = response.value.TrustAll;
 									var validateCerts = response.value.ValidateCerts;
-									var validatePeerCerts = response.value.ValidatePeerCerts;									
+									var validatePeerCerts = response.value.ValidatePeerCerts;	
+									
+									var rateLimitPerSecond = response.value.RateLimitPerSecond;
+									var rateLimitPerMinute = response.value.RateLimitPerMinute;
+									var rateLimitPerHour = response.value.RateLimitPerHour;
+									var rateLimitPerDay = response.value.RateLimitPerDay;
 									
 									
 									if(systemType == null || systemType==""){
@@ -614,6 +647,16 @@
 													'<dt>Unbinding</dt> <dd>' + unbinding + ' </dd>' +
 													'</dl>'+
 									        '    </div>'+	
+									        '<hr style="margin: 5px 0;"/>' +
+									        '    <div id="div-' + name +'Throttling">'+
+									        '      <p class="muted">Throttling</p>'+
+													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+													'<dt>RateLimitPerSecond</dt> <dd>' + rateLimitPerSecond + ' </dd>' +
+													'<dt>RateLimitPerMinute</dt> <dd>' + rateLimitPerMinute + ' </dd>' +
+													'<dt>RateLimitPerHour</dt> <dd>' + rateLimitPerHour + ' </dd>' +
+													'<dt>RateLimitPerDay</dt> <dd>' + rateLimitPerDay + ' </dd>' +
+													'</dl>'+
+									        '    </div>'+										        
 									        '<hr style="margin: 5px 0;"/>' +
 									        '<div id="div-' + name +'button-set" class="btn-group">'+
 									        '              <button type="button" class="btn" onclick="disableLogBytes(\'' + name +  '\')"><i class="icon-ban-circle"></i> DisableLogBytes</button>'+
@@ -978,7 +1021,69 @@
 																			'</td>'+
 																		'</tr>'+
 																		
-																		
+																		'<tr data-toggle="tooltip" title="throttling of SMS per second for this connection. 0 means no limit">'+
+																		'<td style="font-size: 0.9em;">Rate Limit Per Second</td>'+
+																		'<td style="font-size: 0.9em; padding: 0;">'+
+																			'<div id="div-' + name +'RateLimitPerSecond-input" class="control-group">'+
+																			'<span id="' + name +'RateLimitPerSecond-input" style="display: none;">'+
+																				'<input type="text" class="input-small" value="' + rateLimitPerSecond + '" /> ' +
+																				'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RateLimitPerSecond\', \'' + name+"RateLimitPerSecond" + '\', \'false\')"></i> ' +
+																				'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RateLimitPerSecond"+']\').toggle(); $(\'input[id^='+name+"RateLimitPerSecond"+']\').focus();"></i>' + 
+																			'</span>'+
+																			'</div>' +
+																			'<span id="' +name + 'RateLimitPerSecond-text">' + rateLimitPerSecond + '</span>'+
+																		'</td>'+
+																		'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RateLimitPerSecond"+']\').toggle(); $(\'input[id^='+name+"RateLimitPerSecond"+']\').focus();"></i>' +
+																		'</td>'+
+																	'</tr>'+
+																	
+																		'<tr data-toggle="tooltip" title="throttling of SMS per minute for this connection. 0 means no limit">'+
+																		'<td style="font-size: 0.9em;">Rate Limit Per Minute</td>'+
+																		'<td style="font-size: 0.9em; padding: 0;">'+
+																			'<div id="div-' + name +'RateLimitPerMinute-input" class="control-group">'+
+																			'<span id="' + name +'RateLimitPerMinute-input" style="display: none;">'+
+																				'<input type="text" class="input-small" value="' + rateLimitPerMinute + '" /> ' +
+																				'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RateLimitPerMinute\', \'' + name+"RateLimitPerMinute" + '\', \'false\')"></i> ' +
+																				'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RateLimitPerMinute"+']\').toggle(); $(\'input[id^='+name+"RateLimitPerMinute"+']\').focus();"></i>' + 
+																			'</span>'+
+																			'</div>' +
+																			'<span id="' +name + 'RateLimitPerMinute-text">' + rateLimitPerMinute + '</span>'+
+																		'</td>'+
+																		'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RateLimitPerMinute"+']\').toggle(); $(\'input[id^='+name+"RateLimitPerMinute"+']\').focus();"></i>' +
+																		'</td>'+
+																	'</tr>'+
+																
+																		'<tr data-toggle="tooltip" title="throttling of SMS per hour for this connection. 0 means no limit">'+
+																		'<td style="font-size: 0.9em;">Rate Limit Per Hour</td>'+
+																		'<td style="font-size: 0.9em; padding: 0;">'+
+																			'<div id="div-' + name +'RateLimitPerHour-input" class="control-group">'+
+																			'<span id="' + name +'RateLimitPerHour-input" style="display: none;">'+
+																				'<input type="text" class="input-small" value="' + rateLimitPerHour + '" /> ' +
+																				'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RateLimitPerHour\', \'' + name+"RateLimitPerHour" + '\', \'false\')"></i> ' +
+																				'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RateLimitPerHour"+']\').toggle(); $(\'input[id^='+name+"RateLimitPerHour"+']\').focus();"></i>' + 
+																			'</span>'+
+																			'</div>' +
+																			'<span id="' +name + 'RateLimitPerHour-text">' + rateLimitPerHour + '</span>'+
+																		'</td>'+
+																		'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RateLimitPerHour"+']\').toggle(); $(\'input[id^='+name+"RateLimitPerHour"+']\').focus();"></i>' +
+																		'</td>'+
+																	'</tr>'+
+															
+																		'<tr data-toggle="tooltip" title="throttling of SMS per day for this connection. 0 means no limit">'+
+																		'<td style="font-size: 0.9em;">Rate Limit Per Day</td>'+
+																		'<td style="font-size: 0.9em; padding: 0;">'+
+																			'<div id="div-' + name +'RateLimitPerDay-input" class="control-group">'+
+																			'<span id="' + name +'RateLimitPerDay-input" style="display: none;">'+
+																				'<input type="text" class="input-small" value="' + rateLimitPerDay + '" /> ' +
+																				'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'RateLimitPerDay\', \'' + name+"RateLimitPerDay" + '\', \'false\')"></i> ' +
+																				'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"RateLimitPerDay"+']\').toggle(); $(\'input[id^='+name+"RateLimitPerDay"+']\').focus();"></i>' + 
+																			'</span>'+
+																			'</div>' +
+																			'<span id="' +name + 'RateLimitPerDay-text">' + rateLimitPerDay + '</span>'+
+																		'</td>'+
+																		'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RateLimitPerDay"+']\').toggle(); $(\'input[id^='+name+"RateLimitPerDay"+']\').focus();"></i>' +
+																		'</td>'+
+																	'</tr>'+															
 																		
 																	'</tbody>' +
 																'</table>' +															
@@ -1754,6 +1859,26 @@
 		var e6 = document.getElementById("chargingEnabled");
 		var chargingEnabled = e6.options[e5.selectedIndex].text;
 		
+		var rateLimitPerSecond = $("#rateLimitPerSecond").val();
+		if(rateLimitPerSecond == "") {
+			rateLimitPerSecond = "0";
+		}
+		
+		var rateLimitPerMinute = $("#rateLimitPerMinute").val();
+		if(rateLimitPerMinute == "") {
+			rateLimitPerMinute = "0";
+		}
+		
+		var rateLimitPerHour = $("#rateLimitPerHour").val();
+		if(rateLimitPerHour == "") {
+			rateLimitPerHour = "0";
+		}
+		
+		var rateLimitPerDay = $("#rateLimitPerDay").val();
+		if(rateLimitPerDay == "") {
+			rateLimitPerDay = "0";
+		}		
+		
 		if(formInvalid) {
 			$("#login-settings-error").show();
 			logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
@@ -1762,7 +1887,7 @@
 			$("#login-settings-error").hide();
 		}
 		
-		jolokia.execute("com.telscale.smpp:layer=EsmeManagement,name=SmppManagement","createEsme", esmeName,systemId,password,ipAddress,ipPort,chargingEnabled,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay,sourceTon,sourceNpi,sourceRange,routingTon,routingNpi,routingRange,networkId, 
+		jolokia.execute("com.telscale.smpp:layer=EsmeManagement,name=SmppManagement","createEsme", esmeName,systemId,password,ipAddress,ipPort,chargingEnabled,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay,sourceTon,sourceNpi,sourceRange,routingTon,routingNpi,routingRange,networkId,rateLimitPerSecond,rateLimitPerMinute,rateLimitPerHour,rateLimitPerDay, 
 				{
 					success: function(value) {
 						updateEsmes();

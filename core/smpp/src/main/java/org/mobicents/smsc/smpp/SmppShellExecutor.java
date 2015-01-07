@@ -80,13 +80,15 @@ public class SmppShellExecutor implements ShellExecutor {
      * charging-enabled <true | false> source-ton <source address ton>
      * source-npi <source address npi> source-range <source address range>
      * routing-ton <routing address ton> routing-npi <routing address npi>
-     * routing-range <routing address range>
+     * routing-range <routing address range> ratelimit-second <ratelimitsecond>
+     * ratelimit-minute <ratelimitminute> ratelimit-hour <ratelimithour> 
+     * ratelimit-day <ratelimitday>
      * 
      * @param args
      * @return
      */
     private String modifyEsme(String[] args) throws Exception {
-        if (args.length < 6 || args.length > 40) {
+        if (args.length < 6 || args.length > 48) {
             return SmppOamMessages.INVALID_COMMAND;
         }
 
@@ -165,16 +167,16 @@ public class SmppShellExecutor implements ShellExecutor {
                 String routingAddressRange = args[count++];
                 esme.setRoutingAddressRange(routingAddressRange);
 
-            } else if (key.equals("ratelimit_second")) {
+            } else if (key.equals("ratelimit-second")) {
                 long val = Long.parseLong(args[count++]);
                 esme.setRateLimitPerSecond(val);
-            } else if (key.equals("ratelimit_minute")) {
+            } else if (key.equals("ratelimit-minute")) {
                 long val = Long.parseLong(args[count++]);
                 esme.setRateLimitPerMinute(val);
-            } else if (key.equals("ratelimit_hour")) {
+            } else if (key.equals("ratelimit-hour")) {
                 long val = Long.parseLong(args[count++]);
                 esme.setRateLimitPerHour(val);
-            } else if (key.equals("ratelimit_day")) {
+            } else if (key.equals("ratelimit-day")) {
                 long val = Long.parseLong(args[count++]);
                 esme.setRateLimitPerDay(val);
 
@@ -199,13 +201,15 @@ public class SmppShellExecutor implements ShellExecutor {
      * enquire-link-delay <30000> charging-enabled <true | false> source-ton
      * <source address ton> source-npi <source address npi> source-range <source
      * address range> routing-ton <routing address ton> routing-npi <routing
-     * address npi>, routing-range <routing address range>
+     * address npi>, routing-range <routing address range> ratelimit-second <ratelimitsecond>
+     * ratelimit-minute <ratelimitminute> ratelimit-hour <ratelimithour> 
+     * ratelimit-day <ratelimitday>
      * 
      * @param args
      * @return
      */
     private String createEsme(String[] args) throws Exception {
-        if (args.length < 9 || args.length > 51) {
+        if (args.length < 9 || args.length > 61) {
             return SmppOamMessages.INVALID_COMMAND;
         }
 
@@ -335,13 +339,13 @@ public class SmppShellExecutor implements ShellExecutor {
             } else if (key.equals("routing-range")) {
                 routingAddressRange = args[count++];
 
-            } else if (key.equals("ratelimit_second")) {
+            } else if (key.equals("ratelimit-second")) {
                 rateLimitPerSecond = Long.parseLong(args[count++]);
-            } else if (key.equals("ratelimit_minute")) {
+            } else if (key.equals("ratelimit-minute")) {
                 rateLimitPerMinute = Long.parseLong(args[count++]);
-            } else if (key.equals("ratelimit_hour")) {
+            } else if (key.equals("ratelimit-hour")) {
                 rateLimitPerHour = Long.parseLong(args[count++]);
-            } else if (key.equals("ratelimit_day")) {
+            } else if (key.equals("ratelimit-day")) {
                 rateLimitPerDay = Long.parseLong(args[count++]);
             } else {
                 return SmppOamMessages.INVALID_COMMAND;
