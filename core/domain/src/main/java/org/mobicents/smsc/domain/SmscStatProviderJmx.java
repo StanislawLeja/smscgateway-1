@@ -108,7 +108,15 @@ public class SmscStatProviderJmx implements SmscStatProviderJmxMBean, CounterMed
         cds.addCounterDef(cd);
         cd = new CounterDefImpl(CounterType.Summary, "MsgInReceivedSs7Hr", "Messages received and accepted via SS7 interface (home routing)");
         cds.addCounterDef(cd);
-        cd = new CounterDefImpl(CounterType.Summary, "HomeRoutingCorrIdFail", "Home douting failures because of absent  correlationId");
+        cd = new CounterDefImpl(CounterType.Summary, "HomeRoutingCorrIdFail", "Home routing failures because of absent correlationId");
+        cds.addCounterDef(cd);
+        cd = new CounterDefImpl(CounterType.Summary, "SmppSecondRateOverlimitFail", "Rejecting of incoming SMPP messages case because of exceeding of a rate limit per a second");
+        cds.addCounterDef(cd);
+        cd = new CounterDefImpl(CounterType.Summary, "SmppMinuteRateOverlimitFail", "Rejecting of incoming SMPP messages case because of exceeding of a rate limit per a minute");
+        cds.addCounterDef(cd);
+        cd = new CounterDefImpl(CounterType.Summary, "SmppHourRateOverlimitFail", "Rejecting of incoming SMPP messages case because of exceeding of a rate limit per a hour");
+        cds.addCounterDef(cd);
+        cd = new CounterDefImpl(CounterType.Summary, "SmppDayRateOverlimitFail", "Rejecting of incoming SMPP messages case because of exceeding of a rate limit per a day");
         cds.addCounterDef(cd);
         cd = new CounterDefImpl(CounterType.Summary, "MsgInReceivedSmpp", "Messages received and accepted via SMPP interface");
         cds.addCounterDef(cd);
@@ -213,6 +221,14 @@ public class SmscStatProviderJmx implements SmscStatProviderJmxMBean, CounterMed
                     svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInReceivedSs7Hr());
                 } else if (cd.getCounterName().equals("HomeRoutingCorrIdFail")) {
                     svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getHomeRoutingCorrIdFail());
+                } else if (cd.getCounterName().equals("SmppSecondRateOverlimitFail")) {
+                    svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getSmppSecondRateOverlimitFail());
+                } else if (cd.getCounterName().equals("SmppMinuteRateOverlimitFail")) {
+                    svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getSmppMinuteRateOverlimitFail());
+                } else if (cd.getCounterName().equals("SmppHourRateOverlimitFail")) {
+                    svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getSmppHourRateOverlimitFail());
+                } else if (cd.getCounterName().equals("SmppDayRateOverlimitFail")) {
+                    svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getSmppDayRateOverlimitFail());
 
                 } else if (cd.getCounterName().equals("MsgInReceivedSmpp")) {
                     svo = new SourceValueObjectImpl(this.getName(), smscStatAggregator.getMsgInReceivedSmpp());

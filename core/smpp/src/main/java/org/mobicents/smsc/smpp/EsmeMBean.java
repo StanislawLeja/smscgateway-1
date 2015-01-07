@@ -258,8 +258,33 @@ public interface EsmeMBean extends DefaultSmppSessionMXBean, SslConfigurationWra
 	 */
 	void setEnquireLinkDelay(int enquireLinkDelay);
 
-	int getEnquireLinkDelay();
-	
-	void setPassword(String password);
+    int getEnquireLinkDelay();
+
+    void setPassword(String password);
+
+
+    long getRateLimitPerSecond();
+
+    void setRateLimitPerSecond(long value);
+
+    long getRateLimitPerMinute();
+
+    void setRateLimitPerMinute(long value);
+
+    long getRateLimitPerHour();
+
+    void setRateLimitPerHour(long value);
+
+    long getRateLimitPerDay();
+
+    void setRateLimitPerDay(long value);
+
+    long getSecondReceivedMsgCount();
+
+    long getMinuteReceivedMsgCount();
+
+    long getHourReceivedMsgCount();
+
+    long getDayReceivedMsgCount();
 
 }

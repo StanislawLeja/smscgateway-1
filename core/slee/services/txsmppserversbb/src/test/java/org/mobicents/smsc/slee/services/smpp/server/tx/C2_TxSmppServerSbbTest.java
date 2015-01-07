@@ -62,8 +62,10 @@ import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.smpp.Esme;
+import org.mobicents.smsc.smpp.EsmeManagement;
 import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.smsc.smpp.SmppInterfaceVersionType;
+import org.mobicents.smsc.smpp.SmppManagement;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -97,7 +99,9 @@ public class C2_TxSmppServerSbbTest {
     private TargetAddress ta2 = new TargetAddress(1, 1, "5556", 0);
 
     private static String sMsg = "������Hel";
-	private static byte[] msgUtf8;
+    private static String sMsg_2 = "Msg 2";
+    private static String sMsg_3 = "Msg 3";
+	private static byte[] msgUtf8, msgUtf8_2, msgUtf8_3;
     private static byte[] msgUcs2;
     private static byte[] udhCode;
 	private byte[] msg_ref_num = { 0, 10 };
@@ -106,10 +110,18 @@ public class C2_TxSmppServerSbbTest {
 	static {
 		String s1 = sMsg;
 
-		Charset utf8Charset = Charset.forName("UTF-8");
-		ByteBuffer bf = utf8Charset.encode(s1);
-		msgUtf8 = new byte[bf.limit()];
-		bf.get(msgUtf8);
+        Charset utf8Charset = Charset.forName("UTF-8");
+        ByteBuffer bf = utf8Charset.encode(s1);
+        msgUtf8 = new byte[bf.limit()];
+        bf.get(msgUtf8);
+
+        bf = utf8Charset.encode(sMsg_2);
+        msgUtf8_2 = new byte[bf.limit()];
+        bf.get(msgUtf8_2);
+
+        bf = utf8Charset.encode(sMsg_3);
+        msgUtf8_3 = new byte[bf.limit()];
+        bf.get(msgUtf8_3);
 
         UserDataHeader udh = new UserDataHeaderImpl();
         UserDataHeaderElement informationElement = new ConcatenatedShortMessagesIdentifierImpl(false, 20, 5, 2);
@@ -162,7 +174,7 @@ public class C2_TxSmppServerSbbTest {
 		Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, false, null,
 				SmppInterfaceVersionType.SMPP34, -1, -1, null, SmppBindType.TRANSCEIVER, SmppSession.Type.CLIENT,
 				windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, "Esme_1",
-				true, 30000, -1, -1, "^[0-9a-zA-Z]*", -1, -1, "^[0-9a-zA-Z]*", 0);
+				true, 30000, -1, -1, "^[0-9a-zA-Z]*", -1, -1, "^[0-9a-zA-Z]*", 0, 0, 0, 0, 0);
 		ActivityContextInterface aci = new SmppTransactionProxy(esme);
 
 		SubmitSm event = new SubmitSm();
@@ -197,6 +209,119 @@ public class C2_TxSmppServerSbbTest {
 		assertEquals(resp.getOptionalParameterCount(), 0);
 	}
 
+//    @Test(groups = { "TxSmppServer" })
+//    public void testSubmitSm_OverRate() throws Exception {
+//
+//        if (!this.cassandraDbInited)
+//            return;
+//
+//        this.smppSess = new SmppSessionsProxy();
+//        this.sbb.setSmppServerSessions(smppSess);
+//
+//        int windowSize = SmppConstants.DEFAULT_WINDOW_SIZE;
+//        long connectTimeout = SmppConstants.DEFAULT_CONNECT_TIMEOUT;
+//        long requestExpiryTimeout = SmppConstants.DEFAULT_REQUEST_EXPIRY_TIMEOUT;
+//        long windowMonitorInterval = SmppConstants.DEFAULT_WINDOW_MONITOR_INTERVAL;
+//        long windowWaitTimeout = SmppConstants.DEFAULT_WINDOW_WAIT_TIMEOUT;
+//
+//        SmppManagement smppManagement = SmppManagement.getInstance("Test");
+//        EsmeManagement esmeManagement = EsmeManagement.getInstance();
+//        esmeManagement.start();
+//        Thread.sleep(3000);
+////        esmeManagement.stop();
+//
+//        try {
+//            esmeManagement.destroyEsme("Esme_1");
+//        } catch (Exception e) {
+//        }
+//        esmeManagement.createEsme("Esme_1", "Esme_systemId_1", "pwd", "host", 1, false, SmppBindType.TRANSCEIVER.toString(), null,
+//                SmppInterfaceVersionType.SMPP34.toString(), (byte) -1, (byte) -1, null, SmppSession.Type.CLIENT.toString(), windowSize, connectTimeout,
+//                requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, "Esme_1", true, 30000, (byte) -1, (byte) -1, "^[0-9a-zA-Z]*", (byte) -1,
+//                (byte) -1, "^[0-9a-zA-Z]*", 0, 1, 0, 0, 0);
+////        String name, String systemId, String password, String host, int port, boolean chargingEnabled, String smppBindType,
+////        String systemType, String smppIntVersion, byte ton, byte npi, String address, String smppSessionType, int windowSize, long connectTimeout,
+////        long requestExpiryTimeout, long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled, int enquireLinkDelay,
+////        int sourceTon, int sourceNpi, String sourceAddressRange, int routingTon, int routingNpi, String routingAddressRange, int networkId,
+////        long rateLimitPerSecond, long rateLimitPerMinute, long rateLimitPerHour, long rateLimitPerDay        
+//
+////        Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, false, null, SmppInterfaceVersionType.SMPP34, -1, -1, null,
+////                SmppBindType.TRANSCEIVER, SmppSession.Type.CLIENT, windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout,
+////                "Esme_1", true, 30000, -1, -1, "^[0-9a-zA-Z]*", -1, -1, "^[0-9a-zA-Z]*", 0, 0, 1, 0, 0);
+//        Esme esme = esmeManagement.getEsmeByName("Esme_1");
+//
+//        ActivityContextInterface aci = new SmppTransactionProxy(esme);
+//
+//        SubmitSm event = new SubmitSm();
+//        Date curDate = new Date();
+//        this.fillSm(event, curDate, true);
+//        event.setShortMessage(msgUtf8);
+//
+//        SubmitSm event2 = new SubmitSm();
+//        this.fillSm(event2, curDate, true);
+//        event2.setShortMessage(msgUtf8_2);
+//
+//        SubmitSm event3 = new SubmitSm();
+//        this.fillSm(event3, curDate, true);
+//        event3.setShortMessage(msgUtf8_3);
+//
+//        long dueSlot = this.pers.c2_getDueSlotForTime(scheduleDeliveryTime);
+//        PreparedStatementCollection_C3 psc = this.pers.getStatementCollection(scheduleDeliveryTime);
+//        int b1 = this.pers.checkSmsExists(dueSlot, ta1.getTargetId());
+//        long b2 = this.pers.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
+//        assertEquals(b1, 0);
+//        assertEquals(b2, 0L);
+//
+//        // first one - ok
+//        TxSmppServerSbb.smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Utf8);
+//        this.sbb.onSubmitSm(event, aci);
+//
+//        b1 = this.pers.checkSmsExists(dueSlot, ta1.getTargetId());
+//        assertEquals(b1, 1);
+//
+//        SmsSet smsSet = this.pers.c2_getRecordListForTargeId(dueSlot, ta1.getTargetId());
+////        this.checkSmsSet(smsSet, curDate, true);
+//        Sms sms = smsSet.getSms(0);
+//        assertEquals(sms.getShortMessageText(), sMsg);
+//
+//        assertEquals(this.smppSess.getReqList().size(), 0);
+//        assertEquals(this.smppSess.getRespList().size(), 1);
+//
+//        PduResponse resp = this.smppSess.getRespList().get(0);
+//        assertEquals(resp.getCommandStatus(), 0);
+//        assertEquals(resp.getOptionalParameterCount(), 0);
+//
+//        // second one - overrate (only one is possible)
+//        this.sbb.onSubmitSm(event2, aci);
+//
+//        b1 = this.pers.checkSmsExists(dueSlot, ta1.getTargetId());
+//        assertEquals(b1, 1);
+//
+//        smsSet = this.pers.c2_getRecordListForTargeId(dueSlot, ta1.getTargetId());
+//
+//        assertEquals(this.smppSess.getReqList().size(), 0);
+//        assertEquals(this.smppSess.getRespList().size(), 2);
+//
+//        resp = this.smppSess.getRespList().get(1);
+//        assertEquals(resp.getCommandStatus(), 88);
+//
+//        // third one again ok - after a delay
+//        Thread.sleep(1100);
+//        this.sbb.onSubmitSm(event3, aci);
+//
+//        b1 = this.pers.checkSmsExists(dueSlot, ta1.getTargetId());
+//        assertEquals(b1, 2);
+//
+//        smsSet = this.pers.c2_getRecordListForTargeId(dueSlot, ta1.getTargetId());
+//
+//        assertEquals(this.smppSess.getReqList().size(), 0);
+//        assertEquals(this.smppSess.getRespList().size(), 3);
+//
+//        resp = this.smppSess.getRespList().get(2);
+//        assertEquals(resp.getCommandStatus(), 0);
+//    }
+	
+	
+	
 	@Test(groups = { "TxSmppServer" })
 	public void testDataSm() throws Exception {
 
@@ -215,7 +340,7 @@ public class C2_TxSmppServerSbbTest {
 		Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, false, null,
 				SmppInterfaceVersionType.SMPP34, -1, -1, null, SmppBindType.TRANSCEIVER, SmppSession.Type.CLIENT,
 				windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, "Esme_1",
-				true, 30000, -1, -1, "^[0-9a-zA-Z]*", -1, -1, "^[0-9a-zA-Z]*", 0);
+				true, 30000, -1, -1, "^[0-9a-zA-Z]*", -1, -1, "^[0-9a-zA-Z]*", 0, 0, 0, 0, 0);
 		ActivityContextInterface aci = new SmppTransactionProxy(esme);
 
 		DataSm event = new DataSm();
@@ -278,7 +403,7 @@ public class C2_TxSmppServerSbbTest {
         Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, false, null,
                 SmppInterfaceVersionType.SMPP34, -1, -1, null, SmppBindType.TRANSCEIVER, SmppSession.Type.CLIENT,
                 windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, "Esme_1",
-                true, 30000, -1, -1, "^[0-9a-zA-Z]*", -1, -1, "^[0-9a-zA-Z]*", 0);
+                true, 30000, -1, -1, "^[0-9a-zA-Z]*", -1, -1, "^[0-9a-zA-Z]*", 0, 0, 0, 0, 0);
         ActivityContextInterface aci = new SmppTransactionProxy(esme);
 
         SubmitMulti event = new SubmitMulti();
@@ -349,7 +474,7 @@ public class C2_TxSmppServerSbbTest {
         Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, false, null,
                 SmppInterfaceVersionType.SMPP34, -1, -1, null, SmppBindType.TRANSCEIVER, SmppSession.Type.CLIENT,
                 windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, "Esme_1",
-                true, 30000, -1, -1, "^[0-9a-zA-Z]*", -1, -1, "^[0-9a-zA-Z]*", 0);
+                true, 30000, -1, -1, "^[0-9a-zA-Z]*", -1, -1, "^[0-9a-zA-Z]*", 0, 0, 0, 0, 0);
         ActivityContextInterface aci = new SmppTransactionProxy(esme);
 
         SubmitMulti event = new SubmitMulti();
@@ -412,7 +537,7 @@ public class C2_TxSmppServerSbbTest {
 		Esme esme = new Esme("Esme_1", "Esme_systemId_1", "pwd", "host", 0, false, null,
 				SmppInterfaceVersionType.SMPP34, -1, -1, null, SmppBindType.TRANSCEIVER, SmppSession.Type.CLIENT,
 				windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, "Esme_1",
-				true, 30000, -1, -1, "^[0-9a-zA-Z]*", -1, -1, "^[0-9a-zA-Z]*", 0);
+				true, 30000, -1, -1, "^[0-9a-zA-Z]*", -1, -1, "^[0-9a-zA-Z]*", 0, 0, 0, 0, 0);
 		ActivityContextInterface aci = new SmppTransactionProxy(esme);
 
 		SubmitSm event = new SubmitSm();

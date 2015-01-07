@@ -164,6 +164,20 @@ public class SmppShellExecutor implements ShellExecutor {
             } else if (key.equals("routing-range")) {
                 String routingAddressRange = args[count++];
                 esme.setRoutingAddressRange(routingAddressRange);
+
+            } else if (key.equals("ratelimit_second")) {
+                long val = Long.parseLong(args[count++]);
+                esme.setRateLimitPerSecond(val);
+            } else if (key.equals("ratelimit_minute")) {
+                long val = Long.parseLong(args[count++]);
+                esme.setRateLimitPerMinute(val);
+            } else if (key.equals("ratelimit_hour")) {
+                long val = Long.parseLong(args[count++]);
+                esme.setRateLimitPerHour(val);
+            } else if (key.equals("ratelimit_day")) {
+                long val = Long.parseLong(args[count++]);
+                esme.setRateLimitPerDay(val);
+
             } else {
                 return SmppOamMessages.INVALID_COMMAND;
             }
@@ -245,7 +259,10 @@ public class SmppShellExecutor implements ShellExecutor {
         String clusterName = name;
         String password = null;
         int networkId = 0;
-
+        long rateLimitPerSecond = 0;
+        long rateLimitPerMinute = 0;
+        long rateLimitPerHour = 0;
+        long rateLimitPerDay = 0;
         int count = 9;
 
         int windowSize = SmppConstants.DEFAULT_WINDOW_SIZE;
@@ -317,17 +334,25 @@ public class SmppShellExecutor implements ShellExecutor {
                 routingNpi = Integer.parseInt(args[count++]);
             } else if (key.equals("routing-range")) {
                 routingAddressRange = args[count++];
+
+            } else if (key.equals("ratelimit_second")) {
+                rateLimitPerSecond = Long.parseLong(args[count++]);
+            } else if (key.equals("ratelimit_minute")) {
+                rateLimitPerMinute = Long.parseLong(args[count++]);
+            } else if (key.equals("ratelimit_hour")) {
+                rateLimitPerHour = Long.parseLong(args[count++]);
+            } else if (key.equals("ratelimit_day")) {
+                rateLimitPerDay = Long.parseLong(args[count++]);
             } else {
                 return SmppOamMessages.INVALID_COMMAND;
             }
 
         }
 
-        Esme esme = this.smppManagement.getEsmeManagement().createEsme(name, systemId, password, host, intPort,
-                chargingEnabled, smppBindTypeStr, systemType, smppVersionType, esmeTonType, esmeNpiType, esmeAddrRange,
-                smppSessionTypeStr, windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval,
-                windowWaitTimeout, clusterName, countersEnabled, enquireLinkDelay, sourceTon, sourceNpi,
-                sourceAddressRange, routinigTon, routingNpi, routingAddressRange, networkId);
+        Esme esme = this.smppManagement.getEsmeManagement().createEsme(name, systemId, password, host, intPort, chargingEnabled, smppBindTypeStr, systemType,
+                smppVersionType, esmeTonType, esmeNpiType, esmeAddrRange, smppSessionTypeStr, windowSize, connectTimeout, requestExpiryTimeout,
+                windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled, enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange,
+                routinigTon, routingNpi, routingAddressRange, networkId, rateLimitPerSecond, rateLimitPerMinute, rateLimitPerHour, rateLimitPerDay);
         return String.format(SmppOamMessages.CREATE_ESME_SUCCESSFULL, esme.getSystemId());
     }
 

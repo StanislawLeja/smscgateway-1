@@ -22,6 +22,7 @@
 
 package org.mobicents.smsc.smpp;
 
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +40,8 @@ import com.cloudhopper.smpp.type.Address;
 
 /**
  * @author amit bhayani
- * 
+ * @author sergey vetyutnev
+ *
  */
 public class Esme extends SslConfigurationWrapper implements XMLSerializable, EsmeMBean {
 
@@ -87,6 +89,11 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 
 	private static final String ENQUIRE_LINK_DELAY = "enquireLinkDelay";
 	private static final String COUNTERS_ENABLED = "countersEnabled";
+
+    private static final String RATE_LIMIT_PER_SECOND = "rateLimitPerSecond";
+    private static final String RATE_LIMIT_PER_MINUTE = "rateLimitPerMinute";
+    private static final String RATE_LIMIT_PER_HOUR = "rateLimitPerHour";
+    private static final String RATE_LIMIT_PER_DAY = "rateLimitPerDay";
 
 	private static final String STARTED = "started";
 
@@ -157,7 +164,25 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 	 * Set the amount of time to wait until a slot opens up in the sendWindow.
 	 * Defaults to 60000.
 	 */
-	private long windowWaitTimeout;
+    private long windowWaitTimeout;
+
+    /**
+     * Set limits for message count received from ESME per a second, minute,
+     * hour or a day. Zero values means "no restrictions".
+     */
+    private long rateLimitPerSecond = 0;
+    private long rateLimitPerMinute = 0;
+    private long rateLimitPerHour = 0;
+    private long rateLimitPerDay = 0;
+
+    private AtomicLong receivedMsgPerSecond = new AtomicLong();
+    private AtomicLong receivedMsgPerMinute = new AtomicLong();
+    private AtomicLong receivedMsgPerHour = new AtomicLong();
+    private AtomicLong receivedMsgPerDay = new AtomicLong();
+    private AtomicLong extraMsgPerSecond = new AtomicLong();
+    private AtomicLong extraMsgPerMinute = new AtomicLong();
+    private AtomicLong extraMsgPerHour = new AtomicLong();
+    private AtomicLong extraMsgPerDay = new AtomicLong();
 
 	protected transient EsmeManagement esmeManagement = null;
 
@@ -188,8 +213,8 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 			String systemType, SmppInterfaceVersionType smppVersion, int esmeTon, int esmeNpi, String esmeAddressRange,
 			SmppBindType smppBindType, Type smppSessionType, int windowSize, long connectTimeout,
 			long requestExpiryTimeout, long windowMonitorInterval, long windowWaitTimeout, String clusterName,
-			boolean countersEnabled, int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange,
-			int routingTon, int routingNpi, String routingAddressRange, int networkId) {
+            boolean countersEnabled, int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange, int routingTon, int routingNpi,
+            String routingAddressRange, int networkId, long rateLimitPerSecond, long rateLimitPerMinute, long rateLimitPerHour, long rateLimitPerDay) {
 
 		this.name = name;
 
@@ -238,7 +263,12 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 			this.routingAddressRangePattern = Pattern.compile(this.routingAddressRange);
 		}
 
-		this.networkId = networkId;
+        this.networkId = networkId;
+
+        this.rateLimitPerSecond = rateLimitPerSecond;
+        this.rateLimitPerMinute = rateLimitPerMinute;
+        this.rateLimitPerHour = rateLimitPerHour;
+        this.rateLimitPerDay = rateLimitPerDay;
 	}
 
 	/**
@@ -594,6 +624,51 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 		this.store();
 	}
 
+    @Override
+    public long getRateLimitPerSecond() {
+        return rateLimitPerSecond;
+    }
+
+    @Override
+    public void setRateLimitPerSecond(long value) {
+        this.rateLimitPerSecond = value;
+        this.store();
+    }
+
+    @Override
+    public long getRateLimitPerMinute() {
+        return rateLimitPerMinute;
+    }
+
+    @Override
+    public void setRateLimitPerMinute(long value) {
+        this.rateLimitPerMinute = value;
+        this.store();
+    }
+
+    @Override
+    public long getRateLimitPerHour() {
+        return rateLimitPerHour;
+    }
+
+    @Override
+    public void setRateLimitPerHour(long value) {
+        this.rateLimitPerHour = value;
+        this.store();
+    }
+
+    @Override
+    public long getRateLimitPerDay() {
+        return rateLimitPerDay;
+    }
+
+    @Override
+    public void setRateLimitPerDay(long value) {
+        this.rateLimitPerDay = value;
+        this.store();
+    }
+
+
 	/**
 	 * @return the started
 	 */
@@ -607,7 +682,9 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 	 *            the started to set
 	 */
 	protected void setStarted(boolean started) {
-		this.started = started;
+        this.started = started;
+        if (started)
+            this.clearDayMsgCounter();
 	}
 
 	/**
@@ -715,6 +792,11 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 			esme.port = xml.getAttribute(REMOTE_HOST_PORT, -1);
 			esme.networkId = xml.getAttribute(NETWORK_ID, 0);
 
+            esme.rateLimitPerSecond = xml.getAttribute(RATE_LIMIT_PER_SECOND, 0L);
+            esme.rateLimitPerMinute = xml.getAttribute(RATE_LIMIT_PER_MINUTE, 0L);
+            esme.rateLimitPerHour = xml.getAttribute(RATE_LIMIT_PER_HOUR, 0L);
+            esme.rateLimitPerDay = xml.getAttribute(RATE_LIMIT_PER_DAY, 0L);
+
 			String smppBindTypeStr = xml.getAttribute(SMPP_BIND_TYPE, "TRANSCEIVER");
 
 			if (SmppBindType.TRANSCEIVER.toString().equals(smppBindTypeStr)) {
@@ -739,10 +821,10 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 			esme.esmeAddressRange = xml.getAttribute(ESME_ADDRESS_RANGE, null);
 
 			esme.windowSize = xml.getAttribute(WINDOW_SIZE, 0);
-			esme.connectTimeout = xml.getAttribute(CONNECT_TIMEOUT, 0);
-			esme.requestExpiryTimeout = xml.getAttribute(REQUEST_EXPIRY_TIMEOUT, 0);
-			esme.windowMonitorInterval = xml.getAttribute(WINDOW_MONITOR_INTERVAL, 0);
-			esme.windowWaitTimeout = xml.getAttribute(WINDOW_WAIT_TIMEOUT, 0);
+			esme.connectTimeout = xml.getAttribute(CONNECT_TIMEOUT, 0L);
+			esme.requestExpiryTimeout = xml.getAttribute(REQUEST_EXPIRY_TIMEOUT, 0L);
+			esme.windowMonitorInterval = xml.getAttribute(WINDOW_MONITOR_INTERVAL, 0L);
+			esme.windowWaitTimeout = xml.getAttribute(WINDOW_WAIT_TIMEOUT, 0L);
 			esme.countersEnabled = xml.getAttribute(COUNTERS_ENABLED, true);
 			esme.enquireLinkDelay = xml.getAttribute(ENQUIRE_LINK_DELAY, 30000);
 
@@ -806,6 +888,12 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 			xml.setAttribute(REMOTE_HOST_IP, esme.host);
 			xml.setAttribute(REMOTE_HOST_PORT, esme.port);
 			xml.setAttribute(NETWORK_ID, esme.networkId);
+
+            xml.setAttribute(RATE_LIMIT_PER_SECOND, esme.rateLimitPerSecond);
+            xml.setAttribute(RATE_LIMIT_PER_MINUTE, esme.rateLimitPerMinute);
+            xml.setAttribute(RATE_LIMIT_PER_HOUR, esme.rateLimitPerHour);
+            xml.setAttribute(RATE_LIMIT_PER_DAY, esme.rateLimitPerDay);
+
 			xml.setAttribute(SMPP_BIND_TYPE, esme.smppBindType.toString());
 			xml.setAttribute(SMPP_SESSION_TYPE, esme.smppSessionType.toString());
 
@@ -888,7 +976,15 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 				.append(SmppOamMessages.SHOW_SOURCE_ADDRESS).append(this.sourceAddressRange)
 				.append(SmppOamMessages.SHOW_ROUTING_ADDRESS_TON).append(this.routingTon)
 				.append(SmppOamMessages.SHOW_ROUTING_ADDRESS_NPI).append(this.routingNpi)
-				.append(SmppOamMessages.SHOW_ROUTING_ADDRESS).append(this.routingAddressRange);
+				.append(SmppOamMessages.SHOW_ROUTING_ADDRESS).append(this.routingAddressRange)
+                .append(SmppOamMessages.SHOW_RATE_LIMIT_PER_SECOND).append(this.rateLimitPerSecond)
+                .append(SmppOamMessages.SHOW_RATE_LIMIT_PER_MINUTE).append(this.rateLimitPerMinute)
+                .append(SmppOamMessages.SHOW_RATE_LIMIT_PER_HOUR).append(this.rateLimitPerHour)
+                .append(SmppOamMessages.SHOW_RATE_LIMIT_PER_DAY).append(this.rateLimitPerDay)
+                .append(SmppOamMessages.SHOW_SECOND_RECEIVED_MSG_COUNT).append(this.getSecondReceivedMsgCount())
+                .append(SmppOamMessages.SHOW_MINUTE_RECEIVED_MSG_COUNT).append(this.getMinuteReceivedMsgCount())
+                .append(SmppOamMessages.SHOW_HOUR_RECEIVED_MSG_COUNT).append(this.getHourReceivedMsgCount())
+                .append(SmppOamMessages.SHOW_DAY_RECEIVED_MSG_COUNT).append(this.getDayReceivedMsgCount());
 
 		sb.append(SmppOamMessages.NEW_LINE);
 	}
@@ -1166,6 +1262,118 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 		}
 
 	}
+
+
+    /**
+     * On receiving of every message from this ESME this method should be
+     * invoked. This method updates a counter of received messages and checks if
+     * a seconds / minute / hour / day limits are exceeded
+     * 
+     * @param count
+     *            received messages count
+     * @return checking result
+     */
+	public CheckMessageLimitResult onMessageReceived(int count) {
+	    long cntSecond = this.receivedMsgPerSecond.addAndGet(count);
+        if (rateLimitPerSecond > 0 && cntSecond > rateLimitPerSecond) {
+            this.receivedMsgPerSecond.addAndGet(-count);
+            if (this.extraMsgPerSecond.addAndGet(1) == 1)
+                return new CheckMessageLimitResult(CheckMessageLimitResult.Result.firstFault, "RateLimitPerSecond is exceeded for ESME=" + this.name,
+                        CheckMessageLimitResult.Domain.perSecond);
+            else
+                return new CheckMessageLimitResult(CheckMessageLimitResult.Result.nextFault, "RateLimitPerSecond is exceeded for ESME=" + this.name,
+                        CheckMessageLimitResult.Domain.perSecond);
+        }
+        long cntMinute = this.receivedMsgPerMinute.addAndGet(count);
+        if (rateLimitPerMinute > 0 && cntMinute > rateLimitPerMinute) {
+            this.receivedMsgPerMinute.addAndGet(-count);
+            if (this.extraMsgPerMinute.addAndGet(1) == 1)
+                return new CheckMessageLimitResult(CheckMessageLimitResult.Result.firstFault, "RateLimitPerMinute is exceeded for ESME=" + this.name,
+                        CheckMessageLimitResult.Domain.perMinute);
+            else
+                return new CheckMessageLimitResult(CheckMessageLimitResult.Result.nextFault, "RateLimitPerMinute is exceeded for ESME=" + this.name,
+                        CheckMessageLimitResult.Domain.perMinute);
+        }
+        long cntHour = this.receivedMsgPerHour.addAndGet(count);
+        if (rateLimitPerHour > 0 && cntHour > rateLimitPerHour) {
+            this.receivedMsgPerHour.addAndGet(-count);
+            if (this.extraMsgPerHour.addAndGet(1) == 1)
+                return new CheckMessageLimitResult(CheckMessageLimitResult.Result.firstFault, "RateLimitPerHour is exceeded for ESME=" + this.name,
+                        CheckMessageLimitResult.Domain.perHour);
+            else
+                return new CheckMessageLimitResult(CheckMessageLimitResult.Result.nextFault, "RateLimitPerHour is exceeded for ESME=" + this.name,
+                        CheckMessageLimitResult.Domain.perHour);
+        }
+        long cntDay = this.receivedMsgPerDay.addAndGet(count);
+        if (rateLimitPerDay > 0 && cntDay > rateLimitPerDay) {
+            this.receivedMsgPerDay.addAndGet(-count);
+            if (this.extraMsgPerDay.addAndGet(1) == 1)
+                return new CheckMessageLimitResult(CheckMessageLimitResult.Result.firstFault, "RateLimitPerDay is exceeded for ESME=" + this.name,
+                        CheckMessageLimitResult.Domain.perDay);
+            else
+                return new CheckMessageLimitResult(CheckMessageLimitResult.Result.nextFault, "RateLimitPerDay is exceeded for ESME=" + this.name,
+                        CheckMessageLimitResult.Domain.perDay);
+        }
+
+        return new CheckMessageLimitResult(CheckMessageLimitResult.Result.ok, null, null);
+    }
+
+    public void clearSecondMsgCounter() {
+        this.receivedMsgPerSecond.set(0L);
+
+        this.extraMsgPerSecond.set(0L);
+    }
+
+    public void clearMinuteMsgCounter() {
+        this.receivedMsgPerSecond.set(0L);
+        this.receivedMsgPerMinute.set(0L);
+
+        this.extraMsgPerSecond.set(0L);
+        this.extraMsgPerMinute.set(0L);
+    }
+
+    public void clearHourMsgCounter() {
+        this.receivedMsgPerSecond.set(0L);
+        this.receivedMsgPerMinute.set(0L);
+        this.receivedMsgPerHour.set(0L);
+
+        this.extraMsgPerSecond.set(0L);
+        this.extraMsgPerMinute.set(0L);
+        this.extraMsgPerHour.set(0L);
+    }
+
+    public void clearDayMsgCounter() {
+        this.receivedMsgPerSecond.set(0L);
+        this.receivedMsgPerMinute.set(0L);
+        this.receivedMsgPerHour.set(0L);
+        this.receivedMsgPerDay.set(0L);
+
+        this.extraMsgPerSecond.set(0L);
+        this.extraMsgPerMinute.set(0L);
+        this.extraMsgPerHour.set(0L);
+        this.extraMsgPerDay.set(0L);
+    }
+
+    @Override
+    public long getSecondReceivedMsgCount() {
+        return this.receivedMsgPerSecond.get();
+    }
+
+    @Override
+    public long getMinuteReceivedMsgCount() {
+        return this.receivedMsgPerMinute.get();
+    }
+
+    @Override
+    public long getHourReceivedMsgCount() {
+        return this.receivedMsgPerHour.get();
+    }
+
+    @Override
+    public long getDayReceivedMsgCount() {
+        return this.receivedMsgPerDay.get();
+    }
+
 
 	@Override
 	public int hashCode() {

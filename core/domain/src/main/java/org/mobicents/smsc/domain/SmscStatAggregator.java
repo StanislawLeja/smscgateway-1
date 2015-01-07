@@ -146,8 +146,40 @@ public class SmscStatAggregator implements UpdateMessagesInProcessListener {
         statCollector.homeRoutingCorrIdFail.addAndGet(1);
     }
 
+    public long getSmppSecondRateOverlimitFail() {
+        return statCollector.smppSecondRateOverlimitFail.get();
+    }
+
+    public void updateSmppSecondRateOverlimitFail() {
+        statCollector.smppSecondRateOverlimitFail.addAndGet(1);
+    }
+
+    public long getSmppMinuteRateOverlimitFail() {
+        return statCollector.smppMinuteRateOverlimitFail.get();
+    }
+
+    public void updateSmppMinuteRateOverlimitFail() {
+        statCollector.smppMinuteRateOverlimitFail.addAndGet(1);
+    }
+
+    public long getSmppHourRateOverlimitFail() {
+        return statCollector.smppHourRateOverlimitFail.get();
+    }
+
+    public void updateSmppHourRateOverlimitFail() {
+        statCollector.smppHourRateOverlimitFail.addAndGet(1);
+    }
+
+    public long getSmppDayRateOverlimitFail() {
+        return statCollector.smppDayRateOverlimitFail.get();
+    }
+
+    public void updateSmppDayRateOverlimitFail() {
+        statCollector.smppDayRateOverlimitFail.addAndGet(1);
+    }
+
     public long getMsgInReceivedSmpp() {
-        return statCollector.msgInReceivedSmpp.get();
+       return statCollector.msgInReceivedSmpp.get();
     }
 
     public void updateMsgInReceivedSmpp() {
@@ -289,6 +321,10 @@ public class SmscStatAggregator implements UpdateMessagesInProcessListener {
         private AtomicLong msgInReceivedSs7Mo = new AtomicLong();
         private AtomicLong msgInReceivedSs7Hr = new AtomicLong();
         private AtomicLong homeRoutingCorrIdFail = new AtomicLong();
+        private AtomicLong smppSecondRateOverlimitFail = new AtomicLong();
+        private AtomicLong smppMinuteRateOverlimitFail = new AtomicLong();
+        private AtomicLong smppHourRateOverlimitFail = new AtomicLong();
+        private AtomicLong smppDayRateOverlimitFail = new AtomicLong();
         
         private AtomicLong msgInReceivedSmpp = new AtomicLong();
         private AtomicLong msgInReceivedSip = new AtomicLong();
