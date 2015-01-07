@@ -117,4 +117,20 @@ public interface SmppOamMessages {
 
     public static final String SHOW_ROUTING_ADDRESS = " routingAddress=";
 
+    public static final String SHOW_RATE_LIMIT_PER_SECOND = " rateLimitPerSecond=";
+
+    public static final String SHOW_RATE_LIMIT_PER_MINUTE = " rateLimitPerMinute=";
+
+    public static final String SHOW_RATE_LIMIT_PER_HOUR = " rateLimitPerHour=";
+
+    public static final String SHOW_RATE_LIMIT_PER_DAY = " rateLimitPerDay=";
+
+    public static final String SHOW_SECOND_RECEIVED_MSG_COUNT = " secondReceivedMsgCount=";
+
+    public static final String SHOW_MINUTE_RECEIVED_MSG_COUNT = " minuteReceivedMsgCount=";
+
+    public static final String SHOW_HOUR_RECEIVED_MSG_COUNT = " hourReceivedMsgCount=";
+
+    public static final String SHOW_DAY_RECEIVED_MSG_COUNT = " dayReceivedMsgCount=";
+
 }

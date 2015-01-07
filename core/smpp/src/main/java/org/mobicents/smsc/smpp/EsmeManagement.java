@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.mobicents.smsc.smpp;
 
 import java.io.File;
@@ -29,6 +30,9 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -54,9 +58,10 @@ import com.cloudhopper.smpp.SmppBindType;
 import com.cloudhopper.smpp.SmppSession;
 
 /**
- * 
+ *
  * @author amit bhayani
- * 
+ * @author sergey vetyutnev
+ *
  */
 public class EsmeManagement implements EsmeManagementMBean {
 
@@ -80,7 +85,10 @@ public class EsmeManagement implements EsmeManagementMBean {
 
 	private SmppClientManagement smppClient = null;
 
-	private MBeanServer mbeanServer = null;
+    private MBeanServer mbeanServer = null;
+
+    private Timer timer;
+    private TimerTask timerTask;
 
 	private static EsmeManagement instance = null;
 
@@ -188,12 +196,11 @@ public class EsmeManagement implements EsmeManagementMBean {
 		return null;
 	}
 
-	public Esme createEsme(String name, String systemId, String password, String host, int port,
-			boolean chargingEnabled, String smppBindType, String systemType, String smppIntVersion, byte ton, byte npi,
-			String address, String smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
-			long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
-			int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange, int routingTon,
-			int routingNpi, String routingAddressRange, int networkId) throws Exception {
+    public Esme createEsme(String name, String systemId, String password, String host, int port, boolean chargingEnabled, String smppBindType,
+            String systemType, String smppIntVersion, byte ton, byte npi, String address, String smppSessionType, int windowSize, long connectTimeout,
+            long requestExpiryTimeout, long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled, int enquireLinkDelay,
+            int sourceTon, int sourceNpi, String sourceAddressRange, int routingTon, int routingNpi, String routingAddressRange, int networkId,
+            long rateLimitPerSecond, long rateLimitPerMinute, long rateLimitPerHour, long rateLimitPerDay) throws Exception {
 
 		SmppBindType smppBindTypeOb = SmppBindType.valueOf(smppBindType);
 
@@ -269,12 +276,11 @@ public class EsmeManagement implements EsmeManagementMBean {
 			clusterName = name;
 		}
 
-		Esme esme = new Esme(name, systemId, password, host, port, chargingEnabled, systemType,
-				smppInterfaceVersionTypeObj, ton, npi, address, smppBindTypeOb, smppSessionTypeObj, windowSize,
-				connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName,
-				countersEnabled, enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange, routingTon, routingNpi,
-				routingAddressRange, networkId);
-		
+        Esme esme = new Esme(name, systemId, password, host, port, chargingEnabled, systemType, smppInterfaceVersionTypeObj, ton, npi, address, smppBindTypeOb,
+                smppSessionTypeObj, windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled,
+                enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange, routingTon, routingNpi, routingAddressRange, networkId, rateLimitPerSecond,
+                rateLimitPerMinute, rateLimitPerHour, rateLimitPerDay);
+
 		esme.esmeManagement = this;
 
 		esmes.add(esme);
@@ -371,7 +377,10 @@ public class EsmeManagement implements EsmeManagementMBean {
 
 	public void start() throws Exception {
 
-		this.mbeanServer = MBeanServerLocator.locateJBoss();
+        try {
+            this.mbeanServer = MBeanServerLocator.locateJBoss();
+        } catch (Exception e) {
+        }
 
 		this.persistFile.clear();
 
@@ -398,10 +407,17 @@ public class EsmeManagement implements EsmeManagementMBean {
 			this.registerEsmeMbean(esme);
 		}
 
+		// setting a timer for cleaning of 
+        this.clearMessageClearTimer();
+        this.timer = new Timer();
+        this.timerTask = new MessageCleanerTimerTask();
+        this.timer.scheduleAtFixedRate(timerTask, 0, 1000);
 	}
 
 	public void stop() throws Exception {
-		this.store();
+        this.clearMessageClearTimer();
+
+        this.store();
 
 		for (FastList.Node<Esme> n = esmes.head(), end = esmes.tail(); (n = n.getNext()) != end;) {
 			Esme esme = n.getValue();
@@ -409,6 +425,17 @@ public class EsmeManagement implements EsmeManagementMBean {
 			this.unregisterEsmeMbean(esme.getName());
 		}
 	}
+
+    private void clearMessageClearTimer() {
+        if (timerTask != null) {
+            timerTask.cancel();
+            timerTask = null;
+        }
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
 
 	/**
 	 * Persist
@@ -519,4 +546,44 @@ public class EsmeManagement implements EsmeManagementMBean {
 		}
 	}
 
+    private class MessageCleanerTimerTask extends TimerTask {
+
+        private int lastDay = -1;
+        private int lastHour = -1;
+        private int lastMinute = -1;
+
+        @Override
+        public void run() {
+            boolean needDay = false;
+            boolean needHour = false;
+            boolean needMinute = false;
+            Date tm = new Date();
+            if (lastDay != tm.getDay()) {
+                lastDay = tm.getDay();
+                needDay = true;
+            }
+            if (lastHour != tm.getHours()) {
+                lastHour = tm.getHours();
+                needHour = true;
+            }
+            if (lastMinute != tm.getMinutes()) {
+                lastMinute = tm.getMinutes();
+                needMinute = true;
+            }
+
+            for (FastList.Node<Esme> n = esmes.head(), end = esmes.tail(); (n = n.getNext()) != end;) {
+                Esme esme = n.getValue();
+                if (needDay) {
+                    esme.clearDayMsgCounter();
+                } else if (needHour) {
+                    esme.clearHourMsgCounter();
+                } else if (needMinute) {
+                    esme.clearMinuteMsgCounter();
+                } else {
+                    esme.clearSecondMsgCounter();
+                }
+            }
+        }
+
+    }
 }

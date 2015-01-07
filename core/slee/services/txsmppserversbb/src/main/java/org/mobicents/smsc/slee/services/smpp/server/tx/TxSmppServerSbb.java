@@ -68,6 +68,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppTransactionACIFactory;
 import org.mobicents.smsc.slee.resources.smpp.server.events.PduRequestTimeout;
 import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
 import org.mobicents.smsc.slee.services.charging.ChargingMedium;
+import org.mobicents.smsc.smpp.CheckMessageLimitResult;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmppEncoding;
 
@@ -144,6 +145,35 @@ public abstract class TxSmppServerSbb implements Sbb {
 		if (this.logger.isFineEnabled()) {
 			this.logger.fine("\nReceived SUBMIT_SM = " + event + " from Esme name=" + esmeName);
 		}
+
+        CheckMessageLimitResult cres = esme.onMessageReceived(1);
+        if (cres.getResult() != CheckMessageLimitResult.Result.ok) {
+            if (cres.getResult() == CheckMessageLimitResult.Result.firstFault) {
+                this.updateOverrateCounters(cres);
+                this.logger.info(cres.getMessage());
+            }
+
+            SubmitSmResp response = event.createResponse();
+            response.setCommandStatus(SmppConstants.STATUS_THROTTLED);
+            String s = cres.getMessage();
+            if (s.length() > 255)
+                s = s.substring(0, 255);
+            Tlv tlv;
+            try {
+                tlv = TlvUtil.createNullTerminatedStringTlv(SmppConstants.TAG_ADD_STATUS_INFO, s);
+                response.addOptionalParameter(tlv);
+            } catch (TlvConvertException e) {
+                this.logger.severe("TlvConvertException while storing TAG_ADD_STATUS_INFO Tlv parameter", e);
+            }
+
+            // Lets send the Response with error here
+            try {
+                this.smppServerSessions.sendResponsePdu(esme, event, response);
+            } catch (Exception e) {
+                this.logger.severe("Error while trying to send SubmitSmResponse=" + response, e);
+            }
+            return;
+        }
 
 		Sms sms;
 		try {
@@ -235,6 +265,23 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 	}
 
+    private void updateOverrateCounters(CheckMessageLimitResult cres) {
+        switch (cres.getDomain()) {
+        case perSecond:
+            smscStatAggregator.updateSmppSecondRateOverlimitFail();
+            break;
+        case perMinute:
+            smscStatAggregator.updateSmppMinuteRateOverlimitFail();
+            break;
+        case perHour:
+            smscStatAggregator.updateSmppHourRateOverlimitFail();
+            break;
+        case perDay:
+            smscStatAggregator.updateSmppDayRateOverlimitFail();
+            break;
+        }
+    }
+
 	public void onDataSm(com.cloudhopper.smpp.pdu.DataSm event, ActivityContextInterface aci) {
 		SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
 		Esme esme = smppServerTransaction.getEsme();
@@ -244,9 +291,38 @@ public abstract class TxSmppServerSbb implements Sbb {
 			this.logger.fine("Received DATA_SM = " + event + " from Esme name=" + esmeName);
 		}
 
+        CheckMessageLimitResult cres = esme.onMessageReceived(1);
+        if (cres.getResult() != CheckMessageLimitResult.Result.ok) {
+            if (cres.getResult() == CheckMessageLimitResult.Result.firstFault) {
+                this.updateOverrateCounters(cres);
+                this.logger.info(cres.getMessage());
+            }
+
+            DataSmResp response = event.createResponse();
+            response.setCommandStatus(SmppConstants.STATUS_THROTTLED);
+            String s = cres.getMessage();
+            if (s.length() > 255)
+                s = s.substring(0, 255);
+            Tlv tlv;
+            try {
+                tlv = TlvUtil.createNullTerminatedStringTlv(SmppConstants.TAG_ADD_STATUS_INFO, s);
+                response.addOptionalParameter(tlv);
+            } catch (TlvConvertException e) {
+                this.logger.severe("TlvConvertException while storing TAG_ADD_STATUS_INFO Tlv parameter", e);
+            }
+
+            // Lets send the Response with error here
+            try {
+                this.smppServerSessions.sendResponsePdu(esme, event, response);
+            } catch (Exception e) {
+                this.logger.severe("Error while trying to send DataSmResponse=" + response, e);
+            }
+            return;
+        }
+
 		Sms sms;
 		try {
-			TargetAddress ta = createDestTargetAddress(event.getDestAddress(), esme.getNetworkId());
+	        TargetAddress ta = createDestTargetAddress(event.getDestAddress(), esme.getNetworkId());
 			PersistenceRAInterface store = getStore();
 			TargetAddress lock = store.obtainSynchroObject(ta);
 
@@ -334,6 +410,39 @@ public abstract class TxSmppServerSbb implements Sbb {
 
         if (this.logger.isFineEnabled()) {
             this.logger.fine("\nReceived SUBMIT_MULTI = " + event + " from Esme name=" + esmeName);
+        }
+
+        List<Address> addrList = event.getDestAddresses();
+        int msgCnt = 0;
+        if (addrList != null)
+            msgCnt = addrList.size();
+        CheckMessageLimitResult cres = esme.onMessageReceived(msgCnt);
+        if (cres.getResult() != CheckMessageLimitResult.Result.ok) {
+            if (cres.getResult() == CheckMessageLimitResult.Result.firstFault) {
+                this.updateOverrateCounters(cres);
+                this.logger.info(cres.getMessage());
+            }
+
+            SubmitMultiResp response = event.createResponse();
+            response.setCommandStatus(SmppConstants.STATUS_THROTTLED);
+            String s = cres.getMessage();
+            if (s.length() > 255)
+                s = s.substring(0, 255);
+            Tlv tlv;
+            try {
+                tlv = TlvUtil.createNullTerminatedStringTlv(SmppConstants.TAG_ADD_STATUS_INFO, s);
+                response.addOptionalParameter(tlv);
+            } catch (TlvConvertException e) {
+                this.logger.severe("TlvConvertException while storing TAG_ADD_STATUS_INFO Tlv parameter", e);
+            }
+
+            // Lets send the Response with error here
+            try {
+                this.smppServerSessions.sendResponsePdu(esme, event, response);
+            } catch (Exception e) {
+                this.logger.severe("Error while trying to send SubmitMultiResponse=" + response, e);
+            }
+            return;
         }
 
         PersistenceRAInterface store = getStore();
@@ -480,6 +589,35 @@ public abstract class TxSmppServerSbb implements Sbb {
 		if (this.logger.isFineEnabled()) {
 			this.logger.fine("\nReceived DELIVER_SM = " + event + " from Esme name=" + esmeName);
 		}
+
+		CheckMessageLimitResult cres = esme.onMessageReceived(1);
+        if (cres.getResult() != CheckMessageLimitResult.Result.ok) {
+            if (cres.getResult() == CheckMessageLimitResult.Result.firstFault) {
+                this.updateOverrateCounters(cres);
+                this.logger.info(cres.getMessage());
+            }
+
+            DeliverSmResp response = event.createResponse();
+            response.setCommandStatus(SmppConstants.STATUS_THROTTLED);
+            String s = cres.getMessage();
+            if (s.length() > 255)
+                s = s.substring(0, 255);
+            Tlv tlv;
+            try {
+                tlv = TlvUtil.createNullTerminatedStringTlv(SmppConstants.TAG_ADD_STATUS_INFO, s);
+                response.addOptionalParameter(tlv);
+            } catch (TlvConvertException e) {
+                this.logger.severe("TlvConvertException while storing TAG_ADD_STATUS_INFO Tlv parameter", e);
+            }
+
+            // Lets send the Response with error here
+            try {
+                this.smppServerSessions.sendResponsePdu(esme, event, response);
+            } catch (Exception e) {
+                this.logger.severe("Error while trying to send DeliverSmResponse=" + response, e);
+            }
+            return;
+        }
 
 		Sms sms;
 		try {
