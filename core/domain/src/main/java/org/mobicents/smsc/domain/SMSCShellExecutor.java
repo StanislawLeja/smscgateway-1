@@ -503,6 +503,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 				smscPropertiesManagement.setProcessingSmsSetTimeout(val);
             } else if (parName.equals("generatereceiptcdr")) {
                 smscPropertiesManagement.setGenerateReceiptCdr(Boolean.parseBoolean(options[3]));
+            } else if (parName.equals("receiptsdisabling")) {
+                smscPropertiesManagement.setReceiptsDisabling(Boolean.parseBoolean(options[3]));
             } else if (parName.equals("generatecdr")) {
                 int val = Integer.parseInt(options[3]);
                 smscPropertiesManagement.setGenerateCdrInt(val);
@@ -672,6 +674,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 				sb.append(smscPropertiesManagement.getProcessingSmsSetTimeout());
             } else if (parName.equals("generatereceiptcdr")) {
                 sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
+            } else if (parName.equals("receiptsdisabling")) {
+                sb.append(smscPropertiesManagement.getReceiptsDisabling());
             } else if (parName.equals("generatecdr")) {
                 sb.append(smscPropertiesManagement.getGenerateCdr().getValue());
             } else if (parName.equals("generatearchivetable")) {
@@ -864,6 +868,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 
             sb.append("generatereceiptcdr = ");
             sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
+            sb.append("\n");
+
+            sb.append("receiptsdisabling = ");
+            sb.append(smscPropertiesManagement.getReceiptsDisabling());
             sb.append("\n");
 
             sb.append("generatecdr = ");
