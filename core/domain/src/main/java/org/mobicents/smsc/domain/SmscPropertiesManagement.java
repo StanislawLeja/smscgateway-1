@@ -86,6 +86,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String REVISE_SECONDS_ON_SMSC_START = "reviseSecondsOnSmscStart";
 	private static final String PROCESSING_SMS_SET_TIMEOUT = "processingSmsSetTimeout";
     private static final String GENERATE_RECEIPT_CDR = "generateReceiptCdr";
+    private static final String RECEIPTS_DISABLING = "receiptsDisabling";
     private static final String GENERATE_CDR = "generateCdr";
     private static final String GENERATE_ARCHIVE_TABLE = "generateArchiveTable";
     private static final String STORE_AND_FORWORD_MODE = "storeAndForwordMode";
@@ -193,6 +194,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// true: we generate CDR for both receipt and regular messages
 	// false: we generate CDR only for regular messages
     private boolean generateReceiptCdr = false;
+    // true: generating of receipts will be discabled for all messages
+    private boolean receiptsDisabling = false;
 
     // generating CDR's option
     private GenerateType generateCdr = new GenerateType(true, true, true);
@@ -624,6 +627,15 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.store();
 	}
 
+    public boolean getReceiptsDisabling() {
+        return this.receiptsDisabling;
+    }
+
+    public void setReceiptsDisabling(boolean receiptsDisabling) {
+        this.receiptsDisabling = receiptsDisabling;
+        this.store();
+    }
+
     @Override
     public MoChargingType getMoCharging() {
         return moCharging;
@@ -916,6 +928,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.reviseSecondsOnSmscStart, REVISE_SECONDS_ON_SMSC_START, Integer.class);
 			writer.write(this.processingSmsSetTimeout, PROCESSING_SMS_SET_TIMEOUT, Integer.class);
             writer.write(this.generateReceiptCdr, GENERATE_RECEIPT_CDR, Boolean.class);
+            writer.write(this.receiptsDisabling, RECEIPTS_DISABLING, Boolean.class);
             writer.write(this.generateCdr.getValue(), GENERATE_CDR, Integer.class);
             writer.write(this.generateArchiveTable.getValue(), GENERATE_ARCHIVE_TABLE, Integer.class);
 
@@ -1062,10 +1075,14 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			if (val != null)
 				this.processingSmsSetTimeout = val;
 
-			valB = reader.read(GENERATE_RECEIPT_CDR, Boolean.class);
-			if (valB != null) {
-				this.generateReceiptCdr = valB.booleanValue();
-			}
+            valB = reader.read(GENERATE_RECEIPT_CDR, Boolean.class);
+            if (valB != null) {
+                this.generateReceiptCdr = valB.booleanValue();
+            }
+            valB = reader.read(RECEIPTS_DISABLING, Boolean.class);
+            if (valB != null) {
+                this.receiptsDisabling = valB.booleanValue();
+            }
 
             val = reader.read(GENERATE_CDR, Integer.class);
             if (val != null)

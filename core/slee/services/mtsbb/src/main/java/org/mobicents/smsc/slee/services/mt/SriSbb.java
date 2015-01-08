@@ -66,6 +66,8 @@ import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 
+import com.cloudhopper.smpp.SmppConstants;
+
 /**
  * 
  * @author amit bhayani
@@ -111,6 +113,13 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
             // routed to SS7
             // TODO: ????
             // ....................
+
+            if (smsSet.getDestAddrTon() == SmppConstants.TON_ALPHANUMERIC) {
+                // bad TON at the destination address: alhpanumerical is not supported
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.BAD_TYPE_OF_NUMBER,
+                        "TON \"alhpanumerical\" is not supported for as a destination address", true);
+                return;
+            }
 
             int curMsg = 0;
             Sms sms = smsSet.getSms(curMsg);

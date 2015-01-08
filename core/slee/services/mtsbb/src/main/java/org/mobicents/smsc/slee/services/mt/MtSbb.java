@@ -932,7 +932,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			// adding a success receipt if it is needed
 //			if (sms.getStored()) {
             int registeredDelivery = sms.getRegisteredDelivery();
-            if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
+            if (!smscPropertiesManagement.getReceiptsDisabling() && MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
                 TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr(), smsSet.getNetworkId());
                 TargetAddress lock = SmsSetCache.getInstance().addSmsSet(ta);
                 try {

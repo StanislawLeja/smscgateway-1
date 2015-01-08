@@ -562,7 +562,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 			// adding an error receipt if it is needed
             int registeredDelivery = sms.getRegisteredDelivery();
-            if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
+            if (!smscPropertiesManagement.getReceiptsDisabling() && MessageUtil.isReceiptOnFailure(registeredDelivery)) {
                 TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr(), smsSet.getNetworkId());
                 lock = SmsSetCache.getInstance().addSmsSet(ta);
                 try {
@@ -855,7 +855,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 				// adding a success receipt if it is needed
                 int registeredDelivery = sms.getRegisteredDelivery();
-                if (MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
+                if (!smscPropertiesManagement.getReceiptsDisabling() && MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
                     TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr(), smsSet.getNetworkId());
                     TargetAddress lock = SmsSetCache.getInstance().addSmsSet(ta);
                     try {
