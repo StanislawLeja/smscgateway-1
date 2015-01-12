@@ -238,6 +238,10 @@ public interface SmscPropertiesManagementMBean {
 
     public int getGenerateArchiveTableInt();
     
-    public void setGenerateArchiveTableInt(int generateArchiveTable);    
+    public void setGenerateArchiveTableInt(int generateArchiveTable); 
+    
+    public boolean getReceiptsDisabling();
+    
+    public void setReceiptsDisabling(boolean receiptsDisabling);
 
 }

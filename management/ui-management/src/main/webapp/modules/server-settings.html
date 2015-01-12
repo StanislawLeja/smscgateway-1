@@ -394,6 +394,16 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 								</span> 								
 							</div>
 							
+							<div id="div-receiptsdisabling" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="set to true to disable SMS receipt. Even if SMS carries header for delivery receipt, SMSC will not generate one">
+									<span class="add-on">Disable Delivery Receipt</span>
+									<select id="receiptsdisabling" >
+										<option>true</option>
+										<option>false</option>
+									</select>
+								</span> 								
+							</div>							
+							
 							<div class="control-group">
 								<span class="span12" style="text-align: left;">
 									&nbsp;<button class="btn btn-danger" onclick="updateProcessing();"><i class="icon-undo"></i> Revert</button>
@@ -669,12 +679,20 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 								],
 								{ success: [
 									function(response) {
-										var deliverypauseVar = response.value.DeliveryPause
+										var deliverypauseVar = response.value.DeliveryPause;
 										
 										if(deliverypauseVar){
 											deliveryPause.options[0].selected = true;
 										} else {
 											deliveryPause.options[1].selected = true;
+										}
+										
+										var receiptsdisablingVar = response.value.ReceiptsDisabling;
+										
+										if(receiptsdisablingVar){
+											receiptsdisabling.options[0].selected = true;
+										} else {
+											receiptsdisabling.options[1].selected = true;
 										}
 									}],
 									error: function(value) {
@@ -1307,10 +1325,15 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						e = document.getElementById("deliveryPause");
 						var deliverypauseVar = e.options[e.selectedIndex].text;
 						
+						e = document.getElementById("receiptsdisabling");
+						var receiptsdisabling = e.options[e.selectedIndex].text;
+						
+						
 						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
 						jolokia.request(
 								[
 									{ type: "write", mbean: mbeanSearch, attribute: "DeliveryPause", value: deliverypauseVar },
+									{ type: "write", mbean: mbeanSearch, attribute: "ReceiptsDisabling", value: receiptsdisabling },
 								],
 								{
 									success: function(response) {
