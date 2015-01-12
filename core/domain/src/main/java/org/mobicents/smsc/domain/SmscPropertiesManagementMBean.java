@@ -22,6 +22,8 @@
 
 package org.mobicents.smsc.domain;
 
+import java.util.Map;
+
 import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.smsc.smpp.GenerateType;
 import org.mobicents.smsc.smpp.SmppEncoding;
@@ -39,6 +41,10 @@ public interface SmscPropertiesManagementMBean {
     public String getServiceCenterGt(int networkId);
 
 	public void setServiceCenterGt(String serviceCenterGt);
+	
+	public void setServiceCenterGt(int networkId, String serviceCenterGt);
+	
+	public Map<Integer, String> getNetworkIdVsServiceCenterGt();
 
 	public int getServiceCenterSsn();
 

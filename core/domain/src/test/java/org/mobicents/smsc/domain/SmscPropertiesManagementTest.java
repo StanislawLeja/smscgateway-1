@@ -13,7 +13,7 @@ public class SmscPropertiesManagementTest {
         man.start();
 
         man.setSMSHomeRouting(true);
-        man.setServiceCenterGtNetworkId(1, "22229");
+        man.setServiceCenterGt(1, "22229");
        
         man.stop();
         

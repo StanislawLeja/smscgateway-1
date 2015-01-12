@@ -145,12 +145,23 @@ Delay after every consecutive delivery failure = prev-due-delay * due-delay-mult
                         </div>  				 	
                         <div class="tab-pane" id="ss7settings">
                         	<h5 style="border-bottom: 1px solid #DDD;">Global Title Configuration</h5>
+                        	
+							<div id="div-gtinitext" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC Gateway Global Title Indicator Network Id">
+								  <span class="add-on">SMSC Gateway Global Title Indicator Network Id</span>				
+								  <select id="gtinisel" style="width: 200px;" onchange="gtInSelChange()">
+								  </select>
+							 	 <input id="gtinitext" type="text" name="format" class="input-mini" value="0" style="width: 165px; margin-left: -199px; margin-top: 1px; border: none;">
+							 	</span>
+							</div>	                        	
+                        	
                         	<div id="div-ussdgt" class="control-group">
 								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC Gateway Global Title">
 									<span class="add-on">SMSC Gateway Global Title</span>
 									<input id="ussdgt" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
 								</span>
 							</div>
+							
                         	<div id="div-gti" class="control-group">
 								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC Gateway Global Title Indicator">
 									<span class="add-on">SMSC Gateway Global Title Indicator</span>
@@ -460,6 +471,15 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						updateCdr();
 	    			});	
 					
+					function gtInSelChange(){
+						var gtinisel = document.getElementById("gtinisel");
+						var gtinitext = document.getElementById("gtinitext");
+						var ussdgt = document.getElementById("ussdgt");
+						
+						gtinitext.value = gtinisel.options[gtinisel.selectedIndex].text;
+						ussdgt.value = gtinisel.options[gtinisel.selectedIndex].value;
+					}
+					
 					function generateCdrCheckBox(){
 						var e = document.getElementById("generateCdrNone");
 						if(e.checked == true){
@@ -558,7 +578,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										$("#mscssn").val(response.value.MscSsn);
 										$("#maxmapv").val(response.value.MaxMapVersion);
 										$("#maxmessagelengthreducer").val(response.value.MaxMessageLengthReducer);
-										
+																				
 										var gtiVar = response.value.GlobalTitleIndicator;
 										if(gtiVar == "GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY"){
 											gti.options[0].selected = true;
@@ -571,6 +591,13 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										}
 										
 										$("#tt").val(response.value.TranslationType);
+										
+										$("#gtinisel").append(new Option("0", response.value.ServiceCenterGt));
+										
+										jQuery.each(response.value.NetworkIdVsServiceCenterGt, function(key, val) {
+											$("#gtinisel").append(new Option(key, val));
+											
+										});
 									}],
 									error: function(value) {
 										errorUID = ("st" + new Date().getTime()).hashCode();
@@ -921,6 +948,14 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 					function applySs7Settings() {
 						var formInvalid = false;
 						
+						var gtinitext = $("#gtinitext").val();
+						if(gtinitext.trim() == "") {
+			    			$("#div-gtinitext").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-gtinitext").hasClass("error")) {
+			    			$("#div-gtinitext").removeClass("error");		
+			    		}						
+						
 						var ussdgt = $("#ussdgt").val();
 						if(ussdgt.trim() == "") {
 			    			$("#div-ussdgt").addClass("error");					    			
@@ -986,7 +1021,6 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
 						jolokia.request(
 								[
-									{ type: "write", mbean: mbeanSearch, attribute: "ServiceCenterGt", value: ussdgt },
 									{ type: "write", mbean: mbeanSearch, attribute: "ServiceCenterSsn", value: ussdssn },
 									{ type: "write", mbean: mbeanSearch, attribute: "HlrSsn", value: hlrssn },
 									{ type: "write", mbean: mbeanSearch, attribute: "MscSsn", value: mscssn },
@@ -1004,6 +1038,39 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									} 
 								}
 							);
+						
+						
+						if(gtinitext != "0"){
+						jolokia.execute(mbeanSearch,"setServiceCenterGt", gtinitext,ussdgt, 
+								{
+									success: function(value) {
+										$("#gtinisel").empty();
+										updateSs7Properties();
+										logToConsole("INFO", "SMSC Gateway SS7 settings successfully updated.");
+									},
+									error: function(value){
+										errorUID = ("st" + new Date().getTime()).hashCode();
+										createStackTrace(errorUID, value.stacktrace);
+										logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+									}					
+								});	
+						} else {
+							
+							mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+							jolokia.request(
+									[							
+										{ type: "write", mbean: mbeanSearch, attribute: "ServiceCenterGt", value: ussdgt },
+									],
+									{
+										success: function(response) {
+											logToConsole("INFO", "SMSC Gateway SS7 settings successfully updated.");
+										},
+										error: function(response) {
+											logToConsole("ERROR", "Failure trying to communicate with the Telscale SMSC Gateway. Please try again later.");
+										} 
+									}
+							);
+						}
 									
 					}
 					

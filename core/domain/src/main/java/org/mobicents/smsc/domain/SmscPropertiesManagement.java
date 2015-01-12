@@ -121,7 +121,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private DatabaseType databaseType = DatabaseType.Cassandra_2;
 
     private String serviceCenterGt = "0";
-    private FastMap<Integer, String> serviceCenterGtNetworkId = new FastMap<Integer, String>();
+    private FastMap<Integer, String> networkIdVsServiceCenterGt = new FastMap<Integer, String>();
 	private int serviceCenterSsn = -1;
 	private int hlrSsn = -1;
 	private int mscSsn = -1;
@@ -300,25 +300,25 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	}
 
     public String getServiceCenterGt(int networkId) {
-        return serviceCenterGtNetworkId.get(networkId);
+        return networkIdVsServiceCenterGt.get(networkId);
     }
 
-    public Map<Integer, String> getServiceCenterGt_NetworkIdList() {
-        return serviceCenterGtNetworkId.unmodifiable();
+    public Map<Integer, String> getNetworkIdVsServiceCenterGt() {
+        return networkIdVsServiceCenterGt;
     }
 
     public void setServiceCenterGt(String serviceCenterGt) {
-        this.setServiceCenterGtNetworkId(0, serviceCenterGt);
+        this.setServiceCenterGt(0, serviceCenterGt);
     }
 
-    public void setServiceCenterGtNetworkId(int networkId, String serviceCenterGt) {
+    public void setServiceCenterGt(int networkId, String serviceCenterGt) {
         if (networkId == 0) {
             this.serviceCenterGt = serviceCenterGt;
         } else {
             if (serviceCenterGt == null || serviceCenterGt.equals("") || serviceCenterGt.equals("0")) {
-                this.serviceCenterGtNetworkId.remove(networkId);
+                this.networkIdVsServiceCenterGt.remove(networkId);
             } else {
-                this.serviceCenterGtNetworkId.put(networkId, serviceCenterGt);
+                this.networkIdVsServiceCenterGt.put(networkId, serviceCenterGt);
             }
         }
 
@@ -867,9 +867,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.setIndentation(TAB_INDENT);
 
 			writer.write(this.serviceCenterGt, SC_GT, String.class);
-            if (serviceCenterGtNetworkId.size() > 0) {
+            if (networkIdVsServiceCenterGt.size() > 0) {
                 ArrayList<ServiceCenterGtNetworkIdElement> al = new ArrayList<ServiceCenterGtNetworkIdElement>();
-                for (Entry<Integer, String> val : serviceCenterGtNetworkId.entrySet()) {
+                for (Entry<Integer, String> val : networkIdVsServiceCenterGt.entrySet()) {
                     ServiceCenterGtNetworkIdElement el = new ServiceCenterGtNetworkIdElement();
                     el.networkId = val.getKey();
                     el.serviceCenterGt = val.getValue();
@@ -952,10 +952,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			reader.setBinding(binding);
 			this.serviceCenterGt = reader.read(SC_GT, String.class);
             SmscPropertiesManagement_serviceCenterGtNetworkId al = reader.read(SC_GT_LIST, SmscPropertiesManagement_serviceCenterGtNetworkId.class);
-            serviceCenterGtNetworkId.clear();
+            networkIdVsServiceCenterGt.clear();
             if (al != null) {
                 for (ServiceCenterGtNetworkIdElement elem : al.getData()) {
-                    serviceCenterGtNetworkId.put(elem.networkId, elem.serviceCenterGt);
+                    networkIdVsServiceCenterGt.put(elem.networkId, elem.serviceCenterGt);
                 }
             }
 
