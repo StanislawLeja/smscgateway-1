@@ -42,6 +42,13 @@
 								<input id="updtaemsisdnclunme" type="text" class="input-mini" style="width: 180px; margin-right: 12px; text-align: center;" value="" />
 							</span>					
 							</div>
+							
+							<div id="div-updtaemsisdnnetid" class="control-group">
+							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="network-id for which this MSISDN should be considered. By default is 0">
+								<span class="add-on">Network Id</span>
+								<input id="updtaemsisdnnetid" type="text" class="input-mini" style="width: 90px; margin-right: 12px; text-align: center;" value="" />
+							</span>					
+							</div>							
 						</div>
 						<div class="row">
 							<span class="span12" style="text-align: right;">
@@ -71,6 +78,13 @@
 								<input id="deletemsisdn" type="text" class="input-mini" style="width: 220px; margin-right: 12px; text-align: center;" value="" />
 							</span>
 							</div>
+							
+							<div id="div-deletemsisdnnetid" class="control-group">
+							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="network-id for which this MSISDN should be considered. By default is 0">
+								<span class="add-on">Network Id</span>
+								<input id="deletemsisdnnetid" type="text" class="input-mini" style="width: 90px; margin-right: 12px; text-align: center;" value="" />
+							</span>					
+							</div>							
 						</div>
 						<div class="row">
 							<span class="span12" style="text-align: right;">
@@ -101,6 +115,13 @@
 								<input id="viewmsisdn" type="text" class="input-mini" style="width: 220px; margin-right: 12px; text-align: center;" value="" />
 							</span>
 							</div>
+							
+							<div id="div-updtaemsisdnclunme" class="control-group">
+							<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="network-id for which this MSISDN should be considered. By default is 0">
+								<span class="add-on">Network Id</span>
+								<input id="viewmsisdnnetid" type="text" class="input-mini" style="width: 90px; margin-right: 12px; text-align: center;" value="" />
+							</span>					
+							</div>							
 						</div>
 						<div class="row">
 							<span class="span12" style="text-align: right;">
@@ -136,6 +157,11 @@
 			    			$("#div-updtaemsisdnclunme").removeClass("error");		
 			    		}
 						
+						var updtaemsisdnnetid =  $("#updtaemsisdnnetid").val();
+						if(updtaemsisdnnetid.trim() == "") {
+							updtaemsisdnnetid = "0";	
+			    		}
+						
 						if(formInvalid) {
 							$("#login-settings-error").show();
 							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
@@ -144,7 +170,7 @@
 							$("#login-settings-error").hide();
 						}						
 						
-						jolokia.execute(mbeanSearch,"updateDbSmsRoutingRule",dbRuleType,updatemsisdn,updtaemsisdnclunme,
+						jolokia.execute(mbeanSearch,"updateDbSmsRoutingRule",dbRuleType,updatemsisdn,updtaemsisdnnetid,updtaemsisdnclunme,
 								{
 									success: function(value) {
 										logToConsole('INFO', 'Successfully set routing rule to ' + updtaemsisdnclunme + ' for MSISDN ' + updatemsisdn );
@@ -172,6 +198,11 @@
 			    			$("#div-deletemsisdn").removeClass("error");		
 			    		}
 						
+						var deletemsisdnnetid =  $("#deletemsisdnnetid").val();
+						if(deletemsisdnnetid.trim() == "") {
+							deletemsisdnnetid = "0";	
+			    		}
+						
 						if(formInvalid) {
 							$("#login-settings-error").show();
 							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
@@ -180,7 +211,7 @@
 							$("#login-settings-error").hide();
 						}						
 						
-						jolokia.execute(mbeanSearch,"deleteDbSmsRoutingRule",dbRuleType,deletemsisdn,
+						jolokia.execute(mbeanSearch,"deleteDbSmsRoutingRule",dbRuleType,deletemsisdn,deletemsisdnnetid,
 								{
 									success: function(value) {
 										logToConsole('INFO', 'Successfully deleted rule for MSISDN ' + deletemsisdn );
@@ -208,6 +239,11 @@
 			    			$("#div-viewmsisdn").removeClass("error");		
 			    		}
 						
+						var viewmsisdnnetid =  $("#viewmsisdnnetid").val();
+						if(viewmsisdnnetid.trim() == "") {
+							viewmsisdnnetid = "0";	
+			    		}
+						
 						if(formInvalid) {
 							$("#login-settings-error").show();
 							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
@@ -216,7 +252,7 @@
 							$("#login-settings-error").hide();
 						}						
 						
-						jolokia.execute(mbeanSearch,"getSmsRoutingRule",dbRuleType,viewmsisdn,
+						jolokia.execute(mbeanSearch,"getSmsRoutingRule",dbRuleType,viewmsisdn,viewmsisdnnetid,
 								{
 									success: function(value) {
 										if(value!=null){

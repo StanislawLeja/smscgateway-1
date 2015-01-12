@@ -934,7 +934,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 	}
 
 	/**
-	 * smsc databaseRule update <address> <systemId> <SMPP|SIP>
+	 * smsc databaseRule update <address> <systemId> <SMPP|SIP> networkid <network-id>
 	 * 
 	 * @param args
 	 * @return
@@ -976,7 +976,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 	}
 
 	/**
-	 * smsc databaseRule delete <address> <SMPP|SIP>
+	 * smsc databaseRule delete <address> <SMPP|SIP> networkid <network-id>
 	 * 
 	 * @param args
 	 * @return
@@ -1013,7 +1013,7 @@ public class SMSCShellExecutor implements ShellExecutor {
     }
 
 	/**
-	 * smsc databaseRule get <address> <SMPP|SIP>
+	 * smsc databaseRule get <address> <SMPP|SIP> networkid <network-id>
 	 * 
 	 * @param args
 	 * @return
