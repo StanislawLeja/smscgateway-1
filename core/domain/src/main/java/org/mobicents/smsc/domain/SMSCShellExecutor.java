@@ -101,14 +101,14 @@ public class SMSCShellExecutor implements ShellExecutor {
 	 * Command is smsc sip modify name cluster-name <clusterName> host <ip> port
 	 * <port> routing-ton <routing address ton> routing-npi <routing address
 	 * npi> routing-range <routing address range> counters-enabled <true |
-	 * false> charging-enabled <true | false>
+	 * false> charging-enabled <true | false> networkid <network-d>
 	 * 
 	 * @param args
 	 * @return
 	 * @throws Exception
 	 */
 	private String modifySip(String[] args) throws Exception {
-		if (args.length < 6 || args.length > 20) {
+		if (args.length < 6 || args.length > 22) {
 			return SMSCOAMMessages.INVALID_COMMAND;
 		}
 
@@ -156,6 +156,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 				success = true;
 			} else if (command.equals("charging-enabled")) {
 				sip.setChargingEnabled(Boolean.parseBoolean(value));
+				success = true;
+			} else if (command.equals("networkid")) {
+				sip.setNetworkId(Integer.parseInt(value));
 				success = true;
 			}
 		}// while

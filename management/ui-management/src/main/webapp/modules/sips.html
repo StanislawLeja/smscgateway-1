@@ -66,6 +66,7 @@
 									var isSmppServerStarted = response.value.Started;
 									
 									var name = response.value.Name;
+									var networkId = response.value.NetworkId;
 									var clusterName = response.value.ClusterName;
 									
 									var state = "STOPPED";
@@ -93,6 +94,7 @@
 									        '    <div>'+
 									        '      <p class="muted">SIP Properties</p>'+
 													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+														'<dt>NetworkId</dt> <dd>' + networkId + ' </dd>' +
 														'<dt>ClusterName</dt> <dd>' + clusterName + ' </dd>' + 
 													'</dl>'+
 									        '    </div>'+

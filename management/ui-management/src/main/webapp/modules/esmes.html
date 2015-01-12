@@ -433,6 +433,7 @@
 									var isSmppServerStarted = response.value.Started;
 									
 									var name = response.value.Name;
+									var networkId = response.value.NetworkId;
 									var clusterName = response.value.ClusterName;
 									
 									var chargingenabled = response.value.ChargingEnabled;
@@ -732,6 +733,22 @@
 																'<table id="'+name+'-ESME" class="table table-condensed table-striped">' + 
 																	'<thead><tr><th style="width: 40%;">Name</th><th style="width: 55%;">Value</th><th>&nbsp;</th></tr></thead>' +
 																	'<tbody>'+
+																	
+																		'<tr data-toggle="tooltip" title="network id to which this SMPP connection belongs to">'+
+																			'<td style="font-size: 0.9em;">Network Id</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + name +'NetworkId-input" class="control-group">'+
+																				'<span id="' + name +'NetworkId-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + networkId + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'NetworkId\', \'' + name+"NetworkId" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"NetworkId"+']\').toggle(); $(\'input[id^='+name+"NetworkId"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +name + 'Password-text">' + networkId + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"NetworkId"+']\').toggle(); $(\'input[id^='+name+"NetworkId"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+																	
 																	
 																		'<tr data-toggle="tooltip" title="is used by the SMSC to authenticate the identity of the binding ESME. The Service Provider may require ESME’s to provide a password when binding to the SMSC">'+
 																			'<td style="font-size: 0.9em;">Password</td>'+
