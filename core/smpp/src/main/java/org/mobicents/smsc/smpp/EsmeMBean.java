@@ -72,6 +72,8 @@ public interface EsmeMBean extends DefaultSmppSessionMXBean, SslConfigurationWra
 	String getHost();
 
     int getPort();
+    
+    void setNetworkId(int networkId);
 
     int getNetworkId();
 
