@@ -610,7 +610,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
             // adding an error receipt if it is needed
             int registeredDelivery = sms.getRegisteredDelivery();
-            if (MessageUtil.isReceiptOnFailure(registeredDelivery)) {
+            if (!smscPropertiesManagement.getReceiptsDisabling() && MessageUtil.isReceiptOnFailure(registeredDelivery)) {
                 TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr(), smsSet.getNetworkId());
                 lock = SmsSetCache.getInstance().addSmsSet(ta);
                 try {

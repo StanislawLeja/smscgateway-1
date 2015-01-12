@@ -561,21 +561,29 @@ public abstract class TxSmppServerSbb implements Sbb {
         case SmppConstants.TON_NATIONAL:
             destTon = addr.getTon();
             break;
+        case SmppConstants.TON_ALPHANUMERIC:
+            destTon = addr.getTon();
+            break;
 		default:
 			throw new SmscProcessingException("DestAddress TON not supported: " + addr.getTon(),
 					SmppConstants.STATUS_INVDSTTON, MAPErrorCode.systemFailure, addr);
 		}
-		switch (addr.getNpi()) {
-		case SmppConstants.NPI_UNKNOWN:
-			destNpi = smscPropertiesManagement.getDefaultNpi();
-			break;
-		case SmppConstants.NPI_E164:
-			destNpi = addr.getNpi();
-			break;
-		default:
-            throw new SmscProcessingException("DestAddress NPI not supported: " + addr.getNpi(), SmppConstants.STATUS_INVDSTNPI, MAPErrorCode.systemFailure,
-                    addr);
-		}
+
+        if (addr.getTon() == SmppConstants.TON_ALPHANUMERIC) {
+            destNpi = addr.getNpi();
+        } else {
+            switch (addr.getNpi()) {
+            case SmppConstants.NPI_UNKNOWN:
+                destNpi = smscPropertiesManagement.getDefaultNpi();
+                break;
+            case SmppConstants.NPI_E164:
+                destNpi = addr.getNpi();
+                break;
+            default:
+                throw new SmscProcessingException("DestAddress NPI not supported: " + addr.getNpi(), SmppConstants.STATUS_INVDSTNPI,
+                        MAPErrorCode.systemFailure, addr);
+            }
+        }
 
 		TargetAddress ta = new TargetAddress(destTon, destNpi, addr.getAddress(), networkId);
 		return ta;

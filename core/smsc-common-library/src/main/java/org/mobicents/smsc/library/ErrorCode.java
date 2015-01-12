@@ -71,7 +71,7 @@ public enum ErrorCode {
     UNKNOWN_ERROR_FROM_MSC(36),
     UNKNOWN_ERROR_FROM_HLR(37),
     //Reserved(38-39),
-    RESERVED_38(38),
+    BAD_TYPE_OF_NUMBER(38),
     RESERVED_39(39),
     /**
      * HLR does not send acknowledgment after routing request is sent(40),
