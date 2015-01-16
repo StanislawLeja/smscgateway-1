@@ -25,3 +25,5 @@ pom.xml.releaseBackup
 /Test_smscproperties.xml
 /test_sip.xml
 /Test_esme.xml
+/HomeRoutingManagementTest_cc_mccmnc.xml
+/HomeRoutingManagementTest_corrid.xml

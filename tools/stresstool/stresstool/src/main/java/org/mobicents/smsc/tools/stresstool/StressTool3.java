@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.log4j.Logger;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
-import org.mobicents.protocols.ss7.map.primitives.IMSIImpl;
 import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.mobicents.protocols.ss7.map.service.sms.LocationInfoWithLMSIImpl;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
@@ -84,7 +83,7 @@ public class StressTool3 {
         // -dDataTableDaysTimeArea
 
         this.dbOperations = new TT_DBOperationsProxy3();
-        this.dbOperations.start(host, port, keyspace, 60, 60, 60 * 10, null);
+        this.dbOperations.start(host, port, keyspace, 60, 60, 60 * 10);
 
         
         

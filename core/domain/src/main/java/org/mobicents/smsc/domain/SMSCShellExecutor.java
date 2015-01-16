@@ -26,13 +26,13 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
-import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.SmsRoutingRuleType;
 import org.mobicents.smsc.library.DbSmsRoutingRule;
 import org.mobicents.smsc.smpp.SmppEncoding;
@@ -202,7 +202,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 			} else if (args[1].equals("remove")) {
 				return this.manageRemove(args);
 			} else if (args[1].toLowerCase().equals("databaserule")) {
-				String rasCmd = args[2];
+                if (args.length < 3)
+                    return SMSCOAMMessages.INVALID_COMMAND;
+
+			    String rasCmd = args[2];
 				if (rasCmd == null) {
 					return SMSCOAMMessages.INVALID_COMMAND;
 				}
@@ -224,6 +227,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 				return SMSCOAMMessages.INVALID_COMMAND;
 			} else if (args[1].equals("archive")) {
+                if (args.length < 3)
+                    return SMSCOAMMessages.INVALID_COMMAND;
+
 				String rasCmd = args[2];
 				if (rasCmd == null) {
 					return SMSCOAMMessages.INVALID_COMMAND;
@@ -235,6 +241,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 				return SMSCOAMMessages.INVALID_COMMAND;
 			} else if (args[1].toLowerCase().equals("mapcache")) {
+                if (args.length < 3)
+                    return SMSCOAMMessages.INVALID_COMMAND;
+
 				String rasCmd = args[2];
 
 				if (rasCmd == null) {
@@ -251,6 +260,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 				return SMSCOAMMessages.INVALID_COMMAND;
 			} else if (args[1].toLowerCase().equals("stat")) {
+                if (args.length < 3)
+                    return SMSCOAMMessages.INVALID_COMMAND;
+
 				String rasCmd = args[2];
 
 				if (rasCmd == null) {
@@ -263,8 +275,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 				return SMSCOAMMessages.INVALID_COMMAND;
 
-			} else if (args[1].toLowerCase().equals("updateccmccmnstable")) {
+            } else if (args[1].toLowerCase().equals("updateccmccmnstable")) {
                 return this.updateCcMccmnstable(args);
+            } else if (args[1].toLowerCase().equals("hrccmccmnc")) {
+                return this.ccMccmnsValueUpdate(args);
 			}
 
 			return SMSCOAMMessages.INVALID_COMMAND;
@@ -1150,9 +1164,80 @@ public class SMSCShellExecutor implements ShellExecutor {
 	}
 
     public String updateCcMccmnstable(String[] args) {
-        DBOperations_C2.getInstance().updateCcMccmnsTable();
+        HomeRoutingManagement homeRoutingManagement = HomeRoutingManagement.getInstance();
+        if (homeRoutingManagement != null)
+            homeRoutingManagement.updateCcMccmncTable();
 
-        return SMSCOAMMessages.CORRELATION_TABLE_WILL_BE_RELOADED;
+        return SMSCOAMMessages.CORRELATION_TABLE_HAS_BE_LOADED;
+    }
+
+    public String ccMccmnsValueUpdate(String[] args) throws Exception {
+        if (args.length < 3 || args.length > 7) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        HomeRoutingManagement homeRoutingManagement = HomeRoutingManagement.getInstance();
+        if (homeRoutingManagement == null)
+            return SMSCOAMMessages.HR_ABSENT;
+
+        String cmd = args[2];
+        String cc = null;
+        if (args.length >= 4) {
+            cc = args[3];
+            if (cc == null)
+                return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        if (cmd.equals("add")) {
+            if (args.length < 5)
+                return SMSCOAMMessages.INVALID_COMMAND;
+            String mccmnc = args[4];
+            String smsc = null;
+            if (args.length >= 7 && args[5] != null && args[5].equals("smscgt")) {
+                smsc = args[6];
+                if (smsc != null && smsc.equals("-1"))
+                    smsc = null;
+            }
+            homeRoutingManagement.addCcMccmnc(cc, mccmnc, smsc);
+            return SMSCOAMMessages.HR_CCMCCMNC_ADDED;
+        
+        } else if (cmd.equals("modify")) {
+            if (args.length < 5)
+                return SMSCOAMMessages.INVALID_COMMAND;
+            String mccmnc = args[4];
+            String smsc = null;
+            if (args.length >= 7 && args[5] != null && args[5].equals("smscgt")) {
+                smsc = args[6];
+                if (smsc != null && smsc.equals("-1"))
+                    smsc = null;
+            }
+            homeRoutingManagement.modifyCcMccmnc(cc, mccmnc, smsc);
+            return SMSCOAMMessages.HR_CCMCCMNC_MODIFIED;
+        } else if (cmd.equals("remove")) {
+            homeRoutingManagement.removeCcMccmnc(cc);
+            return SMSCOAMMessages.HR_CCMCCMNC_REMOVED;
+        } else if (cmd.equals("show")) {
+            if (cc == null) {
+                Map<String, CcMccmncImpl> map = homeRoutingManagement.getCcMccmncMap();
+                StringBuilder sb = new StringBuilder();
+                sb.append(SMSCOAMMessages.HR_CCMCCMNC_COLL);
+                for (CcMccmncImpl val : map.values()) {
+                    sb.append(val.toString());
+                    sb.append("\n");
+                }
+                sb.append("]");
+                return sb.toString();
+            } else {
+                CcMccmncImpl ccMccmnc = (CcMccmncImpl) homeRoutingManagement.getCcMccmnc(cc);
+                if (ccMccmnc != null) {
+                    return ccMccmnc.toString();
+                } else {
+                    return String.format(SMSCOAMMessages.HR_CCMCCMNC_NOTFOUND, cc);
+                }
+            }
+        } else {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
     }
 
 	public String execute(String[] args) {
@@ -1174,3 +1259,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 	}
 
 }
+
+
+//smsc homeroute add <countrycode> <mccmnc> smscgt <smsc-gt>
+//smsc homeroute modify <countrycode> <mccmnc> smscgt <smsc-gt>
+//smsc homeroute delete <countrycode>
+//smsc homeroute show <mccmnc> 
+

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.cassandra;
+package org.mobicents.smsc.domain;
 
 import javolution.xml.XMLFormat;
 import javolution.xml.stream.XMLStreamException;
@@ -30,7 +30,7 @@ import javolution.xml.stream.XMLStreamException;
  * @author sergey vetyutnev
  * 
  */
-public class CcMccmns {
+public class CcMccmncImpl implements CcMccmnc {
 
     private static final String COUNTRY_CODE = "countryCode";
     private static final String MCC_MNC = "mccMnc";
@@ -42,25 +42,36 @@ public class CcMccmns {
     private String mccMnc;
     private String smsc;
 
-    public CcMccmns(String countryCode, String mccMnc, String smsc) {
+    public CcMccmncImpl(String countryCode, String mccMnc, String smsc) {
         this.countryCode = countryCode;
         this.mccMnc = mccMnc;
         this.smsc = smsc;
     }
 
-    public CcMccmns() {
+    public CcMccmncImpl() {
     }
 
+    @Override
     public String getCountryCode() {
         return countryCode;
     }
 
+    @Override
     public String getMccMnc() {
         return mccMnc;
     }
 
+    @Override
     public String getSmsc() {
         return smsc;
+    }
+
+    public void setMccMnc(String val) {
+        this.mccMnc = val;
+    }
+
+    public void setSmsc(String val) {
+        this.smsc = val;
     }
 
     @Override
@@ -82,17 +93,17 @@ public class CcMccmns {
     /**
      * XML Serialization/Deserialization
      */
-    protected static final XMLFormat<CcMccmns> CC_MCCMNS_XML = new XMLFormat<CcMccmns>(CcMccmns.class) {
+    protected static final XMLFormat<CcMccmncImpl> CC_MCCMNS_XML = new XMLFormat<CcMccmncImpl>(CcMccmncImpl.class) {
 
         @Override
-        public void read(javolution.xml.XMLFormat.InputElement xml, CcMccmns ccMccmns) throws XMLStreamException {
+        public void read(javolution.xml.XMLFormat.InputElement xml, CcMccmncImpl ccMccmns) throws XMLStreamException {
             ccMccmns.countryCode = xml.getAttribute(COUNTRY_CODE, DEFAULT_STRING);
             ccMccmns.mccMnc = xml.getAttribute(MCC_MNC, DEFAULT_STRING);
             ccMccmns.smsc = xml.getAttribute(SMSC, DEFAULT_STRING);
         }
 
         @Override
-        public void write(CcMccmns ccMccmns, javolution.xml.XMLFormat.OutputElement xml) throws XMLStreamException {
+        public void write(CcMccmncImpl ccMccmns, javolution.xml.XMLFormat.OutputElement xml) throws XMLStreamException {
             xml.setAttribute(COUNTRY_CODE, ccMccmns.countryCode);
             xml.setAttribute(MCC_MNC, ccMccmns.mccMnc);
             xml.setAttribute(SMSC, ccMccmns.smsc);

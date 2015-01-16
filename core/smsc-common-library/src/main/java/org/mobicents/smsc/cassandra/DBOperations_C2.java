@@ -24,9 +24,6 @@ package org.mobicents.smsc.cassandra;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -38,7 +35,6 @@ import java.util.UUID;
 
 import javolution.util.FastList;
 import javolution.util.FastMap;
-import javolution.xml.XMLBinding;
 import javolution.xml.XMLObjectReader;
 import javolution.xml.XMLObjectWriter;
 import javolution.xml.stream.XMLStreamException;
@@ -90,15 +86,6 @@ public class DBOperations_C2 {
 
 	private static final DBOperations_C2 instance = new DBOperations_C2();
 
-    private int ccMccmnsTableVersionLoaded = 0;
-    private int ccMccmnsTableVersionActual = 1;
-    private CcMccmnsCollection ccMccmnsCollection;
-    private static final XMLBinding binding = new XMLBinding();
-    private static final String CLASS_ATTRIBUTE = "type";
-    private static final String CC_MCCMNC_PERSIST_FILE_NAME = "cc_mccmnc.xml";
-    private String persistDir;
-    private String persistFileCcMccmnc;
-
 	// cassandra access
 	private Cluster cluster;
 	protected Session session;
@@ -136,7 +123,6 @@ public class DBOperations_C2 {
 
 	private long currentDueSlot = 0;
 	private long messageId = 0;
-	private long correlationId = 0;
 	private UUID currentSessionUUID;
 
 	private FastMap<String, PreparedStatementCollection_C3> dataTableRead = new FastMap<String, PreparedStatementCollection_C3>();
@@ -182,7 +168,7 @@ public class DBOperations_C2 {
 	}
 
 	public void start(String ip, int port, String keyspace, int secondsForwardStoring, int reviseSecondsOnSmscStart,
-			int processingSmsSetTimeout, String persistDir) throws Exception {
+			int processingSmsSetTimeout) throws Exception {
 		if (this.started) {
 			throw new Exception("DBOperations already started");
 		}
@@ -192,15 +178,6 @@ public class DBOperations_C2 {
 		this.dueSlotForwardStoring = secondsForwardStoring * 1000 / slotMSecondsTimeArea;
 		this.dueSlotReviseOnSmscStart = reviseSecondsOnSmscStart * 1000 / slotMSecondsTimeArea;
         this.processingSmsSetTimeout = processingSmsSetTimeout;
-
-        this.persistDir = persistDir;
-        if (persistDir != null) {
-            persistFileCcMccmnc = persistDir + File.separator + CC_MCCMNC_PERSIST_FILE_NAME;
-        } else {
-            persistFileCcMccmnc = CC_MCCMNC_PERSIST_FILE_NAME;
-        }
-
-        binding.setClassAttribute(CLASS_ATTRIBUTE);
 
 		this.pcsDate = null;
 		currentSessionUUID = UUID.randomUUID();
@@ -271,10 +248,6 @@ public class DBOperations_C2 {
             messageId = c2_getCurrentSlotTable(NEXT_MESSAGE_ID);
             messageId += MESSAGE_ID_LAG;
             c2_setCurrenrSlotTable(NEXT_MESSAGE_ID, messageId);
-
-            correlationId = c2_getCurrentSlotTable(NEXT_CORRELATION_ID);
-            correlationId += MESSAGE_ID_LAG;
-            c2_setCurrenrSlotTable(NEXT_CORRELATION_ID, correlationId);
 		} catch (Exception e1) {
 			String msg = "Failed reading a currentDueSlot !";
 			throw new PersistenceException(msg, e1);
@@ -359,98 +332,6 @@ public class DBOperations_C2 {
 
 		return messageId;
 	}
-
-    /**
-     * Returns a next correlationId and corresponded data for home routing mode
-     * Every MESSAGE_ID_LAG correlationId will be stored at cassandra database
-     */
-    public synchronized NextCorrelationIdResult c2_getNextCorrelationId(String msisdn) {
-        long corrId = doGetNextCorrelationId();
-        CcMccmns ccMccmnsValue = getCcMccmnsValue(msisdn);
-        String mccmns;
-        if (ccMccmnsValue == null) {
-            logger.warn("Found no entry in CcMccmnsCollection for msisdn: " + msisdn);
-            mccmns = "";
-        } else {
-            mccmns = ccMccmnsValue.getMccMnc();
-        }
-
-        String corrIdS = String.valueOf(corrId);
-        StringBuilder sb = new StringBuilder();
-        int len = mccmns.length() + corrIdS.length();
-        if (len <= 15) {
-            sb.append(mccmns);
-            for (int i1 = len; i1 < 15; i1++) {
-                sb.append("0");
-            }
-            sb.append(corrIdS);
-        } else {
-            sb.append(mccmns);
-            sb.append(corrIdS.substring(corrIdS.length() - (15 - mccmns.length())));
-        }
-
-        NextCorrelationIdResult res = new NextCorrelationIdResult();
-        res.setCorrelationId(sb.toString());
-        if (ccMccmnsValue != null)
-            res.setSmscAddress(ccMccmnsValue.getSmsc());
-        return res;
-    }
-
-    protected synchronized long doGetNextCorrelationId() {
-        correlationId++;
-        if (correlationId >= MAX_MESSAGE_ID)
-            correlationId = 1;
-
-        // TODO: properly implement it with provided MSISDN -> IMSI recoding table
-        if (correlationId % MESSAGE_ID_LAG == 0) {
-            try {
-                c2_setCurrenrSlotTable(NEXT_CORRELATION_ID, messageId);
-            } catch (PersistenceException e) {
-                logger.error("Exception when storing next correlationId to the database: " + e.getMessage(), e);
-            }
-        }
-
-        return correlationId;
-    }
-
-    public void updateCcMccmnsTable() {
-        ccMccmnsTableVersionActual++;
-    }
-
-    protected CcMccmns getCcMccmnsValue(String countryCode) {
-        checkCcMccmnsTable();
-        return ccMccmnsCollection.findMccmns(countryCode);
-    }
-
-    protected void checkCcMccmnsTable() {
-        if (ccMccmnsCollection != null && ccMccmnsTableVersionLoaded == ccMccmnsTableVersionActual)
-            return;
-        loadCcMccmnsTable();
-    }
-
-    protected synchronized void loadCcMccmnsTable() {
-        if (ccMccmnsCollection != null && ccMccmnsTableVersionLoaded == ccMccmnsTableVersionActual)
-            return;
-
-        ccMccmnsCollection = new CcMccmnsCollection();
-        XMLObjectReader reader = null;
-        try {
-            reader = XMLObjectReader.newInstance(new FileInputStream(persistFileCcMccmnc.toString()));
-            try {
-                reader.setBinding(binding);
-                ccMccmnsCollection = reader.read("CcMccmnsCollection", CcMccmnsCollection.class);
-
-                logger.info("Successfully loaded CcMccmnsCollection: " + persistFileCcMccmnc);
-            } finally {
-                reader.close();
-            }
-        } catch (FileNotFoundException ex) {
-            logger.warn("CcMccmnsCollection: file not found: " + persistFileCcMccmnc, ex);
-        } catch (XMLStreamException ex) {
-            logger.error("Error while loading CcMccmnsCollection from file" + persistFileCcMccmnc, ex);
-        }
-        ccMccmnsTableVersionLoaded = ccMccmnsTableVersionActual;
-    }
 
     /**
      * Initial reading CURRENT_DUE_SLOT and NEXT_MESSAGE_ID when cassandra

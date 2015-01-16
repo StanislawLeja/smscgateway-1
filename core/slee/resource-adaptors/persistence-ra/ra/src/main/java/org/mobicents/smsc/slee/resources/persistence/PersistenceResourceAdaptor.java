@@ -44,9 +44,9 @@ import javax.slee.resource.ResourceAdaptorContext;
 
 import org.mobicents.smsc.cassandra.DBOperations_C1;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
-import org.mobicents.smsc.cassandra.NextCorrelationIdResult;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
+import org.mobicents.smsc.domain.NextCorrelationIdResult;
 import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
@@ -217,11 +217,6 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             @Override
             public long c2_getNextMessageId() {
                 return dbOperations_C2.c2_getNextMessageId();
-            }
-
-            @Override
-            public NextCorrelationIdResult c2_getNextCorrelationId(String msisdn) {
-                return dbOperations_C2.c2_getNextCorrelationId(msisdn);
             }
 
             @Override

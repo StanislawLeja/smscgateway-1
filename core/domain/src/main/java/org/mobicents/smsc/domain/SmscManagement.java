@@ -58,6 +58,7 @@ public class SmscManagement implements SmscManagementMBean {
 	public static final String JMX_LAYER_SMSC_STATS = "SmscStats";
 	public static final String JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT = "SmscPropertiesManagement";
     public static final String JMX_LAYER_SMSC_DATABASE_MANAGEMENT = "SmscDatabaseManagement";
+    public static final String JMX_LAYER_HOME_ROUTING_MANAGEMENT = "HomeRoutingManagement";
 
 	public static final String JMX_LAYER_DATABASE_SMS_ROUTING_RULE = "DatabaseSmsRoutingRule";
 
@@ -75,7 +76,8 @@ public class SmscManagement implements SmscManagementMBean {
 	private SmppManagement smppManagement; 
 
 	private SipManagement sipManagement = null;
-	private SmscPropertiesManagement smscPropertiesManagement = null;
+    private SmscPropertiesManagement smscPropertiesManagement = null;
+    private HomeRoutingManagement homeRoutingManagement = null;
 	private SmscDatabaseManagement smscDatabaseManagement = null;
 	private ArchiveSms archiveSms;
 	private MapVersionCache mapVersionCache;
@@ -169,7 +171,7 @@ public class SmscManagement implements SmscManagementMBean {
             this.logger.error("Exception when obtaining of MBeanServer: " + e.getMessage(), e);
         }
 
-		// Step 2 Setup SMSC Properties
+		// Step 2 Setup SMSC Properties / home routing properties
 		this.smscPropertiesManagement = SmscPropertiesManagement.getInstance(this.name);
 		this.smscPropertiesManagement.setPersistDir(this.persistDir);
 		this.smscPropertiesManagement.start();
@@ -178,11 +180,18 @@ public class SmscManagement implements SmscManagementMBean {
 				+ JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT + ",name=" + this.getName());
 		this.registerMBean(this.smscPropertiesManagement, SmscPropertiesManagementMBean.class, true, smscObjNname);
 
+        this.homeRoutingManagement = HomeRoutingManagement.getInstance(this.name);
+        this.homeRoutingManagement.setPersistDir(this.persistDir);
+        this.homeRoutingManagement.start();
+
+        ObjectName hrObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_HOME_ROUTING_MANAGEMENT + ",name=" + this.getName());
+        this.registerMBean(this.homeRoutingManagement, HomeRoutingManagementMBean.class, true, hrObjNname);
+
         String host = smscPropertiesManagement.getDbHosts();
         int port = smscPropertiesManagement.getDbPort();
         DBOperations_C2.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName(), this.smscPropertiesManagement.getFirstDueDelay(),
-                this.smscPropertiesManagement.getReviseSecondsOnSmscStart(), this.smscPropertiesManagement.getProcessingSmsSetTimeout(), this.persistDir);
-
+                this.smscPropertiesManagement.getReviseSecondsOnSmscStart(), this.smscPropertiesManagement.getProcessingSmsSetTimeout());
+        
         // Step 3 SmsSetCashe.start()
         SmsSetCache.start(this.smscPropertiesManagement.getCorrelationIdLiveTime());
 
@@ -270,6 +279,10 @@ public class SmscManagement implements SmscManagementMBean {
 		ObjectName smscObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
 				+ JMX_LAYER_SMSC_PROPERTIES_MANAGEMENT + ",name=" + this.getName());
 		this.unregisterMbean(smscObjNname);
+
+        this.homeRoutingManagement.stop();
+        ObjectName hrObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_HOME_ROUTING_MANAGEMENT + ",name=" + this.getName());
+        this.unregisterMbean(hrObjNname);
 
 		DBOperations_C1.getInstance().stop();
 		DBOperations_C2.getInstance().stop();

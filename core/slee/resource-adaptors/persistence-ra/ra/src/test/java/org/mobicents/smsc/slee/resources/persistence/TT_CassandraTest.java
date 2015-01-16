@@ -40,8 +40,8 @@ import org.mobicents.protocols.ss7.map.smstpdu.ConcatenatedShortMessagesIdentifi
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
-import org.mobicents.smsc.cassandra.NextCorrelationIdResult;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
+import org.mobicents.smsc.domain.NextCorrelationIdResult;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
@@ -497,21 +497,21 @@ public class TT_CassandraTest {
         }
     }
 
-    @Test(groups = { "cassandra" })
-    public void testingCorrelationId() throws Exception {
-
-        if (!this.cassandraDbInited)
-            return;
-
-        NextCorrelationIdResult s1 = sbb.c2_getNextCorrelationId("1111");
-        assertEquals(s1.getCorrelationId(), "222000000001001");
-        assertNull(s1.getSmscAddress());
-
-        NextCorrelationIdResult s2 = sbb.c2_getNextCorrelationId("3333");
-        assertEquals(s2.getCorrelationId(), "444444444444402");
-        assertEquals(s2.getSmscAddress(), "00001");
-
-    }
+//    @Test(groups = { "cassandra" })
+//    public void testingCorrelationId() throws Exception {
+//
+//        if (!this.cassandraDbInited)
+//            return;
+//
+//        NextCorrelationIdResult s1 = sbb.c2_getNextCorrelationId("1111");
+//        assertEquals(s1.getCorrelationId(), "222000000001001");
+//        assertNull(s1.getSmscAddress());
+//
+//        NextCorrelationIdResult s2 = sbb.c2_getNextCorrelationId("3333");
+//        assertEquals(s2.getCorrelationId(), "444444444444402");
+//        assertEquals(s2.getSmscAddress(), "00001");
+//
+//    }
 
     public long addingNewMessages() throws Exception {
         Date dt = new Date();

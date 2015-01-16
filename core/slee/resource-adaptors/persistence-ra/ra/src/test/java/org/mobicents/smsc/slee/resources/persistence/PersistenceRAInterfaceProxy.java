@@ -29,10 +29,10 @@ import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.mobicents.smsc.cassandra.DBOperations_C1;
-import org.mobicents.smsc.cassandra.NextCorrelationIdResult;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Schema;
+import org.mobicents.smsc.domain.NextCorrelationIdResult;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
@@ -360,12 +360,6 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
     public long c2_checkDueSlotWritingPossibility(long dueSlot) {
         // TODO Auto-generated method stub
         return 0;
-    }
-
-    @Override
-    public NextCorrelationIdResult c2_getNextCorrelationId(String msisdn) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
 }

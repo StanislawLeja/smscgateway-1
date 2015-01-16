@@ -32,9 +32,9 @@ import javax.slee.facilities.Tracer;
 
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
-import org.mobicents.smsc.cassandra.NextCorrelationIdResult;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
+import org.mobicents.smsc.domain.NextCorrelationIdResult;
 import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
@@ -274,11 +274,6 @@ public interface PersistenceRAInterface {
      * Return next messageId for a new incoming message
      */
     long c2_getNextMessageId();
-
-    /**
-     * Returns a next correlationId and extra data for home routing mode
-     */
-    public NextCorrelationIdResult c2_getNextCorrelationId(String msisdn);
 
     /**
      * Return due_slop for current time

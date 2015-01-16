@@ -75,7 +75,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
     }
 
     public void start() throws Exception {
-        super.start(ip, 9042, keyspace, 60, 60, 60 * 10, null);
+        super.start(ip, 9042, keyspace, 60, 60, 60 * 10);
     }
 
     public void setOldShortMessageDbFormat(boolean val) {

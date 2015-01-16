@@ -93,7 +93,7 @@ public interface SMSCOAMMessages {
 
     public static final String GLOBAL_TYTLE_INDICATOR_BAD_VALUES = "Value of gti (global title indicator) is bad (possible values: 0001, 0010, 0011, 0010)";
 
-    public static final String CORRELATION_TABLE_WILL_BE_RELOADED = "cc_mccmnc correlation table will be reloaded after first correlationId request";
+    public static final String CORRELATION_TABLE_HAS_BE_LOADED = "cc_mccmnc correlation table has been loaded";
 
 	/**
 	 * Generic constants
@@ -124,5 +124,24 @@ public interface SMSCOAMMessages {
 	public static final String SHOW_ADDRESS_RANGE = " range=";
 
 	public static final String SHOW_SIP_NAME = "SIP name=";
+
+
+    public static final String NULL_ARGUMENT = "Argument %s can not be null";
+
+    public static final String CC_MCCMNC_IS_PRESENT = "ccMccmnc is already present for countrCode: %s";
+
+    public static final String CC_MCCMNC_NOT_FOUND = "ccMccmnc is absent for countrCode: %s";
+
+    public static final String HR_ABSENT = "HomeRoutingManagement is absent";
+
+    public static final String HR_CCMCCMNC_NOTFOUND = "CcMccmnc is absent: %s";
+
+    public static final String HR_CCMCCMNC_COLL = "CcMccmnc table: [\n";
+
+    public static final String HR_CCMCCMNC_ADDED = "CcMccmnc ha successfully added";
+
+    public static final String HR_CCMCCMNC_MODIFIED = "CcMccmnc ha successfully modified";
+
+    public static final String HR_CCMCCMNC_REMOVED = "CcMccmnc ha successfully removed";
 
 }

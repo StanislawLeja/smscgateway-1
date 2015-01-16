@@ -62,6 +62,7 @@ import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.smsc.domain.HomeRoutingManagement;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.library.MessageUtil;
@@ -80,6 +81,7 @@ public abstract class HomeRoutingCommonSbb implements Sbb {
     private static final String PERSISTENCE_LINK = "PersistenceResourceAdaptor";
 
     protected static final SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+    protected static final HomeRoutingManagement homeRoutingManagement = HomeRoutingManagement.getInstance();
 
 	private final String className;
 

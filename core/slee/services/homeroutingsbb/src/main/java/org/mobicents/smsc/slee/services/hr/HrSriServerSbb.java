@@ -52,8 +52,8 @@ import org.mobicents.slee.resource.map.events.DialogTimeout;
 import org.mobicents.slee.resource.map.events.DialogUserAbort;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
-import org.mobicents.smsc.cassandra.NextCorrelationIdResult;
 import org.mobicents.smsc.domain.MoChargingType;
+import org.mobicents.smsc.domain.NextCorrelationIdResult;
 import org.mobicents.smsc.library.CorrelationIdValue;
 import org.mobicents.smsc.library.SmsSetCache;
 
@@ -204,7 +204,7 @@ public abstract class HrSriServerSbb extends HomeRoutingCommonSbb implements HrS
         if (hrSriClientSbbLocalObject != null) {
             String sca = msisdn.getAddress();
 //          String sca = serviceCentreAddress.getAddress();
-            NextCorrelationIdResult correlationIDRes = this.persistence.c2_getNextCorrelationId(sca);
+            NextCorrelationIdResult correlationIDRes = this.homeRoutingManagement.getNextCorrelationId(sca);
             if (correlationIDRes.getSmscAddress() != null && !correlationIDRes.getSmscAddress().equals(""))
                 this.setSmscAddressForCountryCode(correlationIDRes.getSmscAddress());
             String correlationID = correlationIDRes.getCorrelationId();
