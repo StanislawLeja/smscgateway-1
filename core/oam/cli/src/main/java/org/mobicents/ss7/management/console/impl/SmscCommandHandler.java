@@ -121,6 +121,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 //        set.addChild("cdrdatabaseexportduration");
         set.addChild("esmedefaultcluster");
         set.addChild("deliverypause");
+        set.addChild("receiptsdisabling");
 
 		Node get = parent.addChild("get");
 		get.addChild("scgt");
@@ -175,6 +176,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 //        get.addChild("cdrdatabaseexportduration");
         get.addChild("esmedefaultcluster");
         get.addChild("deliverypause");
+        get.addChild("receiptsdisabling");
 
         Node remove = parent.addChild("remove");
         remove.addChild("esmedefaultcluster");
@@ -196,6 +198,12 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         stat.addChild("get");
 
         Node updateccmccmnstable = parent.addChild("updateccmccmnstable");
+
+        Node hrccmccmnc = parent.addChild("hrccmccmnc");
+        hrccmccmnc.addChild("add");
+        hrccmccmnc.addChild("modify");
+        hrccmccmnc.addChild("remove");
+        hrccmccmnc.addChild("show");
 
 	};
 
