@@ -189,7 +189,8 @@ public class Sms implements Serializable {
     }
 
     public String getMessageIdText() {
-        return String.format("%010d", messageId);
+        // return String.format("%010d", messageId);
+        return String.format("%d", messageId);
     }
 
 	public void setMessageId(long messageId) {
