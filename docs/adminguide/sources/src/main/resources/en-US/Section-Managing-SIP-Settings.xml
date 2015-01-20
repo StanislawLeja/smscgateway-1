@@ -22,7 +22,7 @@ SYNOPSIS
 	smsc sip modify name cluster-name <clusterName> host <ip> port <port> 
 	routing-ton <routing address ton> routing-npi <routing address npi> 
 	routing-range <routing address range> counters-enabled <true | false> 
-	charging-enabled <true | false> 
+	charging-enabled <true | false> networkid <networkId>
 
 DESCRIPTION
 	This command is used to modify SIP settings. 
@@ -73,6 +73,11 @@ PARAMETERS
 
 	charging-enabled	- Flag to enable or disable charging for every SMS 
 				  arriving from SIP.
+
+    networkId     - means to which virtual subnetwork belongs the SIP
+                  connector (this is for multi-tenancy support). Default value
+                  is 0. If you do not use multi-tenancy support - set this value
+                  to 0.
 ]]></screen>
 			</section>
 			<section id="sip_gui">

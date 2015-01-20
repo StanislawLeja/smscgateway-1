@@ -69,7 +69,9 @@
                 	<listitem> <para>&THIS.PLATFORM; &THIS.APPLICATION; enables mobile operators to provide core SMSC features like subscriber to subscriber SMS messaging, broadcasting campaigns and group messaging <footnoteref linkend='fnrestcomm'/>between subscribers.
             		<itemizedlist> 
 				<listitem>
-					<para>&THIS.PLATFORM; &THIS.APPLICATION; can handle mobile originated SMS and deliver them to the intended recipient (mobile, ESME or SIP). It also provides a flexible routing mechanism to route messages to/from ESME over SMPP protocol. It can also act as ESME initiating connection to third party SMSC.
+					<para>&THIS.PLATFORM; &THIS.APPLICATION; can handle mobile originated SMS and deliver them to the intended recipient (mobile, ESME or SIP).
+					It also provides a flexible routing mechanism to route messages to/from ESME over SMPP protocol. TelScale SMSC Gateway supports normal style (Server side) SMPP connection.
+					It can also act as ESME initiating connection to third party SMSC (Client side). Submit_Sm, Data_Sm, Submit_Multi and Deliver_Sm messages are accepted.
 					</para>
 				</listitem>
               	  		<listitem>
@@ -96,21 +98,33 @@ If the <literal>EsmClass</literal> field indicates StoreAndForward (or default) 
 					</variablelist>
 					</para>
 				</listitem> 
-                		<listitem>
+                <listitem>
 					<para>Messages that come from SS7 or SIP are processed the same way as "StoreAndForward" messages that come from SMPP ESME.
 					</para>
 				</listitem> 
-                		<listitem>
+                <listitem>
+                    <para>&THIS.PLATFORM; &THIS.APPLICATION; supports Non Transparent Home Routing as explained in 3GPP 23.840 5.2.3.
+                    </para>
+                </listitem> 
+                <listitem>
 					<para>&THIS.PLATFORM; &THIS.APPLICATION; can be configured for congestion control to reject messages when the number of messages in processing exceeds a configurable limit (<literal>MaxActivityCount</literal>). </para>
 					<para>When the SMSC is configured in ForwardAndStore (fast) mode, SMPP originated messages will be first rejected. Then when the number of messages in processing further increases, SIP originated messages will be rejected and finally SS7 originated messages will be rejected. </para>
 					<para>When SMSC is configured in StoreAndForward (normal) mode, only datagramm and transactional SMPP originated messages will be rejected. However StoreAndForward messages and all SS7/SIP originated messages will be stored in the Cassandra database and the scheduling for delivery of these messages will be stopped until the number of messages in processing does not exceed the configured limit.
 					</para>
+                </listitem> 
+                <listitem>
+                    <para>&THIS.PLATFORM; &THIS.APPLICATION; has a congestion control at ESME side. Each ESME can be configured for rate limit per a second, a minute, a hour or a day. </para>
 				</listitem> 
                			<listitem>
 					<para>&THIS.PLATFORM; &THIS.APPLICATION; supports ReportSMDeliveryStatus and AlertServiceCentre requests after mobile delivery failure.</para>
 				</listitem> 
                 		<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; supports GSM7, GSM8 and UCS2 message encoding.</para></listitem> 
-                		<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; itself splits ESME and SIP originated long length messages before delivering to mobile phones, if a message does not contain User Data headers (UDH).</para></listitem> 
+                		<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; itself splits ESME and SIP originated long length messages before delivering to mobile phones, if a message does not contain User Data headers (UDH).</para></listitem>
+                		<listitem><para>Multi-tenancy support: &THIS.PLATFORM; &THIS.APPLICATION; supports a model of message network as a splitted to several logical subnetworks and SMSC messages will be logically processed only in one of this logical subnetwork.
+                		SMPP ESMEs, SCCP SAPs (Service Access Points) and SIP connector will belong to one of such subnetworks (A subnetwork is identified by a digital value - networkId).
+                		Any message that has come to SMSC GW from some port (ESME, SS7, SIP) will belong to networkId (subnetwork) from networkId of the port the message has come to SMSC.
+                		Then the message will be routed into the port (ESME, SS7, SIP) which belongs to the same networkId (subnetwork).
+                		</para></listitem> 
 				<listitem><para>Additionally, when enabled with proper administrator privileges, &THIS.PLATFORM; &THIS.APPLICATION; allows convenient group messaging <footnoteref linkend='fnrestcomm'/>between subscribers (e.g. family, friends, colleagues) .</para></listitem> 
 				<!--<listitem><para>&THIS.PLATFORM; &THIS.APPLICATION; offers “SMS Broadcasting” which enables marketing campaigns. Via
 convenient Web UI, campaign administrators can prioritize, schedule and monitor a

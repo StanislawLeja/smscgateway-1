@@ -459,6 +459,12 @@ value is 0.
 				<entry>ASCII</entry>
 				<entry>From SRI response.</entry>
 			</row>
+            <row>
+                <entry>CORR_ID</entry>
+                <entry>ASCII</entry>
+                <entry>This field is used for keeping of correlationId value for home routing mode.
+                This table will keep this value when StoreAndForward mode for time between storing of message and scheduling it for delivering.</entry>
+            </row>
 			<row>
 				<entry>NNN_DIGITS</entry>
 				<entry>ASCII</entry>
@@ -696,6 +702,12 @@ value is 0.
 				<entry>ASCII</entry>
 				<entry>From SRI response.</entry>
 			</row>
+            <row>
+                <entry>CORR_ID</entry>
+                <entry>ASCII</entry>
+                <entry>This field is used for keeping of correlationId value for home routing mode.
+                This table  will keep this value for logging purpose.</entry>
+            </row>
 			<row>
 				<entry>NNN_DIGITS</entry>
 				<entry>ASCII</entry>
