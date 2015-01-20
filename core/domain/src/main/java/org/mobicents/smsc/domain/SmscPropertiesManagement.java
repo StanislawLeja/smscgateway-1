@@ -204,7 +204,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     // options for storeAndForward mode: will messages be store into a database
     // firstly (normal mode) or not
-    private StoreAndForwordMode storeAndForwordMode = StoreAndForwordMode.normal;
+    private StoreAndForwordMode storeAndForwordMode = StoreAndForwordMode.fast;
 
     // option for processing of incoming SS7 mobile originated messages
     // accept - all incoming messages are accepted
