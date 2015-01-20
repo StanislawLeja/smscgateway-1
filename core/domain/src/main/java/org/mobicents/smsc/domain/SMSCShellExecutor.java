@@ -1171,6 +1171,17 @@ public class SMSCShellExecutor implements ShellExecutor {
         return SMSCOAMMessages.CORRELATION_TABLE_HAS_BE_LOADED;
     }
 
+    /**
+     * Home Routing management. Commands are
+     * 
+     * smsc hrccmccmnc add <cc> <mccmnc> smscgt <smscgt>
+     * smsc hrccmccmnc modify <cc> <mccmnc> smscgt <smscgt>
+     * smsc hrccmccmnc remove <cc>
+     * smsc hrccmccmnc show
+     * @param args
+     * @return
+     * @throws Exception
+     */
     public String ccMccmnsValueUpdate(String[] args) throws Exception {
         if (args.length < 3 || args.length > 7) {
             return SMSCOAMMessages.INVALID_COMMAND;

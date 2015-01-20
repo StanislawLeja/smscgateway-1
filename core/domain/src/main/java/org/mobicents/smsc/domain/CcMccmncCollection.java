@@ -94,7 +94,7 @@ public class CcMccmncCollection {
     }
 
     public Map<String, CcMccmncImpl> getCcMccmncMap() {
-        return this.ccMccmncMap.unmodifiable();
+        return this.ccMccmncMap;
     }
 
     public void modifyCcMccmnc(String countryCode, String mccMnc, String smsc) throws Exception {
