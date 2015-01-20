@@ -187,9 +187,9 @@ public class SmscManagement implements SmscManagementMBean {
         ObjectName hrObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_HOME_ROUTING_MANAGEMENT + ",name=" + this.getName());
         this.registerMBean(this.homeRoutingManagement, HomeRoutingManagementMBean.class, true, hrObjNname);
 
-        String host = smscPropertiesManagement.getDbHosts();
+        String hosts = smscPropertiesManagement.getDbHosts();
         int port = smscPropertiesManagement.getDbPort();
-        DBOperations_C2.getInstance().start(host, port, this.smscPropertiesManagement.getKeyspaceName(), this.smscPropertiesManagement.getFirstDueDelay(),
+        DBOperations_C2.getInstance().start(hosts, port, this.smscPropertiesManagement.getKeyspaceName(), this.smscPropertiesManagement.getFirstDueDelay(),
                 this.smscPropertiesManagement.getReviseSecondsOnSmscStart(), this.smscPropertiesManagement.getProcessingSmsSetTimeout());
         
         // Step 3 SmsSetCashe.start()

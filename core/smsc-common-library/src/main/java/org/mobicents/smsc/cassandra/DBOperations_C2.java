@@ -167,7 +167,7 @@ public class DBOperations_C2 {
 		return this.session;
 	}
 
-	public void start(String ip, int port, String keyspace, int secondsForwardStoring, int reviseSecondsOnSmscStart,
+	public void start(String hosts, int port, String keyspace, int secondsForwardStoring, int reviseSecondsOnSmscStart,
 			int processingSmsSetTimeout) throws Exception {
 		if (this.started) {
 			throw new Exception("DBOperations already started");
@@ -183,8 +183,9 @@ public class DBOperations_C2 {
 		currentSessionUUID = UUID.randomUUID();
 
 		Builder builder = Cluster.builder();
-
-        builder.addContactPoint(ip);
+		
+		String[] cassHostsArray = hosts.split(",");
+        builder.addContactPoints(cassHostsArray);
 		builder.withPort(port);
 
 		this.cluster = builder.build().init();
