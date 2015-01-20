@@ -580,9 +580,9 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                         int registeredDelivery = sms.getRegisteredDelivery();
                         if (!smscPropertiesManagement.getReceiptsDisabling() && MessageUtil.isReceiptOnFailure(registeredDelivery)) {
                             TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr(), smsSet.getNetworkId());
-                            lock = SmsSetCache.getInstance().addSmsSet(ta);
+                            TargetAddress lock2 = SmsSetCache.getInstance().addSmsSet(ta);
                             try {
-                                synchronized (lock) {
+                                synchronized (lock2) {
                                     try {
                                         Sms receipt;
                                         if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
@@ -629,7 +629,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                                     }
                                 }
                             } finally {
-                                SmsSetCache.getInstance().removeSmsSet(lock);
+                                SmsSetCache.getInstance().removeSmsSet(lock2);
                             }
                         }
                     }

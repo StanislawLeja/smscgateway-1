@@ -41,7 +41,7 @@ Name
 	smsc databaserule update
 
 SYNOPSIS
-	smsc databaserule update <address> <systemId> <SMPP|SIP>
+	smsc databaserule update <address> <systemId> <SMPP|SIP> networkid <networkId>
 
 DESCRIPTION
 	This command is used to add or update a Database Rule for SMPP or SIP. 
@@ -61,6 +61,11 @@ DESCRIPTION
 
 	To update an existing rule, you must issue the command with both the address 
 	parameter and the systemId parameter and specifiy if the rule is for SIP or SMPP.
+
+	networkId - means to which virtual SS7 subnetwork belongs a database
+	            routing rule (this is for Multi-tenancy support). If this
+	            parameter is skipped - networkId will be set to "0" for
+	            a database routing rule operation.
 ]]>
 </screen>
 			</section>
@@ -88,7 +93,7 @@ Name
 	smsc databaserule delete
 
 SYNOPSIS
-	smsc databaserule delete <address> <SMPP|SIP>
+	smsc databaserule delete <address> <SMPP|SIP> networkid <networkId>
 
 DESCRIPTION
 	This command is used to delete an existing Database Rule specified for 'address'.
@@ -96,6 +101,11 @@ DESCRIPTION
 	The parameter <SMPP|SIP> is used to define if the rule is deleted for SMPP or SIP. 
 	This is an optional parameter and if unspecified, by default the rule is 
 	deleted for SMPP. 
+
+    networkId - means to which virtual SS7 subnetwork belongs a database
+                routing rule (this is for Multi-tenancy support). If this
+                parameter is skipped - networkId will be set to "0" for
+                a database routing rule operation.
 ]]>
 </screen>
 			</section>
@@ -123,7 +133,7 @@ Name
 	smsc databaserule get
 
 SYNOPSIS
-	smsc databaserule get <address> <SMPP|SIP>
+	smsc databaserule get <address> <SMPP|SIP> networkid <networkId>
 
 DESCRIPTION
 	This command is used to view the details of an existing Database Rule specified 
@@ -132,6 +142,11 @@ DESCRIPTION
 	The parameter <SMPP|SIP> is used to define if the rule is to be viewed for SMPP 
 	or SIP. This is an optional parameter and if unspecified, by default the rule is 
 	retrieved for SMPP. 
+
+    networkId - means to which virtual SS7 subnetwork belongs a database
+                routing rule (this is for Multi-tenancy support). If this
+                parameter is skipped - networkId will be set to "0" for
+                a database routing rule operation.
 ]]>
 </screen>
 			</section>

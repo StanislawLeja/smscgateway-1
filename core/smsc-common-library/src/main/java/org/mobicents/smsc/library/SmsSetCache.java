@@ -117,8 +117,8 @@ public class SmsSetCache {
 		synchronized (lstSmsSetUnderAtomicOper) {
 			TargetAddressContainer cont = lstSmsSetUnderAtomicOper.get(ta);
 
-			if (--cont.count <= 0)
-				lstSmsSetUnderAtomicOper.remove(ta);
+            if (cont != null && --cont.count <= 0)
+                lstSmsSetUnderAtomicOper.remove(ta);
 		}
 	}
 

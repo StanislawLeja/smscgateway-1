@@ -39,6 +39,7 @@ Name
 SYNOPSIS
     smpp esme create <name> <systemId> <host-ip> <port> 
     <SmppBindType> <SmppSession.Type> password <Specify password>
+    networkid <networkId>
     system-type <sms | vms | ota > interface-version <3.3 | 3.4 | 5.0>
     esme-ton <esme address ton> esme-npi <esme address npi>
     esme-range <esme address range> cluster-name <clusterName>
@@ -50,6 +51,8 @@ SYNOPSIS
     source-ton <source address ton> source-npi <source address npi>
     source-range <source address range> routing-ton <routing address ton>
     routing-npi <routing address npi> routing-range <routing address range>
+    ratelimit_second <ratelimit> ratelimit_minute <ratelimit>
+    ratelimit_hour <ratelimit> ratelimit_day <ratelimit>
 
 DESCRIPTION
     This command is used to configure a new ESME.
@@ -104,9 +107,15 @@ PARAMETERS
 
     Optional Parameters
 
-    Password        - It is used by the SMSC to authenticate the identity of 
+    Password      - It is used by the SMSC to authenticate the identity of 
                   the binding ESME. The Service Provider may require 
                   ESME’s to provide a password when binding to the SMSC.
+
+    networkId     - means to which virtual subnetwork belongs the ESME
+                  (this is for multi-tenancy support). If this parameter is
+                  skipped - networkId will be set to "0" when ESME creation.
+                  If you do not use multi-tenancy support - set this value
+                  to 0 or skip.
 
     system-type         - Default value is null. 
                   This is used to categorize the type of ESME that is 
@@ -211,7 +220,7 @@ PARAMETERS
                   before sending. If "charging-enabled" option is added,
                   messages from this ESME will be charged, if not - not.
 
-    source-ton      - Every SMS coming into the SMSC via this ESME should have
+    source-ton    - Every SMS coming into the SMSC via this ESME should have
                   the same 'source_addr_ton' as the value configured here.
 
                   If this configured value is null(-1) or not null and 
@@ -223,7 +232,7 @@ PARAMETERS
                   an error code '0x0000000A' indicating 
                   Invalid Source Address.
 
-    source-npi      - Every SMS coming into the SMSC via this ESME should have
+    source-npi    - Every SMS coming into the SMSC via this ESME should have
                   the same 'source_addr_npi' as the value configured here.
                   configured here. 
 
@@ -235,7 +244,7 @@ PARAMETERS
                   SMS with an error code '0x0000000A' indicating 
                   Invalid Source Address.
 
-    source-range        - Every SMS coming into the SMSC via this ESME should have
+    source-range  - Every SMS coming into the SMSC via this ESME should have
                   the same 'source_addr_range' as the value configured 
                   here.This is a regular java expression and 
                   default value is ^[0-9a-zA-Z]*. 
@@ -294,7 +303,26 @@ PARAMETERS
                   SmppSession.Type is SERVER
                   3) SmppBindType is TRANSMITTER and 
                   SmppSession.Type is CLIENT
-    
+
+    ratelimit_second  - Sets for the ESME a max limit in messages that SMSC
+                  will accepts from this ESME during any one second. If ESME
+                  sends messages more than ratelimit_second during a second,
+                  more messages will be rejected by SMSC GW with "throttled"
+                  error code. "0" value is default and means "no
+                  restrictions". Missing of this parameter means also "no
+                  restrictions".
+
+    ratelimit_minute - Sets for the ESME a max limit in messages that SMSC
+                  will accepts from this ESME during any one minute like
+                  ratelimit_second
+
+    ratelimit_hour - Sets for the ESME a max limit in messages that SMSC
+                  will accepts from this ESME during any one hour like
+                  ratelimit_second
+
+    ratelimit_day - Sets for the ESME a max limit in messages that SMSC
+                  will accepts from this ESME during any one day like
+                  ratelimit_second
 ]]></screen>
             </section>
             <section id="ESME_Settings_Create_GUI">
@@ -342,6 +370,8 @@ SYNOPSIS
     source-npi <source address npi> source-range <source address range>
     routing-ton <routing address ton> routing-npi <routing address npi>
     routing-range <routing address range>
+    ratelimit_second <ratelimit> ratelimit_minute <ratelimit>
+    ratelimit_hour <ratelimit> ratelimit_day <ratelimit>
 
 DESCRIPTION
 	This command is used to modify an existing ESME.
@@ -481,7 +511,7 @@ PARAMETERS
 				  Invalid Source Address.
 				  Changed values takes effect immediately
 
-	source-range		- Every SMS coming into the SMSC via this ESME should have
+	source-range  - Every SMS coming into the SMSC via this ESME should have
 				  the same 'source_addr_range' as the value configured 
 				  here.This is a regular java expression and 
 				  default value is ^[0-9a-zA-Z]*. 
@@ -544,7 +574,25 @@ PARAMETERS
 				  3) SmppBindType is TRANSMITTER and 
 				  SmppSession.Type is CLIENT
 				  Changed values takes effect immediately
-	
+
+    ratelimit_second  - Sets for the ESME a max limit in messages that SMSC
+                  will accepts from this ESME during any one second. If ESME
+                  sends messages more than ratelimit_second during a second,
+                  more messages will be rejected by SMSC GW with "throttled"
+                  error code. "0" value is default and means "no
+                  restrictions".
+
+    ratelimit_minute - Sets for the ESME a max limit in messages that SMSC
+                  will accepts from this ESME during any one minute like
+                  ratelimit_second
+
+    ratelimit_hour - Sets for the ESME a max limit in messages that SMSC
+                  will accepts from this ESME during any one hour like
+                  ratelimit_second
+
+    ratelimit_day - Sets for the ESME a max limit in messages that SMSC
+                  will accepts from this ESME during any one day like
+                  ratelimit_second
 ]]></screen>
 			</section>
 			<section id="ESME_Settings_Modify_GUI">
