@@ -14,15 +14,15 @@ set PROGNAME=run.bat
 if "%OS%" == "Windows_NT" set PROGNAME=%~nx0%
 
 pushd %DIRNAME%..
-set SMSC_HOME=%CD%
+set SMSC_HLR_HOME=%CD%
 echo ========
-echo %SMSC_HOME%
+echo %SMSC_HLR_HOME%
 
 popd
 
 REM Add bin/native to the PATH if present
-if exist "%SMSC_HOME%\native" set PATH=%SMSC_HOME%\native;%PATH%
-if exist "%SMSC_HOME%\native" set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path="%PATH%"
+if exist "%SMSC_HLR_HOME%\native" set PATH=%SMSC_HLR_HOME%\native;%PATH%
+if exist "%SMSC_HLR_HOME%\native" set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path="%PATH%"
 
 REM Run section  - here we define node and default ip
 set IP=127.0.0.1
@@ -55,7 +55,7 @@ set ARGS=""
 
 rem Find run.jar, or we can't continue
 
-set RUNJAR=%SMSC_HOME%\bin\run.jar
+set RUNJAR=%SMSC_HLR_HOME%\bin\run.jar
 if exist "%RUNJAR%" goto FOUND_RUN_JAR
 echo Could not locate %RUNJAR%. Please check that you are in the
 echo bin directory when running this script.
@@ -115,14 +115,14 @@ rem JPDA options. Uncomment and modify as appropriate to enable remote debugging
 rem set JAVA_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y %JAVA_OPTS%
 
 rem Setup the java endorsed dirs
-set SMSC_ENDORSED_DIRS=%SMSC_HOME%\lib
+set SMSC_ENDORSED_DIRS=%SMSC_HLR_HOME%\lib
 
 
 echo ===============================================================================
 echo.
 echo   Mobicents SMSC Gateway Test Server Bootstrap Environment
 echo.
-echo   SMSC_HOME: %SMSC_HOME%
+echo   SMSC_HLR_HOME: %SMSC_HLR_HOME%
 echo.
 echo   JAVA: %JAVA%
 echo.
@@ -136,7 +136,7 @@ echo ===========================================================================
 echo.
 
 :RESTART
-"%JAVA%" %JAVA_OPTS% -Djava.ext.dirs="%SMSC_ENDORSED_DIRS%" -Dmbrola.base="%SMSC_HOME%/mbrola" -classpath "%SMSC_BOOT_CLASSPATH%" org.mobicents.smsc.server.bootstrap.Main %*
+"%JAVA%" %JAVA_OPTS% -Djava.ext.dirs="%SMSC_ENDORSED_DIRS%" -Dmbrola.base="%SMSC_HLR_HOME%/mbrola" -classpath "%SMSC_BOOT_CLASSPATH%" org.mobicents.smsc.server.bootstrap.Main %*
 rem if ERRORLEVEL 10 goto RESTART
 
 :END

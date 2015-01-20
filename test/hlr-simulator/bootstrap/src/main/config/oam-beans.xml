@@ -21,7 +21,7 @@
 			</parameter>
 		</constructor>
 
-		<property name="address">${smsc.bind.address}</property>
+		<property name="address">${smsc.hlr.bind.address}</property>
 		<property name="port">3436</property>
 	</bean>
 </deployment>

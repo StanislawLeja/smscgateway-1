@@ -47,14 +47,13 @@ import org.jboss.util.StringPropertyReplacer;
  */
 public class Main {
 
-    private final static String HOME_DIR = "SMSC_HOME";
+    private final static String HOME_DIR = "SMSC_HLR_HOME";
     private final static String BOOT_URL = "/conf/bootstrap-beans.xml";
     private final static String LOG4J_URL = "/conf/log4j.properties";
     private final static String LOG4J_URL_XML = "/conf/log4j.xml";
-    public static final String SMSC_HOME = "smsc.home.dir";
-    public static final String SMSC_DATA = "smsc.data.dir";
-    public static final String SMSC_BIND_ADDRESS = "smsc.bind.address";
-	private static final String LINKSET_PERSIST_DIR_KEY = "linkset.persist.dir";    
+    public static final String SMSC_HLR_HOME = "smsc.hlr.home.dir";
+    public static final String SMSC_HLR_DATA = "smsc.hlr.data.dir";
+    public static final String SMSC_HLR_BIND_ADDRESS = "smsc.hlr.bind.address";
     private static int index = 0;
     private Kernel kernel;
     private BasicXMLDeployer kernelDeployer;
@@ -63,12 +62,10 @@ public class Main {
 
     public static void main(String[] args) throws Throwable {
         String homeDir = getHomeDir(args);
-        System.setProperty(SMSC_HOME, homeDir);
-        System.setProperty(SMSC_DATA, homeDir + File.separator + "data" + File.separator);
+        System.setProperty(SMSC_HLR_HOME, homeDir);
+        System.setProperty(SMSC_HLR_DATA, homeDir + File.separator + "data" + File.separator);
         
         //This is for SS7 configuration file persistence
-        System.setProperty(LINKSET_PERSIST_DIR_KEY, homeDir + File.separator + "ss7" );
-        
         if (!initLOG4JProperties(homeDir) && !initLOG4JXml(homeDir)) {
             logger.error("Failed to initialize loggin, no configuration. Defaults are used.");
         }
@@ -102,7 +99,7 @@ public class Main {
                 //
                 case 'b':
                     arg = g.getOptarg();
-                    System.setProperty(SMSC_BIND_ADDRESS, arg);
+                    System.setProperty(SMSC_HLR_BIND_ADDRESS, arg);
 
                     break;
                 //
@@ -133,8 +130,8 @@ public class Main {
             }
         }
 
-        if (System.getProperty(SMSC_BIND_ADDRESS) == null) {
-            System.setProperty(SMSC_BIND_ADDRESS, "127.0.0.1");
+        if (System.getProperty(SMSC_HLR_BIND_ADDRESS) == null) {
+            System.setProperty(SMSC_HLR_BIND_ADDRESS, "127.0.0.1");
         }
 
     }
@@ -201,7 +198,7 @@ public class Main {
      * @return URL of the boot descriptor.
      */
     private static URL getBootURL(String args[]) throws Exception {
-        String bootURL = "${" + SMSC_HOME + "}" + BOOT_URL;
+        String bootURL = "${" + SMSC_HLR_HOME + "}" + BOOT_URL;
         return getURL(bootURL);
     }
 

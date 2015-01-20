@@ -20,7 +20,7 @@
 	<!-- The MainDeployer -->
     <bean name="MainDeployer"
 		class="org.mobicents.smsc.server.bootstrap.MainDeployer">
-        <property name="path">${smsc.home.dir}/deploy</property>
+        <property name="path">${smsc.hlr.home.dir}/deploy</property>
         <property name="fileFilter"><inject bean="FileFilter"/></property>
     </bean>
 

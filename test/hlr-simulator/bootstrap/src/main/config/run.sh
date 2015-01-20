@@ -55,20 +55,20 @@ fi
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
 if $cygwin ; then
-    [ -n "$SMSC_HOME" ] &&
-        SMSC_HOME=`cygpath --unix "$SMSC_HOME"`
+    [ -n "$SMSC_HLR_HOME" ] &&
+        SMSC_HLR_HOME=`cygpath --unix "$SMSC_HLR_HOME"`
     [ -n "$JAVA_HOME" ] &&
         JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
     [ -n "$JAVAC_JAR" ] &&
         JAVAC_JAR=`cygpath --unix "$JAVAC_JAR"`
 fi
 
-# Setup SMSC_HOME
-if [ "x$SMSC_HOME" = "x" ]; then
+# Setup SMSC_HLR_HOME
+if [ "x$SMSC_HLR_HOME" = "x" ]; then
     # get the full path (without any relative bits)
-    SMSC_HOME=`cd $DIRNAME/..; pwd`
+    SMSC_HLR_HOME=`cd $DIRNAME/..; pwd`
 fi
-export SMSC_HOME
+export SMSC_HLR_HOME
 
 # Increase the maximum file descriptors if we can
 if [ "$cygwin" = "false" ]; then
@@ -98,7 +98,7 @@ if [ "x$JAVA" = "x" ]; then
 fi
 
 # Setup the classpath
-runjar="$SMSC_HOME/bin/run.jar"
+runjar="$SMSC_HLR_HOME/bin/run.jar"
 if [ ! -f "$runjar" ]; then
     die "Missing required file: $runjar"
 fi
@@ -135,15 +135,15 @@ JAVA_OPTS="-Dprogram.name=$PROGNAME $JAVA_OPTS"
 JAVA_OPTS="$JAVA_OPTS -Xms256m -Xmx512m -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000"
 #JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
 # Setup the java endorsed dirs
-SMSC_ENDORSED_DIRS="$SMSC_HOME/lib"
+SMSC_ENDORSED_DIRS="$SMSC_HLR_HOME/lib"
 
 # Setup path for native libs
-LD_LIBRARY_PATH="$SMSC_HOME/native"
+LD_LIBRARY_PATH="$SMSC_HLR_HOME/native"
 export LD_LIBRARY_PATH
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
-    SMSC_HOME=`cygpath --path --windows "$SMSC_HOME"`
+    SMSC_HLR_HOME=`cygpath --path --windows "$SMSC_HLR_HOME"`
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
     SMSC_CLASSPATH=`cygpath --path --windows "$SMSC_CLASSPATH"`
     SMSC_ENDORSED_DIRS=`cygpath --path --windows "$SMSC_ENDORSED_DIRS"`
@@ -154,7 +154,7 @@ echo "========================================================================="
 echo ""
 echo "  Mobicents SMSC Gateway Test Server Bootstrap Environment"
 echo ""
-echo "  SMSC_HOME: $SMSC_HOME"
+echo "  SMSC_HLR_HOME: $SMSC_HLR_HOME"
 echo ""
 echo "  JAVA: $JAVA"
 echo ""
