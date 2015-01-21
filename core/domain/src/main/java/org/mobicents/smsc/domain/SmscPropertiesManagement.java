@@ -136,7 +136,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private int subscriberBusyDueDelay = 60 * 2;
 	// delay before first a delivering try after incoming message receiving
 	// (sec)
-	private int firstDueDelay = 60;
+	private int firstDueDelay = 20;
 	// delay after first delivering failure (sec)
 	private int secondDueDelay = 60 * 5;
 	// max possible delay between delivering failure (sec)
