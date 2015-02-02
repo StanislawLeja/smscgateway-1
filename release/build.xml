@@ -26,7 +26,7 @@
 		<!-- **//-->
 	
 	<property name="telscale-slee.version" value="6.1.2.GA" />
-	<property name="telscale-jss7.version" value="6.2.1.GA" />
+	<property name="telscale-jss7.version" value="6.2.2.GA" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
 	<property name="telscale-diam.version" value="6.2.0.GA" />
 	<property name="dse-cassandra.version" value="4.5.2" />

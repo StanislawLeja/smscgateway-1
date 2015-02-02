@@ -486,8 +486,14 @@ Switch to the SMSC GW tab and you will find that the window will look similar to
   <section id="gui_security">
 		<title>Authentication</title>	
 			<para>
-				&THIS.PLATFORM; &THIS.APPLICATION; GUI Management Security is based on the JBoss Security Framework. However please note that the feature is not fully functional yet and you will not be able to sign-out or sign-in using the login panel at the top right corner of the GUI. Future releases will offer a full implementation.
+				&THIS.PLATFORM; &THIS.APPLICATION; GUI Management Security is based on the JBoss Security Framework. To read more on JBoss Security Framework refer JBoss Installation Guide <ulink url="http://docs.jboss.org/jbossas/docs/Installation_And_Getting_Started_Guide/5/html_single/index.html#Basic_Configuration_Issues-Security_Service">here</ulink>
 			</para>
+			<note>
+				<para>
+					Deafult user-id and password for GUI Management Console is admin and admin. You can change the user-id and password in files <filename>jmx-console-roles.properties</filename> and <filename>jmx-console-users.properties</filename> 
+					located at <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/conf/props/</filename>
+				</para>
+			</note>			
  </section>
 
 </section>
