@@ -30,7 +30,7 @@
 		<log4j.version>1.2.14</log4j.version>
 		<junit.version>3.8.1</junit.version>
 		<!-- cloudhopper smpp -->
-		<ch.smpp.version>5.0.7-TelScale-SNAPSHOT</ch.smpp.version>
+		<ch.smpp.version>5.0.7.GA-TelScale</ch.smpp.version>
 		<slf4j.version>1.5.6</slf4j.version>
 		
 		<!-- Cassandra Driver and dependency 1.0.2 1.2.6 -->
@@ -55,7 +55,7 @@
 		<jss7.telscale.version>6.2.2.GA-TelScale</jss7.telscale.version>
 		<ts.slee.version>6.1.2.GA-TelScale</ts.slee.version>
 		<jslee.ext.version>${ts.slee.version}</jslee.ext.version>
-		<mobicents.resources.map.version>6.2.0.GA-TelScale</mobicents.resources.map.version>
+		<mobicents.resources.map.version>6.2.2.GA-TelScale</mobicents.resources.map.version>
 		<mobicents.resources.sip.version>6.1.2.GA-TelScale</mobicents.resources.sip.version>
 		<jdiameter.version>6.1.2.GA-TelScale</jdiameter.version>
 		<telscale.license.version>1.5.1</telscale.license.version>
