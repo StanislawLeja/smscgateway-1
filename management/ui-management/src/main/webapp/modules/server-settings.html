@@ -138,7 +138,7 @@ Delay after every consecutive delivery failure = prev-due-delay * due-delay-mult
                         	<h5 style="border-bottom: 1px solid #DDD;">Global Title Configuration</h5>
                         	
 							<div id="div-gtinitext" class="control-group">
-								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC Gateway Global Title Indicator Network Id">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC Gateway Global Title Indicator Network Id. Double click on select box to add new values. networkId specifies Global Title for a virtual SS7 subnetwork (this is for Multi-tenancy support). You can define different networkIds as unique subnetworks and assign Global Titles for each of the subnetworks. networkId 0 is for default SS7 network.">
 								  <span class="add-on">SMSC Gateway Global Title Indicator Network Id</span>				
 								  <select id="gtinisel" style="width: 200px;" onchange="gtInSelChange()">
 								  </select>
@@ -1080,11 +1080,8 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						
 						var ussdgt = $("#ussdgt").val();
 						if(ussdgt.trim() == "") {
-			    			$("#div-ussdgt").addClass("error");					    			
-			    			formInvalid = true;
-			    		} else if($("#div-ussdgt").hasClass("error")) {
-			    			$("#div-ussdgt").removeClass("error");		
-			    		}
+							ussdgt = null;							
+			    		} 
 						
 						var ussdssn = $("#ussdssn").val();
 						if(ussdssn.trim() == "") {

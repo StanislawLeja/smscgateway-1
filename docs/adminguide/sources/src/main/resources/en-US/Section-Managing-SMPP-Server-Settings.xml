@@ -224,9 +224,16 @@ DESCRIPTION
   		</mediaobject>
 	</figure>
 				</para></step>
-				<step><para>
-				To edit any property, click on the edit icon of the row corresponding to the property. This action will display an editable text field for the property as shown in the figure above. Adjacent to the editable text field, you will find a 'tick' icon and a 'x' icon. To accept the newly entered value for the property, you must click on the 'tick' icon. To discard the change and stop the editing of the property, you must click on the 'x' icon.
-				</para></step>
+				<step>
+					<para>
+						To edit any property, click on the edit icon of the row corresponding to the property. This action will display an editable text field for the property as shown in the figure above. 
+						Adjacent to the editable text field, you will find a 'tick' icon and a 'x' icon. To accept the newly entered value for the property, you must click on the 'tick' icon. To discard the change and 
+						stop the editing of the property, you must click on the 'x' icon.
+					</para>
+					<para>
+						SMPP Server can be setup for SSL so every incoming connection request should first do SSL hand-shake. Settingup SSL is only possible from GUI.
+					</para>
+				</step>
 				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
 				</para></step>
 			</procedure>

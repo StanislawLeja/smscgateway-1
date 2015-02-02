@@ -6,7 +6,8 @@ SYNOPSIS
 
 DESCRIPTION
 	This command is used to set the host-ip address for Cassandra Database
-	access.
+	access. Pass comma separated values if Cassandra is setup in cluster
+	and can be accessed via multiple IP's 
 
 EXAMPLES
 	smsc set dbhosts 127.0.0.1

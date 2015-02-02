@@ -603,8 +603,21 @@ PARAMETERS
 				</para></step>
 				<step><para>The main panel will display the existing ESMEs (if any), one each in a row with corresponding actions (start, stop, delete, update) for each row.
 				</para></step>
-				<step><para>You can update an existing by launching the 'ESME &lt;name&gt; properties' window by clicking on the blue coloured 'Update ESME' button. The 'ESME &lt;name&gt; properties' window will display all ESME paramters that can be updated by you. For more details of these parameters please refer to the descriptions of the CLI commands for the same in the preceding section. 
-				</para></step>
+				<step>
+					<para>
+						You can update an existing by launching the 'ESME &lt;name&gt; properties' window by clicking on the blue coloured 'Update ESME' button. 
+						The 'ESME &lt;name&gt; properties' window will display all ESME paramters that can be updated by you. For more details of these parameters please refer to the descriptions of the CLI commands 
+						for the same in the preceding section. 
+					</para>
+					<para>
+						ESME can be setup for SSL so every connection request should first do SSL hand-shake. Settingup SSL is only possible from GUI. After creating the ESME, users can edit property and enable SSL.
+					</para>
+					<note>
+					 <para>
+					 	Only CLIENT ESME's (one that sends BIND request) can be enabled for SSL.  
+					 </para>
+					</note>					
+				</step>
 				<step><para>
 				Update appropriate values for all the parameters and then click on the 'Close' button. This action will modify a new ESME with parameters as defined by you.
 				</para></step>
