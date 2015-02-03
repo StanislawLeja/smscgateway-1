@@ -12,6 +12,8 @@ SYNOPSIS
 	source-ton <source address ton> source-npi <source address npi>
 	source-range <source address range> routing-ton <routing address ton>
 	routing-npi <routing address npi> routing-range <routing address range>
+	ratelimit-second <ratelimitsecond> ratelimit-minute <ratelimitminute> 
+	ratelimit-hour <ratelimithour> ratelimit-day <ratelimitday>
 
 DESCRIPTION
 	This command is used to modify the settings of an existing ESME configuration.
@@ -236,6 +238,26 @@ PARAMETERS
 				  SmppSession.Type is CLIENT
 
 				  The new value takes effect immediately.
+				  
+    ratelimit_second    - Sets for the ESME a max limit in messages that SMSC
+					will accepts from this ESME during any one second. If ESME
+					sends messages more than ratelimit_second during a second,
+					more messages will be rejected by SMSC GW with "throttled"
+					error code. "0" value is default and means "no
+					restrictions". Missing of this parameter means also "no
+					restrictions".
+	
+	ratelimit_minute 	- Sets for the ESME a max limit in messages that SMSC
+					will accepts from this ESME during any one minute like
+					ratelimit_second
+
+	ratelimit_hour 		- Sets for the ESME a max limit in messages that SMSC
+					will accepts from this ESME during any one hour like
+					ratelimit_second
+
+	ratelimit_day - 	Sets for the ESME a max limit in messages that SMSC
+					will accepts from this ESME during any one day like
+					ratelimit_second				  
 	
 SEE ALSO
 	smsc get scgt, smsc set scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
