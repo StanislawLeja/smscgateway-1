@@ -38,7 +38,7 @@
 	<property name="telscale-slee.download.url" value="ftp://ftp.box.com/TelScale%20JAIN-SLEE/${telscale-slee.version}/slim-with-lce151/${telscale-slee.download.distro.file}" />
 	<property name="telscale-slee.distro.zip.path" value="${checkout.dir}/${telscale-slee.download.distro.file}" />
 	
-	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}-1410311553.zip" />
+	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}-1501291033.zip" />
 	<property name="telscale-jss7.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-jss7.version}/${telscale-jss7.download.distro.file}" />
 	<property name="telscale-jss7.distro.zip.path" value="${checkout.dir}/${telscale-jss7.download.distro.file}" />
 	
