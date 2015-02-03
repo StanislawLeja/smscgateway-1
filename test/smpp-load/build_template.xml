@@ -13,17 +13,17 @@
 
 	<property name="assemble.dir" value="${ant.file.mobicents.release}/../target/load" />
 	<path id="project.class.path">
-		<pathelement location="${assemble.dir}/smpp-load-6.2.0-TelScale-SNAPSHOT.jar" />
-		<pathelement location="${assemble.dir}/ch-smpp-5.0.7.GA-TelScale.jar" />
-		<pathelement location="${assemble.dir}/netty-3.9.0.Final.jar" />
-		<pathelement location="${assemble.dir}/slf4j-1.5.6.jar" />
-		<pathelement location="${assemble.dir}/slf4j-log4j12-1.5.6.jar" />
+		<pathelement location="${assemble.dir}/smpp-load-@project.version@.jar" />
+		<pathelement location="${assemble.dir}/ch-smpp-@ch.smpp.version@.jar" />
+		<pathelement location="${assemble.dir}/netty-@netty.version@.jar" />
+		<pathelement location="${assemble.dir}/slf4j-@slf4j.version@.jar" />
+		<pathelement location="${assemble.dir}/slf4j-log4j12-@slf4j.version@.jar" />
 
-		<pathelement location="${assemble.dir}/ch-commons-charset-3.0.2.jar" />
-		<pathelement location="${assemble.dir}/ch-commons-util-6.0.1.jar" />
-		<pathelement location="${assemble.dir}/joda-time-2.6.jar" />
+		<pathelement location="${assemble.dir}/ch-commons-charset-@ch-commons-charset.version@.jar" />
+		<pathelement location="${assemble.dir}/ch-commons-util-@ch-commons-util.version@.jar" />
+		<pathelement location="${assemble.dir}/joda-time-@joda-time.version@.jar" />
 
-		<pathelement location="${assemble.dir}/log4j-1.2.14.jar" />
+		<pathelement location="${assemble.dir}/log4j-@log4j.version@.jar" />
 		<pathelement location="src/main/resources" />
 
 	</path>
