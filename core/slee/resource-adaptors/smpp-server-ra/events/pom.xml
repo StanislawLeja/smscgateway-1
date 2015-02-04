@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.telscale.smsc</groupId>
 		<artifactId>smpp-server-ra</artifactId>
-		<version>6.2.0-TelScale-SNAPSHOT</version>
+		<version>6.2.1.463</version>
 	</parent>
 
 	<artifactId>smpp-server-ra-events</artifactId>

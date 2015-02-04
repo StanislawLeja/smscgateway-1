@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>core</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.2.0-TelScale-SNAPSHOT</version>
+		<version>6.2.1.463</version>
 	</parent>
 
 	<artifactId>smsc-common-library</artifactId>

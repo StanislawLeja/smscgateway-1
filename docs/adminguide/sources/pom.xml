@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>telscale-smsc-adminguide</artifactId>
 		<groupId>com.telscale.smsc.docs.adminguide</groupId>
-		<version>6.2.0-TelScale-SNAPSHOT</version>
+		<version>6.2.1.463</version>
 	</parent>
 
 	<artifactId>telscale-smsc-adminguide-sources</artifactId>
