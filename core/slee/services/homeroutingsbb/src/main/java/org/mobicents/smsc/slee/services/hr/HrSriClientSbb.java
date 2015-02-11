@@ -375,7 +375,12 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
             MAPApplicationContext mapApplicationContext, int networkId) throws MAPException {
         // this.mapParameterFactory.creat
 
-        SccpAddress destinationAddr = this.convertAddressFieldToSCCPAddress(destinationAddress, ton, npi);
+        String hlrAddress = destinationAddress;
+        if (smscPropertiesManagement.getHrHlrNumber() != null && smscPropertiesManagement.getHrHlrNumber().length() > 0) {
+            hlrAddress = smscPropertiesManagement.getHrHlrNumber();
+        }
+
+        SccpAddress destinationAddr = this.convertAddressFieldToSCCPAddress(hlrAddress, ton, npi);
 
         MAPDialogSms mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,
                 this.getServiceCenterSccpAddress(networkId), null, destinationAddr, null);

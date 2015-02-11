@@ -103,6 +103,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private static final String DIAMETER_USER_NAME = "diameterUserName";
     private static final String REMOVING_LIVE_TABLES_DAYS = "removingLiveTablesDays";
     private static final String REMOVING_ARCHIVE_TABLES_DAYS = "removingArchiveTablesDays";
+    private static final String MO_UNKNOWN_TYPE_OF_NUMBER_PREFIX = "moUnknownTypeOfNumberPrefix";
+    private static final String HR_HLR_NUMBER = "hrHlrNumber";
     private static final String DELIVERY_PAUSE = "deliveryPause";
 
 
@@ -253,6 +255,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // set this option to 0 to disable this option
     private int removingArchiveTablesDays = 3;
 
+    // if this value != null and != "" and incoming mo message has TypeOfNumber==Unknown
+    // moUnknownTypeOfNumberPrefix will be added as a prefix to a dest address
+    private String moUnknownTypeOfNumberPrefix = "47";
+
+    private String hrHlrNumber = "";
+
     // if set to true:
     // SMSC does not try to deliver any messages from cassandra database to SS7
     // / ESMEs / SIP
@@ -303,7 +311,11 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	}
 
     public String getServiceCenterGt(int networkId) {
-        return networkIdVsServiceCenterGt.get(networkId);
+        String res = networkIdVsServiceCenterGt.get(networkId);
+        if (res != null)
+            return res;
+        else
+            return serviceCenterGt;
     }
 
     public Map<Integer, String> getNetworkIdVsServiceCenterGt() {
@@ -780,6 +792,24 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         this.store();
     }
 
+    public String getMoUnknownTypeOfNumberPrefix() {
+        return moUnknownTypeOfNumberPrefix;
+    }
+
+    public void setMoUnknownTypeOfNumberPrefix(String moUnknownTypeOfNumberPrefix) {
+        this.moUnknownTypeOfNumberPrefix = moUnknownTypeOfNumberPrefix;
+        this.store();
+    }
+
+    public String getHrHlrNumber() {
+        return hrHlrNumber;
+    }
+
+    public void setHrHlrNumber(String hrHlrNumber) {
+        this.hrHlrNumber = hrHlrNumber;
+        this.store();
+    }
+
     @Override
     public boolean isDeliveryPause() {
         return deliveryPause;
@@ -918,6 +948,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
             writer.write(this.removingLiveTablesDays, REMOVING_LIVE_TABLES_DAYS, Integer.class);
             writer.write(this.removingArchiveTablesDays, REMOVING_ARCHIVE_TABLES_DAYS, Integer.class);
+            writer.write(this.moUnknownTypeOfNumberPrefix, MO_UNKNOWN_TYPE_OF_NUMBER_PREFIX, String.class);
+            writer.write(this.hrHlrNumber, HR_HLR_NUMBER, String.class);
 
 			writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
 			writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
@@ -1048,6 +1080,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             val = reader.read(REMOVING_ARCHIVE_TABLES_DAYS, Integer.class);
             if (val != null)
                 this.removingArchiveTablesDays = val;
+            vals = reader.read(MO_UNKNOWN_TYPE_OF_NUMBER_PREFIX, String.class);
+            if (vals != null)
+                this.moUnknownTypeOfNumberPrefix = vals;
+            vals = reader.read(HR_HLR_NUMBER, String.class);
+            if (vals != null)
+                this.hrHlrNumber = vals;
 
 			this.esmeDefaultClusterName = reader.read(ESME_DEFAULT_CLUSTER_NAME, String.class);
 

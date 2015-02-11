@@ -57,6 +57,7 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverReportTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsSubmitTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsTpdu;
+import org.mobicents.protocols.ss7.map.api.smstpdu.TypeOfNumber;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriod;
@@ -676,10 +677,20 @@ public abstract class MoSbb extends MoCommonSbb {
 					MAPErrorCode.unexpectedDataValue, null);
 		}
 
+        String digits = af.getAddressValue();
 		int destTon, destNpi;
 		switch (af.getTypeOfNumber()) {
 		case Unknown:
-			destTon = smscPropertiesManagement.getDefaultTon();
+            destTon = smscPropertiesManagement.getDefaultTon();
+
+            
+//            this.logger.severe("*********************** "+af.getTypeOfNumber()+" - "+smscPropertiesManagement.getMoUnknownTypeOfNumberPrefix());
+            
+            
+            if (smscPropertiesManagement.getMoUnknownTypeOfNumberPrefix() != null && smscPropertiesManagement.getMoUnknownTypeOfNumberPrefix().length() > 0) {
+                digits = smscPropertiesManagement.getMoUnknownTypeOfNumberPrefix() + digits;
+                destTon = TypeOfNumber.InternationalNumber.getCode();
+            }
 			break;
         case InternationalNumber:
             destTon = af.getTypeOfNumber().getCode();
@@ -704,7 +715,7 @@ public abstract class MoSbb extends MoCommonSbb {
 					MAPErrorCode.unexpectedDataValue, null);
 		}
 
-		TargetAddress ta = new TargetAddress(destTon, destNpi, af.getAddressValue(), networkId);
+		TargetAddress ta = new TargetAddress(destTon, destNpi, digits, networkId);
 		return ta;
 	}
 
