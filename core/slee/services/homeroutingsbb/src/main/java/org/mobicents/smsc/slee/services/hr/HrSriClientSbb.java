@@ -379,7 +379,6 @@ public abstract class HrSriClientSbb extends HomeRoutingCommonSbb implements HrS
         if (smscPropertiesManagement.getHrHlrNumber() != null && smscPropertiesManagement.getHrHlrNumber().length() > 0) {
             hlrAddress = smscPropertiesManagement.getHrHlrNumber();
         }
-
         SccpAddress destinationAddr = this.convertAddressFieldToSCCPAddress(hlrAddress, ton, npi);
 
         MAPDialogSms mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,

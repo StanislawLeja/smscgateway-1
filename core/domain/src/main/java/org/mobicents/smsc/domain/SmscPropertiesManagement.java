@@ -259,6 +259,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // moUnknownTypeOfNumberPrefix will be added as a prefix to a dest address
     private String moUnknownTypeOfNumberPrefix = "47";
 
+    // if !=null and !=""
+    // this address will be inserted as CalledPartyAddress SCCP into all SRI
+    // outgoing requests
     private String hrHlrNumber = "";
 
     // if set to true:

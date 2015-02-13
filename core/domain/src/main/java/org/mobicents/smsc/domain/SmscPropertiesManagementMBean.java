@@ -244,4 +244,8 @@ public interface SmscPropertiesManagementMBean {
     
     public void setReceiptsDisabling(boolean receiptsDisabling);
 
+    public String getHrHlrNumber();
+
+    public void setHrHlrNumber(String hrHlrNumber);
+
 }

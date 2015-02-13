@@ -670,6 +670,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 					smsSet.getDestAddrNpi(), smsSet.getDestAddr(), orignatingEsmeName, smsSet.getNetworkId());
 
 			// Step 2: If no SMPP's found, check if its for SIP
+			// TODO: we possibly do not need to send a SIP-originated message back to SIP
 			if (destClusterName == null) {
 				destClusterName = smsRouteManagement.getSipClusterName(smsSet.getDestAddrTon(),
 						smsSet.getDestAddrNpi(), smsSet.getDestAddr(), smsSet.getNetworkId());
