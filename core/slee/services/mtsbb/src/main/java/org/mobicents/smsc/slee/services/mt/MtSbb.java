@@ -288,8 +288,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 			MAPRefuseReason mapRefuseReason = evt.getRefuseReason();
 
+            // TODO: remove "&& false" ...................................
 			if (mapRefuseReason == MAPRefuseReason.PotentialVersionIncompatibility
-					&& evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1) {
+					&& evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1 && false) {
 				if (logger.isWarningEnabled()) {
 					this.logger.warning("Rx : Mt onDialogReject / PotentialVersionIncompatibility=" + evt);
 				}
@@ -312,13 +313,20 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 				mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
 						newMAPApplicationContextVersion);
 
+
+				// TODO: remove it ...................................
+                this.logger.severe("***** setMAPApplicationContextVersion() - PotentialVersionIncompatibility: dig=" + this.getNetworkNode().getGlobalTitle().getDigits() + ", vers="
+                        + newMAPApplicationContextVersion + ", message=" + evt);
+                // TODO: remove it ...................................
+
+
+
 				// possible a peer supports only MAP V1
 				// Now send new SRI with supported ACN (MAP V1)
 				try {
 					// Update cache
-					mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
-							newMAPApplicationContextVersion);
-
+//					mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
+//							newMAPApplicationContextVersion);
 					this.sendMtSms(this.getMtFoSMSMAPApplicationContext(MAPApplicationContextVersion.version1),
 							MessageProcessingState.resendAfterMapProtocolNegotiation, null, smsSet.getNetworkId());
 					return;
@@ -387,6 +395,12 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 				mapVersionCache.setMAPApplicationContextVersion(this.getNetworkNode().getGlobalTitle().getDigits(),
 						newMAPApplicationContextVersion);
+
+				
+				// TODO: remove it ...................................
+                this.logger.severe("***** setMAPApplicationContextVersion() - ApplicationContextNotSupported: dig=" + this.getNetworkNode().getGlobalTitle().getDigits() + ", vers="
+                        + newMAPApplicationContextVersion + ", message=" + evt);
+                // TODO: remove it ...................................
 
 				try {
 					this.sendMtSms(this.getMtFoSMSMAPApplicationContext(newMAPApplicationContextVersion),
