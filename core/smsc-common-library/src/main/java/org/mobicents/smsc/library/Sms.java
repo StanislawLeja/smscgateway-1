@@ -48,6 +48,7 @@ public class Sms implements Serializable {
     private long dueSlot;
     private boolean stored;
     private boolean storingAfterFailure;
+    private boolean invokedByAlert;
 
 	private int sourceAddrTon;
 	private int sourceAddrNpi;
@@ -135,6 +136,17 @@ public class Sms implements Serializable {
 
     public void setStoringAfterFailure(boolean storingAfterFailure) {
         this.storingAfterFailure = storingAfterFailure;
+    }
+
+    /**
+     * If this message was invoked for delivering after Alert message
+     */
+    public boolean getInvokedByAlert() {
+        return invokedByAlert;
+    }
+
+    public void setInvokedByAlert(boolean invokedByAlert) {
+        this.invokedByAlert = invokedByAlert;
     }
 
 	/**
@@ -461,6 +473,8 @@ public class Sms implements Serializable {
         sb.append(stored);
         sb.append(", storingAfterFailure=");
         sb.append(storingAfterFailure);
+        sb.append(", invokedByAlert=");
+        sb.append(invokedByAlert);
 		sb.append(", sourceAddrTon=");
 		sb.append(sourceAddrTon);
 		sb.append(", sourceAddrNpi=");

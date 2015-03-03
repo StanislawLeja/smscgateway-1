@@ -1241,7 +1241,11 @@ public class DBOperations_C2 {
     }
 
 	public void c2_updateInSystem(Sms sms, int isSystemStatus, boolean fastStoreAndForwordMode) throws PersistenceException {
-        if (sms.getStored() && !fastStoreAndForwordMode) {
+        // if (sms.getStored() && (!fastStoreAndForwordMode ||
+        // sms.getInvokedByAlert() || <new method parameter -
+        // "updateInSystemForFastMode">)) {
+
+        if (sms.getStored()) {
             PreparedStatementCollection_C3 psc = this.getStatementCollection(sms.getDueSlot());
 
             try {

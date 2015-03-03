@@ -65,6 +65,7 @@ import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.library.MessageUtil;
+import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
@@ -269,6 +270,11 @@ public abstract class AlertSbb implements Sbb {
                                 if (dueSlot != 0 && dueSlot > pers.c2_getCurrentDueSlot()) {
                                     SmsSet smsSet = pers.c2_getRecordListForTargeId(dueSlot, smsSet0.getTargetId());
                                     if (smsSet != null) {
+                                        for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
+                                            Sms sms = smsSet.getSms(i1);
+                                            sms.setInvokedByAlert(true);
+                                        }
+
                                         ArrayList<SmsSet> lstS = new ArrayList<SmsSet>();
                                         lstS.add(smsSet);
                                         ArrayList<SmsSet> lst = pers.c2_sortRecordList(lstS);
