@@ -574,7 +574,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 					case permanentFailure:
 						smsCnt = smsSet.getSmsCount();
 						for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
-							Sms sms = smsSet.getSms(currentMsgNum);
+							Sms sms = smsSet.getSms(i1);
 							if (sms != null) {
 								lstFailured.add(sms);
 							}
