@@ -4,7 +4,6 @@
 package org.mobicents.smsc.domain;
 
 import javolution.util.FastMap;
-
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 
 /**
@@ -13,7 +12,7 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
  */
 public class MapVersionCache implements MapVersionCacheMBean {
 
-	private FastMap<String, MAPApplicationContextVersion> cache = new FastMap<String, MAPApplicationContextVersion>()
+	private FastMap<String, MapVersionNeg> cache = new FastMap<String, MapVersionNeg>()
 			.shared();
 
 	private final String name;
@@ -47,21 +46,38 @@ public class MapVersionCache implements MapVersionCacheMBean {
 	 */
 	@Override
 	public MAPApplicationContextVersion getMAPApplicationContextVersion(String globalTitleDigits) {
-		return this.cache.get(globalTitleDigits);
+        MapVersionNeg neg = this.cache.get(globalTitleDigits);
+        if (neg != null)
+            return neg.getCurVersion();
+        else
+            return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mobicents.smsc.smpp.MapVersionCacheMBean#setMAPApplicationContextVersion
-	 * (java.lang.String,
-	 * org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion)
-	 */
-	@Override
-	public void setMAPApplicationContextVersion(String globalTitleDigits, MAPApplicationContextVersion version) {
-		this.cache.put(globalTitleDigits, version);
-	}
+    public void setMAPApplicationContextVersion(String globalTitleDigits, MAPApplicationContextVersion version) {
+        MapVersionNeg neg = this.cache.get(globalTitleDigits);
+        if (neg != null)
+            neg.registerCheckedVersion(version);
+        else {
+            neg = new MapVersionNeg(globalTitleDigits);
+            this.cache.put(globalTitleDigits, neg);
+            neg.registerCheckedVersion(version);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.mobicents.smsc.smpp.MapVersionCacheMBean#setMAPApplicationContextVersion
+     * (java.lang.String,
+     * org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion)
+     */
+    @Override
+    public void forceMAPApplicationContextVersion(String globalTitleDigits, MAPApplicationContextVersion version) {
+        MapVersionNeg neg = new MapVersionNeg(globalTitleDigits);
+        this.cache.put(globalTitleDigits, neg);
+        neg.registerCheckedVersion(version);
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -70,7 +86,7 @@ public class MapVersionCache implements MapVersionCacheMBean {
 	 * getMAPApplicationContextVersionCache()
 	 */
 	@Override
-	public FastMap<String, MAPApplicationContextVersion> getMAPApplicationContextVersionCache() {
+	public FastMap<String, MapVersionNeg> getMAPApplicationContextVersionCache() {
 		return this.cache;
 	}
 
@@ -78,5 +94,4 @@ public class MapVersionCache implements MapVersionCacheMBean {
 	public void forceClear() {
 		this.cache.clear();
 	}
-
 }

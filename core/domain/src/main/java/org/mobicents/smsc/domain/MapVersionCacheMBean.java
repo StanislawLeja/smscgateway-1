@@ -33,9 +33,9 @@ public interface MapVersionCacheMBean {
 
 	MAPApplicationContextVersion getMAPApplicationContextVersion(String globalTitleDigits);
 
-	void setMAPApplicationContextVersion(String globalTitleDigits, MAPApplicationContextVersion version);
+	void forceMAPApplicationContextVersion(String globalTitleDigits, MAPApplicationContextVersion version);
 
-	FastMap<String, MAPApplicationContextVersion> getMAPApplicationContextVersionCache();
+	FastMap<String, MapVersionNeg> getMAPApplicationContextVersionCache();
 	
 	void forceClear();
 
