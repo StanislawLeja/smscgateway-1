@@ -52,7 +52,8 @@ public class SmscManagement implements SmscManagementMBean {
 
 	public static final String JMX_DOMAIN = "com.telscale.smsc";
 	public static final String JMX_LAYER_SMSC_MANAGEMENT = "SmscManagement";
-	public static final String JMX_LAYER_SIP_MANAGEMENT = "SipManagement";
+    public static final String JMX_LAYER_SIP_MANAGEMENT = "SipManagement";
+    public static final String JMX_LAYER_MPROC_MANAGEMENT = "MProcManagement";
 	public static final String JMX_LAYER_ARCHIVE_SMS = "ArchiveSms";
 	public static final String JMX_LAYER_MAP_VERSION_CACHE = "MapVersionCache";
 	public static final String JMX_LAYER_SMSC_STATS = "SmscStats";
@@ -75,7 +76,8 @@ public class SmscManagement implements SmscManagementMBean {
 	
 	private SmppManagement smppManagement; 
 
-	private SipManagement sipManagement = null;
+    private SipManagement sipManagement = null;
+    private MProcManagement mProcManagement = null;
     private SmscPropertiesManagement smscPropertiesManagement = null;
     private HomeRoutingManagement homeRoutingManagement = null;
 	private SmscDatabaseManagement smscDatabaseManagement = null;
@@ -224,7 +226,16 @@ public class SmscManagement implements SmscManagementMBean {
                 + ",name=" + this.getName());
         this.registerMBean(this.sipManagement, SipManagementMBean.class, false, sipObjNname);
 
-        // Step 12 Set Routing Rule class
+        // Step 12 Setup MProcRules
+        this.mProcManagement = MProcManagement.getInstance(this.name);
+        this.mProcManagement.setPersistDir(this.persistDir);
+        this.mProcManagement.start();
+
+        ObjectName mProcObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_MPROC_MANAGEMENT
+                + ",name=" + this.getName());
+        this.registerMBean(this.mProcManagement, MProcManagementMBean.class, false, mProcObjNname);
+
+        // Step 13 Set Routing Rule class
         if (this.smsRoutingRuleClass != null) {
             smsRoutingRule = (SmsRoutingRule) Class.forName(this.smsRoutingRuleClass).newInstance();
 
@@ -307,6 +318,11 @@ public class SmscManagement implements SmscManagementMBean {
             this.unregisterMbean(dbSmsRoutingRuleObjName);
         }
 
+        this.mProcManagement.stop();
+        ObjectName mProcObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_MPROC_MANAGEMENT
+                + ",name=" + this.getName());
+        this.unregisterMbean(mProcObjNname);
+
         this.sipManagement.stop();
         ObjectName sipObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_SIP_MANAGEMENT
                 + ",name=" + this.getName());
@@ -364,7 +380,8 @@ public class SmscManagement implements SmscManagementMBean {
 	protected void unregisterMbean(ObjectName name) {
 
 		try {
-			this.mbeanServer.unregisterMBean(name);
+            if (this.mbeanServer != null)
+                this.mbeanServer.unregisterMBean(name);
 		} catch (MBeanRegistrationException e) {
 			logger.error(String.format("Error while unregistering MBean %s", name), e);
 		} catch (InstanceNotFoundException e) {

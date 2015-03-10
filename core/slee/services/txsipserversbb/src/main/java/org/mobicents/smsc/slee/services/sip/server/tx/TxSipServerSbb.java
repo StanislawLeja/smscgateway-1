@@ -56,6 +56,7 @@ import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.domain.MProcManagement;
 import org.mobicents.smsc.domain.Sip;
 import org.mobicents.smsc.domain.SipManagement;
 import org.mobicents.smsc.domain.SipXHeaders;
@@ -150,7 +151,6 @@ public abstract class TxSipServerSbb implements Sbb {
 			// Persist this message
 			TargetAddress ta = this.createDestTargetAddress(toUser, sip.getNetworkId());
 			PersistenceRAInterface store = getStore();
-			TargetAddress lock = store.obtainSynchroObject(ta);
 
 			byte[] udh = null;
 
@@ -198,10 +198,8 @@ public abstract class TxSipServerSbb implements Sbb {
 
 			Sms sms;
 			try {
-				synchronized (lock) {
-                    sms = this.createSmsEvent(fromUser, message, ta, store, udh, codingSchme, validityPeriod, regDeliveryInt, sip.getNetworkId());
-					this.processSms(sms, store);
-				}
+                sms = this.createSmsEvent(fromUser, message, ta, store, udh, codingSchme, validityPeriod, regDeliveryInt, sip.getNetworkId());
+                this.processSms(sms, store);
 			} catch (SmscProcessingException e1) {
 				this.logger.severe("SmscProcessingException while processing a message from sip", e1);
 				smscStatAggregator.updateMsgInFailedAll();
@@ -231,8 +229,6 @@ public abstract class TxSipServerSbb implements Sbb {
 				}
 
 				return;
-			} finally {
-				store.releaseSynchroObject(lock);
 			}
 
 			ServerTransaction serverTransaction = event.getServerTransaction();
@@ -421,6 +417,8 @@ public abstract class TxSipServerSbb implements Sbb {
 			sms.setSourceAddrNpi(smscPropertiesManagement.getDefaultNpi());
 		}
 
+        sms.setOrigNetworkId(networkId);
+
 		// checking for a destination address
 		isDigital = true;
 		for (char ch : ta.getAddr().toCharArray()) {
@@ -509,7 +507,7 @@ public abstract class TxSipServerSbb implements Sbb {
 		return sms;
 	}
 
-	private void processSms(Sms sms, PersistenceRAInterface store) throws SmscProcessingException {
+	private void processSms(Sms sms0, PersistenceRAInterface store) throws SmscProcessingException {
 		// checking if SMSC is stopped
 		if (smscPropertiesManagement.isSmscStopped()) {
 			SmscProcessingException e = new SmscProcessingException("SMSC is stopped", SmppConstants.STATUS_SYSERR, 0,
@@ -549,39 +547,53 @@ public abstract class TxSipServerSbb implements Sbb {
 
 		if (withCharging) {
 			ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
-			chargingSbb.setupChargingRequestInterface(ChargingMedium.TxSipOrig, sms);
+			chargingSbb.setupChargingRequestInterface(ChargingMedium.TxSipOrig, sms0);
 		} else {
-			// store and forward
-			if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
-				try {
-					sms.setStoringAfterFailure(true);
-					this.scheduler.injectSmsOnFly(sms.getSmsSet());
-				} catch (Exception e) {
-					throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(),
-							SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e);
-				}
-			} else {
-				try {
-					sms.setStored(true);
-					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-						store.createLiveSms(sms);
-						if (sms.getScheduleDeliveryTime() == null)
-							store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil
-									.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
-						else
-							store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
-					} else {
-						store.c2_scheduleMessage_ReschedDueSlot(sms,
-								smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, false);
-					}
-				} catch (PersistenceException e) {
-					throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(),
-							SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
-				}
-			}
+            smscStatAggregator.updateMsgInReceivedAll();
+            smscStatAggregator.updateMsgInReceivedSip();
 
-			smscStatAggregator.updateMsgInReceivedAll();
-			smscStatAggregator.updateMsgInReceivedSip();
+            // applying of MProc
+            Sms[] smss = MProcManagement.getInstance().applyMProc(sms0);
+
+            for (Sms sms : smss) {
+                TargetAddress ta = new TargetAddress(sms.getSmsSet());
+                TargetAddress lock = store.obtainSynchroObject(ta);
+
+                try {
+                    synchronized (lock) {
+                        // store and forward
+                        if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+                            try {
+                                sms.setStoringAfterFailure(true);
+                                this.scheduler.injectSmsOnFly(sms.getSmsSet());
+                            } catch (Exception e) {
+                                throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
+                                        MAPErrorCode.systemFailure, null, e);
+                            }
+                        } else {
+                            try {
+                                sms.setStored(true);
+                                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                                    store.createLiveSms(sms);
+                                    if (sms.getScheduleDeliveryTime() == null)
+                                        store.setNewMessageScheduled(sms.getSmsSet(),
+                                                MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+                                    else
+                                        store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
+                                } else {
+                                    store.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast,
+                                            false);
+                                }
+                            } catch (PersistenceException e) {
+                                throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(),
+                                        SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
+                            }
+                        }
+                    }
+                } finally {
+                    store.releaseSynchroObject(lock);
+                }
+            }
 		}
 	}
 

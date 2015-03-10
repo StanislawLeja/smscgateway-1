@@ -95,6 +95,16 @@ public interface SMSCOAMMessages {
 
     public static final String CORRELATION_TABLE_HAS_BE_LOADED = "cc_mccmnc correlation table has been loaded";
 
+    public static final String MPROC_CREATE_SUCCESS = "Successfully created MProcRule id=%d";
+
+    public static final String MPROC_MODIFY_SUCCESS = "Successfully modified MProcRule id=%d";
+
+    public static final String MPROC_DESTROY_SUCCESS = "Successfully destroyed MProcRule id=%d";
+
+    public static final String MPROC_NO_RULE = "No MProcRule - id=%d";
+
+    public static final String MPROC_NO_RULES = "No MProcRules";
+
 	/**
 	 * Generic constants
 	 */

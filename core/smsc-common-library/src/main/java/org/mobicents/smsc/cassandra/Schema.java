@@ -39,6 +39,7 @@ public class Schema {
     public static final String COLUMN_ID = "ID";
     public static final String COLUMN_TARGET_ID = "TARGET_ID";
     public static final String COLUMN_NETWORK_ID = "NETWORK_ID";
+    public static final String COLUMN_ORIG_NETWORK_ID = "ORIG_NETWORK_ID";
     public static final String COLUMN_SENT = "SENT";
     public static final String COLUMN_MESSAGE_ID = "MESSAGE_ID";
     public static final String COLUMN_MO_MESSAGE_REF = "MO_MESSAGE_REF";
@@ -156,6 +157,7 @@ public class Schema {
 		tmp.add(COLUMN_ADDR_SRC_DIGITS);
 		tmp.add(COLUMN_ADDR_SRC_TON);
 		tmp.add(COLUMN_ADDR_SRC_NPI);
+        tmp.add(COLUMN_ORIG_NETWORK_ID);
 
 		tmp.add(COLUMN_SERVICE_TYPE);
 		tmp.add(COLUMN_ESM_CLASS);
@@ -181,9 +183,11 @@ public class Schema {
         tmp.add(COLUMN_ADDR_DST_DIGITS);
         tmp.add(COLUMN_ADDR_DST_TON);
         tmp.add(COLUMN_ADDR_DST_NPI);
-		tmp.add(COLUMN_ADDR_SRC_DIGITS);
+		tmp.add(COLUMN_NETWORK_ID);
+        tmp.add(COLUMN_ADDR_SRC_DIGITS);
 		tmp.add(COLUMN_ADDR_SRC_TON);
 		tmp.add(COLUMN_ADDR_SRC_NPI);
+        tmp.add(COLUMN_ORIG_NETWORK_ID);
 
 		tmp.add(COLUMN_MESSAGE_ID);
         tmp.add(COLUMN_MO_MESSAGE_REF);

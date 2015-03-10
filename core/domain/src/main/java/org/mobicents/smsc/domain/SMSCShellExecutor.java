@@ -23,6 +23,7 @@
 package org.mobicents.smsc.domain;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.smsc.cassandra.SmsRoutingRuleType;
 import org.mobicents.smsc.library.DbSmsRoutingRule;
+import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.ss7.management.console.ShellExecutor;
 
@@ -49,7 +51,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 	private SmscManagement smscManagement;
 
-	private static SmscPropertiesManagement smscPropertiesManagement;
+    private static SmscPropertiesManagement smscPropertiesManagement;
 
 	private static final MapVersionCache mapVersionCache = MapVersionCache.getInstance();
 
@@ -170,6 +172,239 @@ public class SMSCShellExecutor implements ShellExecutor {
 		return String.format(SMSCOAMMessages.SIP_MODIFY_SUCCESS, name);
 	}
 
+    /**
+     * Command is mproc add <id> desttonmask <destination type of number>
+     * destnpimask <destination numbering plan indicator> destdigmask <regular
+     * expression - destination number digits mask> originatingmask <mo | hr |
+     * esme | sip> networkidmask <networkId value> newnetworkid <new networkId
+     * value> newdestton <new destination type of number> newdestnpi <new
+     * destination numbering plan indicator> addestdigprefix <prefix> makecopy
+     * <false | true>
+     * 
+     * @param args
+     * @return
+     * @throws Exception
+     */
+    private String addMProc(String[] args) throws Exception {
+        if (args.length < 4 || args.length > 26) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        // create new MProcRule
+        int id = Integer.parseInt(args[3]);
+
+        MProcManagement mProcManagement = MProcManagement.getInstance();
+        MProcRule mProcRule = mProcManagement.getMProcRuleById(id);
+        if (mProcRule != null) {
+            return String.format(MProcRuleOamMessages.CREATE_MPROC_RULE_FAIL_ALREADY_EXIST, id);
+        }
+
+        int count = 4;
+        String command;
+
+        boolean success = false;
+        int destTonMask = -1;
+        int destNpiMask = -1;
+        String destDigMask = "-1";
+        String originatingMask = "-1";
+        int networkIdMask = -1;
+        int newNetworkId = -1;
+        int newDestTon = -1;
+        int newDestNpi = -1;
+        String addDestDigPrefix = "-1";
+        boolean makeCopy = false;
+        while (count < args.length) {
+            command = args[count++];
+            if (count < args.length) {
+                String value = args[count++];
+                if (command.equals("desttonmask")) {
+                    destTonMask = Integer.parseInt(value);
+                } else if (command.equals("destnpimask")) {
+                    destNpiMask = Integer.parseInt(value);
+                } else if (command.equals("destdigmask")) {
+                    destDigMask = value;
+                } else if (command.equals("originatingmask")) {
+                    originatingMask = value;
+                } else if (command.equals("networkidmask")) {
+                    networkIdMask = Integer.parseInt(value);
+                } else if (command.equals("newnetworkid")) {
+                    newNetworkId = Integer.parseInt(value);
+                    success = true;
+                } else if (command.equals("newdestton")) {
+                    newDestTon = Integer.parseInt(value);
+                    success = true;
+                } else if (command.equals("newdestnpi")) {
+                    newDestNpi = Integer.parseInt(value);
+                    success = true;
+                } else if (command.equals("adddestdigprefix")) {
+                    addDestDigPrefix = value;
+                    success = true;
+
+                } else if (command.equals("makecopy")) {
+                    makeCopy = Boolean.parseBoolean(value);
+                    success = true;
+                }
+            }
+        }// while
+
+        if (!success) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        mProcManagement.createMProcRule(id, destTonMask, destNpiMask, destDigMask, originatingMask, networkIdMask, newNetworkId, newDestTon, newDestNpi,
+                addDestDigPrefix, makeCopy);
+
+        return String.format(SMSCOAMMessages.MPROC_CREATE_SUCCESS, id);
+    }
+
+    /**
+     * Command is mproc modify <id> desttonmask <destination type of number>
+     * destnpimask <destination numbering plan indicator> destdigmask <regular
+     * expression - destination number digits mask> originatingmask <mo | hr |
+     * esme | sip> networkidmask <networkId value> newnetworkid <new networkId
+     * value> newdestton <new destination type of number> newdestnpi <new
+     * destination numbering plan indicator> addestdigprefix <prefix> makecopy
+     * <false | true>
+     * 
+     * @param args
+     * @return
+     * @throws Exception
+     */
+    private String modifyMProc(String[] args) throws Exception {
+        if (args.length < 4 || args.length > 26) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        // modify of existing MProcRule
+        int id = Integer.parseInt(args[3]);
+
+        MProcManagement mProcManagement = MProcManagement.getInstance();
+        MProcRule mProcRule = mProcManagement.getMProcRuleById(id);
+        if (mProcRule == null) {
+            return String.format(MProcRuleOamMessages.MODIFY_MPROC_RULE_FAIL_NOT_EXIST, id);
+        }
+
+        int count = 4;
+        String command;
+
+        boolean success = false;
+        while (count < args.length) {
+            command = args[count++];
+            if (count < args.length) {
+                String value = args[count++];
+                if (command.equals("desttonmask")) {
+                    int val = Integer.parseInt(value);
+                    mProcRule.setDestTonMask(val);
+                    success = true;
+                } else if (command.equals("destnpimask")) {
+                    int val = Integer.parseInt(value);
+                    mProcRule.setDestNpiMask(val);
+                    success = true;
+                } else if (command.equals("destdigmask")) {
+                    mProcRule.setDestDigMask(value);
+                    success = true;
+                } else if (command.equals("originatingmask")) {
+                    Sms.OriginationType originatingMask = Enum.valueOf(Sms.OriginationType.class, value);
+                    mProcRule.setOriginatingMask(originatingMask);
+                    success = true;
+                } else if (command.equals("networkidmask")) {
+                    int val = Integer.parseInt(value);
+                    mProcRule.setNetworkIdMask(val);
+                    success = true;
+                } else if (command.equals("newnetworkid")) {
+                    int val = Integer.parseInt(value);
+                    mProcRule.setNewNetworkId(val);
+                    success = true;
+                } else if (command.equals("newdestton")) {
+                    int val = Integer.parseInt(value);
+                    mProcRule.setNewDestTon(val);
+                    success = true;
+                } else if (command.equals("newdestnpi")) {
+                    int val = Integer.parseInt(value);
+                    mProcRule.setNewDestNpi(val);
+                    success = true;
+                } else if (command.equals("adddestdigprefix")) {
+                    mProcRule.setAddDestDigPrefix(value);
+                    success = true;
+                } else if (command.equals("makecopy")) {
+                    boolean val = Boolean.parseBoolean(value);
+                    mProcRule.setMakeCopy(val);
+                    success = true;
+                }
+            }
+        }// while
+
+        if (!success) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        return String.format(SMSCOAMMessages.MPROC_MODIFY_SUCCESS, id);
+    }
+
+    /**
+     * Command is mproc destroy <id>
+     * 
+     * @param args
+     * @return
+     * @throws Exception
+     */
+    private String removeMProc(String[] args) throws Exception {
+        if (args.length < 4 || args.length > 4) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        // destroy of existing MProcRule
+        int id = Integer.parseInt(args[3]);
+
+        MProcManagement mProcManagement = MProcManagement.getInstance();
+        MProcRule mProcRule = mProcManagement.getMProcRuleById(id);
+        if (mProcRule != null) {
+            return String.format(MProcRuleOamMessages.DESTROY_MPROC_RULE_FAIL_NOT_EXIST, id);
+        }
+
+        mProcManagement.destroyMProcRule(id);
+
+        return String.format(SMSCOAMMessages.MPROC_DESTROY_SUCCESS, id);
+    }
+
+    /**
+     * Command is "show destroy <id>" or "show destroy"
+     * 
+     * @param args
+     * @return
+     * @throws Exception
+     */
+    private String showMProc(String[] args) throws Exception {
+        if (args.length < 3 || args.length > 4) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        // show of existing MProcRule / all MProcRule
+        MProcManagement mProcManagement = MProcManagement.getInstance();
+        if (args.length == 3) {
+            ArrayList<MProcRule> lst = mProcManagement.getMProcRule();
+
+            StringBuilder sb = new StringBuilder();
+            if (lst.size() == 0) {
+                sb.append(SMSCOAMMessages.MPROC_NO_RULES);
+            } else {
+                for (MProcRule rule : lst) {
+                    sb.append(rule.toString());
+                    sb.append("\n");
+                }
+            }
+            return sb.toString();
+        } else {
+            int id = Integer.parseInt(args[3]);
+            MProcRule rule = mProcManagement.getMProcRuleById(id);
+            if (rule == null) {
+                return String.format(SMSCOAMMessages.MPROC_NO_RULE, id);
+            }
+
+            return rule.toString();
+        }
+    }
+
 	private String executeSmsc(String[] args) {
 		try {
 			if (args.length < 2 || args.length > 50) {
@@ -194,6 +429,24 @@ public class SMSCShellExecutor implements ShellExecutor {
 				}
 
 				return SMSCOAMMessages.INVALID_COMMAND;
+
+            } else if (args[1].equals("mproc")) {
+                String rasCmd = args[2];
+                if (rasCmd == null) {
+                    return SMSCOAMMessages.INVALID_COMMAND;
+                }
+
+                if (rasCmd.equals("add")) {
+                    return this.addMProc(args);
+                } else if (rasCmd.equals("modify")) {
+                    return this.modifyMProc(args);
+                } else if (rasCmd.equals("remove")) {
+                    return this.removeMProc(args);
+                } else if (rasCmd.equals("show")) {
+                    return this.showMProc(args);
+                }
+
+                return SMSCOAMMessages.INVALID_COMMAND;
 
 			} else if (args[1].equals("set")) {
 				return this.manageSet(args);
@@ -314,14 +567,14 @@ public class SMSCShellExecutor implements ShellExecutor {
 			}
 		}
 
-		FastMap<String, MAPApplicationContextVersion> cache = mapVersionCache.getMAPApplicationContextVersionCache();
+		FastMap<String, MapVersionNeg> cache = mapVersionCache.getMAPApplicationContextVersionCache();
 		if (cache.size() == 0) {
 			return SMSCOAMMessages.MAP_VERSION_CACHE_NOT_FOUND;
 		}
 
 		StringBuffer sb = new StringBuffer();
-		for (FastMap.Entry<String, MAPApplicationContextVersion> e = cache.head(), end = cache.tail(); (e = e.getNext()) != end;) {
-			sb.append(e.getKey()).append(MAP_CACHE_KEY_VALUE_SEPARATOR).append(e.getValue()).append(LINE_SEPARATOR);
+		for (FastMap.Entry<String, MapVersionNeg> e = cache.head(), end = cache.tail(); (e = e.getNext()) != end;) {
+			sb.append(e.getKey()).append(MAP_CACHE_KEY_VALUE_SEPARATOR).append(e.getValue().getCurVersion()).append(LINE_SEPARATOR);
 		}
 
 		return sb.toString();
@@ -370,7 +623,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		}
 
-		mapVersionCache.setMAPApplicationContextVersion(msisdn, mapApplicationContextVersion);
+		mapVersionCache.forceMAPApplicationContextVersion(msisdn, mapApplicationContextVersion);
 
 		return SMSCOAMMessages.MAP_VERSION_CACHE_SUCCESSFULLY_SET;
 	}
@@ -522,6 +775,8 @@ public class SMSCShellExecutor implements ShellExecutor {
                 smscPropertiesManagement.setGenerateReceiptCdr(Boolean.parseBoolean(options[3]));
             } else if (parName.equals("receiptsdisabling")) {
                 smscPropertiesManagement.setReceiptsDisabling(Boolean.parseBoolean(options[3]));
+            } else if (parName.equals("orignetworkidforreceipts")) {
+                smscPropertiesManagement.setOrigNetworkIdForReceipts(Boolean.parseBoolean(options[3]));
             } else if (parName.equals("generatecdr")) {
                 int val = Integer.parseInt(options[3]);
                 smscPropertiesManagement.setGenerateCdrInt(val);
@@ -693,8 +948,10 @@ public class SMSCShellExecutor implements ShellExecutor {
                 sb.append(smscPropertiesManagement.getGenerateReceiptCdr());
             } else if (parName.equals("receiptsdisabling")) {
                 sb.append(smscPropertiesManagement.getReceiptsDisabling());
-            } else if (parName.equals("generatecdr")) {
-                sb.append(smscPropertiesManagement.getGenerateCdr().getValue());
+            } else if (parName.equals("receiptsdisabling")) {
+                sb.append(smscPropertiesManagement.getReceiptsDisabling());
+            } else if (parName.equals("orignetworkidforreceipts")) {
+                sb.append(smscPropertiesManagement.getOrigNetworkIdForReceipts());
             } else if (parName.equals("generatearchivetable")) {
                 sb.append(smscPropertiesManagement.getGenerateArchiveTable().getValue());
 
@@ -889,6 +1146,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 
             sb.append("receiptsdisabling = ");
             sb.append(smscPropertiesManagement.getReceiptsDisabling());
+            sb.append("\n");
+
+            sb.append("orignetworkidforreceipts = ");
+            sb.append(smscPropertiesManagement.getOrigNetworkIdForReceipts());
             sb.append("\n");
 
             sb.append("generatecdr = ");

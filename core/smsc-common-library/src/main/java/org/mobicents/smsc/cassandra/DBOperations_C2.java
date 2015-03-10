@@ -742,7 +742,8 @@ public class DBOperations_C2 {
 			PreparedStatement ps = psc.createRecordCurrent;
 			BoundStatement boundStatement = new BoundStatement(ps);
 
-			setSmsFields(sms, dueSlot, boundStatement, false, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(), psc.getAddedNetworkId());
+            setSmsFields(sms, dueSlot, boundStatement, false, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(), psc.getAddedNetworkId(),
+                    psc.getAddedOrigNetworkId());
 
 			ResultSet res = session.execute(boundStatement);
 		} catch (Exception e1) {
@@ -763,7 +764,8 @@ public class DBOperations_C2 {
 			PreparedStatement ps = psc.createRecordArchive;
 			BoundStatement boundStatement = new BoundStatement(ps);
 
-			setSmsFields(sms, dueSlot, boundStatement, true, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(), psc.getAddedNetworkId());
+            setSmsFields(sms, dueSlot, boundStatement, true, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(), psc.getAddedNetworkId(),
+                    psc.getAddedOrigNetworkId());
 
 			ResultSet res = session.execute(boundStatement);
 		} catch (Exception e1) {
@@ -774,7 +776,7 @@ public class DBOperations_C2 {
 	}
 
     private void setSmsFields(Sms sms, long dueSlot, BoundStatement boundStatement, boolean archive, boolean shortMessageNewStringFormat, boolean addedCorrId,
-            boolean addedNetworkId) throws PersistenceException {
+            boolean addedNetworkId, boolean addedOrigNetworkId) throws PersistenceException {
 		boundStatement.setUUID(Schema.COLUMN_ID, sms.getDbId());
         boundStatement.setString(Schema.COLUMN_TARGET_ID, sms.getSmsSet().getTargetId());
         if (addedNetworkId) {
@@ -787,11 +789,16 @@ public class DBOperations_C2 {
 		boundStatement.setString(Schema.COLUMN_ADDR_DST_DIGITS, sms.getSmsSet().getDestAddr());
 		boundStatement.setInt(Schema.COLUMN_ADDR_DST_TON, sms.getSmsSet().getDestAddrTon());
 		boundStatement.setInt(Schema.COLUMN_ADDR_DST_NPI, sms.getSmsSet().getDestAddrNpi());
+
+
 		if (sms.getSourceAddr() != null) {
 			boundStatement.setString(Schema.COLUMN_ADDR_SRC_DIGITS, sms.getSourceAddr());
 		}
 		boundStatement.setInt(Schema.COLUMN_ADDR_SRC_TON, sms.getSourceAddrTon());
 		boundStatement.setInt(Schema.COLUMN_ADDR_SRC_NPI, sms.getSourceAddrNpi());
+        if (addedOrigNetworkId) {
+            boundStatement.setInt(Schema.COLUMN_ORIG_NETWORK_ID, sms.getOrigNetworkId());
+        }
 
 		boundStatement.setInt(Schema.COLUMN_DUE_DELAY, sms.getSmsSet().getDueDelay());
 		if (sms.getSmsSet().getStatus() != null)
@@ -938,7 +945,8 @@ public class DBOperations_C2 {
 			ResultSet res = session.execute(boundStatement);
 
 			for (Row row : res) {
-                SmsSet smsSet = this.createSms(row, null, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(), psc.getAddedNetworkId());
+                SmsSet smsSet = this.createSms(row, null, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(), psc.getAddedNetworkId(),
+                        psc.getAddedOrigNetworkId());
 				if (smsSet != null)
 					result.add(smsSet);
 			}
@@ -962,7 +970,8 @@ public class DBOperations_C2 {
 			ResultSet res = session.execute(boundStatement);
 
 			for (Row row : res) {
-                result = this.createSms(row, result, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(), psc.getAddedNetworkId());
+                result = this.createSms(row, result, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(), psc.getAddedNetworkId(),
+                        psc.getAddedOrigNetworkId());
 			}
 		} catch (Exception e1) {
 			String msg = "Failed getRecordListForTargeId()";
@@ -973,8 +982,8 @@ public class DBOperations_C2 {
         return result;
 	}
 
-    protected SmsSet createSms(final Row row, SmsSet smsSet, boolean shortMessageNewStringFormat, boolean addedCorrId, boolean addedNetworkId)
-            throws PersistenceException {
+    protected SmsSet createSms(final Row row, SmsSet smsSet, boolean shortMessageNewStringFormat, boolean addedCorrId, boolean addedNetworkId,
+            boolean addedOrigNetworkId) throws PersistenceException {
         if (row == null) {
             return smsSet;
         }
@@ -994,6 +1003,9 @@ public class DBOperations_C2 {
 		sms.setSourceAddr(row.getString(Schema.COLUMN_ADDR_SRC_DIGITS));
 		sms.setSourceAddrTon(row.getInt(Schema.COLUMN_ADDR_SRC_TON));
 		sms.setSourceAddrNpi(row.getInt(Schema.COLUMN_ADDR_SRC_NPI));
+        if (addedOrigNetworkId) {
+            sms.setOrigNetworkId(row.getInt(Schema.COLUMN_ORIG_NETWORK_ID));
+        }
 
 		sms.setMessageId(row.getLong(Schema.COLUMN_MESSAGE_ID));
 		sms.setMoMessageRef(row.getInt(Schema.COLUMN_MO_MESSAGE_REF));
@@ -1396,7 +1408,8 @@ public class DBOperations_C2 {
 
 		appendField(sb, Schema.COLUMN_ADDR_SRC_DIGITS, "ascii");
 		appendField(sb, Schema.COLUMN_ADDR_SRC_TON, "int");
-		appendField(sb, Schema.COLUMN_ADDR_SRC_NPI, "int");
+        appendField(sb, Schema.COLUMN_ADDR_SRC_NPI, "int");
+        appendField(sb, Schema.COLUMN_ORIG_NETWORK_ID, "int");
 
 		appendField(sb, Schema.COLUMN_DUE_DELAY, "int");
 		appendField(sb, Schema.COLUMN_ALERTING_SUPPORTED, "boolean");

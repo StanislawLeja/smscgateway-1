@@ -53,6 +53,7 @@ public class Sms implements Serializable {
 	private int sourceAddrTon;
 	private int sourceAddrNpi;
 	private String sourceAddr;
+    private int origNetworkId;
 
 	private long messageId;
 	private int moMessageRef;
@@ -192,6 +193,17 @@ public class Sms implements Serializable {
 	public void setSourceAddr(String sourceAddr) {
 		this.sourceAddr = sourceAddr;
 	}
+
+    /**
+     * original networkId
+     */
+    public int getOrigNetworkId() {
+        return origNetworkId;
+    }
+
+    public void setOrigNetworkId(int origNetworkId) {
+        this.origNetworkId = origNetworkId;
+    }
 
 	/**
 	 * Unique message ID assigned by SMSC (since SMSC started)
@@ -479,8 +491,10 @@ public class Sms implements Serializable {
 		sb.append(sourceAddrTon);
 		sb.append(", sourceAddrNpi=");
 		sb.append(sourceAddrNpi);
-		sb.append(", sourceAddr=");
-		sb.append(sourceAddr);
+        sb.append(", sourceAddr=");
+        sb.append(sourceAddr);
+        sb.append(", origNetworkId=");
+        sb.append(origNetworkId);
 		sb.append(", messageId=");
 		sb.append(messageId);
 		sb.append(", moMessageRef=");

@@ -41,7 +41,6 @@ import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
-import org.mobicents.smsc.domain.NextCorrelationIdResult;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
@@ -435,6 +434,7 @@ public class TT_CassandraTest {
                 sms.setSourceAddrTon(1);
                 sms.setSourceAddrNpi(1);
                 sms.setMessageId(8888888);
+                sms.setOrigNetworkId(49);
 
                 sms.setDataCoding(dcs.getCode());
 
@@ -477,6 +477,7 @@ public class TT_CassandraTest {
                 assertEquals(lst.size(), 1);
                 SmsSet smsSet = lst.get(0);
                 assertEquals(smsSet.getNetworkId(), 9);
+                assertEquals(sms.getOrigNetworkId(), 49);
                 for (Sms sms1 : smsSet.getRawList()) {
                     if (sms1.getDbId().equals(sms.getDbId())) {
                         assertEquals(sms1.getDataCoding(), dcs.getCode());
@@ -724,6 +725,7 @@ public class TT_CassandraTest {
         sms.setSourceAddrNpi(11 + num);
         sms.setMessageId(8888888 + num);
         sms.setMoMessageRef(102 + num);
+        sms.setOrigNetworkId(49);
 
         sms.setOrigEsmeName("esme_" + num);
         sms.setOrigSystemId("sys_" + num);
@@ -772,6 +774,7 @@ public class TT_CassandraTest {
         assertEquals(sms.getSourceAddr(), "11112_" + num);
         assertEquals(sms.getSourceAddrTon(), 14 + num);
         assertEquals(sms.getSourceAddrNpi(), 11 + num);
+        assertEquals(sms.getOrigNetworkId(), 49);
 
         assertEquals(sms.getMessageId(), 8888888 + num);
         assertEquals(sms.getMoMessageRef(), 102 + num);

@@ -142,6 +142,7 @@ public class HomeRoutingManagementTest {
         assertEquals(man.getCcMccmncMap().size(), 1);
         man.modifyCcMccmnc("0111", "77702", null);
         assertEquals(man.getCcMccmncMap().size(), 1);
+        val = man.getCcMccmncValue("0111");
         assertEquals(val.getCountryCode(), "0111");
         assertEquals(val.getMccMnc(), "77702");
         assertNull(val.getSmsc());

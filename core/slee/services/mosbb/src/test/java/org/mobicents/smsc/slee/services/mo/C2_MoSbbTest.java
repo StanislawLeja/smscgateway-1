@@ -38,7 +38,6 @@ import org.mobicents.protocols.asn.AsnOutputStream;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
-import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
@@ -77,7 +76,9 @@ import org.mobicents.protocols.ss7.map.smstpdu.ValidityPeriodImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
+import org.mobicents.smsc.domain.MProcManagement;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
@@ -124,8 +125,16 @@ public class C2_MoSbbTest {
             return;
         this.pers.start();
 
+        MProcManagement.getInstance("TestMo");
         SmscPropertiesManagement.getInstance("Test");
         SmscPropertiesManagement.getInstance().setSmscStopped(false);
+        SmscPropertiesManagement.getInstance().setStoreAndForwordMode(StoreAndForwordMode.normal);
+        try {
+            MProcManagement.getInstance().destroyMProcRule(1);
+            MProcManagement.getInstance().destroyMProcRule(2);
+            MProcManagement.getInstance().destroyMProcRule(3);
+        } catch (Exception e) {
+        }
 
         this.sbb = new MoSbbProxy(this.pers);
     }
@@ -558,6 +567,187 @@ public class C2_MoSbbTest {
 
         assertEquals(sms.getShortMessageText(), "abc 01234567890");
         assertEquals(sms.getShortMessageBin(), decodedUserDataHeader.getEncodedData());
+    }
+
+    @Test(groups = { "Mo" })
+    public void testMo4_MProc() throws Exception {
+
+        if (!this.cassandraDbInited)
+            return;
+
+        MProcManagement.getInstance().createMProcRule(1, 1, 1, "-1", "SS7_MO", 0, -1, -1, -1, "47", true);
+        MProcManagement.getInstance().createMProcRule(2, -1, -1, "-1", null, 0, 5, 2, -1, "-1", true);
+        // destTonMask, destNpiMask, destDigMask, originatingMask, networkIdMask, newNetworkId, newDestTon, newDestNpi, addDestDigPrefix, makeCopy
+
+        SmppSessionsProxy smppServerSessions = new SmppSessionsProxy();
+        this.sbb.setSmppServerSessions(smppServerSessions);
+
+
+        AddressString serviceCentreAddressDA = new AddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "1111");
+        SM_RP_DA sm_RP_DA = new SM_RP_DAImpl(serviceCentreAddressDA);
+        ISDNAddressString msisdn = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "4444");
+        SM_RP_OAImpl sm_RP_OA = new SM_RP_OAImpl();
+        sm_RP_OA.setMsisdn(msisdn);
+        AddressField destinationAddress = new AddressFieldImpl(TypeOfNumber.InternationalNumber, NumberingPlanIdentification.ISDNTelephoneNumberingPlan, "5555");
+        ProtocolIdentifier protocolIdentifier = new ProtocolIdentifierImpl(12);
+        DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(8);
+        UserData userData = new UserDataImpl(new String("UCS2 USC2 USC2"), dataCodingScheme, null, null);
+        SmsTpdu tpdu = new SmsSubmitTpduImpl(false, false, false, 150, destinationAddress, protocolIdentifier, null, userData);
+        SmsSignalInfo sm_RP_UI = new SmsSignalInfoImpl(tpdu, null);
+        ForwardShortMessageRequest event = new ForwardShortMessageRequestImpl(sm_RP_DA, sm_RP_OA, sm_RP_UI, false);
+
+        long dueSlot = this.pers.c2_getDueSlotForTime(new Date());
+        PreparedStatementCollection_C3 psc = this.pers.getStatementCollection(new Date());
+        int b1 = this.pers.checkSmsExists(dueSlot, ta1.getTargetId());
+        long b2 = this.pers.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
+        assertEquals(b1, 0);
+        assertEquals(b2, 0L);
+
+        MAPProviderProxy proxy = new MAPProviderProxy();
+        MAPDialogSmsProxy dialog = new MAPDialogSmsProxy(new MAPServiceSmsProxy(proxy), null, null, null);
+        event.setMAPDialog(dialog);
+        Date curDate = new Date();
+        MAPApplicationContext act = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgMORelayContext, MAPApplicationContextVersion.version2);
+        dialog.setApplicationContext(act);
+        this.sbb.onForwardShortMessageRequest(event, null);
+
+        TargetAddress tax1 = new TargetAddress(1, 1, "475555", 0);
+        TargetAddress tax2 = new TargetAddress(2, 1, "475555", 5);
+//        int addrTon, int addrNpi, String addr, int networkId
+
+        b2 = this.pers.c2_getDueSlotForTargetId(psc, ta1.getTargetId());
+        dueSlot = b2;
+        b1 = this.pers.checkSmsExists(dueSlot, ta1.getTargetId());
+        assertEquals(b1, 1);
+        assertEquals(b2, dueSlot);
+        b2 = this.pers.c2_getDueSlotForTargetId(psc, tax1.getTargetId());
+        long dueSlot2 = b2;
+        b1 = this.pers.checkSmsExists(dueSlot, tax1.getTargetId());
+        assertEquals(b1, 1);
+        assertEquals(b2, dueSlot2);
+        long dueSlot3 = b2;
+        b1 = this.pers.checkSmsExists(dueSlot, tax1.getTargetId());
+        assertEquals(b1, 1);
+        assertEquals(b2, dueSlot3);
+
+        assertEquals(dialog.getResponseCount(), 1);
+        assertEquals(dialog.getErrorList().size(), 0);
+
+        SmsSet smsSet = this.pers.c2_getRecordListForTargeId(dueSlot, ta1.getTargetId());
+        SmsSet smsSet2 = this.pers.c2_getRecordListForTargeId(dueSlot2, tax1.getTargetId());
+        SmsSet smsSet3 = this.pers.c2_getRecordListForTargeId(dueSlot3, tax2.getTargetId());
+
+        assertEquals(smsSet.getDestAddr(), "5555");
+        assertEquals(smsSet.getDestAddrTon(), SmppConstants.TON_INTERNATIONAL);
+        assertEquals(smsSet.getDestAddrNpi(), SmppConstants.NPI_E164);
+        assertEquals(smsSet.getNetworkId(), 0);
+        assertEquals(smsSet2.getDestAddr(), "475555");
+        assertEquals(smsSet2.getDestAddrTon(), SmppConstants.TON_INTERNATIONAL);
+        assertEquals(smsSet2.getDestAddrNpi(), SmppConstants.NPI_E164);
+        assertEquals(smsSet2.getNetworkId(), 0);
+        assertEquals(smsSet3.getDestAddr(), "475555");
+        assertEquals(smsSet3.getDestAddrTon(), SmppConstants.TON_NATIONAL);
+        assertEquals(smsSet3.getDestAddrNpi(), SmppConstants.NPI_E164);
+        assertEquals(smsSet3.getNetworkId(), 5);
+
+        Sms sms = smsSet.getSms(0);
+        assertNotNull(sms);
+        assertEquals(sms.getSourceAddr(), "4444");
+        assertEquals(sms.getSourceAddrTon(), SmppConstants.TON_INTERNATIONAL);
+        assertEquals(sms.getSourceAddrNpi(), SmppConstants.NPI_E164);
+        assertEquals(sms.getMessageId(), DBOperations_C2.MESSAGE_ID_LAG + 1);
+        assertEquals(sms.getMoMessageRef(), 150);
+
+        assertEquals(sms.getDataCoding(), 8);
+        assertNull(sms.getOrigEsmeName());
+        assertNull(sms.getOrigSystemId());
+
+        assertNull(sms.getServiceType());
+        assertEquals(sms.getEsmClass() & 0xFF, 3);
+        assertEquals(sms.getRegisteredDelivery(), 0);
+
+        assertEquals(sms.getProtocolId(), 12);
+        assertEquals(sms.getPriority(), 0);
+        assertEquals(sms.getReplaceIfPresent(), 0);
+        assertEquals(sms.getDefaultMsgId(), 0);
+
+        assertEquals(sms.getTlvSet().getOptionalParameterCount(), 0);
+
+        assertNull(sms.getScheduleDeliveryTime());
+        assertDateEq(sms.getValidityPeriod(), MessageUtil.addHours(curDate, 24 * 3));
+
+        assertEquals(sms.getDeliveryCount(), 0);
+        assertEquals(sms.getShortMessageText(), "UCS2 USC2 USC2");
+        assertNull(sms.getShortMessageBin());
+
+        sms = smsSet2.getSms(0);
+        assertNotNull(sms);
+        assertEquals(sms.getSourceAddr(), "4444");
+        assertEquals(sms.getSourceAddrTon(), SmppConstants.TON_INTERNATIONAL);
+        assertEquals(sms.getSourceAddrNpi(), SmppConstants.NPI_E164);
+        assertEquals(sms.getMessageId(), DBOperations_C2.MESSAGE_ID_LAG + 1);
+        assertEquals(sms.getMoMessageRef(), 150);
+
+        assertEquals(sms.getDataCoding(), 8);
+        assertNull(sms.getOrigEsmeName());
+        assertNull(sms.getOrigSystemId());
+
+        assertNull(sms.getServiceType());
+        assertEquals(sms.getEsmClass() & 0xFF, 3);
+        assertEquals(sms.getRegisteredDelivery(), 0);
+
+        assertEquals(sms.getProtocolId(), 12);
+        assertEquals(sms.getPriority(), 0);
+        assertEquals(sms.getReplaceIfPresent(), 0);
+        assertEquals(sms.getDefaultMsgId(), 0);
+
+        assertEquals(sms.getTlvSet().getOptionalParameterCount(), 0);
+
+        assertNull(sms.getScheduleDeliveryTime());
+        assertDateEq(sms.getValidityPeriod(), MessageUtil.addHours(curDate, 24 * 3));
+
+        assertEquals(sms.getDeliveryCount(), 0);
+        assertEquals(sms.getShortMessageText(), "UCS2 USC2 USC2");
+        assertNull(sms.getShortMessageBin());
+
+        sms = smsSet3.getSms(0);
+        assertNotNull(sms);
+        assertEquals(sms.getSourceAddr(), "4444");
+        assertEquals(sms.getSourceAddrTon(), SmppConstants.TON_INTERNATIONAL);
+        assertEquals(sms.getSourceAddrNpi(), SmppConstants.NPI_E164);
+        assertEquals(sms.getMessageId(), DBOperations_C2.MESSAGE_ID_LAG + 1);
+        assertEquals(sms.getMoMessageRef(), 150);
+
+        assertEquals(sms.getDataCoding(), 8);
+        assertNull(sms.getOrigEsmeName());
+        assertNull(sms.getOrigSystemId());
+
+        assertNull(sms.getServiceType());
+        assertEquals(sms.getEsmClass() & 0xFF, 3);
+        assertEquals(sms.getRegisteredDelivery(), 0);
+
+        assertEquals(sms.getProtocolId(), 12);
+        assertEquals(sms.getPriority(), 0);
+        assertEquals(sms.getReplaceIfPresent(), 0);
+        assertEquals(sms.getDefaultMsgId(), 0);
+
+        assertEquals(sms.getTlvSet().getOptionalParameterCount(), 0);
+
+        assertNull(sms.getScheduleDeliveryTime());
+        assertDateEq(sms.getValidityPeriod(), MessageUtil.addHours(curDate, 24 * 3));
+
+        assertEquals(sms.getDeliveryCount(), 0);
+        assertEquals(sms.getShortMessageText(), "UCS2 USC2 USC2");
+        assertNull(sms.getShortMessageBin());
+
+        try {
+            MProcManagement.getInstance().destroyMProcRule(1);
+            MProcManagement.getInstance().destroyMProcRule(2);
+//            MProcManagement.getInstance().destroyMProcRule(3);
+        } catch (Exception e) {
+        }
+    
+    
     }
 
 //    private void clearDatabase() throws PersistenceException, IOException {

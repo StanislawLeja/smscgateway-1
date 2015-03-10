@@ -301,7 +301,7 @@ public abstract class RxSipServerSbb implements Sbb {
 								this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr()
 										+ ", dest=" + receipt.getSmsSet().getDestAddr());
 							} else {
-								receipt = MessageUtil.createReceiptSms(sms, true, ta);
+								receipt = MessageUtil.createReceiptSms(sms, true, ta, smscPropertiesManagement.getOrigNetworkIdForReceipts());
 								boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
 								if (!storeAndForwMode) {
 									try {
@@ -780,7 +780,7 @@ public abstract class RxSipServerSbb implements Sbb {
 								pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil
 										.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
 							} else {
-								receipt = MessageUtil.createReceiptSms(sms, false, ta);
+								receipt = MessageUtil.createReceiptSms(sms, false, ta, smscPropertiesManagement.getOrigNetworkIdForReceipts());
 								boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
 								if (!storeAndForwMode) {
 									try {

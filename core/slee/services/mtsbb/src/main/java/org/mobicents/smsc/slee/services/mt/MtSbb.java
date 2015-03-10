@@ -945,7 +945,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                             pers.setNewMessageScheduled(receipt.getSmsSet(),
                                     MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
                         } else {
-                            receipt = MessageUtil.createReceiptSms(sms, true, ta);
+                            receipt = MessageUtil.createReceiptSms(sms, true, ta, smscPropertiesManagement.getOrigNetworkIdForReceipts());
                             boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
                             if (!storeAndForwMode) {
                                 try {

@@ -22,10 +22,13 @@
 
 package org.mobicents.smsc.domain;
 
+import static org.testng.Assert.*;
+
 import javax.slee.facilities.FacilityException;
 import javax.slee.facilities.TraceLevel;
 
 import org.mobicents.smsc.domain.SMSCShellExecutor;
+import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.smpp.SmppManagement;
 import org.testng.annotations.Test;
 
@@ -89,7 +92,142 @@ public class SMSCShellExecutorTest {
         args = "smsc databaserule delete 2222 SIP networkid 2".split(" ");
         s = exec.execute(args);
 
+        smscManagement.stop();
+
     }
+
+    @Test(groups = { "ShellExecutor" })
+    public void testShellExecutor_MProc() throws Exception {
+
+        TT_PersistenceProxy sbb = new TT_PersistenceProxy();
+        boolean cassandraDbInited = sbb.testCassandraAccess();
+        if (!cassandraDbInited)
+            return;
+
+        SmscManagement smscManagement = SmscManagement.getInstance("Test");
+//        smscManagement.setSmsRoutingRuleClass("org.mobicents.smsc.domain.DatabaseSmsRoutingRule");
+        SmppManagement smppManagement = SmppManagement.getInstance("Test");
+        smscManagement.setSmppManagement(smppManagement);
+        smscManagement.start();
+        SMSCShellExecutor exec = new SMSCShellExecutor();
+        exec.setSmscManagement(smscManagement);
+
+        MProcManagement mProcManagement = MProcManagement.getInstance();
+        mProcManagement.mprocs.clear();
+        mProcManagement.store();
+
+        assertEquals(mProcManagement.mprocs.size(), 0);
+
+        String[] args = "smsc mproc add 10 desttonmask 2 destnpimask 3 destdigmask ^[0-9a-zA-Z]* originatingmask SS7_MO networkidmask 21 newnetworkid 22 newdestton 4 newdestnpi 5 adddestdigprefix 47 makecopy true".split(" ");
+        String s = exec.execute(args);
+
+        assertEquals(mProcManagement.mprocs.size(), 1);
+        MProcRule rule = mProcManagement.getMProcRuleById(10);
+        assertNotNull(rule);
+        assertEquals(rule.getId(), 10);
+        assertEquals(rule.getDestTonMask(), 2);
+        assertEquals(rule.getDestNpiMask(), 3);
+        assertEquals(rule.getDestDigMask(), "^[0-9a-zA-Z]*");
+        assertEquals(rule.getOriginatingMask(), Sms.OriginationType.SS7_MO);
+        assertEquals(rule.getNetworkIdMask(), 21);
+        assertEquals(rule.getNewNetworkId(), 22);
+        assertEquals(rule.getNewDestTon(), 4);
+        assertEquals(rule.getNewDestNpi(), 5);
+        assertEquals(rule.getAddDestDigPrefix(), "47");
+        assertTrue(rule.isMakeCopy());
+
+
+        args = "smsc mproc modify 10 newnetworkid 23".split(" ");
+        s = exec.execute(args);
+
+        assertEquals(mProcManagement.mprocs.size(), 1);
+        rule = mProcManagement.getMProcRuleById(10);
+        assertNotNull(rule);
+        assertEquals(rule.getId(), 10);
+        assertEquals(rule.getDestTonMask(), 2);
+        assertEquals(rule.getDestNpiMask(), 3);
+        assertEquals(rule.getDestDigMask(), "^[0-9a-zA-Z]*");
+        assertEquals(rule.getOriginatingMask(), Sms.OriginationType.SS7_MO);
+        assertEquals(rule.getNetworkIdMask(), 21);
+        assertEquals(rule.getNewNetworkId(), 23);
+        assertEquals(rule.getNewDestTon(), 4);
+        assertEquals(rule.getNewDestNpi(), 5);
+        assertEquals(rule.getAddDestDigPrefix(), "47");
+        assertTrue(rule.isMakeCopy());
+
+
+        args = "smsc mproc modify 11 newnetworkid 24".split(" ");
+        s = exec.execute(args);
+        assertEquals(mProcManagement.mprocs.size(), 1);
+        rule = mProcManagement.getMProcRuleById(10);
+        assertNotNull(rule);
+        assertEquals(rule.getNewNetworkId(), 23);
+
+
+        args = "smsc mproc add 9 networkidmask 31 newnetworkid 32".split(" ");
+        s = exec.execute(args);
+        assertEquals(mProcManagement.mprocs.size(), 2);
+        rule = mProcManagement.getMProcRuleById(9);
+        assertNotNull(rule);
+        assertEquals(rule.getDestDigMask(), "-1");
+        assertNull(rule.getOriginatingMask());
+        assertEquals(rule.getNetworkIdMask(), 31);
+        assertEquals(rule.getNewNetworkId(), 32);
+        rule = mProcManagement.getMProcRuleById(10);
+        assertNotNull(rule);
+        rule = mProcManagement.getMProcRuleById(15);
+        assertNull(rule);
+
+
+        mProcManagement.mprocs.clear();
+        assertEquals(mProcManagement.mprocs.size(), 0);
+
+        mProcManagement.load();
+        assertEquals(mProcManagement.mprocs.size(), 2);
+        rule = mProcManagement.getMProcRuleById(10);
+        assertNotNull(rule);
+        assertEquals(rule.getId(), 10);
+        assertEquals(rule.getDestTonMask(), 2);
+        assertEquals(rule.getDestNpiMask(), 3);
+        assertEquals(rule.getDestDigMask(), "^[0-9a-zA-Z]*");
+        assertEquals(rule.getOriginatingMask(), Sms.OriginationType.SS7_MO);
+        assertEquals(rule.getNetworkIdMask(), 21);
+        assertEquals(rule.getNewNetworkId(), 23);
+        assertEquals(rule.getNewDestTon(), 4);
+        assertEquals(rule.getNewDestNpi(), 5);
+        assertEquals(rule.getAddDestDigPrefix(), "47");
+        assertTrue(rule.isMakeCopy());
+        rule = mProcManagement.getMProcRuleById(9);
+        assertNotNull(rule);
+        assertEquals(rule.getDestDigMask(), "-1");
+        assertNull(rule.getOriginatingMask());
+        assertEquals(rule.getNetworkIdMask(), 31);
+        assertEquals(rule.getNewNetworkId(), 32);
+        rule = mProcManagement.getMProcRuleById(10);
+        assertNotNull(rule);
+        rule = mProcManagement.getMProcRuleById(15);
+        assertNull(rule);
+
+
+        args = "smsc mproc show 9".split(" ");
+        s = exec.execute(args);
+        args = "smsc mproc show".split(" ");
+        s = exec.execute(args);
+
+
+        args = "smsc mproc remove 9".split(" ");
+        s = exec.execute(args);
+        assertEquals(mProcManagement.mprocs.size(), 1);
+        rule = mProcManagement.getMProcRuleById(10);
+        assertNotNull(rule);
+        rule = mProcManagement.getMProcRuleById(9);
+        assertNull(rule);
+
+        mProcManagement.mprocs.clear();
+
+        smscManagement.stop();
+    }
+
 
 //    @Test(groups = { "aaa" })
 //    public void testA1() throws Exception {

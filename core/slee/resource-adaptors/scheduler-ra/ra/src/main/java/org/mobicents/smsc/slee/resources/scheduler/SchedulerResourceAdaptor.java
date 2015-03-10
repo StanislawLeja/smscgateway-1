@@ -594,7 +594,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                                             dbOperations_C1.setNewMessageScheduled(receipt.getSmsSet(),
                                                     MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
                                         } else {
-                                            receipt = MessageUtil.createReceiptSms(sms, false, ta);
+                                            receipt = MessageUtil.createReceiptSms(sms, false, ta, smscPropertiesManagement.getOrigNetworkIdForReceipts());
                                             boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
                                             if (!storeAndForwMode) {
                                                 try {

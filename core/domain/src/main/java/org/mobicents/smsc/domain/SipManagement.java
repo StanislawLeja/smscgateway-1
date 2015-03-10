@@ -314,7 +314,8 @@ public class SipManagement implements SipManagementMBean {
 
 		try {
 			ObjectName esmeObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=Sip,name=" + esmeName);
-			this.mbeanServer.unregisterMBean(esmeObjNname);
+            if (this.mbeanServer != null)
+                this.mbeanServer.unregisterMBean(esmeObjNname);
 		} catch (MBeanRegistrationException e) {
 			logger.error(String.format("Error while unregistering MBean for ESME %s", esmeName), e);
 		} catch (InstanceNotFoundException e) {

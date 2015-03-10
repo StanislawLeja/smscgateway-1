@@ -216,7 +216,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
         ResultSet result = session.execute(boundStatement);
 
         Row row = result.one();
-        SmsSet smsSet = createSms(row, null, true, true, true);
+        SmsSet smsSet = createSms(row, null, true, true, true, true);
         if (smsSet == null)
             return null;
 
@@ -283,7 +283,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
             SmsSet smsSet = null;
             Row row2 = null;
             for (Row row : rs) {
-                smsSet = this.createSms(row, null, true, true, true);
+                smsSet = this.createSms(row, null, true, true, true, true);
                 row2 = row;
                 break;
             }
@@ -324,6 +324,9 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
         appendField(sb, Schema.COLUMN_ADDR_SRC_DIGITS, "ascii");
         appendField(sb, Schema.COLUMN_ADDR_SRC_TON, "int");
         appendField(sb, Schema.COLUMN_ADDR_SRC_NPI, "int");
+        if (!oldShortMessageDbFormat) {
+            appendField(sb, Schema.COLUMN_ORIG_NETWORK_ID, "int");
+        }
 
         appendField(sb, Schema.COLUMN_DUE_DELAY, "int");
         appendField(sb, Schema.COLUMN_ALERTING_SUPPORTED, "boolean");

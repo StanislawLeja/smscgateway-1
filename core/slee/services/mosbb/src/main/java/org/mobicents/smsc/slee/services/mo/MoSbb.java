@@ -74,6 +74,7 @@ import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.domain.MProcManagement;
 import org.mobicents.smsc.domain.MoChargingType;
 import org.mobicents.smsc.domain.SmscStatProvider;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
@@ -797,18 +798,11 @@ public abstract class MoSbb extends MoCommonSbb {
 	private void handleSmsSubmitTpdu(SmsSubmitTpdu smsSubmitTpdu, AddressString callingPartyAddress, int networkId)
 			throws SmscProcessingException {
 
-		TargetAddress ta = createDestTargetAddress(smsSubmitTpdu.getDestinationAddress(), networkId);
-		PersistenceRAInterface store = obtainStore(ta);
-		TargetAddress lock = store.obtainSynchroObject(ta);
+        TargetAddress ta = createDestTargetAddress(smsSubmitTpdu.getDestinationAddress(), networkId);
+        PersistenceRAInterface store = obtainStore(ta);
 
-		try {
-			synchronized (lock) {
-				Sms sms = this.createSmsEvent(smsSubmitTpdu, ta, store, callingPartyAddress, networkId);
-                this.processSms(sms, store, smscPropertiesManagement.getMoCharging());
-			}
-		} finally {
-			store.releaseSynchroObject(lock);
-		}
+        Sms sms = this.createSmsEvent(smsSubmitTpdu, ta, store, callingPartyAddress, networkId);
+        this.processSms(sms, store, smscPropertiesManagement.getMoCharging());
 	}
 
     private void handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, IMSI destinationImsi, int networkId)
@@ -818,33 +812,19 @@ public abstract class MoSbb extends MoCommonSbb {
 
         TargetAddress ta = createDestTargetAddress(destinationImsi, networkId);
         PersistenceRAInterface store = obtainStore(ta);
-        TargetAddress lock = store.obtainSynchroObject(ta);
 
-        try {
-            synchronized (lock) {
-                Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, tpOAAddress, networkId);
-                this.processSms(sms, store, smscPropertiesManagement.getHrCharging());
-            }
-        } finally {
-            store.releaseSynchroObject(lock);
-        }
+        Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, tpOAAddress, networkId);
+        this.processSms(sms, store, smscPropertiesManagement.getHrCharging());
     }
 
 	private void handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, CorrelationIdValue civ, int networkId)
 			throws SmscProcessingException {
 
-		TargetAddress ta = createDestTargetAddress(civ.getMsisdn(), networkId);
-		PersistenceRAInterface store = obtainStore(ta);
-		TargetAddress lock = store.obtainSynchroObject(ta);
+        TargetAddress ta = createDestTargetAddress(civ.getMsisdn(), networkId);
+        PersistenceRAInterface store = obtainStore(ta);
 
-		try {
-			synchronized (lock) {
-				Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, civ, networkId);
-				this.processSms(sms, store, smscPropertiesManagement.getHrCharging());
-			}
-		} finally {
-			store.releaseSynchroObject(lock);
-		}
+        Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, civ, networkId);
+        this.processSms(sms, store, smscPropertiesManagement.getHrCharging());
 	}
 
 	private Sms createSmsEvent(SmsSubmitTpdu smsSubmitTpdu, TargetAddress ta, PersistenceRAInterface store,
@@ -905,6 +885,8 @@ public abstract class MoSbb extends MoCommonSbb {
 					+ callingPartyAddress.getNumberingPlan(), SmppConstants.STATUS_SYSERR,
 					MAPErrorCode.unexpectedDataValue, null);
 		}
+
+        sms.setOrigNetworkId(networkId);
 
 		sms.setSubmitDate(new Timestamp(System.currentTimeMillis()));
 
@@ -1074,6 +1056,8 @@ public abstract class MoSbb extends MoCommonSbb {
 					MAPErrorCode.unexpectedDataValue, null);
 		}
 
+        sms.setOrigNetworkId(networkId);
+
 		sms.setSubmitDate(new Timestamp(System.currentTimeMillis()));
 
 		sms.setEsmClass(0x03 + (smsDeliverTpdu.getUserDataHeaderIndicator() ? SmppConstants.ESM_CLASS_UDHI_MASK : 0)
@@ -1154,7 +1138,7 @@ public abstract class MoSbb extends MoCommonSbb {
         sms.setOriginationType(Sms.OriginationType.SS7_HR);
 
         AddressField callingPartyAddress = smsDeliverTpdu.getOriginatingAddress();
-        
+
         // checking parameters first
         if (callingPartyAddress == null || callingPartyAddress.getAddressValue() == null
                 || callingPartyAddress.getAddressValue().isEmpty()) {
@@ -1203,6 +1187,8 @@ public abstract class MoSbb extends MoCommonSbb {
                     + callingPartyAddress.getNumberingPlanIdentification(), SmppConstants.STATUS_SYSERR,
                     MAPErrorCode.unexpectedDataValue, null);
         }
+
+        sms.setOrigNetworkId(networkId);
 
         sms.setSubmitDate(new Timestamp(System.currentTimeMillis()));
 
@@ -1267,7 +1253,7 @@ public abstract class MoSbb extends MoCommonSbb {
         return sms;
     }
 
-	private void processSms(Sms sms, PersistenceRAInterface store, MoChargingType chargingType) throws SmscProcessingException {
+	private void processSms(Sms sms0, PersistenceRAInterface store, MoChargingType chargingType) throws SmscProcessingException {
         // TODO: we can make this some check will we send this message or not
 
         // checking if SMSC is stopped
@@ -1294,38 +1280,55 @@ public abstract class MoSbb extends MoCommonSbb {
             }
         }
 
-	    switch(chargingType){
-        case accept:
-            if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
-                try {
-                    sms.setStoringAfterFailure(true);
-                    this.scheduler.injectSmsOnFly(sms.getSmsSet());
-                } catch (Exception e) {
-                    throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
-                            MAPErrorCode.systemFailure, null, e);
-                }
-            } else {
-                try {
-                    sms.setStored(true);
-                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                        store.createLiveSms(sms);
-                        store.setNewMessageScheduled(sms.getSmsSet(),
-                                MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
-                    } else {
-                        store.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, false);
-                    }
-                } catch (PersistenceException e) {
-                    throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL,
-                            MAPErrorCode.systemFailure, null, e);
-                }
-            }
-
+        if (chargingType == MoChargingType.accept) {
             smscStatAggregator.updateMsgInReceivedAll();
             smscStatAggregator.updateMsgInReceivedSs7();
-            if (sms.getOriginationType() == OriginationType.SS7_MO) {
+            if (sms0.getOriginationType() == OriginationType.SS7_MO) {
                 smscStatAggregator.updateMsgInReceivedSs7Mo();
             } else {
                 smscStatAggregator.updateMsgInReceivedSs7Hr();
+            }
+        }
+
+        switch (chargingType) {
+        case accept:
+            // applying of MProc
+            Sms[] smss = MProcManagement.getInstance().applyMProc(sms0);
+
+            for (Sms sms : smss) {
+                TargetAddress ta = new TargetAddress(sms.getSmsSet());
+                TargetAddress lock = store.obtainSynchroObject(ta);
+
+                try {
+                    synchronized (lock) {
+                        if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+                            try {
+                                sms.setStoringAfterFailure(true);
+                                this.scheduler.injectSmsOnFly(sms.getSmsSet());
+                            } catch (Exception e) {
+                                throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
+                                        MAPErrorCode.systemFailure, null, e);
+                            }
+                        } else {
+                            try {
+                                sms.setStored(true);
+                                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                                    store.createLiveSms(sms);
+                                    store.setNewMessageScheduled(sms.getSmsSet(),
+                                            MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+                                } else {
+                                    store.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast,
+                                            false);
+                                }
+                            } catch (PersistenceException e) {
+                                throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(),
+                                        SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
+                            }
+                        }
+                    }
+                } finally {
+                    store.releaseSynchroObject(lock);
+                }
             }
             break;
         case reject:
@@ -1333,9 +1336,9 @@ public abstract class MoSbb extends MoCommonSbb {
             break;
         case diameter:
             ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
-            chargingSbb.setupChargingRequestInterface(ChargingMedium.MoOrig, sms);
+            chargingSbb.setupChargingRequestInterface(ChargingMedium.MoOrig, sms0);
             break;
-	    }
+        }
 	}
 
 	public enum MoProcessingState {

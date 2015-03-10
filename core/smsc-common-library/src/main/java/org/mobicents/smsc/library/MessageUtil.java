@@ -460,13 +460,16 @@ public class MessageUtil {
             return false;
     }
 
-    public static Sms createReceiptSms(Sms sms, boolean delivered, TargetAddress ta) {
+    public static Sms createReceiptSms(Sms sms, boolean delivered, TargetAddress ta, boolean origNetworkIdForReceipts) {
         Sms receipt = createReceiptSms(sms, delivered);
         SmsSet backSmsSet = new SmsSet();
         backSmsSet.setDestAddr(ta.getAddr());
         backSmsSet.setDestAddrNpi(ta.getAddrNpi());
         backSmsSet.setDestAddrTon(ta.getAddrTon());
-        backSmsSet.setNetworkId(sms.getSmsSet().getNetworkId());
+        if (origNetworkIdForReceipts)
+            backSmsSet.setNetworkId(sms.getOrigNetworkId());
+        else
+            backSmsSet.setNetworkId(sms.getSmsSet().getNetworkId());
         backSmsSet.addSms(receipt);
         receipt.setStored(true);
         return receipt;
