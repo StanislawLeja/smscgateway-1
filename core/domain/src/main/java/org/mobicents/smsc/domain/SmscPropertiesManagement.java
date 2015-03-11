@@ -260,7 +260,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     // if this value != null and != "" and incoming mo message has TypeOfNumber==Unknown
     // moUnknownTypeOfNumberPrefix will be added as a prefix to a dest address
-    private String moUnknownTypeOfNumberPrefix = "";
+//    private String moUnknownTypeOfNumberPrefix = "";
 
     // if !=null and !=""
     // this address will be inserted as CalledPartyAddress SCCP into all SRI
@@ -807,14 +807,14 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         this.store();
     }
 
-    public String getMoUnknownTypeOfNumberPrefix() {
-        return moUnknownTypeOfNumberPrefix;
-    }
-
-    public void setMoUnknownTypeOfNumberPrefix(String moUnknownTypeOfNumberPrefix) {
-        this.moUnknownTypeOfNumberPrefix = moUnknownTypeOfNumberPrefix;
-        this.store();
-    }
+//    public String getMoUnknownTypeOfNumberPrefix() {
+//        return moUnknownTypeOfNumberPrefix;
+//    }
+//
+//    public void setMoUnknownTypeOfNumberPrefix(String moUnknownTypeOfNumberPrefix) {
+//        this.moUnknownTypeOfNumberPrefix = moUnknownTypeOfNumberPrefix;
+//        this.store();
+//    }
 
     public String getHrHlrNumber() {
         return hrHlrNumber;
@@ -963,7 +963,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
             writer.write(this.removingLiveTablesDays, REMOVING_LIVE_TABLES_DAYS, Integer.class);
             writer.write(this.removingArchiveTablesDays, REMOVING_ARCHIVE_TABLES_DAYS, Integer.class);
-            writer.write(this.moUnknownTypeOfNumberPrefix, MO_UNKNOWN_TYPE_OF_NUMBER_PREFIX, String.class);
+//            writer.write(this.moUnknownTypeOfNumberPrefix, MO_UNKNOWN_TYPE_OF_NUMBER_PREFIX, String.class);
             writer.write(this.hrHlrNumber, HR_HLR_NUMBER, String.class);
 
 			writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
@@ -1097,8 +1097,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             if (val != null)
                 this.removingArchiveTablesDays = val;
             vals = reader.read(MO_UNKNOWN_TYPE_OF_NUMBER_PREFIX, String.class);
-            if (vals != null)
-                this.moUnknownTypeOfNumberPrefix = vals;
+//            if (vals != null)
+//                this.moUnknownTypeOfNumberPrefix = vals;
             vals = reader.read(HR_HLR_NUMBER, String.class);
             if (vals != null)
                 this.hrHlrNumber = vals;

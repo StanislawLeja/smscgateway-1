@@ -199,6 +199,10 @@ public class MProcManagement implements MProcManagementMBean {
         for (int i1 = 0; i1 < cur.size(); i1++) {
             MProcRule rule = cur.get(i1);
             if (rule.isMessageMatchToRule(destTon, destNpi, destDig, originatingType, networkId)) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("MRule matches to a message:\nrule: " + rule + "\nmessage: " + sms);
+                }
+
                 if (rule.isMakeCopy()) {
                     res.add(sms);
 

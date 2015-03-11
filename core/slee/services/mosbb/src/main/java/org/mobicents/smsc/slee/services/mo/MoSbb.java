@@ -682,16 +682,14 @@ public abstract class MoSbb extends MoCommonSbb {
 		int destTon, destNpi;
 		switch (af.getTypeOfNumber()) {
 		case Unknown:
-            destTon = smscPropertiesManagement.getDefaultTon();
+            destTon = af.getTypeOfNumber().getCode();
 
-            
-//            this.logger.severe("*********************** "+af.getTypeOfNumber()+" - "+smscPropertiesManagement.getMoUnknownTypeOfNumberPrefix());
-            
-            
-            if (smscPropertiesManagement.getMoUnknownTypeOfNumberPrefix() != null && smscPropertiesManagement.getMoUnknownTypeOfNumberPrefix().length() > 0) {
-                digits = smscPropertiesManagement.getMoUnknownTypeOfNumberPrefix() + digits;
-                destTon = TypeOfNumber.InternationalNumber.getCode();
-            }
+            // removing of MoUnknownTypeOfNumberPrefix prefix here -> moving to mproc
+//            destTon = smscPropertiesManagement.getDefaultTon();
+//            if (smscPropertiesManagement.getMoUnknownTypeOfNumberPrefix() != null && smscPropertiesManagement.getMoUnknownTypeOfNumberPrefix().length() > 0) {
+//                digits = smscPropertiesManagement.getMoUnknownTypeOfNumberPrefix() + digits;
+//                destTon = TypeOfNumber.InternationalNumber.getCode();
+//            }
 			break;
         case InternationalNumber:
             destTon = af.getTypeOfNumber().getCode();

@@ -249,10 +249,6 @@ public class MProcRule implements MProcRuleMBean {
         return true;
     }
 
-    public void applyRule(Sms sms) {
-        // .........................
-    }
-
     private void store() {
         this.mProcManagement.store();
     }
