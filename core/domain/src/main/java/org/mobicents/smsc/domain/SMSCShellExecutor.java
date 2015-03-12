@@ -358,7 +358,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 
         MProcManagement mProcManagement = MProcManagement.getInstance();
         MProcRule mProcRule = mProcManagement.getMProcRuleById(id);
-        if (mProcRule != null) {
+        if (mProcRule == null) {
             return String.format(MProcRuleOamMessages.DESTROY_MPROC_RULE_FAIL_NOT_EXIST, id);
         }
 
