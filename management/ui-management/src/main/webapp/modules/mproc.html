@@ -1,0 +1,711 @@
+
+<h3 style="margin: 0px;">
+	<i class="icon-link"></i> Message Processing Rules
+</h3>
+<hr style="margin: 10 0px;" />
+<span style="float: right;">
+	<button id="refresh" style="float: right; margin-right: 20px; margin-left: 20px; height: 30px;" class="btn btn-medium btn-success" data-toggle="tooltip" data-placement="left" title="Refresh MProc Rules List" onclick="updateMProc();">
+		<i class="icon-refresh"></i>
+	</button>
+</span>
+<span id="esmes-table-wrapper">
+	<table id="no-esmes-table" class="table" style="display: none;">
+		<tr>
+			<td>
+				<div class="alert alert-info fade in">
+					<strong>No message processing rule defined!</strong> 
+				</div>
+			</td>
+		</tr>
+	</table>
+
+	<table id="esmes-table" class="table table-hover">
+		<thead>
+			<tr>
+				<th style="width: 30px;">&nbsp;</th>
+				<th>Id</th>
+				<th>Destination TON</th>
+				<th>Destination NPI</th>
+				<th>Destination Digit</th>
+				<th style="text-align: center; width: 150px;">Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+	<p>
+		<a href="#entities-modal" role="button" class="btn btn-info btn-small" data-toggle="modal" ><i class="icon-external-link"></i> Create Message Processing Rule</a>
+	</p>	
+</span>
+
+<div id="entities-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3>Create Message Processing Rule</h3>
+	</div>
+	<div id="entities-modal-body" class="modal-body">
+		<div class="alert alert-error" id="login-settings-error" style="display:none;">
+		  <button type="button" class="close">&times;</button>
+		  Some Fields are not correctly filled out, please double check the settings below !
+		</div>
+		<p>
+			<span>
+				<div id="div-id" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="unique name for this ESME">
+						<span class="add-on">Id</span>
+						<input id="id" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Id" />
+					</span>				
+				</div>
+				
+				<div id="div-desttonmask" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="defines ESME TON. if SMPP Session Type is CLIENT this TON will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same TON as configured here. If configured is null(-1), SMSC will ignore in both the cases">
+						<span class="add-on">Destination Type of number (TON)</span>
+						<select id="desttonmask" >
+							<option value="-1">Null</option>
+							<option value="0">Unknown</option>
+							<option value="1">International</option>
+							<option value="2">National</option>
+							<option value="3">Network Specific</option>
+							<option value="4">Subscriber Number</option>
+							<option value="5">Alphanumeric</option>
+							<option value="6">Abbreviated</option>
+							<option value="7">Reserved</option>
+						</select>
+					</span>	
+				</div>
+								
+				<div id="div-destnpimask" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="defines ESME NPI. if SMPP Session Type is CLIENT this NPI will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same NPI as configured here. If configured is null(-1), SMSC will ignore in both the cases">
+						<span class="add-on">Destination Number plan indicator (NPI)</span>
+						<select id="destnpimask" >
+							<option value="-1">Null</option>
+							<option value="0">Unknown</option>
+							<option value="1">ISDN (E163/E164)</option>
+							<option value="3">Data (X.121)</option>
+							<option value="4">Telex (F.69)</option>
+							<option value="6">Land Mobile (E.212)</option>
+							<option value="8">National</option>
+							<option value="9">Private</option>
+							<option value="10">ERMES</option>
+							<option value="14">Internet (IP)</option>
+							<option value="18">WAP Client Id</option>
+						</select>
+					</span>	
+				</div>
+				
+				<div id="div-destdigmask" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="unique name for this ESME">
+						<span class="add-on">Destination Digit Mask</span>
+						<input id="destdigmask" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Destination digits mask" />
+					</span>				
+				</div>	
+				
+				<div id="div-originatingmask" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="defines ESME NPI. if SMPP Session Type is CLIENT this NPI will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same NPI as configured here. If configured is null(-1), SMSC will ignore in both the cases">
+						<span class="add-on">Originating Channel</span>
+						<select id="originatingmask" >
+							<option value="All">All</option>
+							<option value="mo">Mobile Originated</option>
+							<option value="hr">Home Routing</option>
+							<option value="esme">ESME</option>
+							<option value="sip">SIP</option>
+						</select>
+					</span>	
+				</div>		
+				
+				<div id="div-networkidmask" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="unique name for this ESME">
+						<span class="add-on">Network Id Mask</span>
+						<input id="networkidmask" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Destination digits mask" />
+					</span>				
+				</div>	
+				
+				<div id="div-newnetworkid" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="unique name for this ESME">
+						<span class="add-on">New Network Id</span>
+						<input id="newnetworkid" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Destination digits mask" />
+					</span>				
+				</div>	
+				
+				<div id="div-newdestton" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="defines ESME TON. if SMPP Session Type is CLIENT this TON will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same TON as configured here. If configured is null(-1), SMSC will ignore in both the cases">
+						<span class="add-on">New Type Of Number (TON)</span>
+						<select id="newdestton" >
+							<option value="-1">Null</option>
+							<option value="0">Unknown</option>
+							<option value="1">International</option>
+							<option value="2">National</option>
+							<option value="3">Network Specific</option>
+							<option value="4">Subscriber Number</option>
+							<option value="5">Alphanumeric</option>
+							<option value="6">Abbreviated</option>
+							<option value="7">Reserved</option>
+						</select>
+					</span>	
+				</div>
+								
+				<div id="div-newdestnpi" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="defines ESME NPI. if SMPP Session Type is CLIENT this NPI will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same NPI as configured here. If configured is null(-1), SMSC will ignore in both the cases">
+						<span class="add-on">New Number Plan Indicator (NPI)</span>
+						<select id="newdestnpi" >
+							<option value="-1">Null</option>
+							<option value="0">Unknown</option>
+							<option value="1">ISDN (E163/E164)</option>
+							<option value="3">Data (X.121)</option>
+							<option value="4">Telex (F.69)</option>
+							<option value="6">Land Mobile (E.212)</option>
+							<option value="8">National</option>
+							<option value="9">Private</option>
+							<option value="10">ERMES</option>
+							<option value="14">Internet (IP)</option>
+							<option value="18">WAP Client Id</option>
+						</select>
+					</span>	
+				</div>	
+				
+				<div id="div-addestdigprefix" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="unique name for this ESME">
+						<span class="add-on">Address prefix</span>
+						<input id="addestdigprefix" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Destination digits mask" />
+					</span>				
+				</div>																		
+				
+				<div id="div-makecopy" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="defines ESME NPI. if SMPP Session Type is CLIENT this NPI will be used in BIND request, if SMPP Session Type is SERVER, incoming BIND request should have same NPI as configured here. If configured is null(-1), SMSC will ignore in both the cases">
+						<span class="add-on">Make Copy</span>
+						<select id="makecopy" >
+							<option value="true">True</option>
+							<option value="false">False</option>
+						</select>
+					</span>	
+				</div>	
+								
+				<button id="add-entity-button" class="btn btn btn-primary" onclick="createMProc()">Create</button>
+			</span>
+		</p>
+		<p>&nbsp;</p>
+		<div class="accordion" id="entities-accordion">
+		</div>
+	</div>
+	<div class="modal-footer">
+		<a href="#" onclick="$('#entities-modal').modal('hide'); return false;" class="btn">Close</a>
+	</div>
+</div>
+
+<script type="text/javascript">
+
+	function convertTon(ton){
+		switch(ton){
+		case -1:
+			return "Null";
+		case 0:
+			return "Unknown";
+		case 1:
+			return "International";
+		case 2:
+			return "National";
+		case 3:
+			return "Network Specific";
+		case 4:
+			return "Subscriber Number";
+		case 5:
+			return "Alphanumeric";
+		case 6:
+			return "Abbreviated";
+		case 7:
+			return "Reserved";
+		default:
+			return "NA";
+		}
+	}
+	
+	function convertNpi(npi){
+		switch(npi){
+		case -1:
+			return "Null";
+		case 0:
+			return "Unknown";
+		case 1:
+			return "ISDN (E163/E164)";
+		case 3:
+			return "Data (X.121)";
+		case 4:
+			return "Telex (F.69)";
+		case 6:
+			return "Land Mobile (E.212)";
+		case 8:
+			return "National";
+		case 9:
+			return "Private";
+		case 10:
+			return "ERMES";
+		case 14:
+			return "Internet (IP)";
+		case 18:
+			return "WAP Client Id";
+		default:
+			return "NA";
+		}
+	}	
+	
+	
+	
+	function updateMProc() {
+		mbeanSearch="com.telscale.smsc:layer=MProcRule,name=*";
+		var mbeanVar;
+		$.ajax({
+			dataType: "json",
+			url: window.jolokiaProtocol + "//" + window.jolokiaAddress + ":" + window.jolokiaPort + "/jolokia/search/" + mbeanSearch
+		})
+		.done(function(html) {
+			if (html.error) {
+				logToConsole("ERROR", html.error);
+			}
+			else {		
+				
+				$('.service-row').remove();
+				$('.text-info').remove();
+				jQuery.each(html.value, function() {
+					mbeanVar = this;
+					
+					
+					jolokia.request(
+							[
+								{ type: "read", mbean: mbeanVar },
+							],
+							{ success: [
+								function(response) {
+									
+									var id = response.value.Id;
+									var desttonmask = response.value.DestTonMask;
+									var destnpimask = response.value.DestNpiMask;
+									var destdigmask = response.value.DestDigMask;
+									var originatingmask = response.value.OriginatingMask;
+									var networkidmask = response.value.NetworkIdMask;
+									var newnetworkid = response.value.NewNetworkId;
+									
+									var newdestton = response.value.NewDestTon;
+									
+									var newdestnpi = response.value.NewDestNpi;
+									var addestdigprefix = response.value.AddDestDigPrefix;
+									var makecopy = response.value.MakeCopy;
+									
+									
+									
+									
+									if(destdigmask == null || destdigmask==""){
+										destdigmask = "null";
+									}
+									
+									serviceClass = 'active-service';
+									
+									$('#esmes-table').children('tbody').append('<tr class="service-row"><td style="vertical-align: middle; text-align: center;"><i style="color: #51A351;" class="icon-play-circle"></i></td>'+
+											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + id + '</td>' +
+											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + desttonmask + ' : '+convertTon(desttonmask)+'</td>' +
+											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + destnpimask + ' : '+ convertNpi(destnpimask)+'</td>' +
+											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + destdigmask + '</td>' +
+											'<td style="font-size: 16px; vertical-align: middle; text-align: center; width: 150px;">' + 
+												'<button class="btn btn-small btn-danger"' + ' data-toggle="tooltip" title="Remove MProc" data-placement="bottom" onclick="mprocOperation(\'destroyMProcRule\', \'' + id +  '\')"><i class="icon-remove"> </i></button> ' +
+												'<a href="#entities-modal'+id+'" role="button" class="btn btn-info btn-small" data-toggle="modal"><i class="icon-external-link"></i></a>' +
+											'</td></tr>'+
+
+
+											'<tr class="text-info" style="display: none;"><td colspan=6>' +
+											'<div class="bs-docs-example bs-docs-example-submenus"> '+
+									        '    <div id="div-' + id +'smpp-props">'+
+									        '      <p class="muted">Properties</p>'+
+													'<dl class="dl-horizontal" style="font-size: 0.8em;">' +
+													    '<dt>Id</dt> <dd>' + id + ' </dd>' + 
+													    '<dt>Dest TON Mask</dt> <dd>' + desttonmask+ ' : '+convertTon(desttonmask) + ' </dd>' +
+													    '<dt>Dest NPI Mask</dt> <dd>' + destnpimask+ ' : '+ convertNpi(destnpimask) + ' </dd>' +
+													    '<dt>Dest Digits Mask</dt> <dd>' + destdigmask + ' </dd>' +
+													    '<dt>Originating Channel</dt> <dd>' + originatingmask + ' </dd>' +
+													    '<dt>Network Id Mask</dt> <dd>' + networkidmask + ' </dd>' +
+													    '<dt>New Network Id</dt> <dd>' + newnetworkid + ' </dd>' +
+													    '<dt>New Destination TON</dt> <dd>' + newdestton+ ' : '+convertTon(newdestton) + ' </dd>' +
+													    '<dt>New Destination NPI</dt> <dd>' + newdestnpi+ ' : '+ convertNpi(newdestnpi) + ' </dd>' +
+													    '<dt>Destination Digits Prefix</dt> <dd>' + addestdigprefix + ' </dd>' +
+													    '<dt>Make Copy</dt> <dd>' + makecopy + ' </dd>' +
+													'</dl>'+
+									        '    </div>'+
+											'</td></tr>'
+									);	
+									
+									
+									
+									$('#esmes-table-wrapper').append('<div id="entities-modal'+id+'" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'+
+											'<div class="modal-header">'+
+												'<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>'+
+												'<h3>ESME '+id+' properties</h3>'+
+											'</div>'+	
+											'<div id="entities-modal-body" class="modal-body">'+
+													'<div class="accordion-group">' +
+														'<div class="accordion-heading">' +id+ 										
+														'</div>'+
+														'<div id="' + id + '" class="accordion-body">' +
+															'<div class="accordion-inner">' +
+																'<strong><i class="icon-list"></i> ESME Configuration Properties</strong>' +
+																
+																'<div class="alert alert-error" id="login-settings-error" style="display:none;">'+
+																  '<button type="button" class="close">&times;</button>'+
+																  'Some Fields are not correctly filled out, please double check the settings below !'+
+																'</div>'+																			
+																
+																'<table id="'+id+'-ESME" class="table table-condensed table-striped">' + 
+																	'<thead><tr><th style="width: 40%;">Name</th><th style="width: 55%;">Value</th><th>&nbsp;</th></tr></thead>' +
+																	'<tbody>'+
+																	
+																		'<tr data-toggle="tooltip" title="network id to which this SMPP connection belongs to">'+
+																			'<td style="font-size: 0.9em;">Dest Ton Mask</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'DestTonMask-input" class="control-group">'+
+																				'<span id="' + id +'DestTonMask-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + desttonmask + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'DestTonMask\', \'' + id+"DestTonMask" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"DestTonMask"+']\').toggle(); $(\'input[id^='+id+"DestTonMask"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'DestTonMask-text">' + desttonmask + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"DestTonMask"+']\').toggle(); $(\'input[id^='+id+"DestTonMask"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="network id to which this SMPP connection belongs to">'+
+																			'<td style="font-size: 0.9em;">Dest Npi Mask</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'DestNpiMask-input" class="control-group">'+
+																				'<span id="' + id +'DestNpiMask-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + destnpimask + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'DestNpiMask\', \'' + id+"DestNpiMask" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"DestNpiMask"+']\').toggle(); $(\'input[id^='+id+"DestNpiMask"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'DestNpiMask-text">' + destnpimask + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"DestNpiMask"+']\').toggle(); $(\'input[id^='+id+"DestNpiMask"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="network id to which this SMPP connection belongs to">'+
+																			'<td style="font-size: 0.9em;">Dest Digits Mask</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'DestDigMask-input" class="control-group">'+
+																				'<span id="' + id +'DestDigMask-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + destdigmask + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'DestDigMask\', \'' + id+"DestDigMask" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"DestDigMask"+']\').toggle(); $(\'input[id^='+id+"DestDigMask"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'DestDigMask-text">' + destdigmask + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"DestDigMask"+']\').toggle(); $(\'input[id^='+id+"DestDigMask"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="network id to which this SMPP connection belongs to">'+
+																			'<td style="font-size: 0.9em;">Orginating Chanel</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'OriginatingMask-input" class="control-group">'+
+																				'<span id="' + id +'OriginatingMask-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + originatingmask + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'OriginatingMask\', \'' + id+"OriginatingMask" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"OriginatingMask"+']\').toggle(); $(\'input[id^='+id+"OriginatingMask"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'OriginatingMask-text">' + originatingmask + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"OriginatingMask"+']\').toggle(); $(\'input[id^='+id+"OriginatingMask"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="network id to which this SMPP connection belongs to">'+
+																			'<td style="font-size: 0.9em;">Network Id Mask</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'NetworkIdMask-input" class="control-group">'+
+																				'<span id="' + id +'NetworkIdMask-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + networkidmask + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'NetworkIdMask\', \'' + id+"NetworkIdMask" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"NetworkIdMask"+']\').toggle(); $(\'input[id^='+id+"NetworkIdMask"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'NetworkIdMask-text">' + networkidmask + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"NetworkIdMask"+']\').toggle(); $(\'input[id^='+id+"NetworkIdMask"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="network id to which this SMPP connection belongs to">'+
+																			'<td style="font-size: 0.9em;">New Network Id</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'NewNetworkId-input" class="control-group">'+
+																				'<span id="' + id +'NewNetworkId-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + newnetworkid + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'NewNetworkId\', \'' + id+"NewNetworkId" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"NewNetworkId"+']\').toggle(); $(\'input[id^='+id+"NewNetworkId"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'NewNetworkId-text">' + newnetworkid + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"NewNetworkId"+']\').toggle(); $(\'input[id^='+id+"NewNetworkId"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="network id to which this SMPP connection belongs to">'+
+																			'<td style="font-size: 0.9em;">New Destination Ton</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'NewDestTon-input" class="control-group">'+
+																				'<span id="' + id +'NewDestTon-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + newdestton + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'NewDestTon\', \'' + id+"NewDestTon" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"NewDestTon"+']\').toggle(); $(\'input[id^='+id+"NewDestTon"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'NewDestTon-text">' + newdestton + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"NewDestTon"+']\').toggle(); $(\'input[id^='+id+"NewDestTon"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="network id to which this SMPP connection belongs to">'+
+																			'<td style="font-size: 0.9em;">New Destination Npi</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'NewDestNpi-input" class="control-group">'+
+																				'<span id="' + id +'NewDestNpi-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + newdestnpi + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'NewDestNpi\', \'' + id+"NewDestNpi" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"NewDestNpi"+']\').toggle(); $(\'input[id^='+id+"NewDestNpi"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'NewDestNpi-text">' + newdestnpi + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"NewDestNpi"+']\').toggle(); $(\'input[id^='+id+"NewDestNpi"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="network id to which this SMPP connection belongs to">'+
+																			'<td style="font-size: 0.9em;">Destination Digits Prefix</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'AddDestDigPrefix-input" class="control-group">'+
+																				'<span id="' + id +'AddDestDigPrefix-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + addestdigprefix + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'AddDestDigPrefix\', \'' + id+"AddDestDigPrefix" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"AddDestDigPrefix"+']\').toggle(); $(\'input[id^='+id+"AddDestDigPrefix"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'AddDestDigPrefix-text">' + addestdigprefix + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"AddDestDigPrefix"+']\').toggle(); $(\'input[id^='+id+"AddDestDigPrefix"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="network id to which this SMPP connection belongs to">'+
+																			'<td style="font-size: 0.9em;">Make Copy</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'MakeCopy-input" class="control-group">'+
+																				'<span id="' + id +'MakeCopy-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + makecopy + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'MakeCopy\', \'' + id+"MakeCopy" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"MakeCopy"+']\').toggle(); $(\'input[id^='+id+"MakeCopy"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'MakeCopy-text">' + makecopy + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"MakeCopy"+']\').toggle(); $(\'input[id^='+id+"MakeCopy"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+																		
+																	
+																	'</tbody>' +
+																'</table>' +															
+															'</div>'+
+														'</div>'+
+													'</div>'+
+											'</div>'+
+											'<div class="modal-footer">'+
+												'<a href="#" onclick="$(\'#entities-modal'+id+'\').modal(\'hide\'); return false;" class="btn">Close</a>'+
+											'</div>'+										
+										'</div>');	
+									
+									
+								}],
+								error: function(value){
+									errorUID = ("st" + new Date().getTime()).hashCode();
+									createStackTrace(errorUID, value.stacktrace);
+									logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+								}
+							}
+						); 
+
+				});
+			}
+		})
+		.fail(function() {
+			logToConsole("ERROR", "Failure trying to communicate with the SMSC Gateway. Please try again later.");
+		})
+	}
+	
+	function mprocOperation(operation, name) {
+		mbeanSearch="com.telscale.smsc:layer=MProcManagement,name=SmscManagement";
+		jolokia.execute(mbeanSearch,operation,name,
+				{
+					success: function(value) {
+						updateMProc();
+						logToConsole('INFO', 'Successfully '+operation+' ' + name );
+					},
+					error: function(value){
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+					}
+				});	
+		
+	}
+	function createMProc(){
+		var formInvalid = false;
+		var focusNotSet = true;
+		
+		var id = $("#id").val();
+		if(id.trim() == "") {
+			$("#div-id").addClass("error");
+			if(focusNotSet){
+				$("#id").focus();
+				focusNotSet = false;
+			}
+			formInvalid = true;
+		} else if($("#div-id").hasClass("error")) {
+			$("#div-id").removeClass("error");		
+		}
+		
+		var e = document.getElementById("desttonmask");
+		var desttonmask = e.options[e.selectedIndex].value;
+		
+		e = document.getElementById("destnpimask");
+		var destnpimask = e.options[e.selectedIndex].value;
+		
+		
+		var destdigmask = $("#destdigmask").val();
+		if(destdigmask.trim() == "") {
+			destdigmask = null;		
+		}
+		
+		e = document.getElementById("originatingmask");
+		var originatingmask = e.options[e.selectedIndex].value;
+		
+		if(originatingmask == "All") {
+			originatingmask = null;		
+		}
+		
+		var networkidmask = $("#networkidmask").val();
+		if(networkidmask.trim() == "") {
+			networkidmask = "-1";
+		}
+		
+		var newnetworkid = $("#newnetworkid").val();
+		if(newnetworkid.trim() == "") {
+			newnetworkid = "-1";
+		}
+		
+		var e = document.getElementById("newdestton");
+		var newdestton = e.options[e.selectedIndex].value;
+		
+		e = document.getElementById("newdestnpi");
+		var newdestnpi = e.options[e.selectedIndex].value;		
+		
+		
+		var addestdigprefix = $("#addestdigprefix").val();
+		if(addestdigprefix == "") {
+			addestdigprefix = null;
+		}
+		
+		
+		e = document.getElementById("makecopy");
+		var makecopy = e.options[e.selectedIndex].value;
+		
+		if(formInvalid) {
+			$("#login-settings-error").show();
+			logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+			return false;
+		} else {
+			$("#login-settings-error").hide();
+		}
+		
+		jolokia.execute("com.telscale.smsc:layer=MProcManagement,name=SmscManagement","createMProcRule", id,desttonmask,destnpimask,destdigmask,originatingmask,networkidmask,newnetworkid,newdestton,newdestnpi,addestdigprefix,makecopy, 
+				{
+					success: function(value) {
+						updateMProc();
+						logToConsole('INFO', 'MProc rule ' + id + ' created successfuly.');
+						$('#entities-modal').modal('hide');
+					},
+					error: function(value){
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+					}					
+				});		
+		
+	}
+	
+	function onModifyEsmeOk(mbeanName, propertyName, spanId){
+		var skipCheck = false;
+		onModifyEsmeOk(mbeanName, propertyName, spanId, skipCheck)
+	}
+	
+	function onModifyEsmeOk(mbeanName, propertyName, spanId, skipCheck){
+		var formInvalid = false;
+		
+		var spanElement = document.getElementById(spanId + "-input");
+		var eleChild = spanElement.childNodes;
+		var inputTextEle = eleChild[0];
+		var spanElementTxt = document.getElementById(spanId + "-text");
+		
+		var propvalue = inputTextEle.value;
+		
+		if(!skipCheck){
+			if(propvalue.trim() == "") {
+				$("#div-"+spanId + "-input").addClass("error");					    			
+				formInvalid = true;
+			} else if($("#div-"+spanId + "-input").hasClass("error")) {
+				$("#div-"+spanId + "-input").removeClass("error");		
+			}	
+			
+			if(formInvalid) {
+				$("#login-settings-error").show();
+				logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+				return false;
+			} else {
+				$("#login-settings-error").hide();
+			}
+		}
+		
+		var propValue = inputTextEle.value;
+		if(propValue == ""){
+			propValue = null;
+		}
+		
+		var mbeanSearch="com.telscale.smsc:layer=MProcRule,name="+mbeanName;
+		jolokia.request(
+				[
+					{ type: "write", mbean: mbeanSearch, attribute: propertyName, value: propValue },
+				],
+				{
+					success: function(response) {
+						logToConsole("INFO", "MProc property "+ propertyName +"  successfully updated.");
+						spanElementTxt.innerHTML= inputTextEle.value;
+					},
+					error: function(value) {
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+					} 
+				}
+			);		
+		
+		spanElement.style.display = 'none';
+		spanElementTxt.style.display = '';
+		
+		
+	}	
+	$(document).ready(function () {
+		updateMProc();
+	});
+</script>
