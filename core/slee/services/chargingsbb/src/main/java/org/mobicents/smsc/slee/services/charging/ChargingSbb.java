@@ -22,6 +22,7 @@
 
 package org.mobicents.smsc.slee.services.charging;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -101,6 +102,8 @@ public abstract class ChargingSbb implements Sbb {
     private static final ResourceAdaptorTypeID SCHEDULER_ID = new ResourceAdaptorTypeID(
             "SchedulerResourceAdaptorType", "org.mobicents", "1.0");
     private static final String SCHEDULER_LINK = "SchedulerResourceAdaptor";
+
+    private static Charset utf8Charset = Charset.forName("UTF-8");
 
 	// private static String originIP = "127.0.0.1";
 	// private static String originPort = "1812";
@@ -265,6 +268,9 @@ public abstract class ChargingSbb implements Sbb {
 		this.setChargingData(chargingData);
 
 		String msisdn = sms.getSourceAddr();
+        String originatorSccpAddress = sms.getOriginatorSccpAddress();
+        String recipientAddress = sms.getSmsSet().getDestAddr();
+        int dataCodingScheme = sms.getDataCoding();
 
 		try {
 
@@ -344,21 +350,52 @@ public abstract class ChargingSbb implements Sbb {
 			ArrayList<DiameterAvp> smsInfoAvpLst = new ArrayList<DiameterAvp>();
 			int vendorID = 10415;
 
-			ArrayList<DiameterAvp> originatorReceivedAddressAvpLst = new ArrayList<DiameterAvp>();
-			DiameterAvp avpAddressType = avpFactory.getBaseFactory().createAvp(vendorID, 899,
-					AddressTypeEnum.Msisdn.getValue());
-			originatorReceivedAddressAvpLst.add(avpAddressType);
-			DiameterAvp avpAddressData = avpFactory.getBaseFactory().createAvp(vendorID, 897, msisdn);
-			originatorReceivedAddressAvpLst.add(avpAddressData);
-			DiameterAvp[] originatorReceivedAddressAvpArr = new DiameterAvp[originatorReceivedAddressAvpLst.size()];
-			originatorReceivedAddressAvpLst.toArray(originatorReceivedAddressAvpArr);
 
-			DiameterAvp avpOriginatorReceivedAddress = avpFactory.getBaseFactory().createAvp(vendorID, 2027,
-					originatorReceivedAddressAvpArr);
-			smsInfoAvpLst.add(avpOriginatorReceivedAddress);
+			// Originator-Received-Address 2027
+            ArrayList<DiameterAvp> originatorReceivedAddressAvpLst = new ArrayList<DiameterAvp>();
+            DiameterAvp avpAddressType = avpFactory.getBaseFactory().createAvp(vendorID, 899, AddressTypeEnum.Msisdn.getValue());
+            originatorReceivedAddressAvpLst.add(avpAddressType);
+            DiameterAvp avpAddressData = avpFactory.getBaseFactory().createAvp(vendorID, 897, msisdn);
+            originatorReceivedAddressAvpLst.add(avpAddressData);
+            DiameterAvp[] originatorReceivedAddressAvpArr = new DiameterAvp[originatorReceivedAddressAvpLst.size()];
+            originatorReceivedAddressAvpLst.toArray(originatorReceivedAddressAvpArr);
 
-			DiameterAvp[] smsInfoAvpArr = new DiameterAvp[smsInfoAvpLst.size()];
-			smsInfoAvpLst.toArray(smsInfoAvpArr);
+            DiameterAvp avpOriginatorReceivedAddress = avpFactory.getBaseFactory().createAvp(vendorID, 2027, originatorReceivedAddressAvpArr);
+            smsInfoAvpLst.add(avpOriginatorReceivedAddress);
+
+            // Originator-SCCP-Address 2008
+            if (originatorSccpAddress != null) {
+                byte[] originatorSccpAddressAddrPartByteArr = originatorSccpAddress.getBytes(utf8Charset);
+                byte[] originatorSccpAddressByteArr = new byte[2 + originatorSccpAddressAddrPartByteArr.length];
+                originatorSccpAddressByteArr[1] = 8;
+                System.arraycopy(originatorSccpAddressAddrPartByteArr, 0, originatorSccpAddressByteArr, 2, originatorSccpAddressAddrPartByteArr.length);
+                DiameterAvp avpOriginatorSccpAddress = avpFactory.getBaseFactory().createAvp(vendorID, 2008, originatorSccpAddressByteArr);
+                smsInfoAvpLst.add(avpOriginatorSccpAddress);
+            }
+
+            // Recipient-Address 1201
+            ArrayList<DiameterAvp> recipientAddressAvpLst = new ArrayList<DiameterAvp>();
+            avpAddressType = avpFactory.getBaseFactory().createAvp(vendorID, 899, AddressTypeEnum.Msisdn.getValue());
+            recipientAddressAvpLst.add(avpAddressType);
+            avpAddressData = avpFactory.getBaseFactory().createAvp(vendorID, 897, recipientAddress);
+            recipientAddressAvpLst.add(avpAddressData);
+            DiameterAvp[] recipientAddressAvpArr = new DiameterAvp[recipientAddressAvpLst.size()];
+            recipientAddressAvpLst.toArray(recipientAddressAvpArr);
+
+            DiameterAvp avpRecipientAddress = avpFactory.getBaseFactory().createAvp(vendorID, 1201, recipientAddressAvpArr);
+            smsInfoAvpLst.add(avpRecipientAddress);
+
+            // Data-Coding-Scheme 2001
+            DiameterAvp avpDataCodingScheme = avpFactory.getBaseFactory().createAvp(vendorID, 2001, dataCodingScheme);
+            smsInfoAvpLst.add(avpDataCodingScheme);
+
+            //  SM-Message-Type 2007
+            DiameterAvp avpSmMessageType = avpFactory.getBaseFactory().createAvp(vendorID, 2007, SmMessageTypeEnum.SUBMISSION.getValue());
+            smsInfoAvpLst.add(avpSmMessageType);
+
+
+            DiameterAvp[] smsInfoAvpArr = new DiameterAvp[smsInfoAvpLst.size()];
+            smsInfoAvpLst.toArray(smsInfoAvpArr);
 
 			DiameterAvp[] smsInfo = new DiameterAvp[1];
 			smsInfo[0] = avpFactory.getBaseFactory().createAvp(vendorID, 2000, smsInfoAvpArr);
@@ -570,4 +607,19 @@ public abstract class ChargingSbb implements Sbb {
 			return code;
 		}
 	}
+
+    public enum SmMessageTypeEnum implements net.java.slee.resource.diameter.base.events.avp.Enumerated {
+        SUBMISSION(0), DELIVERY_REPORT(1), SMServiceRequest(2);
+
+        private int code;
+
+        private SmMessageTypeEnum(int code) {
+            this.code = code;
+        }
+
+        @Override
+        public int getValue() {
+            return code;
+        }
+    }
 }
