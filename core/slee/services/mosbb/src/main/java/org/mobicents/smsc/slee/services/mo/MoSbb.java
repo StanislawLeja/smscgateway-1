@@ -57,11 +57,11 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverReportTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsSubmitTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.SmsTpdu;
-import org.mobicents.protocols.ss7.map.api.smstpdu.TypeOfNumber;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriod;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriodFormat;
+import org.mobicents.protocols.ss7.sccp.parameter.GlobalTitle;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogNotice;
@@ -209,7 +209,11 @@ public abstract class MoSbb extends MoCommonSbb {
         }
 
 		try {
-			this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId());
+            String originatorSccpAddress = null;
+            GlobalTitle gt = dialog.getRemoteAddress().getGlobalTitle();
+            if (gt != null)
+                originatorSccpAddress = gt.getDigits();
+            this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId(), originatorSccpAddress);
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
             smscStatAggregator.updateMsgInFailedAll();
@@ -342,7 +346,11 @@ public abstract class MoSbb extends MoCommonSbb {
             if (isMt) {
                 this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId());
             } else {
-                this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId());
+                String originatorSccpAddress = null;
+                GlobalTitle gt = dialog.getRemoteAddress().getGlobalTitle();
+                if (gt != null)
+                    originatorSccpAddress = gt.getDigits();
+                this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId(), originatorSccpAddress);
             }
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
@@ -576,8 +584,8 @@ public abstract class MoSbb extends MoCommonSbb {
 		}
 	}
 
-	private void processMoMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo, int networkId)
-			throws SmscProcessingException {
+    private void processMoMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo, int networkId, String originatorSccpAddress)
+            throws SmscProcessingException {
 
 		// TODO: check if smRPDA contains local SMSC address and reject messages
 		// if not equal ???
@@ -621,7 +629,7 @@ public abstract class MoSbb extends MoCommonSbb {
 					this.logger.info("Received SMS_SUBMIT = " + smsSubmitTpdu);
 				}
 				// AddressField af = smsSubmitTpdu.getDestinationAddress();
-				this.handleSmsSubmitTpdu(smsSubmitTpdu, callingPartyAddress, networkId);
+				this.handleSmsSubmitTpdu(smsSubmitTpdu, callingPartyAddress, networkId, originatorSccpAddress);
 				break;
 			case SMS_DELIVER_REPORT:
 				SmsDeliverReportTpdu smsDeliverReportTpdu = (SmsDeliverReportTpdu) smsTpdu;
@@ -793,13 +801,13 @@ public abstract class MoSbb extends MoCommonSbb {
 	 * @throws MAPException
 	 */
 
-	private void handleSmsSubmitTpdu(SmsSubmitTpdu smsSubmitTpdu, AddressString callingPartyAddress, int networkId)
-			throws SmscProcessingException {
+    private void handleSmsSubmitTpdu(SmsSubmitTpdu smsSubmitTpdu, AddressString callingPartyAddress, int networkId, String originatorSccpAddress)
+            throws SmscProcessingException {
 
         TargetAddress ta = createDestTargetAddress(smsSubmitTpdu.getDestinationAddress(), networkId);
         PersistenceRAInterface store = obtainStore(ta);
 
-        Sms sms = this.createSmsEvent(smsSubmitTpdu, ta, store, callingPartyAddress, networkId);
+        Sms sms = this.createSmsEvent(smsSubmitTpdu, ta, store, callingPartyAddress, networkId, originatorSccpAddress);
         this.processSms(sms, store, smscPropertiesManagement.getMoCharging());
 	}
 
@@ -825,8 +833,8 @@ public abstract class MoSbb extends MoCommonSbb {
         this.processSms(sms, store, smscPropertiesManagement.getHrCharging());
 	}
 
-	private Sms createSmsEvent(SmsSubmitTpdu smsSubmitTpdu, TargetAddress ta, PersistenceRAInterface store,
-			AddressString callingPartyAddress, int networkId) throws SmscProcessingException {
+    private Sms createSmsEvent(SmsSubmitTpdu smsSubmitTpdu, TargetAddress ta, PersistenceRAInterface store, AddressString callingPartyAddress, int networkId,
+            String originatorSccpAddress) throws SmscProcessingException {
 
 		UserData userData = smsSubmitTpdu.getUserData();
 		try {
@@ -870,6 +878,7 @@ public abstract class MoSbb extends MoCommonSbb {
 					+ callingPartyAddress.getAddressNature(), SmppConstants.STATUS_SYSERR,
 					MAPErrorCode.unexpectedDataValue, null);
 		}
+		sms.setOriginatorSccpAddress(originatorSccpAddress);
 
 		switch (callingPartyAddress.getNumberingPlan()) {
 		case unknown:
