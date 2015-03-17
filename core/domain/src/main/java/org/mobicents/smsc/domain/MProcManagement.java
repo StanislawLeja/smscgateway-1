@@ -348,6 +348,12 @@ public class MProcManagement implements MProcManagementMBean {
             this.mprocs = reader.read(MPROC_LIST, ArrayList.class);
 
             reader.close();
+            
+            //Iterate through all MProcRule and assign MProcManagement
+            for (int i1 = 0; i1 < this.mprocs.size(); i1++) {
+                MProcRule rule = this.mprocs.get(i1);
+                rule.mProcManagement = this;
+            }
         } catch (XMLStreamException ex) {
             logger.info("Error while re-creating MProcRule from persisted file", ex);
         }
