@@ -55,6 +55,8 @@ public class Sms implements Serializable {
 	private String sourceAddr;
     private int origNetworkId;
 
+    private String originatorSccpAddress;
+
 	private long messageId;
 	private int moMessageRef;
 
@@ -203,6 +205,17 @@ public class Sms implements Serializable {
 
     public void setOrigNetworkId(int origNetworkId) {
         this.origNetworkId = origNetworkId;
+    }
+
+    /**
+     * Originator Sccp Address
+     */
+    public String getOriginatorSccpAddress() {
+        return originatorSccpAddress;
+    }
+
+    public void setOriginatorSccpAddress(String originatorSccpAddress) {
+        this.originatorSccpAddress = originatorSccpAddress;
     }
 
 	/**
