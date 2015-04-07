@@ -148,7 +148,7 @@ public class DefaultSmppServerHandler implements SmppServerHandler {
 			throws SmppProcessingException {
 		synchronized (this) {
 			if (logger.isInfoEnabled()) {
-				logger.info(String.format("Session created: Name=%s SysemId=%s", session.getConfiguration().getName(),
+				logger.info(String.format("Session created: Name=%s SystemId=%s", session.getConfiguration().getName(),
 						session.getConfiguration().getSystemId()));
 			}
 
