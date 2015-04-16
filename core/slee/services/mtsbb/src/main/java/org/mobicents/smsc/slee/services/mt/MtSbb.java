@@ -288,9 +288,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 			MAPRefuseReason mapRefuseReason = evt.getRefuseReason();
 
-            // TODO: remove "&& false" ...................................
 			if (mapRefuseReason == MAPRefuseReason.PotentialVersionIncompatibility
-					&& evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1 /* && false */ ) {
+					&& evt.getMAPDialog().getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1 ) {
 				if (logger.isWarningEnabled()) {
 					this.logger.warning("Rx : Mt onDialogReject / PotentialVersionIncompatibility=" + evt);
 				}
@@ -314,7 +313,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 						newMAPApplicationContextVersion);
 
 				// possible a peer supports only MAP V1
-				// Now send new SRI with supported ACN (MAP V1)
+				// Now send new ForwardSM with supported ACN (MAP V1)
 				try {
 					// Update cache
 					this.sendMtSms(this.getMtFoSMSMAPApplicationContext(MAPApplicationContextVersion.version1),
