@@ -56,6 +56,7 @@ public class SmppSimulatorParameters {
 	private EncodingType encodingType = EncodingType.GSM7;
 	private boolean messageClass;
 	private SplittingType splittingType = SplittingType.DoNotSplit;
+	private int specifiedSegmentLength = 100;
     private ValidityType validityType = ValidityType.NoSpecial;
     private MCDeliveryReceipt mcDeliveryReceipt = MCDeliveryReceipt.No;
     private SendingMessageType sendingMessageType = SendingMessageType.SubmitSm;
@@ -333,13 +334,20 @@ public class SmppSimulatorParameters {
         this.messagingMode = messagingMode;
     }
 
+    public int getSpecifiedSegmentLength() {
+        return specifiedSegmentLength;
+    }
+
+    public void setSpecifiedSegmentLength(int specifiedSegmentLength) {
+        this.specifiedSegmentLength = specifiedSegmentLength;
+    }
 
     public enum EncodingType {
     	GSM7, GSM8, UCS2,
     }
 
     public enum SplittingType {
-    	DoNotSplit, SplitWithParameters, SplitWithUdh,
+        DoNotSplit, SplitWithParameters_DefaultSegmentLength, SplitWithUdh_DefaultSegmentLength, SplitWithParameters_SpecifiedSegmentLength, SplitWithUdh_SpecifiedSegmentLength,
     }
 
     public enum TON {
