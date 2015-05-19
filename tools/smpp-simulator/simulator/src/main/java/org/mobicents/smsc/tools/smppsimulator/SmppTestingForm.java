@@ -268,8 +268,9 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 		JButton btSendMessage = new JButton("Submit a message");
 		btSendMessage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-                submitMessage(param.getEncodingType(), param.isMessageClass(), param.getMessageText(), param.getSplittingType(), param.getValidityType(),
-                        param.getDestAddress(), param.getMessagingMode());
+                submitMessage(param.getEncodingType(), param.isMessageClass(), param.getMessageText(),
+                        param.getSplittingType(), param.getValidityType(), param.getDestAddress(), param.getMessagingMode(),
+                        param.getSpecifiedSegmentLength());
 			}
 		});
 		btSendMessage.setBounds(11, 80, 341, 23);
@@ -410,7 +411,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
     }
 
     private void submitMessage(EncodingType encodingType, boolean messageClass0, String messageText, SplittingType splittingType, ValidityType validityType,
-            String destAddr, SmppSimulatorParameters.MessagingMode messagingMode) {
+            String destAddr, SmppSimulatorParameters.MessagingMode messagingMode, int specifiedSegmentLength) {
         if (session0 == null)
             return;
 
@@ -436,6 +437,11 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
             DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
             int maxLen = MessageUtil.getMaxSolidMessageCharsLength(dataCodingScheme);
             int maxSplLen = MessageUtil.getMaxSegmentedMessageCharsLength(dataCodingScheme);
+            if (splittingType == SplittingType.SplitWithParameters_SpecifiedSegmentLength
+                    || splittingType == SplittingType.SplitWithUdh_SpecifiedSegmentLength) {
+                maxLen = specifiedSegmentLength;
+                maxSplLen = specifiedSegmentLength;
+            }
 
             int segmCnt = 0;
             int esmClass = 0;
@@ -467,7 +473,8 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
                     ArrayList<String> r1 = this.splitStr(messageText, maxSplLen);
                     segmCnt = r1.size();
                     break;
-                case SplitWithParameters:
+                case SplitWithParameters_DefaultSegmentLength:
+                case SplitWithParameters_SpecifiedSegmentLength:
                     msgRef = getNextMsgRef();
                     r1 = this.splitStr(messageText, maxSplLen);
                     for (String bf : r1) {
@@ -476,7 +483,8 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
                     segmCnt = msgLst.size();
                     addSegmTlv = true;
                     break;
-                case SplitWithUdh:
+                case SplitWithUdh_DefaultSegmentLength:
+                case SplitWithUdh_SpecifiedSegmentLength:
                     msgRef = getNextMsgRef();
                     r1 = this.splitStr(messageText, maxSplLen);
                     byte[] bf1 = new byte[6];
@@ -926,10 +934,10 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
                 splittingType = SplittingType.DoNotSplit;
                 break;
             case 1:
-                splittingType = SplittingType.SplitWithParameters;
+                splittingType = SplittingType.SplitWithParameters_DefaultSegmentLength;
                 break;
             default:
-                splittingType = SplittingType.SplitWithUdh;
+                splittingType = SplittingType.SplitWithUdh_DefaultSegmentLength;
                 break;
             }
 
@@ -938,7 +946,8 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
             if (j4 == 0)
                 msg = bigMessage;
 
-            this.submitMessage(encodingType, false, msg, splittingType, param.getValidityType(), destAddrS, param.getMessagingMode());
+            this.submitMessage(encodingType, false, msg, splittingType, param.getValidityType(), destAddrS,
+                    param.getMessagingMode(), param.getSpecifiedSegmentLength());
         }
 	}
 

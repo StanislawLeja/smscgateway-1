@@ -18,7 +18,7 @@ public class A1Test {
             esmeManagement = EsmeManagement.getInstance();
         }
     }
-    
+
     @Test(groups = { "Base" })
     public void testA1() {
 
@@ -105,5 +105,4 @@ public class A1Test {
 //        ArrayList<String> resx = mt.sliceMessage(sx, dataCodingScheme);
 //        int i111 = 0;
     }
-
 }
