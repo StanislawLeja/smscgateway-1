@@ -32,8 +32,10 @@
 	    <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/> 
 	    <param name="File" value="${jboss.server.home.dir}/log/cdr.log"/> 
 	    <param name="Append" value="true"/> 
+	    <param name="MaxFileSize" value="500KB"/>
+	    <param name="MaxBackupIndex" value="1"/>
 	    <param name="Threshold" value="DEBUG"/>
-	    
+
 	    <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
 	    <layout class="org.apache.log4j.PatternLayout"> 
@@ -43,7 +45,6 @@
 
 	<category name="javax.slee">
 		<priority value="INFO" />
-		<appender-ref ref="FILE"/> 
 	</category>
 	
 	<category name="org.mobicents.smsc.library.CdrGenerator" additivity="false"> 
