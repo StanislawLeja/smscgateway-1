@@ -21,7 +21,7 @@ public class SmscPropertiesManagementTest {
         
         assertTrue(man.getSMSHomeRouting());
         assertEquals(man.getServiceCenterGt(1), "22229");        
-        assertNull(man.getServiceCenterGt(2));        
+        assertEquals(man.getServiceCenterGt(2), "0");        
         
     }
 }
