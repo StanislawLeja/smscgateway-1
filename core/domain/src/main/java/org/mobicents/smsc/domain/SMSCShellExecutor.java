@@ -717,9 +717,11 @@ public class SMSCShellExecutor implements ShellExecutor {
                     smscPropertiesManagement.setSmppEncodingForGsm7(SmppEncoding.Utf8);
                 } else if (s1.equals("unicode")) {
                     smscPropertiesManagement.setSmppEncodingForGsm7(SmppEncoding.Unicode);
+                } else if (s1.equals("gsm7")) {
+                    smscPropertiesManagement.setSmppEncodingForGsm7(SmppEncoding.Gsm7);
                 } else {
                     return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, "SmppEncodingForGsm7 value",
-                            "UTF8 or UNICODE are possible");
+                            "UTF8 or UNICODE or GSM7 are possible");
                 }
             } else if (parName.equals("smppencodingforucs2")) {
                 String s1 = options[3].toLowerCase();
@@ -727,9 +729,11 @@ public class SMSCShellExecutor implements ShellExecutor {
                     smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Utf8);
                 } else if (s1.equals("unicode")) {
                     smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Unicode);
+                } else if (s1.equals("gsm7")) {
+                    smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Gsm7);
                 } else {
                     return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, "SmppEncodingForUCS2 value",
-                            "UTF8 or UNICODE are possible");
+                            "UTF8 or UNICODE or GSM7 are possible");
                 }
 //            } else if (parName.equals("hosts")) {
 //                String val = options[3];

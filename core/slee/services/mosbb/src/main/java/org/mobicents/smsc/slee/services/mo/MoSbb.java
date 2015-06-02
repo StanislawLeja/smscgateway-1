@@ -62,6 +62,7 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriod;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriodFormat;
 import org.mobicents.protocols.ss7.sccp.parameter.GlobalTitle;
+import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.resource.map.events.DialogDelimiter;
 import org.mobicents.slee.resource.map.events.DialogNotice;
@@ -210,10 +211,14 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		try {
             String originatorSccpAddress = null;
-            GlobalTitle gt = dialog.getRemoteAddress().getGlobalTitle();
-            if (gt != null)
-                originatorSccpAddress = gt.getDigits();
-            this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId(), originatorSccpAddress);
+            SccpAddress sccpAddress = dialog.getRemoteAddress();
+            if (sccpAddress != null) {
+                GlobalTitle gt = sccpAddress.getGlobalTitle();
+                if (gt != null)
+                    originatorSccpAddress = gt.getDigits();
+            }
+            this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId(),
+                    originatorSccpAddress);
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
             smscStatAggregator.updateMsgInFailedAll();
@@ -347,9 +352,12 @@ public abstract class MoSbb extends MoCommonSbb {
                 this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId());
             } else {
                 String originatorSccpAddress = null;
-                GlobalTitle gt = dialog.getRemoteAddress().getGlobalTitle();
-                if (gt != null)
-                    originatorSccpAddress = gt.getDigits();
+                SccpAddress sccpAddress = dialog.getRemoteAddress();
+                if (sccpAddress != null) {
+                    GlobalTitle gt = dialog.getRemoteAddress().getGlobalTitle();
+                    if (gt != null)
+                        originatorSccpAddress = gt.getDigits();
+                }
                 this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId(), originatorSccpAddress);
             }
 		} catch (SmscProcessingException e1) {

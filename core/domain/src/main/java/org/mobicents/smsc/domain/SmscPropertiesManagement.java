@@ -152,10 +152,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// Recommended value = 6 Possible values from 0 to 12
 	private int maxMessageLengthReducer = 6;
     // Encoding type at SMPP part for data coding schema==0 (GSM7)
-    // 0-UTF8, 1-UNICODE
+    // 0-UTF8, 1-UNICODE, 3-GSM7
     private SmppEncoding smppEncodingForGsm7 = SmppEncoding.Utf8;
     // Encoding type at SMPP part for data coding schema==8 (UCS2)
-    // 0-UTF8, 1-UNICODE
+    // 0-UTF8, 1-UNICODE, 3-GSM7
     private SmppEncoding smppEncodingForUCS2 = SmppEncoding.Utf8;
 
 	// time duration of exporting CDR's to a log based on cassandra database

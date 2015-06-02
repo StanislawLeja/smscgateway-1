@@ -22,6 +22,9 @@
 
 package org.mobicents.smsc.slee.services.smpp.server.tx;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -44,6 +47,10 @@ import javax.slee.resource.ResourceAdaptorTypeID;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharset;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetDecoder;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetDecodingData;
+import org.mobicents.protocols.ss7.map.datacoding.Gsm7EncodingStyle;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
@@ -118,6 +125,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 	private static Charset utf8Charset = Charset.forName("UTF-8");
 	private static Charset ucs2Charset = Charset.forName("UTF-16BE");
     private static Charset isoCharset = Charset.forName("ISO-8859-1");
+    private static Charset gsm7Charset = new GSMCharset("GSM", new String[] {});
 
 	public TxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -880,17 +888,34 @@ public abstract class TxSmppServerSbb implements Sbb {
 
         if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
             msg = new String(textPart, isoCharset);
-        } else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
-            if (smscPropertiesManagement.getSmppEncodingForGsm7() == SmppEncoding.Utf8) {
-                msg = new String(textPart, utf8Charset);
-            } else {
-                msg = new String(textPart, ucs2Charset);
-            }
         } else {
-            if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncoding.Utf8) {
-                msg = new String(textPart, utf8Charset);
+            SmppEncoding enc;
+            if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+                enc = smscPropertiesManagement.getSmppEncodingForGsm7();
             } else {
-                msg = new String(textPart, ucs2Charset);
+                enc = smscPropertiesManagement.getSmppEncodingForUCS2();
+            }
+            switch (enc) {
+                case Utf8:
+                default:
+                    msg = new String(textPart, utf8Charset);
+                    break;
+                case Unicode:
+                    msg = new String(textPart, ucs2Charset);
+                    break;
+                case Gsm7:
+                    GSMCharsetDecoder decoder = (GSMCharsetDecoder) gsm7Charset.newDecoder();
+                    decoder.setGSMCharsetDecodingData(new GSMCharsetDecodingData(Gsm7EncodingStyle.bit8_smpp_style,
+                            Integer.MAX_VALUE, 0));
+                    ByteBuffer bb = ByteBuffer.wrap(textPart);
+                    CharBuffer bf = null;
+                    try {
+                        bf = decoder.decode(bb);
+                    } catch (CharacterCodingException e) {
+                        // this can not be
+                    }
+                    msg = bf.toString();
+                    break;
             }
         }
 
@@ -1093,19 +1118,52 @@ public abstract class TxSmppServerSbb implements Sbb {
 
         if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
             msg = new String(textPart, isoCharset);
-        } else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
-            if (smscPropertiesManagement.getSmppEncodingForGsm7() == SmppEncoding.Utf8) {
-                msg = new String(textPart, utf8Charset);
-            } else {
-                msg = new String(textPart, ucs2Charset);
-            }
         } else {
-            if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncoding.Utf8) {
-                msg = new String(textPart, utf8Charset);
+            SmppEncoding enc;
+            if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+                enc = smscPropertiesManagement.getSmppEncodingForGsm7();
             } else {
-                msg = new String(textPart, ucs2Charset);
+                enc = smscPropertiesManagement.getSmppEncodingForUCS2();
+            }
+            switch (enc) {
+                case Utf8:
+                default:
+                    msg = new String(textPart, utf8Charset);
+                    break;
+                case Unicode:
+                    msg = new String(textPart, ucs2Charset);
+                    break;
+                case Gsm7:
+                    GSMCharsetDecoder decoder = (GSMCharsetDecoder) gsm7Charset.newDecoder();
+                    decoder.setGSMCharsetDecodingData(new GSMCharsetDecodingData(Gsm7EncodingStyle.bit8_smpp_style,
+                            Integer.MAX_VALUE, 0));
+                    ByteBuffer bb = ByteBuffer.wrap(textPart);
+                    CharBuffer bf = null;
+                    try {
+                        bf = decoder.decode(bb);
+                    } catch (CharacterCodingException e) {
+                        // this can not be
+                    }
+                    msg = bf.toString();
+                    break;
             }
         }
+
+//        if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
+//            msg = new String(textPart, isoCharset);
+//        } else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+//            if (smscPropertiesManagement.getSmppEncodingForGsm7() == SmppEncoding.Utf8) {
+//                msg = new String(textPart, utf8Charset);
+//            } else {
+//                msg = new String(textPart, ucs2Charset);
+//            }
+//        } else {
+//            if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncoding.Utf8) {
+//                msg = new String(textPart, utf8Charset);
+//            } else {
+//                msg = new String(textPart, ucs2Charset);
+//            }
+//        }
 
         messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg.length());
         if (udhData != null)

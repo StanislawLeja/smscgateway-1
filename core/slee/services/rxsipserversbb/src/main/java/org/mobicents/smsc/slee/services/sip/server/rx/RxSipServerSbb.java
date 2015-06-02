@@ -22,6 +22,9 @@
 
 package org.mobicents.smsc.slee.services.sip.server.rx;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,6 +59,10 @@ import net.java.slee.resource.sip.SleeSipProvider;
 
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharset;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetEncoder;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetEncodingData;
+import org.mobicents.protocols.ss7.map.datacoding.Gsm7EncodingStyle;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
@@ -124,6 +131,7 @@ public abstract class RxSipServerSbb implements Sbb {
 	private static Charset ucs2Charset = Charset.forName("UTF-16BE");
 	private static Charset utf8Charset = Charset.forName("UTF-8");
 	private static Charset isoCharset = Charset.forName("ISO-8859-1");
+    private static Charset gsm7Charset = new GSMCharset("GSM", new String[] {});
 
 	public RxSipServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -602,21 +610,47 @@ public abstract class RxSipServerSbb implements Sbb {
 
 		byte[] textPart;
 		if (msg != null) {
-			if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
-				textPart = msg.getBytes(isoCharset);
-			} else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
-				if (smscPropertiesManagement.getSmppEncodingForGsm7() == SmppEncoding.Utf8) {
-					textPart = msg.getBytes(utf8Charset);
-				} else {
-					textPart = msg.getBytes(ucs2Charset);
-				}
-			} else {
-				if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncoding.Utf8) {
-					textPart = msg.getBytes(utf8Charset);
-				} else {
-					textPart = msg.getBytes(ucs2Charset);
-				}
-			}
+            if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
+                textPart = msg.getBytes(isoCharset);
+            } else {
+                SmppEncoding enc;
+                if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+                    enc = smscPropertiesManagement.getSmppEncodingForGsm7();
+                } else {
+                    enc = smscPropertiesManagement.getSmppEncodingForUCS2();
+                }
+                if (enc == SmppEncoding.Utf8) {
+                    textPart = msg.getBytes(utf8Charset);
+                } else if (enc == SmppEncoding.Unicode) {
+                    textPart = msg.getBytes(ucs2Charset);
+                } else {
+                    GSMCharsetEncoder encoder = (GSMCharsetEncoder) gsm7Charset.newEncoder();
+                    encoder.setGSMCharsetEncodingData(new GSMCharsetEncodingData(Gsm7EncodingStyle.bit8_smpp_style, null));
+                    ByteBuffer bb = null;
+                    try {
+                        bb = encoder.encode(CharBuffer.wrap(msg));
+                    } catch (CharacterCodingException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    textPart = new byte[bb.limit()];
+                    bb.get(textPart);
+                }
+
+//                if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+//                    if (smscPropertiesManagement.getSmppEncodingForGsm7() == SmppEncoding.Utf8) {
+//                        textPart = msg.getBytes(utf8Charset);
+//                    } else {
+//                        textPart = msg.getBytes(ucs2Charset);
+//                    }
+//                } else {
+//                    if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncoding.Utf8) {
+//                        textPart = msg.getBytes(utf8Charset);
+//                    } else {
+//                        textPart = msg.getBytes(ucs2Charset);
+//                    }
+//                }
+            }
 		} else {
 			textPart = new byte[0];
 		}
