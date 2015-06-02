@@ -53,7 +53,7 @@ public class SmppSimulatorParameters {
     private String addressRange = "6666";
 
 	private String messageText = "Hello!";
-	private EncodingType encodingType = EncodingType.GSM7;
+	private EncodingType encodingType = EncodingType.GSM7_DCS_0;
 	private boolean messageClass;
 	private SplittingType splittingType = SplittingType.DoNotSplit;
 	private int specifiedSegmentLength = 100;
@@ -62,6 +62,10 @@ public class SmppSimulatorParameters {
     private SendingMessageType sendingMessageType = SendingMessageType.SubmitSm;
     private int submitMultiMessageCnt = 2;
     private SmppSession.Type smppSessionType = SmppSession.Type.CLIENT;
+    /**
+     * Encoding style of text at SMPP part
+     * 0-Utf8, 1-Unicode, 2-Gsm7
+     */
     private int smppEncoding = 0;
     private MessagingMode messagingMode = MessagingMode.storeAndForward;
 
@@ -343,7 +347,7 @@ public class SmppSimulatorParameters {
     }
 
     public enum EncodingType {
-    	GSM7, GSM8, UCS2,
+    	GSM7_DCS_0, GSM8_DCS_4, UCS2_DCS_8,
     }
 
     public enum SplittingType {

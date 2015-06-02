@@ -30,10 +30,14 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+
 import javax.swing.JScrollPane;
+
 import java.awt.Component;
+
 import javax.swing.JTable;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -41,11 +45,16 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 
 import java.awt.Color;
+
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JButton;
 
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharset;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetEncoder;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetEncodingData;
+import org.mobicents.protocols.ss7.map.datacoding.Gsm7EncodingStyle;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.EncodingType;
@@ -78,6 +87,9 @@ import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
@@ -90,6 +102,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -133,6 +146,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 	private static Charset utf8Charset = Charset.forName("UTF-8");
     private static Charset ucs2Charset = Charset.forName("UTF-16BE");
     private static Charset isoCharset = Charset.forName("ISO-8859-1");
+    private static Charset gsm7Charset = new GSMCharset("GSM", new String[] {});
 
 	public SmppTestingForm(JFrame owner) {
 		super(owner, true);
@@ -399,13 +413,26 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 	}
 
     private byte[] encodeSegment(String msg, EncodingType encodingType) {
-        if (encodingType == EncodingType.GSM8) {
+        if (encodingType == EncodingType.GSM8_DCS_4) {
             return msg.getBytes(isoCharset);
         } else {
             if (this.param.getSmppEncoding() == 0) {
                 return msg.getBytes(utf8Charset);
-            } else {
+            } else if (this.param.getSmppEncoding() == 1) {
                 return msg.getBytes(ucs2Charset);
+            } else {
+                GSMCharsetEncoder encoder = (GSMCharsetEncoder) gsm7Charset.newEncoder();
+                encoder.setGSMCharsetEncodingData(new GSMCharsetEncodingData(Gsm7EncodingStyle.bit8_smpp_style, null));
+                ByteBuffer bb = null;
+                try {
+                    bb = encoder.encode(CharBuffer.wrap(msg));
+                } catch (CharacterCodingException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                byte[] data = new byte[bb.limit()];
+                bb.get(data);
+                return data;
             }
         }
     }
@@ -421,13 +448,13 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
         	int msgRef = 0;
 
             switch (encodingType) {
-            case GSM7:
+            case GSM7_DCS_0:
                 dcs = 0;
                 break;
-            case GSM8:
+            case GSM8_DCS_4:
                 dcs = 4;
                 break;
-            case UCS2:
+            case UCS2_DCS_8:
                 dcs = 8;
                 break;
             }
@@ -453,7 +480,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
                     // we do not split
                     byte[] buf1 = encodeSegment(messageText, encodingType);
                     byte[] buf2;
-                    if (encodingType == EncodingType.GSM8) {
+                    if (encodingType == EncodingType.GSM8_DCS_4) {
                         byte[] bf3 = new byte[7];
                         bf3[0] = 6; // total UDH length
                         bf3[1] = 5; // UDH id
@@ -509,7 +536,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
                 }
             } else {
                 byte[] buf = encodeSegment(messageText, encodingType);
-                if (encodingType == EncodingType.GSM8) {
+                if (encodingType == EncodingType.GSM8_DCS_4) {
                     byte[] bf1 = new byte[7];
                     bf1[0] = 6; // total UDH length
                     bf1[1] = 5; // UDH id
@@ -925,9 +952,9 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
             int j3 = rand.nextInt(3);
             EncodingType encodingType;
             if (j2 == 0)
-                encodingType = EncodingType.GSM7;
+                encodingType = EncodingType.GSM7_DCS_0;
             else
-                encodingType = EncodingType.UCS2;
+                encodingType = EncodingType.UCS2_DCS_8;
             SplittingType splittingType;
             switch (j3) {
             case 0:

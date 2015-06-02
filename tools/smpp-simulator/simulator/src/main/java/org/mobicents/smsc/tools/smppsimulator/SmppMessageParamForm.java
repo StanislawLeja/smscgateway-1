@@ -80,6 +80,7 @@ public class SmppMessageParamForm extends JDialog {
 	private JComboBox<SmppSimulatorParameters.MCDeliveryReceipt> cbMcDeliveryReceipt;
 	private JRadioButton rbUtf8;
 	private JRadioButton rbUnicode;
+	private JRadioButton rbGsm7;
 	private JComboBox<SmppSimulatorParameters.MessagingMode> cbMessagingMode;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JTextField tbSubmitMultiMessageCnt;
@@ -135,7 +136,7 @@ public class SmppMessageParamForm extends JDialog {
 								scrollPane.setBounds(10, 33, 604, 58);
 								panel_main.add(scrollPane);
 								
-								JLabel lblTextEncodingType = new JLabel("Text encoding type");
+								JLabel lblTextEncodingType = new JLabel("Data coding scheme (DCS)");
 								lblTextEncodingType.setBounds(10, 105, 329, 14);
 								panel_main.add(lblTextEncodingType);
 								
@@ -148,39 +149,39 @@ public class SmppMessageParamForm extends JDialog {
 								panel_main.add(cbMessageClass);
 								
 								JLabel lblMessageSplittingType = new JLabel("Message splitting type");
-								lblMessageSplittingType.setBounds(10, 164, 329, 14);
+								lblMessageSplittingType.setBounds(10, 198, 283, 14);
 								panel_main.add(lblMessageSplittingType);
 								
 								JLabel lblTypeOfNumber = new JLabel("Source address: Type of number");
-								lblTypeOfNumber.setBounds(10, 223, 329, 14);
+								lblTypeOfNumber.setBounds(10, 257, 329, 14);
 								panel_main.add(lblTypeOfNumber);
 								
 								JLabel lblNumberingPlanIndicator = new JLabel("Source address: Numbering plan indicator");
-								lblNumberingPlanIndicator.setBounds(10, 251, 329, 14);
+								lblNumberingPlanIndicator.setBounds(10, 285, 329, 14);
 								panel_main.add(lblNumberingPlanIndicator);
 								
 								JLabel lblDestinationAddressType = new JLabel("Destination address: Type of number");
-								lblDestinationAddressType.setBounds(10, 281, 329, 14);
+								lblDestinationAddressType.setBounds(10, 315, 329, 14);
 								panel_main.add(lblDestinationAddressType);
 								
 								JLabel lblDestinationAddressNumbering = new JLabel("Destination address: Numbering plan indicator");
-								lblDestinationAddressNumbering.setBounds(10, 309, 329, 14);
+								lblDestinationAddressNumbering.setBounds(10, 343, 329, 14);
 								panel_main.add(lblDestinationAddressNumbering);
 								
 								cbDestNPI = new JComboBox<SmppSimulatorParameters.NPI>();
-								cbDestNPI.setBounds(349, 306, 255, 20);
+								cbDestNPI.setBounds(349, 340, 255, 20);
 								panel_main.add(cbDestNPI);
 								
 								cbDestTON = new JComboBox<SmppSimulatorParameters.TON>();
-								cbDestTON.setBounds(349, 278, 255, 20);
+								cbDestTON.setBounds(349, 312, 255, 20);
 								panel_main.add(cbDestTON);
 								
 								cbSrcNPI = new JComboBox<SmppSimulatorParameters.NPI>();
-								cbSrcNPI.setBounds(349, 248, 255, 20);
+								cbSrcNPI.setBounds(349, 282, 255, 20);
 								panel_main.add(cbSrcNPI);
 								
 								cbSrcTON = new JComboBox<SmppSimulatorParameters.TON>();
-								cbSrcTON.setBounds(349, 220, 255, 20);
+								cbSrcTON.setBounds(349, 254, 255, 20);
 								panel_main.add(cbSrcTON);
 								
 										cbSplittingType = new JComboBox<SmppSimulatorParameters.SplittingType>();
@@ -208,20 +209,20 @@ public class SmppMessageParamForm extends JDialog {
                 }
             }
 										});
-										cbSplittingType.setBounds(304, 161, 300, 20);
+										cbSplittingType.setBounds(304, 195, 300, 20);
 										panel_main.add(cbSplittingType);
 										
 										JLabel lblEncodingTypeAt = new JLabel("Encoding type at SMPP part for (GSM7/UCS2)");
-										lblEncodingTypeAt.setBounds(10, 339, 401, 14);
+										lblEncodingTypeAt.setBounds(10, 164, 358, 14);
 										panel_main.add(lblEncodingTypeAt);
 										
 										rbUtf8 = new JRadioButton("Utf8");
-										rbUtf8.setBounds(418, 334, 73, 25);
+										rbUtf8.setBounds(349, 159, 73, 25);
 										panel_main.add(rbUtf8);
 										buttonGroup.add(rbUtf8);
 										
 										rbUnicode = new JRadioButton("Unicode");
-										rbUnicode.setBounds(495, 334, 109, 25);
+										rbUnicode.setBounds(449, 159, 86, 25);
 										panel_main.add(rbUnicode);
 										buttonGroup.add(rbUnicode);
 										
@@ -286,12 +287,17 @@ public class SmppMessageParamForm extends JDialog {
 																												
 																												tbSegmentLength = new JTextField();
 																												tbSegmentLength.setColumns(10);
-																												tbSegmentLength.setBounds(349, 189, 86, 20);
+																												tbSegmentLength.setBounds(349, 223, 86, 20);
 																												panel_main.add(tbSegmentLength);
 																												
 																												JLabel lblSpecifiedSegmentLength = new JLabel("Specified segment length :");
-																												lblSpecifiedSegmentLength.setBounds(10, 189, 329, 14);
+																												lblSpecifiedSegmentLength.setBounds(10, 223, 329, 14);
 																												panel_main.add(lblSpecifiedSegmentLength);
+																												
+																												rbGsm7 = new JRadioButton("Gsm7");
+																												buttonGroup.add(rbGsm7);
+																												rbGsm7.setBounds(537, 159, 86, 25);
+																												panel_main.add(rbGsm7);
 																cbSendingMessageType.addItemListener(new ItemListener() {
 																    public void itemStateChanged(ItemEvent arg0) {
                 if (cbSendingMessageType.getSelectedItem().toString().equals(SendingMessageType.SubmitMulti.toString())) {
@@ -466,8 +472,10 @@ public class SmppMessageParamForm extends JDialog {
 
         if (data.getSmppEncoding() == 0)
             this.rbUtf8.setSelected(true);
-        else
+        else if (data.getSmppEncoding() == 1)
             this.rbUnicode.setSelected(true);
+        else
+            this.rbGsm7.setSelected(true);
  	}
 
 	public SmppSimulatorParameters getData() {
@@ -543,8 +551,10 @@ public class SmppMessageParamForm extends JDialog {
 
         if (this.rbUtf8.isSelected())
             this.data.setSmppEncoding(0);
-        else
+        else if (this.rbUnicode.isSelected())
             this.data.setSmppEncoding(1);
+        else
+            this.data.setSmppEncoding(2);
 
 		this.dispose();
 	}
