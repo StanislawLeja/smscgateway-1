@@ -47,11 +47,13 @@ import javax.slee.resource.ResourceAdaptorTypeID;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
 import org.mobicents.protocols.ss7.map.datacoding.GSMCharset;
 import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetDecoder;
 import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetDecodingData;
 import org.mobicents.protocols.ss7.map.datacoding.Gsm7EncodingStyle;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
+import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.DatabaseType;
@@ -872,7 +874,6 @@ public abstract class TxSmppServerSbb implements Sbb {
         byte[] udhData;
         byte[] textPart;
         String msg;
-        int messageLen;
         udhData = null;
         textPart = data;
         if (udhPresent && data.length > 2) {
@@ -885,6 +886,7 @@ public abstract class TxSmppServerSbb implements Sbb {
                 System.arraycopy(data, 0, udhData, 0, udhLen);
             }
         }
+
 
         if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
             msg = new String(textPart, isoCharset);
@@ -919,31 +921,87 @@ public abstract class TxSmppServerSbb implements Sbb {
             }
         }
 
-        messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg.length());
-        if (udhData != null)
-            messageLen += udhData.length;
-
         sms.setShortMessageText(msg);
         sms.setShortMessageBin(udhData);
 
-		// checking max message length
-        int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
-        int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
+        // checking of min / max length
+        if (origEsme.getMinMessageLength() >= 0 && msg.length() < origEsme.getMinMessageLength()) {
+            SmscProcessingException e = new SmscProcessingException("Message length is less than a min length limit for ESME="
+                    + origEsme.getName() + ", len=" + msg.length(), SmppConstants.STATUS_INVMSGLEN, MAPErrorCode.systemFailure,
+                    null);
+            e.setSkipErrorLogging(true);
+            throw e;
+        }
+        if (origEsme.getMaxMessageLength() >= 0 && msg.length() > origEsme.getMaxMessageLength()) {
+            SmscProcessingException e = new SmscProcessingException("Message length is more than a max length limit for ESME="
+                    + origEsme.getName() + ", len=" + msg.length(), SmppConstants.STATUS_INVMSGLEN, MAPErrorCode.systemFailure,
+                    null);
+            e.setSkipErrorLogging(true);
+            throw e;
+        }
+
+        // checking max message length
         if (udhPresent || segmentTlvFlag) {
-			// here splitting by SMSC is not supported
-			if (messageLen > lenSolid) {
-				throw new SmscProcessingException("Message length in bytes is too big for solid message: "
-						+ messageLen + ">" + lenSolid, SmppConstants.STATUS_INVPARLEN,
-						MAPErrorCode.systemFailure, null);
-			}
-		} else {
-			// here splitting by SMSC is supported
-			if (messageLen > lenSegmented * 255) {
-				throw new SmscProcessingException("Message length in bytes is too big for segmented message: "
-						+ messageLen + ">" + lenSegmented, SmppConstants.STATUS_INVPARLEN,
-						MAPErrorCode.systemFailure, null);
-			}
-		}
+            // here splitting by SMSC is not supported
+            UserDataHeader udh = null;
+            int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
+            if (udhPresent) {
+                udh = new UserDataHeaderImpl(udhData);
+            } else {
+                udh = createNationalLanguageUdh(origEsme, dataCodingScheme);
+                if (udh != null && udh.getNationalLanguageLockingShift() != null) {
+                    lenSolid -= 3;
+                    sms.setNationalLanguageLockingShift(udh.getNationalLanguageLockingShift().getNationalLanguageIdentifier()
+                            .getCode());
+                }
+                if (udh != null && udh.getNationalLanguageSingleShift() != null) {
+                    lenSolid -= 3;
+                    sms.setNationalLanguageSingleShift(udh.getNationalLanguageSingleShift().getNationalLanguageIdentifier()
+                            .getCode());
+                }
+            }
+            int messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg, udh);
+            if (udhData != null)
+                lenSolid -= udhData.length;
+            if (messageLen > lenSolid) {
+                throw new SmscProcessingException("Message length in bytes is too big for solid message: " + messageLen + ">"
+                        + lenSolid, SmppConstants.STATUS_INVPARLEN, MAPErrorCode.systemFailure, null);
+            }
+        } else {
+            // here splitting by SMSC is supported
+            int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
+            UserDataHeader udh = createNationalLanguageUdh(origEsme, dataCodingScheme);
+            if (msg.length() * 2 > (lenSegmented - 6) * 255) { // firstly draft length check
+                int messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg, udh);
+                if (udh != null) {
+                    if (udh.getNationalLanguageLockingShift() != null) {
+                        lenSegmented -= 3;
+                        sms.setNationalLanguageLockingShift(udh.getNationalLanguageLockingShift()
+                                .getNationalLanguageIdentifier().getCode());
+                    }
+                    if (udh.getNationalLanguageSingleShift() != null) {
+                        lenSegmented -= 3;
+                        sms.setNationalLanguageSingleShift(udh.getNationalLanguageSingleShift().getNationalLanguageIdentifier()
+                                .getCode());
+                    }
+                }
+                if (messageLen > lenSegmented * 255) {
+                    throw new SmscProcessingException("Message length in bytes is too big for segmented message: " + messageLen
+                            + ">" + lenSegmented, SmppConstants.STATUS_INVPARLEN, MAPErrorCode.systemFailure, null);
+                }
+            } else {
+                if (udh != null) {
+                    if (udh.getNationalLanguageLockingShift() != null) {
+                        sms.setNationalLanguageLockingShift(udh.getNationalLanguageLockingShift()
+                                .getNationalLanguageIdentifier().getCode());
+                    }
+                    if (udh.getNationalLanguageSingleShift() != null) {
+                        sms.setNationalLanguageSingleShift(udh.getNationalLanguageSingleShift().getNationalLanguageIdentifier()
+                                .getCode());
+                    }
+                }
+            }
+        }
 
 		// ValidityPeriod processing
 		Tlv tlvQosTimeToLive = event.getOptionalParameter(SmppConstants.TAG_QOS_TIME_TO_LIVE);
@@ -1018,6 +1076,21 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		return sms;
 	}
+
+    private UserDataHeader createNationalLanguageUdh(Esme origEsme, DataCodingScheme dataCodingScheme) {
+        UserDataHeader udh = null;
+        int nationalLanguageSingleShift = 0;
+        int nationalLanguageLockingShift = 0;
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+            nationalLanguageSingleShift = origEsme.getNationalLanguageSingleShift();
+            nationalLanguageLockingShift = origEsme.getNationalLanguageLockingShift();
+            if (nationalLanguageSingleShift == -1)
+                nationalLanguageSingleShift = smscPropertiesManagement.getNationalLanguageSingleShift();
+            if (nationalLanguageLockingShift == -1)
+                nationalLanguageLockingShift = smscPropertiesManagement.getNationalLanguageLockingShift();
+        }
+        return MessageUtil.getNationalLanguageIdentifierUdh(nationalLanguageLockingShift, nationalLanguageSingleShift);
+    }
 
     protected SubmitMultiParseResult createSmsEventMulti(SubmitMulti event, Esme origEsme, PersistenceRAInterface store, int networkId) throws SmscProcessingException {
 
@@ -1102,7 +1175,6 @@ public abstract class TxSmppServerSbb implements Sbb {
         byte[] udhData;
         byte[] textPart;
         String msg;
-        int messageLen;
         udhData = null;
         textPart = data;
         if (udhPresent && data.length > 2) {
@@ -1165,15 +1237,32 @@ public abstract class TxSmppServerSbb implements Sbb {
 //            }
 //        }
 
-        messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg.length());
-        if (udhData != null)
-            messageLen += udhData.length;
-        
         // checking max message length
-        int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
-        int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
+        int nationalLanguageLockingShift = 0;
+        int nationalLanguageSingleShift = 0;
         if (udhPresent || segmentTlvFlag) {
             // here splitting by SMSC is not supported
+            UserDataHeader udh = null;
+            int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
+            if (udhPresent)
+                udh = new UserDataHeaderImpl(udhData);
+            else {
+                udh = createNationalLanguageUdh(origEsme, dataCodingScheme);
+                if (udh.getNationalLanguageLockingShift() != null) {
+                    lenSolid -= 3;
+                    nationalLanguageLockingShift = udh.getNationalLanguageLockingShift().getNationalLanguageIdentifier()
+                            .getCode();
+                }
+                if (udh.getNationalLanguageSingleShift() != null) {
+                    lenSolid -= 3;
+                    nationalLanguageSingleShift = udh.getNationalLanguageSingleShift().getNationalLanguageIdentifier()
+                            .getCode();
+                }
+            }
+            int messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg, udh);
+            if (udhData != null)
+                messageLen += udhData.length;
+
             if (messageLen > lenSolid) {
                 throw new SmscProcessingException("Message length in bytes is too big for solid message: "
                         + messageLen + ">" + lenSolid, SmppConstants.STATUS_INVPARLEN,
@@ -1181,10 +1270,24 @@ public abstract class TxSmppServerSbb implements Sbb {
             }
         } else {
             // here splitting by SMSC is supported
-            if (messageLen > lenSegmented * 255) {
-                throw new SmscProcessingException("Message length in bytes is too big for segmented message: "
-                        + messageLen + ">" + lenSegmented, SmppConstants.STATUS_INVPARLEN,
-                        MAPErrorCode.systemFailure, null);
+            int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
+            if (msg.length() * 2 > (lenSegmented - 6) * 255) { // firstly draft length check
+                UserDataHeader udh = createNationalLanguageUdh(origEsme, dataCodingScheme);
+                int messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg, udh);
+                if (udh.getNationalLanguageLockingShift() != null) {
+                    lenSegmented -= 3;
+                    nationalLanguageLockingShift = udh.getNationalLanguageLockingShift().getNationalLanguageIdentifier()
+                            .getCode();
+                }
+                if (udh.getNationalLanguageSingleShift() != null) {
+                    lenSegmented -= 3;
+                    nationalLanguageSingleShift = udh.getNationalLanguageSingleShift().getNationalLanguageIdentifier()
+                            .getCode();
+                }
+                if (messageLen > lenSegmented * 255) {
+                    throw new SmscProcessingException("Message length in bytes is too big for segmented message: " + messageLen
+                            + ">" + lenSegmented, SmppConstants.STATUS_INVPARLEN, MAPErrorCode.systemFailure, null);
+                }
             }
         }
 
@@ -1250,6 +1353,8 @@ public abstract class TxSmppServerSbb implements Sbb {
                 sms.setOrigNetworkId(networkId);
 
                 sms.setDataCoding(dcs);
+                sms.setNationalLanguageLockingShift(nationalLanguageLockingShift);
+                sms.setNationalLanguageSingleShift(nationalLanguageSingleShift);
 
                 sms.setOrigSystemId(origEsme.getSystemId());
                 sms.setOrigEsmeName(origEsme.getName());

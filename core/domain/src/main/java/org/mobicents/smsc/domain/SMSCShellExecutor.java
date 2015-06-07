@@ -820,6 +820,18 @@ public class SMSCShellExecutor implements ShellExecutor {
                 if (val == 1 || val == 2 || val < 0)
                     return SMSCOAMMessages.REMOVING_LIVE_ARCHIVE_TABLES_DAYS_BAD_VALUES;
                 smscPropertiesManagement.setRemovingArchiveTablesDays(val);
+
+            } else if (parName.equals("national-language-single-shift")) {
+                int val = Integer.parseInt(options[3]);
+                if (val < 0 || val > 13)
+                    return SMSCOAMMessages.NATIONAL_LANGUAGE_SHIFT_BAD_VALUE;
+                smscPropertiesManagement.setNationalLanguageSingleShift(val);
+            } else if (parName.equals("national-language-locking-shift")) {
+                int val = Integer.parseInt(options[3]);
+                if (val < 0 || val > 13)
+                    return SMSCOAMMessages.NATIONAL_LANGUAGE_SHIFT_BAD_VALUE;
+                smscPropertiesManagement.setNationalLanguageLockingShift(val);
+
             } else if (parName.equals("deliverypause")) {
                 boolean val = Boolean.parseBoolean(options[3]);
                 smscPropertiesManagement.setDeliveryPause(val);
@@ -981,6 +993,12 @@ public class SMSCShellExecutor implements ShellExecutor {
                 sb.append(smscPropertiesManagement.getRemovingLiveTablesDays());
             } else if (parName.equals("removingarchivetablesdays")) {
                 sb.append(smscPropertiesManagement.getRemovingArchiveTablesDays());
+
+            } else if (parName.equals("national-language-single-shift")) {
+                sb.append(smscPropertiesManagement.getNationalLanguageSingleShift());
+            } else if (parName.equals("national-language-locking-shift")) {
+                sb.append(smscPropertiesManagement.getNationalLanguageLockingShift());
+
             } else if (parName.equals("deliverypause")) {
                 sb.append(smscPropertiesManagement.isDeliveryPause());
 			} else {
@@ -1202,6 +1220,14 @@ public class SMSCShellExecutor implements ShellExecutor {
 
             sb.append("removinglivetablesdays = ");
             sb.append(smscPropertiesManagement.getRemovingLiveTablesDays());
+            sb.append("\n");
+
+            sb.append("national-language-single-shift = ");
+            sb.append(smscPropertiesManagement.getNationalLanguageSingleShift());
+            sb.append("\n");
+
+            sb.append("national-language-locking-shift = ");
+            sb.append(smscPropertiesManagement.getNationalLanguageLockingShift());
             sb.append("\n");
 
             sb.append("deliverypause = ");

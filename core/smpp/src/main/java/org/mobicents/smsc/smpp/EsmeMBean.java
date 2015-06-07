@@ -289,4 +289,20 @@ public interface EsmeMBean extends DefaultSmppSessionMXBean, SslConfigurationWra
 
     long getDayReceivedMsgCount();
 
+    int getNationalLanguageSingleShift();
+
+    void setNationalLanguageSingleShift(int nationalLanguageSingleShift);
+
+    int getNationalLanguageLockingShift();
+
+    void setNationalLanguageLockingShift(int nationalLanguageLockingShift);
+
+    int getMinMessageLength();
+
+    void setMinMessageLength(int minMessageLength);
+
+    int getMaxMessageLength();
+
+    void setMaxMessageLength(int maxMessageLength);
+
 }

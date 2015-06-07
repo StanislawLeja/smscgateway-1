@@ -106,6 +106,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private static final String REMOVING_ARCHIVE_TABLES_DAYS = "removingArchiveTablesDays";
     private static final String MO_UNKNOWN_TYPE_OF_NUMBER_PREFIX = "moUnknownTypeOfNumberPrefix";
     private static final String HR_HLR_NUMBER = "hrHlrNumber";
+    private static final String NATIONAL_LANGUAGE_SINGLE_SHIFT = "nationalLanguageSingleShift";
+    private static final String NATIONAL_LANGUAGE_LOCKING_SHIFT = "nationalLanguageLockingShift";
+
     private static final String DELIVERY_PAUSE = "deliveryPause";
 
 
@@ -197,9 +200,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	// true: we generate CDR for both receipt and regular messages
 	// false: we generate CDR only for regular messages
     private boolean generateReceiptCdr = false;
-    // true: generating of receipts will be discabled for all messages
+    // true: generating of receipts will be disabled for all messages
     private boolean receiptsDisabling = false;
-    // true: for receipts the original teworkId will be assigned
+    // true: for receipts the original networkId will be assigned
     private boolean origNetworkIdForReceipts = false;
 
     // generating CDR's option
@@ -266,6 +269,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // this address will be inserted as CalledPartyAddress SCCP into all SRI
     // outgoing requests
     private String hrHlrNumber = "";
+
+    // national single and locking shift tables for the case when a message is SMPP originated and does not have included UDH
+    private int nationalLanguageSingleShift = 0;
+    private int nationalLanguageLockingShift = 0;
 
     // if set to true:
     // SMSC does not try to deliver any messages from cassandra database to SS7
@@ -807,21 +814,30 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         this.store();
     }
 
-//    public String getMoUnknownTypeOfNumberPrefix() {
-//        return moUnknownTypeOfNumberPrefix;
-//    }
-//
-//    public void setMoUnknownTypeOfNumberPrefix(String moUnknownTypeOfNumberPrefix) {
-//        this.moUnknownTypeOfNumberPrefix = moUnknownTypeOfNumberPrefix;
-//        this.store();
-//    }
-
     public String getHrHlrNumber() {
         return hrHlrNumber;
     }
 
     public void setHrHlrNumber(String hrHlrNumber) {
         this.hrHlrNumber = hrHlrNumber;
+        this.store();
+    }
+
+    public int getNationalLanguageSingleShift() {
+        return nationalLanguageSingleShift;
+    }
+
+    public void setNationalLanguageSingleShift(int nationalLanguageSingleShift) {
+        this.nationalLanguageSingleShift = nationalLanguageSingleShift;
+        this.store();
+    }
+
+    public int getNationalLanguageLockingShift() {
+       return nationalLanguageLockingShift;
+    }
+
+    public void setNationalLanguageLockingShift(int nationalLanguageLockingShift) {
+        this.nationalLanguageLockingShift = nationalLanguageLockingShift;
         this.store();
     }
 
@@ -963,8 +979,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
             writer.write(this.removingLiveTablesDays, REMOVING_LIVE_TABLES_DAYS, Integer.class);
             writer.write(this.removingArchiveTablesDays, REMOVING_ARCHIVE_TABLES_DAYS, Integer.class);
-//            writer.write(this.moUnknownTypeOfNumberPrefix, MO_UNKNOWN_TYPE_OF_NUMBER_PREFIX, String.class);
             writer.write(this.hrHlrNumber, HR_HLR_NUMBER, String.class);
+
+            writer.write(this.nationalLanguageSingleShift, NATIONAL_LANGUAGE_SINGLE_SHIFT, Integer.class);
+            writer.write(this.nationalLanguageLockingShift, NATIONAL_LANGUAGE_LOCKING_SHIFT, Integer.class);
 
 			writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
 			writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
@@ -1086,10 +1104,6 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
                 this.deliveryPause = valB.booleanValue();
             }
 
-			// val = reader.read(CDR_DATABASE_EXPORT_DURATION, Integer.class);
-			// if (val != null)
-			// this.cdrDatabaseExportDuration = val;
-
             val = reader.read(REMOVING_LIVE_TABLES_DAYS, Integer.class);
             if (val != null)
                 this.removingLiveTablesDays = val;
@@ -1097,11 +1111,16 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             if (val != null)
                 this.removingArchiveTablesDays = val;
             vals = reader.read(MO_UNKNOWN_TYPE_OF_NUMBER_PREFIX, String.class);
-//            if (vals != null)
-//                this.moUnknownTypeOfNumberPrefix = vals;
             vals = reader.read(HR_HLR_NUMBER, String.class);
             if (vals != null)
                 this.hrHlrNumber = vals;
+
+            val = reader.read(NATIONAL_LANGUAGE_SINGLE_SHIFT, Integer.class);
+            if (val != null)
+                this.nationalLanguageSingleShift = val;
+            val = reader.read(NATIONAL_LANGUAGE_LOCKING_SHIFT, Integer.class);
+            if (val != null)
+                this.nationalLanguageLockingShift = val;
 
 			this.esmeDefaultClusterName = reader.read(ESME_DEFAULT_CLUSTER_NAME, String.class);
 

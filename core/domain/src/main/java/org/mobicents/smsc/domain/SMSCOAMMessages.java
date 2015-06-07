@@ -105,6 +105,8 @@ public interface SMSCOAMMessages {
 
     public static final String MPROC_NO_RULES = "No MProcRules";
 
+    public static final String NATIONAL_LANGUAGE_SHIFT_BAD_VALUE = "National language shift shift value must be between 0 and 13";
+
 	/**
 	 * Generic constants
 	 */

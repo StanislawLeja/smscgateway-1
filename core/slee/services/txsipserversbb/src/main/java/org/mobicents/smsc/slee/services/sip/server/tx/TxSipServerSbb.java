@@ -465,7 +465,7 @@ public abstract class TxSipServerSbb implements Sbb {
 		sms.setDataCoding(dataCodingScheme.getCode());
 
 		// checking max message length
-		int messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg.length());
+		int messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg, null);
 		int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
 		int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
 		// splitting by SMSC is supported for all messages from SIP

@@ -63,4 +63,25 @@ public class SmsSetCasheTest {
         SmsSetCache.stop();
     }
 
+    @Test(groups = { "ShellExecutor" })
+    public void testSmsDataCoding() throws Exception {
+        int encoded = 10 + 5 * 256 + 1 * 256 * 256;
+        
+        Sms sms = new Sms();
+
+        sms.setDataCoding(10);
+        sms.setNationalLanguageLockingShift(5);
+        sms.setNationalLanguageSingleShift(1);
+
+        int d = sms.getDataCodingForDatabase();
+        assertEquals(d, encoded);
+
+        sms = new Sms();
+        sms.setDataCodingForDatabase(encoded);
+
+        assertEquals(sms.getDataCoding(), 10);
+        assertEquals(sms.getNationalLanguageLockingShift(), 5);
+        assertEquals(sms.getNationalLanguageSingleShift(), 1);
+    }
+
 }

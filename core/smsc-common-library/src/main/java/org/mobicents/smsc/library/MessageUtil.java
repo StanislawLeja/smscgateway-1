@@ -33,12 +33,20 @@ import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
 import org.mobicents.protocols.ss7.indicator.RoutingIndicator;
+import org.mobicents.protocols.ss7.map.api.datacoding.NationalLanguageIdentifier;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.ConcatenatedShortMessagesIdentifier;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.api.smstpdu.NationalLanguageLockingShiftIdentifier;
+import org.mobicents.protocols.ss7.map.api.smstpdu.NationalLanguageSingleShiftIdentifier;
+import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharset;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
+import org.mobicents.protocols.ss7.map.smstpdu.NationalLanguageLockingShiftIdentifierImpl;
+import org.mobicents.protocols.ss7.map.smstpdu.NationalLanguageSingleShiftIdentifierImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
+import org.mobicents.protocols.ss7.map.smstpdu.UserDataImpl;
 import org.mobicents.protocols.ss7.sccp.parameter.GlobalTitle;
 import org.mobicents.protocols.ss7.sccp.parameter.ParameterFactory;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
@@ -354,15 +362,38 @@ public class MessageUtil {
         return 132;
     }
 
+    public static UserDataHeader getNationalLanguageIdentifierUdh(int nationalLanguageLockingShift,
+            int nationalLanguageSingleShift) {
+        UserDataHeader udh = null;
+        if (nationalLanguageSingleShift > 0 || nationalLanguageLockingShift > 0) {
+            udh = new UserDataHeaderImpl();
+            if (nationalLanguageSingleShift > 0) {
+                NationalLanguageIdentifier nli = NationalLanguageIdentifier.getInstance(nationalLanguageSingleShift);
+                NationalLanguageSingleShiftIdentifier informationElement = new NationalLanguageSingleShiftIdentifierImpl(nli);
+                udh.addInformationElement(informationElement);
+            }
+            if (nationalLanguageLockingShift > 0) {
+                NationalLanguageIdentifier nli = NationalLanguageIdentifier.getInstance(nationalLanguageLockingShift);
+                NationalLanguageLockingShiftIdentifier informationElement = new NationalLanguageLockingShiftIdentifierImpl(nli);
+                udh.addInformationElement(informationElement);
+            }
+        }
+        return udh;
+    }
+
     /**
      * Returns now many bytes occupies this charCount
      * @param dataCodingScheme
      * @param charCount
      * @return
      */
-    public static int getMessageLengthInBytes(DataCodingScheme dataCodingScheme, int charCount) {
+    public static int getMessageLengthInBytes(DataCodingScheme dataCodingScheme, String msg, UserDataHeader udh) {
+        int charCount = msg.length();
+
         if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
-            return (charCount + 1) * 7 / 8;
+            int msgLenInChars = UserDataImpl.checkEncodedDataLengthInChars(msg, udh);
+            return GSMCharset.septetsToOctets(msgLenInChars);
+            // return (charCount + 1) * 7 / 8;
         } else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
             return charCount;
         } else {

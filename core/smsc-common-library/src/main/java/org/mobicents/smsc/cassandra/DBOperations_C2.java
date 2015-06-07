@@ -828,7 +828,7 @@ public class DBOperations_C2 {
 
 		boundStatement.setInt(Schema.COLUMN_REGISTERED_DELIVERY, sms.getRegisteredDelivery());
 		boundStatement.setInt(Schema.COLUMN_REPLACE, sms.getReplaceIfPresent());
-		boundStatement.setInt(Schema.COLUMN_DATA_CODING, sms.getDataCoding());
+		boundStatement.setInt(Schema.COLUMN_DATA_CODING, sms.getDataCodingForDatabase());
 		boundStatement.setInt(Schema.COLUMN_DEFAULT_MSG_ID, sms.getDefaultMsgId());
 
         if (shortMessageNewStringFormat) {
@@ -1019,7 +1019,7 @@ public class DBOperations_C2 {
 		sms.setPriority(row.getInt(Schema.COLUMN_PRIORITY));
 		sms.setRegisteredDelivery(row.getInt(Schema.COLUMN_REGISTERED_DELIVERY));
 		sms.setReplaceIfPresent(row.getInt(Schema.COLUMN_REPLACE));
-		sms.setDataCoding(row.getInt(Schema.COLUMN_DATA_CODING));
+		sms.setDataCodingForDatabase(row.getInt(Schema.COLUMN_DATA_CODING));
 		sms.setDefaultMsgId(row.getInt(Schema.COLUMN_DEFAULT_MSG_ID));
 
         if (shortMessageNewStringFormat) {

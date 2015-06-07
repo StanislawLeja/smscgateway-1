@@ -96,10 +96,11 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 	private int mapApplicationContextVersionsUsed = 0;
 
 
-    protected SmsSignalInfo createSignalInfo(Sms sms, String msg, byte[] udhData, boolean moreMessagesToSend, int messageReferenceNumber,
-            int messageSegmentCount, int messageSegmentNumber, DataCodingScheme dataCodingScheme, boolean udhExists) throws MAPException {
-        return super.createSignalInfo(sms, msg, udhData, moreMessagesToSend, messageReferenceNumber, messageSegmentCount, messageSegmentNumber,
-                dataCodingScheme, udhExists);
+    protected SmsSignalInfo createSignalInfo(Sms sms, String msg, byte[] udhData, boolean moreMessagesToSend,
+            int messageReferenceNumber, int messageSegmentCount, int messageSegmentNumber, DataCodingScheme dataCodingScheme,
+            int nationalLanguageLockingShift, int nationalLanguageSingleShift) throws MAPException {
+        return super.createSignalInfo(sms, msg, udhData, moreMessagesToSend, messageReferenceNumber, messageSegmentCount,
+                messageSegmentNumber, dataCodingScheme, nationalLanguageLockingShift, nationalLanguageSingleShift);
     }
 
 	@Override

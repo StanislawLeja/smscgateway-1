@@ -80,6 +80,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("removingarchivetablesdays");
         set.addChild("removingarchivetablesdays");
         set.addChild("removingarchivetablesdays");
+        set.addChild("national-language-single-shift");
+        set.addChild("national-language-locking-shift");
 
         txsmppcharging.addChild("None");
         txsmppcharging.addChild("Selected");
@@ -162,6 +164,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("diameterusername");
         get.addChild("removinglivetablesdays");
         get.addChild("removingarchivetablesdays");
+        get.addChild("national-language-single-shift");
+        get.addChild("national-language-locking-shift");
 
         Node smppencodingforgsm72 = get.addChild("smppencodingforgsm7");
         Node smppencodingforucs22 = get.addChild("smppencodingforucs2");

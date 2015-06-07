@@ -32,6 +32,7 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPException;
+import org.mobicents.protocols.ss7.map.api.datacoding.NationalLanguageIdentifier;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPAbortProviderReason;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPRefuseReason;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
@@ -58,17 +59,14 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AbsoluteTimeStamp;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AddressField;
+import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.api.smstpdu.NumberingPlanIdentification;
+import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
 import org.mobicents.protocols.ss7.map.api.smstpdu.TypeOfNumber;
+import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
 import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeaderElement;
-import org.mobicents.protocols.ss7.map.service.sms.SmsSignalInfoImpl;
-import org.mobicents.protocols.ss7.map.smstpdu.AbsoluteTimeStampImpl;
-import org.mobicents.protocols.ss7.map.smstpdu.AddressFieldImpl;
-import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
-import org.mobicents.protocols.ss7.map.smstpdu.SmsDeliverTpduImpl;
-import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataImpl;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.asn.ApplicationContextName;
@@ -1076,63 +1074,108 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		}
 	}
 
-	private ArrayList<String> sliceMessage(String msg, DataCodingScheme dataCodingScheme) {
-
-		// TODO: if we use extended character tables we will need more
-		// sophisticated algorithm
-		// for calculating real message length (for GSM7)
-
+    private String[] sliceMessage(String msg, DataCodingScheme dataCodingScheme, int nationalLanguageLockingShift,
+            int nationalLanguageSingleShift) {
         int lenSolid = MessageUtil.getMaxSolidMessageCharsLength(dataCodingScheme);
         int lenSegmented = MessageUtil.getMaxSegmentedMessageCharsLength(dataCodingScheme);
 
-		ArrayList<String> res = new ArrayList<String>();
-		if (msg.length() <= lenSolid) {
-			res.add(msg);
-		} else {
-			int segmCnt = (msg.length() - 1) / lenSegmented + 1;
-			for (int i1 = 0; i1 < segmCnt; i1++) {
-                if (i1 == segmCnt - 1) {
-                    res.add(msg.substring(i1 * lenSegmented, msg.length()));
-                } else {
-                    res.add(msg.substring(i1 * lenSegmented, (i1 + 1) * lenSegmented));
-                }
-			}
-		}
+        UserDataHeader udh = null;
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7
+                && (nationalLanguageLockingShift > 0 || nationalLanguageSingleShift > 0)) {
+            udh = MessageUtil.getNationalLanguageIdentifierUdh(nationalLanguageLockingShift, nationalLanguageSingleShift);
+            if (nationalLanguageLockingShift > 0) {
+                lenSolid -= 3;
+                lenSegmented -= 3;
+            }
+            if (nationalLanguageSingleShift > 0) {
+                lenSolid -= 3;
+                lenSegmented -= 3;
+            }
+        }
 
-		return res;
+		int msgLenInChars = msg.length();
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7 && msgLenInChars * 2 > lenSolid) {
+            // GSM7 data coding. We need to care if some characters occupy two char places
+            msgLenInChars = UserDataImpl.checkEncodedDataLengthInChars(msg, udh);
+        }
+		if (msgLenInChars <= lenSolid) {
+            String[] res = new String[] { msg };
+            return res;
+		} else {
+            if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+                String[] res = UserDataImpl.sliceString(msg, lenSegmented, udh);
+                return res;
+            } else {
+                ArrayList<String> res = new ArrayList<String>();
+                int segmCnt = (msg.length() - 1) / lenSegmented + 1;
+                for (int i1 = 0; i1 < segmCnt; i1++) {
+                    if (i1 == segmCnt - 1) {
+                        res.add(msg.substring(i1 * lenSegmented, msg.length()));
+                    } else {
+                        res.add(msg.substring(i1 * lenSegmented, (i1 + 1) * lenSegmented));
+                    }
+                }
+
+                String[] ress = new String[res.size()];
+                res.toArray(ress);
+                return ress;
+            }
+        }
 	}
 
-    protected SmsSignalInfo createSignalInfo(Sms sms, String msg, byte[] udhData, boolean moreMessagesToSend, int messageReferenceNumber,
-            int messageSegmentCount, int messageSegmentNumber, DataCodingScheme dataCodingScheme, boolean udhExists) throws MAPException {
+    protected SmsSignalInfo createSignalInfo(Sms sms, String msg, byte[] udhData, boolean moreMessagesToSend,
+            int messageReferenceNumber, int messageSegmentCount, int messageSegmentNumber, DataCodingScheme dataCodingScheme,
+            int nationalLanguageLockingShift, int nationalLanguageSingleShift) throws MAPException {
 
-        UserDataHeader userDataHeader = new UserDataHeaderImpl(udhData);
+        UserDataHeader userDataHeader;
+        if (udhData != null) {
+            userDataHeader = this.mapSmsTpduParameterFactory.createUserDataHeader(udhData);
+        } else {
+            userDataHeader = this.mapSmsTpduParameterFactory.createUserDataHeader();
 
-		if (messageSegmentCount > 1) {
-			userDataHeader = this.mapSmsTpduParameterFactory.createUserDataHeader();
-			UserDataHeaderElement concatenatedShortMessagesIdentifier = this.mapSmsTpduParameterFactory
-					.createConcatenatedShortMessagesIdentifier(messageReferenceNumber > 255, messageReferenceNumber,
-							messageSegmentCount, messageSegmentNumber);
-			userDataHeader.addInformationElement(concatenatedShortMessagesIdentifier);
-		}
+            if (messageSegmentCount > 1) {
+                UserDataHeaderElement concatenatedShortMessagesIdentifier = this.mapSmsTpduParameterFactory
+                        .createConcatenatedShortMessagesIdentifier(messageReferenceNumber > 255, messageReferenceNumber,
+                                messageSegmentCount, messageSegmentNumber);
+                userDataHeader.addInformationElement(concatenatedShortMessagesIdentifier);
+            }
+            if (nationalLanguageLockingShift > 0) {
+                NationalLanguageIdentifier nationalLanguageIdentifier = NationalLanguageIdentifier
+                        .getInstance(nationalLanguageLockingShift);
+                if (nationalLanguageIdentifier != null) {
+                    UserDataHeaderElement nationalLanguageLockingShiftEl = this.mapSmsTpduParameterFactory
+                            .createNationalLanguageLockingShiftIdentifier(nationalLanguageIdentifier);
+                    userDataHeader.addInformationElement(nationalLanguageLockingShiftEl);
+                }
+            }
+            if (nationalLanguageSingleShift > 0) {
+                NationalLanguageIdentifier nationalLanguageIdentifier = NationalLanguageIdentifier
+                        .getInstance(nationalLanguageSingleShift);
+                if (nationalLanguageIdentifier != null) {
+                    UserDataHeaderElement nationalLanguageSingleShiftEl = this.mapSmsTpduParameterFactory
+                            .createNationalLanguageSingleShiftIdentifier(nationalLanguageIdentifier);
+                    userDataHeader.addInformationElement(nationalLanguageSingleShiftEl);
+                }
+            }
+        }
 
-		UserDataImpl ud = new UserDataImpl(msg, dataCodingScheme, userDataHeader, isoCharset);
+        UserData ud = this.mapSmsTpduParameterFactory.createUserData(msg, dataCodingScheme, userDataHeader, isoCharset);
 
 		Date submitDate = sms.getSubmitDate();
 
 		// TODO : TimeZone should be configurable
-		AbsoluteTimeStamp serviceCentreTimeStamp = new AbsoluteTimeStampImpl((submitDate.getYear() % 100),
-				(submitDate.getMonth() + 1), submitDate.getDate(), submitDate.getHours(), submitDate.getMinutes(),
-				submitDate.getSeconds(), (submitDate.getTimezoneOffset() / 15));
+        AbsoluteTimeStamp serviceCentreTimeStamp = this.mapSmsTpduParameterFactory.createAbsoluteTimeStamp(
+                (submitDate.getYear() % 100), (submitDate.getMonth() + 1), submitDate.getDate(), submitDate.getHours(),
+                submitDate.getMinutes(), submitDate.getSeconds(), (submitDate.getTimezoneOffset() / 15));
 
-		SmsDeliverTpduImpl smsDeliverTpduImpl = new SmsDeliverTpduImpl(moreMessagesToSend, false,
-				((sms.getEsmClass() & SmppConstants.ESM_CLASS_REPLY_PATH_MASK) != 0), false,
-				this.getSmsTpduOriginatingAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr()),
-				this.mapSmsTpduParameterFactory.createProtocolIdentifier(sms.getProtocolId()), serviceCentreTimeStamp,
-				ud);
+        SmsDeliverTpdu smsDeliverTpdu = this.mapSmsTpduParameterFactory.createSmsDeliverTpdu(moreMessagesToSend, false,
+                ((sms.getEsmClass() & SmppConstants.ESM_CLASS_REPLY_PATH_MASK) != 0), false,
+                this.getSmsTpduOriginatingAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr()),
+                this.mapSmsTpduParameterFactory.createProtocolIdentifier(sms.getProtocolId()), serviceCentreTimeStamp, ud);
 
-		SmsSignalInfoImpl smsSignalInfo = new SmsSignalInfoImpl(smsDeliverTpduImpl, isoCharset);
+        SmsSignalInfo smsSignalInfo = this.mapParameterFactory.createSmsSignalInfo(smsDeliverTpdu, isoCharset);
 
-		return smsSignalInfo;
+        return smsSignalInfo;
 	}
 
 	private void sendMtSms(MAPApplicationContext mapApplicationContext, MessageProcessingState messageProcessingState,
@@ -1176,7 +1219,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			SmsSignalInfo smsSignalInfo;
 			if (messageProcessingState == MessageProcessingState.firstMessageSending) {
 
-				DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(sms.getDataCoding());
+				DataCodingScheme dataCodingScheme = this.mapSmsTpduParameterFactory.createDataCodingScheme(sms.getDataCoding());
 				Tlv sarMsgRefNum = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
 				Tlv sarTotalSegments = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_TOTAL_SEGMENTS);
 				Tlv sarSegmentSeqnum = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_SEGMENT_SEQNUM);
@@ -1185,27 +1228,30 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                     // message already contains UDH - we can not slice it
                     segments = new SmsSignalInfo[1];
                     segments[0] = this.createSignalInfo(sms, sms.getShortMessageText(), sms.getShortMessageBin(), moreMessagesToSend, 0, 1, 1,
-                            dataCodingScheme, true);
+                            dataCodingScheme, 0, 0);
 				} else if (sarMsgRefNum != null && sarTotalSegments != null && sarSegmentSeqnum != null) {
 					// we have tlv's that define message count/number/reference
 					int messageSegmentCount = sarTotalSegments.getValueAsUnsignedByte();
 					int messageSegmentNumber = sarSegmentSeqnum.getValueAsUnsignedByte();
 					int messageReferenceNumber = sarMsgRefNum.getValueAsUnsignedShort();
 					segments = new SmsSignalInfo[1];
-					segments[0] = this.createSignalInfo(sms, sms.getShortMessageText(), sms.getShortMessageBin(), moreMessagesToSend,
-							messageReferenceNumber, messageSegmentCount, messageSegmentNumber, dataCodingScheme, false);
+                    segments[0] = this.createSignalInfo(sms, sms.getShortMessageText(), null, moreMessagesToSend,
+                            messageReferenceNumber, messageSegmentCount, messageSegmentNumber, dataCodingScheme,
+                            sms.getNationalLanguageLockingShift(), sms.getNationalLanguageSingleShift());
 				} else {
 					// possible a big message and segmentation
-					ArrayList<String> segmentsByte;
-                    segmentsByte = this.sliceMessage(sms.getShortMessageText(), dataCodingScheme);
-                    segments = new SmsSignalInfo[segmentsByte.size()];
+                    String[] segmentsByte;
+                    segmentsByte = this.sliceMessage(sms.getShortMessageText(), dataCodingScheme,
+                            sms.getNationalLanguageLockingShift(), sms.getNationalLanguageSingleShift());
+                    segments = new SmsSignalInfo[segmentsByte.length];
 
 					// TODO messageReferenceNumber should be generated
 					int messageReferenceNumber = msgNum + 1;
 
-					for (int i1 = 0; i1 < segmentsByte.size(); i1++) {
-                        segments[i1] = this.createSignalInfo(sms, segmentsByte.get(i1), null, (i1 < segmentsByte.size() - 1 ? true : moreMessagesToSend),
-                                messageReferenceNumber, segmentsByte.size(), i1 + 1, dataCodingScheme, false);
+					for (int i1 = 0; i1 < segmentsByte.length; i1++) {
+                        segments[i1] = this.createSignalInfo(sms, segmentsByte[i1], null, (i1 < segmentsByte.length - 1 ? true
+                                : moreMessagesToSend), messageReferenceNumber, segmentsByte.length, i1 + 1, dataCodingScheme,
+                                sms.getNationalLanguageLockingShift(), sms.getNationalLanguageSingleShift());
 					}
 				}
 
@@ -1295,8 +1341,8 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	}
 
 	private AddressField getSmsTpduOriginatingAddress(int ton, int npi, String address) {
-		return new AddressFieldImpl(TypeOfNumber.getInstance(ton), NumberingPlanIdentification.getInstance(npi),
-				address);
+        return this.mapSmsTpduParameterFactory.createAddressField(TypeOfNumber.getInstance(ton),
+                NumberingPlanIdentification.getInstance(npi), address);
 	}
 
 	protected boolean isNegotiatedMapVersionUsing() {
