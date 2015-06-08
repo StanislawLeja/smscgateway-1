@@ -502,7 +502,7 @@ public class MessageUtil {
         else
             backSmsSet.setNetworkId(sms.getSmsSet().getNetworkId());
         backSmsSet.addSms(receipt);
-        receipt.setStored(true);
+//        receipt.setStored(true);
         return receipt;
     }
 
