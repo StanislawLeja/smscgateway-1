@@ -28,90 +28,89 @@
 		</itemizedlist>
 		</para>
 	</section>
+
 	<section id="notes_whats_new">
 		<title>What's New?</title>
         <formalpara>
-        <title>Support for datagramm and transactional modes</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; now comes with support for SMPP datagramm and transactional modes. Previous versions supported only ForwardAndStore mode.
+        <title>ESME level rate limit</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; can be configured at ESME level rate limit (per a second / a minute / a hour / a day) for incoming messages. Messages over the limit are rejected.
         </para>
         </formalpara>
         <formalpara>
-        <title>Forward and store mode</title>
-        <para>A special "Forward and store" mode has been introduced for the purpose of process optimization. A user can configure the SMSC Gateway to have messages stored in the cassandra database only if an attempt to deliver fails the first time. This mode also enables delivering messages in the shortest time in the first attempt.
+        <title>Home Routing</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; can play the role of receiver of MT-ForwardSM messages (with interoperation with HLR) - Non Transparent Home Routing feature.
         </para>
         </formalpara>
         <formalpara>
-        <title>GSM8 message encoding support</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; now comes with support for GSM8 encoding (Now all GSM7, GSM8 and UCS2 are supported).
+        <title>Multi-tenancy support</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; now comes with Multi-tenancy support (operate as several independed SMSC GW instances with different SMSC GlobalTitles).
         </para>
         </formalpara>
         <formalpara>
-        <title>Latest version of TelScale JSS7 library and Datastax driver</title>
-        <para>The latest TelScale JSS7 6.2.0 library and Datastax version are included in this release.
+        <title>SUBMIT_MULTI messages</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports for SUBMIT_MULTI messages (that are coming from SMPP part).
         </para>
         </formalpara>
         <formalpara>
-        <title>Processing statistics</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; introduces statistic counters for some key parameters. For example, number of messages received / sent. These statistics can now be observed in the GUI.
+        <title>SMPP over SSL</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports SMPP over SSL.
         </para>
         </formalpara>
         <formalpara>
-        <title>X-headers for SIP message</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; can now process special X-headers for SIP messages that help in sending UDH to/from SIP etc.
+        <title>Receipts disabling</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; has now an option for disabling receipts generating even when a message requests such receipts.
         </para>
         </formalpara>
         <formalpara>
-        <title>SMSC Pause Option</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; comes with a SMSC Pause Option. A user can pause message delivery (incoming storeAndForward messages will be stored in a database; incoming datagramm, transactional and forwardAndStore messages will be rejected).
-        </para>
-        </formalpara>
-        <formalpara>
-        <title>Message content stored in text format</title>
-        <para>Message content is now stored in text format in the database field "MESSAGE_TEXT" (UDH is kept in binary form in a separate database field).
-        </para>
-        </formalpara>
-        <formalpara>
-        <title>Command Line SMPP Load Testing Tool</title>
-        <para>A new Command line load testing tool is now available for generating SMPP traffic, just like HLR simulator.
-        </para>
-        </formalpara>
-        <formalpara>
-        <title>TON_NATIONAL Support</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; accepts TypeOfNumber as 'TON_NATIONAL'.
-        </para>
-        </formalpara>
-        <formalpara>
-	<title>Process throttling SMPP responses</title>
-	<para>In datagramm, transactional and FAS modes the SMSC will send throttling SMPP responses when throttling problems occur. The smpp-load Client will now appropriately process them and resend requests to SMSC.
-	</para>
-        </formalpara>
-	<formalpara>
-	<title>Null Password for ESME definition
-	</title>
-	<para>While defining ESME, Password can be null.	
-	</para>
-	</formalpara>
-        <formalpara>
-        <title>Additional configuration</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; has additional configuration options. For example, storing records into CDR's and archive database tables, rejecting all incoming SS7 originated messages, etc.
+        <title>Alphanumerical destination address</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; accepts messages with alphanumerical dest address.
         </para>
         </formalpara>
 	</section>
+
 	<section id="features_bug_fixes">
 		<title>Issues Fixed</title>
 		<para>For a full list of resolved issues and their details, please refer to <ulink url="https://telestax.atlassian.net/browse/SMSC/" />.</para>	
 <itemizedlist>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-130">SMSC-130</ulink>: RsdsSbb errors when InvokeTimeout, ComponentError
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-85">SMSC-85</ulink>: rate limitation per esme
 </para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-151">SMSC-151</ulink>: CDR Timestamp format not uniform
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-172">SMSC-172</ulink>: Smsc set dbhosts takes single IP address while cassandra can take multiple ip's
 </para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-112">SMSC-112</ulink>: submit_sm with validity fails
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-174">SMSC-174</ulink>: Non Transparent Home Routing feature
 </para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-134">SMSC-134</ulink>: SMPP Client mode (from SMSC side) does not work properly
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-175">SMSC-175</ulink>: Multi-tenancy support
 </para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-135">SMSC-135</ulink>: Concurrent SMPP bind request from multiple ESME's uses same esme definition from SMSC
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-176">SMSC-176</ulink>: Support for SUBMIT_MULTI
 </para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-161">SMSC-161</ulink>: Double messages in SIP->SMSC messageflow
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-178">SMSC-178</ulink>: SMPP over SSL support
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-180">SMSC-180</ulink>: TelScale-hlr-simulator/bin/run.sh refers SMSC_HOME
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-181">SMSC-181</ulink>: Keep mode as 'fast' by default
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-182">SMSC-182</ulink>: Usage of bad SSN in SRI and RSDS requests in CallingPartyAddress
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-183">SMSC-183</ulink>: EsmeCluster.getNextEsme() index gone bug
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-184">SMSC-184</ulink>: Switch to another netty library version
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-185">SMSC-185</ulink>: messageId field format for receipts
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-187">SMSC-187</ulink>: By default smsc-console should be secured
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-188">SMSC-188</ulink>: Docs : smsc-console is secured by default
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-189">SMSC-189</ulink>: Option for discabling receipts generating even when a message requests such receipts
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-190">SMSC-190</ulink>: Acepting of messages with alphanumerical dest address
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-192">SMSC-192</ulink>: TelScale-smpp-load in binary misses the jars
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-193">SMSC-193</ulink>: Docs: Manual update for 6.2.1 release
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-195">SMSC-195</ulink>: Docs: Manual update for "SMPP over SSL support" issue
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-196">SMSC-196</ulink>: Docs : Smsc set dbhosts takes single IP address while cassandra can take multiple ip's
 </para></listitem>
 </itemizedlist>
 	</section>
@@ -132,7 +131,5 @@
 			&THIS.PLATFORM; &THIS.APPLICATION; is fully supported by TeleStax. For help with the software or to raise bugs please login to your account at <ulink url="https://telestax.zendesk.com/home" /> and follow the instructions.
 		</para>
 	</section>
-
-
 		
 </chapter>
