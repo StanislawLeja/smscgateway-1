@@ -304,8 +304,12 @@ public class SMSCShellExecutor implements ShellExecutor {
                     mProcRule.setDestDigMask(value);
                     success = true;
                 } else if (command.equals("originatingmask")) {
-                    Sms.OriginationType originatingMask = Enum.valueOf(Sms.OriginationType.class, value);
-                    mProcRule.setOriginatingMask(originatingMask);
+                    if (value != null && value.equals("-1")) {
+                        mProcRule.setOriginatingMask(null);
+                    } else {
+                        Sms.OriginationType originatingMask = Enum.valueOf(Sms.OriginationType.class, value);
+                        mProcRule.setOriginatingMask(originatingMask);
+                    }
                     success = true;
                 } else if (command.equals("networkidmask")) {
                     int val = Integer.parseInt(value);

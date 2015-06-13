@@ -75,16 +75,21 @@ public class SmppMessageParamForm extends JDialog {
 	private JTextField tbBulkDestAddressRangeStart;
 	private JTextField tbBulkDestAddressRangeEnd;
 	private JTextField tbBulkMessagePerSecond;
-	private JCheckBox cbMessageClass;
 	private JComboBox<SmppSimulatorParameters.SendingMessageType> cbSendingMessageType;
 	private JComboBox<SmppSimulatorParameters.MCDeliveryReceipt> cbMcDeliveryReceipt;
 	private JRadioButton rbUtf8;
 	private JRadioButton rbUnicode;
 	private JRadioButton rbGsm7;
+    private JRadioButton rbClass0;
+    private JRadioButton rbClass1;
+    private JRadioButton rbClass2;
+    private JRadioButton rbClass3;
+    private JRadioButton rbClassNo;
 	private JComboBox<SmppSimulatorParameters.MessagingMode> cbMessagingMode;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JTextField tbSubmitMultiMessageCnt;
 	private JTextField tbSegmentLength;
+	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
 
 	public SmppMessageParamForm(JDialog owner) {
 		super(owner, true);
@@ -143,10 +148,6 @@ public class SmppMessageParamForm extends JDialog {
 								cbEncodingType = new JComboBox<SmppSimulatorParameters.EncodingType>();
 								cbEncodingType.setBounds(349, 102, 255, 20);
 								panel_main.add(cbEncodingType);
-								
-								cbMessageClass = new JCheckBox("Add message class 0");
-								cbMessageClass.setBounds(349, 131, 255, 25);
-								panel_main.add(cbMessageClass);
 								
 								JLabel lblMessageSplittingType = new JLabel("Message splitting type");
 								lblMessageSplittingType.setBounds(10, 198, 283, 14);
@@ -213,18 +214,18 @@ public class SmppMessageParamForm extends JDialog {
 										panel_main.add(cbSplittingType);
 										
 										JLabel lblEncodingTypeAt = new JLabel("Encoding type at SMPP part for (GSM7/UCS2)");
-										lblEncodingTypeAt.setBounds(10, 164, 358, 14);
+										lblEncodingTypeAt.setBounds(10, 164, 329, 14);
 										panel_main.add(lblEncodingTypeAt);
 										
 										rbUtf8 = new JRadioButton("Utf8");
+										buttonGroup.add(rbUtf8);
 										rbUtf8.setBounds(349, 159, 73, 25);
 										panel_main.add(rbUtf8);
-										buttonGroup.add(rbUtf8);
 										
 										rbUnicode = new JRadioButton("Unicode");
+										buttonGroup.add(rbUnicode);
 										rbUnicode.setBounds(449, 159, 86, 25);
 										panel_main.add(rbUnicode);
-										buttonGroup.add(rbUnicode);
 										
 										tbSourceAddress = new JTextField();
 										tbSourceAddress.setBounds(349, 371, 255, 20);
@@ -298,6 +299,35 @@ public class SmppMessageParamForm extends JDialog {
 																												buttonGroup.add(rbGsm7);
 																												rbGsm7.setBounds(537, 159, 86, 25);
 																												panel_main.add(rbGsm7);
+																												
+																												rbClass0 = new JRadioButton("Cl 0 Display");
+																												buttonGroup_1.add(rbClass0);
+																												rbClass0.setBounds(154, 129, 104, 23);
+																												panel_main.add(rbClass0);
+																												
+																												rbClass1 = new JRadioButton("Cl 1 Equipment");
+																												buttonGroup_1.add(rbClass1);
+																												rbClass1.setBounds(260, 129, 121, 23);
+																												panel_main.add(rbClass1);
+																												
+																												rbClass2 = new JRadioButton("Cl 2 SIM");
+																												buttonGroup_1.add(rbClass2);
+																												rbClass2.setBounds(383, 129, 86, 23);
+																												panel_main.add(rbClass2);
+																												
+																												rbClass3 = new JRadioButton("Cl 3 External Unit 1 ");
+																												buttonGroup_1.add(rbClass3);
+																												rbClass3.setBounds(471, 129, 143, 23);
+																												panel_main.add(rbClass3);
+																												
+																												JLabel lblMessageClass = new JLabel("Message class");
+																												lblMessageClass.setBounds(10, 134, 91, 14);
+																												panel_main.add(lblMessageClass);
+																												
+																												rbClassNo = new JRadioButton("No");
+																												buttonGroup_1.add(rbClassNo);
+																												rbClassNo.setBounds(104, 129, 45, 23);
+																												panel_main.add(rbClassNo);
 																cbSendingMessageType.addItemListener(new ItemListener() {
 																    public void itemStateChanged(ItemEvent arg0) {
                 if (cbSendingMessageType.getSelectedItem().toString().equals(SendingMessageType.SubmitMulti.toString())) {
@@ -467,8 +497,23 @@ public class SmppMessageParamForm extends JDialog {
         if (dvMcDeliveryReceipt != null)
             this.cbMcDeliveryReceipt.setSelectedItem(dvMcDeliveryReceipt);
 
-
-        this.cbMessageClass.setSelected(data.isMessageClass());
+        switch (data.betMessageClass()) {
+            case 0:
+                this.rbClassNo.setSelected(true);
+                break;
+            case 1:
+                this.rbClass0.setSelected(true);
+                break;
+            case 2:
+                this.rbClass1.setSelected(true);
+                break;
+            case 3:
+                this.rbClass2.setSelected(true);
+                break;
+            case 4:
+                this.rbClass3.setSelected(true);
+                break;
+        }
 
         if (data.getSmppEncoding() == 0)
             this.rbUtf8.setSelected(true);
@@ -547,7 +592,16 @@ public class SmppMessageParamForm extends JDialog {
         this.data.setMcDeliveryReceipt((SmppSimulatorParameters.MCDeliveryReceipt) cbMcDeliveryReceipt.getSelectedItem());
         this.data.setMessagingMode((SmppSimulatorParameters.MessagingMode) cbMessagingMode.getSelectedItem());
 
-        this.data.setMessageClass(this.cbMessageClass.isSelected());
+        if (this.rbClassNo.isSelected())
+            this.data.setMessageClass(0);
+        if (this.rbClass0.isSelected())
+            this.data.setMessageClass(1);
+        if (this.rbClass1.isSelected())
+            this.data.setMessageClass(2);
+        if (this.rbClass2.isSelected())
+            this.data.setMessageClass(3);
+        if (this.rbClass3.isSelected())
+            this.data.setMessageClass(4);
 
         if (this.rbUtf8.isSelected())
             this.data.setSmppEncoding(0);
