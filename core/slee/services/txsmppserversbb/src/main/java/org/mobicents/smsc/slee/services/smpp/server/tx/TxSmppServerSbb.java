@@ -836,6 +836,31 @@ public abstract class TxSmppServerSbb implements Sbb {
 			throw new SmscProcessingException("TxSmpp DataCoding scheme does not supported: " + dcs + " - " + err,
 					SmppExtraConstants.ESME_RINVDCS, MAPErrorCode.systemFailure, null);
 		}
+
+        // storing additional parameters
+        ArrayList<Tlv> optionalParameters = event.getOptionalParameters();
+        if (optionalParameters != null && optionalParameters.size() > 0) {
+            for (Tlv tlv : optionalParameters) {
+                if (tlv.getTag() != SmppConstants.TAG_MESSAGE_PAYLOAD) {
+                    sms.getTlvSet().addOptionalParameter(tlv);
+                }
+            }
+        }
+
+        // processing dest_addr_subunit for message_class
+        Tlv dest_addr_subunit = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_DEST_ADDR_SUBUNIT);
+        if (dest_addr_subunit != null) {
+            try {
+                int mclass = dest_addr_subunit.getValueAsByte();
+                if (mclass >= 1 && mclass <= 4) {
+                    dcs |= (0x10 + (mclass - 1));
+                }
+            } catch (TlvConvertException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
 		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
 		sms.setDataCoding(dcs);
 
@@ -886,7 +911,6 @@ public abstract class TxSmppServerSbb implements Sbb {
                 System.arraycopy(data, 0, udhData, 0, udhLen);
             }
         }
-
 
         if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
             msg = new String(textPart, isoCharset);
@@ -1037,16 +1061,6 @@ public abstract class TxSmppServerSbb implements Sbb {
 		}
 		MessageUtil.applyScheduleDeliveryTime(sms, scheduleDeliveryTime);
 
-		// storing additional parameters
-		ArrayList<Tlv> optionalParameters = event.getOptionalParameters();
-		if (optionalParameters != null && optionalParameters.size() > 0) {
-			for (Tlv tlv : optionalParameters) {
-				if (tlv.getTag() != SmppConstants.TAG_MESSAGE_PAYLOAD) {
-					sms.getTlvSet().addOptionalParameter(tlv);
-				}
-			}
-		}
-
 		SmsSet smsSet;
 		if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 			try {
@@ -1151,6 +1165,19 @@ public abstract class TxSmppServerSbb implements Sbb {
             throw new SmscProcessingException("TxSmpp DataCoding scheme does not supported: " + dcs + " - " + err,
                     SmppExtraConstants.ESME_RINVDCS, MAPErrorCode.systemFailure, null);
         }
+
+        // processing dest_addr_subunit for message_class
+        Tlv dest_addr_subunit = event.getOptionalParameters().get(SmppConstants.TAG_DEST_ADDR_SUBUNIT);
+        if (dest_addr_subunit != null) {
+            try {
+                int mclass = dest_addr_subunit.getValueAsInt();
+                dcs |= (0x10 + (mclass - 1));
+            } catch (TlvConvertException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
         DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
 
         boolean udhPresent = (event.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
@@ -1220,22 +1247,6 @@ public abstract class TxSmppServerSbb implements Sbb {
                     break;
             }
         }
-
-//        if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
-//            msg = new String(textPart, isoCharset);
-//        } else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
-//            if (smscPropertiesManagement.getSmppEncodingForGsm7() == SmppEncoding.Utf8) {
-//                msg = new String(textPart, utf8Charset);
-//            } else {
-//                msg = new String(textPart, ucs2Charset);
-//            }
-//        } else {
-//            if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncoding.Utf8) {
-//                msg = new String(textPart, utf8Charset);
-//            } else {
-//                msg = new String(textPart, ucs2Charset);
-//            }
-//        }
 
         // checking max message length
         int nationalLanguageLockingShift = 0;
