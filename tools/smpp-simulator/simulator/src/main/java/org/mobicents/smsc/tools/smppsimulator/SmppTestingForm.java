@@ -282,7 +282,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 		JButton btSendMessage = new JButton("Submit a message");
 		btSendMessage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-                submitMessage(param.getEncodingType(), param.isMessageClass(), param.getMessageText(),
+                submitMessage(param.getEncodingType(), param.betMessageClass(), param.getMessageText(),
                         param.getSplittingType(), param.getValidityType(), param.getDestAddress(), param.getMessagingMode(),
                         param.getSpecifiedSegmentLength());
 			}
@@ -437,7 +437,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
         }
     }
 
-    private void submitMessage(EncodingType encodingType, boolean messageClass0, String messageText, SplittingType splittingType, ValidityType validityType,
+    private void submitMessage(EncodingType encodingType, int messageClass, String messageText, SplittingType splittingType, ValidityType validityType,
             String destAddr, SmppSimulatorParameters.MessagingMode messagingMode, int specifiedSegmentLength) {
         if (session0 == null)
             return;
@@ -458,9 +458,14 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
                 dcs = 8;
                 break;
             }
-            if (messageClass0) {
-                dcs += 16;
+            // if (messageClass) {
+            // dcs += 16;
+            // }
+            int messageClassVal = 0;
+            if (messageClass > 0) {
+                messageClassVal = messageClass;
             }
+
             DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
             int maxLen = MessageUtil.getMaxSolidMessageCharsLength(dataCodingScheme);
             int maxSplLen = MessageUtil.getMaxSegmentedMessageCharsLength(dataCodingScheme);
@@ -558,7 +563,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
             }
             esmClass |= messagingMode.getCode();
 
-            this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv, esmClass, validityType, segmCnt, destAddr);
+            this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv, esmClass, validityType, segmCnt, destAddr, messageClassVal);
 		} catch (Exception e) {
 			this.addMessage("Failure to submit message", e.toString());
 			return;
@@ -592,9 +597,10 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 		return res;
 	}
 
-	private void doSubmitMessage(int dcs, ArrayList<byte[]> msgLst, int msgRef, boolean addSegmTlv, int esmClass,
-			SmppSimulatorParameters.ValidityType validityType, int segmentCnt, String destAddr) throws Exception {
-		int i1 = 0;
+    private void doSubmitMessage(int dcs, ArrayList<byte[]> msgLst, int msgRef, boolean addSegmTlv, int esmClass,
+            SmppSimulatorParameters.ValidityType validityType, int segmentCnt, String destAddr, int messageClassVal)
+            throws Exception {
+        int i1 = 0;
 		for (byte[] buf : msgLst) {
 			i1++;
 
@@ -689,6 +695,12 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 				tlv = new Tlv(SmppConstants.TAG_SAR_SEGMENT_SEQNUM, buf1);
 				pdu.addOptionalParameter(tlv);
 			}
+            if (messageClassVal > 0) {
+                byte[] buf1 = new byte[1];
+                buf1[0] = (byte) messageClassVal;
+                Tlv tlv = new Tlv(SmppConstants.TAG_DEST_ADDR_SUBUNIT, buf1);
+                pdu.addOptionalParameter(tlv);
+            }
 
 	        WindowFuture<Integer,PduRequest,PduResponse> future0 = session0.sendRequestPdu(pdu, 10000, false);
 
@@ -973,7 +985,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
             if (j4 == 0)
                 msg = bigMessage;
 
-            this.submitMessage(encodingType, false, msg, splittingType, param.getValidityType(), destAddrS,
+            this.submitMessage(encodingType, 0, msg, splittingType, param.getValidityType(), destAddrS,
                     param.getMessagingMode(), param.getSpecifiedSegmentLength());
         }
 	}

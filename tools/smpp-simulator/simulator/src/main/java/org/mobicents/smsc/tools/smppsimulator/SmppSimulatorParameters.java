@@ -54,7 +54,8 @@ public class SmppSimulatorParameters {
 
 	private String messageText = "Hello!";
 	private EncodingType encodingType = EncodingType.GSM7_DCS_0;
-	private boolean messageClass;
+    // message class value: 0-no, 1-class0, 2-class1, 3-class2, 4-class3
+    private int messageClass = 0;
 	private SplittingType splittingType = SplittingType.DoNotSplit;
 	private int specifiedSegmentLength = 100;
     private ValidityType validityType = ValidityType.NoSpecial;
@@ -282,11 +283,11 @@ public class SmppSimulatorParameters {
 		this.bulkMessagePerSecond = bulkMessagePerSecond;
 	}
 
-    public boolean isMessageClass() {
+    public int betMessageClass() {
         return messageClass;
     }
 
-    public void setMessageClass(boolean messageClass) {
+    public void setMessageClass(int messageClass) {
         this.messageClass = messageClass;
     }
 
