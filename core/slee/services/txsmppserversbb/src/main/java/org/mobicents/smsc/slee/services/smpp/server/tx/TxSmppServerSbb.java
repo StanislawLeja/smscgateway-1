@@ -1167,14 +1167,22 @@ public abstract class TxSmppServerSbb implements Sbb {
         }
 
         // processing dest_addr_subunit for message_class
-        Tlv dest_addr_subunit = event.getOptionalParameters().get(SmppConstants.TAG_DEST_ADDR_SUBUNIT);
-        if (dest_addr_subunit != null) {
-            try {
-                int mclass = dest_addr_subunit.getValueAsInt();
-                dcs |= (0x10 + (mclass - 1));
-            } catch (TlvConvertException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+        ArrayList<Tlv> optionalParameters = event.getOptionalParameters();
+        if (optionalParameters != null && optionalParameters.size() > 0) {
+            for (Tlv tlv : optionalParameters) {
+                if (tlv.getTag() == SmppConstants.TAG_DEST_ADDR_SUBUNIT) {
+                    int mclass;
+                    try {
+                        mclass = tlv.getValueAsByte();
+                        if (mclass >= 1 && mclass <= 4) {
+                            dcs |= (0x10 + (mclass - 1));
+                        }
+                    } catch (TlvConvertException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    break;
+                }
             }
         }
 
@@ -1388,7 +1396,6 @@ public abstract class TxSmppServerSbb implements Sbb {
                 MessageUtil.applyScheduleDeliveryTime(sms, scheduleDeliveryTime);
 
                 // storing additional parameters
-                ArrayList<Tlv> optionalParameters = event.getOptionalParameters();
                 if (optionalParameters != null && optionalParameters.size() > 0) {
                     for (Tlv tlv : optionalParameters) {
                         if (tlv.getTag() != SmppConstants.TAG_MESSAGE_PAYLOAD) {
