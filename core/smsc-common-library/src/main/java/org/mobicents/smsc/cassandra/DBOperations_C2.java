@@ -820,8 +820,10 @@ public class DBOperations_C2 {
 
 
 		if (sms.getSourceAddr() != null) {
-			boundStatement.setString(Schema.COLUMN_ADDR_SRC_DIGITS, sms.getSourceAddr());
-		}
+            boundStatement.setString(Schema.COLUMN_ADDR_SRC_DIGITS, sms.getSourceAddr());
+        } else {
+            boundStatement.setToNull(Schema.COLUMN_ADDR_SRC_DIGITS);
+        }
 		boundStatement.setInt(Schema.COLUMN_ADDR_SRC_TON, sms.getSourceAddrTon());
 		boundStatement.setInt(Schema.COLUMN_ADDR_SRC_NPI, sms.getSourceAddrNpi());
         if (addedOrigNetworkId) {
@@ -829,27 +831,34 @@ public class DBOperations_C2 {
         }
 
 		boundStatement.setInt(Schema.COLUMN_DUE_DELAY, sms.getSmsSet().getDueDelay());
-		if (sms.getSmsSet().getStatus() != null)
-			boundStatement.setInt(Schema.COLUMN_SM_STATUS, sms.getSmsSet().getStatus().getCode());
+        if (sms.getSmsSet().getStatus() != null)
+            boundStatement.setInt(Schema.COLUMN_SM_STATUS, sms.getSmsSet().getStatus().getCode());
+        else
+            boundStatement.setToNull(Schema.COLUMN_SM_STATUS);
 		boundStatement.setBool(Schema.COLUMN_ALERTING_SUPPORTED, sms.getSmsSet().isAlertingSupported());
 
 		boundStatement.setLong(Schema.COLUMN_MESSAGE_ID, sms.getMessageId());
 		boundStatement.setInt(Schema.COLUMN_MO_MESSAGE_REF, sms.getMoMessageRef());
-		if (sms.getOrigEsmeName() != null) {
-			boundStatement.setString(Schema.COLUMN_ORIG_ESME_NAME, sms.getOrigEsmeName());
-		}
+        if (sms.getOrigEsmeName() != null) {
+            boundStatement.setString(Schema.COLUMN_ORIG_ESME_NAME, sms.getOrigEsmeName());
+        } else
+            boundStatement.setToNull(Schema.COLUMN_ORIG_ESME_NAME);
 		if (sms.getOrigSystemId() != null) {
 			boundStatement.setString(Schema.COLUMN_ORIG_SYSTEM_ID, sms.getOrigSystemId());
-		}
+        } else
+            boundStatement.setToNull(Schema.COLUMN_ORIG_SYSTEM_ID);
 		if (sms.getSubmitDate() != null) {
 			boundStatement.setDate(Schema.COLUMN_SUBMIT_DATE, sms.getSubmitDate());
-		}
+        } else
+            boundStatement.setToNull(Schema.COLUMN_SUBMIT_DATE);
 		if (sms.getDeliverDate() != null) {
 			boundStatement.setDate(Schema.COLUMN_DELIVERY_DATE, sms.getDeliverDate());
-		}
+        } else
+            boundStatement.setToNull(Schema.COLUMN_DELIVERY_DATE);
 		if (sms.getServiceType() != null) {
 			boundStatement.setString(Schema.COLUMN_SERVICE_TYPE, sms.getServiceType());
-		}
+        } else
+            boundStatement.setToNull(Schema.COLUMN_SERVICE_TYPE);
 		boundStatement.setInt(Schema.COLUMN_ESM_CLASS, sms.getEsmClass());
 		boundStatement.setInt(Schema.COLUMN_PROTOCOL_ID, sms.getProtocolId());
 		boundStatement.setInt(Schema.COLUMN_PRIORITY, sms.getPriority());
@@ -862,10 +871,13 @@ public class DBOperations_C2 {
         if (shortMessageNewStringFormat) {
             if (sms.getShortMessageText() != null) {
                 boundStatement.setString(Schema.COLUMN_MESSAGE_TEXT, sms.getShortMessageText());
-            }
+            } else
+                boundStatement.setToNull(Schema.COLUMN_MESSAGE_TEXT);
             if (sms.getShortMessageBin() != null) {
                 boundStatement.setBytes(Schema.COLUMN_MESSAGE_BIN, ByteBuffer.wrap(sms.getShortMessageBin()));
-            }
+            } else
+                boundStatement.setToNull(Schema.COLUMN_MESSAGE_BIN);
+            boundStatement.setToNull(Schema.COLUMN_MESSAGE);
         } else {
             // convert to an old format
             String msg = sms.getShortMessageText();
@@ -908,10 +920,12 @@ public class DBOperations_C2 {
 
 		if (sms.getScheduleDeliveryTime() != null) {
 			boundStatement.setDate(Schema.COLUMN_SCHEDULE_DELIVERY_TIME, sms.getScheduleDeliveryTime());
-		}
+        } else
+            boundStatement.setToNull(Schema.COLUMN_SCHEDULE_DELIVERY_TIME);
 		if (sms.getValidityPeriod() != null) {
 			boundStatement.setDate(Schema.COLUMN_VALIDITY_PERIOD, sms.getValidityPeriod());
-		}
+        } else
+            boundStatement.setToNull(Schema.COLUMN_VALIDITY_PERIOD);
 
 		boundStatement.setInt(Schema.COLUMN_DELIVERY_COUNT, sms.getDeliveryCount());
 
@@ -931,9 +945,15 @@ public class DBOperations_C2 {
 
 				throw new PersistenceException(msg, e);
 			}
+		} else {
+            boundStatement.setToNull(Schema.COLUMN_OPTIONAL_PARAMETERS);
 		}
 
         if (!archive) {
+            if (addedCorrId) {
+                boundStatement.setToNull(Schema.COLUMN_CORR_ID);
+            }
+            boundStatement.setToNull(Schema.COLUMN_IMSI);
             if (sms.getSmsSet().getCorrelationId() != null) {
                 if (addedCorrId) {
                     boundStatement.setString(Schema.COLUMN_CORR_ID, sms.getSmsSet().getCorrelationId());
@@ -941,25 +961,30 @@ public class DBOperations_C2 {
                     boundStatement.setString(Schema.COLUMN_IMSI, sms.getSmsSet().getCorrelationId());
                 }
             }
-        }
-
-        if (archive) {
-            if (sms.getSmsSet().getLocationInfoWithLMSI() != null && sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber() != null) {
-				boundStatement.setString(Schema.COLUMN_NNN_DIGITS, sms.getSmsSet().getLocationInfoWithLMSI()
-						.getNetworkNodeNumber().getAddress());
-				boundStatement.setInt(Schema.COLUMN_NNN_AN, sms.getSmsSet().getLocationInfoWithLMSI()
-						.getNetworkNodeNumber().getAddressNature().getIndicator());
-				boundStatement.setInt(Schema.COLUMN_NNN_NP, sms.getSmsSet().getLocationInfoWithLMSI()
-						.getNetworkNodeNumber().getNumberingPlan().getIndicator());
-			}
-			if (sms.getSmsSet().getType() != null) {
-				boundStatement.setInt(Schema.COLUMN_SM_TYPE, sms.getSmsSet().getType().getCode());
-			}
+        } else {
+            if (sms.getSmsSet().getLocationInfoWithLMSI() != null
+                    && sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber() != null) {
+                boundStatement.setString(Schema.COLUMN_NNN_DIGITS, sms.getSmsSet().getLocationInfoWithLMSI()
+                        .getNetworkNodeNumber().getAddress());
+                boundStatement.setInt(Schema.COLUMN_NNN_AN, sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber()
+                        .getAddressNature().getIndicator());
+                boundStatement.setInt(Schema.COLUMN_NNN_NP, sms.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber()
+                        .getNumberingPlan().getIndicator());
+            } else {
+                boundStatement.setToNull(Schema.COLUMN_NNN_DIGITS);
+                boundStatement.setToNull(Schema.COLUMN_NNN_AN);
+                boundStatement.setToNull(Schema.COLUMN_NNN_NP);
+            }
+            if (sms.getSmsSet().getType() != null) {
+                boundStatement.setInt(Schema.COLUMN_SM_TYPE, sms.getSmsSet().getType().getCode());
+            } else {
+                boundStatement.setToNull(Schema.COLUMN_SM_TYPE);
+            }
             if (addedCorrId) {
                 boundStatement.setString(Schema.COLUMN_CORR_ID, sms.getSmsSet().getCorrelationId());
             }
             boundStatement.setString(Schema.COLUMN_IMSI, sms.getSmsSet().getImsi());
-		}
+        }
 	}
 
 	public ArrayList<SmsSet> c2_getRecordList(long dueSlot) throws PersistenceException {

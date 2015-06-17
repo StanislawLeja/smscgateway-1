@@ -18,13 +18,23 @@
 			<groupId>com.datastax.cassandra</groupId>
 			<artifactId>cassandra-driver-core</artifactId>
 			<version>${cassandra-driver-core.version}</version>
+			<classifier>shaded</classifier>
+			<!-- Because the shaded JAR uses the original POM, you still need to exclude this dependency explicitly: -->
+			<exclusions>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
+<!-- 
 		<dependency>
 			<groupId>org.apache.cassandra</groupId>
 			<artifactId>cassandra-all</artifactId>
 			<version>${cassandra-all.version}</version>
 		</dependency>
+-->
 
 		<dependency>
 			<groupId>com.codahale.metrics</groupId>
@@ -55,6 +65,8 @@
 			<artifactId>netty</artifactId>
 			<version>${netty.version}</version>
 		</dependency>
+
+<!-- 
 		<dependency>
 			<groupId>org.apache.cassandra</groupId>
 			<artifactId>cassandra-thrift</artifactId>
@@ -65,6 +77,9 @@
 			<artifactId>libthrift</artifactId>
 			<version>${apache-thrift.version}</version>
 		</dependency>
+-->
+
+
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-core-asl</artifactId>

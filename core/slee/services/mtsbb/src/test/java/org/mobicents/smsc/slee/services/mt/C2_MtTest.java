@@ -226,6 +226,7 @@ public class C2_MtTest {
     @Test(groups = { "Mt" })
     public void SuccessDelivery1Test() throws Exception {
 
+        System.out.println("SuccessDelivery1Test - 300 " + new Date());
         if (!this.cassandraDbInited)
             return;
 

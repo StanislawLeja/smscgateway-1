@@ -49,6 +49,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -91,6 +92,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
 
         try {
             Cluster cluster = Cluster.builder().addContactPoint(ip).build();
+
             try {
                 Metadata metadata = cluster.getMetadata();
 
@@ -102,38 +104,64 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
 
                 session.execute("USE \"" + keyspace + "\"");
 
+
                 // testing if a keyspace is acceptable
-                PreparedStatement ps = session.prepare("DROP TABLE \"TEST_TABLE\";");
-                BoundStatement boundStatement = new BoundStatement(ps);
-                boundStatement.bind();
+                int tstRes = 0;
+                PreparedStatement ps;
+                BoundStatement boundStatement;
                 try {
+                    ps = session.prepare("SELECT * from \"TEST_TABLE\";");
+                    boundStatement = new BoundStatement(ps);
+                    boundStatement.bind();
                     session.execute(boundStatement);
+                    tstRes = 1;
                 } catch (Exception e) {
                     int g1 = 0;
                     g1++;
-                }                
+                }
 
-                ps = session.prepare("CREATE TABLE \"TEST_TABLE\" ( id uuid primary key ) ;");
-                boundStatement = new BoundStatement(ps);
-                boundStatement.bind();
-                session.execute(boundStatement);
+                ProtocolVersion protVersion = cluster.getConfiguration().getProtocolOptions().getProtocolVersionEnum();
+                if (protVersion == ProtocolVersion.V1) {
+                    if (tstRes == 0) {
+                        session.execute("CREATE TABLE \"TEST_TABLE\" (id uuid primary key);");
+                    }
 
-                // deleting of current tables
-                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_CURRENT_SLOT_TABLE + "\";");
-                boundStatement = new BoundStatement(ps);
-                boundStatement.bind();
-                try {
-                    session.execute(boundStatement);
-                } catch (Exception e) {
-                    int g1 = 0;
-                    g1++;
-                }                
+                    // deleting of current tables
+                    try {
+                        session.execute("TRUNCATE \"" + Schema.FAMILY_CURRENT_SLOT_TABLE + "\";");
+                    } catch (Exception e) {
+                        int g1 = 0;
+                        g1++;
+                    }                
+                } else {
+                    if (tstRes == 0) {
+                        ps = session.prepare("CREATE TABLE \"TEST_TABLE\" (id uuid primary key);");
+                        boundStatement = new BoundStatement(ps);
+                        boundStatement.bind();
+                        session.execute(boundStatement);
+                    }
+
+                    // deleting of current tables
+                    ps = session.prepare("TRUNCATE \"" + Schema.FAMILY_CURRENT_SLOT_TABLE + "\";");
+                    boundStatement = new BoundStatement(ps);
+                    boundStatement.bind();
+                    try {
+                        session.execute(boundStatement);
+                    } catch (Exception e) {
+                        int g1 = 0;
+                        g1++;
+                    }                
+                }
+                
+                
+
+
 
                 // 1
                 Date dt = new Date();
                 String tName = this.getTableName(dt);
 
-                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_DST_SLOT_TABLE + tName + "\";");
+                ps = session.prepare("TRUNCATE \"" + Schema.FAMILY_DST_SLOT_TABLE + tName + "\";");
                 boundStatement = new BoundStatement(ps);
                 boundStatement.bind();
                 try {
@@ -143,7 +171,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
                     g1++;
                 }
 
-                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\";");
+                ps = session.prepare("TRUNCATE \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\";");
                 boundStatement = new BoundStatement(ps);
                 boundStatement.bind();
                 try {
@@ -153,7 +181,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
                     g1++;
                 }
 
-                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_MESSAGES + tName + "\";");
+                ps = session.prepare("TRUNCATE \"" + Schema.FAMILY_MESSAGES + tName + "\";");
                 boundStatement = new BoundStatement(ps);
                 boundStatement.bind();
                 try {
@@ -167,7 +195,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
                 dt = new Date(new Date().getTime() + 1000 * 60 * 60 * 24);
                 tName = this.getTableName(dt);
 
-                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_DST_SLOT_TABLE + tName + "\";");
+                ps = session.prepare("TRUNCATE \"" + Schema.FAMILY_DST_SLOT_TABLE + tName + "\";");
                 boundStatement = new BoundStatement(ps);
                 boundStatement.bind();
                 try {
@@ -177,7 +205,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
                     g1++;
                 }
 
-                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\";");
+                ps = session.prepare("TRUNCATE \"" + Schema.FAMILY_SLOT_MESSAGES_TABLE + tName + "\";");
                 boundStatement = new BoundStatement(ps);
                 boundStatement.bind();
                 try {
@@ -187,7 +215,7 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
                     g1++;
                 }
 
-                ps = session.prepare("DROP TABLE \"" + Schema.FAMILY_MESSAGES + tName + "\";");
+                ps = session.prepare("TRUNCATE \"" + Schema.FAMILY_MESSAGES + tName + "\";");
                 boundStatement = new BoundStatement(ps);
                 boundStatement.bind();
                 try {
@@ -203,6 +231,8 @@ public class TT_PersistenceRAInterfaceProxy extends DBOperations_C2 implements P
 //                cluster.shutdown();
             }
         } catch (Exception e) {
+            e.printStackTrace();            
+            
             return false;
         }
     }

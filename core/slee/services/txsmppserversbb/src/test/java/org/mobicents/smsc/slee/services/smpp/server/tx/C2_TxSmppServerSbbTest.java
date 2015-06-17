@@ -82,6 +82,7 @@ import com.cloudhopper.smpp.pdu.SubmitSm;
 import com.cloudhopper.smpp.tlv.Tlv;
 import com.cloudhopper.smpp.tlv.TlvConvertException;
 import com.cloudhopper.smpp.type.Address;
+import com.datastax.driver.core.ProtocolVersion;
 
 /**
  * 
