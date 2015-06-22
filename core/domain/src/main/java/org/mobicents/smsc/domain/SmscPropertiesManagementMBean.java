@@ -219,6 +219,8 @@ public interface SmscPropertiesManagementMBean {
 
     public boolean isSmscStopped();
 
+    public void setSkipUnsentMessages(int skipUnsentMessages);
+
     public void setDeliveryPause(boolean deliveryPause);
 
     public GenerateType getGenerateCdr();

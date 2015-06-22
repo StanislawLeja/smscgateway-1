@@ -286,6 +286,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // and is set to false when Schedule RA is activated
     private boolean smscStopped = true;
 
+    // this flag is set for SMSC GW skip of processing of unsent messages for
+    // previous dueSlots. Value of this message means time offset in seconds
+    // before actual time.
+    private int skipUnsentMessages = -1;
 
     private SmscPropertiesManagement(String name) {
 		this.name = name;
@@ -859,6 +863,14 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     public void setSmscStopped(boolean smscStopped) {
         this.smscStopped = smscStopped;
+    }
+
+    public int getSkipUnsentMessages() {
+        return skipUnsentMessages;
+    }
+
+    public void setSkipUnsentMessages(int skipUnsentMessages) {
+        this.skipUnsentMessages = skipUnsentMessages;
     }
 
     public GenerateType getGenerateCdr() {

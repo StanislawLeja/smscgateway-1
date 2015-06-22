@@ -458,6 +458,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 				return this.manageGet(args);
 			} else if (args[1].equals("remove")) {
 				return this.manageRemove(args);
+            } else if (args[1].equals("skip-unsent-messages")) {
+                return this.skipUnsentMessages(args);
 			} else if (args[1].toLowerCase().equals("databaserule")) {
                 if (args.length < 3)
                     return SMSCOAMMessages.INVALID_COMMAND;
@@ -868,6 +870,26 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		return SMSCOAMMessages.PARAMETER_SUCCESSFULLY_REMOVED;
 	}
+
+    private String skipUnsentMessages(String[] options) throws Exception {
+        if (options.length < 3) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        int val = Integer.parseInt(options[2]);
+        try {
+            if (val >= 0) {
+                smscPropertiesManagement.setSkipUnsentMessages(val);
+            } else {
+                return SMSCOAMMessages.SKIP_UNSENT_MESSAGES_NEGATIVE_VALUE;
+            }
+        } catch (IllegalArgumentException e) {
+            return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, options[2], e.getMessage());
+        }
+
+        String s = (new Date(new Date().getTime() - val * 1000 - 10000)).toString();
+        return String.format(SMSCOAMMessages.SKIP_UNSENT_MESSAGES_ACCEPTED_VALUE, s);
+    }
 
 	private String manageGet(String[] options) throws Exception {
 		if (options.length == 3) {
@@ -1446,8 +1468,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 		sb.append(smscStatProvider.getCurrentMessageId());
 		sb.append(", MessageScheduledTotal: ");
 		sb.append(smscStatProvider.getMessageScheduledTotal());
-		sb.append(", DueSlotProcessingLag: ");
-		sb.append(smscStatProvider.getDueSlotProcessingLag());
+        sb.append(", DueSlotProcessingLag: ");
+        sb.append(smscStatProvider.getDueSlotProcessingLag());
+        sb.append(", DueSlotProcessingTime: ");
+        sb.append(smscStatProvider.getDueSlotProcessingTime());
 		sb.append(", Param1: ");
 		sb.append(smscStatProvider.getParam1());
 		sb.append(", Param2: ");

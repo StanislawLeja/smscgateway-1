@@ -55,11 +55,17 @@ public class SmscStatProvider implements SmscStatProviderMBean {
 		return smsSetCashe.getProcessingSmsSetSize();
 	}
 
-	public int getDueSlotProcessingLag() {
-		long current = dbOperations_C2.c2_getCurrentDueSlot();
-		long inTime = dbOperations_C2.c2_getDueSlotForTime(new Date());
-		return (int) (inTime - current);
-	}
+    public int getDueSlotProcessingLag() {
+        long current = dbOperations_C2.c2_getCurrentDueSlot();
+        long inTime = dbOperations_C2.c2_getDueSlotForTime(new Date());
+        return (int) (inTime - current);
+    }
+
+    public Date getDueSlotProcessingTime() {
+        long current = dbOperations_C2.c2_getCurrentDueSlot();
+        Date currentDate = dbOperations_C2.c2_getTimeForDueSlot(current);
+        return currentDate;
+    }
 
 	public long getMessageScheduledTotal() {
 		return messageScheduledTotal;

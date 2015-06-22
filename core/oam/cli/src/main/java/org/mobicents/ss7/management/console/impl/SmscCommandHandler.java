@@ -215,6 +215,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         mproc.addChild("remove");
         mproc.addChild("show");
 
+        Node skipUnsentMessages = parent.addChild("skip-unsent-messages");
+
 	};
 
 	public SmscCommandHandler() {
