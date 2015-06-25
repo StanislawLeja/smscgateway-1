@@ -78,8 +78,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("diameterusername");
         set.addChild("removinglivetablesdays");
         set.addChild("removingarchivetablesdays");
-        set.addChild("removingarchivetablesdays");
-        set.addChild("removingarchivetablesdays");
+        set.addChild("hrhlrnumber");
         set.addChild("national-language-single-shift");
         set.addChild("national-language-locking-shift");
 
@@ -164,6 +163,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("diameterusername");
         get.addChild("removinglivetablesdays");
         get.addChild("removingarchivetablesdays");
+        get.addChild("hrhlrnumber");
         get.addChild("national-language-single-shift");
         get.addChild("national-language-locking-shift");
 
@@ -184,6 +184,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 
         Node remove = parent.addChild("remove");
         remove.addChild("esmedefaultcluster");
+        remove.addChild("hrhlrnumber");
 
 		Node smppServer = parent.addChild("smppserver");
 

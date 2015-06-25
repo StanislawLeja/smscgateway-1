@@ -827,6 +827,9 @@ public class SMSCShellExecutor implements ShellExecutor {
                     return SMSCOAMMessages.REMOVING_LIVE_ARCHIVE_TABLES_DAYS_BAD_VALUES;
                 smscPropertiesManagement.setRemovingArchiveTablesDays(val);
 
+            } else if (parName.equals("hrhlrnumber")) {
+                smscPropertiesManagement.setHrHlrNumber(options[3]);
+
             } else if (parName.equals("national-language-single-shift")) {
                 int val = Integer.parseInt(options[3]);
                 if (val < 0 || val > 13)
@@ -858,8 +861,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		String parName = options[2].toLowerCase();
 		try {
-			if (parName.equals("esmedefaultcluster")) {
-				smscPropertiesManagement.setEsmeDefaultClusterName(null);
+            if (parName.equals("esmedefaultcluster")) {
+                smscPropertiesManagement.setEsmeDefaultClusterName(null);
+            } else if (parName.equals("hrhlrnumber")) {
+                smscPropertiesManagement.setHrHlrNumber("");
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -1020,6 +1025,8 @@ public class SMSCShellExecutor implements ShellExecutor {
             } else if (parName.equals("removingarchivetablesdays")) {
                 sb.append(smscPropertiesManagement.getRemovingArchiveTablesDays());
 
+            } else if (parName.equals("hrhlrnumber")) {
+                sb.append(smscPropertiesManagement.getHrHlrNumber());
             } else if (parName.equals("national-language-single-shift")) {
                 sb.append(smscPropertiesManagement.getNationalLanguageSingleShift());
             } else if (parName.equals("national-language-locking-shift")) {
@@ -1246,6 +1253,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 
             sb.append("removinglivetablesdays = ");
             sb.append(smscPropertiesManagement.getRemovingLiveTablesDays());
+            sb.append("\n");
+
+            sb.append("hrhlrnumber = ");
+            sb.append(smscPropertiesManagement.getHrHlrNumber());
             sb.append("\n");
 
             sb.append("national-language-single-shift = ");
