@@ -22,9 +22,10 @@
 
 package org.mobicents.smsc.slee.services.smpp.server.tx;
 
-import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
+import org.mobicents.smsc.library.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.smpp.Esme;
+
 import javax.slee.facilities.Tracer;
 
 import com.cloudhopper.smpp.SmppConstants;
