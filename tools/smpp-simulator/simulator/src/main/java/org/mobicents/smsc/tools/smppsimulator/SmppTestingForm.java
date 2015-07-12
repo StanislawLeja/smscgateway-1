@@ -61,13 +61,14 @@ import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.EncodingTy
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.SendingMessageType;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.SplittingType;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.ValidityType;
+import org.mobicents.smsc.tools.smppsimulator.testsmpp.TestSmppClient;
+import org.mobicents.smsc.tools.smppsimulator.testsmpp.TestSmppSession;
 
 import com.cloudhopper.commons.util.windowing.WindowFuture;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppServerConfiguration;
 import com.cloudhopper.smpp.SmppSession;
 import com.cloudhopper.smpp.SmppSessionConfiguration;
-import com.cloudhopper.smpp.impl.DefaultSmppClient;
 import com.cloudhopper.smpp.impl.DefaultSmppServer;
 import com.cloudhopper.smpp.impl.DefaultSmppSessionHandler;
 import com.cloudhopper.smpp.pdu.BaseSm;
@@ -134,7 +135,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 
 	private ThreadPoolExecutor executor;
 	private ScheduledThreadPoolExecutor monitorExecutor;
-	private DefaultSmppClient clientBootstrap;
+	private TestSmppClient clientBootstrap;
 	private SmppSession session0;
 	private DefaultSmppServer defaultSmppServer;
 
@@ -381,6 +382,15 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 		tbPcapPort.setBounds(501, 150, 86, 20);
 		panel_2.add(tbPcapPort);
 		tbPcapPort.setColumns(10);
+		
+		JButton btSendBadPacket = new JButton("Send Bad packet");
+		btSendBadPacket.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+                doSendBadPacket();
+		    }
+		});
+		btSendBadPacket.setBounds(509, 45, 129, 23);
+		panel_2.add(btSendBadPacket);
 
 		this.tm = new javax.swing.Timer(5000, new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -390,6 +400,18 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 		this.tm.start();
 		
 	}
+
+    private void doSendBadPacket() {
+        // TODO: ..............................
+        SubmitSm submitSm = new SubmitSm();
+        try {
+            ((TestSmppSession)this.session0).setMalformedPacket();
+            this.session0.submit(submitSm, 1000);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
 	private int msgRef = 0;
 
@@ -744,7 +766,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
         });
 
         if (this.param.getSmppSessionType() == SmppSession.Type.CLIENT) {
-            clientBootstrap = new DefaultSmppClient(Executors.newCachedThreadPool(), 1, monitorExecutor);
+            clientBootstrap = new TestSmppClient(Executors.newCachedThreadPool(), 1, monitorExecutor);
 
             DefaultSmppSessionHandler sessionHandler = new ClientSmppSessionHandler(this);
 
