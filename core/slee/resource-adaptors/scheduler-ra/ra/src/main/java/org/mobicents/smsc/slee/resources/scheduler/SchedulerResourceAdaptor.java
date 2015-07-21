@@ -343,6 +343,10 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				SmsSetCache.getInstance().garbadeCollectProcessingSmsSet();
 			}
 
+			// checking if cassandra database is available
+            if (!dbOperations_C2.isDatabaseAvailable())
+                return;
+
             // checking if we need to advance dueSlot
             SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
             int val = smscPropertiesManagement.getSkipUnsentMessages();

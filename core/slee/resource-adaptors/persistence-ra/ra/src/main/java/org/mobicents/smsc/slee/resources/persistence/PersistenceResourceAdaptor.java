@@ -46,7 +46,6 @@ import org.mobicents.smsc.cassandra.DBOperations_C1;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
-import org.mobicents.smsc.domain.NextCorrelationIdResult;
 import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
@@ -85,6 +84,10 @@ public class PersistenceResourceAdaptor implements ResourceAdaptor {
             @Override
             public void releaseSynchroObject(TargetAddress ta) {
                 SmsSetCache.getInstance().removeSmsSet(ta);
+            }
+
+            public boolean isDatabaseAvailable() {
+                return dbOperations_C2.isDatabaseAvailable();
             }
 
 		    // C1

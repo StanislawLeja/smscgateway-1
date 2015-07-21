@@ -1277,23 +1277,50 @@ public abstract class MoSbb extends MoCommonSbb {
             e.setSkipErrorLogging(true);
             throw e;
         }
-
-        if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
-            // checking if SMSC is paused
-            if (smscPropertiesManagement.isDeliveryPause()) {
-                SmscProcessingException e = new SmscProcessingException("SMSC is paused", SmppConstants.STATUS_SYSERR, MAPErrorCode.facilityNotSupported, null);
-                e.setSkipErrorLogging(true);
-                throw e;
-            }
+        // checking if SMSC is paused
+        if (smscPropertiesManagement.isDeliveryPause()
+                && (!MessageUtil.isStoreAndForward(sms0) || smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast)) {
+            SmscProcessingException e = new SmscProcessingException("SMSC is paused", SmppConstants.STATUS_SYSERR,
+                    MAPErrorCode.facilityNotSupported, null);
+            e.setSkipErrorLogging(true);
+            throw e;
+        }
+        // checking if cassandra database is available
+        if (!store.isDatabaseAvailable() && MessageUtil.isStoreAndForward(sms0)) {
+            SmscProcessingException e = new SmscProcessingException("Database is unavailable", SmppConstants.STATUS_SYSERR,
+                    MAPErrorCode.facilityNotSupported, null);
+            e.setSkipErrorLogging(true);
+            throw e;
+        }
+        if (!MessageUtil.isStoreAndForward(sms0)
+                || smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
             // checking if delivery query is overloaded
             int fetchMaxRows = (int) (smscPropertiesManagement.getMaxActivityCount() * 1.4);
             int activityCount = SmsSetCache.getInstance().getProcessingSmsSetSize();
             if (activityCount >= fetchMaxRows) {
-                SmscProcessingException e = new SmscProcessingException("SMSC is overloaded", SmppConstants.STATUS_THROTTLED, MAPErrorCode.resourceLimitation, null);
+                SmscProcessingException e = new SmscProcessingException("SMSC is overloaded", SmppConstants.STATUS_THROTTLED,
+                        MAPErrorCode.resourceLimitation, null);
                 e.setSkipErrorLogging(true);
                 throw e;
             }
         }
+
+//        if (!MessageUtil.isStoreAndForward(sms0) || smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+//            // checking if SMSC is paused
+//            if (smscPropertiesManagement.isDeliveryPause()) {
+//                SmscProcessingException e = new SmscProcessingException("SMSC is paused", SmppConstants.STATUS_SYSERR, MAPErrorCode.facilityNotSupported, null);
+//                e.setSkipErrorLogging(true);
+//                throw e;
+//            }
+//            // checking if delivery query is overloaded
+//            int fetchMaxRows = (int) (smscPropertiesManagement.getMaxActivityCount() * 1.4);
+//            int activityCount = SmsSetCache.getInstance().getProcessingSmsSetSize();
+//            if (activityCount >= fetchMaxRows) {
+//                SmscProcessingException e = new SmscProcessingException("SMSC is overloaded", SmppConstants.STATUS_THROTTLED, MAPErrorCode.resourceLimitation, null);
+//                e.setSkipErrorLogging(true);
+//                throw e;
+//            }
+//        }
 
         if (chargingType == MoChargingType.accept) {
             smscStatAggregator.updateMsgInReceivedAll();
