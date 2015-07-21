@@ -959,6 +959,50 @@ EXAMPLES
 			</procedure>
 			</section>
 		</section>
+		<section id="hrhlrnumber_sri">
+			<title>Pre-configured HLR address for SRI messages</title>
+			<section id="set_hrhlrnumber_sri_CLI">
+			<title>Using CLI</title>
+<para>
+You can set a pre-configured HLR address for SRI messages by issuing the command <command>smsc set hrhlrnumber</command> with appropriate parameters as described below. You can remove this pre-configured address by issuing the command <command>smsc remove hrhlrnumber</command>. You can verify this by issuing the command <command>smsc get hrhlrnumber</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set hrhlrnumber
+
+SYNOPSIS
+	smsc set hrhlrnumber <hlr GT digits>
+
+DESCRIPTION
+	This command is used to set a pre-configured HLR address for SRI messages.
+	
+	In some scenarios it may be required to set a HLR address instead of a
+	MSISDN address into the SCCP 'CalledPartyAddress' of 'SendRoutingInfo'
+	requests issued by the SMSC GW in both mobile terminated and home routing
+	modes. In such cases, you must set this parameter 'hrhlrnumber' to a 
+	pre-configured HLR address. 
+	
+	For all other scenarios where this is not required, you may leave this
+	parameter empty. When this is empty, the SCCP 'CalledPartyAddress' of 
+	'SendRoutingInfo' request will be set to the destination MSISDN of a 
+	subscriber.
+]]></screen>
+			</section>
+			<section id="set_hrhlrnumber_sri_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set Pre-configured HLR address for SRI messages using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into eight horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing, CDR and Home Routing. Switch to the 'SS7 Settings' tab in the GUI.
+				</para></step>
+				<step><para>You can specify (set or remove) the Pre-configured HLR address for SRI messages by entering appropriate values. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+		</section>		
 		</section>
 
 <!--cassandra settings -->
