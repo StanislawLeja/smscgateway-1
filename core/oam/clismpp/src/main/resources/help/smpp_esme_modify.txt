@@ -14,7 +14,9 @@ SYNOPSIS
 	routing-npi <routing address npi> routing-range <routing address range>
 	ratelimit-second <ratelimitsecond> ratelimit-minute <ratelimitminute> 
 	ratelimit-hour <ratelimithour> ratelimit-day <ratelimitday>
-
+	min-message-length <min-message-length value>
+	max-message-length <max-message-length value>
+	
 DESCRIPTION
 	This command is used to modify the settings of an existing ESME configuration.
 
@@ -27,7 +29,7 @@ PARAMETERS
 	Password		- Specify the new password.
 				  It is used by the SMSC to authenticate the identity of 
 				  the binding ESME. The Service Provider may require 
-				  ESME’s to provide a password when binding to the SMSC.
+				  ESMEs to provide a password when binding to the SMSC.
 
 				  The new value takes effect when SMPP is restarted.
 
@@ -238,26 +240,80 @@ PARAMETERS
 				  SmppSession.Type is CLIENT
 
 				  The new value takes effect immediately.
-				  
-    ratelimit_second    - Sets for the ESME a max limit in messages that SMSC
-					will accepts from this ESME during any one second. If ESME
-					sends messages more than ratelimit_second during a second,
-					more messages will be rejected by SMSC GW with "throttled"
-					error code. "0" value is default and means "no
-					restrictions". Missing of this parameter means also "no
-					restrictions".
+				  				  
+    ratelimit_second    - This parameter is used to specify a maximum limit
+    				of messages that the SMSC will accept from this ESME 
+    				during any one second. 
+    				
+    				If the ESME sends more messages (per second) 
+    				than the maximum limit specified by 'ratelimit_second',
+					these additional messages will be rejected by the 
+					SMSC GW along with an error code - "throttled".
+					
+					The default value for this parameter is "0" and it
+					implies "no restrictions". If this parameter is not
+					specified it implies "no restrictions".
 	
-	ratelimit_minute 	- Sets for the ESME a max limit in messages that SMSC
-					will accepts from this ESME during any one minute like
-					ratelimit_second
+	ratelimit_minute    - This parameter is used to specify a maximum limit
+    				of messages that the SMSC will accept from this ESME 
+    				during any one minute. 
+    				
+    				If the ESME sends more messages (per minute) 
+    				than the maximum limit specified by 'ratelimit_minute',
+					these additional messages will be rejected by the 
+					SMSC GW along with an error code - "throttled".
+					
+					The default value for this parameter is "0" and it
+					implies "no restrictions". If this parameter is not
+					specified it implies "no restrictions".
 
-	ratelimit_hour 		- Sets for the ESME a max limit in messages that SMSC
-					will accepts from this ESME during any one hour like
-					ratelimit_second
+	ratelimit_hour    - This parameter is used to specify a maximum limit
+    				of messages that the SMSC will accept from this ESME 
+    				during any one hour. 
+    				
+    				If the ESME sends more messages (per hour) 
+    				than the maximum limit specified by 'ratelimit_hour',
+					these additional messages will be rejected by the 
+					SMSC GW along with an error code - "throttled".
+					
+					The default value for this parameter is "0" and it
+					implies "no restrictions". If this parameter is not
+					specified it implies "no restrictions".
 
-	ratelimit_day - 	Sets for the ESME a max limit in messages that SMSC
-					will accepts from this ESME during any one day like
-					ratelimit_second				  
+	ratelimit_day    - This parameter is used to specify a maximum limit
+    				of messages that the SMSC will accept from this ESME 
+    				during any one day. 
+    				
+    				If the ESME sends more messages (per day) 
+    				than the maximum limit specified by 'ratelimit_day',
+					these additional messages will be rejected by the 
+					SMSC GW along with an error code - "throttled".
+					
+					The default value for this parameter is "0" and it
+					implies "no restrictions". If this parameter is not
+					specified it implies "no restrictions".		
+							  
+	min-message-length    - This paramter is used to specify the minimum
+					message length (in characters) acceptable to
+					the SMSC GW, for messages coming from this ESME.
+					
+					If an incoming message length is less than the
+					min-message-length it will be rejected by SMSC GW.
+					
+					The default value for this parameter is "-1" and it
+					implies "no limitations". Any other negative value
+					also implies "no limitations".
+					
+	max-message-length    - This paramter is used to specify the maximum
+					message length (in characters) acceptable to
+					the SMSC GW, for messages coming from this ESME.
+					
+					If an incoming message length is more than the
+					max-message-length it will be rejected by SMSC GW.
+					
+					The default value for this parameter is "-1" and it
+					implies "no limitations". Any other negative value
+					also implies "no limitations".					  
 	
 SEE ALSO
 	smsc get scgt, smsc set scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
