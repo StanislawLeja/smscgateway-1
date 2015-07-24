@@ -150,6 +150,7 @@ public class DBOperations_C2 {
 	private PreparedStatementCollection_C3[] savedPsc;
 
 	private volatile boolean started = false;
+	private boolean databaseAvailable = false;
 
 	protected DBOperations_C2() {
 		super();
@@ -159,9 +160,13 @@ public class DBOperations_C2 {
 		return instance;
 	}
 
-	public boolean isStarted() {
-		return started;
-	}
+    public boolean isStarted() {
+        return started;
+    }
+
+    public boolean isDatabaseAvailable() {
+        return databaseAvailable;
+    }
 
 	protected Session getSession() {
 		return this.session;
@@ -182,13 +187,22 @@ public class DBOperations_C2 {
 		this.pcsDate = null;
 		currentSessionUUID = UUID.randomUUID();
 
-		Builder builder = Cluster.builder();
-		
-		String[] cassHostsArray = hosts.split(",");
-        builder.addContactPoints(cassHostsArray);
-		builder.withPort(port);
+        Builder builder = Cluster.builder();
 
-		this.cluster = builder.build().init();
+        try {
+            String[] cassHostsArray = hosts.split(",");
+            builder.addContactPoints(cassHostsArray);
+            builder.withPort(port);
+
+            this.cluster = builder.build().init();
+        } catch (Exception e) {
+            logger.error(
+                    String.format(
+                            "Failure of connting to cassandra database. : host=%s, port=%d. SMSC GW will work without database support\n",
+                            hosts, port), e);
+            return;
+        }
+        databaseAvailable = true;
 
         Metadata metadata = cluster.getMetadata();
         logger.info(String.format("Connected to cluster: %s\n", metadata.getClusterName()));
@@ -248,7 +262,7 @@ public class DBOperations_C2 {
 
             messageId = c2_getCurrentSlotTable(NEXT_MESSAGE_ID);
             messageId += MESSAGE_ID_LAG;
-            c2_setCurrenrSlotTable(NEXT_MESSAGE_ID, messageId);
+            c2_setCurrentSlotTable(NEXT_MESSAGE_ID, messageId);
 		} catch (Exception e1) {
 			String msg = "Failed reading a currentDueSlot !";
 			throw new PersistenceException(msg, e1);
@@ -312,7 +326,7 @@ public class DBOperations_C2 {
 	public void c2_setCurrentDueSlot(long newDueSlot) throws PersistenceException {
 		currentDueSlot = newDueSlot;
 
-		c2_setCurrenrSlotTable(CURRENT_DUE_SLOT, newDueSlot);
+		c2_setCurrentSlotTable(CURRENT_DUE_SLOT, newDueSlot);
 	}
 
 	/**
@@ -323,9 +337,9 @@ public class DBOperations_C2 {
 		messageId++;
 		if (messageId >= MAX_MESSAGE_ID)
 			messageId = 1;
-		if (messageId % MESSAGE_ID_LAG == 0) {
+		if (messageId % MESSAGE_ID_LAG == 0 && databaseAvailable) {
 			try {
-				c2_setCurrenrSlotTable(NEXT_MESSAGE_ID, messageId);
+				c2_setCurrentSlotTable(NEXT_MESSAGE_ID, messageId);
 			} catch (PersistenceException e) {
 				logger.error("Exception when storing next messageId to the database: " + e.getMessage(), e);
 			}
@@ -357,7 +371,7 @@ public class DBOperations_C2 {
 		return res2;
 	}
 
-	private void c2_setCurrenrSlotTable(int key, long newVal) throws PersistenceException {
+	private void c2_setCurrentSlotTable(int key, long newVal) throws PersistenceException {
 		try {
 			PreparedStatement ps = updateCurrentSlotTable;
 			BoundStatement boundStatement = new BoundStatement(ps);
@@ -754,6 +768,9 @@ public class DBOperations_C2 {
 	}
 
 	public void c2_createRecordArchive(Sms sms) throws PersistenceException {
+        if (!this.databaseAvailable)
+            return;
+
 		Date deliveryDate = sms.getDeliverDate();
 		if (deliveryDate == null)
 			deliveryDate = new Date();

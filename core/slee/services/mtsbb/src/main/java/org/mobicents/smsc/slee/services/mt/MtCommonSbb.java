@@ -43,6 +43,7 @@ import org.mobicents.protocols.ss7.map.api.MAPSmsTpduParameterFactory;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
 import org.mobicents.protocols.ss7.map.api.dialog.ProcedureCancellationReason;
 import org.mobicents.protocols.ss7.map.api.dialog.ResourceUnavailableReason;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
@@ -458,7 +459,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 				org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.getInstance(npi), destinationAddress);
 	}
 
-    protected void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason, boolean removeSmsSet) {
+    protected void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason,
+            boolean removeSmsSet, MAPErrorMessage errMessage) {
         smscStatAggregator.updateMsgOutFailedAll();
 
         PersistenceRAInterface pers = this.getStore();
@@ -494,7 +496,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
             Sms sms = smsSet.getSms(i1);
             if (sms != null) {
                 if (sms.getMessageDeliveryResultResponse() != null) {
-                    sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason);
+                    sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason, errMessage);
                     sms.setMessageDeliveryResultResponse(null);
                 }
             }

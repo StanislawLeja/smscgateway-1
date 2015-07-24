@@ -3688,7 +3688,7 @@ public class C2_MtTest {
         this.mtSbb.setSmsSubmitData(smsSubmitData);
 
         // SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason, boolean removeSmsSet
-        this.sriSbb.onDeliveryError(smsSet, ErrorAction.subscriberBusy, ErrorCode.ABSENT_SUBSCRIBER, "X error", true);
+        this.sriSbb.onDeliveryError(smsSet, ErrorAction.subscriberBusy, ErrorCode.ABSENT_SUBSCRIBER, "X error", true, null);
 
         PreparedStatementCollection_C3[] pscc = this.pers.c2_getPscList();
         long l1 = 0;

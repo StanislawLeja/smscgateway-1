@@ -103,7 +103,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
                     this.getStore().fetchSchedulableSms(smsSet, true);
                 } catch (PersistenceException e) {
                     this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "PersistenceException when fetchSchedulableSms(): "
-                            + e.getMessage(), true);
+                            + e.getMessage(), true, null);
                     return;
                 }
             } else {
@@ -117,7 +117,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
             if (smsSet.getDestAddrTon() == SmppConstants.TON_ALPHANUMERIC) {
                 // bad TON at the destination address: alhpanumerical is not supported
                 this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.BAD_TYPE_OF_NUMBER,
-                        "TON \"alhpanumerical\" is not supported for as a destination address", true);
+                        "TON \"alhpanumerical\" is not supported for as a destination address", true, null);
                 return;
             }
 
@@ -126,7 +126,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
             if (sms == null) {
                 // this means that no messages with good ScheduleDeliveryTime or
                 // no messages at all we have to reschedule
-                this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SUCCESS, "No messages for sending now", true);
+                this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SUCCESS, "No messages for sending now", true, null);
                 return;
             }
 
@@ -219,7 +219,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
         }
 
 		this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
-				"onRejectComponent after SRI Request: " + reason != null ? reason.toString() : "", true);
+				"onRejectComponent after SRI Request: " + reason != null ? reason.toString() : "", true, null);
 	}
 
 	/**
@@ -272,7 +272,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 
             super.onDialogReject(evt, aci);
             this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogReject after SRI Request: "
-                    + mapRefuseReason != null ? mapRefuseReason.toString() : "", true);
+                    + mapRefuseReason != null ? mapRefuseReason.toString() : "", true, null);
         } catch (Throwable e1) {
             logger.severe("Exception in SriSbb.onDialogReject() when fetching records and issuing events: " + e1.getMessage(), e1);
         }
@@ -298,7 +298,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
             }
 
             this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogProviderAbort after SRI Request: "
-                    + abortProviderReason != null ? abortProviderReason.toString() : "", true);
+                    + abortProviderReason != null ? abortProviderReason.toString() : "", true, null);
         } catch (Throwable e1) {
             logger.severe("Exception in SriSbb.onDialogProviderAbort() when fetching records and issuing events: " + e1.getMessage(), e1);
         }
@@ -324,7 +324,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
             }
 
             this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogUserAbort after SRI Request: "
-                    + reason != null ? reason.toString() : "", true);
+                    + reason != null ? reason.toString() : "", true, null);
         } catch (Throwable e1) {
             logger.severe("Exception in SriSbb.onDialogUserAbort() when fetching records and issuing events: " + e1.getMessage(), e1);
         }
@@ -349,7 +349,8 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
                 return;
             }
 
-            this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO, "onDialogTimeout after SRI Request", true);
+            this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
+                    "onDialogTimeout after SRI Request", true, null);
         } catch (Throwable e1) {
             logger.severe("Exception in SriSbb.onDialogTimeout() when fetching records and issuing events: " + e1.getMessage(), e1);
         }
@@ -580,7 +581,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 			String reason = "MAPException when sending SRI from sendSRI(): " + e.toString();
 			this.logger.severe(reason, e);
 			ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
-			this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true);
+			this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true, null);
 		}
 	}
 
@@ -639,50 +640,50 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
             return;
         }
 
-		if (errorMessage != null) {
-			// we have a negative response
-			if (errorMessage.isEmAbsentSubscriber()) {
-				this.onDeliveryError(smsSet, ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
-						"AbsentSubscriber response from HLR: " + errorMessage.toString(), true);
-			} else if (errorMessage.isEmAbsentSubscriberSM()) {
-				this.onDeliveryError(smsSet, ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
-						"AbsentSubscriberSM response from HLR: " + errorMessage.toString(), true);
-			} else if (errorMessage.isEmCallBarred()) {
-				this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.CALL_BARRED,
-						"CallBarred response from HLR: " + errorMessage.toString(), true);
-			} else if (errorMessage.isEmFacilityNotSup()) {
-				this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
-						"FacilityNotSuppored response from HLR: " + errorMessage.toString(), true);
-			} else if (errorMessage.isEmSystemFailure()) {
-				// TODO: may be systemFailure is not a permanent error case ?
-				this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
-						"SystemFailure response from HLR: " + errorMessage.toString(), true);
-			} else if (errorMessage.isEmUnknownSubscriber()) {
-				this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNKNOWN_SUBSCRIBER,
-						"UnknownSubscriber response from HLR: " + errorMessage.toString(), true);
-			} else if (errorMessage.isEmExtensionContainer()) {
-				if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.dataMissing) {
-					this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.DATA_MISSING,
-							"DataMissing response from HLR", true);
-				} else if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.unexpectedDataValue) {
-					this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA,
-							"UnexpectedDataValue response from HLR", true);
-				} else if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.teleserviceNotProvisioned) {
-					this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.TELESERVICE_NOT_PROVISIONED,
-							"TeleserviceNotProvisioned response from HLR", true);
-				} else {
-					this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA_FROM_HLR,
-							"Error response from HLR: " + errorMessage.toString(), true);
-				}
-			} else {
+        if (errorMessage != null) {
+            // we have a negative response
+            if (errorMessage.isEmAbsentSubscriber()) {
+                this.onDeliveryError(smsSet, ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
+                        "AbsentSubscriber response from HLR: " + errorMessage.toString(), true, errorMessage);
+            } else if (errorMessage.isEmAbsentSubscriberSM()) {
+                this.onDeliveryError(smsSet, ErrorAction.mobileNotReachableFlag, ErrorCode.ABSENT_SUBSCRIBER,
+                        "AbsentSubscriberSM response from HLR: " + errorMessage.toString(), true, errorMessage);
+            } else if (errorMessage.isEmCallBarred()) {
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.CALL_BARRED,
+                        "CallBarred response from HLR: " + errorMessage.toString(), true, errorMessage);
+            } else if (errorMessage.isEmFacilityNotSup()) {
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
+                        "FacilityNotSuppored response from HLR: " + errorMessage.toString(), true, errorMessage);
+            } else if (errorMessage.isEmSystemFailure()) {
+                // TODO: may be systemFailure is not a permanent error case ?
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
+                        "SystemFailure response from HLR: " + errorMessage.toString(), true, errorMessage);
+            } else if (errorMessage.isEmUnknownSubscriber()) {
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNKNOWN_SUBSCRIBER,
+                        "UnknownSubscriber response from HLR: " + errorMessage.toString(), true, errorMessage);
+            } else if (errorMessage.isEmExtensionContainer()) {
+                if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.dataMissing) {
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.DATA_MISSING,
+                            "DataMissing response from HLR", true, errorMessage);
+                } else if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.unexpectedDataValue) {
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA,
+                            "UnexpectedDataValue response from HLR", true, errorMessage);
+                } else if (errorMessage.getEmExtensionContainer().getErrorCode() == MAPErrorCode.teleserviceNotProvisioned) {
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.TELESERVICE_NOT_PROVISIONED,
+                            "TeleserviceNotProvisioned response from HLR", true, errorMessage);
+                } else {
+                    this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA_FROM_HLR,
+                            "Error response from HLR: " + errorMessage.toString(), true, errorMessage);
+                }
+            } else {
                 this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNEXPECTED_DATA_FROM_HLR,
-                        "Error response from HLR: " + errorMessage.toString(), true);
-			}
-		} else {
-			// we have no responses - this is an error behaviour
-			this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
-					"Empty response after SRI Request", false);
-		}
+                        "Error response from HLR: " + errorMessage.toString(), true, errorMessage);
+            }
+        } else {
+            // we have no responses - this is an error behaviour
+            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.HLR_REJECT_AFTER_ROUTING_INFO,
+                    "Empty response after SRI Request", false, null);
+        }
 	}
 
     private void executeForwardSM(SmsSet smsSet, LocationInfoWithLMSI locationInfoWithLMSI, String imsi, int networkId) {

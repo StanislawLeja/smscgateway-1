@@ -209,6 +209,10 @@ public abstract class AlertSbb implements Sbb {
         if (smscPropertiesManagement.isDeliveryPause())
             return;
 
+        // checking if database is available
+        if (!pers.isDatabaseAvailable())
+            return;
+
 		int addrTon = msisdn.getAddressNature().getIndicator();
 		int addrNpi = msisdn.getNumberingPlan().getIndicator();
 		String addr = msisdn.getAddress();
