@@ -48,6 +48,7 @@ import org.mobicents.protocols.ss7.map.api.service.sms.MtForwardShortMessageRequ
 import org.mobicents.protocols.ss7.map.api.service.sms.MtForwardShortMessageResponse;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
+import org.mobicents.protocols.ss7.map.api.service.sms.SmsMessage;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AbsoluteTimeStamp;
 import org.mobicents.protocols.ss7.map.api.smstpdu.AddressField;
@@ -209,6 +210,7 @@ public abstract class MoSbb extends MoCommonSbb {
             }
         }
 
+        Sms sms = null;
 		try {
             String originatorSccpAddress = null;
             SccpAddress sccpAddress = dialog.getRemoteAddress();
@@ -217,8 +219,8 @@ public abstract class MoSbb extends MoCommonSbb {
                 if (gt != null)
                     originatorSccpAddress = gt.getDigits();
             }
-            this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId(),
-                    originatorSccpAddress);
+            sms = this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId(),
+                    originatorSccpAddress, true, evt.getMAPDialog(), evt, evt.getInvokeId());
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
             smscStatAggregator.updateMsgInFailedAll();
@@ -279,16 +281,18 @@ public abstract class MoSbb extends MoCommonSbb {
 			return;
 		}
 
-		try {
-			dialog.addMoForwardShortMessageResponse(evt.getInvokeId(), null, null);
-			if (this.logger.isFineEnabled()) {
-				this.logger.fine("\nSent MoForwardShortMessageResponse = " + evt);
-			}
+        if (sms == null || sms.getMessageDeliveryResultResponse() == null) {
+            try {
+                dialog.addMoForwardShortMessageResponse(evt.getInvokeId(), null, null);
+                if (this.logger.isFineEnabled()) {
+                    this.logger.fine("\nSent MoForwardShortMessageResponse = " + evt);
+                }
 
-			dialog.close(false);
-		} catch (Throwable e) {
-			logger.severe("Error while sending MoForwardShortMessageResponse ", e);
-		}
+                dialog.close(false);
+            } catch (Throwable e) {
+                logger.severe("Error while sending MoForwardShortMessageResponse ", e);
+            }
+        }
 	}
 
 	/**
@@ -347,9 +351,11 @@ public abstract class MoSbb extends MoCommonSbb {
             }
         }
 
+        Sms sms = null;
 		try {
             if (isMt) {
-                this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId());
+                sms = this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId(),
+                        false, evt.getMAPDialog(), evt, evt.getInvokeId());
             } else {
                 String originatorSccpAddress = null;
                 SccpAddress sccpAddress = dialog.getRemoteAddress();
@@ -358,7 +364,8 @@ public abstract class MoSbb extends MoCommonSbb {
                     if (gt != null)
                         originatorSccpAddress = gt.getDigits();
                 }
-                this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId(), originatorSccpAddress);
+                sms = this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId(),
+                        originatorSccpAddress, false, evt.getMAPDialog(), evt, evt.getInvokeId());
             }
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
@@ -420,16 +427,18 @@ public abstract class MoSbb extends MoCommonSbb {
 			return;
 		}
 
-		try {
-			dialog.addForwardShortMessageResponse(evt.getInvokeId());
-			if (this.logger.isFineEnabled()) {
-				this.logger.fine("\nSent ForwardShortMessageResponse = " + evt);
-			}
+        if (sms == null || sms.getMessageDeliveryResultResponse() == null) {
+            try {
+                dialog.addForwardShortMessageResponse(evt.getInvokeId());
+                if (this.logger.isFineEnabled()) {
+                    this.logger.fine("\nSent ForwardShortMessageResponse = " + evt);
+                }
 
-			dialog.close(false);
-		} catch (Throwable e) {
-			logger.severe("Error while sending ForwardShortMessageResponse ", e);
-		}
+                dialog.close(false);
+            } catch (Throwable e) {
+                logger.severe("Error while sending ForwardShortMessageResponse ", e);
+            }
+        }
 	}
 
 	/**
@@ -463,7 +472,7 @@ public abstract class MoSbb extends MoCommonSbb {
         }
 
 		try {
-	        this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId());
+	        this.processMtMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId(), false, evt.getMAPDialog(), evt, evt.getInvokeId());
 		} catch (SmscProcessingException e1) {
 			this.logger.severe(e1.getMessage(), e1);
 			try {
@@ -541,9 +550,10 @@ public abstract class MoSbb extends MoCommonSbb {
 
 	}
 
-	private void processMtMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo, int networkId)
-			throws SmscProcessingException {
+    private Sms processMtMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo, int networkId,
+            boolean isMoOperation, MAPDialogSms dialog, SmsMessage evt, long invokeId) throws SmscProcessingException {
 
+	    Sms sms = null;
         smsSignalInfo.setGsm8Charset(isoCharset);
 
         IMSI destinationImsi = smRPDA.getIMSI();
@@ -581,7 +591,7 @@ public abstract class MoSbb extends MoCommonSbb {
 					this.logger.info("Received SMS_DELIVER = " + smsDeliverTpdu);
 				}
 				// AddressField af = smsSubmitTpdu.getDestinationAddress();
-				this.handleSmsDeliverTpdu(smsDeliverTpdu, civ, networkId);
+				sms = this.handleSmsDeliverTpdu(smsDeliverTpdu, civ, networkId, isMoOperation, dialog, evt, invokeId);
 				break;
 			default:
 				this.logger.severe("Received non SMS_DELIVER = " + smsTpdu);
@@ -590,14 +600,18 @@ public abstract class MoSbb extends MoCommonSbb {
 		} catch (MAPException e1) {
 			logger.severe("Error while decoding SmsSignalInfo ", e1);
 		}
+
+        return sms;
 	}
 
-    private void processMoMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo, int networkId, String originatorSccpAddress)
+    private Sms processMoMessage(SM_RP_OA smRPOA, SM_RP_DA smRPDA, SmsSignalInfo smsSignalInfo, int networkId,
+            String originatorSccpAddress, boolean isMoOperation, MAPDialogSms dialog, SmsMessage evt, long invokeId)
             throws SmscProcessingException {
 
 		// TODO: check if smRPDA contains local SMSC address and reject messages
 		// if not equal ???
 
+        Sms sms = null;
         smsSignalInfo.setGsm8Charset(isoCharset);
 
 		ISDNAddressString callingPartyAddress = smRPOA.getMsisdn();
@@ -605,7 +619,7 @@ public abstract class MoSbb extends MoCommonSbb {
 			throw new SmscProcessingException("MO callingPartyAddress is absent", SmppConstants.STATUS_SYSERR,
 					MAPErrorCode.unexpectedDataValue, null);
 		}
-		
+
 		AddressString serviceCentreAddressOA = null;
 		IMSI destinationImsi = null;
 		if (callingPartyAddress == null ){
@@ -619,7 +633,11 @@ public abstract class MoSbb extends MoCommonSbb {
 			destinationImsi = smRPDA.getIMSI();
 		}
 
-		SmsTpdu smsTpdu = null;
+        SmsTpdu smsTpdu = null;
+        String origMoServiceCentreAddressDA = null;
+        if (smRPDA.getServiceCentreAddressDA() != null) {
+            origMoServiceCentreAddressDA = smRPDA.getServiceCentreAddressDA().getAddress();
+        }
 
 		try {
 			if(callingPartyAddress != null){
@@ -637,7 +655,8 @@ public abstract class MoSbb extends MoCommonSbb {
 					this.logger.info("Received SMS_SUBMIT = " + smsSubmitTpdu);
 				}
 				// AddressField af = smsSubmitTpdu.getDestinationAddress();
-				this.handleSmsSubmitTpdu(smsSubmitTpdu, callingPartyAddress, networkId, originatorSccpAddress);
+                    sms = this.handleSmsSubmitTpdu(smsSubmitTpdu, callingPartyAddress, networkId, originatorSccpAddress,
+                            isMoOperation, dialog, evt, invokeId, origMoServiceCentreAddressDA);
 				break;
 			case SMS_DELIVER_REPORT:
 				SmsDeliverReportTpdu smsDeliverReportTpdu = (SmsDeliverReportTpdu) smsTpdu;
@@ -660,8 +679,9 @@ public abstract class MoSbb extends MoCommonSbb {
 				// callingPartyAddress);
 				break;
 			case SMS_DELIVER:
-				SmsDeliverTpdu smsDeliverTpdu = (SmsDeliverTpdu) smsTpdu;
-				this.handleSmsDeliverTpdu(smsDeliverTpdu, destinationImsi, networkId);
+                    SmsDeliverTpdu smsDeliverTpdu = (SmsDeliverTpdu) smsTpdu;
+                    sms = this.handleSmsDeliverTpdu(smsDeliverTpdu, destinationImsi, networkId, isMoOperation, dialog, evt,
+                            invokeId, origMoServiceCentreAddressDA);
 				break;
 			default:
 				this.logger.severe("Received non SMS_SUBMIT or SMS_DELIVER_REPORT or SMS_COMMAND or SMS_DELIVER = " + smsTpdu);
@@ -671,6 +691,8 @@ public abstract class MoSbb extends MoCommonSbb {
 		} catch (MAPException e1) {
 			logger.severe("Error while decoding SmsSignalInfo ", e1);
 		}
+
+        return sms;
 	}
 
 	private TargetAddress createDestTargetAddress(IMSI imsi, int networkId) throws SmscProcessingException {
@@ -809,17 +831,20 @@ public abstract class MoSbb extends MoCommonSbb {
 	 * @throws MAPException
 	 */
 
-    private void handleSmsSubmitTpdu(SmsSubmitTpdu smsSubmitTpdu, AddressString callingPartyAddress, int networkId, String originatorSccpAddress)
-            throws SmscProcessingException {
+    private Sms handleSmsSubmitTpdu(SmsSubmitTpdu smsSubmitTpdu, AddressString callingPartyAddress, int networkId,
+            String originatorSccpAddress, boolean isMoOperation, MAPDialogSms dialog, SmsMessage evt, long invokeId,
+            String origMoServiceCentreAddressDA) throws SmscProcessingException {
 
         TargetAddress ta = createDestTargetAddress(smsSubmitTpdu.getDestinationAddress(), networkId);
         PersistenceRAInterface store = obtainStore(ta);
 
         Sms sms = this.createSmsEvent(smsSubmitTpdu, ta, store, callingPartyAddress, networkId, originatorSccpAddress);
-        this.processSms(sms, store, smscPropertiesManagement.getMoCharging());
-	}
+        sms.setOrigMoServiceCentreAddressDA(origMoServiceCentreAddressDA);
+        return this.processSms(sms, store, smscPropertiesManagement.getMoCharging(), isMoOperation, dialog, evt, invokeId);
+    }
 
-    private void handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, IMSI destinationImsi, int networkId)
+    private Sms handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, IMSI destinationImsi, int networkId, boolean isMoOperation,
+            MAPDialogSms dialog, SmsMessage evt, long invokeId, String origMoServiceCentreAddressDA)
             throws SmscProcessingException {
 
         AddressField tpOAAddress = smsDeliverTpdu.getOriginatingAddress();
@@ -828,17 +853,18 @@ public abstract class MoSbb extends MoCommonSbb {
         PersistenceRAInterface store = obtainStore(ta);
 
         Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, tpOAAddress, networkId);
-        this.processSms(sms, store, smscPropertiesManagement.getHrCharging());
+        sms.setOrigMoServiceCentreAddressDA(origMoServiceCentreAddressDA);
+        return this.processSms(sms, store, smscPropertiesManagement.getHrCharging(), isMoOperation, dialog, evt, invokeId);
     }
 
-	private void handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, CorrelationIdValue civ, int networkId)
-			throws SmscProcessingException {
+    private Sms handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, CorrelationIdValue civ, int networkId,
+            boolean isMoOperation, MAPDialogSms dialog, SmsMessage evt, long invokeId) throws SmscProcessingException {
 
         TargetAddress ta = createDestTargetAddress(civ.getMsisdn(), networkId);
         PersistenceRAInterface store = obtainStore(ta);
 
         Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, civ, networkId);
-        this.processSms(sms, store, smscPropertiesManagement.getHrCharging());
+        return this.processSms(sms, store, smscPropertiesManagement.getHrCharging(), isMoOperation, dialog, evt, invokeId);
 	}
 
     private Sms createSmsEvent(SmsSubmitTpdu smsSubmitTpdu, TargetAddress ta, PersistenceRAInterface store, AddressString callingPartyAddress, int networkId,
@@ -1268,7 +1294,8 @@ public abstract class MoSbb extends MoCommonSbb {
         return sms;
     }
 
-	private void processSms(Sms sms0, PersistenceRAInterface store, MoChargingType chargingType) throws SmscProcessingException {
+    private Sms processSms(Sms sms0, PersistenceRAInterface store, MoChargingType chargingType, boolean isMoOperation,
+            MAPDialogSms dialog, SmsMessage evt, long invokeId) throws SmscProcessingException {
         // TODO: we can make this some check will we send this message or not
 
         // checking if SMSC is stopped
@@ -1332,6 +1359,14 @@ public abstract class MoSbb extends MoCommonSbb {
             }
         }
 
+        // transactional mode / or charging request
+        boolean isTransactional = MessageUtil.isTransactional(sms0);
+        if (isTransactional || chargingType == MoChargingType.diameter) {
+            MessageDeliveryResultResponseMo messageDeliveryResultResponse = new MessageDeliveryResultResponseMo(
+                    !isTransactional, isMoOperation, dialog, this.mapProvider, evt, invokeId, this.logger);
+            sms0.setMessageDeliveryResultResponse(messageDeliveryResultResponse);
+        }
+
         switch (chargingType) {
         case accept:
             // applying of MProc
@@ -1372,15 +1407,16 @@ public abstract class MoSbb extends MoCommonSbb {
                     store.releaseSynchroObject(lock);
                 }
             }
-            break;
+            return sms0;
         case reject:
             // this case is already processed
-            break;
+            return null;
         case diameter:
             ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
             chargingSbb.setupChargingRequestInterface(ChargingMedium.MoOrig, sms0);
-            break;
+            return sms0;
         }
+        return null;
 	}
 
 	public enum MoProcessingState {

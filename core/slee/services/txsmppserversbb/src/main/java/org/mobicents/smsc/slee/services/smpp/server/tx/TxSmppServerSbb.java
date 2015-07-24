@@ -1485,10 +1485,11 @@ public abstract class TxSmppServerSbb implements Sbb {
             smscStatAggregator.updateMsgInReceivedSmpp();
         }
 
-        // transactional mode
-        if ((eventSubmit != null || eventData != null) && MessageUtil.isTransactional(sms0)) {
-            MessageDeliveryResultResponseSmpp messageDeliveryResultResponse = new MessageDeliveryResultResponseSmpp(this.smppServerSessions, esme, eventSubmit,
-                    eventData, sms0.getMessageId());
+        // transactional mode / or charging request
+        boolean isTransactional = (eventSubmit != null || eventData != null) && MessageUtil.isTransactional(sms0);
+        if (isTransactional || withCharging) {
+            MessageDeliveryResultResponseSmpp messageDeliveryResultResponse = new MessageDeliveryResultResponseSmpp(
+                    !isTransactional, this.smppServerSessions, esme, eventSubmit, eventData, sms0.getMessageId());
             sms0.setMessageDeliveryResultResponse(messageDeliveryResultResponse);
         }
 

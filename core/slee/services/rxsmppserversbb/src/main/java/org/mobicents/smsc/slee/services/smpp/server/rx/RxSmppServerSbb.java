@@ -501,7 +501,7 @@ public abstract class RxSmppServerSbb implements Sbb {
             Sms sms = smsSet.getSms(i1);
             if (sms != null) {
                 if (sms.getMessageDeliveryResultResponse() != null) {
-                    sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason);
+                    sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason, null);
                     sms.setMessageDeliveryResultResponse(null);
                 }
             }

@@ -87,6 +87,8 @@ public class Sms implements Serializable {
 	private Date scheduleDeliveryTime; // not present in data_sm
 	private Date validityPeriod; // not present in data_sm
 
+    private String origMoServiceCentreAddressDA;
+
     private int deliveryCount;
 
     private OriginationType originationType;
@@ -459,6 +461,17 @@ public class Sms implements Serializable {
 		this.validityPeriod = validityPeriod;
 	}
 
+    /**
+     * original ServiceCentreAddressDA that has come in incoming MO SS7 mesage
+     */
+    public String getOrigMoServiceCentreAddressDA() {
+        return origMoServiceCentreAddressDA;
+    }
+
+    public void setOrigMoServiceCentreAddressDA(String origMoServiceCentreAddressDA) {
+        this.origMoServiceCentreAddressDA = origMoServiceCentreAddressDA;
+    }
+
 	/**
 	 * delivery tries count
 	 */
@@ -570,8 +583,10 @@ public class Sms implements Serializable {
 		sb.append(defaultMsgId);
 		sb.append(", scheduleDeliveryTime=");
 		sb.append(scheduleDeliveryTime);
-		sb.append(", validityPeriod=");
-		sb.append(validityPeriod);
+        sb.append(", validityPeriod=");
+        sb.append(validityPeriod);
+        sb.append(", origMoServiceCentreAddressDA=");
+        sb.append(origMoServiceCentreAddressDA);
         sb.append(", deliveryCount=");
         sb.append(deliveryCount);
         sb.append(", originationType=");

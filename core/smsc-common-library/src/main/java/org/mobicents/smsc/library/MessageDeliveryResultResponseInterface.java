@@ -22,6 +22,8 @@
 
 package org.mobicents.smsc.library;
 
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
+
 /**
  *
  * @author sergey vetyutnev
@@ -29,9 +31,11 @@ package org.mobicents.smsc.library;
  */
 public interface MessageDeliveryResultResponseInterface {
 
+    public boolean isOnlyChargingRequest();
+
     public void responseDeliverySuccess();
 
-    public void responseDeliveryFailure(DeliveryFailureReason reason);
+    public void responseDeliveryFailure(DeliveryFailureReason reason, MAPErrorMessage errMessage);
 
     public enum DeliveryFailureReason {
         destinationUnavalable(0), invalidDestinationAddress(1), permanentNetworkError(2), temporaryNetworkError(3);
