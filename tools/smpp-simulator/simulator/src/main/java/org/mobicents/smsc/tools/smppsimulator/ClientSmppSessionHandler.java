@@ -180,6 +180,12 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
 
 
                 testingForm.addMessage("TextReceived: ", s2 + s);
+//                try {
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException e) {
+//                    // TODO Auto-generated catch block
+//                    e.printStackTrace();
+//                }
             }
 
             if (this.testingForm.getSmppSimulatorParameters().isRejectIncomingDeliveryMessage()) {
