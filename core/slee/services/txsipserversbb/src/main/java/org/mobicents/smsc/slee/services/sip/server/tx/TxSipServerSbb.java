@@ -569,7 +569,7 @@ public abstract class TxSipServerSbb implements Sbb {
 //		}
 
 		boolean withCharging = false;
-		switch (smscPropertiesManagement.getTxSmppChargingType()) {
+		switch (smscPropertiesManagement.getTxSipChargingType()) {
 		case Selected:
 			// withCharging = esme.isChargingEnabled();
 			// TODO Selected not supported now as there is only 1 SIP Stack
