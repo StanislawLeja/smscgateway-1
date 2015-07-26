@@ -200,6 +200,7 @@ public class DBOperations_C2 {
                     String.format(
                             "Failure of connting to cassandra database. : host=%s, port=%d. SMSC GW will work without database support\n",
                             hosts, port), e);
+            this.started = true;
             return;
         }
         databaseAvailable = true;
@@ -275,7 +276,7 @@ public class DBOperations_C2 {
 		if (!this.started)
 			return;
 
-        if (!cluster.isClosed()) {
+        if (cluster != null && !cluster.isClosed()) {
             Metadata metadata = cluster.getMetadata();
             cluster.close();
             logger.info(String.format("Disconnected from cluster: %s\n", metadata.getClusterName()));
