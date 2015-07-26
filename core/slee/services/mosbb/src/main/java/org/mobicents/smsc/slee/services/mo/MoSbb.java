@@ -222,8 +222,10 @@ public abstract class MoSbb extends MoCommonSbb {
             sms = this.processMoMessage(evt.getSM_RP_OA(), evt.getSM_RP_DA(), evt.getSM_RP_UI(), dialog.getNetworkId(),
                     originatorSccpAddress, true, evt.getMAPDialog(), evt, evt.getInvokeId());
 		} catch (SmscProcessingException e1) {
-			this.logger.severe(e1.getMessage(), e1);
-            smscStatAggregator.updateMsgInFailedAll();
+            if (!e1.isSkipErrorLogging()) {
+                this.logger.severe(e1.getMessage(), e1);
+                smscStatAggregator.updateMsgInFailedAll();
+            }
 
             try {
 				MAPErrorMessage errorMessage;
@@ -368,8 +370,10 @@ public abstract class MoSbb extends MoCommonSbb {
                         originatorSccpAddress, false, evt.getMAPDialog(), evt, evt.getInvokeId());
             }
 		} catch (SmscProcessingException e1) {
-			this.logger.severe(e1.getMessage(), e1);
-            smscStatAggregator.updateMsgInFailedAll();
+            if (!e1.isSkipErrorLogging()) {
+                this.logger.severe(e1.getMessage(), e1);
+                smscStatAggregator.updateMsgInFailedAll();
+            }
 
             try {
 				MAPErrorMessage errorMessage;
