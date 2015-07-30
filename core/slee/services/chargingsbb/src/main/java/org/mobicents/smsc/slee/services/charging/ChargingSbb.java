@@ -63,7 +63,6 @@ import net.java.slee.resource.diameter.ro.events.avp.ServiceInformation;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.DatabaseType;
-import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.MProcManagement;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
@@ -71,6 +70,7 @@ import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.CdrGenerator;
 import org.mobicents.smsc.library.ErrorCode;
+import org.mobicents.smsc.library.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmscProcessingException;
@@ -269,6 +269,7 @@ public abstract class ChargingSbb implements Sbb {
 
 		String msisdn = sms.getSourceAddr();
         String originatorSccpAddress = sms.getOriginatorSccpAddress();
+        String origMoServiceCentreAddressDA = sms.getOrigMoServiceCentreAddressDA();
         String recipientAddress = sms.getSmsSet().getDestAddr();
         int dataCodingScheme = sms.getDataCoding();
 
@@ -371,6 +372,18 @@ public abstract class ChargingSbb implements Sbb {
                 System.arraycopy(originatorSccpAddressAddrPartByteArr, 0, originatorSccpAddressByteArr, 2, originatorSccpAddressAddrPartByteArr.length);
                 DiameterAvp avpOriginatorSccpAddress = avpFactory.getBaseFactory().createAvp(vendorID, 2008, originatorSccpAddressByteArr);
                 smsInfoAvpLst.add(avpOriginatorSccpAddress);
+            }
+
+            // SMSC-Address 2017
+            if (origMoServiceCentreAddressDA != null) {
+                byte[] origMoServiceCentreAddressDAPartByteArr = origMoServiceCentreAddressDA.getBytes(utf8Charset);
+                byte[] origMoServiceCentreAddressDAByteArr = new byte[2 + origMoServiceCentreAddressDAPartByteArr.length];
+                origMoServiceCentreAddressDAByteArr[1] = 8;
+                System.arraycopy(origMoServiceCentreAddressDAPartByteArr, 0, origMoServiceCentreAddressDAByteArr, 2,
+                        origMoServiceCentreAddressDAPartByteArr.length);
+                DiameterAvp avpOrigMoServiceCentreAddressDA = avpFactory.getBaseFactory().createAvp(vendorID, 2017,
+                        origMoServiceCentreAddressDAByteArr);
+                smsInfoAvpLst.add(avpOrigMoServiceCentreAddressDA);
             }
 
             // Recipient-Address 1201
@@ -479,6 +492,13 @@ public abstract class ChargingSbb implements Sbb {
 		}
 
 		try {
+            // sending of a failure response for delaying for charging result (nontransactional mode)
+            if (sms0.getMessageDeliveryResultResponse() != null
+                    && sms0.getMessageDeliveryResultResponse().isOnlyChargingRequest()) {
+                sms0.getMessageDeliveryResultResponse().responseDeliverySuccess();
+                sms0.setMessageDeliveryResultResponse(null);
+            }
+
             smscStatAggregator.updateMsgInReceivedAll();
             switch (sms0.getOriginationType()) {
             case SMPP:
@@ -553,10 +573,10 @@ public abstract class ChargingSbb implements Sbb {
 		}
 
 		try {
-	        // sending of a failure response for transactional mode
+	        // sending of a failure response for transactional mode / delaying for charging result
             MessageDeliveryResultResponseInterface.DeliveryFailureReason delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.invalidDestinationAddress;
             if (sms.getMessageDeliveryResultResponse() != null) {
-                sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason);
+                sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason, null);
                 sms.setMessageDeliveryResultResponse(null);
             }
 

@@ -25,6 +25,7 @@ package org.mobicents.smsc.domain;
 import java.util.Map;
 
 import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
+import org.mobicents.protocols.ss7.map.api.datacoding.NationalLanguageIdentifier;
 import org.mobicents.smsc.smpp.GenerateType;
 import org.mobicents.smsc.smpp.SmppEncoding;
 
@@ -138,10 +139,6 @@ public interface SmscPropertiesManagementMBean {
 
 	public void setMaxActivityCount(int maxActivityCount);
 
-	// public int getCdrDatabaseExportDuration();
-	//
-	// public void setCdrDatabaseExportDuration(int cdrDatabaseExportDuration);
-
 	public String getEsmeDefaultClusterName();
 
 	public void setEsmeDefaultClusterName(String val);
@@ -222,6 +219,8 @@ public interface SmscPropertiesManagementMBean {
 
     public boolean isSmscStopped();
 
+    public void setSkipUnsentMessages(int skipUnsentMessages);
+
     public void setDeliveryPause(boolean deliveryPause);
 
     public GenerateType getGenerateCdr();
@@ -251,5 +250,13 @@ public interface SmscPropertiesManagementMBean {
     public String getHrHlrNumber();
 
     public void setHrHlrNumber(String hrHlrNumber);
+
+    public int getNationalLanguageSingleShift();
+
+    public void setNationalLanguageSingleShift(int nationalLanguageSingleShift);
+
+    public int getNationalLanguageLockingShift();
+
+    public void setNationalLanguageLockingShift(int nationalLanguageLockingShift);
 
 }

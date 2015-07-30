@@ -97,15 +97,25 @@ EXAMPLES
 		<para>
 			&THIS.PLATFORM; &THIS.APPLICATION; is configured to generate CDR in a plain text file located at <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/log/cdr.log</filename>. The CDR generated in the text file is of the below format:
 <screen><![CDATA[
-DELIVER_DATE,ADDR_SRC_DIGITS,ADDR_SRC_TON,ADDR_SRC_NPI,ADDR_DST_DIGITS,
-ADDR_DST_TON,ADDR_DST_NPI,Message_Delivery_Status,ORIG_SYSTEM_ID,MESSAGE_ID,
-First 20 characters of SMS, Reason_For_Failure.
+SIMBIT_DATE,ADDR_SRC_DIGITS,ADDR_SRC_TON,ADDR_SRC_NPI,ADDR_DST_DIGITS,ADDR_DST_TON,ADDR_DST_NPI,Message_Delivery_Status,ORIG_SYSTEM_ID,MESSAGE_ID,NNN_DIGITS,IMSI,CORR_ID,First 20 characters of SMS, Reason_For_Failure
 ]]>
 </screen>
-where <literal>DELIVER_DATE, ADDR_SRC_DIGITS, ADDR_SRC_TON, ADDR_SRC_NPI, ADDR_DST_DIGITS, ADDR_DST_TON, ADDR_DST_NPI, ORIG_SYSTEM_ID</literal> and <literal>MESSAGE_ID</literal> are as explained in <xref linkend="SLOT_MESSAGES_TABLE_yyyy_mm_dd" />; <literal>Message_Delivery_Status</literal> and <literal>Reason_For_Failure</literal> are described below.
+where <literal>ADDR_SRC_DIGITS, ADDR_SRC_TON, ADDR_SRC_NPI, ADDR_DST_DIGITS, ADDR_DST_TON, ADDR_DST_NPI, ORIG_SYSTEM_ID, MESSAGE_ID, NNN_DIGITS, IMSI</literal> and <literal>CORR_ID</literal> are as explained in <xref linkend="SLOT_MESSAGES_TABLE_yyyy_mm_dd" />; <literal>SIMBIT_DATE</literal>, <literal>Message_Delivery_Status</literal> and <literal>Reason_For_Failure</literal> are described below in this section.
 </para>
+<note>
+<para>
+<literal>NNN_DIGITS</literal> and <literal>IMSI</literal> fields are present only in the case of SS7 terminated messages when there is a SRI positive response. <literal>CORR_ID</literal> is present only if a message has come to the SMSC Gateway via "home-routing" procedure.
+</para>
+</note>
+<formalpara>
+	<title>SIMBIT_DATE</title>
+	<para>Time when the message reached the SMSC Gateway.
+	</para>
+</formalpara>
+<formalpara>
+	<title>Message_Delivery_Status</title>
 		<para>
-The CDR text file contains a special field, <literal>Message_Delivery_Status</literal>, that specifies the message delivery status and the possible values are described below.
+The CDR text file contains a special field, <literal>Message_Delivery_Status</literal>, that specifies the message delivery status. The possible values are described below:
 	<variablelist>
 	<title>Message_Delivery_Status if delivering to GSM network:</title>
 	<varlistentry>
@@ -152,7 +162,41 @@ The CDR text file contains a special field, <literal>Message_Delivery_Status</li
 	</para></listitem>
 	</varlistentry>
 	</variablelist>
-	</para>
+	<variablelist>
+	<title>Message_Delivery_Status if delivering to SIP:</title>
+	<varlistentry>
+	<term>partial_sip</term>
+	<listitem><para>Delivered a part of a multi-part message but not the last part.
+	</para></listitem>
+	</varlistentry>
+	<varlistentry>
+	<term>success_sip</term>
+	<listitem><para>Delivered the last part of a multi-part message or a single message.
+	</para></listitem>
+	</varlistentry>
+	<varlistentry>
+	<term>temp_failed_sip</term>
+	<listitem><para>Failed delivering a part of a multi-part message or a single message.
+	</para></listitem>
+	</varlistentry>
+	<varlistentry>
+	<term>failed_sip</term>
+	<listitem><para>Failed delivering a message and the SMSC will now attempt to resend the message or part of the message.
+	</para></listitem>
+	</varlistentry>
+	</variablelist>
+	<variablelist>
+	<title>Message_Delivery_Status if the message has been rejected by the OCS Server (Diameter Server):</title>
+	<varlistentry>
+	<term>ocs_rejected</term>
+	<listitem><para>OCS Server rejected an incoming message.
+	</para></listitem>
+	</varlistentry>
+	</variablelist>
+	</para>	
+</formalpara>
+<formalpara>
+	<title></title>
 <para>The last field in the CDR generated is <literal>Reason_For_Failure</literal>, which records the reason for delivery failure and is empty if the delivery is successful. The possible delivery failure cases are explained below.
 		<variablelist>
 			<title>Reasons_For_Failure</title>
@@ -221,6 +265,7 @@ The CDR text file contains a special field, <literal>Message_Delivery_Status</li
 				<listitem><para>Any other message that usually indicates some internal failure.</para></listitem>
 			</varlistentry>
 		</variablelist>
-		</para>
+		</para>	
+</formalpara>
 </section>
 </chapter>

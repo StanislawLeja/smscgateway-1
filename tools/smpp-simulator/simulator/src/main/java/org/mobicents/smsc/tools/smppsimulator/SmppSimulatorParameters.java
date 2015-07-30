@@ -53,14 +53,20 @@ public class SmppSimulatorParameters {
     private String addressRange = "6666";
 
 	private String messageText = "Hello!";
-	private EncodingType encodingType = EncodingType.GSM7;
-	private boolean messageClass;
+	private EncodingType encodingType = EncodingType.GSM7_DCS_0;
+    // message class value: 0-no, 1-class0, 2-class1, 3-class2, 4-class3
+    private int messageClass = 0;
 	private SplittingType splittingType = SplittingType.DoNotSplit;
+	private int specifiedSegmentLength = 100;
     private ValidityType validityType = ValidityType.NoSpecial;
     private MCDeliveryReceipt mcDeliveryReceipt = MCDeliveryReceipt.No;
     private SendingMessageType sendingMessageType = SendingMessageType.SubmitSm;
     private int submitMultiMessageCnt = 2;
     private SmppSession.Type smppSessionType = SmppSession.Type.CLIENT;
+    /**
+     * Encoding style of text at SMPP part
+     * 0-Utf8, 1-Unicode, 2-Gsm7
+     */
     private int smppEncoding = 0;
     private MessagingMode messagingMode = MessagingMode.storeAndForward;
 
@@ -277,11 +283,11 @@ public class SmppSimulatorParameters {
 		this.bulkMessagePerSecond = bulkMessagePerSecond;
 	}
 
-    public boolean isMessageClass() {
+    public int betMessageClass() {
         return messageClass;
     }
 
-    public void setMessageClass(boolean messageClass) {
+    public void setMessageClass(int messageClass) {
         this.messageClass = messageClass;
     }
 
@@ -333,13 +339,20 @@ public class SmppSimulatorParameters {
         this.messagingMode = messagingMode;
     }
 
+    public int getSpecifiedSegmentLength() {
+        return specifiedSegmentLength;
+    }
+
+    public void setSpecifiedSegmentLength(int specifiedSegmentLength) {
+        this.specifiedSegmentLength = specifiedSegmentLength;
+    }
 
     public enum EncodingType {
-    	GSM7, GSM8, UCS2,
+    	GSM7_DCS_0, GSM8_DCS_4, UCS2_DCS_8,
     }
 
     public enum SplittingType {
-    	DoNotSplit, SplitWithParameters, SplitWithUdh,
+        DoNotSplit, SplitWithParameters_DefaultSegmentLength, SplitWithUdh_DefaultSegmentLength, SplitWithParameters_SpecifiedSegmentLength, SplitWithUdh_SpecifiedSegmentLength,
     }
 
     public enum TON {

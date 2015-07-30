@@ -30,10 +30,14 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+
 import javax.swing.JScrollPane;
+
 import java.awt.Component;
+
 import javax.swing.JTable;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -41,24 +45,30 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 
 import java.awt.Color;
+
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JButton;
 
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharset;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetEncoder;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetEncodingData;
+import org.mobicents.protocols.ss7.map.datacoding.Gsm7EncodingStyle;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.EncodingType;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.SendingMessageType;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.SplittingType;
 import org.mobicents.smsc.tools.smppsimulator.SmppSimulatorParameters.ValidityType;
+import org.mobicents.smsc.tools.smppsimulator.testsmpp.TestSmppClient;
+import org.mobicents.smsc.tools.smppsimulator.testsmpp.TestSmppSession;
 
 import com.cloudhopper.commons.util.windowing.WindowFuture;
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppServerConfiguration;
 import com.cloudhopper.smpp.SmppSession;
 import com.cloudhopper.smpp.SmppSessionConfiguration;
-import com.cloudhopper.smpp.impl.DefaultSmppClient;
 import com.cloudhopper.smpp.impl.DefaultSmppServer;
 import com.cloudhopper.smpp.impl.DefaultSmppSessionHandler;
 import com.cloudhopper.smpp.pdu.BaseSm;
@@ -78,6 +88,9 @@ import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
@@ -90,6 +103,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -121,7 +135,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 
 	private ThreadPoolExecutor executor;
 	private ScheduledThreadPoolExecutor monitorExecutor;
-	private DefaultSmppClient clientBootstrap;
+	private TestSmppClient clientBootstrap;
 	private SmppSession session0;
 	private DefaultSmppServer defaultSmppServer;
 
@@ -133,6 +147,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 	private static Charset utf8Charset = Charset.forName("UTF-8");
     private static Charset ucs2Charset = Charset.forName("UTF-16BE");
     private static Charset isoCharset = Charset.forName("ISO-8859-1");
+    private static Charset gsm7Charset = new GSMCharset("GSM", new String[] {});
 
 	public SmppTestingForm(JFrame owner) {
 		super(owner, true);
@@ -268,8 +283,9 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 		JButton btSendMessage = new JButton("Submit a message");
 		btSendMessage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-                submitMessage(param.getEncodingType(), param.isMessageClass(), param.getMessageText(), param.getSplittingType(), param.getValidityType(),
-                        param.getDestAddress(), param.getMessagingMode());
+                submitMessage(param.getEncodingType(), param.betMessageClass(), param.getMessageText(),
+                        param.getSplittingType(), param.getValidityType(), param.getDestAddress(), param.getMessagingMode(),
+                        param.getSpecifiedSegmentLength());
 			}
 		});
 		btSendMessage.setBounds(11, 80, 341, 23);
@@ -366,6 +382,15 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 		tbPcapPort.setBounds(501, 150, 86, 20);
 		panel_2.add(tbPcapPort);
 		tbPcapPort.setColumns(10);
+		
+		JButton btSendBadPacket = new JButton("Send Bad packet");
+		btSendBadPacket.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+                doSendBadPacket();
+		    }
+		});
+		btSendBadPacket.setBounds(509, 45, 129, 23);
+		panel_2.add(btSendBadPacket);
 
 		this.tm = new javax.swing.Timer(5000, new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -375,6 +400,18 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 		this.tm.start();
 		
 	}
+
+    private void doSendBadPacket() {
+        // TODO: ..............................
+        SubmitSm submitSm = new SubmitSm();
+        try {
+            ((TestSmppSession)this.session0).setMalformedPacket();
+            this.session0.submit(submitSm, 1000);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
 	private int msgRef = 0;
 
@@ -398,19 +435,32 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 	}
 
     private byte[] encodeSegment(String msg, EncodingType encodingType) {
-        if (encodingType == EncodingType.GSM8) {
+        if (encodingType == EncodingType.GSM8_DCS_4) {
             return msg.getBytes(isoCharset);
         } else {
             if (this.param.getSmppEncoding() == 0) {
                 return msg.getBytes(utf8Charset);
-            } else {
+            } else if (this.param.getSmppEncoding() == 1) {
                 return msg.getBytes(ucs2Charset);
+            } else {
+                GSMCharsetEncoder encoder = (GSMCharsetEncoder) gsm7Charset.newEncoder();
+                encoder.setGSMCharsetEncodingData(new GSMCharsetEncodingData(Gsm7EncodingStyle.bit8_smpp_style, null));
+                ByteBuffer bb = null;
+                try {
+                    bb = encoder.encode(CharBuffer.wrap(msg));
+                } catch (CharacterCodingException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                byte[] data = new byte[bb.limit()];
+                bb.get(data);
+                return data;
             }
         }
     }
 
-    private void submitMessage(EncodingType encodingType, boolean messageClass0, String messageText, SplittingType splittingType, ValidityType validityType,
-            String destAddr, SmppSimulatorParameters.MessagingMode messagingMode) {
+    private void submitMessage(EncodingType encodingType, int messageClass, String messageText, SplittingType splittingType, ValidityType validityType,
+            String destAddr, SmppSimulatorParameters.MessagingMode messagingMode, int specifiedSegmentLength) {
         if (session0 == null)
             return;
 
@@ -420,22 +470,32 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
         	int msgRef = 0;
 
             switch (encodingType) {
-            case GSM7:
+            case GSM7_DCS_0:
                 dcs = 0;
                 break;
-            case GSM8:
+            case GSM8_DCS_4:
                 dcs = 4;
                 break;
-            case UCS2:
+            case UCS2_DCS_8:
                 dcs = 8;
                 break;
             }
-            if (messageClass0) {
-                dcs += 16;
+            // if (messageClass) {
+            // dcs += 16;
+            // }
+            int messageClassVal = 0;
+            if (messageClass > 0) {
+                messageClassVal = messageClass;
             }
+
             DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
             int maxLen = MessageUtil.getMaxSolidMessageCharsLength(dataCodingScheme);
             int maxSplLen = MessageUtil.getMaxSegmentedMessageCharsLength(dataCodingScheme);
+            if (splittingType == SplittingType.SplitWithParameters_SpecifiedSegmentLength
+                    || splittingType == SplittingType.SplitWithUdh_SpecifiedSegmentLength) {
+                maxLen = specifiedSegmentLength;
+                maxSplLen = specifiedSegmentLength;
+            }
 
             int segmCnt = 0;
             int esmClass = 0;
@@ -447,7 +507,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
                     // we do not split
                     byte[] buf1 = encodeSegment(messageText, encodingType);
                     byte[] buf2;
-                    if (encodingType == EncodingType.GSM8) {
+                    if (encodingType == EncodingType.GSM8_DCS_4) {
                         byte[] bf3 = new byte[7];
                         bf3[0] = 6; // total UDH length
                         bf3[1] = 5; // UDH id
@@ -467,7 +527,8 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
                     ArrayList<String> r1 = this.splitStr(messageText, maxSplLen);
                     segmCnt = r1.size();
                     break;
-                case SplitWithParameters:
+                case SplitWithParameters_DefaultSegmentLength:
+                case SplitWithParameters_SpecifiedSegmentLength:
                     msgRef = getNextMsgRef();
                     r1 = this.splitStr(messageText, maxSplLen);
                     for (String bf : r1) {
@@ -476,7 +537,8 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
                     segmCnt = msgLst.size();
                     addSegmTlv = true;
                     break;
-                case SplitWithUdh:
+                case SplitWithUdh_DefaultSegmentLength:
+                case SplitWithUdh_SpecifiedSegmentLength:
                     msgRef = getNextMsgRef();
                     r1 = this.splitStr(messageText, maxSplLen);
                     byte[] bf1 = new byte[6];
@@ -501,7 +563,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
                 }
             } else {
                 byte[] buf = encodeSegment(messageText, encodingType);
-                if (encodingType == EncodingType.GSM8) {
+                if (encodingType == EncodingType.GSM8_DCS_4) {
                     byte[] bf1 = new byte[7];
                     bf1[0] = 6; // total UDH length
                     bf1[1] = 5; // UDH id
@@ -523,7 +585,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
             }
             esmClass |= messagingMode.getCode();
 
-            this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv, esmClass, validityType, segmCnt, destAddr);
+            this.doSubmitMessage(dcs, msgLst, msgRef, addSegmTlv, esmClass, validityType, segmCnt, destAddr, messageClassVal);
 		} catch (Exception e) {
 			this.addMessage("Failure to submit message", e.toString());
 			return;
@@ -557,9 +619,10 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 		return res;
 	}
 
-	private void doSubmitMessage(int dcs, ArrayList<byte[]> msgLst, int msgRef, boolean addSegmTlv, int esmClass,
-			SmppSimulatorParameters.ValidityType validityType, int segmentCnt, String destAddr) throws Exception {
-		int i1 = 0;
+    private void doSubmitMessage(int dcs, ArrayList<byte[]> msgLst, int msgRef, boolean addSegmTlv, int esmClass,
+            SmppSimulatorParameters.ValidityType validityType, int segmentCnt, String destAddr, int messageClassVal)
+            throws Exception {
+        int i1 = 0;
 		for (byte[] buf : msgLst) {
 			i1++;
 
@@ -654,6 +717,12 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 				tlv = new Tlv(SmppConstants.TAG_SAR_SEGMENT_SEQNUM, buf1);
 				pdu.addOptionalParameter(tlv);
 			}
+            if (messageClassVal > 0) {
+                byte[] buf1 = new byte[1];
+                buf1[0] = (byte) messageClassVal;
+                Tlv tlv = new Tlv(SmppConstants.TAG_DEST_ADDR_SUBUNIT, buf1);
+                pdu.addOptionalParameter(tlv);
+            }
 
 	        WindowFuture<Integer,PduRequest,PduResponse> future0 = session0.sendRequestPdu(pdu, 10000, false);
 
@@ -697,7 +766,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
         });
 
         if (this.param.getSmppSessionType() == SmppSession.Type.CLIENT) {
-            clientBootstrap = new DefaultSmppClient(Executors.newCachedThreadPool(), 1, monitorExecutor);
+            clientBootstrap = new TestSmppClient(Executors.newCachedThreadPool(), 1, monitorExecutor);
 
             DefaultSmppSessionHandler sessionHandler = new ClientSmppSessionHandler(this);
 
@@ -917,19 +986,19 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
             int j3 = rand.nextInt(3);
             EncodingType encodingType;
             if (j2 == 0)
-                encodingType = EncodingType.GSM7;
+                encodingType = EncodingType.GSM7_DCS_0;
             else
-                encodingType = EncodingType.UCS2;
+                encodingType = EncodingType.UCS2_DCS_8;
             SplittingType splittingType;
             switch (j3) {
             case 0:
                 splittingType = SplittingType.DoNotSplit;
                 break;
             case 1:
-                splittingType = SplittingType.SplitWithParameters;
+                splittingType = SplittingType.SplitWithParameters_DefaultSegmentLength;
                 break;
             default:
-                splittingType = SplittingType.SplitWithUdh;
+                splittingType = SplittingType.SplitWithUdh_DefaultSegmentLength;
                 break;
             }
 
@@ -938,7 +1007,8 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
             if (j4 == 0)
                 msg = bigMessage;
 
-            this.submitMessage(encodingType, false, msg, splittingType, param.getValidityType(), destAddrS, param.getMessagingMode());
+            this.submitMessage(encodingType, 0, msg, splittingType, param.getValidityType(), destAddrS,
+                    param.getMessagingMode(), param.getSpecifiedSegmentLength());
         }
 	}
 

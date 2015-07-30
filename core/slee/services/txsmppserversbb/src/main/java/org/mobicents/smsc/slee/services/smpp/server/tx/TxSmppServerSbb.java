@@ -22,6 +22,9 @@
 
 package org.mobicents.smsc.slee.services.smpp.server.tx;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -44,7 +47,13 @@ import javax.slee.resource.ResourceAdaptorTypeID;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
+import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharset;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetDecoder;
+import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetDecodingData;
+import org.mobicents.protocols.ss7.map.datacoding.Gsm7EncodingStyle;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
+import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.DatabaseType;
@@ -118,6 +127,7 @@ public abstract class TxSmppServerSbb implements Sbb {
 	private static Charset utf8Charset = Charset.forName("UTF-8");
 	private static Charset ucs2Charset = Charset.forName("UTF-16BE");
     private static Charset isoCharset = Charset.forName("ISO-8859-1");
+    private static Charset gsm7Charset = new GSMCharset("GSM", new String[] {});
 
 	public TxSmppServerSbb() {
 		// TODO Auto-generated constructor stub
@@ -826,6 +836,31 @@ public abstract class TxSmppServerSbb implements Sbb {
 			throw new SmscProcessingException("TxSmpp DataCoding scheme does not supported: " + dcs + " - " + err,
 					SmppExtraConstants.ESME_RINVDCS, MAPErrorCode.systemFailure, null);
 		}
+
+        // storing additional parameters
+        ArrayList<Tlv> optionalParameters = event.getOptionalParameters();
+        if (optionalParameters != null && optionalParameters.size() > 0) {
+            for (Tlv tlv : optionalParameters) {
+                if (tlv.getTag() != SmppConstants.TAG_MESSAGE_PAYLOAD) {
+                    sms.getTlvSet().addOptionalParameter(tlv);
+                }
+            }
+        }
+
+        // processing dest_addr_subunit for message_class
+        Tlv dest_addr_subunit = sms.getTlvSet().getOptionalParameter(SmppConstants.TAG_DEST_ADDR_SUBUNIT);
+        if (dest_addr_subunit != null) {
+            try {
+                int mclass = dest_addr_subunit.getValueAsByte();
+                if (mclass >= 1 && mclass <= 4) {
+                    dcs |= (0x10 + (mclass - 1));
+                }
+            } catch (TlvConvertException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
 		DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
 		sms.setDataCoding(dcs);
 
@@ -864,7 +899,6 @@ public abstract class TxSmppServerSbb implements Sbb {
         byte[] udhData;
         byte[] textPart;
         String msg;
-        int messageLen;
         udhData = null;
         textPart = data;
         if (udhPresent && data.length > 2) {
@@ -880,45 +914,118 @@ public abstract class TxSmppServerSbb implements Sbb {
 
         if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
             msg = new String(textPart, isoCharset);
-        } else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
-            if (smscPropertiesManagement.getSmppEncodingForGsm7() == SmppEncoding.Utf8) {
-                msg = new String(textPart, utf8Charset);
-            } else {
-                msg = new String(textPart, ucs2Charset);
-            }
         } else {
-            if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncoding.Utf8) {
-                msg = new String(textPart, utf8Charset);
+            SmppEncoding enc;
+            if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+                enc = smscPropertiesManagement.getSmppEncodingForGsm7();
             } else {
-                msg = new String(textPart, ucs2Charset);
+                enc = smscPropertiesManagement.getSmppEncodingForUCS2();
+            }
+            switch (enc) {
+                case Utf8:
+                default:
+                    msg = new String(textPart, utf8Charset);
+                    break;
+                case Unicode:
+                    msg = new String(textPart, ucs2Charset);
+                    break;
+                case Gsm7:
+                    GSMCharsetDecoder decoder = (GSMCharsetDecoder) gsm7Charset.newDecoder();
+                    decoder.setGSMCharsetDecodingData(new GSMCharsetDecodingData(Gsm7EncodingStyle.bit8_smpp_style,
+                            Integer.MAX_VALUE, 0));
+                    ByteBuffer bb = ByteBuffer.wrap(textPart);
+                    CharBuffer bf = null;
+                    try {
+                        bf = decoder.decode(bb);
+                    } catch (CharacterCodingException e) {
+                        // this can not be
+                    }
+                    msg = bf.toString();
+                    break;
             }
         }
-
-        messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg.length());
-        if (udhData != null)
-            messageLen += udhData.length;
 
         sms.setShortMessageText(msg);
         sms.setShortMessageBin(udhData);
 
-		// checking max message length
-        int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
-        int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
+        // checking of min / max length
+        if (origEsme.getMinMessageLength() >= 0 && msg.length() < origEsme.getMinMessageLength()) {
+            SmscProcessingException e = new SmscProcessingException("Message length is less than a min length limit for ESME="
+                    + origEsme.getName() + ", len=" + msg.length(), SmppConstants.STATUS_INVMSGLEN, MAPErrorCode.systemFailure,
+                    null);
+            e.setSkipErrorLogging(true);
+            throw e;
+        }
+        if (origEsme.getMaxMessageLength() >= 0 && msg.length() > origEsme.getMaxMessageLength()) {
+            SmscProcessingException e = new SmscProcessingException("Message length is more than a max length limit for ESME="
+                    + origEsme.getName() + ", len=" + msg.length(), SmppConstants.STATUS_INVMSGLEN, MAPErrorCode.systemFailure,
+                    null);
+            e.setSkipErrorLogging(true);
+            throw e;
+        }
+
+        // checking max message length
         if (udhPresent || segmentTlvFlag) {
-			// here splitting by SMSC is not supported
-			if (messageLen > lenSolid) {
-				throw new SmscProcessingException("Message length in bytes is too big for solid message: "
-						+ messageLen + ">" + lenSolid, SmppConstants.STATUS_INVPARLEN,
-						MAPErrorCode.systemFailure, null);
-			}
-		} else {
-			// here splitting by SMSC is supported
-			if (messageLen > lenSegmented * 255) {
-				throw new SmscProcessingException("Message length in bytes is too big for segmented message: "
-						+ messageLen + ">" + lenSegmented, SmppConstants.STATUS_INVPARLEN,
-						MAPErrorCode.systemFailure, null);
-			}
-		}
+            // here splitting by SMSC is not supported
+            UserDataHeader udh = null;
+            int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
+            if (udhPresent) {
+                udh = new UserDataHeaderImpl(udhData);
+            } else {
+                udh = createNationalLanguageUdh(origEsme, dataCodingScheme);
+                if (udh != null && udh.getNationalLanguageLockingShift() != null) {
+                    lenSolid -= 3;
+                    sms.setNationalLanguageLockingShift(udh.getNationalLanguageLockingShift().getNationalLanguageIdentifier()
+                            .getCode());
+                }
+                if (udh != null && udh.getNationalLanguageSingleShift() != null) {
+                    lenSolid -= 3;
+                    sms.setNationalLanguageSingleShift(udh.getNationalLanguageSingleShift().getNationalLanguageIdentifier()
+                            .getCode());
+                }
+            }
+            int messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg, udh);
+            if (udhData != null)
+                lenSolid -= udhData.length;
+            if (messageLen > lenSolid) {
+                throw new SmscProcessingException("Message length in bytes is too big for solid message: " + messageLen + ">"
+                        + lenSolid, SmppConstants.STATUS_INVPARLEN, MAPErrorCode.systemFailure, null);
+            }
+        } else {
+            // here splitting by SMSC is supported
+            int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
+            UserDataHeader udh = createNationalLanguageUdh(origEsme, dataCodingScheme);
+            if (msg.length() * 2 > (lenSegmented - 6) * 255) { // firstly draft length check
+                int messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg, udh);
+                if (udh != null) {
+                    if (udh.getNationalLanguageLockingShift() != null) {
+                        lenSegmented -= 3;
+                        sms.setNationalLanguageLockingShift(udh.getNationalLanguageLockingShift()
+                                .getNationalLanguageIdentifier().getCode());
+                    }
+                    if (udh.getNationalLanguageSingleShift() != null) {
+                        lenSegmented -= 3;
+                        sms.setNationalLanguageSingleShift(udh.getNationalLanguageSingleShift().getNationalLanguageIdentifier()
+                                .getCode());
+                    }
+                }
+                if (messageLen > lenSegmented * 255) {
+                    throw new SmscProcessingException("Message length in bytes is too big for segmented message: " + messageLen
+                            + ">" + lenSegmented, SmppConstants.STATUS_INVPARLEN, MAPErrorCode.systemFailure, null);
+                }
+            } else {
+                if (udh != null) {
+                    if (udh.getNationalLanguageLockingShift() != null) {
+                        sms.setNationalLanguageLockingShift(udh.getNationalLanguageLockingShift()
+                                .getNationalLanguageIdentifier().getCode());
+                    }
+                    if (udh.getNationalLanguageSingleShift() != null) {
+                        sms.setNationalLanguageSingleShift(udh.getNationalLanguageSingleShift().getNationalLanguageIdentifier()
+                                .getCode());
+                    }
+                }
+            }
+        }
 
 		// ValidityPeriod processing
 		Tlv tlvQosTimeToLive = event.getOptionalParameter(SmppConstants.TAG_QOS_TIME_TO_LIVE);
@@ -954,16 +1061,6 @@ public abstract class TxSmppServerSbb implements Sbb {
 		}
 		MessageUtil.applyScheduleDeliveryTime(sms, scheduleDeliveryTime);
 
-		// storing additional parameters
-		ArrayList<Tlv> optionalParameters = event.getOptionalParameters();
-		if (optionalParameters != null && optionalParameters.size() > 0) {
-			for (Tlv tlv : optionalParameters) {
-				if (tlv.getTag() != SmppConstants.TAG_MESSAGE_PAYLOAD) {
-					sms.getTlvSet().addOptionalParameter(tlv);
-				}
-			}
-		}
-
 		SmsSet smsSet;
 		if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 			try {
@@ -993,6 +1090,21 @@ public abstract class TxSmppServerSbb implements Sbb {
 
 		return sms;
 	}
+
+    private UserDataHeader createNationalLanguageUdh(Esme origEsme, DataCodingScheme dataCodingScheme) {
+        UserDataHeader udh = null;
+        int nationalLanguageSingleShift = 0;
+        int nationalLanguageLockingShift = 0;
+        if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+            nationalLanguageSingleShift = origEsme.getNationalLanguageSingleShift();
+            nationalLanguageLockingShift = origEsme.getNationalLanguageLockingShift();
+            if (nationalLanguageSingleShift == -1)
+                nationalLanguageSingleShift = smscPropertiesManagement.getNationalLanguageSingleShift();
+            if (nationalLanguageLockingShift == -1)
+                nationalLanguageLockingShift = smscPropertiesManagement.getNationalLanguageLockingShift();
+        }
+        return MessageUtil.getNationalLanguageIdentifierUdh(nationalLanguageLockingShift, nationalLanguageSingleShift);
+    }
 
     protected SubmitMultiParseResult createSmsEventMulti(SubmitMulti event, Esme origEsme, PersistenceRAInterface store, int networkId) throws SmscProcessingException {
 
@@ -1053,6 +1165,27 @@ public abstract class TxSmppServerSbb implements Sbb {
             throw new SmscProcessingException("TxSmpp DataCoding scheme does not supported: " + dcs + " - " + err,
                     SmppExtraConstants.ESME_RINVDCS, MAPErrorCode.systemFailure, null);
         }
+
+        // processing dest_addr_subunit for message_class
+        ArrayList<Tlv> optionalParameters = event.getOptionalParameters();
+        if (optionalParameters != null && optionalParameters.size() > 0) {
+            for (Tlv tlv : optionalParameters) {
+                if (tlv.getTag() == SmppConstants.TAG_DEST_ADDR_SUBUNIT) {
+                    int mclass;
+                    try {
+                        mclass = tlv.getValueAsByte();
+                        if (mclass >= 1 && mclass <= 4) {
+                            dcs |= (0x10 + (mclass - 1));
+                        }
+                    } catch (TlvConvertException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+            }
+        }
+
         DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(dcs);
 
         boolean udhPresent = (event.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
@@ -1077,7 +1210,6 @@ public abstract class TxSmppServerSbb implements Sbb {
         byte[] udhData;
         byte[] textPart;
         String msg;
-        int messageLen;
         udhData = null;
         textPart = data;
         if (udhPresent && data.length > 2) {
@@ -1093,29 +1225,63 @@ public abstract class TxSmppServerSbb implements Sbb {
 
         if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
             msg = new String(textPart, isoCharset);
-        } else if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
-            if (smscPropertiesManagement.getSmppEncodingForGsm7() == SmppEncoding.Utf8) {
-                msg = new String(textPart, utf8Charset);
-            } else {
-                msg = new String(textPart, ucs2Charset);
-            }
         } else {
-            if (smscPropertiesManagement.getSmppEncodingForUCS2() == SmppEncoding.Utf8) {
-                msg = new String(textPart, utf8Charset);
+            SmppEncoding enc;
+            if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM7) {
+                enc = smscPropertiesManagement.getSmppEncodingForGsm7();
             } else {
-                msg = new String(textPart, ucs2Charset);
+                enc = smscPropertiesManagement.getSmppEncodingForUCS2();
+            }
+            switch (enc) {
+                case Utf8:
+                default:
+                    msg = new String(textPart, utf8Charset);
+                    break;
+                case Unicode:
+                    msg = new String(textPart, ucs2Charset);
+                    break;
+                case Gsm7:
+                    GSMCharsetDecoder decoder = (GSMCharsetDecoder) gsm7Charset.newDecoder();
+                    decoder.setGSMCharsetDecodingData(new GSMCharsetDecodingData(Gsm7EncodingStyle.bit8_smpp_style,
+                            Integer.MAX_VALUE, 0));
+                    ByteBuffer bb = ByteBuffer.wrap(textPart);
+                    CharBuffer bf = null;
+                    try {
+                        bf = decoder.decode(bb);
+                    } catch (CharacterCodingException e) {
+                        // this can not be
+                    }
+                    msg = bf.toString();
+                    break;
             }
         }
 
-        messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg.length());
-        if (udhData != null)
-            messageLen += udhData.length;
-        
         // checking max message length
-        int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
-        int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
+        int nationalLanguageLockingShift = 0;
+        int nationalLanguageSingleShift = 0;
         if (udhPresent || segmentTlvFlag) {
             // here splitting by SMSC is not supported
+            UserDataHeader udh = null;
+            int lenSolid = MessageUtil.getMaxSolidMessageBytesLength();
+            if (udhPresent)
+                udh = new UserDataHeaderImpl(udhData);
+            else {
+                udh = createNationalLanguageUdh(origEsme, dataCodingScheme);
+                if (udh.getNationalLanguageLockingShift() != null) {
+                    lenSolid -= 3;
+                    nationalLanguageLockingShift = udh.getNationalLanguageLockingShift().getNationalLanguageIdentifier()
+                            .getCode();
+                }
+                if (udh.getNationalLanguageSingleShift() != null) {
+                    lenSolid -= 3;
+                    nationalLanguageSingleShift = udh.getNationalLanguageSingleShift().getNationalLanguageIdentifier()
+                            .getCode();
+                }
+            }
+            int messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg, udh);
+            if (udhData != null)
+                messageLen += udhData.length;
+
             if (messageLen > lenSolid) {
                 throw new SmscProcessingException("Message length in bytes is too big for solid message: "
                         + messageLen + ">" + lenSolid, SmppConstants.STATUS_INVPARLEN,
@@ -1123,10 +1289,24 @@ public abstract class TxSmppServerSbb implements Sbb {
             }
         } else {
             // here splitting by SMSC is supported
-            if (messageLen > lenSegmented * 255) {
-                throw new SmscProcessingException("Message length in bytes is too big for segmented message: "
-                        + messageLen + ">" + lenSegmented, SmppConstants.STATUS_INVPARLEN,
-                        MAPErrorCode.systemFailure, null);
+            int lenSegmented = MessageUtil.getMaxSegmentedMessageBytesLength();
+            if (msg.length() * 2 > (lenSegmented - 6) * 255) { // firstly draft length check
+                UserDataHeader udh = createNationalLanguageUdh(origEsme, dataCodingScheme);
+                int messageLen = MessageUtil.getMessageLengthInBytes(dataCodingScheme, msg, udh);
+                if (udh.getNationalLanguageLockingShift() != null) {
+                    lenSegmented -= 3;
+                    nationalLanguageLockingShift = udh.getNationalLanguageLockingShift().getNationalLanguageIdentifier()
+                            .getCode();
+                }
+                if (udh.getNationalLanguageSingleShift() != null) {
+                    lenSegmented -= 3;
+                    nationalLanguageSingleShift = udh.getNationalLanguageSingleShift().getNationalLanguageIdentifier()
+                            .getCode();
+                }
+                if (messageLen > lenSegmented * 255) {
+                    throw new SmscProcessingException("Message length in bytes is too big for segmented message: " + messageLen
+                            + ">" + lenSegmented, SmppConstants.STATUS_INVPARLEN, MAPErrorCode.systemFailure, null);
+                }
             }
         }
 
@@ -1192,6 +1372,8 @@ public abstract class TxSmppServerSbb implements Sbb {
                 sms.setOrigNetworkId(networkId);
 
                 sms.setDataCoding(dcs);
+                sms.setNationalLanguageLockingShift(nationalLanguageLockingShift);
+                sms.setNationalLanguageSingleShift(nationalLanguageSingleShift);
 
                 sms.setOrigSystemId(origEsme.getSystemId());
                 sms.setOrigEsmeName(origEsme.getName());
@@ -1214,7 +1396,6 @@ public abstract class TxSmppServerSbb implements Sbb {
                 MessageUtil.applyScheduleDeliveryTime(sms, scheduleDeliveryTime);
 
                 // storing additional parameters
-                ArrayList<Tlv> optionalParameters = event.getOptionalParameters();
                 if (optionalParameters != null && optionalParameters.size() > 0) {
                     for (Tlv tlv : optionalParameters) {
                         if (tlv.getTag() != SmppConstants.TAG_MESSAGE_PAYLOAD) {
@@ -1269,12 +1450,21 @@ public abstract class TxSmppServerSbb implements Sbb {
             e.setSkipErrorLogging(true);
             throw e;
         }
-        if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+        // checking if cassandra database is available
+        if (!store.isDatabaseAvailable() && MessageUtil.isStoreAndForward(sms0)) {
+            SmscProcessingException e = new SmscProcessingException("Database is unavailable", SmppConstants.STATUS_SYSERR, 0,
+                    null);
+            e.setSkipErrorLogging(true);
+            throw e;
+        }
+        if (!MessageUtil.isStoreAndForward(sms0)
+                || smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
             // checking if delivery query is overloaded
             int fetchMaxRows = (int) (smscPropertiesManagement.getMaxActivityCount() * 1.2);
             int activityCount = SmsSetCache.getInstance().getProcessingSmsSetSize();
             if (activityCount >= fetchMaxRows) {
-                SmscProcessingException e = new SmscProcessingException("SMSC is overloaded", SmppConstants.STATUS_THROTTLED, 0, null);
+                SmscProcessingException e = new SmscProcessingException("SMSC is overloaded", SmppConstants.STATUS_THROTTLED,
+                        0, null);
                 e.setSkipErrorLogging(true);
                 throw e;
             }
@@ -1295,10 +1485,11 @@ public abstract class TxSmppServerSbb implements Sbb {
             smscStatAggregator.updateMsgInReceivedSmpp();
         }
 
-        // transactional mode
-        if ((eventSubmit != null || eventData != null) && MessageUtil.isTransactional(sms0)) {
-            MessageDeliveryResultResponseSmpp messageDeliveryResultResponse = new MessageDeliveryResultResponseSmpp(this.smppServerSessions, esme, eventSubmit,
-                    eventData, sms0.getMessageId());
+        // transactional mode / or charging request
+        boolean isTransactional = (eventSubmit != null || eventData != null) && MessageUtil.isTransactional(sms0);
+        if (isTransactional || withCharging) {
+            MessageDeliveryResultResponseSmpp messageDeliveryResultResponse = new MessageDeliveryResultResponseSmpp(
+                    !isTransactional, this.smppServerSessions, esme, eventSubmit, eventData, sms0.getMessageId());
             sms0.setMessageDeliveryResultResponse(messageDeliveryResultResponse);
         }
 

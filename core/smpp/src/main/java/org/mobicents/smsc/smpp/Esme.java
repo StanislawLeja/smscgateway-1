@@ -95,6 +95,11 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
     private static final String RATE_LIMIT_PER_HOUR = "rateLimitPerHour";
     private static final String RATE_LIMIT_PER_DAY = "rateLimitPerDay";
 
+    private static final String NATIONAL_LANGUAGE_SINGLE_SHIFT = "nationalLanguageSingleShift";
+    private static final String NATIONAL_LANGUAGE_LOCKING_SHIFT = "nationalLanguageLockingShift";
+    private static final String MIN_MESSAGE_LENGTH = "minMessageLength";
+    private static final String MAX_MESSAGE_LENGTH = "maxMessageLength";
+
 	private static final String STARTED = "started";
 
 	private String name;
@@ -141,6 +146,18 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 
 	// Default Server
 	private SmppSession.Type smppSessionType = SmppSession.Type.SERVER;
+
+    // national single and locking shift tables for the case when a message is SMPP originated and does not have included UDH
+	// 0 means gsm7 default table
+	// -1 means: take SMSC general nationalLanguage table (this is a default value)
+    private int nationalLanguageSingleShift = -1;
+    private int nationalLanguageLockingShift = -1;
+
+    // min and max side of an incoming message from SMPP connector.
+    // If an incoming message size (in characters) less the the min value or more the max value, it will be rejected
+    // -1 (default value) means no limitations
+    private int minMessageLength = -1;
+    private int maxMessageLength = -1;
 
 	// Client side config. Defaul 100
 	private int windowSize;
@@ -209,13 +226,16 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 	 * @param smscManagement
 	 * @param state
 	 */
-	public Esme(String name, String systemId, String password, String host, int port, boolean chargingEnabled,
-			String systemType, SmppInterfaceVersionType smppVersion, int esmeTon, int esmeNpi, String esmeAddressRange,
-			SmppBindType smppBindType, Type smppSessionType, int windowSize, long connectTimeout,
-			long requestExpiryTimeout, long windowMonitorInterval, long windowWaitTimeout, String clusterName,
-            boolean countersEnabled, int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange, int routingTon, int routingNpi,
-            String routingAddressRange, int networkId, long rateLimitPerSecond, long rateLimitPerMinute, long rateLimitPerHour, long rateLimitPerDay) {
+    public Esme(String name, String systemId, String password, String host, int port, boolean chargingEnabled,
+            String systemType, SmppInterfaceVersionType smppVersion, int esmeTon, int esmeNpi, String esmeAddressRange,
+            SmppBindType smppBindType, Type smppSessionType, int windowSize, long connectTimeout, long requestExpiryTimeout,
+            long windowMonitorInterval, long windowWaitTimeout, String clusterName, boolean countersEnabled,
+            int enquireLinkDelay, int sourceTon, int sourceNpi, String sourceAddressRange, int routingTon, int routingNpi,
+            String routingAddressRange, int networkId, long rateLimitPerSecond, long rateLimitPerMinute, long rateLimitPerHour,
+            long rateLimitPerDay, int nationalLanguageSingleShift, int nationalLanguageLockingShift, int minMessageLength,
+            int maxMessageLength
 
+    ) {
 		this.name = name;
 
 		this.systemId = systemId;
@@ -269,6 +289,11 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
         this.rateLimitPerMinute = rateLimitPerMinute;
         this.rateLimitPerHour = rateLimitPerHour;
         this.rateLimitPerDay = rateLimitPerDay;
+
+        this.nationalLanguageSingleShift = nationalLanguageSingleShift;
+        this.nationalLanguageLockingShift = nationalLanguageLockingShift;
+        this.minMessageLength = minMessageLength;
+        this.maxMessageLength = maxMessageLength;
 	}
 
 	/**
@@ -533,6 +558,42 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 		this.smppSessionType = smppSessionType;
 		this.store();
 	}
+
+    public int getNationalLanguageSingleShift() {
+        return nationalLanguageSingleShift;
+    }
+
+    public void setNationalLanguageSingleShift(int nationalLanguageSingleShift) {
+        this.nationalLanguageSingleShift = nationalLanguageSingleShift;
+        this.store();
+    }
+
+    public int getMinMessageLength() {
+        return minMessageLength;
+    }
+
+    public void setMinMessageLength(int minMessageLength) {
+        this.minMessageLength = minMessageLength;
+        this.store();
+    }
+
+    public int getMaxMessageLength() {
+        return maxMessageLength;
+    }
+
+    public void setMaxMessageLength(int maxMessageLength) {
+        this.maxMessageLength = maxMessageLength;
+        this.store();
+    }
+
+    public int getNationalLanguageLockingShift() {
+        return nationalLanguageLockingShift;
+    }
+
+    public void setNationalLanguageLockingShift(int nationalLanguageLockingShift) {
+        this.nationalLanguageLockingShift = nationalLanguageLockingShift;
+        this.store();
+    }
 
 	/**
 	 * @return the windowSize
@@ -844,6 +905,11 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 				esme.routingAddressRangePattern = Pattern.compile(esme.routingAddressRange);
 			}
 
+            esme.nationalLanguageSingleShift = xml.getAttribute(NATIONAL_LANGUAGE_SINGLE_SHIFT, -1);
+            esme.nationalLanguageLockingShift = xml.getAttribute(NATIONAL_LANGUAGE_LOCKING_SHIFT, -1);
+            esme.minMessageLength = xml.getAttribute(MIN_MESSAGE_LENGTH, -1);
+            esme.maxMessageLength = xml.getAttribute(MAX_MESSAGE_LENGTH, -1);
+
 			// SSL
 			esme.useSsl = xml.getAttribute(USE_SSL, false);
 			esme.wrappedSslConfig.setCertAlias(xml.getAttribute(CERT_ALIAS, null));
@@ -906,6 +972,11 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
 			xml.setAttribute(ESME_TON, esme.esmeTon);
 			xml.setAttribute(ESME_NPI, esme.esmeNpi);
 			xml.setAttribute(ESME_ADDRESS_RANGE, esme.esmeAddressRange);
+
+            xml.setAttribute(NATIONAL_LANGUAGE_SINGLE_SHIFT, esme.nationalLanguageSingleShift);
+            xml.setAttribute(NATIONAL_LANGUAGE_LOCKING_SHIFT, esme.nationalLanguageLockingShift);
+            xml.setAttribute(MIN_MESSAGE_LENGTH, esme.minMessageLength);
+            xml.setAttribute(MAX_MESSAGE_LENGTH, esme.maxMessageLength);
 
 			xml.setAttribute(WINDOW_SIZE, esme.windowSize);
 			xml.setAttribute(CONNECT_TIMEOUT, esme.connectTimeout);
@@ -984,7 +1055,11 @@ public class Esme extends SslConfigurationWrapper implements XMLSerializable, Es
                 .append(SmppOamMessages.SHOW_SECOND_RECEIVED_MSG_COUNT).append(this.getSecondReceivedMsgCount())
                 .append(SmppOamMessages.SHOW_MINUTE_RECEIVED_MSG_COUNT).append(this.getMinuteReceivedMsgCount())
                 .append(SmppOamMessages.SHOW_HOUR_RECEIVED_MSG_COUNT).append(this.getHourReceivedMsgCount())
-                .append(SmppOamMessages.SHOW_DAY_RECEIVED_MSG_COUNT).append(this.getDayReceivedMsgCount());
+                .append(SmppOamMessages.SHOW_DAY_RECEIVED_MSG_COUNT).append(this.getDayReceivedMsgCount())
+                .append(SmppOamMessages.SHOW_NATIONAL_LANGUAGE_SINGLE_SHIFT).append(this.getNationalLanguageSingleShift())
+                .append(SmppOamMessages.SHOW_NATIONAL_LANGUAGE_LOCKING_SHIFT).append(this.getNationalLanguageLockingShift())
+                .append(SmppOamMessages.MIN_MESSAGE_LENGTH).append(this.getMinMessageLength())
+                .append(SmppOamMessages.MAX_MESSAGE_LENGTH).append(this.getMaxMessageLength());
 
 		sb.append(SmppOamMessages.NEW_LINE);
 	}

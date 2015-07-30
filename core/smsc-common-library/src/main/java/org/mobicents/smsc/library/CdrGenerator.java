@@ -91,9 +91,14 @@ public class CdrGenerator {
                 .append(CdrGenerator.CDR_SEPARATOR)
                 .append(smsEvent.getMessageId())
                 .append(CdrGenerator.CDR_SEPARATOR)
-                .append(smsEvent.getSmsSet().getLocationInfoWithLMSI() != null ? smsEvent.getSmsSet().getLocationInfoWithLMSI().getNetworkNodeNumber()
-                        .getAddress() : null).append(CdrGenerator.CDR_SEPARATOR).append(smsEvent.getSmsSet().getImsi()).append(CdrGenerator.CDR_SEPARATOR)
-                .append(smsEvent.getSmsSet().getCorrelationId()).append(CdrGenerator.CDR_SEPARATOR).append(getFirst20CharOfSMS(smsEvent.getShortMessageText()))
+                .append(smsEvent.getSmsSet().getLocationInfoWithLMSI() != null ? smsEvent.getSmsSet().getLocationInfoWithLMSI()
+                        .getNetworkNodeNumber().getAddress() : null)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSmsSet().getImsi())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSmsSet().getCorrelationId())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(getFirst20CharOfSMS(smsEvent.getShortMessageText()))
                 .append(CdrGenerator.CDR_SEPARATOR).append(reason);
 
         CdrGenerator.generateCdr(sb.toString());

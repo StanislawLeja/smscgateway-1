@@ -69,14 +69,11 @@
 									<entry> </entry>	
 									
 								</row>
-
-					<!--			
 								<row>
 									<entry>SCTP libraries</entry>
-									<entry>You must have the <literal>lksctp</literal> library installed. The Linux Kernel Stream Control Transmission Protocol (<literal>lksctp</literal>) library provides SCTP implementation.</entry>
-									<entry>For more details on downloading and installing the <literal>lksctp</literal>, please refer to <ulink url="http://lksctp.sourceforge.net/"></ulink></entry>
+									<entry>If you intend to use <literal>SIGTRAN (M3UA)</literal>, you must have the <literal>lksctp</literal> library installed. The Linux Kernel Stream Control Transmission Protocol (<literal>lksctp</literal>) library provides SCTP implementation.</entry>
+									<entry>For more details on downloading and installing <literal>lksctp</literal>, please refer to <ulink url="http://lksctp.sourceforge.net/"></ulink></entry>
 								</row>
-						-->	
 							</tbody>
 						</tgroup>
 					</table>

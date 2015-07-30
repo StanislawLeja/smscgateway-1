@@ -43,6 +43,7 @@ import org.mobicents.protocols.ss7.map.api.MAPSmsTpduParameterFactory;
 import org.mobicents.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
 import org.mobicents.protocols.ss7.map.api.dialog.ProcedureCancellationReason;
 import org.mobicents.protocols.ss7.map.api.dialog.ResourceUnavailableReason;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
@@ -68,13 +69,13 @@ import org.mobicents.slee.resource.map.events.InvokeTimeout;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.DatabaseType;
-import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.CdrGenerator;
 import org.mobicents.smsc.library.ErrorCode;
+import org.mobicents.smsc.library.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
@@ -458,7 +459,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 				org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan.getInstance(npi), destinationAddress);
 	}
 
-    protected void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason, boolean removeSmsSet) {
+    protected void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason,
+            boolean removeSmsSet, MAPErrorMessage errMessage) {
         smscStatAggregator.updateMsgOutFailedAll();
 
         PersistenceRAInterface pers = this.getStore();
@@ -494,7 +496,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
             Sms sms = smsSet.getSms(i1);
             if (sms != null) {
                 if (sms.getMessageDeliveryResultResponse() != null) {
-                    sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason);
+                    sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason, errMessage);
                     sms.setMessageDeliveryResultResponse(null);
                 }
             }

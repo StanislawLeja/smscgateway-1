@@ -20,7 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.cassandra;
+package org.mobicents.smsc.library;
+
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 
 /**
  *
@@ -29,9 +31,11 @@ package org.mobicents.smsc.cassandra;
  */
 public interface MessageDeliveryResultResponseInterface {
 
+    public boolean isOnlyChargingRequest();
+
     public void responseDeliverySuccess();
 
-    public void responseDeliveryFailure(DeliveryFailureReason reason);
+    public void responseDeliveryFailure(DeliveryFailureReason reason, MAPErrorMessage errMessage);
 
     public enum DeliveryFailureReason {
         destinationUnavalable(0), invalidDestinationAddress(1), permanentNetworkError(2), temporaryNetworkError(3);

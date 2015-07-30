@@ -32,7 +32,6 @@ import org.mobicents.smsc.cassandra.DBOperations_C1;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.cassandra.Schema;
-import org.mobicents.smsc.domain.NextCorrelationIdResult;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
@@ -202,6 +201,11 @@ public class PersistenceRAInterfaceProxy extends DBOperations_C1 implements Pers
 //			}
 //		}
 	}
+
+    @Override
+    public boolean isDatabaseAvailable() {
+        return true;
+    }
 
     @Override
     public TargetAddress obtainSynchroObject(TargetAddress ta) {

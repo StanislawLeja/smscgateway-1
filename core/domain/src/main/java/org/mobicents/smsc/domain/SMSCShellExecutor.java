@@ -304,8 +304,12 @@ public class SMSCShellExecutor implements ShellExecutor {
                     mProcRule.setDestDigMask(value);
                     success = true;
                 } else if (command.equals("originatingmask")) {
-                    Sms.OriginationType originatingMask = Enum.valueOf(Sms.OriginationType.class, value);
-                    mProcRule.setOriginatingMask(originatingMask);
+                    if (value != null && value.equals("-1")) {
+                        mProcRule.setOriginatingMask(null);
+                    } else {
+                        Sms.OriginationType originatingMask = Enum.valueOf(Sms.OriginationType.class, value);
+                        mProcRule.setOriginatingMask(originatingMask);
+                    }
                     success = true;
                 } else if (command.equals("networkidmask")) {
                     int val = Integer.parseInt(value);
@@ -454,6 +458,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 				return this.manageGet(args);
 			} else if (args[1].equals("remove")) {
 				return this.manageRemove(args);
+            } else if (args[1].equals("skip-unsent-messages")) {
+                return this.skipUnsentMessages(args);
 			} else if (args[1].toLowerCase().equals("databaserule")) {
                 if (args.length < 3)
                     return SMSCOAMMessages.INVALID_COMMAND;
@@ -717,9 +723,11 @@ public class SMSCShellExecutor implements ShellExecutor {
                     smscPropertiesManagement.setSmppEncodingForGsm7(SmppEncoding.Utf8);
                 } else if (s1.equals("unicode")) {
                     smscPropertiesManagement.setSmppEncodingForGsm7(SmppEncoding.Unicode);
+                } else if (s1.equals("gsm7")) {
+                    smscPropertiesManagement.setSmppEncodingForGsm7(SmppEncoding.Gsm7);
                 } else {
                     return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, "SmppEncodingForGsm7 value",
-                            "UTF8 or UNICODE are possible");
+                            "UTF8 or UNICODE or GSM7 are possible");
                 }
             } else if (parName.equals("smppencodingforucs2")) {
                 String s1 = options[3].toLowerCase();
@@ -727,9 +735,11 @@ public class SMSCShellExecutor implements ShellExecutor {
                     smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Utf8);
                 } else if (s1.equals("unicode")) {
                     smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Unicode);
+                } else if (s1.equals("gsm7")) {
+                    smscPropertiesManagement.setSmppEncodingForUCS2(SmppEncoding.Gsm7);
                 } else {
                     return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, "SmppEncodingForUCS2 value",
-                            "UTF8 or UNICODE are possible");
+                            "UTF8 or UNICODE or GSM7 are possible");
                 }
 //            } else if (parName.equals("hosts")) {
 //                String val = options[3];
@@ -816,6 +826,21 @@ public class SMSCShellExecutor implements ShellExecutor {
                 if (val == 1 || val == 2 || val < 0)
                     return SMSCOAMMessages.REMOVING_LIVE_ARCHIVE_TABLES_DAYS_BAD_VALUES;
                 smscPropertiesManagement.setRemovingArchiveTablesDays(val);
+
+            } else if (parName.equals("hrhlrnumber")) {
+                smscPropertiesManagement.setHrHlrNumber(options[3]);
+
+            } else if (parName.equals("national-language-single-shift")) {
+                int val = Integer.parseInt(options[3]);
+                if (val < 0 || val > 13)
+                    return SMSCOAMMessages.NATIONAL_LANGUAGE_SHIFT_BAD_VALUE;
+                smscPropertiesManagement.setNationalLanguageSingleShift(val);
+            } else if (parName.equals("national-language-locking-shift")) {
+                int val = Integer.parseInt(options[3]);
+                if (val < 0 || val > 13)
+                    return SMSCOAMMessages.NATIONAL_LANGUAGE_SHIFT_BAD_VALUE;
+                smscPropertiesManagement.setNationalLanguageLockingShift(val);
+
             } else if (parName.equals("deliverypause")) {
                 boolean val = Boolean.parseBoolean(options[3]);
                 smscPropertiesManagement.setDeliveryPause(val);
@@ -836,8 +861,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		String parName = options[2].toLowerCase();
 		try {
-			if (parName.equals("esmedefaultcluster")) {
-				smscPropertiesManagement.setEsmeDefaultClusterName(null);
+            if (parName.equals("esmedefaultcluster")) {
+                smscPropertiesManagement.setEsmeDefaultClusterName(null);
+            } else if (parName.equals("hrhlrnumber")) {
+                smscPropertiesManagement.setHrHlrNumber("");
 
 			} else {
 				return SMSCOAMMessages.INVALID_COMMAND;
@@ -848,6 +875,26 @@ public class SMSCShellExecutor implements ShellExecutor {
 
 		return SMSCOAMMessages.PARAMETER_SUCCESSFULLY_REMOVED;
 	}
+
+    private String skipUnsentMessages(String[] options) throws Exception {
+        if (options.length < 3) {
+            return SMSCOAMMessages.INVALID_COMMAND;
+        }
+
+        int val = Integer.parseInt(options[2]);
+        try {
+            if (val >= 0) {
+                smscPropertiesManagement.setSkipUnsentMessages(val);
+            } else {
+                return SMSCOAMMessages.SKIP_UNSENT_MESSAGES_NEGATIVE_VALUE;
+            }
+        } catch (IllegalArgumentException e) {
+            return String.format(SMSCOAMMessages.ILLEGAL_ARGUMENT, options[2], e.getMessage());
+        }
+
+        String s = (new Date(new Date().getTime() - val * 1000 - 10000)).toString();
+        return String.format(SMSCOAMMessages.SKIP_UNSENT_MESSAGES_ACCEPTED_VALUE, s);
+    }
 
 	private String manageGet(String[] options) throws Exception {
 		if (options.length == 3) {
@@ -977,6 +1024,14 @@ public class SMSCShellExecutor implements ShellExecutor {
                 sb.append(smscPropertiesManagement.getRemovingLiveTablesDays());
             } else if (parName.equals("removingarchivetablesdays")) {
                 sb.append(smscPropertiesManagement.getRemovingArchiveTablesDays());
+
+            } else if (parName.equals("hrhlrnumber")) {
+                sb.append(smscPropertiesManagement.getHrHlrNumber());
+            } else if (parName.equals("national-language-single-shift")) {
+                sb.append(smscPropertiesManagement.getNationalLanguageSingleShift());
+            } else if (parName.equals("national-language-locking-shift")) {
+                sb.append(smscPropertiesManagement.getNationalLanguageLockingShift());
+
             } else if (parName.equals("deliverypause")) {
                 sb.append(smscPropertiesManagement.isDeliveryPause());
 			} else {
@@ -1200,6 +1255,18 @@ public class SMSCShellExecutor implements ShellExecutor {
             sb.append(smscPropertiesManagement.getRemovingLiveTablesDays());
             sb.append("\n");
 
+            sb.append("hrhlrnumber = ");
+            sb.append(smscPropertiesManagement.getHrHlrNumber());
+            sb.append("\n");
+
+            sb.append("national-language-single-shift = ");
+            sb.append(smscPropertiesManagement.getNationalLanguageSingleShift());
+            sb.append("\n");
+
+            sb.append("national-language-locking-shift = ");
+            sb.append(smscPropertiesManagement.getNationalLanguageLockingShift());
+            sb.append("\n");
+
             sb.append("deliverypause = ");
             sb.append(smscPropertiesManagement.isDeliveryPause());
             sb.append("\n");
@@ -1412,8 +1479,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 		sb.append(smscStatProvider.getCurrentMessageId());
 		sb.append(", MessageScheduledTotal: ");
 		sb.append(smscStatProvider.getMessageScheduledTotal());
-		sb.append(", DueSlotProcessingLag: ");
-		sb.append(smscStatProvider.getDueSlotProcessingLag());
+        sb.append(", DueSlotProcessingLag: ");
+        sb.append(smscStatProvider.getDueSlotProcessingLag());
+        sb.append(", DueSlotProcessingTime: ");
+        sb.append(smscStatProvider.getDueSlotProcessingTime());
 		sb.append(", Param1: ");
 		sb.append(smscStatProvider.getParam1());
 		sb.append(", Param2: ");

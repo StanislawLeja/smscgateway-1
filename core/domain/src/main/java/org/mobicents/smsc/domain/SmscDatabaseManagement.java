@@ -80,7 +80,8 @@ public class SmscDatabaseManagement implements SmscDatabaseManagementMBean, Runn
         this.setUnprocessed();
 
         this.executor = Executors.newScheduledThreadPool(4);
-        this.idleTimerFuture = this.executor.schedule(this, 30, TimeUnit.SECONDS);
+        if (dbOperations_C2.isDatabaseAvailable())
+            this.idleTimerFuture = this.executor.schedule(this, 30, TimeUnit.SECONDS);
 
         isStarted = true;
     }

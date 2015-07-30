@@ -78,8 +78,9 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("diameterusername");
         set.addChild("removinglivetablesdays");
         set.addChild("removingarchivetablesdays");
-        set.addChild("removingarchivetablesdays");
-        set.addChild("removingarchivetablesdays");
+        set.addChild("hrhlrnumber");
+        set.addChild("national-language-single-shift");
+        set.addChild("national-language-locking-shift");
 
         txsmppcharging.addChild("None");
         txsmppcharging.addChild("Selected");
@@ -108,9 +109,11 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         Node smppencodingforgsm7 = set.addChild("smppencodingforgsm7");
         smppencodingforgsm7.addChild("utf8");
         smppencodingforgsm7.addChild("unicode");
+        smppencodingforgsm7.addChild("gsm7");
         Node smppencodingforucs2 = set.addChild("smppencodingforucs2");
         smppencodingforucs2.addChild("utf8");
         smppencodingforucs2.addChild("unicode");
+        smppencodingforucs2.addChild("gsm7");
         set.addChild("dbhosts");
         set.addChild("dbport");
         set.addChild("keyspacename");
@@ -160,13 +163,12 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("diameterusername");
         get.addChild("removinglivetablesdays");
         get.addChild("removingarchivetablesdays");
+        get.addChild("hrhlrnumber");
+        get.addChild("national-language-single-shift");
+        get.addChild("national-language-locking-shift");
 
         Node smppencodingforgsm72 = get.addChild("smppencodingforgsm7");
-        smppencodingforgsm72.addChild("utf8");
-        smppencodingforgsm72.addChild("unicode");
         Node smppencodingforucs22 = get.addChild("smppencodingforucs2");
-        smppencodingforucs22.addChild("utf8");
-        smppencodingforucs22.addChild("unicode");
         get.addChild("dbhosts");
         get.addChild("dbport");
         get.addChild("keyspacename");
@@ -182,6 +184,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
 
         Node remove = parent.addChild("remove");
         remove.addChild("esmedefaultcluster");
+        remove.addChild("hrhlrnumber");
 
 		Node smppServer = parent.addChild("smppserver");
 
@@ -212,6 +215,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         mproc.addChild("modify");
         mproc.addChild("remove");
         mproc.addChild("show");
+
+        Node skipUnsentMessages = parent.addChild("skip-unsent-messages");
 
 	};
 

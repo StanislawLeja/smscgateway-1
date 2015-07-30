@@ -71,18 +71,15 @@ public class SmppShellExecutor implements ShellExecutor {
     }
 
     /**
-     * Command is smpp esme modify <name> password <password> esme-ton <esme
-     * address ton> esme-npi <esme address npi> esme-range <esme address range>
-     * window-size <windowSize> connect-timeout <connectTimeout>
-     * request-expiry-timeout <requestExpiryTimeout> window-monitor-interval
-     * <windowMonitorInterval> window-wait-timeout <windowWaitTimeout>
-     * counters-enabled <true | false> enquire-link-delay <30000>
-     * charging-enabled <true | false> source-ton <source address ton>
-     * source-npi <source address npi> source-range <source address range>
-     * routing-ton <routing address ton> routing-npi <routing address npi>
-     * routing-range <routing address range> ratelimit-second <ratelimitsecond>
-     * ratelimit-minute <ratelimitminute> ratelimit-hour <ratelimithour> 
-     * ratelimit-day <ratelimitday>
+     * Command is smpp esme modify <name> password <password> esme-ton <esme address ton> esme-npi <esme address npi> esme-range
+     * <esme address range> window-size <windowSize> connect-timeout <connectTimeout> request-expiry-timeout
+     * <requestExpiryTimeout> window-monitor-interval <windowMonitorInterval> window-wait-timeout <windowWaitTimeout>
+     * counters-enabled <true | false> enquire-link-delay <30000> charging-enabled <true | false> source-ton <source address
+     * ton> source-npi <source address npi> source-range <source address range> routing-ton <routing address ton> routing-npi
+     * <routing address npi> routing-range <routing address range> ratelimit-second <ratelimitsecond> ratelimit-minute
+     * <ratelimitminute> ratelimit-hour <ratelimithour> ratelimit-day <ratelimitday> national-language-locking-shift
+     * <national-language-locking-shift> national-language-single-shift <national-language-single-shift> min-message-length
+     * <min-message-length> max-message-length <max-message-length>
      * 
      * @param args
      * @return
@@ -180,6 +177,19 @@ public class SmppShellExecutor implements ShellExecutor {
                 long val = Long.parseLong(args[count++]);
                 esme.setRateLimitPerDay(val);
 
+            } else if (key.equals("national-language-locking-shift")) {
+                int val = Integer.parseInt(args[count++]);
+                esme.setNationalLanguageLockingShift(val);
+            } else if (key.equals("national-language-single-shift")) {
+                int val = Integer.parseInt(args[count++]);
+                esme.setNationalLanguageSingleShift(val);
+            } else if (key.equals("min-message-length")) {
+                int val = Integer.parseInt(args[count++]);
+                esme.setMinMessageLength(val);
+            } else if (key.equals("max-message-length")) {
+                int val = Integer.parseInt(args[count++]);
+                esme.setMaxMessageLength(val);
+
             } else {
                 return SmppOamMessages.INVALID_COMMAND;
             }
@@ -190,20 +200,17 @@ public class SmppShellExecutor implements ShellExecutor {
     }
 
     /**
-     * Command is smpp esme create name <systemId> <host-ip> <port>
-     * <SmppBindType> <SmppSession.Type> password <password> networkid
-     * <networkid> system-type <sms | vms | ota > interface-version <3.3 | 3.4 |
-     * 5.0> esme-ton <esme address ton> esme-npi <esme address npi> esme-range
-     * <esme address range> cluster-name <clusterName> window-size <windowSize>
-     * connect-timeout <connectTimeout> request-expiry-timeout
-     * <requestExpiryTimeout> window-monitor-interval <windowMonitorInterval>
-     * window-wait-timeout <windowWaitTimeout> counters-enabled <true | false>
-     * enquire-link-delay <30000> charging-enabled <true | false> source-ton
-     * <source address ton> source-npi <source address npi> source-range <source
-     * address range> routing-ton <routing address ton> routing-npi <routing
-     * address npi>, routing-range <routing address range> ratelimit-second <ratelimitsecond>
-     * ratelimit-minute <ratelimitminute> ratelimit-hour <ratelimithour> 
-     * ratelimit-day <ratelimitday>
+     * Command is smpp esme create name <systemId> <host-ip> <port> <SmppBindType> <SmppSession.Type> password <password>
+     * networkid <networkid> system-type <sms | vms | ota > interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton>
+     * esme-npi <esme address npi> esme-range <esme address range> cluster-name <clusterName> window-size <windowSize>
+     * connect-timeout <connectTimeout> request-expiry-timeout <requestExpiryTimeout> window-monitor-interval
+     * <windowMonitorInterval> window-wait-timeout <windowWaitTimeout> counters-enabled <true | false> enquire-link-delay
+     * <30000> charging-enabled <true | false> source-ton <source address ton> source-npi <source address npi> source-range
+     * <source address range> routing-ton <routing address ton> routing-npi <routing address npi>, routing-range <routing
+     * address range> ratelimit-second <ratelimitsecond> ratelimit-minute <ratelimitminute> ratelimit-hour <ratelimithour>
+     * ratelimit-day <ratelimitday> national-language-locking-shift <national-language-locking-shift>
+     * national-language-single-shift <national-language-single-shift> min-message-length <min-message-length>
+     * max-message-length <max-message-length>
      * 
      * @param args
      * @return
@@ -223,11 +230,7 @@ public class SmppShellExecutor implements ShellExecutor {
         if (systemId == null) {
             return SmppOamMessages.INVALID_COMMAND;
         }
-        
-        //Password can be null
-        //if (password == null) {
-        //    return SmppOamMessages.INVALID_COMMAND;
-        //}
+
         String host = args[5];
         if (host == null) {
             return SmppOamMessages.INVALID_COMMAND;
@@ -286,6 +289,11 @@ public class SmppShellExecutor implements ShellExecutor {
         int routinigTon = -1;
         int routingNpi = -1;
         String routingAddressRange = "^[0-9a-zA-Z]*";
+
+        int nationalLanguageSingleShift = -1;
+        int nationalLanguageLockingShift = -1;
+        int minMessageLength = -1;
+        int maxMessageLength = -1;
 
         while (count < args.length) {
             // These are all optional parameters for a Tx/Rx/Trx binds
@@ -347,16 +355,28 @@ public class SmppShellExecutor implements ShellExecutor {
                 rateLimitPerHour = Long.parseLong(args[count++]);
             } else if (key.equals("ratelimit-day")) {
                 rateLimitPerDay = Long.parseLong(args[count++]);
+
+            } else if (key.equals("national-language-single-shift")) {
+                nationalLanguageSingleShift = Integer.parseInt(args[count++]);
+            } else if (key.equals("national-language-locking-shift")) {
+                nationalLanguageLockingShift = Integer.parseInt(args[count++]);
+            } else if (key.equals("min-message-length")) {
+                minMessageLength = Integer.parseInt(args[count++]);
+            } else if (key.equals("max-message-length")) {
+                maxMessageLength = Integer.parseInt(args[count++]);
+
             } else {
                 return SmppOamMessages.INVALID_COMMAND;
             }
 
         }
 
-        Esme esme = this.smppManagement.getEsmeManagement().createEsme(name, systemId, password, host, intPort, chargingEnabled, smppBindTypeStr, systemType,
-                smppVersionType, esmeTonType, esmeNpiType, esmeAddrRange, smppSessionTypeStr, windowSize, connectTimeout, requestExpiryTimeout,
-                windowMonitorInterval, windowWaitTimeout, clusterName, countersEnabled, enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange,
-                routinigTon, routingNpi, routingAddressRange, networkId, rateLimitPerSecond, rateLimitPerMinute, rateLimitPerHour, rateLimitPerDay);
+        Esme esme = this.smppManagement.getEsmeManagement().createEsme(name, systemId, password, host, intPort,
+                chargingEnabled, smppBindTypeStr, systemType, smppVersionType, esmeTonType, esmeNpiType, esmeAddrRange,
+                smppSessionTypeStr, windowSize, connectTimeout, requestExpiryTimeout, windowMonitorInterval, windowWaitTimeout,
+                clusterName, countersEnabled, enquireLinkDelay, sourceTon, sourceNpi, sourceAddressRange, routinigTon,
+                routingNpi, routingAddressRange, networkId, rateLimitPerSecond, rateLimitPerMinute, rateLimitPerHour,
+                rateLimitPerDay, nationalLanguageSingleShift, nationalLanguageLockingShift, minMessageLength, maxMessageLength);
         return String.format(SmppOamMessages.CREATE_ESME_SUCCESSFULL, esme.getSystemId());
     }
 

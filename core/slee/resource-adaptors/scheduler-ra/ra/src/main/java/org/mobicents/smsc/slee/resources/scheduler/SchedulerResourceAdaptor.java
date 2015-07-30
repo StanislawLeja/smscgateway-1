@@ -343,8 +343,36 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 				SmsSetCache.getInstance().garbadeCollectProcessingSmsSet();
 			}
 
-            // checking if SmsRouteManagement is already started
+			// checking if cassandra database is available
+            if (!dbOperations_C2.isDatabaseAvailable())
+                return;
+
+            // checking if we need to advance dueSlot
             SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+            int val = smscPropertiesManagement.getSkipUnsentMessages();
+            if (val >= 0) {
+                smscPropertiesManagement.setSkipUnsentMessages(-1);
+                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                } else {
+                    long processedDueSlot = dbOperations_C2.c2_getCurrentDueSlot();
+                    Date processedTime = dbOperations_C2.c2_getTimeForDueSlot(processedDueSlot);
+                    long possibleDueSlot = dbOperations_C2.c2_getIntimeDueSlot();
+                    // we do a possible time 10 seconds before the time that is possible for running
+                    Date possibleTime = new Date(dbOperations_C2.c2_getTimeForDueSlot(possibleDueSlot).getTime() - 10000);
+                    Date newTime = new Date(possibleTime.getTime() - val * 1000);
+                    if (newTime.getTime() > processedTime.getTime()) {
+                        long newDueSlot = dbOperations_C2.c2_getDueSlotForTime(newTime);
+                        dbOperations_C2.c2_setCurrentDueSlot(newDueSlot);
+                        this.tracer.warning("currentDueSlot has been changed after a user request: from " + processedTime
+                                + " to " + newTime);
+                    } else {
+                        this.tracer.warning("There was a user request to change currentDueSlot: from " + processedTime + " to "
+                                + newTime + ". But the new time must be after the current one and the request was rejected.");
+                    }
+                }
+            }
+
+            // checking if SmsRouteManagement is already started
             SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
             if (smsRouteManagement.getSmsRoutingRule() == null)
                 return;

@@ -86,8 +86,10 @@ public class DatabaseSmsRoutingRule implements DatabaseSmsRoutingRuleMBean {
 	 */
 	@Override
 	public String getEsmeClusterName(int ton, int npi, String address, String name, int networkId) {
-
 		String clusterName = null;
+
+        if (!dbOperations_C2.isDatabaseAvailable())
+            return null;
 
 		try {
 			DbSmsRoutingRule rr;
@@ -120,6 +122,9 @@ public class DatabaseSmsRoutingRule implements DatabaseSmsRoutingRuleMBean {
 	@Override
 	public String getSipClusterName(int ton, int npi, String address, int networkId) {
 		String clusterName = null;
+
+        if (!dbOperations_C2.isDatabaseAvailable())
+            return null;
 
 		try {
 			DbSmsRoutingRule rr;

@@ -22,9 +22,11 @@
 
 package org.mobicents.smsc.slee.services.smpp.server.tx;
 
-import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
+import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
+import org.mobicents.smsc.library.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.smpp.Esme;
+
 import javax.slee.facilities.Tracer;
 
 import com.cloudhopper.smpp.SmppConstants;
@@ -44,6 +46,7 @@ import com.cloudhopper.smpp.tlv.Tlv;
  */
 public class MessageDeliveryResultResponseSmpp implements MessageDeliveryResultResponseInterface {
 
+    private boolean onlyChargingRequest;
     private SmppSessions smppSessions;
     private Esme esme;
     private SubmitSm eventSubmit;
@@ -51,12 +54,19 @@ public class MessageDeliveryResultResponseSmpp implements MessageDeliveryResultR
     private long messageId;
     private Tracer logger;
 
-    public MessageDeliveryResultResponseSmpp(SmppSessions smppSessions, Esme esme, SubmitSm eventSubmit, DataSm eventData, long messageId) {
+    public MessageDeliveryResultResponseSmpp(boolean onlyChargingRequest, SmppSessions smppSessions, Esme esme,
+            SubmitSm eventSubmit, DataSm eventData, long messageId) {
+        this.onlyChargingRequest = onlyChargingRequest;
         this.smppSessions = smppSessions;
         this.esme = esme;
         this.eventSubmit = eventSubmit;
         this.eventData = eventData;
         this.messageId = messageId;
+    }
+
+    @Override
+    public boolean isOnlyChargingRequest() {
+        return onlyChargingRequest;
     }
 
     @Override
@@ -87,7 +97,7 @@ public class MessageDeliveryResultResponseSmpp implements MessageDeliveryResultR
     }
 
     @Override
-    public void responseDeliveryFailure(DeliveryFailureReason reason) {
+    public void responseDeliveryFailure(DeliveryFailureReason reason, MAPErrorMessage errMessage) {
         PduResponse response = null;
         BaseSm event = null;
         if (eventSubmit != null) {

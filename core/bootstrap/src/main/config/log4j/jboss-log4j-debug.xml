@@ -3,11 +3,9 @@
 
 <!-- $Id: jboss-log4j.xml 65459 2007-09-19 00:25:51Z dimitris@jboss.org $ -->
 
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/"
-	debug="false">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 
-	<appender name="FILE"
-		class="org.jboss.logging.appender.DailyRollingFileAppender">
+	<appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
 		<errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler" />
 		<param name="File" value="${jboss.server.log.dir}/server.log" />
 		<param name="Append" value="false" />
@@ -30,14 +28,15 @@
 		</layout>
 	</appender>
 
-	<appender name="CDR"
-		class="org.jboss.logging.appender.RollingFileAppender">
+	<appender name="CDR" class="org.jboss.logging.appender.DailyRollingFileAppender">
 		<errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler" />
 		<param name="File" value="${jboss.server.home.dir}/log/cdr.log" />
 		<param name="Append" value="true" />
 		<param name="MaxFileSize" value="500KB" />
 		<param name="MaxBackupIndex" value="1" />
 		<param name="Threshold" value="DEBUG" />
+
+	    <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern" value="%d %-5p [%c] %m%n" />
@@ -66,12 +65,21 @@
 		<priority value="DEBUG" />
 	</category>
 
+	<!-- HomeRoutingService's Sbb -->
+	<category
+		name="javax.slee.SbbNotification[service=ServiceID[name=HomeRoutingService,vendor=org.mobicents,version=1.0],sbb=SbbID[name=HrSriServerSbb,vendor=org.mobicents,version=1.0]]">
+		<priority value="DEBUG" />
+	</category>
+	<category
+		name="javax.slee.SbbNotification[service=ServiceID[name=HomeRoutingService,vendor=org.mobicents,version=1.0],sbb=SbbID[name=HrSriClientSbb,vendor=org.mobicents,version=1.0]]">
+		<priority value="DEBUG" />
+	</category>
+
 	<!-- SmscTxSipServerService's Sbb -->
 	<category
 		name="javax.slee.SbbNotification[service=ServiceID[name=SmscTxSipServerService,vendor=org.mobicents,version=1.0],sbb=SbbID[name=TxSipServerSbb,vendor=org.mobicents,version=1.0]]">
 		<priority value="DEBUG" />
 	</category>
-
 	<category
 		name="javax.slee.SbbNotification[service=ServiceID[name=SmscTxSipServerService,vendor=org.mobicents,version=1.0],sbb=SbbID[name=ChargingSbb,vendor=org.mobicents,version=1.0]]">
 		<priority value="DEBUG" />
@@ -110,7 +118,6 @@
 		name="javax.slee.SbbNotification[service=ServiceID[name=SmscTxSmppServerService,vendor=org.mobicents,version=1.0],sbb=SbbID[name=TxSmppServerSbb,vendor=org.mobicents,version=1.0]]">
 		<priority value="DEBUG" />
 	</category>
-
 	<category
 		name="javax.slee.SbbNotification[service=ServiceID[name=SmscTxSmppServerService,vendor=org.mobicents,version=1.0],sbb=SbbID[name=ChargingSbb,vendor=org.mobicents,version=1.0]]">
 		<priority value="DEBUG" />

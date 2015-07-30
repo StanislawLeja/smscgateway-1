@@ -133,4 +133,12 @@ public interface SmppOamMessages {
 
     public static final String SHOW_DAY_RECEIVED_MSG_COUNT = " dayReceivedMsgCount=";
 
+    public static final String SHOW_NATIONAL_LANGUAGE_SINGLE_SHIFT = " nationalLanguageSingleShift=";
+
+    public static final String SHOW_NATIONAL_LANGUAGE_LOCKING_SHIFT = " nationalLanguageLockingShift=";
+
+    public static final String MIN_MESSAGE_LENGTH = " minMessageLength=";
+
+    public static final String MAX_MESSAGE_LENGTH = " maxMessageLength=";
+
 }

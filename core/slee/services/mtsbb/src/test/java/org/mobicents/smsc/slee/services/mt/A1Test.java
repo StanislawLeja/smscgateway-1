@@ -18,7 +18,7 @@ public class A1Test {
             esmeManagement = EsmeManagement.getInstance();
         }
     }
-    
+
     @Test(groups = { "Base" })
     public void testA1() {
 
@@ -105,5 +105,14 @@ public class A1Test {
 //        ArrayList<String> resx = mt.sliceMessage(sx, dataCodingScheme);
 //        int i111 = 0;
     }
+    
 
+    @Test(groups = { "Base" })
+    public void testA2() {
+        byte[] buf = new byte[] { 0x74, 0x65, 0x6c, 0x65, 0x20, 0x00, 0x01, 0x02, 0x03, 0x04, 0x21, 0x22, 0x23, 0x25, 0x26,
+                0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38,
+                0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f, 0x40 };
+        Charset utf8Charset = Charset.forName("UTF-8");
+        String msg = new String(buf, utf8Charset);
+    }
 }

@@ -26,7 +26,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
-import org.mobicents.smsc.cassandra.MessageDeliveryResultResponseInterface;
 import org.mobicents.smsc.smpp.TlvSet;
 
 
@@ -76,6 +75,9 @@ public class Sms implements Serializable {
 	private int replaceIfPresent; // not present in data_sm
 
 	private int dataCoding;
+    private int nationalLanguageSingleShift;
+    private int nationalLanguageLockingShift;
+
 	private int defaultMsgId; // not present in data_sm, not used in deliver_sm
 
     private byte[] shortMessage;
@@ -84,6 +86,8 @@ public class Sms implements Serializable {
 
 	private Date scheduleDeliveryTime; // not present in data_sm
 	private Date validityPeriod; // not present in data_sm
+
+    private String origMoServiceCentreAddressDA;
 
     private int deliveryCount;
 
@@ -366,6 +370,32 @@ public class Sms implements Serializable {
 		this.dataCoding = dataCoding;
 	}
 
+    public int getDataCodingForDatabase() {
+        return dataCoding | (nationalLanguageLockingShift << 8) | (nationalLanguageSingleShift << 16);
+    }
+
+    public void setDataCodingForDatabase(int dataCoding) {
+        this.dataCoding = (dataCoding & 0xFF);
+        this.nationalLanguageLockingShift = (dataCoding & 0xFF00) >> 8;
+        this.nationalLanguageSingleShift = (dataCoding & 0xFF0000) >> 16;
+    }
+	
+    public int getNationalLanguageSingleShift() {
+        return nationalLanguageSingleShift;
+    }
+
+    public void setNationalLanguageSingleShift(int nationalLanguageSingleShift) {
+        this.nationalLanguageSingleShift = nationalLanguageSingleShift;
+    }
+
+    public int getNationalLanguageLockingShift() {
+        return nationalLanguageLockingShift;
+    }
+
+    public void setNationalLanguageLockingShift(int nationalLanguageLockingShift) {
+        this.nationalLanguageLockingShift = nationalLanguageLockingShift;
+    }
+
 	/**
 	 * sm_default_msg_id smpp parameter
 	 */
@@ -430,6 +460,17 @@ public class Sms implements Serializable {
 	public void setValidityPeriod(Date validityPeriod) {
 		this.validityPeriod = validityPeriod;
 	}
+
+    /**
+     * original ServiceCentreAddressDA that has come in incoming MO SS7 mesage
+     */
+    public String getOrigMoServiceCentreAddressDA() {
+        return origMoServiceCentreAddressDA;
+    }
+
+    public void setOrigMoServiceCentreAddressDA(String origMoServiceCentreAddressDA) {
+        this.origMoServiceCentreAddressDA = origMoServiceCentreAddressDA;
+    }
 
 	/**
 	 * delivery tries count
@@ -532,14 +573,20 @@ public class Sms implements Serializable {
 		sb.append(registeredDelivery);
 		sb.append(", replaceIfPresent=");
 		sb.append(replaceIfPresent);
-		sb.append(", dataCoding=");
-		sb.append(dataCoding);
+        sb.append(", dataCoding=");
+        sb.append(dataCoding);
+        sb.append(", nationalLanguageSingleShift=");
+        sb.append(nationalLanguageSingleShift);
+        sb.append(", nationalLanguageLockingShift=");
+        sb.append(nationalLanguageLockingShift);
 		sb.append(", defaultMsgId=");
 		sb.append(defaultMsgId);
 		sb.append(", scheduleDeliveryTime=");
 		sb.append(scheduleDeliveryTime);
-		sb.append(", validityPeriod=");
-		sb.append(validityPeriod);
+        sb.append(", validityPeriod=");
+        sb.append(validityPeriod);
+        sb.append(", origMoServiceCentreAddressDA=");
+        sb.append(origMoServiceCentreAddressDA);
         sb.append(", deliveryCount=");
         sb.append(deliveryCount);
         sb.append(", originationType=");
