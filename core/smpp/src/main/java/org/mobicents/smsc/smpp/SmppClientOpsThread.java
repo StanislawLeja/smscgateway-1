@@ -228,6 +228,7 @@ public class SmppClientOpsThread implements Runnable {
 			config0.setConnectTimeout(esme.getConnectTimeout());
 			config0.setSystemId(esme.getSystemId());
 			config0.setPassword(esme.getPassword());
+			config0.setSystemType(esme.getSystemType());
 			config0.getLoggingOptions().setLogBytes(true);
 			// to enable monitoring (request expiration)
 			config0.setRequestExpiryTimeout(esme.getRequestExpiryTimeout());
