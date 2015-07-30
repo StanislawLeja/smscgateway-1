@@ -515,8 +515,8 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
     }
 
     public void doInjectSmsDatabase(SmsSet smsSet) throws Exception {
-        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
-
+//        SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+//
 //        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 //            // TODO: implement it
 //        } else {

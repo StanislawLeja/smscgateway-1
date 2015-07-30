@@ -29,8 +29,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-
 import javolution.util.FastMap;
 
 /**
@@ -39,6 +37,9 @@ import javolution.util.FastMap;
  * 
  */
 public class SmsSetCache {
+
+    public static int SMSSET_MSG_PRO_SEGMENT_LIMIT = 50;
+    public static int SMSSET_FREE_SEGMENT_CNT = 100;
 
     private int processingSmsSetTimeout;
     private int correlationIdLiveTime;
@@ -49,7 +50,8 @@ public class SmsSetCache {
 
 	private AtomicInteger activityCount = new AtomicInteger(0);
 
-	private FastMap<String, SmsSet> lstSmsSetInProcessing = new FastMap<String, SmsSet>();
+    private FastMap<String, SmsSet> lstSmsSetInProcessing = new FastMap<String, SmsSet>();
+    private FastMap<String, SmsSet> lstSmsSetWithBigMessageCount = new FastMap<String, SmsSet>();
     private UpdateMessagesInProcessListener smscStatAggregator;
 
     private FastMap<String, CorrelationIdValue> correlationIdCache1 = new FastMap<String, CorrelationIdValue>();
@@ -151,9 +153,17 @@ public class SmsSetCache {
         }
     }
 
+    public void registerSmsSetWithBigMessageCount(String targetId, SmsSet smsSet) {
+        synchronized (lstSmsSetInProcessing) {
+            lstSmsSetWithBigMessageCount.put(targetId, smsSet);
+        }
+    }
+
     public SmsSet removeProcessingSmsSet(String targetId) {
         synchronized (lstSmsSetInProcessing) {
             SmsSet smsSet = lstSmsSetInProcessing.remove(targetId);
+            lstSmsSetWithBigMessageCount.remove(targetId);
+
             if (smscStatAggregator != null) {
                 smscStatAggregator.updateMaxMessagesInProcess(lstSmsSetInProcessing.size());
                 smscStatAggregator.updateMinMessagesInProcess(lstSmsSetInProcessing.size());
@@ -163,7 +173,12 @@ public class SmsSetCache {
     }
 
     public int getProcessingSmsSetSize() {
-        return lstSmsSetInProcessing.size();
+        int res = lstSmsSetInProcessing.size();
+        for (FastMap.Entry<String, SmsSet> n = this.lstSmsSetWithBigMessageCount.head(), end = this.lstSmsSetWithBigMessageCount
+                .tail(); (n = n.getNext()) != end && n != null;) {
+            res += n.getValue().getSmsCountWithoutDelivered();
+        }
+        return res;
     }
 
     public void garbadeCollectProcessingSmsSet() {
@@ -171,13 +186,24 @@ public class SmsSetCache {
             Date limit = new Date(new Date().getTime() - processingSmsSetTimeout * 1000);
             ArrayList<String> toDel = new ArrayList<String>();
             for (Map.Entry<String, SmsSet> entry : lstSmsSetInProcessing.entrySet()) {
-                if (entry.getValue().getCreationTime().before(limit)) {
+                if (entry.getValue().getLastUpdateTime().before(limit)) {
                     toDel.add(entry.getKey());
                 }
             }
             for (String key : toDel) {
                 lstSmsSetInProcessing.remove(key);
             }
+
+            toDel = new ArrayList<String>();
+            for (Map.Entry<String, SmsSet> entry : lstSmsSetWithBigMessageCount.entrySet()) {
+                if (entry.getValue().getLastUpdateTime().before(limit)) {
+                    toDel.add(entry.getKey());
+                }
+            }
+            for (String key : toDel) {
+                lstSmsSetWithBigMessageCount.remove(key);
+            }
+
             if (smscStatAggregator != null) {
                 smscStatAggregator.updateMaxMessagesInProcess(lstSmsSetInProcessing.size());
                 smscStatAggregator.updateMinMessagesInProcess(lstSmsSetInProcessing.size());
@@ -188,6 +214,7 @@ public class SmsSetCache {
     public void clearProcessingSmsSet() {
         synchronized (lstSmsSetInProcessing) {
             lstSmsSetInProcessing.clear();
+            lstSmsSetWithBigMessageCount.clear();
             if (smscStatAggregator != null) {
                 smscStatAggregator.updateMaxMessagesInProcess(lstSmsSetInProcessing.size());
                 smscStatAggregator.updateMinMessagesInProcess(lstSmsSetInProcessing.size());

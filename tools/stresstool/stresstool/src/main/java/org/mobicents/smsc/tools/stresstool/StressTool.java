@@ -547,7 +547,7 @@ public class StressTool {
                 if (smsSet != null) {
                     try {
                         dbOperations.fetchSchedulableSms(smsSet, false);
-                        int ii = smsSet.getSmsCount();
+                        long ii = smsSet.getSmsCount();
                         for (int i1 = 0; i1 < ii; i1++) {
                             Sms sms = smsSet.getSms(i1);
                             dbOperations.archiveDeliveredSms(sms, new Date());

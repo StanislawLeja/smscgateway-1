@@ -1208,13 +1208,14 @@ public class DBOperations_C2 {
 				synchronized (lock) {
 					smsSet2 = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
 					if (smsSet2 != null) {
-						if (smsSet2.getCreationTime().after(timeOutDate)) {
-							for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
-                                Sms smsx = smsSet.getSms(i1);
-                                if (!smsSet2.checkSmsPresent(smsx)) {
-                                    smsSet2.addSms(smsx);
-                                }
-							}
+						if (smsSet2.getLastUpdateTime().after(timeOutDate)) {
+                            smsSet2.addSmsSet(smsSet);
+//							for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
+//                                Sms smsx = smsSet.getSms(i1);
+//                                if (!smsSet2.checkSmsPresent(smsx)) {
+//                                    smsSet2.addSmsSet(smsx);
+//                                }
+//							}
 						} else {
 							logger.warn("Timeout of SmsSet in ProcessingSmsSet: targetId=" + smsSet2.getTargetId()
 									+ ", messageCount=" + smsSet2.getSmsCount());
@@ -1245,13 +1246,14 @@ public class DBOperations_C2 {
             synchronized (lock) {
                 SmsSet smsSet2 = SmsSetCache.getInstance().getProcessingSmsSet(smsSet.getTargetId());
                 if (smsSet2 != null) {
-                    if (smsSet2.getCreationTime().after(timeOutDate)) {
-                        for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
-                            Sms smsx = smsSet.getSms(i1);
-                            if (!smsSet2.checkSmsPresent(smsx)) {
-                                smsSet2.addSms(smsx);
-                            }
-                        }
+                    if (smsSet2.getLastUpdateTime().after(timeOutDate)) {
+                        smsSet2.addSmsSet(smsSet);
+//                        for (int i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
+//                            Sms smsx = smsSet.getSms(i1);
+//                            if (!smsSet2.checkSmsPresent(smsx)) {
+//                                smsSet2.addSmsSet(smsx);
+//                            }
+//                        }
                         return false;
                     } else {
                         logger.warn("Timeout of SmsSet in ProcessingSmsSet: targetId=" + smsSet2.getTargetId() + ", messageCount=" + smsSet2.getSmsCount());

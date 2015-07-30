@@ -424,7 +424,7 @@ public class MessageUtil {
 
 	public static Date checkScheduleDeliveryTime(final SmsSet smsSet, Date newDueDate) {
 		Date minDate = null;
-		int smsCount = smsSet.getSmsCount();
+		long smsCount = smsSet.getSmsCount();
 		for (int i1 = 0; i1 < smsCount; i1++) {
 			Sms sms = smsSet.getSms(i1);
 			if (sms.getScheduleDeliveryTime() != null) {

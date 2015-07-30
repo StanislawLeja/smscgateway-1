@@ -108,13 +108,13 @@ public class RxSmppServerSbbTest {
         }
 
         @Override
-        public void setCurrentMsgNum(int currentMsgNum) {
+        public void setCurrentMsgNum(long currentMsgNum) {
             // TODO Auto-generated method stub
             
         }
 
         @Override
-        public int getCurrentMsgNum() {
+        public long getCurrentMsgNum() {
             // TODO Auto-generated method stub
             return 0;
         }

@@ -88,7 +88,7 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 	private int mesageSegmentNumber;
 	private SM_RP_DA sm_rp_da;
 	private SM_RP_OA sm_rp_oa;
-	private int currentMsgNum;
+	private long currentMsgNum;
 	private InformServiceCenterContainer informServiceCenterContainer;
 	private int tcEmptySent;
 	private int responseReceived;
@@ -154,12 +154,12 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 	}
 	
 	@Override
-	public int getCurrentMsgNum() {
+	public long getCurrentMsgNum() {
 		return currentMsgNum;
 	}
 
 	@Override
-	public void setCurrentMsgNum(int currentMsgNum) {
+	public void setCurrentMsgNum(long currentMsgNum) {
 		this.currentMsgNum = currentMsgNum;
 	}
 

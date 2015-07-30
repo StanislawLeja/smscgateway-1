@@ -478,7 +478,7 @@ public class TT_CassandraTest {
                 SmsSet smsSet = lst.get(0);
                 assertEquals(smsSet.getNetworkId(), 9);
                 assertEquals(sms.getOrigNetworkId(), 49);
-                for (Sms sms1 : smsSet.getRawList()) {
+                for (Sms sms1 : smsSet.getRawListLastSegment()) {
                     if (sms1.getDbId().equals(sms.getDbId())) {
                         assertEquals(sms1.getDataCoding(), dcs.getCode());
                         if (msg != null)

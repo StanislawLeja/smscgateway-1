@@ -564,7 +564,7 @@ public class StressTool3 {
                         try {
                             synchronized (lock) {
                                 int j2 = j1 % 3;
-                                int ii = smsSet.getSmsCount();
+                                long ii = smsSet.getSmsCount();
 
                                 if (j2 == 0) {
                                     // postpone of delivering

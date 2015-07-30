@@ -189,7 +189,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                         "Error systemFailure after MtForwardSM Request: " + systemFailure.toString(), true, mapErrorMessage);
             } else if (mapErrorMessage.isEmFacilityNotSup()) {
                 MAPErrorMessageFacilityNotSup facilityNotSup = mapErrorMessage.getEmFacilityNotSup();
-                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SYSTEM_FAILURE,
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
                         "Error facilityNotSup after MtForwardSM Request: " + facilityNotSup.toString(), true, mapErrorMessage);
             } else if (mapErrorMessage.isEmExtensionContainer()) {
                 MAPErrorMessageExtensionContainer extensionContainer = mapErrorMessage.getEmExtensionContainer();
@@ -204,11 +204,11 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                                 "Error unexpectedDataValue after MtForwardSM Request: " + extensionContainer.toString(), true,
                                 mapErrorMessage);
                         break;
-                    case MAPErrorCode.facilityNotSupported:
-                        this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
-                                "Error facilityNotSupported after MtForwardSM Request: " + extensionContainer.toString(), true,
-                                mapErrorMessage);
-                        break;
+//                    case MAPErrorCode.facilityNotSupported:
+//                        this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.FACILITY_NOT_SUPPORTED,
+//                                "Error facilityNotSupported after MtForwardSM Request: " + extensionContainer.toString(), true,
+//                                mapErrorMessage);
+//                        break;
                     case MAPErrorCode.unidentifiedSubscriber:
                         this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.UNDEFINED_SUBSCRIBER,
                                 "Error unidentifiedSubscriber after MtForwardSM Request: " + extensionContainer.toString(),
@@ -766,9 +766,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 	public abstract SmsSubmitData getSmsSubmitData();
 
-	public abstract void setCurrentMsgNum(int currentMsgNum);
+	public abstract void setCurrentMsgNum(long currentMsgNum);
 
-	public abstract int getCurrentMsgNum();
+	public abstract long getCurrentMsgNum();
 
 	public abstract void setInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer);
 
@@ -794,11 +794,11 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		return this.getSmsSubmitData();
 	}
 
-	public void doSetCurrentMsgNum(int currentMsgNum) {
+	public void doSetCurrentMsgNum(long currentMsgNum) {
 		this.setCurrentMsgNum(currentMsgNum);
 	}
 
-	public int doGetCurrentMsgNum() {
+	public long doGetCurrentMsgNum() {
 		return this.getCurrentMsgNum();
 	}
 
@@ -874,7 +874,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
         smscStatAggregator.updateMsgOutSentSs7();
 
 		PersistenceRAInterface pers = this.getStore();
-		int currentMsgNum = this.doGetCurrentMsgNum();
+		long currentMsgNum = this.doGetCurrentMsgNum();
 		Sms sms = smsSet.getSms(currentMsgNum);
 
 		// checking if there are yet message segments
@@ -911,9 +911,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
             sms.setMessageDeliveryResultResponse(null);
         }
 
-		// pushing current message into an archive
 		Date deliveryDate = new Date();
 		try {
+	        // pushing current message into an archive
 			// we need to find if it is the last or single segment
 			boolean isPartial = MessageUtil.isSmsNotLastSegment(sms);
             CdrGenerator.generateCdr(sms, isPartial ? CdrGenerator.CDR_PARTIAL : CdrGenerator.CDR_SUCCESS, CdrGenerator.CDR_SUCCESS_NO_REASON,
@@ -990,7 +990,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
 		try {
 			synchronized (lock) {
-				// now we are trying to sent other messages
+		        // marking the message in cache as delivered
+		        smsSet.markSmsAsDelivered(currentMsgNum);
+
+		        // now we are trying to sent other messages
 				if (currentMsgNum < smsSet.getSmsCount() - 1) {
 					// there are more messages to send in cache
 					currentMsgNum++;
@@ -1196,7 +1199,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		if (smsSet == null) {
 			throw new SmscProcessingException("SmsSet is missed in ProcessingSmsSet cashe", -1, -1, null);
 		}
-		int msgNum = this.doGetCurrentMsgNum();
+		long msgNum = this.doGetCurrentMsgNum();
 		Sms sms = smsSet.getSms(msgNum);
 
 		if (sms == null) {
@@ -1252,7 +1255,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                     segments = new SmsSignalInfo[segmentsByte.length];
 
 					// TODO messageReferenceNumber should be generated
-					int messageReferenceNumber = msgNum + 1;
+                    int messageReferenceNumber = (int)(msgNum + 1);
 
 					for (int i1 = 0; i1 < segmentsByte.length; i1++) {
                         segments[i1] = this.createSignalInfo(sms, segmentsByte[i1], null, (i1 < segmentsByte.length - 1 ? true
