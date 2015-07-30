@@ -3771,7 +3771,7 @@ public class C2_MtTest {
                 curDate = new Date();
 
                 procTargetId = res.getTargetId();
-                procId = new UUID[res.getSmsCount()];
+                procId = new UUID[(int)res.getSmsCount()];
                 for (i1 = 0; i1 < res.getSmsCount(); i1++) {
                     procId[i1] = res.getSms(i1).getDbId();
                 }
@@ -3782,7 +3782,7 @@ public class C2_MtTest {
             }
         } else {
             procTargetId = smsSet.getTargetId();
-            procId = new UUID[smsSet.getSmsCount()];
+            procId = new UUID[(int)smsSet.getSmsCount()];
             for (i1 = 0; i1 < smsSet.getSmsCount(); i1++) {
                 procId[i1] = smsSet.getSms(i1).getDbId();
             }

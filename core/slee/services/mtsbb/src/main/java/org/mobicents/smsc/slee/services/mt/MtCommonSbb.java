@@ -465,7 +465,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
         PersistenceRAInterface pers = this.getStore();
 
-        int currentMsgNum = this.doGetCurrentMsgNum();
+        long currentMsgNum = this.doGetCurrentMsgNum();
 		Sms smsa = smsSet.getSms(currentMsgNum);
         if (smsa != null) {
             CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED, reason, smscPropertiesManagement.getGenerateReceiptCdr(),
@@ -492,7 +492,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
             delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.temporaryNetworkError;
         if (errorAction == ErrorAction.permanentFailure)
             delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.permanentNetworkError;
-        for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
+        for (long i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
             Sms sms = smsSet.getSms(i1);
             if (sms != null) {
                 if (sms.getMessageDeliveryResultResponse() != null) {
@@ -519,14 +519,14 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                     }
 					this.decrementDeliveryActivityCount();
 
-					int smsCnt;
+					long smsCnt;
                     if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                         // first of all we are removing messages that delivery
                         // period is over
                         smsCnt = smsSet.getSmsCount();
                         int goodMsgCnt = 0;
                         int removedMsgCnt = 0;
-                        for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
+                        for (long i1 = currentMsgNum; i1 < smsCnt; i1++) {
                             Sms sms = smsSet.getSms(i1);
                             if (sms != null) {
                                 if (sms.getValidityPeriod().before(curDate)) {
@@ -575,7 +575,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 					case permanentFailure:
 						smsCnt = smsSet.getSmsCount();
-						for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
+						for (long i1 = currentMsgNum; i1 < smsCnt; i1++) {
 							Sms sms = smsSet.getSms(i1);
 							if (sms != null) {
 								lstFailured.add(sms);
@@ -673,9 +673,9 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
 	public abstract SmsSubmitData doGetSmsSubmitData();
 
-	public abstract void doSetCurrentMsgNum(int currentMsgNum);
+	public abstract void doSetCurrentMsgNum(long currentMsgNum);
 
-	public abstract int doGetCurrentMsgNum();
+	public abstract long doGetCurrentMsgNum();
 
 	public abstract void doSetInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer);
 
@@ -728,7 +728,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	 * @param smsSet
 	 * @param pers
 	 */
-	protected void freeSmsSetFailured(SmsSet smsSet, PersistenceRAInterface pers, int currentMsgNum) {
+	protected void freeSmsSetFailured(SmsSet smsSet, PersistenceRAInterface pers, long currentMsgNum) {
 
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
 		try {
@@ -736,7 +736,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 				try {
                     if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
                         pers.fetchSchedulableSms(smsSet, false);
-                        int cnt = smsSet.getSmsCount();
+                        long cnt = smsSet.getSmsCount();
                         for (int i1 = 0; i1 < cnt; i1++) {
                             Sms sms = smsSet.getSms(i1);
                             pers.archiveFailuredSms(sms);
@@ -744,7 +744,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 
                         pers.deleteSmsSet(smsSet);
                     } else {
-                        for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
+                        for (long i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
                             Sms sms = smsSet.getSms(i1);
                             pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
                                     smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
@@ -769,7 +769,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	 * 
 	 * @param smsSet
 	 */
-	protected void rescheduleSmsSet(SmsSet smsSet, boolean busySuscriber, PersistenceRAInterface pers, int currentMsgNum, ArrayList<Sms> lstFailured) {
+	protected void rescheduleSmsSet(SmsSet smsSet, boolean busySuscriber, PersistenceRAInterface pers, long currentMsgNum, ArrayList<Sms> lstFailured) {
 
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
 		try {
@@ -794,7 +794,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                         smsSet.setDueDate(newDueDate);
                         smsSet.setDueDelay(newDueDelay);
                         long dueSlot = this.getStore().c2_getDueSlotForTime(newDueDate);
-                        for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
+                        for (long i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
                             Sms sms = smsSet.getSms(i1);
                             pers.c2_scheduleMessage_NewDueSlot(sms, dueSlot, lstFailured,
                                     smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);

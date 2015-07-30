@@ -72,9 +72,11 @@ public class SmsSet implements Serializable {
 
     private boolean processingStarted = false;
 
-	private List<Sms> smsList = new ArrayList<Sms>();
+//    private List<Sms> smsList = new ArrayList<Sms>();
+    private List<Segment> segmList = new ArrayList<Segment>();
+    private long markedSmsAsDelivered = 0;
 
-    private Date creationTime = new Date();
+    private Date lastUpdateTime = new Date();
 
     public SmsSet() {
 	}
@@ -294,34 +296,187 @@ public class SmsSet implements Serializable {
 		this.alertingSupported = alertingSupported;
 	}
 
-	// managing of SMS list
+	// --- managing of SMS list ---
 	public void clearSmsList() {
-		this.smsList.clear();
+		this.segmList.clear();
 	}
 
-	public void addSms(Sms sms) {
-		sms.setSmsSet(this);
-		this.smsList.add(sms);
+    public void addSms(Sms sms) {
+        int i1 = this.segmList.size();
+        if (i1 == 0) {
+            this.segmList.add(new Segment());
+            i1++;
+        }
+        Segment segm = this.segmList.get(i1 - 1);
+        segm.smsList.add(sms);
+        segm.cnt++;
+        sms.setSmsSet(this);
+    }
+
+    public void addSmsSet(SmsSet smsSet) {
+        this.updateLastUpdateTime();
+
+        ArrayList<Sms> al = smsSet.segmList.get(0).smsList;
+
+        int i1 = this.segmList.size();
+        if (i1 == 0) {
+            Segment segm = new Segment();
+            segm.smsList = al;
+            segm.cnt = al.size();
+            this.segmList.add(segm);
+            for (int i2 = 0; i2 < al.size(); i2++) {
+                Sms smsx = al.get(i2);
+                smsx.setSmsSet(this);
+            }
+        } else {
+            if (this.segmList.get(i1 - 1).smsList.size() + al.size() > SmsSetCache.SMSSET_MSG_PRO_SEGMENT_LIMIT) {
+                for (int i2 = 0; i2 < al.size(); i2++) {
+                    Sms smsx = al.get(i2);
+                    if (this.checkSmsPresent(smsx)) {
+                        al.remove(i2);
+                        i2--;
+                    } else {
+                        smsx.setSmsSet(this);
+                    }
+                }
+
+                if (al.size() > 0) {
+                    Segment segm = new Segment();
+                    segm.smsList = al;
+                    segm.cnt = al.size();
+                    this.segmList.add(segm);
+                }
+            } else {
+                Segment segm = this.segmList.get(i1 - 1);
+                ArrayList<Sms> al2 = segm.smsList;
+                for (int i2 = 0; i2 < al.size(); i2++) {
+                    Sms smsx = smsSet.getSms(i2);
+                    if (!this.checkSmsPresent(smsx)) {
+                        smsx.setSmsSet(this);
+                        al2.add(smsx);
+                        segm.cnt++;
+                    }
+                }
+            }
+        }
+
+        if (this.segmList.size() > 1)
+            SmsSetCache.getInstance().registerSmsSetWithBigMessageCount(this.getTargetId(), this);
+    }
+
+    public void resortSms() {
+        int i1 = this.segmList.size();
+        if (i1 > 0) {
+            ArrayList<Sms> al = this.segmList.get(i1 - 1).smsList;
+            Collections.sort(al, new SmsComparator());
+        }
+    }
+
+    public Sms getSms(long index) {
+        List<Segment> lst = this.segmList;
+        int segmCnt = lst.size();
+        long indexCur = index;
+        for (int i1 = 0; i1 < segmCnt; i1++) {
+            Segment segm = lst.get(i1);
+            if (indexCur < segm.cnt) {
+                ArrayList<Sms> al = segm.smsList;
+                if (al != null)
+                    return al.get((int) indexCur);
+                else
+                    return null;
+            } else {
+                indexCur -= segm.cnt;
+            }
+        }
+        return null;
+    }
+
+    public void markSmsAsDelivered(long index) {
+        this.markedSmsAsDelivered = index + 1;
+
+        List<Segment> lst = this.segmList;
+        int segmCnt = lst.size();
+        long cumCnt = 0;
+        int intNum = 0;
+        for (int i1 = 0; i1 < segmCnt; i1++) {
+            Segment segm = lst.get(i1);
+            cumCnt += segm.cnt;
+            if (index < cumCnt) {
+                intNum = i1;
+                break;
+            }
+        }
+        for (int i1 = 0; i1 < intNum; i1++) {
+            Segment segm = lst.get(i1);
+            if (segm.smsList != null) {
+                segm.smsList = null;
+            }
+        }
+        if (intNum >= SmsSetCache.SMSSET_FREE_SEGMENT_CNT) {
+            // need to optimize the segment list
+            List<Segment> lst2 = new ArrayList<Segment>();
+            long cnt = 0;
+            for (int i1 = 0; i1 < intNum; i1++) {
+                cnt += lst.get(i1).cnt;
+            }
+            Segment segm = new Segment();
+            segm.cnt = cnt;
+            segm.smsList = null;
+            lst2.add(segm);
+            for (int i1 = intNum; i1 < segmCnt; i1++) {
+                lst2.add(lst.get(i1));
+            }
+
+            this.segmList = lst2;
+        }
+    }
+
+    public long getSmsCount() {
+        List<Segment> lst = this.segmList;
+        int segmCnt = lst.size();
+        long res = 0;
+        for (int i1 = 0; i1 < segmCnt; i1++) {
+            Segment segm = lst.get(i1);
+            res += segm.cnt;
+        }
+        return res;
 	}
 
-	public void resortSms() {
-		Collections.sort(this.smsList, new SmsComparator());
-	}
+    public int getSmsCountWithoutDelivered() {
+        int res = (int) (getSmsCount() - markedSmsAsDelivered);
+        if (res > 0)
+            return res;
+        else
+            return 0;
+    }
 
-	public Sms getSms(int index) {
-		if (index >= 0 && index < this.smsList.size())
-			return this.smsList.get(index);
-		else
-			return null;
-	}
+    public List<Sms> getRawListLastSegment() {
+        int i1 = this.segmList.size();
+        if (i1 > 0) {
+            ArrayList<Sms> al = this.segmList.get(i1 - 1).smsList;
+            return new ArrayList<Sms>(al);
+        } else
+            return new ArrayList<Sms>();
+    }
 
-	public int getSmsCount() {
-		return this.smsList.size();
-	}
-
-	public List<Sms> getRawList(){
-	    return new ArrayList<Sms>(this.smsList);
-	}
+    public boolean checkSmsPresent(Sms sms) {
+        List<Segment> lst = this.segmList;
+        int segmCnt = lst.size();
+        for (int i1 = 0; i1 < segmCnt; i1++) {
+            Segment segm = lst.get(i1);
+            ArrayList<Sms> al = segm.smsList;
+            if (al != null) {
+                int mCnt = al.size();
+                for (int i2 = 0; i2 < mCnt; i2++) {
+                    Sms smsa = al.get(i2);
+                    if (smsa.getDbId().equals(sms.getDbId())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     public boolean isProcessingStarted() {
         return processingStarted;
@@ -331,17 +486,12 @@ public class SmsSet implements Serializable {
         processingStarted = true;
     }
 
-    public Date getCreationTime() {
-        return creationTime;
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
     }
 
-    public boolean checkSmsPresent(Sms sms) {
-        for (Sms smsa : smsList) {
-            if (smsa.getDbId().equals(sms.getDbId())) {
-                return true;
-            }
-        }
-        return false;
+    public void updateLastUpdateTime() {
+        lastUpdateTime = new Date();
     }
 
 	@Override
@@ -382,8 +532,10 @@ public class SmsSet implements Serializable {
 		sb.append(type);
 		sb.append(", lastDelivery=");
 		sb.append(lastDelivery);
-		sb.append(", alertingSupported=");
-		sb.append(alertingSupported);
+        sb.append(", alertingSupported=");
+        sb.append(alertingSupported);
+        sb.append(", markedSmsAsDelivered=");
+        sb.append(markedSmsAsDelivered);
 
 		sb.append("]");
 
@@ -447,6 +599,10 @@ public class SmsSet implements Serializable {
 					return 1;
 			}
 		}
-
 	}
+
+    public class Segment {
+        protected long cnt;
+        protected ArrayList<Sms> smsList = new ArrayList<Sms>();
+    }
 }

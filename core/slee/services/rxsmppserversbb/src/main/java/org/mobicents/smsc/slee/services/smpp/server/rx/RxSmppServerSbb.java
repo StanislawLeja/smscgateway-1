@@ -266,9 +266,9 @@ public abstract class RxSmppServerSbb implements Sbb {
 
     public abstract String getTargetId();
 
-	public abstract void setCurrentMsgNum(int currentMsgNum);
+	public abstract void setCurrentMsgNum(long currentMsgNum);
 
-	public abstract int getCurrentMsgNum();
+	public abstract long getCurrentMsgNum();
 
 	/**
 	 * Private methods
@@ -282,7 +282,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 	    smscStatAggregator.updateMsgOutTryAll();
         smscStatAggregator.updateMsgOutTrySmpp();
 
-		int currentMsgNum = this.getCurrentMsgNum();
+        long currentMsgNum = this.getCurrentMsgNum();
 		Sms sms = smsSet.getSms(currentMsgNum);
         if (sms == null) {
             // this means that no messages with good ScheduleDeliveryTime or
@@ -483,7 +483,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 	private void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason) {
         smscStatAggregator.updateMsgInFailedAll();
 
-        int currentMsgNum = this.getCurrentMsgNum();
+        long currentMsgNum = this.getCurrentMsgNum();
 		Sms smsa = smsSet.getSms(currentMsgNum);
 		if (smsa != null) {
 			String s1 = reason.replace("\n", "\t");
@@ -497,7 +497,7 @@ public abstract class RxSmppServerSbb implements Sbb {
             delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.temporaryNetworkError;
         if (errorAction == ErrorAction.permanentFailure)
             delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.permanentNetworkError;
-        for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
+        for (long i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
             Sms sms = smsSet.getSms(i1);
             if (sms != null) {
                 if (sms.getMessageDeliveryResultResponse() != null) {
@@ -526,9 +526,9 @@ public abstract class RxSmppServerSbb implements Sbb {
 					// first of all we are removing messages that delivery
 					// period is over
 					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-						int smsCnt = smsSet.getSmsCount();
+					    long smsCnt = smsSet.getSmsCount();
 						int goodMsgCnt = 0;
-						for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
+						for (long i1 = currentMsgNum; i1 < smsCnt; i1++) {
 							Sms sms = smsSet.getSms(currentMsgNum);
 							if (sms != null) {
 								if (sms.getValidityPeriod().before(curDate)) {
@@ -555,8 +555,8 @@ public abstract class RxSmppServerSbb implements Sbb {
 						break;
 
 					case permanentFailure:
-						int smsCnt = smsSet.getSmsCount();
-						for (int i1 = currentMsgNum; i1 < smsCnt; i1++) {
+					    long smsCnt = smsSet.getSmsCount();
+						for (long i1 = currentMsgNum; i1 < smsCnt; i1++) {
 							Sms sms = smsSet.getSms(i1);
 							if (sms != null) {
 								lstFailured.add(sms);
@@ -654,7 +654,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 	 * @param smsSet
 	 * @param pers
 	 */
-	protected void freeSmsSetFailured(SmsSet smsSet, PersistenceRAInterface pers, int currentMsgNum) {
+	protected void freeSmsSetFailured(SmsSet smsSet, PersistenceRAInterface pers, long currentMsgNum) {
 
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
 		try {
@@ -662,7 +662,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 				try {
 					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 						pers.fetchSchedulableSms(smsSet, false);
-						int cnt = smsSet.getSmsCount();
+						long cnt = smsSet.getSmsCount();
 						for (int i1 = 0; i1 < cnt; i1++) {
 							Sms sms = smsSet.getSms(i1);
 							pers.archiveFailuredSms(sms);
@@ -670,7 +670,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 						pers.deleteSmsSet(smsSet);
 					} else {
-						for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
+						for (long i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
                             Sms sms = smsSet.getSms(i1);
                             pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
                                     smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
@@ -695,7 +695,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 	 * 
 	 * @param smsSet
 	 */
-	protected void rescheduleSmsSet(SmsSet smsSet, PersistenceRAInterface pers, int currentMsgNum,
+	protected void rescheduleSmsSet(SmsSet smsSet, PersistenceRAInterface pers, long currentMsgNum,
 			ArrayList<Sms> lstFailured) {
 
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
@@ -715,7 +715,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 						smsSet.setDueDate(newDueDate);
 						smsSet.setDueDelay(newDueDelay);
 						long dueSlot = this.getStore().c2_getDueSlotForTime(newDueDate);
-						for (int i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
+						for (long i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
 							Sms sms = smsSet.getSms(i1);
                             pers.c2_scheduleMessage_NewDueSlot(sms, dueSlot, lstFailured,
                                     smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
@@ -842,7 +842,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 			// current message is sent
             // firstly sending of a positive response for transactional mode
-            int currentMsgNum = this.getCurrentMsgNum();
+		    long currentMsgNum = this.getCurrentMsgNum();
             Sms sms = smsSet.getSms(currentMsgNum);
             if (sms.getMessageDeliveryResultResponse() != null) {
                 sms.getMessageDeliveryResultResponse().responseDeliverySuccess();
@@ -936,7 +936,10 @@ public abstract class RxSmppServerSbb implements Sbb {
 			TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
 			try {
 				synchronized (lock) {
-					// now we are trying to sent other messages
+		            // marking the message in cache as delivered
+		            smsSet.markSmsAsDelivered(currentMsgNum);
+
+		            // now we are trying to sent other messages
 					if (currentMsgNum < smsSet.getSmsCount() - 1) {
 						// there are more messages to send in cache
 						currentMsgNum++;

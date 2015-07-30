@@ -515,14 +515,14 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
 		}
 	}
 
-	public void doSetCurrentMsgNum(int currentMsgNum) {
+	public void doSetCurrentMsgNum(long currentMsgNum) {
 		MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
 		if (mtSbbLocalObject != null) {
 			mtSbbLocalObject.doSetCurrentMsgNum(currentMsgNum);
 		}
 	}
 
-	public int doGetCurrentMsgNum() {
+	public long doGetCurrentMsgNum() {
 		MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
 		if (mtSbbLocalObject != null) {
 			return mtSbbLocalObject.doGetCurrentMsgNum();

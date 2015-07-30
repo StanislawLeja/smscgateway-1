@@ -511,7 +511,7 @@ public class StressTool2 {
                     try {
                         SmsSet smsSet = dbOperations.getSmsSetForTargetId(new Date[] { new Date() }, ti);
                         if (smsSet != null) {
-                            int ii = smsSet.getSmsCount();
+                            long ii = smsSet.getSmsCount();
 
                             for (int i1 = 0; i1 < ii; i1++) {
                                 Sms sms = smsSet.getSms(i1);

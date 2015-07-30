@@ -39,7 +39,7 @@ import org.testng.annotations.Test;
 */
 public class SmsSetCasheTest {
 
-    @Test(groups = { "ShellExecutor" })
+    @Test(groups = { "SmsSet" })
     public void testSmppShellExecutor() throws Exception {
 
         int correlationIdLiveTime = 2;
@@ -63,7 +63,7 @@ public class SmsSetCasheTest {
         SmsSetCache.stop();
     }
 
-    @Test(groups = { "ShellExecutor" })
+    @Test(groups = { "SmsSet" })
     public void testSmsDataCoding() throws Exception {
         int encoded = 10 + 5 * 256 + 1 * 256 * 256;
         

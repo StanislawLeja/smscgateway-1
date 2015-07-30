@@ -40,9 +40,9 @@ public interface MtForwardSmsInterface {
 
 	public SmsSubmitData doGetSmsSubmitData();
 
-	public void doSetCurrentMsgNum(int currentMsgNum);
+	public void doSetCurrentMsgNum(long currentMsgNum);
 
-	public int doGetCurrentMsgNum();
+	public long doGetCurrentMsgNum();
 
 	public void doSetInformServiceCenterContainer(InformServiceCenterContainer informServiceCenterContainer);
 
