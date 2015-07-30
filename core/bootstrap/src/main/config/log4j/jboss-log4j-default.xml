@@ -43,7 +43,6 @@
 
 	<category name="javax.slee">
 		<priority value="INFO" />
-		<appender-ref ref="FILE"/> 
 	</category>
 	
 	<category name="org.mobicents.smsc.library.CdrGenerator" additivity="false"> 
