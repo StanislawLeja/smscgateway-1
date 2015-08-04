@@ -53,4 +53,9 @@ public interface SS7ServiceMBean {
 	  * @return
 	  */
 	 public String getSS7Version();
+	 
+
+	public String getSS7ServiceName();
+
+	public boolean isStarted();
 }

@@ -39,10 +39,19 @@ public class SS7Service extends ServiceMBeanSupport implements SS7ServiceMBean {
 	private Object stack;
 
 	private String jndiName;
+	private final String serviceName;
 
 	private static final String rLogo = " ]]]]]]]]] ";
 	private static final String lLogo = " [[[[[[[[[ ";
 
+    public SS7Service(String serviceName) {
+        this.serviceName = serviceName;
+    }
+    
+    public String getSS7ServiceName() {
+        return this.serviceName;
+    }
+    
 	@Override
 	public void startService() throws Exception {
 		// starting
@@ -59,7 +68,7 @@ public class SS7Service extends ServiceMBeanSupport implements SS7ServiceMBean {
 		if (name != null) {
 			return name;
 		} else {
-			return "Mobicents SMSC";
+			return "TelScale SMSC";
 		}
 	}
 
@@ -68,7 +77,7 @@ public class SS7Service extends ServiceMBeanSupport implements SS7ServiceMBean {
 		if (vendor != null) {
 			return vendor;
 		} else {
-			return "JBoss, a division of Red Hat";
+			return "TeleStax";
 		}
 	}
 
@@ -107,6 +116,11 @@ public class SS7Service extends ServiceMBeanSupport implements SS7ServiceMBean {
 
 		logger.info(generateMessageWithLogo("service stopped"));
 	}
+	
+    @Override
+    public boolean isStarted() {
+        return (this.getState() == STARTED);
+    }
 
 	/**
 	 * Binds trunk object to the JNDI under the jndiName.

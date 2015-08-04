@@ -194,6 +194,9 @@
 	<bean name="MAPSS7Service" class="org.mobicents.smsc.server.bootstrap.SS7Service">
 		<annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="org.mobicents.ss7:service=SS7Service",exposedInterface=org.mobicents.smsc.server.bootstrap.SS7ServiceMBean.class,registerDirectly=true)
 		</annotation>
+		<constructor>
+			<parameter>MAP</parameter>
+		</constructor>
 		<property name="jndiName">java:/mobicents/ss7/map</property>
 		<property name="stack">
 			<inject bean="MapStack" property="MAPProvider" />
