@@ -66,6 +66,7 @@
 									<select id="smppencodingforgsm7" >
 										<option>Utf8</option>
 										<option>Unicode</option>
+										<option>Gsm7</option>
 									</select>
 								</span>                         
 							</div>							
@@ -75,6 +76,7 @@
 									<select id="smppencodingforucs2" >
 										<option>Utf8</option>
 										<option>Unicode</option>
+										<option>Gsm7</option>
 									</select>
 								</span>                         
 							</div>
@@ -559,16 +561,20 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										
 										if(smppEncodingForUCS2 == "Utf8"){
 											smppencodingforucs2.options[0].selected = true;
-										} else {
+										} else if(smppEncodingForUCS2 == "Unicode"){ 
 											smppencodingforucs2.options[1].selected = true;
+										} else {
+											smppencodingforucs2.options[2].selected = true;
 										}
 										
 										var smppEncodingForGsm7 = response.value.SmppEncodingForGsm7;
 										
 										if(smppEncodingForGsm7 == "Utf8"){
 											smppencodingforgsm7.options[0].selected = true;
-										} else {
+										} else if(smppEncodingForGsm7 == "Unicode"){ 
 											smppencodingforgsm7.options[1].selected = true;
+										} else { 
+											smppencodingforgsm7.options[2].selected = true;
 										}										
 										
 										var storeAndForwordMode = response.value.StoreAndForwordMode;
