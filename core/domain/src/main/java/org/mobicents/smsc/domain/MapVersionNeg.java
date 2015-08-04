@@ -84,4 +84,11 @@ public class MapVersionNeg {
         }
     }
 
+	@Override
+	public String toString() {
+		return "MapVersionNeg [msisdn=" + msisdn + ", curVersion=" + curVersion
+				+ ", upVersionTested=" + upVersionTested
+				+ ", downVersionTested=" + downVersionTested + "]";
+	}
+
 }

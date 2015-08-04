@@ -103,7 +103,7 @@
 							$("#login-settings-error").hide();
 						}						
 						
-						jolokia.execute(mbeanSearch,"setMAPApplicationContextVersion",updatemsisdn,smppBindType,
+						jolokia.execute(mbeanSearch,"forceMAPApplicationContextVersion",updatemsisdn,smppBindType,
 								{
 									success: function(value) {
 										logToConsole('INFO', 'Successfully cached MAP Version to ' + smppBindType + ' for Node ' + updatemsisdn );
@@ -148,13 +148,15 @@
 									],
 									{ success: [
 										function(response) {
-											if(response.value.MAPApplicationContextVersionCache.length == 0){
+											var cacheSize = 0;
+											var cache = "";
+											$.each( response.value.MAPApplicationContextVersionCache, function( key, value ) {
+												cache = cache + key + " : " + value.curVersion +"<br/>";
+												cacheSize = cacheSize+1;
+												});
+											if(cacheSize == 0){
 												logToConsole('INFO', "No map version found in the cache");
 											} else {
-												var cache = "";
-												$.each( response.value.MAPApplicationContextVersionCache, function( key, value ) {
-													cache = cache + key + " : " + value +"<br/>";
-													});
 												logToConsole('INFO', cache);
 											}
 										}],
