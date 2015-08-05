@@ -131,9 +131,11 @@
 			<parameter>8</parameter>
 		</constructor>
 		<property name="persistDir">${jboss.server.data.dir}</property>
+<!--
 		<property name="dialogIdleTimeout">60000</property>
 		<property name="invokeTimeout">30000</property>
 		<property name="maxDialogs">25000</property>
+-->
 	</bean>
 
 	<bean name="TcapExecutor" class="org.mobicents.protocols.ss7.tcap.oam.TCAPExecutor">
