@@ -10,6 +10,8 @@ public class SmscPropertiesManagementTest {
     @Test(groups = { "management" })
     public void testPropertiesLoad() throws Exception {
         SmscPropertiesManagement man = SmscPropertiesManagement.getInstance("SmscPropertiesManagementTest");
+
+        
         man.start();
 
         man.setSMSHomeRouting(true);

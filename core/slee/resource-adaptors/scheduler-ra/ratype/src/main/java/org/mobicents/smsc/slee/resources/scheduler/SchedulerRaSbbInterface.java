@@ -35,4 +35,6 @@ public interface SchedulerRaSbbInterface {
 
     public void injectSmsDatabase(SmsSet smsSet) throws Exception;
 
+    public void setDestCluster(SmsSet smsSet);
+
 }

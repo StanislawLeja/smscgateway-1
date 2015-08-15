@@ -1535,6 +1535,7 @@ public abstract class TxSmppServerSbb implements Sbb {
                                         else
                                             store.setNewMessageScheduled(sms.getSmsSet(), sms.getScheduleDeliveryTime());
                                     } else {
+                                        this.scheduler.setDestCluster(sms.getSmsSet());
                                         store.c2_scheduleMessage_ReschedDueSlot(sms,
                                                 smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, false);
                                     }

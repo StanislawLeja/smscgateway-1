@@ -44,6 +44,7 @@ import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.library.DbSmsRoutingRule;
+import org.mobicents.smsc.library.SmType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
@@ -649,22 +650,26 @@ public class DBOperations_C2 {
             int cnt = 0;
             while (!done && cnt < 5) {
                 cnt++;
-                for (PreparedStatementCollection_C3 psc : lstPsc) {
-                    dueSlot = this.c2_getDueSlotForTargetId(psc, sms.getSmsSet().getTargetId());
-                    if (dueSlot != 0)
-                        break;
-                }
 
-                if ((dueSlot == 0 || dueSlot <= this.c2_getCurrentDueSlot()) && preferredDueSlot > 0) {
-                    dueSlot = preferredDueSlot;
-                    this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
-                }
+                SmType destType = sms.getSmsSet().getType();
+                if (destType == null || destType == SmType.SMS_FOR_SS7) {
+                    for (PreparedStatementCollection_C3 psc : lstPsc) {
+                        dueSlot = this.c2_getDueSlotForTargetId(psc, sms.getSmsSet().getTargetId());
+                        if (dueSlot != 0)
+                            break;
+                    }
 
-                if (fastStoreAndForwordMode && dueSlot != 0) {
-                    long dueSlot2 = c2_checkDueSlotWritingPossibility(dueSlot);
-                    if (dueSlot2 != dueSlot) {
-                        dueSlot = dueSlot2;
+                    if ((dueSlot == 0 || dueSlot <= this.c2_getCurrentDueSlot()) && preferredDueSlot > 0) {
+                        dueSlot = preferredDueSlot;
                         this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
+                    }
+
+                    if (fastStoreAndForwordMode && dueSlot != 0) {
+                        long dueSlot2 = c2_checkDueSlotWritingPossibility(dueSlot);
+                        if (dueSlot2 != dueSlot) {
+                            dueSlot = dueSlot2;
+                            this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
+                        }
                     }
                 }
 
@@ -672,6 +677,7 @@ public class DBOperations_C2 {
                     dueSlot = this.c2_getDueSlotForNewSms();
                     this.c2_updateDueSlotForTargetId_WithTableCleaning(sms.getSmsSet().getTargetId(), dueSlot);
                 }
+
                 sms.setDueSlot(dueSlot);
 
                 done = this.do_scheduleMessage(sms, dueSlot, lstFailured, fastStoreAndForwordMode, removeExpiredValidityPeriod);

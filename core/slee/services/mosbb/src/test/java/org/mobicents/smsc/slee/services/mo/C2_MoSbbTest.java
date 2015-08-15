@@ -90,6 +90,7 @@ import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmppSessionsProxy;
 import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.smpp.Esme;
@@ -793,6 +794,7 @@ public class C2_MoSbbTest {
             this.cassandraSbb = cassandraSbb;
             this.logger = new TraceProxy();
             this.mapProvider = new MAPProviderProxy();
+            this.scheduler = new SchedulerResourceAdaptorProxy();
         }
 
         @Override
@@ -873,6 +875,28 @@ public class C2_MoSbbTest {
         public boolean isEnding() throws TransactionRequiredLocalException, SLEEException {
             // TODO Auto-generated method stub
             return false;
+        }
+
+    }
+
+    private class SchedulerResourceAdaptorProxy implements SchedulerRaSbbInterface {
+
+        @Override
+        public void injectSmsOnFly(SmsSet smsSet) throws Exception {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void injectSmsDatabase(SmsSet smsSet) throws Exception {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void setDestCluster(SmsSet smsSet) {
+            // TODO Auto-generated method stub
+
         }
 
     }

@@ -617,6 +617,7 @@ public abstract class RxSmppServerSbb implements Sbb {
                                         }
                                     } else {
                                         receipt.setStored(true);
+                                        this.scheduler.setDestCluster(receipt.getSmsSet());
                                         pers.c2_scheduleMessage_ReschedDueSlot(receipt,
                                                 smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, true);
                                     }
@@ -914,6 +915,7 @@ public abstract class RxSmppServerSbb implements Sbb {
                                         }
                                     } else {
                                         receipt.setStored(true);
+                                        this.scheduler.setDestCluster(receipt.getSmsSet());
                                         pers.c2_scheduleMessage_ReschedDueSlot(receipt,
                                                 smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, true);
                                     }

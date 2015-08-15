@@ -966,6 +966,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                                     }
                                 } else {
                                     receipt.setStored(true);
+                                    this.scheduler.setDestCluster(receipt.getSmsSet());
                                     pers.c2_scheduleMessage_ReschedDueSlot(receipt,
                                             smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, true);
                                 }

@@ -79,7 +79,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 	private Date garbageCollectionTime = new Date();
     private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
-    
+
 	public SchedulerResourceAdaptor() {
 		this.schedulerRaSbbInterface = new SchedulerRaSbbInterface() {
 
@@ -93,6 +93,10 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                 doInjectSmsDatabase(smsSet);
             }
 
+            @Override
+            public void setDestCluster(SmsSet smsSet) {
+                doSetDestCluster(smsSet);
+            }
 		};
 	}
 
@@ -649,6 +653,7 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                                                     }
                                                 } else {
                                                     receipt.setStored(true);
+                                                    this.setDestCluster(receipt.getSmsSet());
                                                     dbOperations_C2.c2_scheduleMessage_ReschedDueSlot(receipt,
                                                             smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, true);
                                                 }
@@ -693,46 +698,19 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
     	}
 
 		try {
-			// Step 1: Check first if this SMS is for SMPP
-			SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
-			
-			//Quick and dirty fix for SMSC-171
-			String orignatingEsmeName = smsSet.getSms(0).getOrigEsmeName();
-			
-			String destClusterName = smsRouteManagement.getEsmeClusterName(smsSet.getDestAddrTon(),
-					smsSet.getDestAddrNpi(), smsSet.getDestAddr(), orignatingEsmeName, smsSet.getNetworkId());
-
-			// Step 2: If no SMPP's found, check if its for SIP
-			// TODO: we possibly do not need to send a SIP-originated message back to SIP
-			if (destClusterName == null) {
-				destClusterName = smsRouteManagement.getSipClusterName(smsSet.getDestAddrTon(),
-						smsSet.getDestAddrNpi(), smsSet.getDestAddr(), smsSet.getNetworkId());
-
-				if (destClusterName == null) {
-					// Step 2: If no SIP's found, its for SS7
-					smsSet.setType(SmType.SMS_FOR_SS7);
-				} else {
-					smsSet.setType(SmType.SMS_FOR_SIP);
-				}
-			} else {
-				// smsSet.setType(destClusterName != null ? SmType.SMS_FOR_ESME
-				// : SmType.SMS_FOR_SS7);
-				smsSet.setType(SmType.SMS_FOR_ESME);
-			}
-
-			smsSet.setDestClusterName(destClusterName);
-			String eventName = null;
-			switch (smsSet.getType()) {
-			case SMS_FOR_ESME:
-				eventName = EVENT_SMPP_SM;
-				break;
-			case SMS_FOR_SS7:
-				eventName = EVENT_SS7_SM;
-				break;
-			case SMS_FOR_SIP:
-				eventName = EVENT_SIP_SM;
-				break;
-			}
+			this.doSetDestCluster(smsSet);
+	        String eventName = null;
+	        switch (smsSet.getType()) {
+	        case SMS_FOR_ESME:
+	            eventName = EVENT_SMPP_SM;
+	            break;
+	        case SMS_FOR_SS7:
+	            eventName = EVENT_SS7_SM;
+	            break;
+	        case SMS_FOR_SIP:
+	            eventName = EVENT_SIP_SM;
+	            break;
+	        }
 
 			final FireableEventType eventTypeId = this.eventIdCache.getEventId(eventName);
 			SmsSetEvent event = new SmsSetEvent();
@@ -767,6 +745,41 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
 		this.incrementActivityCount();
 		return true;
+    }
+
+    public void setDestCluster(SmsSet smsSet) {
+        doSetDestCluster(smsSet);
+    }
+
+    private void doSetDestCluster(SmsSet smsSet) {
+        // Step 1: Check first if this SMS is for SMPP
+        SmsRouteManagement smsRouteManagement = SmsRouteManagement.getInstance();
+        
+        //Quick and dirty fix for SMSC-171
+        String orignatingEsmeName = smsSet.getSms(0).getOrigEsmeName();
+        
+        String destClusterName = smsRouteManagement.getEsmeClusterName(smsSet.getDestAddrTon(),
+        		smsSet.getDestAddrNpi(), smsSet.getDestAddr(), orignatingEsmeName, smsSet.getNetworkId());
+
+        // Step 2: If no SMPP's found, check if its for SIP
+        // TODO: we possibly do not need to send a SIP-originated message back to SIP
+        if (destClusterName == null) {
+        	destClusterName = smsRouteManagement.getSipClusterName(smsSet.getDestAddrTon(),
+        			smsSet.getDestAddrNpi(), smsSet.getDestAddr(), smsSet.getNetworkId());
+
+        	if (destClusterName == null) {
+        		// Step 2: If no SIP's found, its for SS7
+        		smsSet.setType(SmType.SMS_FOR_SS7);
+        	} else {
+        		smsSet.setType(SmType.SMS_FOR_SIP);
+        	}
+        } else {
+        	// smsSet.setType(destClusterName != null ? SmType.SMS_FOR_ESME
+        	// : SmType.SMS_FOR_SS7);
+        	smsSet.setType(SmType.SMS_FOR_ESME);
+        }
+
+        smsSet.setDestClusterName(destClusterName);
     }
 
 	protected OneWaySmsSetCollection fetchSchedulable(int maxRecordCount) throws PersistenceException {

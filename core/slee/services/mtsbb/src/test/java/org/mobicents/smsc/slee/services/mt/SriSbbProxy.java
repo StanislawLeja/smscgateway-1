@@ -40,9 +40,11 @@ import org.mobicents.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMRespo
 import org.mobicents.protocols.ss7.sccp.impl.parameter.ParameterFactoryImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbLocalObjectExt;
+import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
 import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
+import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 
 /**
  * 
@@ -67,6 +69,7 @@ public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObject
 		this.maxMAPApplicationContextVersion = MAPApplicationContextVersion.getInstance(smscPropertiesManagement.getMaxMapVersion());
 		this.mapAcif = new MAPContextInterfaceFactoryProxy();
 		this.sbbContext = new SbbContextExtProxy(this);
+        this.scheduler = new SchedulerResourceAdaptorProxy();
 	}
 
 	@Override
@@ -246,4 +249,25 @@ public class SriSbbProxy extends SriSbb implements ChildRelation, SbbLocalObject
 		return null;
 	}
 
+    private class SchedulerResourceAdaptorProxy implements SchedulerRaSbbInterface {
+
+        @Override
+        public void injectSmsOnFly(SmsSet smsSet) throws Exception {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void injectSmsDatabase(SmsSet smsSet) throws Exception {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void setDestCluster(SmsSet smsSet) {
+            // TODO Auto-generated method stub
+
+        }
+
+    }
 }
