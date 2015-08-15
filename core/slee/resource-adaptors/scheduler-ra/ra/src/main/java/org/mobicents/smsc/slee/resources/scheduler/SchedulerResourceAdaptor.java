@@ -558,6 +558,9 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
                     ErrorCode smStatus = ErrorCode.RESERVED_127;
                     String reason = "Validity period is expired";
 
+                    if (expired.size() > 0) {
+                        smsSet.setStatus(smStatus);
+                    }
                     if (good.size() == 0) {
                         // no good nonexpired messages - we need to remove
                         // SmsSet record
@@ -566,7 +569,9 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
 
                             dbOperations_C1.setDeliveryFailure(smsSet, smStatus, curDate);
                         } else {
-                            smsSet.setStatus(smStatus);
+                            // TODO: remove it !!!!
+                            // smsSet.setStatus(smStatus);
+                            // TODO: remove it !!!!
                             SmsSetCache.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
                         }
                     }
