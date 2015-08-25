@@ -71,7 +71,7 @@ public class SmppShellExecutor implements ShellExecutor {
     }
 
     /**
-     * Command is smpp esme modify <name> password <password> esme-ton <esme address ton> esme-npi <esme address npi> esme-range
+     * Command is smpp esme modify <name> password <password> networkid <networkid> esme-ton <esme address ton> esme-npi <esme address npi> esme-range
      * <esme address range> window-size <windowSize> connect-timeout <connectTimeout> request-expiry-timeout
      * <requestExpiryTimeout> window-monitor-interval <windowMonitorInterval> window-wait-timeout <windowWaitTimeout>
      * counters-enabled <true | false> enquire-link-delay <30000> charging-enabled <true | false> source-ton <source address
@@ -85,7 +85,7 @@ public class SmppShellExecutor implements ShellExecutor {
      * @return
      */
     private String modifyEsme(String[] args) throws Exception {
-        if (args.length < 6 || args.length > 48) {
+        if (args.length < 6 || args.length > 58) {
             return SmppOamMessages.INVALID_COMMAND;
         }
 
@@ -112,6 +112,8 @@ public class SmppShellExecutor implements ShellExecutor {
 
             if (key.equals("password")) {
                 esme.setPassword(args[count++]);
+            } else if (key.equals("networkid")) {
+                esme.setNetworkId(Integer.parseInt(args[count++]));
             } else if (key.equals("esme-ton")) {
                 byte esmeTonType = Byte.parseByte(args[count++]);
                 esme.setEsmeTon(esmeTonType);
@@ -216,7 +218,7 @@ public class SmppShellExecutor implements ShellExecutor {
      * @return
      */
     private String createEsme(String[] args) throws Exception {
-        if (args.length < 9 || args.length > 61) {
+        if (args.length < 9 || args.length > 69) {
             return SmppOamMessages.INVALID_COMMAND;
         }
 

@@ -553,6 +553,11 @@
 									var rateLimitPerHour = response.value.RateLimitPerHour;
 									var rateLimitPerDay = response.value.RateLimitPerDay;
 									
+									var nationalLanguageSingleShift = response.value.NationalLanguageSingleShift;
+									var nationalLanguageLockingShift = response.value.NationalLanguageLockingShift;
+									var minMessageLength = response.value.MinMessageLength;
+									var maxMessageLength = response.value.MaxMessageLength;
+									
 									
 									if(systemType == null || systemType==""){
 										systemType = "null";
@@ -664,6 +669,10 @@
 													'<dt>LocalAddressAndPort</dt> <dd>' + localAddressAndPort + ' </dd>' +
 													'<dt>RemoteAddressAndPort</dt> <dd>' + remoteAddressAndPort + ' </dd>' +
 													'<dt>RemoteTypeName</dt> <dd>' + remoteTypeName + ' </dd>' +
+													'<dt>NationalLanguageSingleShift</dt> <dd>' + nationalLanguageSingleShift + ' </dd>' +
+													'<dt>NationalLanguageLockingShift</dt> <dd>' + nationalLanguageLockingShift + ' </dd>' +
+													'<dt>MinMessageLength</dt> <dd>' + minMessageLength + ' </dd>' +
+													'<dt>MaxMessageLength</dt> <dd>' + maxMessageLength + ' </dd>' +
 													'</dl>'+
 									        '    </div>'+	
 									        '<hr style="margin: 5px 0;"/>' +
@@ -1128,7 +1137,71 @@
 																		'</td>'+
 																		'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"RateLimitPerDay"+']\').toggle(); $(\'input[id^='+name+"RateLimitPerDay"+']\').focus();"></i>' +
 																		'</td>'+
-																	'</tr>'+															
+																	'</tr>'+
+																	
+																	'<tr data-toggle="tooltip" title="throttling of SMS per day for this connection. 0 means no limit">'+
+																		'<td style="font-size: 0.9em;">National Language Single Shift</td>'+
+																		'<td style="font-size: 0.9em; padding: 0;">'+
+																			'<div id="div-' + name +'NationalLanguageSingleShift-input" class="control-group">'+
+																			'<span id="' + name +'NationalLanguageSingleShift-input" style="display: none;">'+
+																				'<input type="text" class="input-small" value="' + nationalLanguageSingleShift + '" /> ' +
+																				'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'NationalLanguageSingleShift\', \'' + name+"NationalLanguageSingleShift" + '\', \'false\')"></i> ' +
+																				'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"NationalLanguageSingleShift"+']\').toggle(); $(\'input[id^='+name+"NationalLanguageSingleShift"+']\').focus();"></i>' + 
+																			'</span>'+
+																			'</div>' +
+																			'<span id="' +name + 'NationalLanguageSingleShift-text">' + nationalLanguageSingleShift + '</span>'+
+																		'</td>'+
+																		'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"NationalLanguageSingleShift"+']\').toggle(); $(\'input[id^='+name+"NationalLanguageSingleShift"+']\').focus();"></i>' +
+																		'</td>'+
+																	'</tr>'+
+																	
+																	'<tr data-toggle="tooltip" title="throttling of SMS per day for this connection. 0 means no limit">'+
+																		'<td style="font-size: 0.9em;">National Language Locking Shift</td>'+
+																		'<td style="font-size: 0.9em; padding: 0;">'+
+																			'<div id="div-' + name +'NationalLanguageLockingShift-input" class="control-group">'+
+																			'<span id="' + name +'NationalLanguageLockingShift-input" style="display: none;">'+
+																				'<input type="text" class="input-small" value="' + nationalLanguageLockingShift + '" /> ' +
+																				'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'NationalLanguageLockingShift\', \'' + name+"NationalLanguageLockingShift" + '\', \'false\')"></i> ' +
+																				'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"NationalLanguageLockingShift"+']\').toggle(); $(\'input[id^='+name+"NationalLanguageLockingShift"+']\').focus();"></i>' + 
+																			'</span>'+
+																			'</div>' +
+																			'<span id="' +name + 'NationalLanguageLockingShift-text">' + nationalLanguageLockingShift + '</span>'+
+																		'</td>'+
+																		'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"NationalLanguageLockingShift"+']\').toggle(); $(\'input[id^='+name+"NationalLanguageLockingShift"+']\').focus();"></i>' +
+																		'</td>'+
+																	'</tr>'+	
+																	
+																	'<tr data-toggle="tooltip" title="throttling of SMS per day for this connection. 0 means no limit">'+
+																		'<td style="font-size: 0.9em;">Min Message Length</td>'+
+																		'<td style="font-size: 0.9em; padding: 0;">'+
+																			'<div id="div-' + name +'MinMessageLength-input" class="control-group">'+
+																			'<span id="' + name +'MinMessageLength-input" style="display: none;">'+
+																				'<input type="text" class="input-small" value="' + minMessageLength + '" /> ' +
+																				'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'MinMessageLength\', \'' + name+"MinMessageLength" + '\', \'false\')"></i> ' +
+																				'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"MinMessageLength"+']\').toggle(); $(\'input[id^='+name+"MinMessageLength"+']\').focus();"></i>' + 
+																			'</span>'+
+																			'</div>' +
+																			'<span id="' +name + 'MinMessageLength-text">' + minMessageLength + '</span>'+
+																		'</td>'+
+																		'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"MinMessageLength"+']\').toggle(); $(\'input[id^='+name+"MinMessageLength"+']\').focus();"></i>' +
+																		'</td>'+
+																	'</tr>'+
+																	
+																	'<tr data-toggle="tooltip" title="throttling of SMS per day for this connection. 0 means no limit">'+
+																		'<td style="font-size: 0.9em;">Max Message Length</td>'+
+																		'<td style="font-size: 0.9em; padding: 0;">'+
+																			'<div id="div-' + name +'MaxMessageLength-input" class="control-group">'+
+																			'<span id="' + name +'MaxMessageLength-input" style="display: none;">'+
+																				'<input type="text" class="input-small" value="' + maxMessageLength + '" /> ' +
+																				'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + name+ '\', \'MaxMessageLength\', \'' + name+"MaxMessageLength" + '\', \'false\')"></i> ' +
+																				'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+name+"MaxMessageLength"+']\').toggle(); $(\'input[id^='+name+"MaxMessageLength"+']\').focus();"></i>' + 
+																			'</span>'+
+																			'</div>' +
+																			'<span id="' +name + 'MaxMessageLength-text">' + maxMessageLength + '</span>'+
+																		'</td>'+
+																		'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+name+"MaxMessageLength"+']\').toggle(); $(\'input[id^='+name+"MaxMessageLength"+']\').focus();"></i>' +
+																		'</td>'+
+																	'</tr>'+																	
 																		
 																	'</tbody>' +
 																'</table>' +															

@@ -3,8 +3,8 @@ Name
 
 SYNOPSIS
 	smsc esme create name <systemId> <host-ip> <port> <SmppBindType>  
-	<SmppSession.Type> password <password> system-type <sms | vms | ota > 
-	interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton> 
+	<SmppSession.Type> password <password> networkid <networkid> system-type 
+	<sms | vms | ota > interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton> 
 	esme-npi <esme address npi> esme-range <esme address range> 
 	cluster-name <clusterName> window-size <windowSize> 
 	connect-timeout <connectTimeout> request-expiry-timeout <requestExpiryTimeout> 
@@ -15,7 +15,9 @@ SYNOPSIS
 	source-range <source address range> routing-ton <routing address ton>
 	routing-npi <routing address npi> routing-range <routing address range>
 	ratelimit-second <ratelimitsecond> ratelimit-minute <ratelimitminute> 
-	ratelimit-hour <ratelimithour> ratelimit-day <ratelimitday> 
+	ratelimit-hour <ratelimithour> ratelimit-day <ratelimitday>
+	national-language-single-shift <national-language-single-shift>
+	national-language-locking-shift <national-language-locking-shift> 
 	min-message-length <min-message-length value>
 	max-message-length <max-message-length value>
 
@@ -72,11 +74,18 @@ PARAMETERS
 
 	Optional Parameters
 	
-	Password		- It is used by the SMSC to authenticate the identity of 
+	Password	    - It is used by the SMSC to authenticate the identity of 
 				  the binding ESME. The Service Provider may require 
 				  ESME’s to provide a password when binding to the SMSC.	
+				  
+	networkId       - indicates virtual subnetwork that this ESME belongs. SMS 
+	                flows within same netwrokId, unless changed using mproc
+	                (this is for multi-tenancy support). If this parameter is
+                    skipped - networkId will be set to "0" when ESME creation.
+                    If you do not use multi-tenancy support - set this value
+                    to 0 or skip.   			  
 
-	system-type 		- Default value is null. 
+	system-type     - Default value is null. 
 				  This is used to categorize the type of ESME that is 
 				  binding to the SMSC.
 
