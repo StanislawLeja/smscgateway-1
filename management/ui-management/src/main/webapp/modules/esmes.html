@@ -358,7 +358,35 @@
 						<span class="add-on">Rate Limit Per Day</span>
 						<input id="rateLimitPerDay" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Rate Limit Per Day" value="0"/>
 					</span>	
-				</div>															
+				</div>
+				
+				<div id="div-nationalLanguageSingleShift" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="national langugae single and locking shift tables for the case when a message is originated from SMPP and does not included UDH. 0 means gsm7 default table. -1 means: take SMSC general nationalLanguage table (this is a default value)">
+						<span class="add-on">National Language Single Shift</span>
+						<input id="nationalLanguageSingleShift" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="National Language Single Shift" value="-1"/>
+					</span>	
+				</div>
+				
+				<div id="div-nationalLanguageLockingShift" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="national langugae single and locking shift tables for the case when a message is originated from SMPP and does not included UDH. 0 means gsm7 default table. -1 means: take SMSC general nationalLanguage table (this is a default value)">
+						<span class="add-on">National Language Locking Shift</span>
+						<input id="nationalLanguageLockingShift" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="National Language Locking Shift" value="-1"/>
+					</span>	
+				</div>
+				
+				<div id="div-minMessageLength" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="min and max side of an incoming message from SMPP. If an incoming message size (in characters) less than the min value or more than the max value, it will be rejected. -1 (default value) means no limitations">
+						<span class="add-on">Min Message Length</span>
+						<input id="minMessageLength" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Min Message Length" value="-1"/>
+					</span>	
+				</div>
+				
+				<div id="div-maxMessageLength" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="min and max side of an incoming message from SMPP. If an incoming message size (in characters) less than the min value or more than the max value, it will be rejected. -1 (default value) means no limitations">
+						<span class="add-on">Max Message Length</span>
+						<input id="maxMessageLength" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Max Message Length" value="-1"/>
+					</span>	
+				</div>																															
 																																																																				
 				<button id="add-entity-button" class="btn btn btn-primary" onclick="createEsme()">Create</button>
 			</span>
@@ -1894,7 +1922,27 @@
 		var rateLimitPerDay = $("#rateLimitPerDay").val();
 		if(rateLimitPerDay == "") {
 			rateLimitPerDay = "0";
-		}		
+		}
+		
+		var nationalLanguageSingleShift = $("#nationalLanguageSingleShift").val();
+		if(nationalLanguageSingleShift == "") {
+			nationalLanguageSingleShift = "-1";
+		}
+		
+		var nationalLanguageLockingShift = $("#nationalLanguageLockingShift").val();
+		if(nationalLanguageLockingShift == "") {
+			nationalLanguageLockingShift = "-1";
+		}
+		
+		var minMessageLength = $("#minMessageLength").val();
+		if(minMessageLength == "") {
+			minMessageLength = "-1";
+		}	
+		
+		var maxMessageLength = $("#maxMessageLength").val();
+		if(maxMessageLength == "") {
+			maxMessageLength = "-1";
+		}			
 		
 		if(formInvalid) {
 			$("#login-settings-error").show();
@@ -1904,7 +1952,7 @@
 			$("#login-settings-error").hide();
 		}
 		
-		jolokia.execute("com.telscale.smpp:layer=EsmeManagement,name=SmppManagement","createEsme", esmeName,systemId,password,ipAddress,ipPort,chargingEnabled,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay,sourceTon,sourceNpi,sourceRange,routingTon,routingNpi,routingRange,networkId,rateLimitPerSecond,rateLimitPerMinute,rateLimitPerHour,rateLimitPerDay, 
+		jolokia.execute("com.telscale.smpp:layer=EsmeManagement,name=SmppManagement","createEsme", esmeName,systemId,password,ipAddress,ipPort,chargingEnabled,smppBindType,systemType,smppVersion,esmeTon,esmeNpi,esmeRange,smppSessionType,windowSize,connectTimeout,reqExpTimeout,windowMonitorInterval,windowWaitTimeout,clusterName,countersEnabled,enqLinkDelay,sourceTon,sourceNpi,sourceRange,routingTon,routingNpi,routingRange,networkId,rateLimitPerSecond,rateLimitPerMinute,rateLimitPerHour,rateLimitPerDay,nationalLanguageSingleShift,nationalLanguageLockingShift,minMessageLength,maxMessageLength, 
 				{
 					success: function(value) {
 						updateEsmes();
