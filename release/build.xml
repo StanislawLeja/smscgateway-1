@@ -26,18 +26,18 @@
 		<!-- **//-->
 	
 	<property name="telscale-slee.version" value="6.1.2.GA" />
-	<property name="telscale-jss7.version" value="6.2.2.GA" />
+	<property name="telscale-jss7.version" value="6.2.4.GA" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
 	<property name="telscale-diam.version" value="6.2.0.GA" />
 	<property name="dse-cassandra.version" value="4.5.2" />
 	<property name="checkout.dse-cassandra.dir" value="${cassandra.dir}/dse-${dse-cassandra.version}" />
 	
 	<!--GET Telscale-Slee & Telscale-jss7 & Telscale-diameter & DSE Cassandra - properties-->
-	<property name="telscale-slee.download.distro.name" value="telscale-slee-${telscale-slee.version}__slim" />
+	<property name="telscale-slee.download.distro.name" value="telscale-slee-${telscale-slee.version}-lce-223__slim" />
 	<property name="telscale-slee.download.distro.file" value="${telscale-slee.download.distro.name}.zip" />
-	<property name="telscale-slee.download.url" value="ftp://ftp.box.com/TelScale%20JAIN-SLEE/${telscale-slee.version}/slim-with-lce151/${telscale-slee.download.distro.file}" />
+	<property name="telscale-slee.download.url" value="ftp://ftp.box.com/TelScale%20JAIN-SLEE/${telscale-slee.version}/slim-with-lce223/${telscale-slee.download.distro.file}" />
 	<property name="telscale-slee.distro.zip.path" value="${checkout.dir}/${telscale-slee.download.distro.file}" />
-	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}-1501291033.zip" />
+	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}-1508191405.zip" />
 	<property name="telscale-jss7.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-jss7.version}/${telscale-jss7.download.distro.file}" />
 	<property name="telscale-jss7.distro.zip.path" value="${checkout.dir}/${telscale-jss7.download.distro.file}" />
 	
@@ -151,11 +151,11 @@
 		<delete dir="${checkout.telscale-slee.dir}" failonerror="false" />
 		<unzip src="${telscale-slee.distro.zip.path}" dest="${release.dir}"/>
         <copy todir="${release.dir}" failonerror="true">
-                <fileset dir="${release.dir}/${telscale-slee.download.distro.name}">
+                <fileset dir="${release.dir}/telscale-slee-${telscale-slee.version}__slim">
                         <include name="**/*" />
                 </fileset>
         </copy>
-		<delete dir="${release.dir}/${telscale-slee.download.distro.name}" includeemptydirs="true" failonerror="false" verbose="false"/>
+		<delete dir="${release.dir}/telscale-slee-${telscale-slee.version}__slim" includeemptydirs="true" failonerror="false" verbose="false"/>
 		<delete dir="${checkout.telscale-slee.dir}/jboss-5.1.0.GA/server/all" includeemptydirs="true" failonerror="false" verbose="false"/>
 	</target>
 	
@@ -350,7 +350,7 @@
         </copy>
         <copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-6.2.2.GA-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-6.2.4.GA-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
     	<mkdir dir="${release.dir}/jboss-5.1.0.GA/server/default/data"/>
@@ -363,7 +363,7 @@
         </copy>
         <copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-6.2.2.GA-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-6.2.4.GA-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
         <copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/data" failonerror="true">
                 <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/data">

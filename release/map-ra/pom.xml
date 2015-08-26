@@ -12,7 +12,7 @@
 		<dependency>
 			<groupId>org.mobicents.resources</groupId>
 			<artifactId>mobicents-slee-ra-map-du</artifactId>
-			<version>${project.version}</version>
+			<version>6.2.4.GA-TelScale</version>
 		</dependency>		
 	</dependencies>
 	
