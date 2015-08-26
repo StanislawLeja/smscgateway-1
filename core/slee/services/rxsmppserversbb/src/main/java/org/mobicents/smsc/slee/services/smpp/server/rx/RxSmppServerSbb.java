@@ -96,6 +96,8 @@ import com.cloudhopper.smpp.type.RecoverablePduException;
 public abstract class RxSmppServerSbb implements Sbb {
 	protected static SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
+	protected static int MAX_MESSAGES_PER_STEP = 100;
+
 	private static final ResourceAdaptorTypeID PERSISTENCE_ID = new ResourceAdaptorTypeID(
 			"PersistenceResourceAdaptorType", "org.mobicents", "1.0");
 	private static final ResourceAdaptorTypeID SCHEDULE_ID = new ResourceAdaptorTypeID("SchedulerResourceAdaptorType",
@@ -103,14 +105,14 @@ public abstract class RxSmppServerSbb implements Sbb {
 	private static final String PERSISTENCE_LINK = "PersistenceResourceAdaptor";
 	private static final String SCHEDULE_LINK = "SchedulerResourceAdaptor";
 
-	private Tracer logger;
-	private SbbContextExt sbbContext;
+	protected Tracer logger;
+	protected SbbContextExt sbbContext;
 
-	private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
-	private SmppSessions smppServerSessions = null;
+	protected SmppTransactionACIFactory smppServerTransactionACIFactory = null;
+	protected SmppSessions smppServerSessions = null;
 
-	private PersistenceRAInterface persistence;
-	private SchedulerRaSbbInterface scheduler;
+	protected PersistenceRAInterface persistence;
+	protected SchedulerRaSbbInterface scheduler;
     private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
 
 	private static Charset utf8Charset = Charset.forName("UTF-8");
@@ -151,14 +153,6 @@ public abstract class RxSmppServerSbb implements Sbb {
 			}
 
 			int curMsg = 0;
-			Sms sms = smsSet.getSms(curMsg);
-			if (sms != null) {
-				if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-					this.startMessageDelivery(sms);
-				} else {
-					sms.setDeliveryCount(sms.getDeliveryCount() + 1);
-				}
-			}
 
 			this.setCurrentMsgNum(curMsg);
 			this.setTargetId(smsSet.getTargetId());
@@ -167,7 +161,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 				this.sendDeliverSm(smsSet);
 			} catch (SmscProcessingException e) {
 				String s = "SmscProcessingException when sending initial sendDeliverSm()=" + e.getMessage()
-						+ ", Message=" + sms;
+						+ ", smsSet=" + smsSet;
 				logger.severe(s, e);
 				this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, s);
 			}
@@ -177,7 +171,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 							+ e1.getMessage(), e1);
 		}
 	}
-	
+
 	public void onSubmitSmResp(SubmitSmResp event, ActivityContextInterface aci, EventContext eventContext){
 		try {
 			if (logger.isFineEnabled()) {
@@ -270,6 +264,10 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 	public abstract long getCurrentMsgNum();
 
+    public abstract void setPendingRequestsList(PendingRequestsList pendingRequestsList);
+
+    public abstract PendingRequestsList getPendingRequestsList();
+
 	/**
 	 * Private methods
 	 */
@@ -279,17 +277,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 		// TODO: let make here a special check if ESME in a good state
 		// if not - skip sending and set temporary error
 
-	    smscStatAggregator.updateMsgOutTryAll();
-        smscStatAggregator.updateMsgOutTrySmpp();
-
         long currentMsgNum = this.getCurrentMsgNum();
-		Sms sms = smsSet.getSms(currentMsgNum);
-        if (sms == null) {
-            // this means that no messages with good ScheduleDeliveryTime or
-            // no messages at all we have to reschedule
-            this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SUCCESS, "No messages for sending now");
-            return;
-        }
 
 		try {
 			EsmeManagement esmeManagement = EsmeManagement.getInstance();
@@ -297,110 +285,137 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 			if (esme == null) {
 				String s = "\nRxSmppServerSbb.sendDeliverSm(): Received DELIVER_SM SmsEvent but no Esme found for destClusterName: "
-						+ smsSet.getDestClusterName() + ", Message=" + sms;
+						+ smsSet.getDestClusterName() + ", smsSet=" + smsSet;
 				logger.warning(s);
 				this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, s);
 				return;
 			}
+            int pendingMsgCnt = (int) (smsSet.getSmsCount() - currentMsgNum);
+            if (pendingMsgCnt > MAX_MESSAGES_PER_STEP)
+                pendingMsgCnt = MAX_MESSAGES_PER_STEP;
 
-			smsSet.setDestSystemId(esme.getSystemId());
-			smsSet.setDestEsmeName(esme.getName());
-			if (esme.getSmppSessionType() == Type.CLIENT) {
-				SubmitSm submitSm = new SubmitSm();
-				submitSm.setSourceAddress(new Address((byte) sms.getSourceAddrTon(), (byte) sms.getSourceAddrNpi(), sms
-						.getSourceAddr()));
-				submitSm.setDestAddress(new Address((byte) sms.getSmsSet().getDestAddrTon(), (byte) sms.getSmsSet()
-						.getDestAddrNpi(), sms.getSmsSet().getDestAddr()));
-				submitSm.setEsmClass((byte) sms.getEsmClass());
-				submitSm.setProtocolId((byte) sms.getProtocolId());
-				submitSm.setPriority((byte) sms.getPriority());
-				if (sms.getScheduleDeliveryTime() != null) {
-					submitSm.setScheduleDeliveryTime(MessageUtil.printSmppAbsoluteDate(sms.getScheduleDeliveryTime(),
-							-(new Date()).getTimezoneOffset()));
-				}
-				if (sms.getValidityPeriod() != null) {
-					submitSm.setValidityPeriod(MessageUtil.printSmppAbsoluteDate(sms.getValidityPeriod(),
-							-(new Date()).getTimezoneOffset()));
-				}
-				submitSm.setRegisteredDelivery((byte) sms.getRegisteredDelivery());
-				submitSm.setReplaceIfPresent((byte) sms.getReplaceIfPresent());
-				submitSm.setDataCoding((byte) sms.getDataCoding());
+            smsSet.setDestSystemId(esme.getSystemId());
+            smsSet.setDestEsmeName(esme.getName());
 
-                String msgStr = sms.getShortMessageText();
-                byte[] msgUdh = sms.getShortMessageBin();
-                if (msgStr != null || msgUdh != null) {
-                    byte[] msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
+            int[] sequenceNumbers = new int[pendingMsgCnt];
+            for (int i1 = 0; i1 < pendingMsgCnt; i1++) {
+                smscStatAggregator.updateMsgOutTryAll();
+                smscStatAggregator.updateMsgOutTrySmpp();
 
-					if (msg.length <= 255) {
-						submitSm.setShortMessage(msg);
-					} else {
-						Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, msg, null);
-						submitSm.addOptionalParameter(tlv);
-					}
-				}
+                Sms sms = smsSet.getSms(currentMsgNum + i1);
+                if (sms == null) {
+                    // this means that no messages with good
+                    // ScheduleDeliveryTime or
+                    // no messages at all we have to reschedule
+                    this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SUCCESS, "No messages for sending now");
+                    return;
+                }
 
-				// TODO : waiting for 2 secs for window to accept our request,
-				// is it
-				// good? Should time be more here?
-				SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, submitSm, 2000);
-				if (logger.isInfoEnabled()) {
-					logger.info(String.format("\nsent submitSm to ESME %s: ", submitSm));
-				}
+                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                    this.startMessageDelivery(sms);
+                } else {
+                    sms.setDeliveryCount(sms.getDeliveryCount() + 1);
+                }
 
-				ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory
-						.getActivityContextInterface(smppServerTransaction);
-				smppTxaci.attach(this.sbbContext.getSbbLocalObject());
-			} else {
-				DeliverSm deliverSm = new DeliverSm();
-				deliverSm.setSourceAddress(new Address((byte) sms.getSourceAddrTon(), (byte) sms.getSourceAddrNpi(),
-						sms.getSourceAddr()));
-				deliverSm.setDestAddress(new Address((byte) sms.getSmsSet().getDestAddrTon(), (byte) sms.getSmsSet()
-						.getDestAddrNpi(), sms.getSmsSet().getDestAddr()));
-				deliverSm.setEsmClass((byte) sms.getEsmClass());
-				deliverSm.setProtocolId((byte) sms.getProtocolId());
-				deliverSm.setPriority((byte) sms.getPriority());
-				if (sms.getScheduleDeliveryTime() != null) {
-					deliverSm.setScheduleDeliveryTime(MessageUtil.printSmppAbsoluteDate(sms.getScheduleDeliveryTime(),
-							-(new Date()).getTimezoneOffset()));
-				}
-				if (sms.getValidityPeriod() != null) {
-					deliverSm.setValidityPeriod(MessageUtil.printSmppAbsoluteDate(sms.getValidityPeriod(),
-							-(new Date()).getTimezoneOffset()));
-				}
-				deliverSm.setRegisteredDelivery((byte) sms.getRegisteredDelivery());
-				deliverSm.setReplaceIfPresent((byte) sms.getReplaceIfPresent());
-				deliverSm.setDataCoding((byte) sms.getDataCoding());
+                int sequenceNumber;
 
-                String msgStr = sms.getShortMessageText();
-                byte[] msgUdh = sms.getShortMessageBin();
-                if (msgStr != null || msgUdh != null) {
-                    byte[] msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
+                if (esme.getSmppSessionType() == Type.CLIENT) {
+                    SubmitSm submitSm = new SubmitSm();
+                    submitSm.setSourceAddress(new Address((byte) sms.getSourceAddrTon(), (byte) sms.getSourceAddrNpi(), sms.getSourceAddr()));
+                    submitSm.setDestAddress(new Address((byte) sms.getSmsSet().getDestAddrTon(), (byte) sms.getSmsSet().getDestAddrNpi(), sms.getSmsSet()
+                            .getDestAddr()));
+                    submitSm.setEsmClass((byte) sms.getEsmClass());
+                    submitSm.setProtocolId((byte) sms.getProtocolId());
+                    submitSm.setPriority((byte) sms.getPriority());
+                    if (sms.getScheduleDeliveryTime() != null) {
+                        submitSm.setScheduleDeliveryTime(MessageUtil.printSmppAbsoluteDate(sms.getScheduleDeliveryTime(), -(new Date()).getTimezoneOffset()));
+                    }
+                    if (sms.getValidityPeriod() != null) {
+                        submitSm.setValidityPeriod(MessageUtil.printSmppAbsoluteDate(sms.getValidityPeriod(), -(new Date()).getTimezoneOffset()));
+                    }
+                    submitSm.setRegisteredDelivery((byte) sms.getRegisteredDelivery());
+                    submitSm.setReplaceIfPresent((byte) sms.getReplaceIfPresent());
+                    submitSm.setDataCoding((byte) sms.getDataCoding());
 
-					if (msg.length <= 255) {
-						deliverSm.setShortMessage(msg);
-					} else {
-						Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, msg, null);
-						deliverSm.addOptionalParameter(tlv);
-					}
-				}
+                    String msgStr = sms.getShortMessageText();
+                    byte[] msgUdh = sms.getShortMessageBin();
+                    if (msgStr != null || msgUdh != null) {
+                        byte[] msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
 
-				// TODO : waiting for 2 secs for window to accept our request,
-				// is it good? Should time be more here?
-				SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, deliverSm, 2000);
-				if (logger.isInfoEnabled()) {
-					logger.info(String.format("\nsent deliverSm to ESME: ", deliverSm));
-				}
+                        if (msg.length <= 255) {
+                            submitSm.setShortMessage(msg);
+                        } else {
+                            Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, msg, null);
+                            submitSm.addOptionalParameter(tlv);
+                        }
+                    }
 
-				ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory
-						.getActivityContextInterface(smppServerTransaction);
-				smppTxaci.attach(this.sbbContext.getSbbLocalObject());
-			}
+                    // TODO : waiting for 2 secs for window to accept our
+                    // request,
+                    // is it
+                    // good? Should time be more here?
+                    SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, submitSm, 2000);
+                    if (logger.isInfoEnabled()) {
+                        logger.info(String.format("\nsent submitSm to ESME %s: ", submitSm));
+                    }
+                    sequenceNumber = submitSm.getSequenceNumber();
 
-		} catch (Exception e) {
-			throw new SmscProcessingException(
-					"RxSmppServerSbb.sendDeliverSm(): Exception while trying to send DELIVERY Report for received SmsEvent="
-							+ e.getMessage() + "\nMessage: " + sms, 0, 0, null, e);
-		} finally {
+                    ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory.getActivityContextInterface(smppServerTransaction);
+                    smppTxaci.attach(this.sbbContext.getSbbLocalObject());
+                } else {
+                    DeliverSm deliverSm = new DeliverSm();
+                    deliverSm.setSourceAddress(new Address((byte) sms.getSourceAddrTon(), (byte) sms.getSourceAddrNpi(), sms.getSourceAddr()));
+                    deliverSm.setDestAddress(new Address((byte) sms.getSmsSet().getDestAddrTon(), (byte) sms.getSmsSet().getDestAddrNpi(), sms.getSmsSet()
+                            .getDestAddr()));
+                    deliverSm.setEsmClass((byte) sms.getEsmClass());
+                    deliverSm.setProtocolId((byte) sms.getProtocolId());
+                    deliverSm.setPriority((byte) sms.getPriority());
+                    if (sms.getScheduleDeliveryTime() != null) {
+                        deliverSm.setScheduleDeliveryTime(MessageUtil.printSmppAbsoluteDate(sms.getScheduleDeliveryTime(), -(new Date()).getTimezoneOffset()));
+                    }
+                    if (sms.getValidityPeriod() != null) {
+                        deliverSm.setValidityPeriod(MessageUtil.printSmppAbsoluteDate(sms.getValidityPeriod(), -(new Date()).getTimezoneOffset()));
+                    }
+                    deliverSm.setRegisteredDelivery((byte) sms.getRegisteredDelivery());
+                    deliverSm.setReplaceIfPresent((byte) sms.getReplaceIfPresent());
+                    deliverSm.setDataCoding((byte) sms.getDataCoding());
+
+                    String msgStr = sms.getShortMessageText();
+                    byte[] msgUdh = sms.getShortMessageBin();
+                    if (msgStr != null || msgUdh != null) {
+                        byte[] msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
+
+                        if (msg.length <= 255) {
+                            deliverSm.setShortMessage(msg);
+                        } else {
+                            Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, msg, null);
+                            deliverSm.addOptionalParameter(tlv);
+                        }
+                    }
+
+                    // TODO : waiting for 2 secs for window to accept our
+                    // request,
+                    // is it good? Should time be more here?
+                    SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, deliverSm, 2000);
+                    if (logger.isInfoEnabled()) {
+                        logger.info(String.format("\nsent deliverSm to ESME: ", deliverSm));
+                    }
+                    sequenceNumber = deliverSm.getSequenceNumber();
+
+                    ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory.getActivityContextInterface(smppServerTransaction);
+                    smppTxaci.attach(this.sbbContext.getSbbLocalObject());
+                }
+
+                sequenceNumbers[i1] = sequenceNumber;
+            }
+
+            PendingRequestsList pendingRequestsList = new PendingRequestsList(sequenceNumbers);
+            this.setPendingRequestsList(pendingRequestsList);
+
+        } catch (Exception e) {
+            throw new SmscProcessingException("RxSmppServerSbb.sendDeliverSm(): Exception while trying to send DELIVERY Report for received SmsEvent="
+                    + e.getMessage() + "\nsmsSet: " + smsSet + ", currentMsgNum=" + currentMsgNum, 0, 0, null, e);
+        } finally {
 			// NullActivity nullActivity = (NullActivity) aci.getActivity();
 			// nullActivity.endActivity();
 		}
@@ -480,16 +495,28 @@ public abstract class RxSmppServerSbb implements Sbb {
 		this.decrementDeliveryActivityCount();
 	}
 
-	private void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason) {
+    private void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason) {
         smscStatAggregator.updateMsgInFailedAll();
 
         long currentMsgNum = this.getCurrentMsgNum();
-		Sms smsa = smsSet.getSms(currentMsgNum);
-		if (smsa != null) {
-			String s1 = reason.replace("\n", "\t");
+        PendingRequestsList pendingRequestsList = this.getPendingRequestsList();
+
+        Sms smsa = null;
+        if (pendingRequestsList != null) {
+            for (int i1 = 0; i1 < pendingRequestsList.getRecordCount(); i1++) {
+                if (!pendingRequestsList.isSent(i1)) {
+                    smsa = smsSet.getSms(currentMsgNum + i1);
+                    break;
+                }
+            }
+        } else {
+            smsa = smsSet.getSms(currentMsgNum);
+        }
+        if (smsa != null) {
+            String s1 = reason.replace("\n", "\t");
             CdrGenerator.generateCdr(smsa, CdrGenerator.CDR_TEMP_FAILED_ESME, s1, smscPropertiesManagement.getGenerateReceiptCdr(),
                     MessageUtil.isNeedWriteArchiveMessage(smsa, smscPropertiesManagement.getGenerateCdr()));
-		}
+        }
 
 		// sending of a failure response for transactional mode
         MessageDeliveryResultResponseInterface.DeliveryFailureReason delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.destinationUnavalable;
@@ -497,12 +524,21 @@ public abstract class RxSmppServerSbb implements Sbb {
             delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.temporaryNetworkError;
         if (errorAction == ErrorAction.permanentFailure)
             delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.permanentNetworkError;
+
         for (long i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
-            Sms sms = smsSet.getSms(i1);
-            if (sms != null) {
-                if (sms.getMessageDeliveryResultResponse() != null) {
-                    sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason, null);
-                    sms.setMessageDeliveryResultResponse(null);
+            boolean isSent = false;
+            if (pendingRequestsList != null) {
+                if (pendingRequestsList.isSent((int) (i1 - currentMsgNum)))
+                    isSent = true;
+            }
+
+            if (!isSent) {
+                Sms sms = smsSet.getSms(i1);
+                if (sms != null) {
+                    if (sms.getMessageDeliveryResultResponse() != null) {
+                        sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason, null);
+                        sms.setMessageDeliveryResultResponse(null);
+                    }
                 }
             }
         }
@@ -515,13 +551,13 @@ public abstract class RxSmppServerSbb implements Sbb {
 			try {
 				Date curDate = new Date();
 				try {
-					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-						pers.setDeliveryFailure(smsSet, smStatus, curDate);
-					} else {
-						smsSet.setStatus(smStatus);
-						SmsSetCache.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
-					}
-					this.decrementDeliveryActivityCount();
+                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                        pers.setDeliveryFailure(smsSet, smStatus, curDate);
+                    } else {
+                        smsSet.setStatus(smStatus);
+                        SmsSetCache.getInstance().removeProcessingSmsSet(smsSet.getTargetId());
+                    }
+                    this.decrementDeliveryActivityCount();
 
 					// first of all we are removing messages that delivery
 					// period is over
@@ -551,18 +587,26 @@ public abstract class RxSmppServerSbb implements Sbb {
 
 					switch (errorAction) {
 					case temporaryFailure:
-						this.rescheduleSmsSet(smsSet, pers, currentMsgNum, lstFailured);
-						break;
+                        this.rescheduleSmsSet(smsSet, pers, currentMsgNum, lstFailured, pendingRequestsList);
+                        break;
 
 					case permanentFailure:
-					    long smsCnt = smsSet.getSmsCount();
-						for (long i1 = currentMsgNum; i1 < smsCnt; i1++) {
-							Sms sms = smsSet.getSms(i1);
-							if (sms != null) {
-								lstFailured.add(sms);
-							}
-						}
-						this.freeSmsSetFailured(smsSet, pers, currentMsgNum);
+                        long smsCnt = smsSet.getSmsCount();
+                        for (long i1 = currentMsgNum; i1 < smsCnt; i1++) {
+                            boolean isSent = false;
+                            if (pendingRequestsList != null) {
+                                if (pendingRequestsList.isSent((int) (i1 - currentMsgNum)))
+                                    isSent = true;
+                            }
+
+                            if (!isSent) {
+                                Sms sms = smsSet.getSms(i1);
+                                if (sms != null) {
+                                    lstFailured.add(sms);
+                                }
+                            }
+                        }
+                        this.freeSmsSetFailured(smsSet, pers, currentMsgNum, pendingRequestsList);
 						break;
 					}
 
@@ -655,7 +699,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 	 * @param smsSet
 	 * @param pers
 	 */
-	protected void freeSmsSetFailured(SmsSet smsSet, PersistenceRAInterface pers, long currentMsgNum) {
+    protected void freeSmsSetFailured(SmsSet smsSet, PersistenceRAInterface pers, long currentMsgNum, PendingRequestsList pendingRequestsList) {
 
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
 		try {
@@ -664,20 +708,36 @@ public abstract class RxSmppServerSbb implements Sbb {
 					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 						pers.fetchSchedulableSms(smsSet, false);
 						long cnt = smsSet.getSmsCount();
-						for (int i1 = 0; i1 < cnt; i1++) {
-							Sms sms = smsSet.getSms(i1);
-							pers.archiveFailuredSms(sms);
+                        for (int i1 = 0; i1 < cnt; i1++) {
+                            boolean isSent = false;
+                            if (pendingRequestsList != null) {
+                                if (pendingRequestsList.isSent((int) (i1 - currentMsgNum)))
+                                    isSent = true;
+                            }
+
+                            if (!isSent) {
+                                Sms sms = smsSet.getSms(i1);
+                                pers.archiveFailuredSms(sms);
+                            }
 						}
 
 						pers.deleteSmsSet(smsSet);
 					} else {
-						for (long i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
-                            Sms sms = smsSet.getSms(i1);
-                            pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
-                                    smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
-                            sms.setDeliveryDate(new Date());
-                            if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
-                                pers.c2_createRecordArchive(sms);
+                        for (long i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
+                            boolean isSent = false;
+                            if (pendingRequestsList != null) {
+                                if (pendingRequestsList.isSent((int) (i1 - currentMsgNum)))
+                                    isSent = true;
+                            }
+
+                            if (!isSent) {
+                                Sms sms = smsSet.getSms(i1);
+                                pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
+                                        smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+                                sms.setDeliveryDate(new Date());
+                                if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
+                                    pers.c2_createRecordArchive(sms);
+                                }
                             }
 						}
 					}
@@ -691,13 +751,47 @@ public abstract class RxSmppServerSbb implements Sbb {
 		}
 	}
 
+    /**
+     * remove smsSet from LIVE database after permanent delivery failure
+     * 
+     * @param smsSet
+     * @param pers
+     */
+    protected void freeSmsSetFailuredNonFinal(SmsSet smsSet, PersistenceRAInterface pers, long currentMsgNum, Sms sms) {
+
+        TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
+        try {
+            synchronized (lock) {
+                try {
+                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                        pers.fetchSchedulableSms(smsSet, false);
+                        pers.archiveFailuredSms(sms);
+                        pers.deleteSmsSet(smsSet);
+                    } else {
+                        pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
+                                smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+                        sms.setDeliveryDate(new Date());
+                        if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
+                            pers.c2_createRecordArchive(sms);
+                        }
+                    }
+                } catch (PersistenceException e) {
+                    this.logger.severe("PersistenceException when RxSmppServerSbb.freeSmsSetFailured(SmsSet smsSet)"
+                            + e.getMessage(), e);
+                }
+            }
+        } finally {
+            pers.releaseSynchroObject(lock);
+        }
+    }
+
 	/**
 	 * make new schedule time for smsSet after temporary failure
 	 * 
 	 * @param smsSet
 	 */
 	protected void rescheduleSmsSet(SmsSet smsSet, PersistenceRAInterface pers, long currentMsgNum,
-			ArrayList<Sms> lstFailured) {
+			ArrayList<Sms> lstFailured, PendingRequestsList pendingRequestsList) {
 
 		TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
 		try {
@@ -716,11 +810,19 @@ public abstract class RxSmppServerSbb implements Sbb {
 						smsSet.setDueDate(newDueDate);
 						smsSet.setDueDelay(newDueDelay);
 						long dueSlot = this.getStore().c2_getDueSlotForTime(newDueDate);
-						for (long i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
-							Sms sms = smsSet.getSms(i1);
-                            pers.c2_scheduleMessage_NewDueSlot(sms, dueSlot, lstFailured,
-                                    smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
-						}
+                        for (long i1 = currentMsgNum; i1 < smsSet.getSmsCount(); i1++) {
+                            boolean isSent = false;
+                            if (pendingRequestsList != null) {
+                                if (pendingRequestsList.isSent((int) (i1 - currentMsgNum)))
+                                    isSent = true;
+                            }
+
+                            if (!isSent) {
+                                Sms sms = smsSet.getSms(i1);
+                                pers.c2_scheduleMessage_NewDueSlot(sms, dueSlot, lstFailured,
+                                        smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+                            }
+                        }
 					}
 				} catch (PersistenceException e) {
 					this.logger.severe(
@@ -732,6 +834,40 @@ public abstract class RxSmppServerSbb implements Sbb {
 			pers.releaseSynchroObject(lock);
 		}
 	}
+
+//    protected void rescheduleSmsSetNonFinal(SmsSet smsSet, PersistenceRAInterface pers, long currentMsgNum, ArrayList<Sms> lstFailured,
+//            Sms sms) {
+//
+//        TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
+//        try {
+//            synchronized (lock) {
+//
+//                try {
+//                    int prevDueDelay = smsSet.getDueDelay();
+//                    int newDueDelay = MessageUtil.computeNextDueDelay(prevDueDelay, smscPropertiesManagement.getSecondDueDelay(),
+//                            smscPropertiesManagement.getDueDelayMultiplicator(), smscPropertiesManagement.getMaxDueDelay());
+//
+//                    Date newDueDate = new Date(new Date().getTime() + newDueDelay * 1000);
+//
+//                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+//                        pers.setDeliveringProcessScheduled(smsSet, newDueDate, newDueDelay);
+//                    } else {
+//                        smsSet.setDueDate(newDueDate);
+//                        smsSet.setDueDelay(newDueDelay);
+//                        long dueSlot = this.getStore().c2_getDueSlotForTime(newDueDate);
+//                        pers.c2_scheduleMessage_NewDueSlot(sms, dueSlot, lstFailured,
+//                                smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+//                    }
+//                } catch (PersistenceException e) {
+//                    this.logger.severe(
+//                            "PersistenceException when RxSmppServerSbb.rescheduleSmsSet(SmsSet smsSet)"
+//                                    + e.getMessage(), e);
+//                }
+//            }
+//        } finally {
+//            pers.releaseSynchroObject(lock);
+//        }
+//    }
 
 	@Override
 	public void sbbActivate() {
@@ -822,7 +958,7 @@ public abstract class RxSmppServerSbb implements Sbb {
 			this.logger.severe("Error while decrementing DeliveryActivityCount", e);
 		}
 	}
-	
+
 	private void handleResponse(BaseSmResp event) throws Exception {
 		String targetId = this.getTargetId();
 		if (targetId == null) {
@@ -835,16 +971,39 @@ public abstract class RxSmppServerSbb implements Sbb {
 					+ targetId);
 			return;
 		}
-        smscStatAggregator.updateMsgOutSentAll();
-        smscStatAggregator.updateMsgOutSentSmpp();
 
 		int status = event.getCommandStatus();
 		if (status == 0) {
+	        smscStatAggregator.updateMsgOutSentAll();
+	        smscStatAggregator.updateMsgOutSentSmpp();
 
+	        long currentMsgNum = this.getCurrentMsgNum();
+            PendingRequestsList pendingRequestsList = this.getPendingRequestsList();
+            Sms sms;
+            int i1 = 0;
+            if (pendingRequestsList != null) {
+                i1 = pendingRequestsList.confirm(event.getSequenceNumber());
+                if (i1 < 0) {
+                    this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR,
+                            "Received undefined SequenceNumber: " + event.getSequenceNumber() + ", SmsSet=" + smsSet);
+                    return;
+                }
+                sms = smsSet.getSms(currentMsgNum + i1);
+            } else {
+                sms = smsSet.getSms(currentMsgNum);
+            }
+
+            
+            // !!!! !!!!-
+            if (sms == null) {
+                this.logger.severe("nul sms =========: UnconfurnedCnt=" + pendingRequestsList.getUnconfurnedCnt() + ", currentMsgNum=" + currentMsgNum
+                        + ", i1=" + i1);
+            }
+            // !!!! !!!!-
+            
+            
 			// current message is sent
             // firstly sending of a positive response for transactional mode
-		    long currentMsgNum = this.getCurrentMsgNum();
-            Sms sms = smsSet.getSms(currentMsgNum);
             if (sms.getMessageDeliveryResultResponse() != null) {
                 sms.getMessageDeliveryResultResponse().responseDeliverySuccess();
                 sms.setMessageDeliveryResultResponse(null);
@@ -935,74 +1094,93 @@ public abstract class RxSmppServerSbb implements Sbb {
 				// we will continue delivering process
 			}
 
-			TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
-			try {
-				synchronized (lock) {
-		            // marking the message in cache as delivered
-		            smsSet.markSmsAsDelivered(currentMsgNum);
+            if (pendingRequestsList == null || pendingRequestsList.getUnconfurnedCnt() == 0) {
+                TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
+                try {
+                    synchronized (lock) {
+                        // marking the message in cache as delivered
+                        if (pendingRequestsList != null) {
+                            int msgCnt = pendingRequestsList.getRecordCount();
+                            for (int i2 = 0; i2 < msgCnt; i2++) {
+                                smsSet.markSmsAsDelivered(currentMsgNum + i2);
+                            }
 
-		            // now we are trying to sent other messages
-					if (currentMsgNum < smsSet.getSmsCount() - 1) {
-						// there are more messages to send in cache
-						currentMsgNum++;
-						this.setCurrentMsgNum(currentMsgNum);
-						sms = smsSet.getSms(currentMsgNum);
-						if (sms != null) {
-							if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-								this.startMessageDelivery(sms);
-							} else {
-								sms.setDeliveryCount(sms.getDeliveryCount() + 1);
-							}
-						}
+                            // now we are trying to sent other messages
+                            if (currentMsgNum + msgCnt < smsSet.getSmsCount()) {
+                                // there are more messages to send in cache
+                                currentMsgNum += msgCnt;
+                                this.setCurrentMsgNum(currentMsgNum);
 
-						try {
-							this.sendDeliverSm(smsSet);
-							return;
-						} catch (SmscProcessingException e) {
-							String s = "SmscProcessingException when sending initial sendDeliverSm()="
-									+ e.getMessage() + ", Message=" + sms;
-							logger.severe(s, e);
-						}
-					}
+                                try {
+                                    this.sendDeliverSm(smsSet);
+                                    return;
+                                } catch (SmscProcessingException e) {
+                                    String s = "SmscProcessingException when sending initial sendDeliverSm()=" + e.getMessage() + ", Message=" + sms;
+                                    logger.severe(s, e);
+                                }
+                            }
+                        } else {
+                            smsSet.markSmsAsDelivered(currentMsgNum);
 
-					// no more messages are in cache now - lets check if
-					// there
-					// are more messages in a database
-					if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-						try {
-							pers.fetchSchedulableSms(smsSet, false);
-						} catch (PersistenceException e1) {
-							this.logger.severe(
-									"PersistenceException when invoking fetchSchedulableSms(smsSet) from RxSmppServerSbb.onDeliverSmResp(): "
-											+ e1.toString(), e1);
-						}
-						if (smsSet.getSmsCount() > 0) {
-							// there are more messages in a database - start
-							// delivering of those messages
-							currentMsgNum = 0;
-							this.setCurrentMsgNum(currentMsgNum);
+                            // now we are trying to sent other messages
+                            if (currentMsgNum < smsSet.getSmsCount() - 1) {
+                                // there are more messages to send in cache
+                                currentMsgNum++;
+                                this.setCurrentMsgNum(currentMsgNum);
+                                sms = smsSet.getSms(currentMsgNum);
+                                if (sms != null) {
+                                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                                        this.startMessageDelivery(sms);
+                                    } else {
+                                        sms.setDeliveryCount(sms.getDeliveryCount() + 1);
+                                    }
+                                }
 
-							try {
-								this.sendDeliverSm(smsSet);
-								return;
-							} catch (SmscProcessingException e) {
-								String s = "SmscProcessingException when sending initial sendDeliverSm()="
-										+ e.getMessage() + ", Message=" + sms;
-								logger.severe(s, e);
-							}
-						}
-					} else {
-					}
+                                try {
+                                    this.sendDeliverSm(smsSet);
+                                    return;
+                                } catch (SmscProcessingException e) {
+                                    String s = "SmscProcessingException when sending initial sendDeliverSm()=" + e.getMessage() + ", Message=" + sms;
+                                    logger.severe(s, e);
+                                }
+                            }
+                        }
 
-					// no more messages to send - remove smsSet
-					this.freeSmsSetSucceded(smsSet, pers);
-				}
-			} finally {
-				pers.releaseSynchroObject(lock);
-			}
+                        // no more messages are in cache now - lets check if
+                        // there are more messages in a database
+                        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                            try {
+                                pers.fetchSchedulableSms(smsSet, false);
+                            } catch (PersistenceException e1) {
+                                this.logger.severe("PersistenceException when invoking fetchSchedulableSms(smsSet) from RxSmppServerSbb.onDeliverSmResp(): "
+                                        + e1.toString(), e1);
+                            }
+                            if (smsSet.getSmsCount() > 0) {
+                                // there are more messages in a database - start
+                                // delivering of those messages
+                                currentMsgNum = 0;
+                                this.setCurrentMsgNum(currentMsgNum);
+
+                                try {
+                                    this.sendDeliverSm(smsSet);
+                                    return;
+                                } catch (SmscProcessingException e) {
+                                    String s = "SmscProcessingException when sending initial sendDeliverSm()=" + e.getMessage() + ", Message=" + sms;
+                                    logger.severe(s, e);
+                                }
+                            }
+                        } else {
+                        }
+
+                        // no more messages to send - remove smsSet
+                        this.freeSmsSetSucceded(smsSet, pers);
+                    }
+                } finally {
+                    pers.releaseSynchroObject(lock);
+                }
+            }
 		} else {
-			this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR,
-					"DeliverSm response has a bad status: " + status);
+            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.SC_SYSTEM_ERROR, "DeliverSm response has a bad status: " + status);
 		}
 	}	
 

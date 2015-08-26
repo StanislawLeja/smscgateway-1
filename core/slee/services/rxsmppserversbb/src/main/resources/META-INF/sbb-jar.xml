@@ -15,7 +15,8 @@
 				<sbb-abstract-class-name>org.mobicents.smsc.slee.services.smpp.server.rx.RxSmppServerSbb</sbb-abstract-class-name>
 
 				<cmp-field><cmp-field-name>targetId</cmp-field-name></cmp-field>
-				<cmp-field><cmp-field-name>currentMsgNum</cmp-field-name></cmp-field>
+                <cmp-field><cmp-field-name>currentMsgNum</cmp-field-name></cmp-field>
+                <cmp-field><cmp-field-name>pendingRequestsList</cmp-field-name></cmp-field>
 			</sbb-abstract-class>
 		</sbb-classes>
 
