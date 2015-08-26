@@ -361,28 +361,28 @@
 				</div>
 				
 				<div id="div-nationalLanguageSingleShift" class="control-group">
-					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="national langugae single and locking shift tables for the case when a message is originated from SMPP and does not included UDH. 0 means gsm7 default table. -1 means: take SMSC general nationalLanguage table (this is a default value)">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="National language single shift table can be configured for messages that have come via SMPP (this ESME), do not have UDHs inside and have GSM7 encoding (DCS==0). The default GSM data coding table is mostly used. Possible values: = 0: default GSM data coding table; = 13: urdu (arabic) national language single table; =1: the national language locking shift value must be obtained from the option national-language-locking-single that is defined at SMSC GW general level.">
 						<span class="add-on">National Language Single Shift</span>
 						<input id="nationalLanguageSingleShift" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="National Language Single Shift" value="-1"/>
 					</span>	
 				</div>
 				
 				<div id="div-nationalLanguageLockingShift" class="control-group">
-					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="national langugae single and locking shift tables for the case when a message is originated from SMPP and does not included UDH. 0 means gsm7 default table. -1 means: take SMSC general nationalLanguage table (this is a default value)">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="National language locking shift table can be configured for messages that have come via SMPP (ESME) that do not have UDHs inside and have GSM7 encoding (DCS==0). The default GSM data coding table is mostly used. Possible values: = 0: default GSM data coding table; = 13: urdu (arabic) national language shift table; =1: the national language locking shift value must be obtained from the option national-language-locking-shift that is defined at SMSC GW general level.">
 						<span class="add-on">National Language Locking Shift</span>
 						<input id="nationalLanguageLockingShift" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="National Language Locking Shift" value="-1"/>
 					</span>	
 				</div>
 				
 				<div id="div-minMessageLength" class="control-group">
-					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="min and max side of an incoming message from SMPP. If an incoming message size (in characters) less than the min value or more than the max value, it will be rejected. -1 (default value) means no limitations">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="minimum message length (in characters) acceptable to the SMSC GW, for messages coming from this ESME. If an incoming message length is less than the min-message-length it will be rejected by SMSC GW. The default value for this parameter is -1 and it implies no limitations. Any other negative value also implies no limitations.">
 						<span class="add-on">Min Message Length</span>
 						<input id="minMessageLength" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Min Message Length" value="-1"/>
 					</span>	
 				</div>
 				
 				<div id="div-maxMessageLength" class="control-group">
-					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="min and max side of an incoming message from SMPP. If an incoming message size (in characters) less than the min value or more than the max value, it will be rejected. -1 (default value) means no limitations">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="maximum message length (in characters) acceptable to the SMSC GW, for messages coming from this ESME. If an incoming message length is more than the max-message-length it will be rejected by SMSC GW. The default value for this parameter is 1 and it implies no limitations. Any other negative value also implies no limitations.">
 						<span class="add-on">Max Message Length</span>
 						<input id="maxMessageLength" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Max Message Length" value="-1"/>
 					</span>	
@@ -1139,7 +1139,7 @@
 																		'</td>'+
 																	'</tr>'+
 																	
-																	'<tr data-toggle="tooltip" title="throttling of SMS per day for this connection. 0 means no limit">'+
+																	'<tr data-toggle="tooltip" title="National language single shift table can be configured for messages that have come via SMPP (this ESME), do not have UDHs inside and have GSM7 encoding (DCS==0). The default GSM data coding table is mostly used. Possible values: = 0: default GSM data coding table; = 13: urdu (arabic) national language single table; =1: the national language locking shift value must be obtained from the option national-language-locking-single that is defined at SMSC GW general level.">'+
 																		'<td style="font-size: 0.9em;">National Language Single Shift</td>'+
 																		'<td style="font-size: 0.9em; padding: 0;">'+
 																			'<div id="div-' + name +'NationalLanguageSingleShift-input" class="control-group">'+
@@ -1155,7 +1155,7 @@
 																		'</td>'+
 																	'</tr>'+
 																	
-																	'<tr data-toggle="tooltip" title="throttling of SMS per day for this connection. 0 means no limit">'+
+																	'<tr data-toggle="tooltip" title="National language locking shift table can be configured for messages that have come via SMPP (ESME) that do not have UDHs inside and have GSM7 encoding (DCS==0). The default GSM data coding table is mostly used. Possible values: = 0: default GSM data coding table; = 13: urdu (arabic) national language shift table; =1: the national language locking shift value must be obtained from the option national-language-locking-shift that is defined at SMSC GW general level.">'+
 																		'<td style="font-size: 0.9em;">National Language Locking Shift</td>'+
 																		'<td style="font-size: 0.9em; padding: 0;">'+
 																			'<div id="div-' + name +'NationalLanguageLockingShift-input" class="control-group">'+
@@ -1171,7 +1171,7 @@
 																		'</td>'+
 																	'</tr>'+	
 																	
-																	'<tr data-toggle="tooltip" title="throttling of SMS per day for this connection. 0 means no limit">'+
+																	'<tr data-toggle="tooltip" title="minimum message length (in characters) acceptable to the SMSC GW, for messages coming from this ESME. If an incoming message length is less than the min-message-length it will be rejected by SMSC GW. The default value for this parameter is -1 and it implies no limitations. Any other negative value also implies no limitations.">'+
 																		'<td style="font-size: 0.9em;">Min Message Length</td>'+
 																		'<td style="font-size: 0.9em; padding: 0;">'+
 																			'<div id="div-' + name +'MinMessageLength-input" class="control-group">'+
@@ -1187,7 +1187,7 @@
 																		'</td>'+
 																	'</tr>'+
 																	
-																	'<tr data-toggle="tooltip" title="throttling of SMS per day for this connection. 0 means no limit">'+
+																	'<tr data-toggle="tooltip" title="maximum message length (in characters) acceptable to the SMSC GW, for messages coming from this ESME. If an incoming message length is more than the max-message-length it will be rejected by SMSC GW. The default value for this parameter is 1 and it implies no limitations. Any other negative value also implies no limitations.">'+
 																		'<td style="font-size: 0.9em;">Max Message Length</td>'+
 																		'<td style="font-size: 0.9em; padding: 0;">'+
 																			'<div id="div-' + name +'MaxMessageLength-input" class="control-group">'+

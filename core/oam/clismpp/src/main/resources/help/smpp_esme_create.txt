@@ -320,6 +320,28 @@ PARAMETERS
 					The default value for this parameter is "0" and it
 					implies "no restrictions". If this parameter is not
 					specified it implies "no restrictions".		
+	
+	national-language-single-shift - National language single shift table can be 
+	                configured for messages that have come via SMPP (ESME) that 
+	                do not have UDHs inside and have GSM7 encoding (DCS==0). The 
+	                default GSM data coding table is mostly used. Possible values:
+                       = 0  : default GSM data coding table
+                       = 13 : urdu (arabic) national language shift table
+                       = 1  : the national language locking shift value must be 
+                              obtained from the option national-language-single-shift 
+                              that is defined at SMSC GW general level.
+	
+	
+	national-language-locking-shift - National language locking shift table can be 
+	                configured for messages that have come via SMPP (ESME) that 
+	                do not have UDHs inside and have GSM7 encoding (DCS==0). The 
+	                default GSM data coding table is mostly used. Possible values:
+                       = 0  : default GSM data coding table
+                       = 13 : urdu (arabic) national language shift table
+                       = 1  : the national language locking shift value must be 
+                              obtained from the option national-language-locking-shift 
+                              that is defined at SMSC GW general level.
+					
 							  
 	min-message-length    - This paramter is used to specify the minimum
 					message length (in characters) acceptable to
