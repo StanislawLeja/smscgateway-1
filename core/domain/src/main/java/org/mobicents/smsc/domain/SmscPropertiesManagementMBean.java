@@ -220,6 +220,8 @@ public interface SmscPropertiesManagementMBean {
     public boolean isSmscStopped();
 
     public void setSkipUnsentMessages(int skipUnsentMessages);
+    
+    public int getSkipUnsentMessages();
 
     public void setDeliveryPause(boolean deliveryPause);
 

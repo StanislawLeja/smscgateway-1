@@ -319,7 +319,20 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									&nbsp;<button class="btn btn-danger" onclick="updateScheduler();"><i class="icon-undo"></i> Revert</button>
 									&nbsp;<button class="btn btn-primary" onclick="applyScheduler();"><i class="icon-save"></i> Save</button>
 								</span>
-							</div>															
+							</div>	
+							&nbsp;
+							<h5 style="border-bottom: 1px solid #DDD;">Skip Unsent Messages</h5>
+							<div id="div-skipUnsentMessages" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="This command will skip of processing / fetching of messages that was scheduled for delivering for the time in the past but have not yet delivered by SMSC GW because of SMSC GW was turned off or overloaded. <time in seconds> means the point of the time (actual current time - <time in seconds>) to which the point of processing / fetching of messages will be shifted. If the value 0 is provided this means SMSC GW will be shifted into an actual (current) time. If the value is positive this means SMSC GW will be shifted into a some time in the past (for example if the value is 3600 - to the time before the current time for 1 hour). Negative value is not accepted. The point of the time can be shifted only forward. It is not possible to shift the the point of time backward (and resend messages that was already sent once).">
+									<span class="add-on">Skip Unsent Messages (in sec)</span>
+									<input id="skipUnsentMessages" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
+								</span> 
+							</div>	
+							<div class="control-group">
+								<span class="span12" style="text-align: left;">
+									<button class="btn btn-primary" onclick="applySkipUnsentMessages();"><i class="icon-save"></i> Save</button>
+								</span>
+							</div>																												
                         </div>
                         
                         <div class="tab-pane" id="diameter">
@@ -1309,7 +1322,33 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 								}
 							);
 									
-					}	
+					}
+					
+					function applySkipUnsentMessages(){
+						var skipUnsentMessages = $("#skipUnsentMessages").val();
+						
+						if(skipUnsentMessages.trim() == "") {
+			    			$("#div-skipUnsentMessages").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-skipUnsentMessages").hasClass("error")) {
+			    			$("#div-skipUnsentMessages").removeClass("error");		
+			    		}
+						
+						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
+						jolokia.request(
+								[
+									{ type: "write", mbean: mbeanSearch, attribute: "SkipUnsentMessages", value: skipUnsentMessages },
+								],
+								{
+									success: function(response) {
+										logToConsole("INFO", "SMSC Gateway SkipUnsentMessages setting successfully updated.");
+									},
+									error: function(response) {
+										logToConsole("ERROR", "Failure trying to communicate with the Telscale SMSC Gateway. Please try again later.");
+									} 
+								}
+							);						
+					}
 					
 					function applyScheduler() {
 						var formInvalid = false;
