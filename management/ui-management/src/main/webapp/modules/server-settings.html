@@ -88,7 +88,20 @@
 										<option>fast</option>
 									</select>
 								</span>                         
-							</div>														
+							</div>	
+							<div id="div-nationalLanguageSingleShift" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="national langugae single shift tables for the case when a message is SMPP originated and does not have included UDH. This is SMSC Gw level and can be overwritten for each ESME created. The default GSM data coding table is mostly used. Possible values: = 0  : default GSM data coding table; = 13 : urdu (arabic) national language shift table">
+									<span class="add-on">National Language Single Shift</span>
+									<input id="nationalLanguageSingleShift" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
+								</span>                         
+							</div>
+							
+							<div id="div-nationalLanguageLockingShift" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="national langugae locking shift tables for the case when a message is SMPP originated and does not have included UDH. This is SMSC Gw level and can be overwritten for each ESME created. The default GSM data coding table is mostly used. Possible values: = 0  : default GSM data coding table; = 13 : urdu (arabic) national language shift table">
+									<span class="add-on">National Language Locking Shift</span>
+									<input id="nationalLanguageLockingShift" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="0" />
+								</span>                         
+							</div>																				
 							
 							&nbsp;
                         	<h5 style="border-bottom: 1px solid #DDD;">Delivery Delay Configuration</h5>
@@ -557,6 +570,9 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										
 										$("#esmedefaultclustername").val(response.value.EsmeDefaultClusterName);
 										
+										$("#nationalLanguageSingleShift").val(response.value.NationalLanguageSingleShift);
+										$("#nationalLanguageLockingShift").val(response.value.NationalLanguageLockingShift);
+										
 										var smppEncodingForUCS2 = response.value.SmppEncodingForUCS2;
 										
 										if(smppEncodingForUCS2 == "Utf8"){
@@ -981,6 +997,22 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						
 						var propesmedefaultclustername = $("#esmedefaultclustername").val();
 						
+						var propnationalLanguageSingleShift = $("#nationalLanguageSingleShift").val();
+						if(propnationalLanguageSingleShift.trim() == "") {
+			    			$("#div-propdefaultnpi").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-propdefaultnpi").hasClass("error")) {
+			    			$("#div-propdefaultnpi").removeClass("error");		
+			    		}						
+						
+						var propnationalLanguageLockingShift = $("#nationalLanguageLockingShift").val();
+						if(propnationalLanguageLockingShift.trim() == "") {
+			    			$("#div-propdefaultnpi").addClass("error");					    			
+			    			formInvalid = true;
+			    		} else if($("#div-propdefaultnpi").hasClass("error")) {
+			    			$("#div-propdefaultnpi").removeClass("error");		
+			    		}						
+						
 						var e = document.getElementById("smppencodingforucs2");
 						var smppencodingforucs2 = e.options[e.selectedIndex].text;
 						
@@ -1051,6 +1083,8 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									{ type: "write", mbean: mbeanSearch, attribute: "DefaultTon", value: propdefaultton },
 									{ type: "write", mbean: mbeanSearch, attribute: "DefaultNpi", value: propdefaultnpi },
 									{ type: "write", mbean: mbeanSearch, attribute: "EsmeDefaultClusterName", value: propesmedefaultclustername },
+									{ type: "write", mbean: mbeanSearch, attribute: "NationalLanguageSingleShift", value: propnationalLanguageSingleShift },
+									{ type: "write", mbean: mbeanSearch, attribute: "NationalLanguageLockingShift", value: propnationalLanguageLockingShift },
 									{ type: "write", mbean: mbeanSearch, attribute: "SmppEncodingForUCS2", value: smppencodingforucs2 },
 									{ type: "write", mbean: mbeanSearch, attribute: "SmppEncodingForGsm7", value: smppencodingforgsm7 },
 									{ type: "write", mbean: mbeanSearch, attribute: "StoreAndForwordMode", value: storeandforwardmode },
