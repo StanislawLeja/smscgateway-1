@@ -458,7 +458,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 				return this.manageGet(args);
 			} else if (args[1].equals("remove")) {
 				return this.manageRemove(args);
-            } else if (args[1].equals("skip-unsent-messages")) {
+            } else if (args[1].equals("skipunsentmessages")) {
                 return this.skipUnsentMessages(args);
 			} else if (args[1].toLowerCase().equals("databaserule")) {
                 if (args.length < 3)
@@ -830,12 +830,12 @@ public class SMSCShellExecutor implements ShellExecutor {
             } else if (parName.equals("hrhlrnumber")) {
                 smscPropertiesManagement.setHrHlrNumber(options[3]);
 
-            } else if (parName.equals("national-language-single-shift")) {
+            } else if (parName.equals("nationallanguagesingleshift")) {
                 int val = Integer.parseInt(options[3]);
                 if (val < 0 || val > 13)
                     return SMSCOAMMessages.NATIONAL_LANGUAGE_SHIFT_BAD_VALUE;
                 smscPropertiesManagement.setNationalLanguageSingleShift(val);
-            } else if (parName.equals("national-language-locking-shift")) {
+            } else if (parName.equals("nationallanguagelockingshift")) {
                 int val = Integer.parseInt(options[3]);
                 if (val < 0 || val > 13)
                     return SMSCOAMMessages.NATIONAL_LANGUAGE_SHIFT_BAD_VALUE;

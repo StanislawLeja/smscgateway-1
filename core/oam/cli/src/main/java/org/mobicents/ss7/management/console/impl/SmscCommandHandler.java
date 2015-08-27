@@ -79,8 +79,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("removinglivetablesdays");
         set.addChild("removingarchivetablesdays");
         set.addChild("hrhlrnumber");
-        set.addChild("national-language-single-shift");
-        set.addChild("national-language-locking-shift");
+        set.addChild("nationallanguagesingleshift");
+        set.addChild("nationallanguagelockingshift");
 
         txsmppcharging.addChild("None");
         txsmppcharging.addChild("Selected");
@@ -164,8 +164,8 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("removinglivetablesdays");
         get.addChild("removingarchivetablesdays");
         get.addChild("hrhlrnumber");
-        get.addChild("national-language-single-shift");
-        get.addChild("national-language-locking-shift");
+        get.addChild("nationallanguagesingleshift");
+        get.addChild("nationallanguagelockingshift");
 
         Node smppencodingforgsm72 = get.addChild("smppencodingforgsm7");
         Node smppencodingforucs22 = get.addChild("smppencodingforucs2");
@@ -216,7 +216,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         mproc.addChild("remove");
         mproc.addChild("show");
 
-        Node skipUnsentMessages = parent.addChild("skip-unsent-messages");
+        Node skipUnsentMessages = parent.addChild("skipunsentmessages");
 
 	};
 
