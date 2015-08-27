@@ -1,0 +1,13 @@
+Name
+	smsc skipunsentmessages
+
+SYNOPSIS
+	smsc skipunsentmessages <value>
+
+DESCRIPTION
+	this flag is set for SMSC GW skip of processing of unsent messages for
+    previous dueSlots. Value of this message means time offset in seconds
+    before actual time.
+
+SEE ALSO
+		
