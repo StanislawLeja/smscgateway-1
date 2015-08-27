@@ -27,6 +27,8 @@
 				<th>Destination TON</th>
 				<th>Destination NPI</th>
 				<th>Destination Digit</th>
+				<th>Originating Channel</th>
+				<th>Network Id</th>
 				<th style="text-align: center; width: 150px;">Actions</th>
 			</tr>
 		</thead>
@@ -61,15 +63,15 @@
 					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Rule will be applied only if destination type of number (TON) of target SMS match's with this rule's desttonmask. Set value to -1 as wild card to match all the TON. Valid values of TON are &#13; 0 : Unknown &#13; 1 : International &#13; 2 : National &#13; 3 : Network Specific &#13; 4 : Subscriber &#13; 5 : Alphanumeric &#13; 6 : Abbreviated &#13; 7 : Reserved &#13; Default value is -1">
 						<span class="add-on">Destination Type of number (TON)</span>
 						<select id="desttonmask" >
-							<option value="-1">Null</option>
-							<option value="0">Unknown</option>
-							<option value="1">International</option>
-							<option value="2">National</option>
-							<option value="3">Network Specific</option>
-							<option value="4">Subscriber Number</option>
-							<option value="5">Alphanumeric</option>
-							<option value="6">Abbreviated</option>
-							<option value="7">Reserved</option>
+							<option value="-1">-1: Null</option>
+							<option value="0">0 : Unknown</option>
+							<option value="1">1 : International</option>
+							<option value="2">2 : National</option>
+							<option value="3">3 : Network Specific</option>
+							<option value="4">4 : Subscriber Number</option>
+							<option value="5">5 : Alphanumeric</option>
+							<option value="6">6 : Abbreviated</option>
+							<option value="7">7 : Reserved</option>
 						</select>
 					</span>	
 				</div>
@@ -78,30 +80,30 @@
 					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Rule will be applied only if destination number plan indicator (NPI) of target SMS match's with this rule's destnpimask. Set value to -1 as wild card to match all the NPI. Valid values of TON are &#13; 0  : Unknown &#13; 1  : ISDN (E163/E164) &#13; 3  : Data (X.121) &#13; 4  : Telex (F.69) &#13; 6  : Land Mobile (E.212) &#13; 8  : National &#13; 9  : Private &#13; 10 : ERMES &#13; 14 : Internet &#13; 18 : WAP Client Id &#13; Default value is -1 ">
 						<span class="add-on">Destination Number plan indicator (NPI)</span>
 						<select id="destnpimask" >
-							<option value="-1">Null</option>
-							<option value="0">Unknown</option>
-							<option value="1">ISDN (E163/E164)</option>
-							<option value="3">Data (X.121)</option>
-							<option value="4">Telex (F.69)</option>
-							<option value="6">Land Mobile (E.212)</option>
-							<option value="8">National</option>
-							<option value="9">Private</option>
-							<option value="10">ERMES</option>
-							<option value="14">Internet (IP)</option>
-							<option value="18">WAP Client Id</option>
+							<option value="-1">-1 : Null</option>
+							<option value="0">0 : Unknown</option>
+							<option value="1">1 : ISDN (E163/E164)</option>
+							<option value="3">3 : Data (X.121)</option>
+							<option value="4">4 : Telex (F.69)</option>
+							<option value="6">6 : Land Mobile (E.212)</option>
+							<option value="8">8: National</option>
+							<option value="9">9 : Private</option>
+							<option value="10">10 : ERMES</option>
+							<option value="14">14 : Internet (IP)</option>
+							<option value="18">18 : WAP Client Id</option>
 						</select>
 					</span>	
 				</div>
 				
 				<div id="div-destdigmask" class="control-group">
-					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Rule will be applied only if destination number of target SMS match's with this rule's destdigmask. destdigmask is java regular expression. Set value to null or -1 as wild card to match all the digits of target SMS destination. Default value is -1">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Rule will be applied only if destination number of target SMS match's with this rule's destdigmask. destdigmask is java regular expression. Set value to -1 or leave blank as wild card to match all the digits of target SMS destination. Default value is -1">
 						<span class="add-on">Destination Digit Mask</span>
 						<input id="destdigmask" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Destination digits mask" />
 					</span>				
 				</div>	
 				
 				<div id="div-originatingmask" class="control-group">
-					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Rule will be applied only if target SMS is originated from channel as specified by originatingmask. Set value to null as wild card to match all the origination type. Valid values are &#13; SMPP &#13; SS7_MO &#13; SS7_HR &#13; SIP &#13; Default value is null">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Rule will be applied only if target SMS is originated from channel as specified by originatingmask. Select All as wild card to match all the origination type. Valid values are &#13; SMPP &#13; SS7_MO &#13; SS7_HR &#13; SIP &#13; Default value is All (null)">
 						<span class="add-on">Originating Channel</span>
 						<select id="originatingmask" >
 							<option value="All">All</option>
@@ -131,15 +133,15 @@
 					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Once rule match's, the target SMS's destination type of number(TON) will be changed to one set here. Set this to -1 to keep original TON. Default value is -1.">
 						<span class="add-on">New Type Of Number (TON)</span>
 						<select id="newdestton" >
-							<option value="-1">Null</option>
-							<option value="0">Unknown</option>
-							<option value="1">International</option>
-							<option value="2">National</option>
-							<option value="3">Network Specific</option>
-							<option value="4">Subscriber Number</option>
-							<option value="5">Alphanumeric</option>
-							<option value="6">Abbreviated</option>
-							<option value="7">Reserved</option>
+							<option value="-1">-1 : null</option>
+							<option value="0">0 : Unknown</option>
+							<option value="1">1 : International</option>
+							<option value="2">2 : National</option>
+							<option value="3">3 : Network Specific</option>
+							<option value="4">4 : Subscriber Number</option>
+							<option value="5">5 : Alphanumeric</option>
+							<option value="6">6 : Abbreviated</option>
+							<option value="7">7 : Reserved</option>
 						</select>
 					</span>	
 				</div>
@@ -148,23 +150,23 @@
 					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Once rule match's, the target SMS's destination number plan indicator (NPI) will be changed to one set here. Set this to -1 to keep original NPI. Default value is -1.">
 						<span class="add-on">New Number Plan Indicator (NPI)</span>
 						<select id="newdestnpi" >
-							<option value="-1">Null</option>
-							<option value="0">Unknown</option>
-							<option value="1">ISDN (E163/E164)</option>
-							<option value="3">Data (X.121)</option>
-							<option value="4">Telex (F.69)</option>
-							<option value="6">Land Mobile (E.212)</option>
-							<option value="8">National</option>
-							<option value="9">Private</option>
-							<option value="10">ERMES</option>
-							<option value="14">Internet (IP)</option>
-							<option value="18">WAP Client Id</option>
+							<option value="-1">-1 : null</option>
+							<option value="0">0 : Unknown</option>
+							<option value="1">1 : ISDN (E163/E164)</option>
+							<option value="3">3 : Data (X.121)</option>
+							<option value="4">4 : Telex (F.69)</option>
+							<option value="6">6 : Land Mobile (E.212)</option>
+							<option value="8">8 : National</option>
+							<option value="9">9 : Private</option>
+							<option value="10">10 : ERMES</option>
+							<option value="14">14 : Internet (IP)</option>
+							<option value="18">18 : WAP Client Id</option>
 						</select>
 					</span>	
 				</div>	
 				
 				<div id="div-addestdigprefix" class="control-group">
-					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Once rule match's, the target SMS's destination number will be prefixed with adddestdigprefix set here. Set this to -1 or null to keep original destination number. Dfault value is -1.">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Once rule match's, the target SMS's destination number will be prefixed with adddestdigprefix set here. Set this to -1 or leave leave empty to keep original destination number. Dfault value is -1.">
 						<span class="add-on">Address prefix</span>
 						<input id="addestdigprefix" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Destination digits mask" />
 					</span>				
@@ -197,7 +199,7 @@
 	function convertTon(ton){
 		switch(ton){
 		case -1:
-			return "Null";
+			return "null";
 		case 0:
 			return "Unknown";
 		case 1:
@@ -222,7 +224,7 @@
 	function convertNpi(npi){
 		switch(npi){
 		case -1:
-			return "Null";
+			return "null";
 		case 0:
 			return "Unknown";
 		case 1:
@@ -304,6 +306,8 @@
 											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + desttonmask + ' : '+convertTon(desttonmask)+'</td>' +
 											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + destnpimask + ' : '+ convertNpi(destnpimask)+'</td>' +
 											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + destdigmask + '</td>' +
+											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + originatingmask + '</td>' +
+											'<td style="cursor: pointer;" onclick="$(this).parent().next().toggle();">' + networkidmask + '</td>' +
 											'<td style="font-size: 16px; vertical-align: middle; text-align: center; width: 150px;">' + 
 												'<button class="btn btn-small btn-danger"' + ' data-toggle="tooltip" title="Remove MProc" data-placement="bottom" onclick="mprocOperation(\'destroyMProcRule\', \'' + id +  '\')"><i class="icon-remove"> </i></button> ' +
 												'<a href="#entities-modal'+id+'" role="button" class="btn btn-info btn-small" data-toggle="modal"><i class="icon-external-link"></i></a>' +
@@ -387,7 +391,7 @@
 																		'</td>'+
 																	'</tr>'+
 																	
-																	'<tr data-toggle="tooltip" title="Rule will be applied only if destination number of target SMS match\'s with this rule\'s destdigmask. destdigmask is java regular expression. Set value to null or -1 as wild card to match all the digits of target SMS destination. Default value is -1">'+
+																	'<tr data-toggle="tooltip" title="Rule will be applied only if destination number of target SMS match\'s with this rule\'s destdigmask. destdigmask is java regular expression. Set value to -1 or leave blank as wild card to match all the digits of target SMS destination. Default value is -1">'+
 																		'<td style="font-size: 0.9em;">Destination Digits Mask</td>'+
 																		'<td style="font-size: 0.9em; padding: 0;">'+
 																			'<div id="div-' + id +'DestDigMask-input" class="control-group">'+
@@ -403,7 +407,7 @@
 																		'</td>'+
 																	'</tr>'+	
 																	
-																	'<tr data-toggle="tooltip" title="Rule will be applied only if target SMS is originated from channel as specified by originatingmask. Set value to null as wild card to match all the origination type. Valid values are &#13; SMPP &#13; SS7_MO &#13; SS7_HR &#13; SIP &#13; Default value is null">'+
+																	'<tr data-toggle="tooltip" title="Rule will be applied only if target SMS is originated from channel as specified by originatingmask. Leave blank as wild card to match all the origination type. Valid values are &#13; SMPP &#13; SS7_MO &#13; SS7_HR &#13; SIP &#13; Default is blank">'+
 																		'<td style="font-size: 0.9em;">Originating Chanel</td>'+
 																		'<td style="font-size: 0.9em; padding: 0;">'+
 																			'<div id="div-' + id +'OriginatingMask-input" class="control-group">'+
@@ -483,7 +487,7 @@
 																		'</td>'+
 																	'</tr>'+
 																	
-																	'<tr data-toggle="tooltip" title="Once rule match\'s, the target SMS\'s destination number will be prefixed with adddestdigprefix set here. Set this to -1 or null to keep original destination number. Dfault value is -1.">'+
+																	'<tr data-toggle="tooltip" title="Once rule match\'s, the target SMS\'s destination number will be prefixed with adddestdigprefix set here. Set this to -1 or leave blank to keep original destination number. Dfault value is -1.">'+
 																		'<td style="font-size: 0.9em;">Destination Digits Prefix</td>'+
 																		'<td style="font-size: 0.9em; padding: 0;">'+
 																			'<div id="div-' + id +'AddDestDigPrefix-input" class="control-group">'+

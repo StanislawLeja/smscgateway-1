@@ -431,7 +431,17 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										<option>false</option>
 									</select>
 								</span> 								
-							</div>							
+							</div>
+							
+							<div id="div-origNetworkIdForReceipts" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="if this option is turned on (true), for each generated delivery receipts networkId will be set to the value of networkId of an ESME from which the original message has come to SMSC. This can help for routing of receipts back to the originated ESME. If this option is turned off (false) then the networkId of receipts will be taken from networkId of ESME / SS7 / SIP via which the original message has left SMSC GW. ">
+									<span class="add-on">Original NetworkId For Receipts</span>
+									<select id="origNetworkIdForReceipts" >
+										<option>true</option>
+										<option>false</option>
+									</select>
+								</span> 								
+							</div>														
 							
 							<div class="control-group">
 								<span class="span12" style="text-align: left;">
@@ -757,6 +767,14 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										} else {
 											receiptsdisabling.options[1].selected = true;
 										}
+										
+										var origNetworkIdForReceiptsVar = response.value.OrigNetworkIdForReceipts;
+										
+										if(origNetworkIdForReceiptsVar){
+											origNetworkIdForReceipts.options[0].selected = true;
+										} else {
+											origNetworkIdForReceipts.options[1].selected = true;
+										}										
 									}],
 									error: function(value) {
 										errorUID = ("st" + new Date().getTime()).hashCode();
@@ -1511,12 +1529,17 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						e = document.getElementById("receiptsdisabling");
 						var receiptsdisabling = e.options[e.selectedIndex].text;
 						
+						e = document.getElementById("origNetworkIdForReceipts");
+						var origNetworkIdForReceipts = e.options[e.selectedIndex].text;
+						
+						
 						
 						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
 						jolokia.request(
 								[
 									{ type: "write", mbean: mbeanSearch, attribute: "DeliveryPause", value: deliverypauseVar },
 									{ type: "write", mbean: mbeanSearch, attribute: "ReceiptsDisabling", value: receiptsdisabling },
+									{ type: "write", mbean: mbeanSearch, attribute: "OrigNetworkIdForReceipts", value: origNetworkIdForReceipts },
 								],
 								{
 									success: function(response) {
