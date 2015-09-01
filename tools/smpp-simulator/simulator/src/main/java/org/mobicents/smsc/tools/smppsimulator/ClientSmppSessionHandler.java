@@ -73,6 +73,7 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
     @Override
     public PduResponse firePduRequestReceived(PduRequest pduRequest) {
         testingForm.addMessage("PduRequestReceived: " + pduRequest.getName(), pduRequest.toString());
+        this.testingForm.messagesRcvd.incrementAndGet();
 
         PduResponse resp = pduRequest.createResponse();
 
@@ -153,33 +154,8 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
                     s2 = sb.toString();
                 }
 
-
-//                if (dcs.getCharacterSet() == CharacterSet.UCS2) {
-//                    boolean udhPresent = (dev.getEsmClass() & SmppConstants.ESM_CLASS_UDHI_MASK) != 0;
-//                    // if (udhPresent) {
-//                    // Charset ucs2Charset = Charset.forName("UTF-16BE");
-//                    // ByteBuffer bb = ByteBuffer.wrap(msg);
-//                    // CharBuffer cb = ucs2Charset.decode(bb);
-//                    // s = cb.toString();
-//                    // } else {
-//
-//                    Charset utf8Charset;
-//                    if (this.testingForm.getSmppSimulatorParameters().getSmppEncoding() == 0) {
-//                        utf8Charset = Charset.forName("UTF-8");
-//                    } else {
-//                        utf8Charset = Charset.forName("UTF-16BE");
-//                    }
-//                    ByteBuffer bb = ByteBuffer.wrap(msg);
-//                    CharBuffer cb = utf8Charset.decode(bb);
-//                    s = cb.toString();
-//                    // }
-//                } else {
-//                    s = new String(msg);
-//                }
-
-
-
                 testingForm.addMessage("TextReceived: ", s2 + s);
+
 //                try {
 //                    Thread.sleep(1000);
 //                } catch (InterruptedException e) {

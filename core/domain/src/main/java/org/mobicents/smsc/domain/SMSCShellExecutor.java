@@ -37,6 +37,7 @@ import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.smsc.cassandra.SmsRoutingRuleType;
 import org.mobicents.smsc.library.DbSmsRoutingRule;
 import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.ss7.management.console.ShellExecutor;
 
@@ -1489,6 +1490,12 @@ public class SMSCShellExecutor implements ShellExecutor {
 		sb.append(smscStatProvider.getParam2());
 		sb.append(", SmscStartTime: ");
 		sb.append(smscStatProvider.getSmscStartTime());
+
+        String s1 = SmsSetCache.getInstance().getLstSmsSetWithBigMessageCountState();
+        if (s1 != null) {
+            sb.append("\nLstSmsSetWithBigMessageCountState:\n");
+            sb.append(s1);
+        }
 
 		return sb.toString();
 	}
