@@ -92,19 +92,23 @@ public class EsmeManagement implements EsmeManagementMBean {
 
 	private static EsmeManagement instance = null;
 
-	private EsmeManagement(String name) {
+	protected EsmeManagement(String name) {
 		this.name = name;
 
 		binding.setClassAttribute(CLASS_ATTRIBUTE);
 		binding.setAlias(Esme.class, "esme");
 	}
 
-	protected static EsmeManagement getInstance(String name) {
-		if (instance == null) {
-			instance = new EsmeManagement(name);
-		}
-		return instance;
-	}
+    protected static EsmeManagement getInstance(String name) {
+        if (instance == null) {
+            instance = new EsmeManagement(name);
+        }
+        return instance;
+    }
+
+    protected static void setInstance(EsmeManagement instance) {
+        EsmeManagement.instance = instance;
+    }
 
 	public static EsmeManagement getInstance() {
 		return instance;

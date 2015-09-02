@@ -330,11 +330,10 @@ public abstract class RxSipServerSbb implements Sbb {
 															+ e.getMessage(), e);
 										}
 									} else {
-										receipt.setStored(true);
-										pers.c2_scheduleMessage_ReschedDueSlot(
-												receipt,
-												smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast,
-												true);
+                                        receipt.setStored(true);
+                                        this.scheduler.setDestCluster(receipt.getSmsSet());
+                                        pers.c2_scheduleMessage_ReschedDueSlot(receipt,
+                                                smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, true);
 									}
 								}
 							}
@@ -839,10 +838,9 @@ public abstract class RxSipServerSbb implements Sbb {
 										}
 									} else {
 										receipt.setStored(true);
-										pers.c2_scheduleMessage_ReschedDueSlot(
-												receipt,
-												smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast,
-												true);
+                                        this.scheduler.setDestCluster(receipt.getSmsSet());
+                                        pers.c2_scheduleMessage_ReschedDueSlot(receipt,
+                                                smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, true);
 									}
 								}
 							}

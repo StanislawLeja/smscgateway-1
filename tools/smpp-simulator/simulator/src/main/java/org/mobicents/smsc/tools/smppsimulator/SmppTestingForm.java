@@ -142,7 +142,8 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 	protected Timer[] timer;
 	protected AtomicInteger messagesSent = new AtomicInteger();
 	protected AtomicInteger segmentsSent = new AtomicInteger();
-	protected AtomicInteger responsesRcvd = new AtomicInteger();
+    protected AtomicInteger responsesRcvd = new AtomicInteger();
+    protected AtomicInteger messagesRcvd = new AtomicInteger();
 
 	private static Charset utf8Charset = Charset.forName("UTF-8");
     private static Charset ucs2Charset = Charset.forName("UTF-16BE");
@@ -749,7 +750,8 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 	private void start() {
 		this.messagesSent = new AtomicInteger();
 		this.segmentsSent = new AtomicInteger();
-		this.responsesRcvd = new AtomicInteger();
+        this.responsesRcvd = new AtomicInteger();
+        this.messagesRcvd = new AtomicInteger();
 
         this.addMessage("Trying to start a new " + this.param.getSmppSessionType() + " session", "");
 
@@ -879,8 +881,9 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 	}
 
 	private void refreshState() {
-		this.lbState.setText("messageSegmentsSent=" + this.segmentsSent.get() + ", submitMessagesSent=" + this.messagesSent.get() + ", submitResponsesRcvd="
-				+ this.responsesRcvd.get());
+        this.lbState.setText("messageSegmentsSent=" + this.segmentsSent.get() + ", submitMessagesSent="
+                + this.messagesSent.get() + ", submitResponsesRcvd=" + this.responsesRcvd.get() + ", messagesRcvd="
+                + this.messagesRcvd.get());
 	}
 
 	public void setData(SmppSimulatorForm mainForm, SmppSimulatorParameters param) {
@@ -969,7 +972,9 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
 	private JTextField tbPcapFileName;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JTextField tbPcapPort;
-	
+
+    private AtomicInteger messagesNum = new AtomicInteger();
+
 	private void doSendSmppMessages() {
 
         Random rand = new Random();
@@ -1006,6 +1011,7 @@ public class SmppTestingForm extends JDialog implements SmppAccepter {
             String msg = this.param.getMessageText();
             if (j4 == 0)
                 msg = bigMessage;
+            msg += " " + ((Integer) messagesNum.incrementAndGet()).toString();
 
             this.submitMessage(encodingType, 0, msg, splittingType, param.getValidityType(), destAddrS,
                     param.getMessagingMode(), param.getSpecifiedSegmentLength());

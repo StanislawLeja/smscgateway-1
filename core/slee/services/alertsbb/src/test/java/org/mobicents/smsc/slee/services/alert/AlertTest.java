@@ -252,5 +252,11 @@ public class AlertTest {
             
         }
 
+        @Override
+        public void setDestCluster(SmsSet smsSet) {
+            // TODO Auto-generated method stub
+            
+        }
+
     }
 }

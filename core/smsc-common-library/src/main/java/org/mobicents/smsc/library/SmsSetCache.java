@@ -181,6 +181,24 @@ public class SmsSetCache {
         return res;
     }
 
+    public String getLstSmsSetWithBigMessageCountState() {
+        if (this.lstSmsSetWithBigMessageCount.size() == 0)
+            return null;
+
+        StringBuilder sb = new StringBuilder();
+        for (FastMap.Entry<String, SmsSet> n = this.lstSmsSetWithBigMessageCount.head(), end = this.lstSmsSetWithBigMessageCount
+                .tail(); (n = n.getNext()) != end && n != null;) {
+            SmsSet smsSet = n.getValue();
+            sb.append(smsSet.getTargetId());
+            sb.append(" - ");
+            sb.append(smsSet.getSmsCount());
+            sb.append(" - ");
+            sb.append(smsSet.getSmsCountWithoutDelivered());
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
     public void garbadeCollectProcessingSmsSet() {
         synchronized (lstSmsSetInProcessing) {
             Date limit = new Date(new Date().getTime() - processingSmsSetTimeout * 1000);

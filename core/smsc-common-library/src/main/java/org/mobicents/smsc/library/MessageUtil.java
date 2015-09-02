@@ -528,10 +528,11 @@ public class MessageUtil {
                     .append(DELIVERY_ACK_STATE_DELIVERED).append(DELIVERY_ACK_ERR).append("000").append(DELIVERY_ACK_TEXT)
                     .append(getFirst20CharOfSMS(sms.getShortMessageText()));
         } else {
+            ErrorCode errorCode = sms.getSmsSet().getStatus();
             sb.append(DELIVERY_ACK_ID).append(sms.getMessageIdText()).append(DELIVERY_ACK_SUB).append("001").append(DELIVERY_ACK_DLVRD).append("001")
                     .append(DELIVERY_ACK_SUBMIT_DATE).append(DELIVERY_ACK_DATE_FORMAT.format(sms.getSubmitDate())).append(DELIVERY_ACK_DONE_DATE)
                     .append(DELIVERY_ACK_DATE_FORMAT.format(new Timestamp(System.currentTimeMillis()))).append(DELIVERY_ACK_STAT)
-                    .append(DELIVERY_ACK_STATE_UNDELIVERABLE).append(DELIVERY_ACK_ERR).append(sms.getSmsSet().getStatus().getCodeText())
+                    .append(DELIVERY_ACK_STATE_UNDELIVERABLE).append(DELIVERY_ACK_ERR).append(errorCode != null ? errorCode.getCodeText() : "null")
                     .append(DELIVERY_ACK_TEXT).append(getFirst20CharOfSMS(sms.getShortMessageText()));
         }
 
