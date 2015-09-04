@@ -146,6 +146,8 @@ public class DBOperations_C2 {
 
 	private PreparedStatement getSipSmsRoutingRulesRange;
 	private PreparedStatement getSipSmsRoutingRulesRange2;
+	
+	private PreparedStatement getTableList;
 
 	private Date pcsDate;
 	private PreparedStatementCollection_C3[] savedPsc;
@@ -251,6 +253,8 @@ public class DBOperations_C2 {
 				+ "\" where token(\"" + Schema.COLUMN_ADDRESS + "\") >= token(?) LIMIT " + row_count + ";");
 		getSipSmsRoutingRulesRange2 = session.prepare("select * from \"" + Schema.FAMILY_SIP_SMS_ROUTING_RULE
 				+ "\"  LIMIT " + row_count + ";");
+		
+		getTableList = session.prepare("select * from system.schema_columnfamilies;");
 
 		try {
 			currentDueSlot = c2_getCurrentSlotTable(CURRENT_DUE_SLOT);
@@ -2024,9 +2028,8 @@ public class DBOperations_C2 {
     public String[] c2_getTableList(String keyspace) {
         ArrayList<String> res = new ArrayList<String>();
         try {
-            String sa = "select * from system.schema_columnfamilies;";
-            PreparedStatement ps = session.prepare(sa);
-            BoundStatement boundStatement = new BoundStatement(ps);
+            
+            BoundStatement boundStatement = new BoundStatement(this.getTableList);
 
             ResultSet result = session.execute(boundStatement);
 
