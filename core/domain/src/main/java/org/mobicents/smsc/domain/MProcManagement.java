@@ -190,15 +190,17 @@ public class MProcManagement implements MProcManagementMBean {
         ArrayList<MProcRule> cur = this.mprocs;
         ArrayList<Sms> res = new ArrayList<Sms>();
 
-        int destTon = sms.getSmsSet().getDestAddrTon();
-        int destNpi = sms.getSmsSet().getDestAddrNpi();
-        String destDig = sms.getSmsSet().getDestAddr();
-        Sms.OriginationType originatingType = sms.getOriginationType();
-        int networkId = sms.getSmsSet().getNetworkId();
+        // int destTon = sms.getSmsSet().getDestAddrTon();
+        // int destNpi = sms.getSmsSet().getDestAddrNpi();
+        // String destDig = sms.getSmsSet().getDestAddr();
+        // Sms.OriginationType originatingType = sms.getOriginationType();
+        // int networkId = sms.getSmsSet().getNetworkId();
 
         for (int i1 = 0; i1 < cur.size(); i1++) {
             MProcRule rule = cur.get(i1);
-            if (rule.isMessageMatchToRule(destTon, destNpi, destDig, originatingType, networkId)) {
+            // if (rule.isMessageMatchToRule(destTon, destNpi, destDig, originatingType, networkId)) {
+            if (rule.isMessageMatchToRule(sms.getSmsSet().getDestAddrTon(), sms.getSmsSet().getDestAddrNpi(), sms.getSmsSet()
+                    .getDestAddr(), sms.getOriginationType(), sms.getSmsSet().getNetworkId())) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("MRule matches to a message:\nrule: " + rule + "\nmessage: " + sms);
                 }
