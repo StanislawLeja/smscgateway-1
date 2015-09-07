@@ -36,6 +36,7 @@
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Section-Managing-SIP-Settings.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Section-Managing-MAP-Version-Cache-Settings.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Section-Managing-DB-Routing-Settings.xml" />
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Section-Managing-mproc-rules.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Section-Managing-Stats.xml" />
 
 

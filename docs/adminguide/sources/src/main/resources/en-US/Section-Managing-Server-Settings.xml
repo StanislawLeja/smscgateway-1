@@ -585,49 +585,6 @@ DESCRIPTION
 			</section>
 			</section>
 
-
-
-            <section id="receiptsdisabling">
-            <title>Disabling of Reciepts generating</title>
-            <section id="receiptsdisabling_CLI">
-            <title>Using CLI</title>
-<para>
-SMCS can generate receipts of messages delivering results (success / error).
-See chapter "Appendix B. Delivery Receipt Format" of "Short Message Peer to Peer. Protocol Specification v3.4."
-You can set the 'receiptsdisabling' value to true/false by issuing the command <command>smsc set receiptsdisabling</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get receiptsdisabling</command> which will display the value set for this property.
-</para>
-<screen><![CDATA[
-Name
-    smsc set receiptsdisabling
-
-SYNOPSIS
-    smsc set receiptsdisabling <true | false>
-
-DESCRIPTION
-    The SMSC can be configured to generat or not delivery receipts.
-     Setting of receiptsdisabling to false enables of receipts generation.
-     Setting of receiptsdisabling to true disables of receipts generation.
-     Default value: false (receipts will be generated).
-]]></screen>
-            </section>
-            <section id="receiptsdisabling_GUI">
-            <title>Using GUI</title>
-            <procedure>
-                <title>Disabling of Reciepts generating using the GUI</title>
-                <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
-                </para></step>
-                <step><para>The main panel will display the existing Settings, segregated into eight horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing, CDR and Home Routing. Switch to the 'Processing' tab in the GUI.
-                </para></step>
-                <step><para>You can specify if the SMSC should disable of receipt generating by setting the value for the field 'Disable Delivery Receipt' to true or false accordingly.
-                For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
-                </para></step>
-                <step><para>You must click on the button 'Save' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
-                </para></step>
-            </procedure>
-            </section>
-            </section>
-
-
 		</section>
 		<section id="SMSC_SS7_Settings">
 		<title>SS7 Settings</title>
@@ -2262,6 +2219,7 @@ DESCRIPTION
 			</section>					
 		</section>
 		
+		
 		<section id="SMSC_Gateway_Server_Processing">
 					<title>Processing</title>
 					
@@ -2307,6 +2265,89 @@ DESCRIPTION
 	            </procedure>
 	            </section>
 	        </section>            
+
+            <section id="receiptsdisabling">
+            <title>Disabling of Reciepts generating</title>
+            <section id="receiptsdisabling_CLI">
+            <title>Using CLI</title>
+<para>
+SMCS can generate receipts of messages delivering results (success / error).
+See chapter "Appendix B. Delivery Receipt Format" of "Short Message Peer to Peer. Protocol Specification v3.4."
+You can set the 'receiptsdisabling' value to true/false by issuing the command <command>smsc set receiptsdisabling</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get receiptsdisabling</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+    smsc set receiptsdisabling
+
+SYNOPSIS
+    smsc set receiptsdisabling <true | false>
+
+DESCRIPTION
+    The SMSC can be configured to generat or not delivery receipts.
+     Setting of receiptsdisabling to false enables of receipts generation.
+     Setting of receiptsdisabling to true disables of receipts generation.
+     Default value: false (receipts will be generated).
+]]></screen>
+            </section>
+            <section id="receiptsdisabling_GUI">
+            <title>Using GUI</title>
+            <procedure>
+                <title>Disabling of Reciepts generating using the GUI</title>
+                <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+                </para></step>
+                <step><para>The main panel will display the existing Settings, segregated into eight horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing, CDR and Home Routing. Switch to the 'Processing' tab in the GUI.
+                </para></step>
+                <step><para>You can specify if the SMSC should disable of receipt generating by setting the value for the field 'Disable Delivery Receipt' to true or false accordingly.
+                For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+                </para></step>
+                <step><para>You must click on the button 'Save' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+                </para></step>
+            </procedure>
+            </section>
+            </section>
+
+			<section id="SMSC_Gateway_Server_Routing_DLV">
+					<title>Routing of delivery receipts</title>
+            <section id="SMSC_Gateway_Server_Routing_DLV_CLI">
+            <title>Using CLI</title>
+<para>
+If this option is turned on for each generated delivery receipt networkId will be assigned to the value of networkId of an ESME via which the original message has come to SMSC.
+This can help for routing of receipts back to the originated ESME. If this option is turned off then the networkId of receipts will be taken from networkId of ESME / SS7 / SIP
+via which the original message has left SMSC GW. You can configure this option by issuing the command smsc set orignetworkidforreceipts with appropriate parameters as described below.
+</para>
+<screen><![CDATA[
+Name
+    smsc set orignetworkidforreceipts
+
+SYNOPSIS
+    smsc set orignetworkidforreceipts <true | false>
+
+DESCRIPTION
+
+	Settings of this option will affect of which networkId will be assigned
+	to a message delivery receipt.
+	true: networkId of the connector via which an original message has 
+	      left SMSC GW
+	false: networkId of the connector via which an original message has
+	       come SMSC GW. This value is default.
+]]></screen>
+            </section>
+            <section id="SMSC_Gateway_Server_Routing_DLV_GUI">
+            <title>Using GUI</title>
+            <procedure>
+                <title>Routing of delivery receipts option update by the GUI</title>
+                <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+                </para></step>
+                <step><para>The main panel will display the existing Settings, segregated into eight horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing, CDR and Home Routing. Switch to the 'Processing' tab in the GUI.
+                </para></step>
+                <step><para>You can specify routing of delivery receipts by setting the value for the field 'Delivery receipts will be routed to the origination networkId' to true or false accordingly.
+                For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+                </para></step>
+                <step><para>You must click on the button 'Save' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+                </para></step>
+            </procedure>
+            </section>
+			</section>
 		
 		</section>
     </section>

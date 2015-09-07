@@ -421,7 +421,7 @@ The SMSC listens to 5060 port for incoming SIP messages. For addressing to/from 
             </procedure>
 
 <para>Now you can run the following tests:
-<numberedlist>
+<orderedlist>
 <listitem>
 <para>For testing sending messages from a SIP phone you can use the feature "Send message" to a concrete contact, type a message text and send. After about 1 minute you will receive the message on the SS7 Simulator or the SIP Simulator.
 </para>
@@ -430,7 +430,7 @@ The SMSC listens to 5060 port for incoming SIP messages. For addressing to/from 
 <para>For testing sending messages to the SIP phone you just need to send a message from the SS7 Simulator or SMPP Simulator to the address "5555". You must put the originating address as "1111" for SS7 Simulator and "6666" for SMPP Simulator.
 </para>
 </listitem>
-</numberedlist>
+</orderedlist>
 </para>
         </section>
 

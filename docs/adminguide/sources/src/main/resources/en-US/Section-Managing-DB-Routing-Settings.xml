@@ -6,18 +6,18 @@
 ]>
 
 	<section id="db_routing_rule_settings">
-	<title>Routing Rules</title>
+	<title>Database Routing Rules</title>
 	<para>
-	&THIS.PLATFORM; &THIS.APPLICATION; can now act as a SMPP Server accepting incoming SMPP connections or can also act as a SMPP client initiating a connection to a remote SMSC server. Therefore you can now set an intelligent routing rule to route SMS between SMPP connections or between SMPP and GSM.
+	&THIS.PLATFORM; &THIS.APPLICATION; can now act as a SMPP Server accepting incoming SMPP connections or can also act as a SMPP client initiating a connection to a remote SMSC server. Therefore you can now set an intelligent database routing rule to route SMS between SMPP connections or between SMPP, SIP and GSM.
 	</para>
 	<para>
-By default, &THIS.PLATFORM; &THIS.APPLICATION; is setup to leverage the "address-range" to decide the routing of SMS. For example:
+By default, &THIS.PLATFORM; &THIS.APPLICATION; is setup to leverage the "routing address-range" to decide the routing of SMS. For example:
 	</para>
 	<para>
-1) If Server ESME is defined of type RECEIVER (and hence accepts incoming RECEIVER BIND from peer client) with address range as 6666; if SMS arrives in system destined for 6666, it matches with this ESME and SMS will be sent as DELIVER_SM to client side. 
+1) If Server ESME is defined of type RECEIVER (and hence accepts incoming RECEIVER BIND from peer client) with routing address range as 6666; if SMS arrives in system destined for 6666, it matches with this ESME and SMS will be sent as DELIVER_SM to client side. 
 	</para>
 	<para>
-2) If Client ESME is defined of type TRANSMITTER (and hence initiates TRANSMITTER BIND to peer server) with address range as 6666; if SMS arrives in system destined for 6666, it matches with this ESME and SMS will be sent as SUBMIT_SM to server side.
+2) If Client ESME is defined of type TRANSMITTER (and hence initiates TRANSMITTER BIND to peer server) with routing address range as 6666; if SMS arrives in system destined for 6666, it matches with this ESME and SMS will be sent as SUBMIT_SM to server side.
 	</para>
 	<para>
 The destined number of SMS is checked with address range. &THIS.PLATFORM; &THIS.APPLICATION; uses regular expression for matching the pattern.

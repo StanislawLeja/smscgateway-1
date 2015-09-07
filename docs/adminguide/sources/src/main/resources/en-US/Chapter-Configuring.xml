@@ -31,6 +31,193 @@
 		<para>Logging is controlled from a central configuration file located at <filename>telscale-smscgateway-&tl;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/conf/jboss-log4j.xml</filename>, one for each JBoss AS configuration profile. This file defines a set of appenders specifying the log files, what categories of messages should go there, the message format and the level of filtering. For more details, please refer to Section 9.6.3, "Logging Service" in the JBoss AS Getting Started Guide available <ulink url="https://community.jboss.org/wiki/JBossAS5InstallationAndGettingStartedGuide">here</ulink>. </para>
 		<para> You must make sure <literal>log4j</literal> is fine tuned for optimal performance in production. We recommend that you set logging threshold to <literal>WARN</literal> and let the CDR appender be <literal>DEBUG</literal>.</para>
 	</section>
+
+	<section id="routing_fundamentals">
+		<title>SMSC GW routing fundamentals</title>
+		<para>
+SMSC GW needs clear info to where it must route messages that have come to SMSC GW from SMPP / SS7 / SIP connectors or created inside SMSC GW receipts.
+Routing procedures gives the answer to this questions, that a user must configure before SMSC GW can properly work.
+	<itemizedlist>
+<para>SMSC GW has two routing procedures:</para>
+<listitem>
+<para>The procedure based on dividing of separated routing area into several areas ("subnetworks") and routing of messages between subnetworks.</para>
+</listitem>
+<listitem>
+<para>The procedure of routing messages to destinations inside subnetworks.</para>
+</listitem>
+	</itemizedlist>
+</para>
+
+<section id="routing_fundamentals_1">
+		<title>The procedure based on dividing of separated routing area into several areas ("subnetworks").</title>
+		<para>
+Each area has its unique digital "netwokId" value.
+Each SMPP connection (ESME), SS7 SCCP service access point (SAP), SIP connector and a database routing rule (if you use them instead of default ESME routing rules) belongs to one of network (to each of the a networkId value is assigned).
+Default netwokId value is "0".
+If a user does not specify a netwokId value when ESME, SAP, SIP or a database routing rule creation, networkId=0 will be assigned.
+		</para>
+		<para>
+When a message has come to SMSC GW a networkId value from ESME, SAP or SIP is assigned for the message.
+The message can be routed only inside the area with the same networkId to what the message belongs. So this means that by default a message can not leave a "networkId" area via which it has come to SMSC GW.
+		</para>
+		<para>
+If a user needs that a message will be delivered to another "networkId" area, he can configure "message processing" rules ("mproc" rules).
+There we can configure that a message from a specified networkId1 and which fits some other conditions (like destination address fit to some mask) must be moved to networkId2 (newNetworkId option of a mproc rule).
+And the message will be delivered via ESME, SAP or SIP that belongs to networkId2.
+		</para>
+		<para>
+Multi-tenancy support is also based on this routing procedure. For each networkId we can configure a separate SS7 GlobalTitle and for an external peer each networkId can play a role as a separate independed SMSC.
+</para>
+	<itemizedlist>
+<para>NetworkId for a generated inside SMSC receipt is assigned by two algoritms:</para>
+<listitem>
+<para>if the option "Delivery receipts will be routed to the origination networkId" is set to true - networkId from ESME/SIP/SAP via what an original message has left SMSC GW will be assigned</para>
+</listitem>
+<listitem>
+<para>if the option "Delivery receipts will be routed to the origination networkId" is set to false - networkId from ESME/SIP/SAP via what an original message has come to SMSC GW will be assigned</para>
+</listitem>
+	</itemizedlist>
+	<itemizedlist>
+<para>NetworkId are specified at different places:</para>
+<listitem>
+<para>for JSS7 level SAPs and SCCP routing rules are configured for this. See "7.4.5. Create a new Service Access Point" and "7.4.17. Create a new SCCP Rule" chapters of "JSS7 stack User Guide".</para>
+</listitem>
+<listitem>
+<para>for ESMEs see the chapter <xref linkend="ESME_Settings"/>.</para>
+</listitem>
+<listitem>
+<para>for SIP level see the chapter <xref linkend="SIP"/>.</para>
+</listitem>
+<listitem>
+<para>for database routing rules see <xref linkend="db_routing_rule_settings"/></para>
+</listitem>
+	</itemizedlist>
+		<para>For configuring of mproc rules - see the chapter <xref linkend="mproc_rule_settings"/>.
+		</para>
+		<para>For configuring of option "Delivery receipts will be routed to the origination networkId" - see the chapter <xref linkend="SMSC_Gateway_Server_Routing_DLV"/>.
+		</para>
+</section>
+
+<section id="routing_fundamentals_2">
+		<title>The procedure of routing messages to destinations inside subnetworks.</title>
+		<para>
+	<itemizedlist>
+<para>Inside each subnetwork there may be several ESME, SAP or SIP configured. If we use default routing rules, then for routing SMSC GW makes following steps:</para>
+<listitem>
+<para>it checks all ESMEs that belongs to the networkId. It checks if TON, NPI and AddressRange of an ESME Routing Address fit to a message destination TON, NPI and address digits the the message will be routed to this ESME. There is one exception of this rule. A message will not be routed in any case to the ESME from which it has come.</para>
+</listitem>
+<listitem>
+<para>if no ESME found for routing SMSC GW then checks SIP connector if it's settings (TON, NPI and routing AddressRange) fits to a message destination TON, NPI and address digits. If yes the message will be routed to SIP</para>
+</listitem>
+<listitem>
+<para>if SIP also does not fit, a message will be routed to SS7 network. Then routing rules at SCCP level will be taken into account for furthe routing.</para>
+</listitem>
+	</itemizedlist>
+</para>
+For configuring of ESME and SIP routing parameters see <xref linkend="ESME_Settings"/> and <xref linkend="SIP"/>.
+<para>
+		</para>
+		<para>
+Instead of default routing rules database routing rules can be used. This is a set of stored in the cassandra database rules that describes where SMSC GW will route a message (to some ESME / SIP) depending on a message destination address.
+Messages that fit to no rules will be routed to SS7 network.
+For configuring of database routing rules see the chapter <xref linkend="mproc_rule_settings"/>
+		</para>
+</section>
+
+<section id="routing_fundamentals_3">
+		<title>Using of different routing procedures.</title>
+		<para>You can use only the procedure based on subnetworks (networkId) areas, only the procedure of routing messages inside subnetworks or both.
+		</para>
+		<para>
+	<itemizedlist>
+<para>If you want to use only the procedure based on subnetworks (networkId) areas you need:</para>
+<listitem>
+<para>configure SMSC GW so that only one SAP / ESME / SIP belongs to each networkId.</para>
+</listitem>
+<listitem>
+<para>for every ESME / SIP specify for "Routing Type of number (TON)"=-1, "Routing Number plan indicator (NPI)"=-1, "Routing Range"="^[0-9a-zA-Z]*" (that fits to any message destination address).</para>
+</listitem>
+<listitem>
+<para>configure a set of mproc rules that will manage of routing of messages from one subnetwork (networkId) to another.</para>
+</listitem>
+	</itemizedlist>
+		</para>
+		<para>
+	<itemizedlist>
+<para>If you want to use only the procedure based on subnetworks (networkId) areas you need:</para>
+<listitem>
+<para>configured for all SAP / SCCP routing rules / ESME / SIP the same networkId (default networkId=0 is usually used)</para>
+</listitem>
+<listitem>
+<para>for every ESME / SIP specify proper values for "Routing Type of number (TON)", "Routing Number plan indicator (NPI)" and "Routing Range" or configure database routing rules</para>
+</listitem>
+<listitem>
+<para>you do not need to configure mproc rules for routing</para>
+</listitem>
+	</itemizedlist>
+		</para>
+		<para>
+If you want to use both, you need to configure both parts.
+Messages will be routed between subnetworks (networkIds) by mproc rules and inside a subnetwork (networkId) by configuring of ESME / SIP "Routing Type of number (TON)", "Routing Number plan indicator (NPI)" and "Routing Range" (or database routing rules).
+		</para>
+</section>
+
+<section id="routing_fundamentals_4">
+		<title>Routing model examples.</title>
+<para>If you have one ESME and JSS7 connector, and the only traffic is ESME -> JSS7</para>
+<itemizedlist>
+  <listitem>
+  <para>use networkId=0 for all
+  </para>
+  </listitem>
+  <listitem>
+  <para>configure "Routing Range" value of the ESME to a value that fits to no mobile subscriber (for example "0")
+  </para>
+  </listitem>
+</itemizedlist>
+
+<para>If you use the model "all JSS7 originated messages must be routed to ESME and all ESME originated messages must be routed to JSS7", you can:</para>
+<itemizedlist>
+  <listitem>
+  <para>set networkId=0 for JSS7 and networkId=1 for ESME
+  </para>
+  </listitem>
+  <listitem>
+  <para>set ESME routing address so it accepts all messages
+  </para>
+  </listitem>
+  <listitem>
+<para>set mproc rules:</para>
+<para>smsc mproc add 1 networkIdMask=1, newNetworkId=0</para>
+<para>smsc mproc add 2 networkIdMask=0, newNetworkId=1</para>
+    </listitem>
+</itemizedlist>
+
+<para>If you have several ESMEs that send message to one SS7 connection and you need that delivery receipts come back to an originator ESME (and no more traffic), you can:</para>
+<itemizedlist>
+  <listitem>
+  <para>put SS7 SAP / SCCP rules to networkId=0
+  </para>
+  </listitem>
+  <listitem>
+  <para>put each ESME to each own networkId (1,2,3)
+  </para>
+  </listitem>
+  <listitem>
+<para>create a set of mproc rules that move ESME originated messages into SS7 network. CLI commabd can be like:</para>
+<para>smsc mproc add 1 networkIdMask=1, newNetworkId=0</para>
+<para>smsc mproc add 2 networkIdMask=2, newNetworkId=0</para>
+<para>smsc mproc add 3 networkIdMask=3, newNetworkId=0</para>
+    </listitem>
+  <listitem>
+  <para>set the option "Delivery receipts will be routed to the origination networkId" is set to true
+  </para>
+  </listitem>
+</itemizedlist>
+</section>
+
+	</section>
+
 	<section id="sms_home_routing">
 		<title>SMS Home Routing</title>
 		<para>According to traditional GSM specifications, all outbound messages pass through an SMSC in the sending network. This allows the SMSC to convert the Mobile Originated (MO) messages into Mobile Terminated (MT) messages and deliver them directly to the destination devices, regardless of what network they are on. As a result, inbound messages generated on other networks will be sent directly to the destination devices under the control of the SMSC in the sending network, not the home network. In this traditional setup, operators can add value to the MO messages but not to the MT messages that the customer may receive from other networks, since they do not pass through an SMSC in the home network.
@@ -42,7 +229,7 @@
 		Home Routing enables operators to offer a full range of value-added services to both inbound and outbound SMS thereby enhancing customer experience while generating additional revenue for the operators.
 		</para>
 		<para>
-		&THIS.PLATFORM; &THIS.APPLICATION; supports SMS Home Routing that enables you to handle Mobile Terminated messages in the network that owns the customer so you can offer a full range of advanced and value added services on both inbound and outbound SMS. You may switch on/off SMS Home Routing according to your requirements. You can configure this by setting the parameter <literal>smshomerouting</literal> to true/false using the CLI or the GUI. For more details refer to <xref linkend="smshomerouting" />.</para>
+		&THIS.PLATFORM; &THIS.APPLICATION; supports SMS Home Routing that enables you to handle Mobile Terminated messages in the network that owns the customer so you can offer a full range of advanced and value added services on both inbound and outbound SMS. You may switch on/off SMS Home Routing according to your requirements. You can configure this by setting the parameter <literal>smshomerouting</literal> to true/false using the CLI or the GUI. For more details refer to <xref linkend="smshomerouting"/>.</para>
 	</section>
 	<section id="CDR_logging_settings">
 		<title>CDR Logging Settings</title>

@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "${ent.filename}">
+%BOOK_ENTITIES;
+]>
+
+<section id="mproc_rule_settings">
+	<title>Message processing rules (mproc rules)</title>
+
+	<para>
+Message processing rules (mproc rules) can be useful for changing of some parameters of incoming messages that fit to some configurable conditions,
+for routing such messages to another subnetwork area (networkId)
+(see chapter <xref linkend="routing_fundamentals"/> [[..... "5.3. SMSC GW routing fundamentals" from https://telestax.atlassian.net/browse/SMSC-206]]) or for doubling of such messages (for sending copies of a message into two destinations for example).
+	</para>
+	<para>
+You can create one or more mproc rules, modify them, show them and remove some of them.
+Each mproc rule has it's unique digital Id. Mproc rule are sorted by this Id value.
+This means that for applying rules for a message SMSC GW starts with looking at a mproc rule with the least Id and then at a next mproc rule with next Id etc.
+When checking if mproc rule condition matches to a rule, updated at the previous applied rules are taken into account.
+	</para>
+	<para>
+For any incoming message (from SMPP, SIP or SS7 connectors) SMSC GW firstly invokes a Diameter server (if we a request to the Diameter server is configured).
+Then if the Diameter server has responsed that SMSC GW must accept the message, mproc rules are applied for the message.
+After this the message will be stored to the database or delivered to a destination.
+	</para>
+	<para>
+Parameters for mproc rule are divided into two cathegories:
+	</para>
+	<para>
+a) Conditions. If a message fits to all conditions then the rule will be applied to the message.
+<table
+						frame="all"
+						pgwide="1">
+<title>The list of possible conditions</title>
+		<tgroup cols='4' colsep='1' rowsep='1'>
+		<colspec
+								colnum="1"
+								colname="c0" />
+		<colspec
+								colnum="2"
+								colname="c1" />
+		<colspec
+								colnum="3"
+								colname="c2" />
+		<colspec
+								colnum="4"
+								colname="c3" />
+		<thead>
+			<row>
+				<entry>Parameter name</entry>
+				<entry>Value</entry>
+				<entry>Description</entry>
+				<entry>Default value</entry>
+			</row>
+		</thead>
+		<tbody>
+			<row>
+				<entry>desttonmask</entry>
+				<entry>&lt;destination type of number&gt;</entry>
+				<entry>a message fits to a rule if a message destination Type of Number is equal to this value "desttonmask"</entry>
+				<entry>"-1". This means then any message fit to the rule.</entry>
+			</row>
+			<row>
+				<entry>destnpimask</entry>
+				<entry>&lt;destination numbering plan indicator&gt;</entry>
+				<entry>a message fits to a rule if a message destination Numbering Plan Indicator is equal to this value "destnpimask".</entry>
+				<entry>"-1". This means then any message fit to the rule.</entry>
+			</row>
+			<row>
+				<entry>destdigmask</entry>
+				<entry>&lt;regular expression - destination number digits mask&gt;</entry>
+				<entry>a message fits to a rule if a message destination address digits are equal to this value "destdigmask".</entry>
+				<entry>"-1". This means then any message fit to the rule.</entry>
+			</row>
+			<row>
+				<entry>originatingmask</entry>
+				<entry>&lt;SS7_MO | SS7_HR | SMPP | SIP&gt;</entry>
+				<entry>a message fits to a rule if a message has come to SMSC GW via a defined in "originatingmask" connector.
+				Values means: SS7 legacy MO prodedure, SS7 home routing procedure, SMPP connector and SIP connector.</entry>
+				<entry>"-1". This means then any message fit to the rule.</entry>
+			</row>
+			<row>
+				<entry>networkidmask</entry>
+				<entry>&lt;networkId value&gt;</entry>
+				<entry>a message fits to a rule if it has come to SMSC GW via a subnetwork with networkId which is equal to this value "networkidmask".</entry>
+				<entry>"-1". This means then any message fit to the rule.</entry>
+ 			</row>
+		</tbody>
+		</tgroup>
+</table>
+	</para>
+	<para>
+b) Actions, which will be applied to messages.
+<table
+						frame="all"
+						pgwide="1">
+<title>The list of possible actions</title>
+		<tgroup cols='4' colsep='1' rowsep='1'>
+		<colspec
+								colnum="1"
+								colname="c0" />
+		<colspec
+								colnum="2"
+								colname="c1" />
+		<colspec
+								colnum="3"
+								colname="c2" />
+		<colspec
+								colnum="4"
+								colname="c3" />
+		<thead>
+			<row>
+				<entry>Parameter name</entry>
+				<entry>Value</entry>
+				<entry>Description</entry>
+				<entry>Default value</entry>
+			</row>
+		</thead>
+		<tbody>
+			<row>
+				<entry>newnetworkid</entry>
+				<entry>&lt;new networkId value&gt;</entry>
+				<entry>networkId of the message will be changed to "newnetworkid" value. This means that the message will be delivered via connectors that belong to the new networId.</entry>
+				<entry>"-1". This means that networkId of the message will not be changed.</entry>
+			</row>
+			<row>
+				<entry>newdestton</entry>
+				<entry>&lt;new destination type of number&gt;</entry>
+				<entry>a message destination Type of Number will be changed to "newdestton" value.</entry>
+				<entry>"-1". This means that destination Type of Number of the message will not be changed.</entry>
+ 			</row>
+			<row>
+				<entry>newdestnpi</entry>
+				<entry>&lt;new destination numbering plan indicator&gt;</entry>
+				<entry>a message destination Numbering Plan Indicator will be changed to "newdestnpi" value.</entry>
+				<entry>"-1". This means that destination Numbering Plan Indicator of the message will not be changed.</entry>
+ 			</row>
+			<row>
+				<entry>adddestdigprefix</entry>
+				<entry>&lt;prefix&gt;</entry>
+				<entry>adddestdigprefix will be added into a begin of a message destination address digits, For example if adddestdigprefix is "22" and destination address digits are "3333333", then the new value of destination address digits will be "223333333".</entry>
+				<entry>"-1". This means that destination address digits of the message will not be changed.</entry>
+			</row>
+			<row>
+				<entry>makecopy</entry>
+				<entry>&lt;false | true&gt;</entry>
+				<entry>If the makecopy action is present then SMSC GW make a copy of a message and then apply all other actions only to the copy.
+				So if you for example want to make copies of messages and send them to another destinations (by sending of copies into another networkId),
+				then for this you can create a rule and set for the rule "makecopy true" and "newnetworkid &lt;new networkId value&gt;" parameters.
+				This makes a copy of a message and set for the copy a new networkId value.</entry>
+				<entry>false</entry>
+			</row>
+		</tbody>
+		</tgroup>
+</table>
+	</para>
+	<para>
+	</para>
+
+			<section id="mproc_rule_settings_create">
+			<title>Create a mproc rule.</title>
+			<section id="mproc_rule_settings_create_CLI">
+			<title>Using CLI</title>
+<para>
+You can configure a new mproc rule by issuing the command smsc mproc add with appropriate parameters as described below.
+</para>
+<screen><![CDATA[
+Name
+	smsc mproc add
+
+SYNOPSIS
+	smsc mproc add <id> desttonmask <destination type of number> destnpimask
+	<destination numbering plan indicator> destdigmask <regular expression -
+	destination number digits mask> originatingmask <SS7_MO | SS7_HR | SMPP
+	| SIP> networkidmask <networkId value> newnetworkid <new networkId value>
+	newdestton<new destination type of number> newdestnpi <new destination
+	numbering plan indicator> adddestdigprefix <prefix> makecopy <false | true>
+
+DESCRIPTION
+
+	This command is used to add a new mproc rule.
+
+PARAMETERS
+
+	Standard Parameters.
+	id - a mandatory parameter that means a unique mproc identifier.
+	desttonmask - an optional parameter.
+	destnpimask - an optional parameter.
+	destdigmask - an optional parameter.
+	originatingmask - an optional parameter.
+	networkidmask - an optional parameter.
+	newnetworkid - an optional parameter.
+	newdestton - an optional parameter.
+	newdestnpi - an optional parameter.
+	adddestdigprefix - an optional parameter.
+	makecopy - an optional parameter.
+	Description of parameters is in the previous chapter.
+
+EXAMPLES
+	smsc mproc add 1 networkidmask 11 newnetworkid 12
+]]></screen>
+			</section>
+			<section id="mproc_rule_settings_create_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Message Processing Rules' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing mproc rule (if any), one each in a row with corresponding actions (delete, update) for each row. Below this you will find the button 'Create Message Processing Rule'.
+				</para></step>
+				<step><para>You can create a new mproc rule by launching the 'Create Message Processing Rule' window by clicking on the blue coloured 'Create Message Processing Rule' button.
+				The 'Create Message Processing Rule' window will display all proc rule paramters that must be defined by you.
+				For more details of these parameters please refer to the descriptions of the CLI commands for the same in the preceding section. 
+				</para></step>
+				<step><para>Enter appropriate values for all the parameters and then click on the 'Create' button at the bottom of this 'Create Message Processing Rule' window.
+				This action will create a new mproc rule with parameters as defined by you.
+				</para></step>
+				<step><para>If there is an error in defining the mproc rule, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+
+			<section id="mproc_rule_settings_modify">
+			<title>Modify a mproc rule.</title>
+			<section id="mproc_rule_settings_modify_CLI">
+			<title>Using CLI</title>
+<para>
+You can modify an existent mproc rule by issuing the command smsc mproc modify with appropriate parameters as described below.
+</para>
+<screen><![CDATA[
+Name
+	smsc mproc modify
+
+SYNOPSIS
+	smsc mproc modify <id> desttonmask <destination type of number> destnpimask
+	<destination numbering plan indicator> destdigmask <regular expression -
+	destination number digits mask> originatingmask <SS7_MO | SS7_HR | SMPP
+	| SIP> networkidmask <networkId value> newnetworkid <new networkId value>
+	newdestton<new destination type of number> newdestnpi <new destination
+	numbering plan indicator> adddestdigprefix <prefix> makecopy <false | true>
+
+DESCRIPTION
+
+	This command is used to modify an existent mproc rule.
+
+PARAMETERS
+
+	Standard Parameters.
+	id - a mandatory parameter that means a unique mproc identifier.
+	desttonmask - an optional parameter.
+	destnpimask - an optional parameter.
+	destdigmask - an optional parameter.
+	originatingmask - an optional parameter.
+	networkidmask - an optional parameter.
+	newnetworkid - an optional parameter.
+	newdestton - an optional parameter.
+	newdestnpi - an optional parameter.
+	adddestdigprefix - an optional parameter.
+	makecopy - an optional parameter.
+
+EXAMPLES
+	smsc mproc modify 1 newnetworkid 13
+]]></screen>
+			</section>
+			<section id="mproc_rule_settings_modify_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Message Processing Rules' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing mproc rule (if any), one each in a row with corresponding actions (delete, update) for each row. Below this you will find the button 'Create Message Processing Rule'.
+				</para></step>
+				<step><para>You can modify an existent mproc rule by launching the 'Message Procesing Rule #... properties' window by clicking on the blue coloured 'Modify Message Processing Rule' button.
+				The 'Message Procesing Rule #... properties' window will display all proc rule paramters that must be updated by you.
+				For more details of these parameters please refer to the descriptions of the CLI commands for the same in the preceding section.
+				</para></step>
+				<step><para>Update appropriate values for all the parameters and then click on the 'Close' button. This action will modify a proc rule with parameters as defined by you.
+				</para></step>
+				<step><para>If there is an error in updating the mproc rule, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+
+			<section id="mproc_rule_settings_view">
+			<title>View a mproc rule details.</title>
+			<section id="mproc_rule_settings_view_CLI">
+			<title>Using CLI</title>
+<para>
+You can view the details of all configured mproc rules or a specified mproc rule by issuing the command smsc mproc show as described below.
+</para>
+<screen><![CDATA[
+Name
+	smsc mproc show
+
+SYNOPSIS
+	smsc mproc show <id>
+
+DESCRIPTION
+
+	This command is used to list all configured mproc rules
+	or a specified mproc rule. Only nondefault mproc rule parameters
+	(conditions and actions) will be displayed in the command output.
+
+PARAMETERS
+
+	id - an optional parameter. You can specify this parameter to ask
+	detalis for a mproc rule with a provided Id. If you do not
+	specify this parameter all mproc rules will be displayed.
+
+EXAMPLES
+	smsc mproc show 1
+	smsc mproc show
+]]></screen>
+			</section>
+			<section id="mproc_rule_settings_view_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Message Processing Rules' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing mproc rule (if any), one each in a row with corresponding actions (delete, update) for each row. Below this you will find the button 'Create Message Processing Rule'.
+				</para></step>
+				<step><para>You can view the details of a mproc rule by clicking on the row corresponding to the mproc rule. All relevant details of the mproc rule will be displayed in an expanded format.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+
+			<section id="mproc_rule_settings_remove">
+			<title>Remove an existing mproc rule.</title>
+			<section id="mproc_rule_settings_remove_CLI">
+			<title>Using CLI</title>
+<para>
+You can remove an existent mproc rule by issuing the command smsc mproc remove with appropriate parameters as described below.
+</para>
+<screen><![CDATA[
+Name
+	smsc mproc remove
+
+SYNOPSIS
+	smsc mproc remove <id>
+
+DESCRIPTION
+
+	This command is used to remove an existing mproc rule.
+
+PARAMETERS
+
+	id - a mandatory parameter - id of an existent
+	mproc rule to remove.
+
+EXAMPLES
+	smsc mproc remove 1
+]]></screen>
+			</section>
+
+			<section id="mproc_rule_settings_remove_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Message Processing Rules' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing mproc rule (if any), one each in a row with corresponding actions (delete, update) for each row. Below this you will find the button 'Create Message Processing Rule'.
+				</para></step>
+				<step><para>To remove an existing mproc rule click on the delete icon marked 'x' in red, for the row corresponding to the mproc rule.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+
+</section>
