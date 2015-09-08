@@ -231,6 +231,157 @@ Messages will be routed between subnetworks (networkIds) by mproc rules and insi
 		<para>
 		&THIS.PLATFORM; &THIS.APPLICATION; supports SMS Home Routing that enables you to handle Mobile Terminated messages in the network that owns the customer so you can offer a full range of advanced and value added services on both inbound and outbound SMS. You may switch on/off SMS Home Routing according to your requirements. You can configure this by setting the parameter <literal>smshomerouting</literal> to true/false using the CLI or the GUI. For more details refer to <xref linkend="smshomerouting"/>.</para>
 	</section>
+
+	<section id="Diameter_OCS_server">
+		<title>Interworking with Diameter OCS server</title>
+
+	<section id="Diameter_OCS_server_general">
+		<title>General information</title>
+		<para>SMSC GW can interoperate with an OCS server via Diameter protocol connection.
+		</para>
+		<para>
+For this case SMSC GW can be configured so any incoming SMPP, MO SS7, Home Routing SS7 and SIP originated messages before next processing will be sent to OCS server. 
+Then OCS server can check if SMSC GW must accept the message or not. If yes, SMSC GW will process the message, if not, the message will be dropped.
+OCS server can also make any charging operations as needed.
+		</para>
+		<para>
+For SMPP and MO SS7 originated messages SMSC GW will return error (reject) in the response back to the orgiginated message submit message.
+So MO and SMPP part will be informed if the message is rejected. (This functionality is not implemented now for Home Routing SS7 and SIP originated messages).
+		</para>
+		<para>
+For interconnecting with OCS Server SMSC GW uses diameter CCR (Credit-Control Request) with following filled AVPs (all of them are located in AVP Service-Information (873)):
+		</para>
+		<para>
+<table
+						frame="all"
+						pgwide="1">
+<title>The AVP list</title>
+		<tgroup cols='3' colsep='1' rowsep='1'>
+		<colspec
+								colnum="1"
+								colname="c0" />
+		<colspec
+								colnum="2"
+								colname="c1" />
+		<colspec
+								colnum="3"
+								colname="c2" />
+		<thead>
+			<row>
+				<entry>AVP name</entry>
+				<entry>AVP code</entry>
+				<entry>Description</entry>
+			</row>
+		</thead>
+		<tbody>
+			<row>
+				<entry>Originator-Received-Address</entry>
+				<entry>2027</entry>
+				<entry>The address of message sender (source address)</entry>
+			</row>
+			<row>
+				<entry>Originator-SCCP-Address</entry>
+				<entry>2008</entry>
+				<entry>The CallingParty SCCP Address of MO message</entry>
+			</row>
+			<row>
+				<entry>Recipient-Address</entry>
+				<entry>1201</entry>
+				<entry>The address of message receiver (destination address)</entry>
+			</row>
+			<row>
+				<entry>Data-Coding-Scheme</entry>
+				<entry>2001</entry>
+				<entry>Data Coding Scheme of a message (for example 0 for GSM7 encoding or 8 for USC2 encoding)</entry>
+			</row>
+			<row>
+				<entry>SM-Message-Type</entry>
+				<entry>2007</entry>
+				<entry>Message type, usually SUBMISSION (value = 0)</entry>
+			</row>
+			<row>
+				<entry>SMSC-Address</entry>
+				<entry>2017</entry>
+				<entry>SMSC address as it is present in SM_RP_DA field in MO request</entry>
+			</row>
+		</tbody>
+</tgroup>
+</table>
+		</para>
+		<para>When OCS server responds with 2001 code (access granted) SMSC GW will accept the message, all other respond codes will reject the message.
+		</para>
+	</section>
+
+	<section id="Diameter_OCS_server_conig">
+		<title>Configuring</title>
+		<para>You can use Telestax OCS server or any third party OCS server as you wish. SMSC GW party configuring is the same for both.
+Here there is a describtion for the case of Telestax OCS server and as an example - the simpliest case when we have OCS at the same host as SMSC GW.
+		</para>
+		<para>
+			<procedure>
+				<title>Steps for configuring of SMSC GW and OCS server</title>
+				<step><para>SMSC GW must be already configured for accepting and sending messages (general, SS7, SMPP, etc parts)</para>
+				</step>
+				<step><para>You can download for testing the Telestax OCS server from https://telestax.zendesk.com/forums/22947518-Product-Downloads. Download and unpack it to a separate folder.</para>
+				</step>
+				<step><para>SMSC GW uses the updated AVP dictionary library. Before using of OCS server copy from SMSC GW the file &lt;smsc gw root folder&gt;/resource/ocs/dictionary.xml
+				to Telestax OCS server to the folder &lt;jboss&gt;/server/default/deploy/TelScale-diameter-mux-6.2.0.GA.sar/config.</para>
+				</step>
+				<step><para>for simple test configuring of SMSC GW and OCS server you can copy example config files jdiameter-config.xml
+					 <substeps>
+						<step><para>from &lt;smsc gw root folder&gt;/resource/ocs/smsc-part to SMSC GW &lt;jboss&gt;/server/default/deploy/TelScale-diameter-mux-6.2.0.GA.sar/config</para>
+						</step>	
+						<step><para>from &lt;smsc gw root folder&gt;/resource/ocs/ocs-part to OCS server &lt;jboss&gt;/server/default/deploy/TelScale-diameter-mux-6.2.0.GA.sar/config</para>
+						</step>	
+					 </substeps>
+					 </para>
+				</step>
+				<step><para>Those configs suppose that you use Telestax OCS server and it is on the same host. If not you need to make extra configuring.
+In the testing config files SMSC GW plays a role of a diameter client and OCS server - a diameter server.
+In this case for OCS server part we need to update jdiameter-config.xml file:
+					 <substeps>
+						<step><para>&lt;LocalPeer&gt; section with URI, IPAddresses and Realm.</para>
+						</step>	
+						<step><para>In &lt;Network&gt; we need to specify &lt;Peer&gt; (SMSC GW diameter IP) and &lt;Realm&gt; (name and the same Realm that is configured in SMSC GW part)</para>
+						</step>	
+					 </substeps>
+For SMSC GW part we need to update:
+					 <substeps>
+						<step><para>&lt;LocalPeer&gt; section with URI, IPAddresses and Realm.</para>
+						</step>	
+						<step><para>In &lt;Network&gt; we need to specify &lt;Peer&gt; (OCS server diameter IP) and &lt;Realm&gt; (name and the same Realm that is configured in OCS server part)</para>
+						</step>	
+					 </substeps>
+You can read more for configuring in the manuals for Telestax Diameter protocol and Telestax OCS server.</para>
+				</step>
+				<step><para> Start OCS server. If it is located in the same host as SMSC GW you need to run it "-b 127.0.0.2" parameter so it uses 127.0.0.2 IP address (127.0.0.1 is used by SMSC GW)
+				Use fo starting the command like:</para>
+				<para>run -b 127.0.0.2</para>
+				</step>
+				<step><para>For accessing OCS managing console (after OCS server is started) use a browser with URL: http://127.0.0.2:8080/charging-server-rest-management/#/users</para>
+				<para>Avoid of using of Microsoft Internet Explorer, OCS server does not work correctly with it.</para>
+				<para>Add one or more test subscribers by the console. You need to specify an address of message sender (source address). OCS Server idendifies a subscriber by its sender address.</para>
+				</step>
+				<step><para>Start SMSC GW</para>
+				</step>
+				<step><para>You need to configure Destination Realm, Destination Host, Destination Port and User Name (of OCS server) - see the chapter "6.1.5. Diameter Settings" of SMSC GW Admin guide.
+You can take values from jdiameter-config.xml. You can assign for User Name any value (for example "telestax").</para>
+				</step>
+				<step><para>You need to specify which messages will be sent to OCS server (see "6.1.5. Diameter Settings" chapter). For example if you want to charge mobile originated messages - 
+specify "Mobile Originated SMS Charged" to value "diameter".</para>
+				</step>
+				<step><para>SMSC GW is configured</para>
+				</step>
+			</procedure>
+		</para>
+		<para>
+		</para>
+		<para>
+		</para>
+	</section>
+
+	</section>
+
 	<section id="CDR_logging_settings">
 		<title>CDR Logging Settings</title>
 		<para>
