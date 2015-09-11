@@ -367,7 +367,7 @@ You can read more for configuring in the manuals for Telestax Diameter protocol 
 				<step><para>You need to configure Destination Realm, Destination Host, Destination Port and User Name (of OCS server) - see the chapter "6.1.5. Diameter Settings" of SMSC GW Admin guide.
 You can take values from jdiameter-config.xml. You can assign for User Name any value (for example "telestax").</para>
 				</step>
-				<step><para>You need to specify which messages will be sent to OCS server (see "6.1.5. Diameter Settings" chapter). For example if you want to charge mobile originated messages - 
+				<step><para>You need to specify which messages will be sent to OCS server (see chapter <xref linkend="SMSC_diameter_Settings"/>). For example if you want to charge mobile originated messages - 
 specify "Mobile Originated SMS Charged" to value "diameter".</para>
 				</step>
 				<step><para>SMSC GW is configured</para>

@@ -174,7 +174,7 @@ bin$ chmod +x run.sh
 			<step>
 						<para>
 							Execute the
-							<filename>run.sh</filename>
+							<filename>run.sh</filename>.
 							Bourne shell script with the command <literal>./run.sh gui</literal> or in the case of Windows <literal>./run.bat gui</literal>. 
 <screen><![CDATA[
 bin$ ./run.sh gui
@@ -198,6 +198,7 @@ The Low level part is configured to SCTP (not TCP) protocol and hence you can te
 			</para></step>
 		</procedure>
 		</section>
+
 		<section id="running_the_simulator_smpp">
 			<title>Running the SMPP Simulator</title>
 		<procedure>
@@ -224,10 +225,10 @@ bin$ chmod +x run.sh
 			<step>
 						<para>
 							Execute the
-							<filename>run.sh</filename>
-							Bourne shell script with the command <literal>./run.sh gui</literal> or in the case of Windows <literal>./run.bat gui</literal>. 
+							<filename>run.sh</filename>.
+							Bourne shell script with the command <literal>./run.sh</literal> or in the case of Windows <literal>./run.bat</literal>. 
 <screen><![CDATA[
-bin$ ./run.sh gui
+bin$ ./run.sh
 ]]>
 </screen>
 This will launch the SMPP Simulator GUI Application.
@@ -236,13 +237,15 @@ This will launch the SMPP Simulator GUI Application.
 			</step>
 			<step>
 						<para>
-							<!--When the GUI shows up, select "main" (default) as host name and press the 'Start' button. -->The SMPP Simulator is already pre-configured to connect to the SMSC Gateway (running in simulator profile). Press 'Run test' and then click on 'Start Session' to connect to the SMSC Gateway.
+							The SMPP Simulator default settings fit to connect to the SMSC Gateway (running in simulator profile).
+							You can in this case just press 'Run test' and then press on 'Start Session' to connect to the SMSC Gateway.
 						</para>
 
 			</step>
 			<step>
 						<para>
 Using the button 'Configuring data for message submitting', you can configure different sending modes, data coding schemas, origination and destination addresses.
+See chapter <xref linkend="smpp_simulator"/> to understand more of SMPP simulator usage.  
 						</para>
 
 			</step>
@@ -260,9 +263,6 @@ With the SMPP Simulator you can also simulate a bulk message delivery to &THIS.A
 			</step>
 		</procedure>
 		</section>
-
-
-
 
 		<section id="running_the_simulator_hlr">
 			<title>Running the HLR Simulator</title>
