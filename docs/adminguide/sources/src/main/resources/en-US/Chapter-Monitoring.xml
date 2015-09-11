@@ -28,20 +28,23 @@ DESCRIPTION
 
 	MessageInProcess	- Number of messages currently being processed for 
 				  delivery in GSM (MT messages) and SMPP (messages that
-				  are routed to ESME).
+				  are routed to ESME) and SIP (messages that are routed to
+				  ESME).
 
 	MessageId		- This is the last assigned Message Id. This indicates
 				  the number of messages that have come into the SMSC
-				  from GSM (Mobile Originated messages) or from ESMEs and
+				  from GSM (Mobile Originated messages), from ESMEs or from SIP
 				  and stored in the Cassandra database. The MessageId 
 				  counter is initiated from the time of the installation
 				  of the SMSC.
 
-	MessageScheduledTotal	- The number of messages put into the delivering process
-				  in both GSM and SMPP since the SMSC was started.
+	MessageScheduledTotal	- The number of messages put into the delivering
+	              process in both GSM, SMPP or SIP since the SMSC was started.
 
-	DueSlotProcessingLag	- The time (in seconds) between "in time" due_slot and 
-				  "in process" due_slot. 
+	DueSlotProcessingLag	- The time (in seconds) between "in time" due_slot
+	              and "in process" due_slot. "In time" means the current actual
+	              time, "in process" means that SMSC GW is processing messages
+	              that was scheduled for that time (in the past).
 
 				  If this value is equal to 0 or 1 or 2, it means that the
 				  SMSC is not highly loaded and all the messages are 
@@ -62,7 +65,22 @@ DESCRIPTION
 				  Normally this value will return to 0 except for few
 				  peaks. If it does not, then you must reduce the load for
 				  SMSC.
-	
+
+	DueSlotProcessingTime - This field shows the time for which SMSC GW is
+	              processing / fetching stored in cassandra database messages
+	              ("in process" due_slot). If this time is far before the
+	              current actual time, then this means:
+                  - either SMSC GW is overloaded and can not send messages
+                    in time
+                  - or SMSC GW was turned off for much time and now is
+                    checking for messages for the time when it was off
+                  If you want to skip unsent messages that was scheduled for
+                  the time in the past (and then shift DueSlotProcessingTime
+                  to to current time) - you can use the command [the reference
+                  to CLI / GUI command "smsc skip-unsent-messages" - see the
+                  Chapter "Skipping of scheduled for the past and not yet
+                  sent messages ("In process" due_slot shifting)."
+
 	Param1			- Ignore.
 
 	Param2			- Ignore.

@@ -1427,6 +1427,57 @@ EXAMPLES
 			</procedure>
 			</section>
 			</section>
+
+
+			<section id="SMSC_Gateway_Server_skip_diue_slot">
+					<title>Skipping of scheduled for the past and not yet sent messages ("In process" due_slot shifting).</title>
+            <section id="SMSC_Gateway_Server_skip_diue_slot_CLI">
+            <title>Using CLI</title>
+<para>
+This command will skip of processing / fetching of messages that was scheduled for delivering for the time in the past but have not yet delivered by SMSC GW because of SMSC GW was turned off or overloaded. 
+&lt;time in seconds&gt; means the point of the time (actual current time - &lt;time in seconds&gt;) to which the point of processing / fetching of messages will be shifted.
+If the value "0" is provided this means SMSC GW will be shifted into an actual (current) time ("in process" due_slot will be shifted to "in time" due_slot).
+If the value is positive this means SMSC GW "in process" due_slot will be shifted into a some time in the past (for example if the value is 3600 - to the time before the current time ("in time" due_slot) for 1 hour).
+Negative values are not accepted. "In process" due_slot can be shifted only forward. It is not possible to shift "in process" due_slot backward (and resend messages that was already sent once).
+</para>
+<screen><![CDATA[
+Name
+    smsc skip-unsent-messages
+
+SYNOPSIS
+    smsc skip-unsent-messages <time in seconds>
+
+DESCRIPTION
+	Executing of this command leads SMSC GW to switch "In process" due_slot
+	forward to the current time or to some time before the current time.
+	This is possible only if there is some lag in message processing by
+	SMSC GW. This also leads of skipping of sending messages that were
+	scheduled for time in the past but have not delivered so far.
+
+EXAMPLES
+	smsc skip-unsent-messages 0
+]]></screen>
+            </section>
+            <section id="SMSC_Gateway_Server_skip_diue_slot_GUI">
+            <title>Using GUI</title>
+            <procedure>
+                <title>Skipping of scheduled for the past and not yet sent messages ("In process" due_slot shifting) by the GUI</title>
+                <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+                </para></step>
+                <step><para>The main panel will display the existing Settings, segregated into eight horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing, CDR and Home Routing.
+                Switch to the 'Scheduler' tab in the GUI.
+                </para></step>
+                <step><para>
+                Set "Skip Unsent Messages (in sec) " field to 0 or positive value.
+                </para></step>
+                <step><para>You must click on the button 'Save' that is below to skip scheduled messages.
+                If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+                </para></step>
+            </procedure>
+            </section>
+			</section>
+
+
 		</section>
 		<section id="SMSC_diameter_Settings">
 		<title>Diameter Settings</title>
@@ -2348,6 +2399,8 @@ DESCRIPTION
             </procedure>
             </section>
 			</section>
-		
+
+
+
 		</section>
     </section>

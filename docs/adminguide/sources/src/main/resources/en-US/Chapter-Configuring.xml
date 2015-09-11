@@ -28,7 +28,7 @@
 		<para>
 		&THIS.PLATFORM; &THIS.APPLICATION; uses <literal>Apache log4j</literal> for logging. If you are not familiar with the <literal>log4j</literal> package, you can read more about it at the Jakarta <ulink url="http://jakarta.apache.org/log4j/">website</ulink>.
 		</para>
-		<para>Logging is controlled from a central configuration file located at <filename>telscale-smscgateway-&tl;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/conf/jboss-log4j.xml</filename>, one for each JBoss AS configuration profile. This file defines a set of appenders specifying the log files, what categories of messages should go there, the message format and the level of filtering. For more details, please refer to Section 9.6.3, "Logging Service" in the JBoss AS Getting Started Guide available <ulink url="https://community.jboss.org/wiki/JBossAS5InstallationAndGettingStartedGuide">here</ulink>. </para>
+		<para>Logging is controlled from a central configuration file located at <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/conf/jboss-log4j.xml</filename>, one for each JBoss AS configuration profile. This file defines a set of appenders specifying the log files, what categories of messages should go there, the message format and the level of filtering. For more details, please refer to Section 9.6.3, "Logging Service" in the JBoss AS Getting Started Guide available <ulink url="https://community.jboss.org/wiki/JBossAS5InstallationAndGettingStartedGuide">here</ulink>. </para>
 		<para> You must make sure <literal>log4j</literal> is fine tuned for optimal performance in production. We recommend that you set logging threshold to <literal>WARN</literal> and let the CDR appender be <literal>DEBUG</literal>.</para>
 	</section>
 
