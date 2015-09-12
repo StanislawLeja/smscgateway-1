@@ -324,6 +324,98 @@ EXAMPLES
 			</section>
 			</section>
 
+			<section id="locking_s_table">
+			<title>National language locking shift table</title>
+			<section id="locking_s_table_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'National language locking shift table' value by issuing the command smsc set national-language-locking-shift with appropriate parameters as described below.
+You can verify this by issuing the command smsc get national-language-locking-shift which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set national-language-locking-shift
+
+SYNOPSIS
+	smsc set national-language-locking-shift <NationalLanguageIdentifier>
+
+DESCRIPTION
+	National language locking shift table can be configured for messages
+	that have come via SMPP, do not have UDHs inside and have GSM7 encoding
+	(DCS==0).
+	The default GSM data coding table is mostly used. Possible values:
+	= 0: default GSM data coding table
+	= 13: urdu (arabic) national language shift table
+	This value can be also configured at ESME level.
+
+EXAMPLES
+	smsc set national-language-locking-shift 0
+	smsc set national-language-locking-shift 13
+]]></screen>
+			</section>
+			<section id="locking_s_table_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set National language locking shift table using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into eight horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing, CDR and Home Routing. Switch to the 'Properties' tab in the GUI.
+				</para></step>
+				<step><para>You can specify the National language locking shift table by entering the value in the text field 'National language locking shift'.
+				For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section.
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+
+			<section id="single_s_table">
+			<title>National language single shift table</title>
+			<section id="single_s_table_CLI">
+			<title>Using CLI</title>
+<para>
+You can set the 'National language single shift table' value by issuing the command smsc set national-language-single-shift with appropriate parameters as described below.
+You can verify this by issuing the command smsc get national-language-single-shift which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set national-language-single-shift
+
+SYNOPSIS
+	smsc set national-language-single-shift <NationalLanguageIdentifier>
+
+DESCRIPTION
+	National language single shift table can be configured for messages
+	that have come via SMPP, do not have UDHs inside and have GSM7 encoding
+	(DCS==0).
+	The default GSM data coding table is mostly used. Possible values:
+	= 0: default GSM data coding table
+	= 13: urdu (arabic) national language shift table
+	This value can be also configured at ESME level.
+
+EXAMPLES
+	smsc set national-language-single-shift 0
+	smsc set national-language-single-shift 13
+]]></screen>
+			</section>
+			<section id="single_s_table_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set National language single shift table using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into eight horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing, CDR and Home Routing. Switch to the 'Properties' tab in the GUI.
+				</para></step>
+				<step><para>You can specify the National language single shift table by entering the value in the text field 'National language single shift'.
+				For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section.
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+			</section>
+
 			<section id="subscriberbusyduedelay">
 			<title>Subscriber busy due delay (in sec)</title>
 			<section id="subscriberbusyduedelay_CLI">

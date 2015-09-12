@@ -53,6 +53,8 @@ SYNOPSIS
 	ratelimit-hour <ratelimithour> ratelimit-day <ratelimitday> 
 	min-message-length <min-message-length value>
 	max-message-length <max-message-length value>
+	national-language-locking-shift <NationalLanguageIdentifier value>
+	national-language-single-shift <NationalLanguageIdentifier value>
 
 DESCRIPTION
 	This command is used to configure a new ESME.
@@ -367,7 +369,33 @@ PARAMETERS
 					
 					The default value for this parameter is "-1" and it
 					implies "no limitations". Any other negative value
-					also implies "no limitations".				
+					also implies "no limitations".
+					
+	national-language-locking-shift - National language locking shift
+					table can be configured for messages that have come
+					via SMPP (this ESME), do not have UDHs inside and
+					have GSM7 encoding (DCS==0).
+					The default GSM data coding table is mostly used.
+					Possible values:
+					= 0: default GSM data coding table
+					= 13: urdu (arabic) national language shift table
+					=1: the national language locking shift value must
+					be obtained from the option
+					national-language-locking-shift that is defined at
+					SMSC GW general level.
+
+	national-language-single-shift - National language single shift
+					table can be configured for messages that have come
+					via SMPP (this ESME), do not have UDHs inside and
+					have GSM7 encoding (DCS==0).
+					The default GSM data coding table is mostly used.
+					Possible values:
+					= 0: default GSM data coding table
+					= 13: urdu (arabic) national language single table
+					=1: the national language locking shift value must
+					be obtained from the option
+					national-language-locking-single that is defined at
+					SMSC GW general level.
 ]]></screen>
             </section>
             <section id="ESME_Settings_Create_GUI">
@@ -417,6 +445,8 @@ SYNOPSIS
 	ratelimit-hour <ratelimithour> ratelimit-day <ratelimitday>
 	min-message-length <min-message-length value>
 	max-message-length <max-message-length value>
+	national-language-locking-shift <NationalLanguageIdentifier value>
+	national-language-single-shift <NationalLanguageIdentifier value>
 	
 DESCRIPTION
 	This command is used to modify the settings of an existing ESME configuration.
