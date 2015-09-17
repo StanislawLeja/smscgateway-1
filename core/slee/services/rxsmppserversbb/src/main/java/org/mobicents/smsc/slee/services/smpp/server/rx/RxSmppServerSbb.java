@@ -356,7 +356,8 @@ public abstract class RxSmppServerSbb implements Sbb {
                     // good? Should time be more here?
                     SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, submitSm, 2000);
                     if (logger.isInfoEnabled()) {
-                        logger.info(String.format("\nsent submitSm to ESME: %s, msgNumInSmsSet: %d", esme.getName(), currentMsgNum + i1));
+                        logger.info(String.format("\nSent submitSm to ESME: %s, msgNumInSmsSet: %d, sms=%s", esme.getName(),
+                                currentMsgNum + i1, sms.toString()));
                     }
                     sequenceNumber = submitSm.getSequenceNumber();
 
@@ -398,7 +399,8 @@ public abstract class RxSmppServerSbb implements Sbb {
                     // is it good? Should time be more here?
                     SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, deliverSm, 2000);
                     if (logger.isInfoEnabled()) {
-                        logger.info(String.format("\nsent deliverSm to ESME: %s, msgNumInSmsSet: %d", esme.getName(), currentMsgNum + i1));
+                        logger.info(String.format("\nSent deliverSm to ESME: %s, msgNumInSmsSet: %d, sms=%s", esme.getName(),
+                                currentMsgNum + i1, sms.toString()));
                     }
                     sequenceNumber = deliverSm.getSequenceNumber();
 

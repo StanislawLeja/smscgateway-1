@@ -192,7 +192,7 @@ public abstract class TxSmppServerSbb implements Sbb {
             PersistenceRAInterface store = getStore();
 
             sms = this.createSmsEvent(event, esme, ta, store);
-            this.processSms(sms, store, esme, event, null, null);
+            this.processSms(sms, store, esme, event, null, null, IncomingMessageType.submit_sm);
 		} catch (SmscProcessingException e1) {
             if (!e1.isSkipErrorLogging()) {
                 this.logger.severe(e1.getMessage(), e1);
@@ -330,7 +330,7 @@ public abstract class TxSmppServerSbb implements Sbb {
             PersistenceRAInterface store = getStore();
 
             sms = this.createSmsEvent(event, esme, ta, store);
-            this.processSms(sms, store, esme, null, event, null);
+            this.processSms(sms, store, esme, null, event, null, IncomingMessageType.data_sm);
 		} catch (SmscProcessingException e1) {
             if (!e1.isSkipErrorLogging()) {
                 this.logger.severe(e1.getMessage(), e1);
@@ -448,7 +448,7 @@ public abstract class TxSmppServerSbb implements Sbb {
             parseResult = this.createSmsEventMulti(event, esme, store, esme.getNetworkId());
 
             for (Sms sms : parseResult.getParsedMessages()) {
-                this.processSms(sms, store, esme, null, null, event);
+                this.processSms(sms, store, esme, null, null, event, IncomingMessageType.submit_multi);
             }
         } catch (SmscProcessingException e1) {
             if (!e1.isSkipErrorLogging()) {
@@ -619,7 +619,7 @@ public abstract class TxSmppServerSbb implements Sbb {
             PersistenceRAInterface store = getStore();
 
             sms = this.createSmsEvent(event, esme, ta, store);
-            this.processSms(sms, store, esme, null, null, null);
+            this.processSms(sms, store, esme, null, null, null, IncomingMessageType.deliver_sm);
 		} catch (SmscProcessingException e1) {
             if (!e1.isSkipErrorLogging()) {
                 this.logger.severe(e1.getMessage(), e1);
@@ -1435,8 +1435,13 @@ public abstract class TxSmppServerSbb implements Sbb {
         return new SubmitMultiParseResult(msgList, badAddresses);
     }
 
-    private void processSms(Sms sms0, PersistenceRAInterface store, Esme esme, SubmitSm eventSubmit, DataSm eventData, SubmitMulti eventSubmitMulti)
-            throws SmscProcessingException {
+    private void processSms(Sms sms0, PersistenceRAInterface store, Esme esme, SubmitSm eventSubmit, DataSm eventData,
+            SubmitMulti eventSubmitMulti, IncomingMessageType incomingMessageType) throws SmscProcessingException {
+        if (logger.isInfoEnabled()) {
+            logger.info(String.format("\nReceived %s to ESME: %s, sms=%s", incomingMessageType.toString(), esme.getName(),
+                    sms0.toString()));
+        }
+
         // checking if SMSC is stopped
         if (smscPropertiesManagement.isSmscStopped()) {
             SmscProcessingException e = new SmscProcessingException("SMSC is stopped", SmppConstants.STATUS_SYSERR, 0, null);
@@ -1575,4 +1580,8 @@ public abstract class TxSmppServerSbb implements Sbb {
 		}
 		return ret;
 	}
+
+    public enum IncomingMessageType {
+        submit_sm, data_sm, deliver_sm, submit_multi,
+    }
 }
