@@ -653,7 +653,7 @@ public class C2_TxSmppServerSbbTest {
             return;
 
         MProcManagement.getInstance().createMProcRule(1, 1, 1, "-1", "SMPP", 0, 5, -1, -1, "47", true);
-        MProcManagement.getInstance().createMProcRule(2, -1, -1, "-1", null, 0, -1, -1, 2, "-1", true);
+        MProcManagement.getInstance().createMProcRule(2, -1, -1, "-1", null, 5, -1, -1, 2, "-1", true);
         // destTonMask, destNpiMask, destDigMask, originatingMask, networkIdMask, newNetworkId, newDestTon, newDestNpi, addDestDigPrefix, makeCopy
 
         this.smppSess = new SmppSessionsProxy();
