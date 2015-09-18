@@ -229,7 +229,9 @@ Messages will be routed between subnetworks (networkIds) by mproc rules and insi
 		Home Routing enables operators to offer a full range of value-added services to both inbound and outbound SMS thereby enhancing customer experience while generating additional revenue for the operators.
 		</para>
 		<para>
-		&THIS.PLATFORM; &THIS.APPLICATION; supports SMS Home Routing that enables you to handle Mobile Terminated messages in the network that owns the customer so you can offer a full range of advanced and value added services on both inbound and outbound SMS. You may switch on/off SMS Home Routing according to your requirements. You can configure this by setting the parameter <literal>smshomerouting</literal> to true/false using the CLI or the GUI. For more details refer to <xref linkend="smshomerouting"/>.</para>
+		&THIS.PLATFORM; &THIS.APPLICATION; supports SMS Home Routing that enables you to handle Mobile Terminated messages in the network that owns the customer so you can offer a full range of advanced and value added services on both inbound and outbound SMS.
+		You need to configure SMSC GW before you can use SMS Home Routing.
+		For more details refer to <xref linkend="SMSC_Gateway_Server_HR"/>.</para>
 	</section>
 
 	<section id="Diameter_OCS_server">

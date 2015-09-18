@@ -642,41 +642,6 @@ EXAMPLES
 			</section>
 			</section>
 
-			<section id="smshomerouting">
-			<title>Enable/Disable SMS Home Routing</title>
-			<section id="smshomerouting_CLI">
-			<title>Using CLI</title>
-<para>You can set the 'smshomerouting' value to true/false by issuing the command <command>smsc set smshomerouting</command> with appropriate parameters as described below. You can verify this by issuing the command <command>smsc get smshomerouting</command> which will display the value set for this property.
-</para>
-<screen><![CDATA[
-Name
-	smsc set smshomerouting
-
-SYNOPSIS
-	smsc set smshomerouting <true | false>
-
-DESCRIPTION
-	The SMSC can be configured to support SMS Home Routing by enabling the parameter 
-	'smshomerouting' using this command. If this is set to true, the SMSC will accept 
-	MT messages and support Home Routing functionality.
-]]></screen>
-			</section>
-			<section id="smshomerouting_GUI">
-			<title>Using GUI</title>
-			<procedure>
-				<title>Enable/Disable SMS Home Routing using the GUI</title>
-				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
-				</para></step>
-				<step><para>The main panel will display the existing Settings, segregated into eight horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing, CDR and Home Routing. Switch to the 'Home Routing' tab in the GUI.
-				</para></step>
-				<step><para>You can specify if the SMSC should accept MT messages (i.e if you want the SMSC to support SMS Home Routing) by setting the value for the field 'Home routing' to true or false accordingly. If this is enabled (set to true), the SMSC will support Home Routing. For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
-				</para></step>
-				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
-				</para></step>
-			</procedure>
-			</section>
-			</section>
-
 		</section>
 		<section id="SMSC_SS7_Settings">
 		<title>SS7 Settings</title>
