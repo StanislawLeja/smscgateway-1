@@ -771,8 +771,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 				// smscPropertiesManagement.setCdrDatabaseExportDuration(val);
 			} else if (parName.equals("esmedefaultcluster")) {
 				smscPropertiesManagement.setEsmeDefaultClusterName(options[3]);
-            } else if (parName.equals("smshomerouting")) {
-                smscPropertiesManagement.setSMSHomeRouting(Boolean.parseBoolean(options[3]));
+//            } else if (parName.equals("smshomerouting")) {
+//                smscPropertiesManagement.setSMSHomeRouting(Boolean.parseBoolean(options[3]));
             } else if (parName.equals("correlationidlivetime")) {
                 int val = Integer.parseInt(options[3]);
                 smscPropertiesManagement.setCorrelationIdLiveTime(val);
@@ -984,8 +984,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 				// sb.append(smscPropertiesManagement.getCdrDatabaseExportDuration());
 			} else if (parName.equals("esmedefaultcluster")) {
 				sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
-            } else if (parName.equals("smshomerouting")) {
-                sb.append(smscPropertiesManagement.getSMSHomeRouting());
+//            } else if (parName.equals("smshomerouting")) {
+//                sb.append(smscPropertiesManagement.getSMSHomeRouting());
             } else if (parName.equals("correlationidlivetime")) {
                 sb.append(smscPropertiesManagement.getCorrelationIdLiveTime());
 			} else if (parName.equals("revisesecondsonsmscstart")) {
@@ -1180,9 +1180,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 			sb.append(smscPropertiesManagement.getEsmeDefaultClusterName());
 			sb.append("\n");
 
-            sb.append("smshomerouting = ");
-            sb.append(smscPropertiesManagement.getSMSHomeRouting());
-            sb.append("\n");
+//            sb.append("smshomerouting = ");
+//            sb.append(smscPropertiesManagement.getSMSHomeRouting());
+//            sb.append("\n");
 
             sb.append("correlationidlivetime = ");
             sb.append(smscPropertiesManagement.getCorrelationIdLiveTime());

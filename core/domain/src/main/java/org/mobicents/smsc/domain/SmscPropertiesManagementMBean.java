@@ -25,7 +25,6 @@ package org.mobicents.smsc.domain;
 import java.util.Map;
 
 import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
-import org.mobicents.protocols.ss7.map.api.datacoding.NationalLanguageIdentifier;
 import org.mobicents.smsc.smpp.GenerateType;
 import org.mobicents.smsc.smpp.SmppEncoding;
 
@@ -143,9 +142,8 @@ public interface SmscPropertiesManagementMBean {
 
 	public void setEsmeDefaultClusterName(String val);
 
-	public boolean getSMSHomeRouting();
-
-	public void setSMSHomeRouting(boolean isSMSHomeRouting);
+//	public boolean getSMSHomeRouting();
+//	public void setSMSHomeRouting(boolean isSMSHomeRouting);
 
 	public int getReviseSecondsOnSmscStart();
 

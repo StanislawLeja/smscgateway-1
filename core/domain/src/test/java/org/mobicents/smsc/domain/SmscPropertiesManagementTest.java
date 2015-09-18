@@ -14,16 +14,16 @@ public class SmscPropertiesManagementTest {
         
         man.start();
 
-        man.setSMSHomeRouting(true);
+        man.setFirstDueDelay(678);
         man.setServiceCenterGt(1, "22229");
-       
+
         man.stop();
-        
+
         man.start();
-        
-        assertTrue(man.getSMSHomeRouting());
-        assertEquals(man.getServiceCenterGt(1), "22229");        
-        assertEquals(man.getServiceCenterGt(2), "0");        
-        
+
+        assertEquals(man.getFirstDueDelay(), 678);
+        assertEquals(man.getServiceCenterGt(1), "22229");
+        assertEquals(man.getServiceCenterGt(2), "0");
+
     }
 }

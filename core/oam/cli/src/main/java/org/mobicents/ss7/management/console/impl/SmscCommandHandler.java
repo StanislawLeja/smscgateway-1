@@ -60,7 +60,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         set.addChild("maxduedelay");
         set.addChild("duedelaymultiplicator");
         set.addChild("maxmessagelengthreducer");
-        set.addChild("smshomerouting");
+//        set.addChild("smshomerouting");
         set.addChild("correlationidlivetime");
         set.addChild("revisesecondsonsmscstart");
         set.addChild("processingsmssettimeout");
@@ -145,7 +145,7 @@ public class SmscCommandHandler extends CommandHandlerWithHelp {
         get.addChild("maxduedelay");
         get.addChild("duedelaymultiplicator");
         get.addChild("maxmessagelengthreducer");
-        get.addChild("smshomerouting");
+//        get.addChild("smshomerouting");
         get.addChild("correlationidlivetime");
         get.addChild("revisesecondsonsmscstart");
         get.addChild("processingsmssettimeout");

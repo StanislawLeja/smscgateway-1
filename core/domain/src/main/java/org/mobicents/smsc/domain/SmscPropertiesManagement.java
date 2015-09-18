@@ -189,7 +189,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 	// if SMSHomeRouting is enabled, SMSC will accept MtForwardSMS and forwardSm
 	// like mobile station
-	private boolean isSMSHomeRouting = false;
+//	private boolean isSMSHomeRouting = false;
 
 	// After SMSC restart it will revise previous reviseSecondsOnSmscStart
 	// seconds dueSlot's for unsent messages
@@ -618,16 +618,16 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.store();
 	}
 
-	@Override
-	public boolean getSMSHomeRouting() {
-		return this.isSMSHomeRouting;
-	}
-
-	@Override
-	public void setSMSHomeRouting(boolean isSMSHomeRouting) {
-		this.isSMSHomeRouting = isSMSHomeRouting;
-		this.store();
-	}
+//	@Override
+//	public boolean getSMSHomeRouting() {
+//		return this.isSMSHomeRouting;
+//	}
+//
+//	@Override
+//	public void setSMSHomeRouting(boolean isSMSHomeRouting) {
+//		this.isSMSHomeRouting = isSMSHomeRouting;
+//		this.store();
+//	}
 
 	public int getReviseSecondsOnSmscStart() {
 		return this.reviseSecondsOnSmscStart;
@@ -998,7 +998,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
 			writer.write(this.esmeDefaultClusterName, ESME_DEFAULT_CLUSTER_NAME, String.class);
 			writer.write(this.maxActivityCount, MAX_ACTIVITY_COUNT, Integer.class);
-			writer.write(this.isSMSHomeRouting, SMS_HOME_ROUTING, Boolean.class);
+//			writer.write(this.isSMSHomeRouting, SMS_HOME_ROUTING, Boolean.class);
             writer.write(this.smppEncodingForGsm7.toString(), SMPP_ENCODING_FOR_GSM7, String.class);
             writer.write(this.smppEncodingForUCS2.toString(), SMPP_ENCODING_FOR_UCS2, String.class);
 
@@ -1140,10 +1140,12 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			if (val != null)
 				this.maxActivityCount = val;
 
+			// this line is for backward compatibility
 			valB = reader.read(SMS_HOME_ROUTING, Boolean.class);
-			if (valB != null) {
-				this.isSMSHomeRouting = valB.booleanValue();
-			}
+
+//			if (valB != null) {
+//				this.isSMSHomeRouting = valB.booleanValue();
+//			}
 
             vals = reader.read(SMPP_ENCODING_FOR_GSM7, String.class);
             if (vals != null)

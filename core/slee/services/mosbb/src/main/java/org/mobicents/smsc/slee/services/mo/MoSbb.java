@@ -619,23 +619,24 @@ public abstract class MoSbb extends MoCommonSbb {
         smsSignalInfo.setGsm8Charset(isoCharset);
 
 		ISDNAddressString callingPartyAddress = smRPOA.getMsisdn();
-		if (callingPartyAddress == null && !smscPropertiesManagement.getSMSHomeRouting() ) {
-			throw new SmscProcessingException("MO callingPartyAddress is absent", SmppConstants.STATUS_SYSERR,
-					MAPErrorCode.unexpectedDataValue, null);
-		}
+//        if (callingPartyAddress == null && !smscPropertiesManagement.getSMSHomeRouting() ) {
+        if (callingPartyAddress == null) {
+            throw new SmscProcessingException("MO callingPartyAddress is absent", SmppConstants.STATUS_SYSERR,
+                    MAPErrorCode.unexpectedDataValue, null);
+        }
 
-		AddressString serviceCentreAddressOA = null;
-		IMSI destinationImsi = null;
-		if (callingPartyAddress == null ){
-			serviceCentreAddressOA = smRPOA.getServiceCentreAddressOA();
-			
-			if(serviceCentreAddressOA == null){
-				throw new SmscProcessingException("Mt serviceCentreAddressOA is absent", SmppConstants.STATUS_SYSERR,
-						MAPErrorCode.unexpectedDataValue, null);
-			}
-			
-			destinationImsi = smRPDA.getIMSI();
-		}
+//		AddressString serviceCentreAddressOA = null;
+//		IMSI destinationImsi = null;
+//		if (callingPartyAddress == null ){
+//			serviceCentreAddressOA = smRPOA.getServiceCentreAddressOA();
+//			
+//			if(serviceCentreAddressOA == null){
+//				throw new SmscProcessingException("Mt serviceCentreAddressOA is absent", SmppConstants.STATUS_SYSERR,
+//						MAPErrorCode.unexpectedDataValue, null);
+//			}
+//			
+//			destinationImsi = smRPDA.getIMSI();
+//		}
 
         SmsTpdu smsTpdu = null;
         String origMoServiceCentreAddressDA = null;
@@ -644,13 +645,15 @@ public abstract class MoSbb extends MoCommonSbb {
         }
 
 		try {
-			if(callingPartyAddress != null){
-				//This is Mobile Originated
-				smsTpdu = smsSignalInfo.decodeTpdu(true);
-			} else {
-				//This is mobile terminated
-				smsTpdu = smsSignalInfo.decodeTpdu(false);
-			}
+            smsTpdu = smsSignalInfo.decodeTpdu(true);
+
+            // if(callingPartyAddress != null){
+            // //This is Mobile Originated
+            // smsTpdu = smsSignalInfo.decodeTpdu(true);
+            // } else {
+            // //This is mobile terminated
+            // smsTpdu = smsSignalInfo.decodeTpdu(false);
+            // }
 
 			switch (smsTpdu.getSmsTpduType()) {
 			case SMS_SUBMIT:
@@ -682,11 +685,11 @@ public abstract class MoSbb extends MoCommonSbb {
 				// this.handleSmsDeliverReportTpdu(smsDeliverReportTpdu,
 				// callingPartyAddress);
 				break;
-			case SMS_DELIVER:
-                    SmsDeliverTpdu smsDeliverTpdu = (SmsDeliverTpdu) smsTpdu;
-                    sms = this.handleSmsDeliverTpdu(smsDeliverTpdu, destinationImsi, networkId, isMoOperation, dialog, evt,
-                            invokeId, origMoServiceCentreAddressDA);
-				break;
+//			case SMS_DELIVER:
+//                    SmsDeliverTpdu smsDeliverTpdu = (SmsDeliverTpdu) smsTpdu;
+//                    sms = this.handleSmsDeliverTpdu(smsDeliverTpdu, destinationImsi, networkId, isMoOperation, dialog, evt,
+//                            invokeId, origMoServiceCentreAddressDA);
+//				break;
 			default:
 				this.logger.severe("Received non SMS_SUBMIT or SMS_DELIVER_REPORT or SMS_COMMAND or SMS_DELIVER = " + smsTpdu);
 	            smscStatAggregator.updateMsgInFailedAll();
@@ -847,19 +850,19 @@ public abstract class MoSbb extends MoCommonSbb {
         return this.processSms(sms, store, smscPropertiesManagement.getMoCharging(), isMoOperation, dialog, evt, invokeId);
     }
 
-    private Sms handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, IMSI destinationImsi, int networkId, boolean isMoOperation,
-            MAPDialogSms dialog, SmsMessage evt, long invokeId, String origMoServiceCentreAddressDA)
-            throws SmscProcessingException {
-
-        AddressField tpOAAddress = smsDeliverTpdu.getOriginatingAddress();
-
-        TargetAddress ta = createDestTargetAddress(destinationImsi, networkId);
-        PersistenceRAInterface store = obtainStore(ta);
-
-        Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, tpOAAddress, networkId);
-        sms.setOrigMoServiceCentreAddressDA(origMoServiceCentreAddressDA);
-        return this.processSms(sms, store, smscPropertiesManagement.getHrCharging(), isMoOperation, dialog, evt, invokeId);
-    }
+//    private Sms handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, IMSI destinationImsi, int networkId, boolean isMoOperation,
+//            MAPDialogSms dialog, SmsMessage evt, long invokeId, String origMoServiceCentreAddressDA)
+//            throws SmscProcessingException {
+//
+//        AddressField tpOAAddress = smsDeliverTpdu.getOriginatingAddress();
+//
+//        TargetAddress ta = createDestTargetAddress(destinationImsi, networkId);
+//        PersistenceRAInterface store = obtainStore(ta);
+//
+//        Sms sms = this.createSmsEvent(smsDeliverTpdu, ta, store, tpOAAddress, networkId);
+//        sms.setOrigMoServiceCentreAddressDA(origMoServiceCentreAddressDA);
+//        return this.processSms(sms, store, smscPropertiesManagement.getHrCharging(), isMoOperation, dialog, evt, invokeId);
+//    }
 
     private Sms handleSmsDeliverTpdu(SmsDeliverTpdu smsDeliverTpdu, CorrelationIdValue civ, int networkId,
             boolean isMoOperation, MAPDialogSms dialog, SmsMessage evt, long invokeId) throws SmscProcessingException {
