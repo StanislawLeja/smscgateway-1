@@ -70,8 +70,24 @@ public class ClientSmppSessionHandler extends DefaultSmppSessionHandler {
         testingForm.doStop();
     }
 
+//    private int incMsgCnt = 0;
+
     @Override
     public PduResponse firePduRequestReceived(PduRequest pduRequest) {
+
+
+//        incMsgCnt++;
+//        if (incMsgCnt > 150) {
+//            incMsgCnt = 0;
+//            try {
+//                Thread.sleep(60000);
+//            } catch (InterruptedException e) {
+//                // TODO Auto-generated catch block
+//                e.printStackTrace();
+//            }
+//        }
+
+
         testingForm.addMessage("PduRequestReceived: " + pduRequest.getName(), pduRequest.toString());
         this.testingForm.messagesRcvd.incrementAndGet();
 
