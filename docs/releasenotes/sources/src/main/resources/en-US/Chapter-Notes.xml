@@ -20,9 +20,13 @@
 		<para>
 		This binary release includes: 
 		<itemizedlist>
-			<listitem><para>cassandra: Contains the script for creating the Cassandra Keyspace.</para></listitem>
+			<listitem><para>cassandra: Contains the script that can help you to learn how Cassandra Keyspace is configured.
+			This is not a script for database structure creation, SMSC GW will create Cassandra Keyspace itself.</para></listitem>
 			<listitem><para>docs: Contains all relevant documentation in respective subfolders.</para></listitem>
-			<listitem><para>jboss-5.1.0.GA: The core server with two profiles "default" and "simulator". The "default" profile is a clean profile where you will have to start from scratch and configure the entire SS7 Stack and SMSC Gateway. The "simulator" profile is a pre-configured profile to work with jss7-simulator. Refer to the Admin Guide for instructions on how to start the server in either of the profiles.</para></listitem>
+			<listitem><para>jboss-5.1.0.GA: The core server with two profiles "default" and "simulator".
+			The "default" profile is a clean profile where you will have to start from scratch and configure the entire SS7 Stack and SMSC Gateway.
+			The "simulator" profile is a pre-configured profile to work with jss7- and smpp- simulators.
+			Refer to the Admin Guide for instructions on how to start the server in either of the profiles.</para></listitem>
 			<listitem><para>resources: Contains SLEE MAP RA jars.</para></listitem>
 			<listitem><para>tools: Contains SLEE tools and jss7-simulator.</para></listitem>
 		</itemizedlist>
@@ -31,69 +35,57 @@
 	<section id="notes_whats_new">
 		<title>What's New?</title>
         <formalpara>
-        <title>Support for datagramm and transactional modes</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; now comes with support for SMPP datagramm and transactional modes. Previous versions supported only ForwardAndStore mode.
+        <title>Lightweight pass-through mode</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; now for sending of only SMPP originated datagramm and transactional messages does not need to install any database. 
         </para>
         </formalpara>
         <formalpara>
-        <title>Forward and store mode</title>
-        <para>A special "Forward and store" mode has been introduced for the purpose of process optimization. A user can configure the SMSC Gateway to have messages stored in the cassandra database only if an attempt to deliver fails the first time. This mode also enables delivering messages in the shortest time in the first attempt.
+        <title>Message processing rules</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; introduces of message processing (mproc) rules.
+        Each rule contains a set of conditions (like destination address mask).
+        If an incoming message fits to the conditions then rule actions will be applied to the message (like adding a prefix into a destination address or networkId changing).
         </para>
         </formalpara>
         <formalpara>
-        <title>GSM8 message encoding support</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; now comes with support for GSM8 encoding (Now all GSM7, GSM8 and UCS2 are supported).
+        <title>Diameter rejections</title>
+        <para>When Diameter server rejects an incoming message then &THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; will send those rejects as responses back to an message originator (for SMPP and MO originated messages).
+        So the message originator will know if the message is accepted or not. 
         </para>
         </formalpara>
         <formalpara>
-        <title>Latest version of TelScale JSS7 library and Datastax driver</title>
-        <para>The latest TelScale JSS7 6.2.0 library and Datastax version are included in this release.
+        <title>Fixing of GSM7 messages encoding issues</title>
+        <para>Fixed several issues of GSM7 encoding errors in case of two-septets characters (like "[" or "]") are present
+or in the case when the last part of a splitted message is short.
         </para>
         </formalpara>
         <formalpara>
-        <title>Processing statistics</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; introduces statistic counters for some key parameters. For example, number of messages received / sent. These statistics can now be observed in the GUI.
+        <title>GSM7 encoding at SMPP part</title>
+        <para> 
+        </para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports now GSM7 encoding at SMPP part (in addition to UTF-8 and Unicode encoding).
+        </formalpara>
+        <formalpara>
+        <title>Preconfigured HLR address</title>
+        <para>There is now a possibility of using a special preconfigured HLR address instead of MSISDN for SCCP CalledPartyAddress in SRI request. 
         </para>
         </formalpara>
         <formalpara>
-        <title>X-headers for SIP message</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; can now process special X-headers for SIP messages that help in sending UDH to/from SIP etc.
+        <title>National Language Shift Tables</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports now National Language Shift Tables which are used in encoding of GSM7 encoding.
         </para>
         </formalpara>
         <formalpara>
-        <title>SMSC Pause Option</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; comes with a SMSC Pause Option. A user can pause message delivery (incoming storeAndForward messages will be stored in a database; incoming datagramm, transactional and forwardAndStore messages will be rejected).
+        <title>Message restrictions for ESMEs</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports now a minimal/maximal message length and rate per a second (a minute, a hour, a day) limits per ESME.
         </para>
         </formalpara>
         <formalpara>
-        <title>Message content stored in text format</title>
-        <para>Message content is now stored in text format in the database field "MESSAGE_TEXT" (UDH is kept in binary form in a separate database field).
+        <title>GSM message classes</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports now dest_addr_subunit parameter at SMPP part. This parameter specifies GSM message classes.
         </para>
         </formalpara>
         <formalpara>
-        <title>Command Line SMPP Load Testing Tool</title>
-        <para>A new Command line load testing tool is now available for generating SMPP traffic, just like HLR simulator.
-        </para>
-        </formalpara>
-        <formalpara>
-        <title>TON_NATIONAL Support</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; accepts TypeOfNumber as 'TON_NATIONAL'.
-        </para>
-        </formalpara>
-        <formalpara>
-	<title>Process throttling SMPP responses</title>
-	<para>In datagramm, transactional and FAS modes the SMSC will send throttling SMPP responses when throttling problems occur. The smpp-load Client will now appropriately process them and resend requests to SMSC.
-	</para>
-        </formalpara>
-	<formalpara>
-	<title>Null Password for ESME definition
-	</title>
-	<para>While defining ESME, Password can be null.	
-	</para>
-	</formalpara>
-        <formalpara>
-        <title>Additional configuration</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; has additional configuration options. For example, storing records into CDR's and archive database tables, rejecting all incoming SS7 originated messages, etc.
+        <title>New license library</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; has switched to license library 2.2.3.
         </para>
         </formalpara>
 	</section>
@@ -101,18 +93,122 @@
 		<title>Issues Fixed</title>
 		<para>For a full list of resolved issues and their details, please refer to <ulink url="https://telestax.atlassian.net/browse/SMSC/" />.</para>	
 <itemizedlist>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-130">SMSC-130</ulink>: RsdsSbb errors when InvokeTimeout, ComponentError
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-144">SMSC-144</ulink>: Document and blog with examples about the different send modes - datagram, forward and store, store and forward
 </para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-151">SMSC-151</ulink>: CDR Timestamp format not uniform
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-177">SMSC-177</ulink>: GSM7 Bit SMS with special character and length of 140 chars throws exception
 </para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-112">SMSC-112</ulink>: submit_sm with validity fails
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-179">SMSC-179</ulink>: SMSC GW: lightweight pass-through mode
 </para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-134">SMSC-134</ulink>: SMPP Client mode (from SMSC side) does not work properly
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-186">SMSC-186</ulink>: A special mode when all generated by SMSC GW messages will be routed to originated ESMEs
 </para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-135">SMSC-135</ulink>: Concurrent SMPP bind request from multiple ESME's uses same esme definition from SMSC
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-191">SMSC-191</ulink>: Old style home routing functionality
 </para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-161">SMSC-161</ulink>: Double messages in SIP->SMSC messageflow
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-194">SMSC-194</ulink>: Message splitting procedure must care on GSM7 extention table characters
 </para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-198">SMSC-198</ulink>: Using in CalledPartyAddress (SRI) a preconfigured HLR address instead of MSISDN
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-199">SMSC-199</ulink>: Docs: add description for HLR addressing of SRI messages in HR mode
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-200">SMSC-200</ulink>: MessageProcessing (MProc) functionality just after a message has come to SMSC GW
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-201">SMSC-201</ulink>: Converting of national -> international numbers for incoming SS7 messages
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-202">SMSC-202</ulink>: Different networkId for incoming / outgoing messages at SMPP ESME / SIP
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-204">SMSC-204</ulink>: Docs: Remove of mentioning of cassandra.cql from SMSC GW Intsallation Guide
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-205">SMSC-205</ulink>: Needed to update InSystem field for FAS mode when a message has beed invoked form a database
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-206">SMSC-206</ulink>: Docs: add a chapter that describes all aspects of SMSC message routing
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-207">SMSC-207</ulink>: PotentialVersionIncompatibility response -> switching to MAP V1 message problems
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-209">SMSC-209</ulink>: GUI for MapVersionCacheMBean has to be updated
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-210">SMSC-210</ulink>: Delivery reciepts for the several permanent undelivered messages contain the content of the first message
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-211">SMSC-211</ulink>: NetworkId of originated ESME will be assigned to a delivery receipt (optional)
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-213">SMSC-213</ulink>: National Language Shift Table support
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-214">SMSC-214</ulink>: Improper logger spelling
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-216">SMSC-216</ulink>: SS7 GUI shows Service running only for jSS7 but when packaged with SMSC it always shows down
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-217">SMSC-217</ulink>: Double logging issue
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-218">SMSC-218</ulink>: Docs: adding "SCTP libraries" into "SMSC GW installation Guide"
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-219">SMSC-219</ulink>: Add "TelScale_SS7Stack_Release_Notes" and "TelScale_SS7Stack_Installation_Guide"
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-222">SMSC-222</ulink>: Too long time duration to restore of functionality after long time shutdown
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-223">SMSC-223</ulink>: Exception when GSM7 encoding of the short message with UDH
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-224">SMSC-224</ulink>: Splitting messages for specified length in SMPP-Simulator
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-225">SMSC-225</ulink>: Adding support for GSM7 encoding at SMPP part
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-226">SMSC-226</ulink>: GUI update after introducing of GSM7 style encoding at SMPP part
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-227">SMSC-227</ulink>: Docs: introducing of GSM7 style encoding at SMPP part
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-228">SMSC-228</ulink>: min-message-length / max-message-length ESME options
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-229">SMSC-229</ulink>: SMSC tries to store receipts into SLOT_MESSAGES_TABLE_2000_01_01 table
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-230">SMSC-230</ulink>: GUI: mproc and orignetworkidforreceipts
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-231">SMSC-231</ulink>: Docs: mproc and orignetworkidforreceipts
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-232">SMSC-232</ulink>: GUI: adding min-message-length / max-message-length ESME options
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-233">SMSC-233</ulink>: Docs: adding min-message-length / max-message-length ESME options
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-234">SMSC-234</ulink>: GUI: National Language Shift Table support
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-235">SMSC-235</ulink>: Docs: National Language Shift Table support
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-237">SMSC-237</ulink>: Support for dest_addr_subunit at SMPP part
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-238">SMSC-238</ulink>: GUI: for skip-unsent-messages command
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-239">SMSC-239</ulink>: Docs: "smsc skip-unsent-messages" command and a new fields in "smsc stat get"
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-240">SMSC-240</ulink>: Docs: update a chapter for manual's for CDR format
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-241">SMSC-241</ulink>: GUI: for hrhlrumber parameter
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-242">SMSC-242</ulink>: Docs: for hrhlrumber parameter
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-245">SMSC-245</ulink>: Switching to a license lib 2.2.3.Final
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-246">SMSC-246</ulink>: Docs : Add new chapter explaining how to use TelScale-smpp-simulator tool
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-247">SMSC-247</ulink>: Response to an originator after a diameter response (MO/SMPP orig)
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-248">SMSC-248</ulink>: Adding SMSC-Address 2017 parameter into diameter request
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-249">SMSC-249</ulink>: Bad processing the case when there are very many messages to the one dest
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-250">SMSC-250</ulink>: BIND request sent by SMSC doesn't respect System Type parameter
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-251">SMSC-251</ulink>: Review SMSC Docs for Improvements
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-252">SMSC-252</ulink>: Big message count can be stored into one due_slot
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-253">SMSC-253</ulink>: Reduced sending rate when very many messages to the one dest address
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-256">SMSC-256</ulink>: Docs: adding a manual chapter for smsc-diameter interconnection
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-258">SMSC-258</ulink>: NullPointerException when receipt creating after ValidityPeriod expiring filter
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-260">SMSC-260</ulink>: mproc rules: checking conditions based on last updated values
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-261">SMSC-261</ulink>: SMSC Re-preparing already prepared query
+</para></listitem>
+
+
 </itemizedlist>
 	</section>
 	<section id="Config_settings">
