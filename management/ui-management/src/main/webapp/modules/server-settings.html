@@ -225,6 +225,12 @@ Empty TC-BEGIN is used in MAP Version 2 and 3 for forwardSM and Mt- ForwardSM re
 									<input id="maxmessagelengthreducer" type="text" class="input-mini" style="width: 30px; margin-right: 12px; text-align: center;" value="0" />
 								</span>								
 							</div>
+                        	<div id="div-hrHlrNumber" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="used to set a pre-configured HLR address for SRI messages. In some scenarios it may be required to set a HLR address instead of a MSISDN address into the SCCP CalledPartyAddress of SendRoutingInfo requests issued by the SMSC GW in both mobile terminated and home routing modes. In such cases, you must set this parameter hrhlrnumber to a pre-configured HLR address. For all other scenarios where this is not required, you may leave this parameter empty. When this is empty, the SCCP CalledPartyAddress of SendRoutingInfo request will be set to the destination MSISDN of a subscriber">
+									<span class="add-on">Home Routing HLR Global Title</span>
+									<input id="hrHlrNumber" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="" />
+								</span>
+							</div>							
 							<div class="control-group">
 								<span class="span12" style="text-align: left;">
 									&nbsp;<button class="btn btn-danger" onclick="updateSs7Properties();"><i class="icon-undo"></i> Revert</button>
@@ -517,7 +523,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									<span class="add-on">Correlation Id Cahc Time (in secs)</span>
 									<input id="smsHomeRoutingCorrIdLivTme" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span>
-							</div>							
+							</div>	
 							&nbsp;
 							<div class="control-group">
 								<span class="span12" style="text-align: left;">
@@ -661,6 +667,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										$("#mscssn").val(response.value.MscSsn);
 										$("#maxmapv").val(response.value.MaxMapVersion);
 										$("#maxmessagelengthreducer").val(response.value.MaxMessageLengthReducer);
+										$("#hrHlrNumber").val(response.value.HrHlrNumber);
 																				
 										var gtiVar = response.value.GlobalTitleIndicator;
 										if(gtiVar == "GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY"){
@@ -1093,9 +1100,6 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 			    			$("#div-duedelaymultiplicator").removeClass("error");		
 			    		}
 						
-						var e2 = document.getElementById("smsHomeRouting");
-						var smsHomeRouting = e2.options[e2.selectedIndex].text;
-												
 						
 						if(formInvalid) {
 							$("#login-settings-error").show();
@@ -1124,7 +1128,6 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									{ type: "write", mbean: mbeanSearch, attribute: "SecondDueDelay", value: propsecduedel },
 									{ type: "write", mbean: mbeanSearch, attribute: "MaxDueDelay", value: propmaxduedel },
 									{ type: "write", mbean: mbeanSearch, attribute: "DueDelayMultiplicator", value: duedelaymultiplicator },
-									{ type: "write", mbean: mbeanSearch, attribute: "SMSHomeRouting", value: smsHomeRouting },
 								],
 								{
 									success: function(response) {
@@ -1199,6 +1202,11 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						
 						var ttVar = $("#tt").val();
 						
+						var hrhlrnumber = $("#hrHlrNumber").val();
+						if(hrhlrnumber.trim() == ""){
+							hrhlrnumber = null;
+						}
+						
 						if(formInvalid) {
 							$("#login-settings-error").show();
 							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
@@ -1218,6 +1226,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									{ type: "write", mbean: mbeanSearch, attribute: "MaxMessageLengthReducer", value: maxmessagelengthreducer },
 									{ type: "write", mbean: mbeanSearch, attribute: "GlobalTitleIndicator", value: gtiVar },
 									{ type: "write", mbean: mbeanSearch, attribute: "TranslationType", value: ttVar },
+									{ type: "write", mbean: mbeanSearch, attribute: "HrHlrNumber", value: hrhlrnumber },
 								],
 								{
 									success: function(response) {
