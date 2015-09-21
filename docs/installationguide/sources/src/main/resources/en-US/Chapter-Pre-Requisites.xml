@@ -59,9 +59,10 @@
 								</row>
 								<row>
 									<entry>Database</entry>
-									<entry>You must have Cassandra database (version 1.2 or 2.0) installed (Version 2.1 or later is not supported).
-									We recommend that you use the latest version of 2.0 release because the support for version 1.2 will not be soon disabled.
-									&THIS.PLATFORM; &THIS.APPLICATION; uses Cassandra Native Driver and therefore you should enable support for native drivers by setting the value of <literal>start_native_transport</literal> to <literal>true</literal> in the file <filename>apache-cassandra-***/conf/cassandra.yaml</filename>. Failure to do this may result in the Gateway not starting correctly.</entry>
+									<entry>You must have Cassandra database (version 1.2 or 2.0) installed (Version 2.1 or later is not supported now).
+									We strongly recommend that you use the latest version of 2.0 release because the support for version 1.2 will not be soon available, the most probably in the next release.
+									&THIS.PLATFORM; &THIS.APPLICATION; uses Cassandra Native Driver and therefore you should enable support for native drivers by setting the value of <literal>start_native_transport</literal> to <literal>true</literal> in the file <filename>apache-cassandra-&lt;version&gt;/conf/cassandra.yaml</filename>.
+									Failure to do this may result in the Gateway not starting correctly.</entry>
 									<entry> </entry>	
 									
 								</row>
