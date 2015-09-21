@@ -4,6 +4,5 @@
 <maxdialogs value="25000"/>
 <dialogidrangestart value="1"/>
 <dialogidrangeend value="30000"/>
-<previewmode value="false"/>
 <donotsendprotocolversion value="false"/>
 <statisticsenabled value="false"/>
