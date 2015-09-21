@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<maxsequencenumber value="256"/>
-<maxasforroute value="2"/>
 <heartbeattime value="10000"/>
 <aspFactoryList>
 	<aspFactory name="testasp" assocName="Ass_main" started="true" maxseqnumber="256" aspid="2" heartbeat="false"/>
@@ -20,5 +18,5 @@
 </asList>
 <route>
 	<key value="2:1:3"/>
-	<value value="testas"/>
+	<routeAs trafficModeType="2" as="testas"/>
 </route>
