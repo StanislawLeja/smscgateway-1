@@ -320,9 +320,9 @@
 	
     <target name="build-smsc">
         <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.telscale-smsc.dir}">
-                <arg line="${release.build.goals} -Dmaven.test.skip=true -Passembly" />
+                <arg line="${release.build.goals} -Dmaven.test.skip=true -Passemble" />
         </exec>
-	<ant antfile="build.xml" dir="${checkout.telscale-smsc.dir}/test/smpp-load/" />
+		<ant antfile="build.xml" dir="${checkout.telscale-smsc.dir}/test/smpp-load/" />
     </target>
 	
     <target name="build-map-ra">
@@ -400,7 +400,7 @@
 		                <include name="**" />
 		        </fileset>
 		</copy>
-	    	<copy file="${checkout.telscale-smsc.dir}/test/smpp-load/build.xml" todir="${release.dir}/tools/TelScale-smpp-load" failonerror="true" />
+	    <copy file="${checkout.telscale-smsc.dir}/test/smpp-load/build.xml" todir="${release.dir}/tools/TelScale-smpp-load" failonerror="true" />
     	
     	<!-- tools : HLR Simulator -->
 		<copy todir="${release.dir}/tools/TelScale-hlr-simulator" failonerror="true">
