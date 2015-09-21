@@ -234,12 +234,25 @@ public class SmppClientOpsThread implements Runnable {
 			config0.setRequestExpiryTimeout(esme.getRequestExpiryTimeout());
 			config0.setWindowMonitorInterval(esme.getWindowMonitorInterval());
 			config0.setCountersEnabled(esme.isCountersEnabled());
-
-			Address address = null;
-			if (esme.getEsmeTon() != -1 && esme.getEsmeNpi() != -1 && esme.getEsmeAddressRange() != null) {
-				address = new Address((byte) esme.getEsmeTon(), (byte) esme.getEsmeNpi(), esme.getEsmeAddressRange());
+			
+			int addressTon = esme.getEsmeTon();
+			int addressNpi = esme.getEsmeNpi();
+			String addressRange = esme.getEsmeAddressRange();
+			
+			Address addressRangeObj = new Address();
+			if(addressTon!=-1){
+				addressRangeObj.setTon((byte)addressTon);
 			}
-			config0.setAddressRange(address);
+			
+			if(addressNpi != -1){
+				addressRangeObj.setNpi((byte)addressNpi);
+			}
+			
+			if(addressRange != null){
+				addressRangeObj.setAddress(addressRange);
+			}
+			
+			config0.setAddressRange(addressRangeObj);
 
 			SmppSessionHandler sessionHandler = new ClientSmppSessionHandler(esme,
 					this.smppSessionHandlerInterface.createNewSmppSessionHandler(esme));
