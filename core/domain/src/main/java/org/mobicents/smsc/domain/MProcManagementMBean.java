@@ -31,13 +31,15 @@ import java.util.ArrayList;
 */
 public interface MProcManagementMBean {
 
-    ArrayList<MProcRule> getMProcRule();
+    ArrayList<MProcRuleInterface> getMProcRule();
 
-    MProcRule getMProcRuleById(int id);
+    MProcRuleInterface getMProcRuleById(int id);
 
-    MProcRule createMProcRule(int id, int destTonMask, int destNpiMask, String destDigMask, String originatingMask, int networkIdMask, int newNetworkId,
+    MProcRuleInterface createMProcRule(int id, int destTonMask, int destNpiMask, String destDigMask, String originatingMask, int networkIdMask, int newNetworkId,
             int newDestTon, int newDestNpi, String addDestDigPrefix, boolean makeCopy) throws Exception;
+    
+    void addMProcRule(MProcRuleInterface mProcRuleInterface) throws Exception;
 
-    MProcRule destroyMProcRule(int mProcRuleId) throws Exception;
+    MProcRuleInterface destroyMProcRule(int mProcRuleId) throws Exception;
 
 }

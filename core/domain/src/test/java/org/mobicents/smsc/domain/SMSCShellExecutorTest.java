@@ -122,7 +122,7 @@ public class SMSCShellExecutorTest {
         String s = exec.execute(args);
 
         assertEquals(mProcManagement.mprocs.size(), 1);
-        MProcRule rule = mProcManagement.getMProcRuleById(10);
+        MProcRuleInterface rule = mProcManagement.getMProcRuleById(10);
         assertNotNull(rule);
         assertEquals(rule.getId(), 10);
         assertEquals(rule.getDestTonMask(), 2);

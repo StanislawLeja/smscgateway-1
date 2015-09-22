@@ -195,7 +195,7 @@ public class SMSCShellExecutor implements ShellExecutor {
         int id = Integer.parseInt(args[3]);
 
         MProcManagement mProcManagement = MProcManagement.getInstance();
-        MProcRule mProcRule = mProcManagement.getMProcRuleById(id);
+        MProcRuleInterface mProcRule = mProcManagement.getMProcRuleById(id);
         if (mProcRule != null) {
             return String.format(MProcRuleOamMessages.CREATE_MPROC_RULE_FAIL_ALREADY_EXIST, id);
         }
@@ -280,7 +280,7 @@ public class SMSCShellExecutor implements ShellExecutor {
         int id = Integer.parseInt(args[3]);
 
         MProcManagement mProcManagement = MProcManagement.getInstance();
-        MProcRule mProcRule = mProcManagement.getMProcRuleById(id);
+        MProcRuleInterface mProcRule = mProcManagement.getMProcRuleById(id);
         if (mProcRule == null) {
             return String.format(MProcRuleOamMessages.MODIFY_MPROC_RULE_FAIL_NOT_EXIST, id);
         }
@@ -362,7 +362,7 @@ public class SMSCShellExecutor implements ShellExecutor {
         int id = Integer.parseInt(args[3]);
 
         MProcManagement mProcManagement = MProcManagement.getInstance();
-        MProcRule mProcRule = mProcManagement.getMProcRuleById(id);
+        MProcRuleInterface mProcRule = mProcManagement.getMProcRuleById(id);
         if (mProcRule == null) {
             return String.format(MProcRuleOamMessages.DESTROY_MPROC_RULE_FAIL_NOT_EXIST, id);
         }
@@ -387,13 +387,13 @@ public class SMSCShellExecutor implements ShellExecutor {
         // show of existing MProcRule / all MProcRule
         MProcManagement mProcManagement = MProcManagement.getInstance();
         if (args.length == 3) {
-            ArrayList<MProcRule> lst = mProcManagement.getMProcRule();
+            ArrayList<MProcRuleInterface> lst = mProcManagement.getMProcRule();
 
             StringBuilder sb = new StringBuilder();
             if (lst.size() == 0) {
                 sb.append(SMSCOAMMessages.MPROC_NO_RULES);
             } else {
-                for (MProcRule rule : lst) {
+                for (MProcRuleInterface rule : lst) {
                     sb.append(rule.toString());
                     sb.append("\n");
                 }
@@ -401,7 +401,7 @@ public class SMSCShellExecutor implements ShellExecutor {
             return sb.toString();
         } else {
             int id = Integer.parseInt(args[3]);
-            MProcRule rule = mProcManagement.getMProcRuleById(id);
+            MProcRuleInterface rule = mProcManagement.getMProcRuleById(id);
             if (rule == null) {
                 return String.format(SMSCOAMMessages.MPROC_NO_RULE, id);
             }
