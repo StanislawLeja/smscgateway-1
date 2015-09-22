@@ -70,6 +70,7 @@
 	</dependencies>
 
 	<profiles>
+		<!-- 
 		<profile>
 			<id>assemble</id>
 			<activation>
@@ -224,6 +225,7 @@
 				</plugins>
 			</build>
 		</profile>
+		 -->
 		<profile>
 			<id>assembly</id>
 			<build>
@@ -234,7 +236,7 @@
 			           <version>1.5.3</version>
 			           <executions>                
 			                <execution>
-			                    <phase>process-sources</phase>
+			                    <phase>prepare-package</phase>
 			                    <goals>
 			                        <goal>replace</goal>
 			                    </goals>
