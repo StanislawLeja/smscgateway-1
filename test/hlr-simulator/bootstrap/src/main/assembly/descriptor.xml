@@ -114,6 +114,7 @@
 			    <include>com.telscale.licensing:lce-common:jar:jar-with-dependencies</include>
 			    <include>com.telscale.licensing:lce-secret:jar:obfuscated</include>
 			    <include>com.telscale.licensing:lce-notify</include>
+			    <include>com.telscale.licensing:lce-offline:jar:obfuscated</include>
 			    <include>org.apache.commons:commons-email</include>					
 			</includes>
 		</dependencySet>
