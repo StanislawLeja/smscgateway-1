@@ -320,7 +320,7 @@
 	
     <target name="build-smsc">
         <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.telscale-smsc.dir}">
-                <arg line="${release.build.goals} -Dmaven.test.skip=true -PPassembly" />
+                <arg line="${release.build.goals} -Dmaven.test.skip=true -Passembly" />
         </exec>
 		<ant antfile="build.xml" dir="${checkout.telscale-smsc.dir}/test/smpp-load/" />
     </target>

@@ -61,7 +61,7 @@
 			<jvmarg value="-XX:+PrintGCDetails" />
 			<jvmarg value="-XX:+PrintGCTimeStamps" />
 			-->
-			<arg value="2775" />
+			<arg value="2776" />
 			<!-- listerning port -->
 			<arg value="10" />
 			<!-- Max number of connections. Must be >= 1 -->
@@ -93,7 +93,7 @@
 			<jvmarg value="-XX:+PrintGCTimeStamps" />
 			-->
 
-			<arg value="2775" />
+			<arg value="2776" />
 			<!-- listerning port -->
 			<arg value="10" />
 			<!-- Max number of connections. Must be >= 1 -->
@@ -120,7 +120,7 @@
 		<java classname="${packageprefix}.Client" fork="true" maxmemory="2048m" classpathref="project.class.path" dir="client">
 			<jvmarg value="-Dlog.file.name=log4j-client.log" />
 			<!-- Session Count -->
-			<arg value="5" />
+			<arg value="1" />
 
 			<!-- Window Size -->
 			<arg value="500000" />
@@ -141,7 +141,7 @@
 			<arg value="127.0.0.1" />
 
 			<!-- Peer Port -->
-			<arg value="2775" />
+			<arg value="2776" />
 
 			<!-- System Id -->
 			<arg value="test" />
