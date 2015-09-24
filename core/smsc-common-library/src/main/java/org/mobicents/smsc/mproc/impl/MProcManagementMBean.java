@@ -22,11 +22,10 @@
 
 package org.mobicents.smsc.mproc.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.mobicents.smsc.mproc.MProcRule;
-import org.mobicents.smsc.mproc.MProcRuleClass;
+import org.mobicents.smsc.mproc.MProcRuleFactory;
 
 /**
 *
@@ -35,15 +34,15 @@ import org.mobicents.smsc.mproc.MProcRuleClass;
 */
 public interface MProcManagementMBean {
 
-    void registerRuleClass(String ruleClassName, MProcRuleClass ruleClass);
+    void registerRuleClass(String ruleClassName, MProcRuleFactory ruleClass);
 
     void deRegisterRuleClass(String ruleClassName);
 
-    List<MProcRuleClass> getRuleClassList();
+    List<MProcRuleFactory> getMProcRuleFactories();
 
-    void setRuleClassList(List<MProcRuleClass> ruleClasses);
+    void setMProcRuleFactories(List<MProcRuleFactory> ruleClasses);
 
-    ArrayList<MProcRule> getMProcRules();
+    List<MProcRule> getMProcRules();
 
     MProcRule getMProcRuleById(int id);
 

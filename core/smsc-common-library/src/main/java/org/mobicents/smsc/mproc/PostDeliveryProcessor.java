@@ -27,7 +27,7 @@ package org.mobicents.smsc.mproc;
 * @author sergey vetyutnev
 *
 */
-public interface MProcProcessingMessageDelivery {
+public interface PostDeliveryProcessor {
 
     /**
      * Creating a new message template for filling and sending by postNewMessage() method

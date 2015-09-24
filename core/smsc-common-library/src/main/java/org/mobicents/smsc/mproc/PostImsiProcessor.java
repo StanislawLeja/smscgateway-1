@@ -27,25 +27,9 @@ package org.mobicents.smsc.mproc;
 * @author sergey vetyutnev
 *
 */
-public interface MProcProcessingMessageComing {
+public interface PostImsiProcessor {
 
-    /**
-     * Drop the message. Success response (that a message is accepted) will be return to a message originator.
-     */
     void dropMessage();
-
-    /**
-     * Drop the message. A reject will be sent to a message originator.
-     */
-    void rejectMessage();
-
-    void updateMessageNetworkId(MProcMessage message, int newNetworkId);
-
-    void updateMessageDestTon(MProcMessage message, int newDestTon);
-
-    void updateMessageDestNpi(MProcMessage message, int newDestNpi);
-
-    void updateMessageDestDigits(MProcMessage message, String newDigits);
 
     /**
      * Creating a new message template for filling and sending by postNewMessage() method

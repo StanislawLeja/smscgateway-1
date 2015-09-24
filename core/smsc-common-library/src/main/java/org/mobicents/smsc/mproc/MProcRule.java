@@ -44,39 +44,39 @@ public interface MProcRule {
     /**
      * @return true if the mproc rule fits to a message
      */
-    boolean matchMessage(MProcMessage message);
+    boolean matches(MProcMessage message);
 
     /**
      * @return true if the mproc rule is used for the phase when a message has just come to SMSC
      */
-    boolean isForComingPhase();
+    boolean isForPostArrivalState();
 
     /**
      * @return true if the mproc rule is used for the phase when IMSI / NNN has been received from HRL
      */
-    boolean isForImsiRequestPhase();
+    boolean isForPostImsiRequestState();
 
     /**
      * @return true if the mproc rule is used for the phase when a message has just been delivered (or delivery failure)
      */
-    boolean isForDeliveryPhase();
+    boolean isForPostDeliveryState();
 
     /**
      * the event occurs when a message has just come to SMSC
      */
-    void onMessageComing(MProcProcessingMessageComing factory, MProcMessage message)
+    void onPostArrival(PostArrivalProcessor factory, MProcMessage message)
             throws Exception;
 
     /**
      * the event occurs when IMSI / NNN has been received from HRL
      */
-    void onMessageImsiRequest(MProcProcessingImsiRequest factory, MProcMessage message, String imsi,
+    void onPostImsiRequest(PostImsiProcessor factory, MProcMessage message, String imsi,
             String nnnDigits, int nnnTon, int nnnNpi) throws Exception;
 
     /**
      * the event occurs when a message has just been delivered (or delivery failure)
      */
-    void onMessageDelivery(MProcProcessingMessageDelivery factory, MProcMessage message,
+    void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message,
             boolean isDeliveryFailure) throws Exception;
 
     /**
