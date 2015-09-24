@@ -509,6 +509,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
                         
            				<div class="tab-pane" id="homerouting">
                         	<h5 style="border-bottom: 1px solid #DDD;">SMS Home Routing Configuration</h5>
+                        	<!-- 
 							<div id="div-smsHomeRouting" class="control-group">
 								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC can be configured to support SMS Home Routing by enabling the parameter smshomerouting. If this is set to true, the SMSC will accept MT messages and support Home Routing functionality.">
 									<span class="add-on">Home routing</span>
@@ -518,6 +519,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									</select>
 								</span>                         
 							</div>
+							 -->
                         	<div id="div-smsHomeRoutingCorrIdLivTme" class="control-group">
 								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cahce time in sec for SMSC to store the correlation id. Do not make this value too high or too low.">
 									<span class="add-on">Correlation Id Cahc Time (in secs)</span>
@@ -637,12 +639,12 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										
 										$("#duedelaymultiplicator").val(response.value.DueDelayMultiplicator);
 										
-										var smsHomeRoutingTmp = response.value.SMSHomeRouting
-										if(smsHomeRoutingTmp){
-											smsHomeRouting.options[0].selected = true;
-										} else {
-											smsHomeRouting.options[1].selected = true;
-										}
+										//var smsHomeRoutingTmp = response.value.SMSHomeRouting
+										//if(smsHomeRoutingTmp){
+										//	smsHomeRouting.options[0].selected = true;
+										//} else {
+										//	smsHomeRouting.options[1].selected = true;
+										//}
 									}],
 									error: function(value) {
 										errorUID = ("st" + new Date().getTime()).hashCode();
@@ -939,12 +941,12 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 								],
 								{ success: [
 									function(response) {
-										var smsHomeRoutingTmp = response.value.SMSHomeRouting
-										if(smsHomeRoutingTmp){
-											smsHomeRouting.options[0].selected = true;
-										} else {
-											smsHomeRouting.options[1].selected = true;
-										}
+										//var smsHomeRoutingTmp = response.value.SMSHomeRouting
+										//if(smsHomeRoutingTmp){
+										//	smsHomeRouting.options[0].selected = true;
+										//} else {
+										//	smsHomeRouting.options[1].selected = true;
+										//}
 										
 										$("#smsHomeRoutingCorrIdLivTme").val(response.value.CorrelationIdLiveTime);
 									}],
@@ -959,8 +961,8 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 					
 					function applyHomeRouting() {
 						var formInvalid = false;
-						var e2 = document.getElementById("smsHomeRouting");
-						var smsHomeRouting = e2.options[e2.selectedIndex].text;
+						//var e2 = document.getElementById("smsHomeRouting");
+						//var smsHomeRouting = e2.options[e2.selectedIndex].text;
 												
 						var smsHomeRoutingCorrIdLivTme = $("#smsHomeRoutingCorrIdLivTme").val();
 						if(smsHomeRoutingCorrIdLivTme.trim() == "") {
@@ -982,7 +984,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						mbeanSearch="com.telscale.smsc:layer=SmscPropertiesManagement,name=SmscManagement";
 						jolokia.request(
 								[
-									{ type: "write", mbean: mbeanSearch, attribute: "SMSHomeRouting", value: smsHomeRouting },
+									//{ type: "write", mbean: mbeanSearch, attribute: "SMSHomeRouting", value: smsHomeRouting },
 									{ type: "write", mbean: mbeanSearch, attribute: "CorrelationIdLiveTime", value: smsHomeRoutingCorrIdLivTme },
 								],
 								{
