@@ -22,7 +22,9 @@
 
 package org.mobicents.smsc.domain;
 
-import java.util.ArrayList;
+import java.util.List;
+
+import org.mobicents.smsc.mproc.MProcRule;
 
 /**
 *
@@ -31,15 +33,24 @@ import java.util.ArrayList;
 */
 public interface MProcManagementMBean {
 
-    ArrayList<MProcRuleInterface> getMProcRule();
+//    void registerRuleFactory(MProcRuleFactory ruleFactory);
+//
+//    void deregisterRuleFactory(String ruleFactoryName);
+//
+//    MProcRuleFactory getRuleFactory(String ruleFactoryName);
+//
+//    List<MProcRuleFactory> getMProcRuleFactories();
+//
+//    void setMProcRuleFactories(List<MProcRuleFactory> ruleFactories);
 
-    MProcRuleInterface getMProcRuleById(int id);
+    List<MProcRule> getMProcRules();
 
-    MProcRuleInterface createMProcRule(int id, int destTonMask, int destNpiMask, String destDigMask, String originatingMask, int networkIdMask, int newNetworkId,
-            int newDestTon, int newDestNpi, String addDestDigPrefix, boolean makeCopy) throws Exception;
-    
-    void addMProcRule(MProcRuleInterface mProcRuleInterface) throws Exception;
+    MProcRule getMProcRuleById(int id);
 
-    MProcRuleInterface destroyMProcRule(int mProcRuleId) throws Exception;
+    MProcRule createMProcRule(int id, String ruleFactoryName, String parametersString) throws Exception;
+
+    MProcRule modifyMProcRule(int id, String parametersString) throws Exception;
+
+    MProcRule destroyMProcRule(int mProcRuleId) throws Exception;
 
 }

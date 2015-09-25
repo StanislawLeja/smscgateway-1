@@ -20,34 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.mproc.impl;
-
-import java.util.List;
-
-import org.mobicents.smsc.mproc.MProcRule;
-import org.mobicents.smsc.mproc.MProcRuleFactory;
+package org.mobicents.smsc.mproc;
 
 /**
 *
 * @author sergey vetyutnev
 *
 */
-public interface MProcManagementMBean {
+public interface MProcRuleMBean {
 
-    void registerRuleClass(String ruleClassName, MProcRuleFactory ruleClass);
+    /**
+     * @return the id of the mproc rule
+     */
+    int getId();
 
-    void deRegisterRuleClass(String ruleClassName);
+    /**
+     * @return Rule class of the mproc rule ("default" or other when a customer implementation)
+     */
+    String getRuleClassName();
 
-    List<MProcRuleFactory> getMProcRuleFactories();
+    /**
+     * @return true if the mproc rule is used for the phase when a message has just come to SMSC
+     */
+    boolean isForPostArrivalState();
 
-    void setMProcRuleFactories(List<MProcRuleFactory> ruleClasses);
+    /**
+     * @return true if the mproc rule is used for the phase when IMSI / NNN has been received from HRL
+     */
+    boolean isForPostImsiRequestState();
 
-    List<MProcRule> getMProcRules();
+    /**
+     * @return true if the mproc rule is used for the phase when a message has just been delivered (or delivery failure)
+     */
+    boolean isForPostDeliveryState();
 
-    MProcRule getMProcRuleById(int id);
-
-    MProcRule createMProcRule(int id, String ruleClassName, String parametersString) throws Exception;
-
-    MProcRule destroyMProcRule(int mProcRuleId) throws Exception;
+    /**
+     * @return rule parameters as CLI return string
+     */
+    String getRuleParameters();
 
 }

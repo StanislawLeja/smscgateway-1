@@ -24,7 +24,9 @@ package org.mobicents.smsc.domain;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -40,6 +42,7 @@ import org.jboss.mx.util.MBeanServerLocator;
 import org.mobicents.smsc.cassandra.DBOperations_C1;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.library.SmsSetCache;
+import org.mobicents.smsc.mproc.MProcRuleFactory;
 import org.mobicents.smsc.smpp.SmppManagement;
 
 /**
@@ -63,8 +66,8 @@ public class SmscManagement implements SmscManagementMBean {
 
 	public static final String JMX_LAYER_DATABASE_SMS_ROUTING_RULE = "DatabaseSmsRoutingRule";
 
-	protected static final String SMSC_PERSIST_DIR_KEY = "smsc.persist.dir";
-	protected static final String USER_DIR_KEY = "user.dir";
+	public static final String SMSC_PERSIST_DIR_KEY = "smsc.persist.dir";
+	public static final String USER_DIR_KEY = "user.dir";
 
 	private static final String PERSIST_FILE_NAME = "smsc.xml";
 
@@ -95,6 +98,7 @@ public class SmscManagement implements SmscManagementMBean {
 	private static SmscStatProvider smscStatProvider = null;
 
 	private SmsRoutingRule smsRoutingRule = null;
+	private ArrayList<MProcRuleFactory> mprocFactories = new ArrayList<MProcRuleFactory>();
 
 	private SmscManagement(String name) {
         this.name = name;
@@ -157,6 +161,54 @@ public class SmscManagement implements SmscManagementMBean {
 	public void setSmsRoutingRuleClass(String smsRoutingRuleClass) {
 		this.smsRoutingRuleClass = smsRoutingRuleClass;
 	}
+
+    public List getMProcRuleFactories() {
+        return this.mprocFactories;
+    }
+
+    public List<MProcRuleFactory> getMProcRuleFactories2() {
+        return this.mprocFactories;
+    }
+
+    public void setMProcRuleFactories(List ruleFactories) {
+        this.mprocFactories = new ArrayList<MProcRuleFactory>();
+        for (Object obj : ruleFactories) {
+            if (obj != null && obj instanceof MProcRuleFactory) {
+                MProcRuleFactory ruleFactory = (MProcRuleFactory) obj;
+                this.mprocFactories.add(ruleFactory);
+                if (this.mProcManagement != null) {
+                    this.mProcManagement.bindAlias(ruleFactory);
+                }
+            }
+        }
+    }
+
+    public void registerRuleFactory(MProcRuleFactory ruleFactory) {
+        this.mprocFactories.add(ruleFactory);
+        if (this.mProcManagement != null) {
+            this.mProcManagement.bindAlias(ruleFactory);
+        }
+    }
+
+    public void deregisterRuleFactory(String ruleFactoryName) {
+        for (MProcRuleFactory rc : this.mprocFactories) {
+            if (ruleFactoryName.equals(rc.getRuleClassName())) {
+                this.mprocFactories.remove(rc);
+                return;
+            }
+        }
+    }
+
+    public MProcRuleFactory getRuleFactory(String ruleFactoryName) {
+        MProcRuleFactory ruleClass = null;
+        for (MProcRuleFactory rc : this.mprocFactories) {
+            if (ruleFactoryName.equals(rc.getRuleClassName())) {
+                ruleClass = rc;
+                break;
+            }
+        }
+        return ruleClass;
+    }
 
 	public void start() throws Exception {
 		logger.warn("Starting SmscManagemet " + name);
@@ -229,6 +281,7 @@ public class SmscManagement implements SmscManagementMBean {
         // Step 12 Setup MProcRules
         this.mProcManagement = MProcManagement.getInstance(this.name);
         this.mProcManagement.setPersistDir(this.persistDir);
+        this.mProcManagement.setSmscManagement(this);
         this.mProcManagement.start();
 
         ObjectName mProcObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_MPROC_MANAGEMENT

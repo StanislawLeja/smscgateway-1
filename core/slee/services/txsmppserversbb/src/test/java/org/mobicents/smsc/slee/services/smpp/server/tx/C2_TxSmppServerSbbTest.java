@@ -652,9 +652,11 @@ public class C2_TxSmppServerSbbTest {
         if (!this.cassandraDbInited)
             return;
 
-        MProcManagement.getInstance().createMProcRule(1, 1, 1, "-1", "SMPP", 0, 5, -1, -1, "47", true);
-        MProcManagement.getInstance().createMProcRule(2, -1, -1, "-1", null, 5, -1, -1, 2, "-1", true);
+        // TODO: ***** make proper mproc rules testing
+//        MProcManagement.getInstance().createMProcRule(1, 1, 1, "-1", "SMPP", 0, 5, -1, -1, "47", true);
+//        MProcManagement.getInstance().createMProcRule(2, -1, -1, "-1", null, 5, -1, -1, 2, "-1", true);
         // destTonMask, destNpiMask, destDigMask, originatingMask, networkIdMask, newNetworkId, newDestTon, newDestNpi, addDestDigPrefix, makeCopy
+        // TODO: ***** make proper mproc rules testing
 
         this.smppSess = new SmppSessionsProxy();
         this.sbb.setSmppServerSessions(smppSess);

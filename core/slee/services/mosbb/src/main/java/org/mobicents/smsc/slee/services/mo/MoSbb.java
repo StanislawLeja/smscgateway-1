@@ -82,8 +82,8 @@ import org.mobicents.smsc.domain.SmscStatProvider;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.CorrelationIdValue;
 import org.mobicents.smsc.library.MessageUtil;
+import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.library.Sms;
-import org.mobicents.smsc.library.Sms.OriginationType;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.SmscProcessingException;
@@ -887,7 +887,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		Sms sms = new Sms();
 		sms.setDbId(UUID.randomUUID());
-        sms.setOriginationType(Sms.OriginationType.SS7_MO);
+        sms.setOriginationType(OriginationType.SS7_MO);
 
 		// checking parameters first
 		if (callingPartyAddress == null || callingPartyAddress.getAddress() == null
@@ -1058,7 +1058,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
 		Sms sms = new Sms();
 		sms.setDbId(UUID.randomUUID());
-        sms.setOriginationType(Sms.OriginationType.SS7_HR);
+        sms.setOriginationType(OriginationType.SS7_HR);
 
 		// checking parameters first
 		if (callingPartyAddress == null || callingPartyAddress.getAddressValue() == null
@@ -1183,7 +1183,7 @@ public abstract class MoSbb extends MoCommonSbb {
 
         Sms sms = new Sms();
         sms.setDbId(UUID.randomUUID());
-        sms.setOriginationType(Sms.OriginationType.SS7_HR);
+        sms.setOriginationType(OriginationType.SS7_HR);
 
         AddressField callingPartyAddress = smsDeliverTpdu.getOriginatingAddress();
 

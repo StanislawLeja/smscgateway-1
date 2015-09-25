@@ -36,8 +36,9 @@ import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.smsc.cassandra.SmsRoutingRuleType;
 import org.mobicents.smsc.library.DbSmsRoutingRule;
-import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSetCache;
+import org.mobicents.smsc.mproc.MProcRule;
+import org.mobicents.smsc.mproc.impl.MProcRuleOamMessages;
 import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.ss7.management.console.ShellExecutor;
 
@@ -174,7 +175,7 @@ public class SMSCShellExecutor implements ShellExecutor {
 	}
 
     /**
-     * Command is mproc add <id> desttonmask <destination type of number>
+     * Command is mproc add factoryName <id> desttonmask <destination type of number>
      * destnpimask <destination numbering plan indicator> destdigmask <regular
      * expression - destination number digits mask> originatingmask <mo | hr |
      * esme | sip> networkidmask <networkId value> newnetworkid <new networkId
@@ -187,75 +188,37 @@ public class SMSCShellExecutor implements ShellExecutor {
      * @throws Exception
      */
     private String addMProc(String[] args) throws Exception {
-        if (args.length < 4 || args.length > 26) {
+        if (args.length < 6 || args.length > 27) {
             return SMSCOAMMessages.INVALID_COMMAND;
         }
 
         // create new MProcRule
-        int id = Integer.parseInt(args[3]);
-
         MProcManagement mProcManagement = MProcManagement.getInstance();
-        MProcRuleInterface mProcRule = mProcManagement.getMProcRuleById(id);
+        String factoryName = args[3];
+
+        int id = Integer.parseInt(args[4]);
+        MProcRule mProcRule = mProcManagement.getMProcRuleById(id);
         if (mProcRule != null) {
             return String.format(MProcRuleOamMessages.CREATE_MPROC_RULE_FAIL_ALREADY_EXIST, id);
         }
 
-        int count = 4;
-        String command;
-
-        boolean success = false;
-        int destTonMask = -1;
-        int destNpiMask = -1;
-        String destDigMask = "-1";
-        String originatingMask = "-1";
-        int networkIdMask = -1;
-        int newNetworkId = -1;
-        int newDestTon = -1;
-        int newDestNpi = -1;
-        String addDestDigPrefix = "-1";
-        boolean makeCopy = false;
-        while (count < args.length) {
-            command = args[count++];
-            if (count < args.length) {
-                String value = args[count++];
-                if (command.equals("desttonmask")) {
-                    destTonMask = Integer.parseInt(value);
-                } else if (command.equals("destnpimask")) {
-                    destNpiMask = Integer.parseInt(value);
-                } else if (command.equals("destdigmask")) {
-                    destDigMask = value;
-                } else if (command.equals("originatingmask")) {
-                    originatingMask = value;
-                } else if (command.equals("networkidmask")) {
-                    networkIdMask = Integer.parseInt(value);
-                } else if (command.equals("newnetworkid")) {
-                    newNetworkId = Integer.parseInt(value);
-                    success = true;
-                } else if (command.equals("newdestton")) {
-                    newDestTon = Integer.parseInt(value);
-                    success = true;
-                } else if (command.equals("newdestnpi")) {
-                    newDestNpi = Integer.parseInt(value);
-                    success = true;
-                } else if (command.equals("adddestdigprefix")) {
-                    addDestDigPrefix = value;
-                    success = true;
-
-                } else if (command.equals("makecopy")) {
-                    makeCopy = Boolean.parseBoolean(value);
-                    success = true;
-                }
-            }
-        }// while
-
-        if (!success) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
-
-        mProcManagement.createMProcRule(id, destTonMask, destNpiMask, destDigMask, originatingMask, networkIdMask, newNetworkId, newDestTon, newDestNpi,
-                addDestDigPrefix, makeCopy);
+        String parametersString = this.assembleString(args, 5);
+        mProcManagement.createMProcRule(id, factoryName, parametersString);
 
         return String.format(SMSCOAMMessages.MPROC_CREATE_SUCCESS, id);
+    }
+
+    private String assembleString(String[] args, int firstArg) {
+        StringBuilder sb = new StringBuilder();
+        boolean isFirst = true;
+        for (int i1 = firstArg; i1 < args.length; i1++) {
+            if (isFirst) {
+                isFirst = false;
+            } else
+                sb.append(" ");
+            sb.append(args[i1]);
+        }
+        return sb.toString();
     }
 
     /**
@@ -272,7 +235,7 @@ public class SMSCShellExecutor implements ShellExecutor {
      * @throws Exception
      */
     private String modifyMProc(String[] args) throws Exception {
-        if (args.length < 4 || args.length > 26) {
+        if (args.length < 5 || args.length > 26) {
             return SMSCOAMMessages.INVALID_COMMAND;
         }
 
@@ -280,68 +243,8 @@ public class SMSCShellExecutor implements ShellExecutor {
         int id = Integer.parseInt(args[3]);
 
         MProcManagement mProcManagement = MProcManagement.getInstance();
-        MProcRuleInterface mProcRule = mProcManagement.getMProcRuleById(id);
-        if (mProcRule == null) {
-            return String.format(MProcRuleOamMessages.MODIFY_MPROC_RULE_FAIL_NOT_EXIST, id);
-        }
-
-        int count = 4;
-        String command;
-
-        boolean success = false;
-        while (count < args.length) {
-            command = args[count++];
-            if (count < args.length) {
-                String value = args[count++];
-                if (command.equals("desttonmask")) {
-                    int val = Integer.parseInt(value);
-                    mProcRule.setDestTonMask(val);
-                    success = true;
-                } else if (command.equals("destnpimask")) {
-                    int val = Integer.parseInt(value);
-                    mProcRule.setDestNpiMask(val);
-                    success = true;
-                } else if (command.equals("destdigmask")) {
-                    mProcRule.setDestDigMask(value);
-                    success = true;
-                } else if (command.equals("originatingmask")) {
-                    if (value != null && value.equals("-1")) {
-                        mProcRule.setOriginatingMask(null);
-                    } else {
-                        Sms.OriginationType originatingMask = Enum.valueOf(Sms.OriginationType.class, value);
-                        mProcRule.setOriginatingMask(originatingMask);
-                    }
-                    success = true;
-                } else if (command.equals("networkidmask")) {
-                    int val = Integer.parseInt(value);
-                    mProcRule.setNetworkIdMask(val);
-                    success = true;
-                } else if (command.equals("newnetworkid")) {
-                    int val = Integer.parseInt(value);
-                    mProcRule.setNewNetworkId(val);
-                    success = true;
-                } else if (command.equals("newdestton")) {
-                    int val = Integer.parseInt(value);
-                    mProcRule.setNewDestTon(val);
-                    success = true;
-                } else if (command.equals("newdestnpi")) {
-                    int val = Integer.parseInt(value);
-                    mProcRule.setNewDestNpi(val);
-                    success = true;
-                } else if (command.equals("adddestdigprefix")) {
-                    mProcRule.setAddDestDigPrefix(value);
-                    success = true;
-                } else if (command.equals("makecopy")) {
-                    boolean val = Boolean.parseBoolean(value);
-                    mProcRule.setMakeCopy(val);
-                    success = true;
-                }
-            }
-        }// while
-
-        if (!success) {
-            return SMSCOAMMessages.INVALID_COMMAND;
-        }
+        String parametersString = this.assembleString(args, 4);
+        mProcManagement.modifyMProcRule(id, parametersString);
 
         return String.format(SMSCOAMMessages.MPROC_MODIFY_SUCCESS, id);
     }
@@ -362,11 +265,6 @@ public class SMSCShellExecutor implements ShellExecutor {
         int id = Integer.parseInt(args[3]);
 
         MProcManagement mProcManagement = MProcManagement.getInstance();
-        MProcRuleInterface mProcRule = mProcManagement.getMProcRuleById(id);
-        if (mProcRule == null) {
-            return String.format(MProcRuleOamMessages.DESTROY_MPROC_RULE_FAIL_NOT_EXIST, id);
-        }
-
         mProcManagement.destroyMProcRule(id);
 
         return String.format(SMSCOAMMessages.MPROC_DESTROY_SUCCESS, id);
@@ -387,13 +285,13 @@ public class SMSCShellExecutor implements ShellExecutor {
         // show of existing MProcRule / all MProcRule
         MProcManagement mProcManagement = MProcManagement.getInstance();
         if (args.length == 3) {
-            ArrayList<MProcRuleInterface> lst = mProcManagement.getMProcRule();
+            ArrayList<MProcRule> lst = mProcManagement.getMProcRules();
 
             StringBuilder sb = new StringBuilder();
             if (lst.size() == 0) {
                 sb.append(SMSCOAMMessages.MPROC_NO_RULES);
             } else {
-                for (MProcRuleInterface rule : lst) {
+                for (MProcRule rule : lst) {
                     sb.append(rule.toString());
                     sb.append("\n");
                 }
@@ -401,7 +299,7 @@ public class SMSCShellExecutor implements ShellExecutor {
             return sb.toString();
         } else {
             int id = Integer.parseInt(args[3]);
-            MProcRuleInterface rule = mProcManagement.getMProcRuleById(id);
+            MProcRule rule = mProcManagement.getMProcRuleById(id);
             if (rule == null) {
                 return String.format(SMSCOAMMessages.MPROC_NO_RULE, id);
             }

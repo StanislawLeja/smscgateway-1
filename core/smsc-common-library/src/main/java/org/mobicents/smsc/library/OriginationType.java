@@ -20,57 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.mproc;
-
-import java.util.Date;
-
-import org.mobicents.smsc.library.OriginationType;
+package org.mobicents.smsc.library;
 
 /**
  *
  * @author sergey vetyutnev
  *
  */
-public interface MProcMessage {
-
-    // source address part
-    int getSourceAddrTon();
-
-    int getSourceAddrNpi();
-
-    String getSourceAddr();
-
-    // dest address part
-    int getDestTon();
-
-    int getDestNpi();
-
-    String getDestDigits();
-
-    // message content part
-    String getShortMessageText();
-
-    byte[] getShortMessageBin();
-
-    // other options
-    int getNetworkId();
-
-    OriginationType getOriginatingType();
-
-    Date getScheduleDeliveryTime();
-
-    Date getValidityPeriod();
-
-    int getDataCoding();
-
-    int getNationalLanguageSingleShift();
-
-    int getNationalLanguageLockingShift();
-
-    int getEsmClass();
-
-    int getPriority();
-
-    int getRegisteredDelivery();
-
+public enum OriginationType {
+    SMPP, SS7_MO, SS7_HR, SIP
 }

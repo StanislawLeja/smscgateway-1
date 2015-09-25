@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.domain;
+package org.mobicents.smsc.mproc.impl;
 
 /**
 *
@@ -29,10 +29,16 @@ package org.mobicents.smsc.domain;
 */
 public interface MProcRuleOamMessages {
 
+    public static final String CREATE_MPROC_RULE_FAIL_RULE_CLASS_NAME_NULL_VALUE = "Creation of MProcRule failed. ruleClassName parameter can not be null";
+
+    public static final String CREATE_MPROC_RULE_FAIL_RULE_CLASS_NOT_FOUND = "Creation of MProcRule failed. ruleClass is not found for ruleClassName: %s";
+
     public static final String CREATE_MPROC_RULE_FAIL_ALREADY_EXIST = "Creation of MProcRule failed. Other MProcRule with id=%d already exist";
 
     public static final String MODIFY_MPROC_RULE_FAIL_NOT_EXIST = "Modification of MProcRule failed. No MProcRule with id=%d exist";
 
     public static final String DESTROY_MPROC_RULE_FAIL_NOT_EXIST = "Destroying of MProcRule failed. No MProcRule with id=%d exist";
+
+    public static final String SET_RULE_PARAMETERS_FAIL_NO_PARAMETERS_POVIDED = "Setting of MProcRule parameters failed: no parameter is provided";
 
 }

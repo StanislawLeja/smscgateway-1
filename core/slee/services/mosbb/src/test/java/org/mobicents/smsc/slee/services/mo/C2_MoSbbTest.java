@@ -576,9 +576,11 @@ public class C2_MoSbbTest {
         if (!this.cassandraDbInited)
             return;
 
-        MProcManagement.getInstance().createMProcRule(1, 1, 1, "-1", "SS7_MO", 0, -1, -1, -1, "47", true);
-        MProcManagement.getInstance().createMProcRule(2, -1, -1, "-1", null, 0, 5, 2, -1, "-1", true);
+        // TODO: ***** make proper mproc rules testing
+//        MProcManagement.getInstance().createMProcRule(1, 1, 1, "-1", "SS7_MO", 0, -1, -1, -1, "47", true);
+//        MProcManagement.getInstance().createMProcRule(2, -1, -1, "-1", null, 0, 5, 2, -1, "-1", true);
         // destTonMask, destNpiMask, destDigMask, originatingMask, networkIdMask, newNetworkId, newDestTon, newDestNpi, addDestDigPrefix, makeCopy
+        // TODO: ***** make proper mproc rules testing
 
         SmppSessionsProxy smppServerSessions = new SmppSessionsProxy();
         this.sbb.setSmppServerSessions(smppServerSessions);

@@ -22,44 +22,19 @@
 
 package org.mobicents.smsc.mproc;
 
-import javolution.xml.stream.XMLStreamException;
-
 /**
 *
 * @author sergey vetyutnev
 *
 */
-public interface MProcRule {
+public interface MProcRule extends MProcRuleMBean {
 
-    /**
-     * @return the id of the mproc rule
-     */
-    int getId();
-
-    /**
-     * @return Rule class of the mproc rule ("default" or other when a customer implementation)
-     */
-    String getRuleClassName();
+    void setId(int val);
 
     /**
      * @return true if the mproc rule fits to a message
      */
     boolean matches(MProcMessage message);
-
-    /**
-     * @return true if the mproc rule is used for the phase when a message has just come to SMSC
-     */
-    boolean isForPostArrivalState();
-
-    /**
-     * @return true if the mproc rule is used for the phase when IMSI / NNN has been received from HRL
-     */
-    boolean isForPostImsiRequestState();
-
-    /**
-     * @return true if the mproc rule is used for the phase when a message has just been delivered (or delivery failure)
-     */
-    boolean isForPostDeliveryState();
 
     /**
      * the event occurs when a message has just come to SMSC
@@ -80,23 +55,13 @@ public interface MProcRule {
             boolean isDeliveryFailure) throws Exception;
 
     /**
-     * this method must implement setting of rule parameters as for provided CLI string
+     * this method must implement setting of rule parameters as for provided CLI string at the step of rule creation
      */
-    void setRuleParameters(String parametersString);
+    void setInitialRuleParameters(String parametersString) throws Exception;
 
     /**
-     * @return rule parameters as CLI return string
+     * this method must implement setting of rule parameters as for provided CLI string at the step of rules modifying
      */
-    String getRuleParameters();
-
-    /**
-     * implementation of XML deserializing for a customer rule (string into xml config file)
-     */
-    public void readXml(javolution.xml.XMLFormat.InputElement xml, MProcRule rule) throws XMLStreamException;
-
-    /**
-     * implementation of XML serializing for a customer rule (string into xml config file)
-     */
-    public void writeXml(MProcRule rule, javolution.xml.XMLFormat.OutputElement xml) throws XMLStreamException;
+    void updateRuleParameters(String parametersString) throws Exception;
 
 }

@@ -20,16 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.domain;
+package org.mobicents.smsc.mproc.impl;
 
+import org.mobicents.smsc.mproc.MProcRuleFactory;
+import org.mobicents.smsc.mproc.MProcRule;
 
 /**
 *
 * @author sergey vetyutnev
 *
 */
-public interface MProcRuleMBean extends MProcRuleInterface {
+public class MProcRuleFactoryDefault implements MProcRuleFactory {
 
- 
+    public static String RULE_CLASS_NAME = "mproc";
+
+    @Override
+    public String getRuleClassName() {
+        return RULE_CLASS_NAME;
+    }
+
+    @Override
+    public MProcRule createMProcRuleInstance() {
+        return new MProcRuleDefaultImpl();
+    }
 
 }

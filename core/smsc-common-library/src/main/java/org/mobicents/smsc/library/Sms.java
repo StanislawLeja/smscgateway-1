@@ -655,7 +655,7 @@ public class Sms implements Serializable {
         return sb.toString();
     }
 
-    public enum OriginationType {
-        SMPP, SS7_MO, SS7_HR, SIP
-    }
+//    public enum OriginationType {
+//        SMPP, SS7_MO, SS7_HR, SIP
+//    }
 }

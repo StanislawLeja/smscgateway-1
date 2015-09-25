@@ -227,6 +227,9 @@
     <!-- SMSC -->
     <!-- SmscManagement is managing the all Smsc server commands -->
     <!-- ==================================================================== -->
+    <bean name="MProcRuleFactoryDefault" class="org.mobicents.smsc.mproc.impl.MProcRuleFactoryDefault">
+    </bean>
+
     <bean name="SmscManagement" class="org.mobicents.smsc.domain.SmscManagement">
         <constructor factoryClass="org.mobicents.smsc.domain.SmscManagement"
             factoryMethod="getInstance">
@@ -235,6 +238,12 @@
         <property name="persistDir">${jboss.server.data.dir}</property>
         <property name="smppManagement">
             <inject bean="SmppManagement" />
+        </property>
+        <property name="MProcRuleFactories">
+            <list elementClass="org.mobicents.smsc.mproc.MProcRuleFactory">
+                <inject bean="MProcRuleFactoryDefault"/>
+                <!-- <inject bean="MProcRuleFactoryCustom"/>  -->
+            </list>
         </property>
         <!-- 
         <property name="smsRoutingRuleClass">org.mobicents.smsc.domain.DatabaseSmsRoutingRule</property>

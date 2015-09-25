@@ -65,6 +65,7 @@ import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.domain.SmscStatProvider;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.MessageUtil;
+import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
@@ -387,7 +388,7 @@ public abstract class TxSipServerSbb implements Sbb {
 
 		Sms sms = new Sms();
 		sms.setDbId(UUID.randomUUID());
-		sms.setOriginationType(Sms.OriginationType.SIP);
+		sms.setOriginationType(OriginationType.SIP);
 		sms.setRegisteredDelivery(regDeliveryInt);
 
 		// checking of source address
