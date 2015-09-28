@@ -24,6 +24,7 @@
 		<pathelement location="${assemble.dir}/joda-time-@joda-time.version@.jar" />
 
 		<pathelement location="${assemble.dir}/log4j-@log4j.version@.jar" />
+		<pathelement location="${assemble.dir}/guava-@guava.version@.jar" />
 		<pathelement location="src/main/resources" />
 
 	</path>
@@ -127,6 +128,9 @@
 
 			<!-- SUBMIT_SM to send -->
 			<arg value="50000" />
+			
+			<!-- SMS per second rate to maintain -->
+			<arg value="150" />			
 
 			<!-- Start destination number -->
 			<arg value="9960200000" />

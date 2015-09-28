@@ -21,7 +21,6 @@
  */
 package org.mobicents.protocols.smpp.load;
 
-import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -45,6 +44,7 @@ import com.cloudhopper.smpp.impl.DefaultSmppClient;
 import com.cloudhopper.smpp.impl.DefaultSmppSessionHandler;
 import com.cloudhopper.smpp.pdu.SubmitSm;
 import com.cloudhopper.smpp.type.Address;
+import com.google.common.util.concurrent.RateLimiter;
 
 /**
  * @author amit bhayani
@@ -53,9 +53,7 @@ import com.cloudhopper.smpp.type.Address;
 public class Client extends TestHarness {
 
 	private static final Logger logger = Logger.getLogger(Client.class);
-	
-	
-	
+
 	//
 	// performance testing options (just for this sample)
 	//
@@ -68,6 +66,9 @@ public class Client extends TestHarness {
 	// total number of submit sent
 	private volatile AtomicInteger submitSent = new AtomicInteger(0);
 
+	//Number of SMPP to submit per sec
+	private int rateLimiter = 100;
+	
 	private long startDestNumber = 9960200000l;
 	private int destNumberDiff = 10000;
 	private long endDestNumber = startDestNumber + destNumberDiff;
@@ -78,29 +79,31 @@ public class Client extends TestHarness {
 	private int peerPort = 2775;
 	private String systemId = "test";
 	private String password = "test";
-    private static String message = "Hello world!";
-    // pause delay after last throttled message in milliseconds
-    private static int throttledPause = 1000;
+	private static String message = "Hello world!";
+	// pause delay after last throttled message in milliseconds
+	//private static int throttledPause = 1000;
+	
+	private RateLimiter rateLimiterObj = null;
 
-    // 0 - Default MC Mode (e.g. Store and Forward)
-    // 1 - Datagram mode
-    // 2 - Forward (i.e. Transaction) mode
-    // 3 - Store and Forward mode
-    private static int esmClass = 3;
+	// 0 - Default MC Mode (e.g. Store and Forward)
+	// 1 - Datagram mode
+	// 2 - Forward (i.e. Transaction) mode
+	// 3 - Store and Forward mode
+	private static int esmClass = 3;
 
-    private static Date lastThrottledMessage;
-    private static AtomicInteger throttledMessageCount = new AtomicInteger(0);
+	// private static Date lastThrottledMessageTime;
+	private static AtomicInteger throttledMessageCount = new AtomicInteger(0);
 
 	// total number of submit sent
-    static public final AtomicInteger SUBMIT_SENT = new AtomicInteger(0);
-    static public final AtomicInteger SUBMIT_RESP = new AtomicInteger(0);
+	static public final AtomicInteger SUBMIT_SENT = new AtomicInteger(0);
+	static public final AtomicInteger SUBMIT_RESP = new AtomicInteger(0);
 
 	static long min_dest_number = 9960200000l;
 	static int dest_number_diff = 100000;
 	static long max_dest_number = min_dest_number + dest_number_diff;
 
 	static public void main(String[] args) throws Exception {
-		
+
 		Client client = new Client();
 		client.test(args);
 	}
@@ -108,30 +111,31 @@ public class Client extends TestHarness {
 	private void test(String[] args) throws Exception {
 
 		this.sessionCount = Integer.parseInt(args[0]);
-		this.windowSize  = Integer.parseInt(args[1]);
+		this.windowSize = Integer.parseInt(args[1]);
 		this.submitToSend = Integer.parseInt(args[2]);
-		this.startDestNumber = Long.parseLong(args[3]);
-		this.destNumberDiff = Integer.parseInt(args[4]);
-		this.sourceNumber = args[5];
-		this.peerAddress = args[6];
-		this.peerPort = Integer.parseInt(args[7]);
-		this.systemId = args[8];
-		this.password = args[9];
-		message = args[10];
-        esmClass = Integer.parseInt(args[11]);
+		this.rateLimiter = Integer.parseInt(args[3]);
+		this.startDestNumber = Long.parseLong(args[4]);
+		this.destNumberDiff = Integer.parseInt(args[5]);
+		this.sourceNumber = args[6];
+		this.peerAddress = args[7];
+		this.peerPort = Integer.parseInt(args[8]);
+		this.systemId = args[9];
+		this.password = args[10];
+		message = args[11];
+		esmClass = Integer.parseInt(args[12]);
 
 		if (sessionCount < 1) {
 			throw new Exception("Session count cannot be less than 1");
 		}
-		
+
 		if (windowSize < 1) {
 			throw new Exception("Windows size cannot be less than 1");
 		}
-		
+
 		if (submitToSend < 1) {
 			throw new Exception("Submit to send cannot be less than 1");
-		}		
-		
+		}
+
 		if (startDestNumber < 1) {
 			throw new Exception("Start Destination Number cannot be less than 1");
 		}
@@ -143,21 +147,21 @@ public class Client extends TestHarness {
 		if (this.sourceNumber == null || this.sourceNumber == "") {
 			throw new Exception("Source Number cannot be null");
 		}
-		
+
 		if (this.peerAddress == null || this.peerAddress == "") {
 			throw new Exception("Peer address cannot be null");
 		}
-		
+
 		if (this.peerPort < 1) {
 			throw new Exception("Peer port cannot be less than 1");
-		}		
+		}
 
 		if (this.message == null) {
 			throw new Exception("Message cannot be less than 1");
 		}
 
-		this.endDestNumber = startDestNumber + destNumberDiff;		
-		
+		this.endDestNumber = startDestNumber + destNumberDiff;
+
 		logger.info("sessionCount=" + sessionCount);
 		logger.info("windowSize=" + windowSize);
 		logger.info("submitToSend=" + submitToSend);
@@ -170,8 +174,11 @@ public class Client extends TestHarness {
 		logger.info("systemId=" + systemId);
 		logger.info("password=" + password);
 		logger.info("message=" + message);
+		logger.info("rateLimiter=" + rateLimiter + " sms/sec");
+		
+		this.rateLimiterObj = RateLimiter.create(this.rateLimiter); // rate 
 
-		lastThrottledMessage = null;
+		// lastThrottledMessageTime = null;
 
 		//
 		// setup 3 things required for any session we plan on creating
@@ -235,7 +242,7 @@ public class Client extends TestHarness {
 		config.setRequestExpiryTimeout(30000);
 		config.setWindowMonitorInterval(15000);
 		config.setCountersEnabled(true);
-//		config.setAddressRange("6666");
+		// config.setAddressRange("6666");
 
 		// various latches used to signal when things are ready
 		CountDownLatch allSessionsBoundSignal = new CountDownLatch(this.sessionCount);
@@ -245,7 +252,8 @@ public class Client extends TestHarness {
 		ThreadPoolExecutor taskExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 		ClientSessionTask[] tasks = new ClientSessionTask[this.sessionCount];
 		for (int i = 0; i < this.sessionCount; i++) {
-			tasks[i] = new ClientSessionTask(allSessionsBoundSignal, startSendingSignal, clientBootstrap, config, this.submitToSend);
+			tasks[i] = new ClientSessionTask(allSessionsBoundSignal, startSendingSignal, clientBootstrap, config,
+					this.submitToSend, this.rateLimiterObj);
 			taskExecutor.submit(tasks[i]);
 		}
 
@@ -275,7 +283,7 @@ public class Client extends TestHarness {
 				actualSubmitSent += tasks[i].getSubmitRequestSent();
 			}
 		}
-//        actualSubmitSent -= throttledMessageCount.get();
+		// actualSubmitSent -= throttledMessageCount.get();
 
 		logger.info("Performance client finished:");
 		logger.info("       Sessions: " + this.sessionCount);
@@ -283,8 +291,8 @@ public class Client extends TestHarness {
 		logger.info("Sessions Failed: " + sessionFailures);
 		logger.info("           Time: " + (stopTimeMillis - startTimeMillis) + " ms");
 		logger.info("  Target Submit: " + this.submitToSend);
-        logger.info("  Actual Submit: " + actualSubmitSent);
-        logger.info("  Throttled Message count: " + throttledMessageCount);
+		logger.info("  Actual Submit: " + actualSubmitSent);
+		logger.info("  Throttled Message count: " + throttledMessageCount);
 		double throughput = (double) actualSubmitSent / ((double) (stopTimeMillis - startTimeMillis) / (double) 1000);
 		logger.info("     Throughput: " + DecimalUtil.toString(throughput, 3) + " per sec");
 
@@ -318,10 +326,11 @@ public class Client extends TestHarness {
 		private Exception cause;
 		private Random r = new Random();
 		private int submitToSend;
-        private CountDownLatch allSubmitResponseReceivedSignal;
+		private CountDownLatch allSubmitResponseReceivedSignal;
+		private RateLimiter rateLimiterObj;
 
 		public ClientSessionTask(CountDownLatch allSessionsBoundSignal, CountDownLatch startSendingSignal,
-				DefaultSmppClient clientBootstrap, SmppSessionConfiguration config, int submitToSend) {
+				DefaultSmppClient clientBootstrap, SmppSessionConfiguration config, int submitToSend, RateLimiter rateLimiterObj) {
 			this.allSessionsBoundSignal = allSessionsBoundSignal;
 			this.startSendingSignal = startSendingSignal;
 			this.clientBootstrap = clientBootstrap;
@@ -330,7 +339,8 @@ public class Client extends TestHarness {
 			this.submitResponseReceived = 0;
 			this.sendingDone = new AtomicBoolean(false);
 			this.submitToSend = submitToSend;
-			
+			this.rateLimiterObj = rateLimiterObj;
+
 		}
 
 		public Exception getCause() {
@@ -344,9 +354,8 @@ public class Client extends TestHarness {
 		@Override
 		public void run() {
 			// a countdownlatch will be used to eventually wait for all
-			// responses
-			// to be received by this thread since we don't want to exit too
-			// early
+			// responses to be received by this thread since we don't want to
+			// exit too early
 			allSubmitResponseReceivedSignal = new CountDownLatch(1);
 
 			DefaultSmppSessionHandler sessionHandler = new ClientSmppSessionHandler();
@@ -363,23 +372,26 @@ public class Client extends TestHarness {
 				startSendingSignal.await();
 
 				// all threads compete for processing
-                while (true) {
-                    if (lastThrottledMessage != null) {
-                        long passedTime = (new Date()).getTime() - lastThrottledMessage.getTime();
-                        if (passedTime < throttledPause) {
-                            Thread.sleep(throttledPause - passedTime + 50);
-                            continue;
-                        }
-                    }
+				while (true) {
+					// if (lastThrottledMessageTime != null) {
+					// long passedTime = (new Date()).getTime() -
+					// lastThrottledMessageTime.getTime();
+					// if (passedTime < throttledPause) {
+					// Thread.sleep(throttledPause - passedTime + 50);
+					// continue;
+					// }
+					// }
 
-                    if (SUBMIT_SENT.get() >= this.submitToSend) {
-                        if (allSubmitResponseReceivedSignal.await(100, TimeUnit.MILLISECONDS)) {
-                            break;
-                        }
-                        if (SUBMIT_SENT.getAndIncrement() >= this.submitToSend)
-                            continue;
-                    }
+					if (SUBMIT_SENT.get() >= this.submitToSend) {
+						if (allSubmitResponseReceivedSignal.await(100, TimeUnit.MILLISECONDS)) {
+							break;
+						}
+						if (SUBMIT_SENT.getAndIncrement() >= this.submitToSend)
+							continue;
+					}
 
+					this.rateLimiterObj.acquire();
+					
 					SubmitSm submit = new SubmitSm();
 					submit.setSourceAddress(new Address((byte) 0x01, (byte) 0x01, "6666"));
 
@@ -395,7 +407,7 @@ public class Client extends TestHarness {
 					sendingDone.set(true);
 					session.sendRequestPdu(submit, 30000, false);
 
-                    SUBMIT_SENT.getAndIncrement();
+					SUBMIT_SENT.getAndIncrement();
 				}
 
 				// all threads have sent all submit, we do need to wait for
@@ -405,7 +417,7 @@ public class Client extends TestHarness {
 				logger.info("Final Session rx-submitSM" + session.getCounters().getRxSubmitSM());
 				logger.info("Final Session tx-submitSM" + session.getCounters().getTxSubmitSM());
 
-//				allSubmitResponseReceivedSignal.await();
+				// allSubmitResponseReceivedSignal.await();
 
 				logger.info("after waiting sendWindow.size: " + session.getSendWindow().getSize());
 
@@ -432,22 +444,22 @@ public class Client extends TestHarness {
 
 			@Override
 			public void fireExpectedPduResponseReceived(PduAsyncResponse pduAsyncResponse) {
-                if (pduAsyncResponse.getResponse().getCommandStatus() == SmppConstants.STATUS_THROTTLED) {
-                    lastThrottledMessage = new Date();
-                    SUBMIT_SENT.decrementAndGet();
-                    throttledMessageCount.incrementAndGet();
-                    submitRequestSent--;
-                } else {
-                    submitResponseReceived++;
-                    SUBMIT_RESP.incrementAndGet();
-                    // if the sending thread is finished, check if we're done
-//                    if (sendingDone.get()) {
-                    if (SUBMIT_SENT.get() >= submitToSend) {
-                        if (submitResponseReceived >= submitRequestSent) { // submitToSend
-                            allSubmitResponseReceivedSignal.countDown();
-                        }
-                    }
-                }
+				if (pduAsyncResponse.getResponse().getCommandStatus() == SmppConstants.STATUS_THROTTLED) {
+					// lastThrottledMessageTime = new Date();
+					SUBMIT_SENT.decrementAndGet();
+					throttledMessageCount.incrementAndGet();
+					submitRequestSent--;
+				} else {
+					submitResponseReceived++;
+					SUBMIT_RESP.incrementAndGet();
+					// if the sending thread is finished, check if we're done
+					// if (sendingDone.get()) {
+					if (SUBMIT_SENT.get() >= submitToSend) {
+						if (submitResponseReceived >= submitRequestSent) { // submitToSend
+							allSubmitResponseReceivedSignal.countDown();
+						}
+					}
+				}
 			}
 		}
 	}
