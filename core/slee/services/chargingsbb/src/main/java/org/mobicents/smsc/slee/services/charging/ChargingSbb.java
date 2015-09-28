@@ -75,6 +75,7 @@ import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.mproc.MProcResult;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 
@@ -455,7 +456,7 @@ public abstract class ChargingSbb implements Sbb {
 			if (resultCode == 2001) { // access granted
 				acceptSms(chargingData);
 			} else { // access rejected
-				rejectSms(chargingData, cca);
+				rejectSmsByDiameter(chargingData, cca);
 			}
 		} catch (Throwable e) {
 			logger.warning("Exception when processing RoCreditControlAnswer response: " + e.getMessage(), e);
@@ -478,7 +479,7 @@ public abstract class ChargingSbb implements Sbb {
 		aci.detach(this.sbbContext.getSbbLocalObject());
 
 		try {
-			rejectSms(chargingData, null);
+			rejectSmsByDiameter(chargingData, null);
 		} catch (Throwable e) {
 			logger.warning("Exception when processing onTimerEvent response: " + e.getMessage(), e);
 		}
@@ -492,6 +493,16 @@ public abstract class ChargingSbb implements Sbb {
 		}
 
 		try {
+            MProcResult mProcResult = MProcManagement.getInstance().applyMProc(sms0);
+            if (mProcResult.isMessageRejected()) {
+                rejectSmsByMproc(chargingData, true);
+                return;
+            }
+            if (mProcResult.isMessageDropped()) {
+                rejectSmsByMproc(chargingData, false);
+                return;
+            }
+
             // sending of a failure response for delaying for charging result (nontransactional mode)
             if (sms0.getMessageDeliveryResultResponse() != null
                     && sms0.getMessageDeliveryResultResponse().isOnlyChargingRequest()) {
@@ -517,7 +528,7 @@ public abstract class ChargingSbb implements Sbb {
                 break;
             }
 
-            Sms[] smss = MProcManagement.getInstance().applyMProc(sms0);
+            Sms[] smss = mProcResult.getMessageList();
             for (Sms sms : smss) {
                 TargetAddress ta = new TargetAddress(sms.getSmsSet());
                 TargetAddress lock = persistence.obtainSynchroObject(ta);
@@ -565,7 +576,7 @@ public abstract class ChargingSbb implements Sbb {
 		}
 	}
 
-	private void rejectSms(ChargingData chargingData, RoCreditControlAnswer evt) throws SmscProcessingException {
+	private void rejectSmsByDiameter(ChargingData chargingData, RoCreditControlAnswer evt) throws SmscProcessingException {
 		Sms sms = chargingData.getSms();
 		if (logger.isInfoEnabled()) {
 			logger.info("ChargingSbb: accessRejected for: resultCode ="
@@ -609,6 +620,53 @@ public abstract class ChargingSbb implements Sbb {
 					SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
 		}
 	}
+
+    private void rejectSmsByMproc(ChargingData chargingData, boolean isRejected) throws SmscProcessingException {
+        Sms sms = chargingData.getSms();
+        if (logger.isInfoEnabled()) {
+            logger.info("ChargingSbb: incoming message is " + (isRejected ? "rejected" : "dropped")
+                    + " by mProc rules, message=[" + sms + "]");
+        }
+
+        try {
+            // sending of a failure response for transactional mode / delaying for charging result
+            MessageDeliveryResultResponseInterface.DeliveryFailureReason delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.invalidDestinationAddress;
+            if (sms.getMessageDeliveryResultResponse() != null) {
+                if (isRejected) {
+                    sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason, null);
+                    sms.setMessageDeliveryResultResponse(null);
+                } else {
+                    sms.getMessageDeliveryResultResponse().responseDeliverySuccess();
+                    sms.setMessageDeliveryResultResponse(null);
+                }
+            }
+
+            sms.getSmsSet().setStatus(ErrorCode.MPROC_ACCESS_NOT_GRANTED);
+
+            boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
+            if (storeAndForwMode) {
+                sms.setStored(true);
+            }
+
+            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                persistence.archiveFailuredSms(sms);
+            } else {
+                if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
+                    persistence.c2_createRecordArchive(sms);
+                }
+            }
+
+            smscStatAggregator.updateMsgInRejectedAll();
+
+            CdrGenerator.generateCdr(sms, (isRejected ? CdrGenerator.CDR_MPROC_REJECTED : CdrGenerator.CDR_MPROC_DROPPED),
+                    CdrGenerator.CDR_SUCCESS_NO_REASON, smscPropertiesManagement.getGenerateReceiptCdr(),
+                    MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
+        } catch (PersistenceException e) {
+            throw new SmscProcessingException(
+                    "PersistenceException when storing into Archive rejected by MProc message : " + e.getMessage(),
+                    SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
+        }
+    }
 
 	protected SbbContext getSbbContext() {
 		return sbbContext;

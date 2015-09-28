@@ -1,6 +1,6 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -22,55 +22,15 @@
 
 package org.mobicents.smsc.mproc;
 
-import java.util.Date;
-
-import org.mobicents.smsc.library.OriginationType;
-
 /**
- *
- * @author sergey vetyutnev
- *
- */
-public interface MProcMessage {
+*
+* @author sergey vetyutnev
+*
+*/
+public class MProcRuleException extends Exception {
 
-    // source address part
-    int getSourceAddrTon();
-
-    int getSourceAddrNpi();
-
-    String getSourceAddr();
-
-    // dest address part
-    int getDestAddrTon();
-
-    int getDestAddrNpi();
-
-    String getDestAddr();
-
-    // message content part
-    String getShortMessageText();
-
-    byte[] getShortMessageBin();
-
-    // other options
-    int getNetworkId();
-
-    OriginationType getOriginationType();
-
-    Date getScheduleDeliveryTime();
-
-    Date getValidityPeriod();
-
-    int getDataCoding();
-
-    int getNationalLanguageSingleShift();
-
-    int getNationalLanguageLockingShift();
-
-    int getEsmClass();
-
-    int getPriority();
-
-    int getRegisteredDelivery();
+    public MProcRuleException(String message) {
+        super(message);
+    }
 
 }

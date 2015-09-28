@@ -49,10 +49,16 @@ import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.mobicents.smsc.domain.SmscManagement;
 import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.mproc.MProcMessage;
+import org.mobicents.smsc.mproc.MProcNewMessage;
+import org.mobicents.smsc.mproc.MProcResult;
 import org.mobicents.smsc.mproc.MProcRuleFactory;
 import org.mobicents.smsc.mproc.MProcRule;
 import org.mobicents.smsc.mproc.MProcRuleMBean;
+import org.mobicents.smsc.mproc.impl.MProcMessageImpl;
+import org.mobicents.smsc.mproc.impl.MProcNewMessageImpl;
 import org.mobicents.smsc.mproc.impl.MProcRuleOamMessages;
+import org.mobicents.smsc.mproc.impl.PostArrivalProcessorImpl;
 
 /**
 *
@@ -80,7 +86,9 @@ public class MProcManagement implements MProcManagementMBean {
     private MBeanServer mbeanServer = null;
 
     private static MProcManagement instance = null;
+
     private SmscManagement smscManagement = null;
+    private SmscPropertiesManagement smscPropertiesManagement = null;
 
     private MProcManagement(String name) {
         this.name = name;
@@ -209,106 +217,146 @@ public class MProcManagement implements MProcManagementMBean {
         return mProcRule;
     }
 
-    public Sms[] applyMProc(Sms sms) {
-        return null;
+    public MProcResult applyMProc(Sms sms) {
+        if (this.mprocs.size() == 0)
+            return new MProcResult(new Sms[] { sms }, false, false);
 
-        // TODO: implement it        
+        ArrayList<MProcRule> cur = this.mprocs;
+        PostArrivalProcessorImpl pap = new PostArrivalProcessorImpl(
+                this.smscPropertiesManagement.getDefaultValidityPeriodHours(),
+                this.smscPropertiesManagement.getMaxValidityPeriodHours());
+        MProcMessage message = new MProcMessageImpl(sms);
+
+        try {
+            for (int i1 = 0; i1 < cur.size(); i1++) {
+                MProcRule rule = cur.get(i1);
+                if (rule.matches(message)) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("MRule matches to a message:\nrule: " + rule + "\nmessage: " + sms);
+                    }
+                    rule.onPostArrival(pap, message);
+                }
+            }
+        } catch (Throwable e) {
+            logger.error(
+                    "Exception when invoking rule.matches(message) or rule.onPostArrival(pap, message): " + e.getMessage(), e);
+            return new MProcResult(new Sms[] { sms }, false, true);
+        }
+
+        if (pap.isNeedDropMessage()) {
+            return new MProcResult(new Sms[] { sms }, false, true);
+        }
+
+        if (pap.isNeedRejectMessage()) {
+            return new MProcResult(new Sms[] { sms }, true, false);
+        }
+
+        ArrayList<MProcNewMessage> newMsgs = pap.getPostedMessages();
+        if (newMsgs == null || newMsgs.size() == 0) {
+            return new MProcResult(new Sms[] { sms }, false, false);
+        }
+
+        Sms[] res = new Sms[newMsgs.size() + 1];
+        res[0] = sms;
+        for(int i1=0; i1<newMsgs.size(); i1++){
+            MProcNewMessageImpl newMsg = (MProcNewMessageImpl) newMsgs.get(i1);
+            res[i1 + 1] = newMsg.getSmsContent();
+        }
+        return new MProcResult(res, false, false);
+
+        // TODO: implement it
         
+//      ArrayList<Sms> res = new ArrayList<Sms>();
         
-//        if (this.mprocs.size() == 0)
-//            return new Sms[] { sms };
-//
-//        ArrayList<MProcRule> cur = this.mprocs;
-//        ArrayList<Sms> res = new ArrayList<Sms>();
-//
-//        for (int i1 = 0; i1 < cur.size(); i1++) {
-//            MProcRule rule = cur.get(i1);
-//            if (rule.isMessageMatchToRule(sms.getSmsSet().getDestAddrTon(), sms.getSmsSet().getDestAddrNpi(), sms.getSmsSet()
-//                    .getDestAddr(), sms.getOriginationType(), sms.getSmsSet().getNetworkId())) {
-//                if (logger.isDebugEnabled()) {
-//                    logger.debug("MRule matches to a message:\nrule: " + rule + "\nmessage: " + sms);
-//                }
-//
-//                if (rule.isMakeCopy()) {
-//                    res.add(sms);
-//
-//                    Sms sms0 = sms;
-//                    sms = new Sms();
-//
-//                    sms.setDbId(UUID.randomUUID());
-//                    sms.setSourceAddr(sms0.getSourceAddr());
-//                    sms.setSourceAddrNpi(sms0.getSourceAddrNpi());
-//                    sms.setSourceAddrTon(sms0.getSourceAddrTon());
-//                    sms.setOrigNetworkId(sms0.getOrigNetworkId());
-//
-//                    sms.setMessageId(sms0.getMessageId());
-//                    sms.setMoMessageRef(sms0.getMoMessageRef());
-//
-//                    sms.setSubmitDate(sms0.getSubmitDate());
-//                    sms.setValidityPeriod(sms0.getValidityPeriod());
-//                    sms.setScheduleDeliveryTime(sms0.getScheduleDeliveryTime());
-//
-//                    sms.setOrigSystemId(sms0.getOrigSystemId());
-//                    sms.setOrigEsmeName(sms0.getOrigEsmeName());
-//                    sms.setServiceType(sms0.getServiceType());
-//                    sms.setEsmClass(sms0.getEsmClass());
-//                    sms.setPriority(sms0.getPriority());
-//                    sms.setProtocolId(sms0.getProtocolId());
-//
-//                    sms.setRegisteredDelivery(sms0.getRegisteredDelivery());
-//                    sms.setReplaceIfPresent(sms0.getReplaceIfPresent());
-//                    sms.setDataCoding(sms0.getDataCoding());
-//                    sms.setDefaultMsgId(sms0.getDefaultMsgId());
-//                    sms.setShortMessageText(sms0.getShortMessageText());
-//                    sms.setShortMessageBin(sms0.getShortMessageBin());
-//                    sms.setOriginationType(sms0.getOriginationType());
-//
-//                    for (Tlv v : sms0.getTlvSet().getOptionalParameters()) {
-//                        Tlv tlv = new Tlv(v.getTag(), v.getValue());
-//                        sms.getTlvSet().getOptionalParameters().add(tlv);
-//                    }
-//
-//                    SmsSet smsSet = new SmsSet();
-//                    smsSet.setDestAddr(sms0.getSmsSet().getDestAddr());
-//                    smsSet.setDestAddrNpi(sms0.getSmsSet().getDestAddrNpi());
-//                    smsSet.setDestAddrTon(sms0.getSmsSet().getDestAddrTon());
-//
-//                    smsSet.setNetworkId(sms0.getSmsSet().getNetworkId());
-//                    smsSet.setCorrelationId(sms0.getSmsSet().getCorrelationId());
-//                    smsSet.addSms(sms);
-//                }
-//
-//                if (rule.getNewNetworkId() != -1) {
-//                    sms.getSmsSet().setNetworkId(rule.getNewNetworkId());
-//                    sms.getSmsSet().setCorrelationId(null);
-//                }
-//
-//                if (rule.getAddDestDigPrefix() != null && !rule.getAddDestDigPrefix().equals("") && !rule.getAddDestDigPrefix().equals("-1")) {
-//                    String destAddr = rule.getAddDestDigPrefix() + sms.getSmsSet().getDestAddr();
-//                    sms.getSmsSet().setDestAddr(destAddr);
-//                    sms.getSmsSet().setCorrelationId(null);
-//                }
-//
-//                if (rule.getNewDestNpi() != -1) {
-//                    sms.getSmsSet().setDestAddrNpi(rule.getNewDestNpi());
-//                    sms.getSmsSet();
-//                }
-//
-//                if (rule.getNewDestTon() != -1) {
-//                    sms.getSmsSet().setDestAddrTon(rule.getNewDestTon());
-//                    sms.getSmsSet().setCorrelationId(null);
-//                }
-//            }
-//        }
-//        res.add(sms);
-//
-//        Sms[] ress = new Sms[res.size()];
-//        res.toArray(ress);
-//
-//        return ress;
+        // if (rule.isMessageMatchToRule(sms.getSmsSet().getDestAddrTon(), sms.getSmsSet().getDestAddrNpi(), sms.getSmsSet()
+        // .getDestAddr(), sms.getOriginationType(), sms.getSmsSet().getNetworkId())) {
+        // if (logger.isDebugEnabled()) {
+        // logger.debug("MRule matches to a message:\nrule: " + rule + "\nmessage: " + sms);
+        // }
+        //
+        // if (rule.isMakeCopy()) {
+        // res.add(sms);
+        //
+        // Sms sms0 = sms;
+        // sms = new Sms();
+        //
+        // sms.setDbId(UUID.randomUUID());
+        // sms.setSourceAddr(sms0.getSourceAddr());
+        // sms.setSourceAddrNpi(sms0.getSourceAddrNpi());
+        // sms.setSourceAddrTon(sms0.getSourceAddrTon());
+        // sms.setOrigNetworkId(sms0.getOrigNetworkId());
+        //
+        // sms.setMessageId(sms0.getMessageId());
+        // sms.setMoMessageRef(sms0.getMoMessageRef());
+        //
+        // sms.setSubmitDate(sms0.getSubmitDate());
+        // sms.setValidityPeriod(sms0.getValidityPeriod());
+        // sms.setScheduleDeliveryTime(sms0.getScheduleDeliveryTime());
+        //
+        // sms.setOrigSystemId(sms0.getOrigSystemId());
+        // sms.setOrigEsmeName(sms0.getOrigEsmeName());
+        // sms.setServiceType(sms0.getServiceType());
+        // sms.setEsmClass(sms0.getEsmClass());
+        // sms.setPriority(sms0.getPriority());
+        // sms.setProtocolId(sms0.getProtocolId());
+        //
+        // sms.setRegisteredDelivery(sms0.getRegisteredDelivery());
+        // sms.setReplaceIfPresent(sms0.getReplaceIfPresent());
+        // sms.setDataCoding(sms0.getDataCoding());
+        // sms.setDefaultMsgId(sms0.getDefaultMsgId());
+        // sms.setShortMessageText(sms0.getShortMessageText());
+        // sms.setShortMessageBin(sms0.getShortMessageBin());
+        // sms.setOriginationType(sms0.getOriginationType());
+        //
+        // for (Tlv v : sms0.getTlvSet().getOptionalParameters()) {
+        // Tlv tlv = new Tlv(v.getTag(), v.getValue());
+        // sms.getTlvSet().getOptionalParameters().add(tlv);
+        // }
+        //
+        // SmsSet smsSet = new SmsSet();
+        // smsSet.setDestAddr(sms0.getSmsSet().getDestAddr());
+        // smsSet.setDestAddrNpi(sms0.getSmsSet().getDestAddrNpi());
+        // smsSet.setDestAddrTon(sms0.getSmsSet().getDestAddrTon());
+        //
+        // smsSet.setNetworkId(sms0.getSmsSet().getNetworkId());
+        // smsSet.setCorrelationId(sms0.getSmsSet().getCorrelationId());
+        // smsSet.addSms(sms);
+        // }
+        //
+        // if (rule.getNewNetworkId() != -1) {
+        // sms.getSmsSet().setNetworkId(rule.getNewNetworkId());
+        // sms.getSmsSet().setCorrelationId(null);
+        // }
+        //
+        // if (rule.getAddDestDigPrefix() != null && !rule.getAddDestDigPrefix().equals("") &&
+        // !rule.getAddDestDigPrefix().equals("-1")) {
+        // String destAddr = rule.getAddDestDigPrefix() + sms.getSmsSet().getDestAddr();
+        // sms.getSmsSet().setDestAddr(destAddr);
+        // sms.getSmsSet().setCorrelationId(null);
+        // }
+        //
+        // if (rule.getNewDestNpi() != -1) {
+        // sms.getSmsSet().setDestAddrNpi(rule.getNewDestNpi());
+        // sms.getSmsSet();
+        // }
+        //
+        // if (rule.getNewDestTon() != -1) {
+        // sms.getSmsSet().setDestAddrTon(rule.getNewDestTon());
+        // sms.getSmsSet().setCorrelationId(null);
+        // }
+        // }
+
+        // res.add(sms);
+        //
+        // Sms[] ress = new Sms[res.size()];
+        // res.toArray(ress);
+        //
+        // return ress;
     }
 
     public void start() throws Exception {
+
+        this.smscPropertiesManagement = SmscPropertiesManagement.getInstance();
 
         if (this.smscManagement != null) {
             for (MProcRuleFactory ruleFactory : this.smscManagement.getMProcRuleFactories2()) {

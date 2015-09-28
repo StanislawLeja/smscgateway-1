@@ -34,54 +34,121 @@ public interface MProcNewMessage {
     // source address part
     int getSourceAddrTon();
 
-    void setSourceAddrTon(int val);
+    /**
+     * Updating of source address message TON. In case of bad value (<0 or >6) MProcRuleException will be thrown
+     * 
+     * @param val
+     * @throws MProcRuleException
+     */
+    void setSourceAddrTon(int val) throws MProcRuleException;
 
     int getSourceAddrNpi();
 
-    void setSourceAddrNpi(int val);
+    /**
+     * Updating of source address message NPI. In case of bad value (<0 or >6) MProcRuleException will be thrown
+     * 
+     * @param val
+     * @throws MProcRuleException
+     */
+    void setSourceAddrNpi(int val) throws MProcRuleException;
 
     String getSourceAddr();
 
-    void setSourceAddr(String val);
+    /**
+     * Updating of source address message digits. Value can not be null and must have length 1-21 characters. In case of
+     * bad value MProcRuleException will be thrown
+     * 
+     * @param val
+     * @throws MProcRuleException
+     */
+    void setSourceAddr(String val) throws MProcRuleException;
 
-    // dest address part
-    int getDestAddrTon();
-
-    void setDestAddrTon(int val);
-
-    int getDestAddrNpi();
-
-    void setDestAddrNpi(int val);
-
-    String getDestAddr();
-
-    void setDestAddr(String val);
-
-    // message content part
-    String getShortMessageText();
-
-    void setShortMessageText(String val);
-
-    byte[] getShortMessageBin();
-
-    void setShortMessageBin(byte[] val);
-
-    // other options
     int getNetworkId();
 
     void setNetworkId(int val);
 
+    // dest address part
+
+    int getDestAddrTon();
+
+    /**
+     * Updating of destination address message TON. In case of bad value (<0 or >6) MProcRuleException will be thrown
+     * 
+     * @param val
+     * @throws MProcRuleException
+     */
+    void setDestAddrTon(int val) throws MProcRuleException;
+
+    int getDestAddrNpi();
+
+    /**
+     * Updating of destination address message NPI. In case of bad value (<0 or >6) MProcRuleException will be thrown
+     * 
+     * @param val
+     * @throws MProcRuleException
+     */
+    void setDestAddrNpi(int val) throws MProcRuleException;
+
+    String getDestAddr();
+
+    /**
+     * Updating of destination address message digits. Value can not be null and must have length 1-21 characters. In case of
+     * bad value MProcRuleException will be thrown
+     * 
+     * @param val
+     * @throws MProcRuleException
+     */
+    void setDestAddr(String val) throws MProcRuleException;
+
+    // message content part
+    String getShortMessageText();
+
+    /**
+     * Updating of message text. Value must not be null and must have length 0-4300. In case of bad value MProcRuleException
+     * will be thrown
+     * 
+     * @param val
+     * @throws MProcRuleException
+     */
+    void setShortMessageText(String val) throws MProcRuleException;
+
+    byte[] getShortMessageBin();
+
+    /**
+     * Updating of UDH binary content. Value can be null or must have length > 0. In case of bad value MProcRuleException will
+     * be thrown
+     * 
+     * @param val
+     */
+    void setShortMessageBin(byte[] val) throws MProcRuleException;
+
+    // validity period and schedule delivery time part
     Date getScheduleDeliveryTime();
 
+    /**
+     * Updating delivery period end time. This value can be null, this means that delivery period will be set to a default
+     * delivery period value of SMSC GW. If the value is more than max validity period that is configured for SMSC GW, then max
+     * validity period will be used instead of a provided value. If you change both ValidityPeriod and ScheduleDeliveryTime
+     * values, then you have to setup ValidityPeriod value firstly.
+     * 
+     * @param val
+     */
     void setScheduleDeliveryTime(Date val);
 
     Date getValidityPeriod();
 
     void setValidityPeriod(Date val);
 
+    // other options
     int getDataCoding();
 
     void setDataCoding(int val);
+
+    void setDataCodingGsm7();
+
+    void setDataCodingGsm8();
+
+    void setDataCodingUcs2();
 
     int getNationalLanguageSingleShift();
 
@@ -95,6 +162,20 @@ public interface MProcNewMessage {
 
     void setEsmClass(int val);
 
+    void setEsmClass_ModeDatagram();
+
+    void setEsmClass_ModeTransaction();
+
+    void setEsmClass_ModeStoreAndForward();
+
+    void setEsmClass_TypeNormalMessage();
+
+    void setEsmClass_TypeDeliveryReceipt();
+
+    void setEsmClass_UDHIndicatorPresent();
+
+    void setEsmClass_UDHIndicatorAbsent();
+
     int getPriority();
 
     void setPriority(int val);
@@ -102,6 +183,14 @@ public interface MProcNewMessage {
     int getRegisteredDelivery();
 
     void setRegisteredDelivery(int val);
+
+    void setRegisteredDelivery_DeliveryReceiptNo();
+
+    void setRegisteredDelivery_DeliveryReceiptOnSuccessOrFailure();
+
+    void setRegisteredDelivery_DeliveryReceiptOnFailure();
+
+    void setRegisteredDelivery_DeliveryReceiptOnSuccess();
 
     // private int sourceAddrTon;
     // private int sourceAddrNpi;

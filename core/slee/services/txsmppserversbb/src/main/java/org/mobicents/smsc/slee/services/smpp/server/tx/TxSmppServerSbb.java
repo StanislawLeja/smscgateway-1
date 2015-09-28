@@ -70,6 +70,7 @@ import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.mproc.MProcResult;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmppExtraConstants;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
@@ -1486,11 +1487,6 @@ public abstract class TxSmppServerSbb implements Sbb {
 			break;
 		}
 
-        if (!withCharging) {
-            smscStatAggregator.updateMsgInReceivedAll();
-            smscStatAggregator.updateMsgInReceivedSmpp();
-        }
-
         // transactional mode / or charging request
         boolean isTransactional = (eventSubmit != null || eventData != null) && MessageUtil.isTransactional(sms0);
         if (isTransactional || withCharging) {
@@ -1504,8 +1500,30 @@ public abstract class TxSmppServerSbb implements Sbb {
             chargingSbb.setupChargingRequestInterface(ChargingMedium.TxSmppOrig, sms0);
         } else {
             // applying of MProc
-            Sms[] smss = MProcManagement.getInstance().applyMProc(sms0);
+            MProcResult mProcResult = MProcManagement.getInstance().applyMProc(sms0);
+            if (mProcResult.isMessageRejected()) {
+                sms0.setMessageDeliveryResultResponse(null);
+                SmscProcessingException e = new SmscProcessingException("Message is rejected by MProc rules",
+                        SmppConstants.STATUS_SUBMITFAIL, 0, null);
+                e.setSkipErrorLogging(true);
+                if (logger.isInfoEnabled()) {
+                    logger.info("TxSmpp: incoming message is rejected by mProc rules, message=[" + sms0 + "]");
+                }
+                throw e;
+            }
+            if (mProcResult.isMessageDropped()) {
+                sms0.setMessageDeliveryResultResponse(null);
+                smscStatAggregator.updateMsgInFailedAll();
+                if (logger.isInfoEnabled()) {
+                    logger.info("TxSmpp: incoming message is dropped by mProc rules, message=[" + sms0 + "]");
+                }
+                return;
+            }
 
+            smscStatAggregator.updateMsgInReceivedAll();
+            smscStatAggregator.updateMsgInReceivedSmpp();
+
+            Sms[] smss = mProcResult.getMessageList();
             for (Sms sms : smss) {
                 TargetAddress ta = new TargetAddress(sms.getSmsSet());
                 TargetAddress lock = store.obtainSynchroObject(ta);
