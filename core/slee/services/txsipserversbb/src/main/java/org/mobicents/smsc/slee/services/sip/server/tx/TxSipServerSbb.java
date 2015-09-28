@@ -71,6 +71,7 @@ import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.mproc.MProcResult;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.services.charging.ChargingMedium;
@@ -543,32 +544,6 @@ public abstract class TxSipServerSbb implements Sbb {
             }
         }
 
-//        if (!MessageUtil.isStoreAndForward(sms0) || smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
-//			// checking if SMSC is paused
-//			if (smscPropertiesManagement.isDeliveryPause()) {
-//				SmscProcessingException e = new SmscProcessingException("SMSC is paused", SmppConstants.STATUS_SYSERR,
-//						0, null);
-//				e.setSkipErrorLogging(true);
-//				throw e;
-//			}
-//            // checking if cassandra database is available
-//            if (!store.isDatabaseAvailable()) {
-//                SmscProcessingException e = new SmscProcessingException("Database is unavailable", SmppConstants.STATUS_SYSERR,
-//                        0, null);
-//                e.setSkipErrorLogging(true);
-//                throw e;
-//            }
-//			// checking if delivery query is overloaded
-//			int fetchMaxRows = (int) (smscPropertiesManagement.getMaxActivityCount() * 1.2);
-//			int activityCount = SmsSetCache.getInstance().getProcessingSmsSetSize();
-//			if (activityCount >= fetchMaxRows) {
-//				SmscProcessingException e = new SmscProcessingException("SMSC is overloaded",
-//						SmppConstants.STATUS_THROTTLED, 0, null);
-//				e.setSkipErrorLogging(true);
-//				throw e;
-//			}
-//		}
-
 		boolean withCharging = false;
 		switch (smscPropertiesManagement.getTxSipChargingType()) {
 		case Selected:
@@ -584,12 +559,29 @@ public abstract class TxSipServerSbb implements Sbb {
 			ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
 			chargingSbb.setupChargingRequestInterface(ChargingMedium.TxSipOrig, sms0);
 		} else {
+            // applying of MProc
+            MProcResult mProcResult = MProcManagement.getInstance().applyMProc(sms0);
+            if (mProcResult.isMessageRejected()) {
+                SmscProcessingException e = new SmscProcessingException("Message is rejected by MProc rules",
+                        SmppConstants.STATUS_SUBMITFAIL, 0, null);
+                e.setSkipErrorLogging(true);
+                if (logger.isInfoEnabled()) {
+                    logger.info("TxSmpp: incoming message is rejected by mProc rules, message=[" + sms0 + "]");
+                }
+                throw e;
+            }
+            if (mProcResult.isMessageDropped()) {
+                smscStatAggregator.updateMsgInFailedAll();
+                if (logger.isInfoEnabled()) {
+                    logger.info("TxSmpp: incoming message is dropped by mProc rules, message=[" + sms0 + "]");
+                }
+                return;
+            }
+
             smscStatAggregator.updateMsgInReceivedAll();
             smscStatAggregator.updateMsgInReceivedSip();
 
-            // applying of MProc
-            Sms[] smss = MProcManagement.getInstance().applyMProc(sms0);
-
+            Sms[] smss = mProcResult.getMessageList();
             for (Sms sms : smss) {
                 TargetAddress ta = new TargetAddress(sms.getSmsSet());
                 TargetAddress lock = store.obtainSynchroObject(ta);

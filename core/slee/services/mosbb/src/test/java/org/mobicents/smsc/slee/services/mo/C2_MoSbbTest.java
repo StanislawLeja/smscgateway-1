@@ -77,12 +77,14 @@ import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.domain.MProcManagement;
+import org.mobicents.smsc.domain.SmscManagement;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.mproc.impl.MProcRuleFactoryDefault;
 import org.mobicents.smsc.slee.resources.persistence.MAPDialogSmsProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPProviderProxy;
 import org.mobicents.smsc.slee.resources.persistence.MAPServiceSmsProxy;
@@ -94,6 +96,7 @@ import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppSessions;
 import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.smpp.Esme;
+import org.mobicents.smsc.smpp.SmppManagement;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -575,6 +578,28 @@ public class C2_MoSbbTest {
 
         if (!this.cassandraDbInited)
             return;
+
+        MProcManagement mProcManagement = MProcManagement.getInstance();
+        SmscManagement smscManagement = SmscManagement.getInstance("Test");
+        SmppManagement smppManagement = SmppManagement.getInstance("Test");
+        smscManagement.setSmppManagement(smppManagement);
+        mProcManagement.setSmscManagement(smscManagement);
+        smscManagement.registerRuleFactory(new MProcRuleFactoryDefault());
+        smscManagement.start();
+
+        try {
+            mProcManagement.destroyMProcRule(1);
+        } catch (Exception e) {
+        }
+        try {
+            mProcManagement.destroyMProcRule(2);
+        } catch (Exception e) {
+        }
+
+        mProcManagement.createMProcRule(1, MProcRuleFactoryDefault.RULE_CLASS_NAME,
+                "desttonmask 1 destnpimask 1 originatingmask SS7_MO networkidmask 0 adddestdigprefix 47 makecopy true");
+        mProcManagement.createMProcRule(2, MProcRuleFactoryDefault.RULE_CLASS_NAME,
+                "networkidmask 0 newnetworkid 5 newdestton 2 makecopy true");
 
         // TODO: ***** make proper mproc rules testing
 //        MProcManagement.getInstance().createMProcRule(1, 1, 1, "-1", "SS7_MO", 0, -1, -1, -1, "47", true);

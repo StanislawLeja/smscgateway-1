@@ -39,6 +39,8 @@ public class CdrGenerator {
     public static final String CDR_FAILED = "failed";
     public static final String CDR_TEMP_FAILED = "temp_failed";
     public static final String CDR_OCS_REJECTED = "ocs_rejected";
+    public static final String CDR_MPROC_REJECTED = "mproc_rejected";
+    public static final String CDR_MPROC_DROPPED = "mproc_dropped";
 
     public static final String CDR_SUCCESS_ESME = "success_esme";
     public static final String CDR_PARTIAL_ESME = "partial_esme";

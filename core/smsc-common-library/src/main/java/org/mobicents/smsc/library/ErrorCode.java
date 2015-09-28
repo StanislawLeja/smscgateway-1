@@ -342,7 +342,7 @@ public enum ErrorCode {
      * Values specific to an application(224-254),
      */
     OCS_ACCESS_NOT_GRANTED(224),
-    APP_SPECIFIC_225(225),
+    MPROC_ACCESS_NOT_GRANTED(225),
     APP_SPECIFIC_226(226),
     APP_SPECIFIC_227(227),
     APP_SPECIFIC_228(228),

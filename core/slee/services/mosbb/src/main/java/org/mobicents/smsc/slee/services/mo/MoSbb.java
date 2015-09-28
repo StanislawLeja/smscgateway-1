@@ -88,6 +88,7 @@ import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.mproc.MProcResult;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.services.charging.ChargingSbbLocalObject;
 import org.mobicents.smsc.slee.services.charging.ChargingMedium;
@@ -1339,33 +1340,6 @@ public abstract class MoSbb extends MoCommonSbb {
             }
         }
 
-//        if (!MessageUtil.isStoreAndForward(sms0) || smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
-//            // checking if SMSC is paused
-//            if (smscPropertiesManagement.isDeliveryPause()) {
-//                SmscProcessingException e = new SmscProcessingException("SMSC is paused", SmppConstants.STATUS_SYSERR, MAPErrorCode.facilityNotSupported, null);
-//                e.setSkipErrorLogging(true);
-//                throw e;
-//            }
-//            // checking if delivery query is overloaded
-//            int fetchMaxRows = (int) (smscPropertiesManagement.getMaxActivityCount() * 1.4);
-//            int activityCount = SmsSetCache.getInstance().getProcessingSmsSetSize();
-//            if (activityCount >= fetchMaxRows) {
-//                SmscProcessingException e = new SmscProcessingException("SMSC is overloaded", SmppConstants.STATUS_THROTTLED, MAPErrorCode.resourceLimitation, null);
-//                e.setSkipErrorLogging(true);
-//                throw e;
-//            }
-//        }
-
-        if (chargingType == MoChargingType.accept) {
-            smscStatAggregator.updateMsgInReceivedAll();
-            smscStatAggregator.updateMsgInReceivedSs7();
-            if (sms0.getOriginationType() == OriginationType.SS7_MO) {
-                smscStatAggregator.updateMsgInReceivedSs7Mo();
-            } else {
-                smscStatAggregator.updateMsgInReceivedSs7Hr();
-            }
-        }
-
         // transactional mode / or charging request
         boolean isTransactional = MessageUtil.isTransactional(sms0);
         if (isTransactional || chargingType == MoChargingType.diameter) {
@@ -1375,54 +1349,85 @@ public abstract class MoSbb extends MoCommonSbb {
         }
 
         switch (chargingType) {
-        case accept:
-            // applying of MProc
-            Sms[] smss = MProcManagement.getInstance().applyMProc(sms0);
+            case accept:
+                // applying of MProc
+                MProcResult mProcResult = MProcManagement.getInstance().applyMProc(sms0);
 
-            for (Sms sms : smss) {
-                TargetAddress ta = new TargetAddress(sms.getSmsSet());
-                TargetAddress lock = store.obtainSynchroObject(ta);
+                if (mProcResult.isMessageRejected()) {
+                    sms0.setMessageDeliveryResultResponse(null);
+                    SmscProcessingException e = new SmscProcessingException("Message is rejected by MProc rules",
+                            SmppConstants.STATUS_SUBMITFAIL, 0, null);
+                    e.setSkipErrorLogging(true);
+                    if (logger.isInfoEnabled()) {
+                        logger.info("TxSmpp: incoming message is rejected by mProc rules, message=[" + sms0 + "]");
+                    }
+                    throw e;
+                }
+                if (mProcResult.isMessageDropped()) {
+                    sms0.setMessageDeliveryResultResponse(null);
+                    smscStatAggregator.updateMsgInFailedAll();
+                    if (logger.isInfoEnabled()) {
+                        logger.info("TxSmpp: incoming message is dropped by mProc rules, message=[" + sms0 + "]");
+                    }
+                    return sms0;
+                }
 
-                try {
-                    synchronized (lock) {
-                        if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
-                            try {
-                                sms.setStoringAfterFailure(true);
-                                this.scheduler.injectSmsOnFly(sms.getSmsSet());
-                            } catch (Exception e) {
-                                throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): " + e.getMessage(), SmppConstants.STATUS_SYSERR,
-                                        MAPErrorCode.systemFailure, null, e);
-                            }
-                        } else {
-                            try {
-                                sms.setStored(true);
-                                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-                                    store.createLiveSms(sms);
-                                    store.setNewMessageScheduled(sms.getSmsSet(),
-                                            MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
-                                } else {
-                                    this.scheduler.setDestCluster(sms.getSmsSet());
-                                    store.c2_scheduleMessage_ReschedDueSlot(sms, smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast,
-                                            false);
+                smscStatAggregator.updateMsgInReceivedAll();
+                smscStatAggregator.updateMsgInReceivedSs7();
+                if (sms0.getOriginationType() == OriginationType.SS7_MO) {
+                    smscStatAggregator.updateMsgInReceivedSs7Mo();
+                } else {
+                    smscStatAggregator.updateMsgInReceivedSs7Hr();
+                }
+
+                Sms[] smss = mProcResult.getMessageList();
+
+                for (Sms sms : smss) {
+                    TargetAddress ta = new TargetAddress(sms.getSmsSet());
+                    TargetAddress lock = store.obtainSynchroObject(ta);
+
+                    try {
+                        synchronized (lock) {
+                            if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+                                try {
+                                    sms.setStoringAfterFailure(true);
+                                    this.scheduler.injectSmsOnFly(sms.getSmsSet());
+                                } catch (Exception e) {
+                                    throw new SmscProcessingException("Exception when runnung injectSmsOnFly(): "
+                                            + e.getMessage(), SmppConstants.STATUS_SYSERR, MAPErrorCode.systemFailure, null, e);
                                 }
-                            } catch (PersistenceException e) {
-                                throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : " + e.getMessage(),
-                                        SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure, null, e);
+                            } else {
+                                try {
+                                    sms.setStored(true);
+                                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                                        store.createLiveSms(sms);
+                                        store.setNewMessageScheduled(sms.getSmsSet(), MessageUtil.computeDueDate(MessageUtil
+                                                .computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+                                    } else {
+                                        this.scheduler.setDestCluster(sms.getSmsSet());
+                                        store.c2_scheduleMessage_ReschedDueSlot(sms,
+                                                smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast,
+                                                false);
+                                    }
+                                } catch (PersistenceException e) {
+                                    throw new SmscProcessingException("MO PersistenceException when storing LIVE_SMS : "
+                                            + e.getMessage(), SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure,
+                                            null, e);
+                                }
                             }
                         }
+                    } finally {
+                        store.releaseSynchroObject(lock);
                     }
-                } finally {
-                    store.releaseSynchroObject(lock);
                 }
-            }
-            return sms0;
-        case reject:
-            // this case is already processed
-            return null;
-        case diameter:
-            ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
-            chargingSbb.setupChargingRequestInterface(ChargingMedium.MoOrig, sms0);
-            return sms0;
+                return sms0;
+            case reject:
+                // this case is already processed
+                return null;
+            case diameter:
+                ChargingSbbLocalObject chargingSbb = getChargingSbbObject();
+                chargingSbb.setupChargingRequestInterface(ChargingMedium.MoOrig, sms0);
+                return sms0;
         }
         return null;
 	}

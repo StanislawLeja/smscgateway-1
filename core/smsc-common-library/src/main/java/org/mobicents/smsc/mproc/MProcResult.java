@@ -1,6 +1,6 @@
 /*
- * TeleStax, Open Source Cloud Communications  Copyright 2012. 
- * and individual contributors
+ * TeleStax, Open Source Cloud Communications  
+ * Copyright 2012, Telestax Inc and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -22,55 +22,35 @@
 
 package org.mobicents.smsc.mproc;
 
-import java.util.Date;
-
-import org.mobicents.smsc.library.OriginationType;
+import org.mobicents.smsc.library.Sms;
 
 /**
- *
- * @author sergey vetyutnev
- *
- */
-public interface MProcMessage {
+*
+* @author sergey vetyutnev
+*
+*/
+public class MProcResult {
 
-    // source address part
-    int getSourceAddrTon();
+    private Sms[] messageList;
+    private boolean messageIsRejected;
+    private boolean messageIsDropped;
 
-    int getSourceAddrNpi();
+    public MProcResult(Sms[] messageList, boolean messageIsRejected, boolean messageIsDropped) {
+        this.messageList = messageList;
+        this.messageIsRejected = messageIsRejected;
+        this.messageIsDropped = messageIsDropped;
+    }
 
-    String getSourceAddr();
+    public Sms[] getMessageList() {
+        return messageList;
+    }
 
-    // dest address part
-    int getDestAddrTon();
+    public boolean isMessageRejected() {
+        return messageIsRejected;
+    }
 
-    int getDestAddrNpi();
-
-    String getDestAddr();
-
-    // message content part
-    String getShortMessageText();
-
-    byte[] getShortMessageBin();
-
-    // other options
-    int getNetworkId();
-
-    OriginationType getOriginationType();
-
-    Date getScheduleDeliveryTime();
-
-    Date getValidityPeriod();
-
-    int getDataCoding();
-
-    int getNationalLanguageSingleShift();
-
-    int getNationalLanguageLockingShift();
-
-    int getEsmClass();
-
-    int getPriority();
-
-    int getRegisteredDelivery();
+    public boolean isMessageDropped() {
+        return messageIsDropped;
+    }
 
 }

@@ -22,6 +22,7 @@
 
 package org.mobicents.smsc.mproc.impl;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javolution.xml.XMLFormat;
@@ -29,6 +30,7 @@ import javolution.xml.stream.XMLStreamException;
 
 import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.mproc.MProcMessage;
+import org.mobicents.smsc.mproc.MProcNewMessage;
 import org.mobicents.smsc.mproc.MProcRuleDefault;
 import org.mobicents.smsc.mproc.PostArrivalProcessor;
 import org.mobicents.smsc.mproc.PostDeliveryProcessor;
@@ -217,28 +219,56 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
 
     @Override
     public boolean matches(MProcMessage message) {
-        // TODO Auto-generated method stub
-        return false;
+        if (destTonMask != -1 && destTonMask != message.getDestAddrTon())
+            return false;
+        if (destNpiMask != -1 && destNpiMask != message.getDestAddrNpi())
+            return false;
+        if (destDigMaskPattern != null) {
+            Matcher m = this.destDigMaskPattern.matcher(message.getDestAddr());
+            if (!m.matches())
+                return false;
+        }
+        if (originatingMask != null && originatingMask != message.getOriginationType())
+            return false;
+        if (networkIdMask != -1 && networkIdMask != message.getNetworkId())
+            return false;
+
+        return true;
     }
 
     @Override
     public void onPostArrival(PostArrivalProcessor factory, MProcMessage message) throws Exception {
-        // TODO Auto-generated method stub
-        
+        if (this.makeCopy) {
+            MProcNewMessage copy = factory.createNewCopyMessage(message);
+            factory.postNewMessage(copy);
+        }
+
+        if (this.newNetworkId != -1) {
+            factory.updateMessageNetworkId(message, this.newNetworkId);
+        }
+
+        if (this.addDestDigPrefix != null && !this.addDestDigPrefix.equals("") && !this.addDestDigPrefix.equals("-1")) {
+            String destAddr = this.getAddDestDigPrefix() + message.getDestAddr();
+            factory.updateMessageDestAddr(message, destAddr);
+        }
+
+        if (this.newDestNpi != -1) {
+            factory.updateMessageDestAddrNpi(message, this.newDestNpi);
+        }
+
+        if (this.newDestTon != -1) {
+            factory.updateMessageDestAddrTon(message, this.newDestTon);
+        }
     }
 
     @Override
     public void onPostImsiRequest(PostImsiProcessor factory, MProcMessage message, String imsi, String nnnDigits,
             int nnnTon, int nnnNpi) throws Exception {
-        // TODO Auto-generated method stub
-        
     }
 
     @Override
     public void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message, boolean isDeliveryFailure)
             throws Exception {
-        // TODO Auto-generated method stub
-        
     }
 
     @Override
@@ -285,7 +315,6 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
                 } else if (command.equals("adddestdigprefix")) {
                     addDestDigPrefix = value;
                     success = true;
-
                 } else if (command.equals("makecopy")) {
                     makeCopy = Boolean.parseBoolean(value);
                     success = true;

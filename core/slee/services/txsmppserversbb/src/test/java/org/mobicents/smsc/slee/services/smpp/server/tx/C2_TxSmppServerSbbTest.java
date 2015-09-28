@@ -46,6 +46,7 @@ import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
 import org.mobicents.smsc.domain.MProcManagement;
+import org.mobicents.smsc.domain.SmscManagement;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
 import org.mobicents.smsc.library.MessageUtil;
@@ -53,6 +54,7 @@ import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.mproc.impl.MProcRuleFactoryDefault;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmppSessionsProxy;
 import org.mobicents.smsc.slee.resources.persistence.TT_PersistenceRAInterfaceProxy;
@@ -63,6 +65,7 @@ import org.mobicents.smsc.slee.resources.smpp.server.SmppTransaction;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.SmppEncoding;
 import org.mobicents.smsc.smpp.SmppInterfaceVersionType;
+import org.mobicents.smsc.smpp.SmppManagement;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -652,10 +655,33 @@ public class C2_TxSmppServerSbbTest {
         if (!this.cassandraDbInited)
             return;
 
+        MProcManagement mProcManagement = MProcManagement.getInstance();
+        SmscManagement smscManagement = SmscManagement.getInstance("Test");
+        SmppManagement smppManagement = SmppManagement.getInstance("Test");
+        smscManagement.setSmppManagement(smppManagement);
+        mProcManagement.setSmscManagement(smscManagement);
+        smscManagement.registerRuleFactory(new MProcRuleFactoryDefault());
+        smscManagement.start();
+
+        try {
+            mProcManagement.destroyMProcRule(1);
+        } catch (Exception e) {
+        }
+        try {
+            mProcManagement.destroyMProcRule(2);
+        } catch (Exception e) {
+        }
+
+        mProcManagement.createMProcRule(1, MProcRuleFactoryDefault.RULE_CLASS_NAME,
+                "desttonmask 1 destnpimask 1 originatingmask SMPP networkidmask 0 newnetworkid 5 adddestdigprefix 47 makecopy true");
+        mProcManagement.createMProcRule(2, MProcRuleFactoryDefault.RULE_CLASS_NAME,
+                "networkidmask 5 newdestnpi 2 makecopy true");
+
         // TODO: ***** make proper mproc rules testing
-//        MProcManagement.getInstance().createMProcRule(1, 1, 1, "-1", "SMPP", 0, 5, -1, -1, "47", true);
-//        MProcManagement.getInstance().createMProcRule(2, -1, -1, "-1", null, 5, -1, -1, 2, "-1", true);
-        // destTonMask, destNpiMask, destDigMask, originatingMask, networkIdMask, newNetworkId, newDestTon, newDestNpi, addDestDigPrefix, makeCopy
+        // MProcManagement.getInstance().createMProcRule(1, 1, 1, "-1", "SMPP", 0, 5, -1, -1, "47", true);
+        // MProcManagement.getInstance().createMProcRule(2, -1, -1, "-1", null, 5, -1, -1, 2, "-1", true);
+        // destTonMask, destNpiMask, destDigMask, originatingMask, networkIdMask, newNetworkId, newDestTon, newDestNpi,
+        // addDestDigPrefix, makeCopy
         // TODO: ***** make proper mproc rules testing
 
         this.smppSess = new SmppSessionsProxy();
@@ -731,9 +757,8 @@ public class C2_TxSmppServerSbbTest {
         assertEquals(resp.getOptionalParameterCount(), 0);
 
         try {
-            MProcManagement.getInstance().destroyMProcRule(1);
-            MProcManagement.getInstance().destroyMProcRule(2);
-//            MProcManagement.getInstance().destroyMProcRule(3);
+            mProcManagement.destroyMProcRule(1);
+            mProcManagement.destroyMProcRule(2);
         } catch (Exception e) {
         }
     }
