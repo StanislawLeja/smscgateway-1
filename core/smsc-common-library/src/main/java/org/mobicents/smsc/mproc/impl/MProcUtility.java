@@ -25,6 +25,8 @@ package org.mobicents.smsc.mproc.impl;
 import java.util.Date;
 import java.util.UUID;
 
+import javolution.util.FastList;
+
 import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
@@ -149,10 +151,7 @@ public class MProcUtility {
         sms.setReplaceIfPresent(sms0.getReplaceIfPresent());
         sms.setDefaultMsgId(sms0.getDefaultMsgId());
 
-        for (Tlv v : sms0.getTlvSet().getOptionalParameters()) {
-            Tlv tlv = new Tlv(v.getTag(), v.getValue());
-            sms.getTlvSet().getOptionalParameters().add(tlv);
-        }
+        sms.getTlvSet().addAllOptionalParameter(sms0.getTlvSet().getOptionalParameters());
 
         SmsSet smsSet = new SmsSet();
         if (backDest) {

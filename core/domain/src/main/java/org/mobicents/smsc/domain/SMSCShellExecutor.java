@@ -23,12 +23,12 @@
 package org.mobicents.smsc.domain;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javolution.util.FastList;
 import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
@@ -285,7 +285,7 @@ public class SMSCShellExecutor implements ShellExecutor {
         // show of existing MProcRule / all MProcRule
         MProcManagement mProcManagement = MProcManagement.getInstance();
         if (args.length == 3) {
-            ArrayList<MProcRule> lst = mProcManagement.getMProcRules();
+            FastList<MProcRule> lst = mProcManagement.getMProcRules();
 
             StringBuilder sb = new StringBuilder();
             if (lst.size() == 0) {

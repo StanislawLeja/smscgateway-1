@@ -24,7 +24,6 @@ package org.mobicents.smsc.domain;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -36,6 +35,7 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
 import javolution.text.TextBuilder;
+import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
@@ -98,7 +98,7 @@ public class SmscManagement implements SmscManagementMBean {
 	private static SmscStatProvider smscStatProvider = null;
 
 	private SmsRoutingRule smsRoutingRule = null;
-	private ArrayList<MProcRuleFactory> mprocFactories = new ArrayList<MProcRuleFactory>();
+	private FastList<MProcRuleFactory> mprocFactories = new FastList<MProcRuleFactory>();
 
 	private SmscManagement(String name) {
         this.name = name;
@@ -171,7 +171,7 @@ public class SmscManagement implements SmscManagementMBean {
     }
 
     public void setMProcRuleFactories(List ruleFactories) {
-        this.mprocFactories = new ArrayList<MProcRuleFactory>();
+        this.mprocFactories = new FastList<MProcRuleFactory>();
         for (Object obj : ruleFactories) {
             if (obj != null && obj instanceof MProcRuleFactory) {
                 MProcRuleFactory ruleFactory = (MProcRuleFactory) obj;

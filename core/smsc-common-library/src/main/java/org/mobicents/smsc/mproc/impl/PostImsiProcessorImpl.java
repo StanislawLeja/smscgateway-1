@@ -20,30 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.mproc;
+package org.mobicents.smsc.mproc.impl;
 
-import org.mobicents.smsc.library.OriginationType;
+import org.mobicents.smsc.mproc.PostImsiProcessor;
 
 /**
 *
 * @author sergey vetyutnev
 *
 */
-public interface PostDeliveryProcessor {
+public class PostImsiProcessorImpl implements PostImsiProcessor {
 
-    /**
-     * Creating a new message template for filling and sending by postNewMessage() method
-     */
-    MProcNewMessage createNewEmptyMessage(OriginationType originationType);
+    private boolean needDropMessages = false;
 
-    MProcNewMessage createNewCopyMessage(MProcMessage message);
+    public PostImsiProcessorImpl() {
+    }
 
-    MProcNewMessage createNewResponseMessage(MProcMessage message);
+    // results of message processing
+    public boolean isNeedDropMessages() {
+        return needDropMessages;
+    }
 
-    /**
-     * Posting a new message. To post a new message you need: create a message template by invoking of createNewMessage(), fill
-     * it and post it be invoking of postNewMessage(). For this new message no mproc rule and diameter request will be applied.
-     */
-    void postNewMessage(MProcNewMessage message);
+    @Override
+    public void dropMessages() {
+        needDropMessages = true;
+    }
 
 }

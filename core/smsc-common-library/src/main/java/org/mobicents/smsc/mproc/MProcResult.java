@@ -22,6 +22,8 @@
 
 package org.mobicents.smsc.mproc;
 
+import javolution.util.FastList;
+
 import org.mobicents.smsc.library.Sms;
 
 /**
@@ -31,17 +33,17 @@ import org.mobicents.smsc.library.Sms;
 */
 public class MProcResult {
 
-    private Sms[] messageList;
+    private FastList<Sms> messageList;
     private boolean messageIsRejected;
     private boolean messageIsDropped;
 
-    public MProcResult(Sms[] messageList, boolean messageIsRejected, boolean messageIsDropped) {
+    public MProcResult(FastList<Sms> messageList, boolean messageIsRejected, boolean messageIsDropped) {
         this.messageList = messageList;
         this.messageIsRejected = messageIsRejected;
         this.messageIsDropped = messageIsDropped;
     }
 
-    public Sms[] getMessageList() {
+    public FastList<Sms> getMessageList() {
         return messageList;
     }
 

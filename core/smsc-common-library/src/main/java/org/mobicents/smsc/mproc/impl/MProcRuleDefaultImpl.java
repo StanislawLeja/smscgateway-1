@@ -30,6 +30,7 @@ import javolution.xml.stream.XMLStreamException;
 
 import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.mproc.MProcMessage;
+import org.mobicents.smsc.mproc.MProcMessageDestination;
 import org.mobicents.smsc.mproc.MProcNewMessage;
 import org.mobicents.smsc.mproc.MProcRuleDefault;
 import org.mobicents.smsc.mproc.PostArrivalProcessor;
@@ -262,8 +263,8 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
     }
 
     @Override
-    public void onPostImsiRequest(PostImsiProcessor factory, MProcMessage message, String imsi, String nnnDigits,
-            int nnnTon, int nnnNpi) throws Exception {
+    public void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages, String imsi, String nnnDigits,
+            int nnnNumberingPlan, int nnnAddressNature) throws Exception {
     }
 
     @Override

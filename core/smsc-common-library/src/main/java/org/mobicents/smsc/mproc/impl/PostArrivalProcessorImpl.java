@@ -22,8 +22,9 @@
 
 package org.mobicents.smsc.mproc.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
+
+import javolution.util.FastList;
 
 import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.library.Sms;
@@ -45,7 +46,7 @@ public class PostArrivalProcessorImpl implements PostArrivalProcessor {
     private boolean needDropMessage = false;
     private boolean needRejectMessage = false;
 
-    private ArrayList<MProcNewMessage> postedMessages = new ArrayList<MProcNewMessage>();
+    private FastList<MProcNewMessage> postedMessages = new FastList<MProcNewMessage>();
 
     public PostArrivalProcessorImpl(int defaultValidityPeriodHours, int maxValidityPeriodHours) {
         this.defaultValidityPeriodHours = defaultValidityPeriodHours;
@@ -61,7 +62,7 @@ public class PostArrivalProcessorImpl implements PostArrivalProcessor {
         return needRejectMessage;
     }
 
-    public ArrayList<MProcNewMessage> getPostedMessages() {
+    public FastList<MProcNewMessage> getPostedMessages() {
         return postedMessages;
     }
 

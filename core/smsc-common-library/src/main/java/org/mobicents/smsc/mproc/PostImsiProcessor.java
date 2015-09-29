@@ -29,21 +29,6 @@ package org.mobicents.smsc.mproc;
 */
 public interface PostImsiProcessor {
 
-    void dropMessage();
-
-    /**
-     * Creating a new message template for filling and sending by postNewMessage() method
-     */
-    MProcNewMessage createNewEmptyMessage();
-
-    MProcNewMessage createNewCopyMessage(MProcMessage message);
-
-    MProcNewMessage createNewResponseMessage(MProcMessage message);
-
-    /**
-     * Posting a new message. To post a new message you need: create a message template by invoking of createNewMessage(), fill
-     * it and post it be invoking of postNewMessage(). For this new message no mproc rule and diameter request will be applied.
-     */
-    void postNewMessage(MProcNewMessage message);
+    void dropMessages();
 
 }

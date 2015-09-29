@@ -46,6 +46,7 @@ import javax.slee.SbbContext;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
+import javolution.util.FastList;
 import net.java.slee.resource.sip.SleeSipProvider;
 
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
@@ -560,7 +561,7 @@ public abstract class TxSipServerSbb implements Sbb {
 			chargingSbb.setupChargingRequestInterface(ChargingMedium.TxSipOrig, sms0);
 		} else {
             // applying of MProc
-            MProcResult mProcResult = MProcManagement.getInstance().applyMProc(sms0);
+            MProcResult mProcResult = MProcManagement.getInstance().applyMProcArrival(sms0);
             if (mProcResult.isMessageRejected()) {
                 SmscProcessingException e = new SmscProcessingException("Message is rejected by MProc rules",
                         SmppConstants.STATUS_SUBMITFAIL, 0, null);
@@ -581,8 +582,9 @@ public abstract class TxSipServerSbb implements Sbb {
             smscStatAggregator.updateMsgInReceivedAll();
             smscStatAggregator.updateMsgInReceivedSip();
 
-            Sms[] smss = mProcResult.getMessageList();
-            for (Sms sms : smss) {
+            FastList<Sms> smss = mProcResult.getMessageList();
+            for (FastList.Node<Sms> n = smss.head(), end = smss.tail(); (n = n.getNext()) != end;) {
+                Sms sms = n.getValue();
                 TargetAddress ta = new TargetAddress(sms.getSmsSet());
                 TargetAddress lock = store.obtainSynchroObject(ta);
 

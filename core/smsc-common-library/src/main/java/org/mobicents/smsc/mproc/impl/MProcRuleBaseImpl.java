@@ -22,12 +22,16 @@
 
 package org.mobicents.smsc.mproc.impl;
 
-import java.util.ArrayList;
-
+import javolution.util.FastList;
 import javolution.xml.XMLFormat;
 import javolution.xml.stream.XMLStreamException;
 
+import org.mobicents.smsc.mproc.MProcMessage;
+import org.mobicents.smsc.mproc.MProcMessageDestination;
 import org.mobicents.smsc.mproc.MProcRule;
+import org.mobicents.smsc.mproc.PostArrivalProcessor;
+import org.mobicents.smsc.mproc.PostDeliveryProcessor;
+import org.mobicents.smsc.mproc.PostImsiProcessor;
 
 /**
 *
@@ -65,6 +69,29 @@ public abstract class MProcRuleBaseImpl implements MProcRule {
         return false;
     }
 
+    @Override
+    public boolean matches(MProcMessage messageDest) {
+        return false;
+    }
+
+    @Override
+    public boolean matches(MProcMessageDestination messageDest) {
+        return false;
+    }
+
+    @Override
+    public void onPostArrival(PostArrivalProcessor factory, MProcMessage message) throws Exception {
+    }
+
+    @Override
+    public void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages, String imsi, String nnnDigits,
+            int nnnNumberingPlan, int nnnAddressNature) throws Exception {
+    }
+
+    @Override
+    public void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message, boolean isDeliveryFailure) throws Exception {
+    }
+
     /**
      * splitting of a message and removing of empty substrings. Space is a splitter between parameters instances.
      *
@@ -73,8 +100,9 @@ public abstract class MProcRuleBaseImpl implements MProcRule {
      */
     protected String[] splitParametersString(String parametersString) {
         String[] args0 = parametersString.split(" ");
-        ArrayList<String> al1 = new ArrayList<String>(args0.length);
-        for (String s : args0) {
+        FastList<String> al1 = new FastList<String>(args0.length);
+        for (FastList.Node<String> n = al1.head(), end = al1.tail(); (n = n.getNext()) != end;) {
+            String s = n.getValue();
             if (s != null && s.length() > 0)
                 al1.add(s);
         }

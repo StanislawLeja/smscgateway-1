@@ -43,6 +43,7 @@ import javax.slee.nullactivity.NullActivityContextInterfaceFactory;
 import javax.slee.nullactivity.NullActivityFactory;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
+import javolution.util.FastList;
 import net.java.slee.resource.diameter.base.events.avp.DiameterAvp;
 import net.java.slee.resource.diameter.base.events.avp.DiameterIdentity;
 import net.java.slee.resource.diameter.cca.events.avp.CcRequestType;
@@ -493,7 +494,7 @@ public abstract class ChargingSbb implements Sbb {
 		}
 
 		try {
-            MProcResult mProcResult = MProcManagement.getInstance().applyMProc(sms0);
+            MProcResult mProcResult = MProcManagement.getInstance().applyMProcArrival(sms0);
             if (mProcResult.isMessageRejected()) {
                 rejectSmsByMproc(chargingData, true);
                 return;
@@ -528,8 +529,9 @@ public abstract class ChargingSbb implements Sbb {
                 break;
             }
 
-            Sms[] smss = mProcResult.getMessageList();
-            for (Sms sms : smss) {
+            FastList<Sms> smss = mProcResult.getMessageList();
+            for (FastList.Node<Sms> n = smss.head(), end = smss.tail(); (n = n.getNext()) != end;) {
+                Sms sms = n.getValue();
                 TargetAddress ta = new TargetAddress(sms.getSmsSet());
                 TargetAddress lock = persistence.obtainSynchroObject(ta);
 

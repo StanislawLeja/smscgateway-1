@@ -22,28 +22,21 @@
 
 package org.mobicents.smsc.mproc;
 
-import org.mobicents.smsc.library.OriginationType;
-
 /**
 *
 * @author sergey vetyutnev
 *
 */
-public interface PostDeliveryProcessor {
+public interface MProcMessageDestination {
 
-    /**
-     * Creating a new message template for filling and sending by postNewMessage() method
-     */
-    MProcNewMessage createNewEmptyMessage(OriginationType originationType);
+    // dest address part
+    int getDestAddrTon();
 
-    MProcNewMessage createNewCopyMessage(MProcMessage message);
+    int getDestAddrNpi();
 
-    MProcNewMessage createNewResponseMessage(MProcMessage message);
+    String getDestAddr();
 
-    /**
-     * Posting a new message. To post a new message you need: create a message template by invoking of createNewMessage(), fill
-     * it and post it be invoking of postNewMessage(). For this new message no mproc rule and diameter request will be applied.
-     */
-    void postNewMessage(MProcNewMessage message);
+    // other options
+    int getNetworkId();
 
 }

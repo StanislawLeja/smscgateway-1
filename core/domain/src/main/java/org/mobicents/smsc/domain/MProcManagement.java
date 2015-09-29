@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -40,6 +39,7 @@ import javax.management.ObjectName;
 import javax.management.StandardMBean;
 
 import javolution.text.TextBuilder;
+import javolution.util.FastList;
 import javolution.xml.XMLBinding;
 import javolution.xml.XMLObjectReader;
 import javolution.xml.XMLObjectWriter;
@@ -49,16 +49,21 @@ import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.mobicents.smsc.domain.SmscManagement;
 import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.mproc.MProcMessage;
+import org.mobicents.smsc.mproc.MProcMessageDestination;
 import org.mobicents.smsc.mproc.MProcNewMessage;
 import org.mobicents.smsc.mproc.MProcResult;
 import org.mobicents.smsc.mproc.MProcRuleFactory;
 import org.mobicents.smsc.mproc.MProcRule;
 import org.mobicents.smsc.mproc.MProcRuleMBean;
+import org.mobicents.smsc.mproc.impl.MProcMessageDestinationImpl;
 import org.mobicents.smsc.mproc.impl.MProcMessageImpl;
 import org.mobicents.smsc.mproc.impl.MProcNewMessageImpl;
 import org.mobicents.smsc.mproc.impl.MProcRuleOamMessages;
 import org.mobicents.smsc.mproc.impl.PostArrivalProcessorImpl;
+import org.mobicents.smsc.mproc.impl.PostDeliveryProcessorImpl;
+import org.mobicents.smsc.mproc.impl.PostImsiProcessorImpl;
 
 /**
 *
@@ -79,7 +84,7 @@ public class MProcManagement implements MProcManagementMBean {
 
     private String persistDir = null;
 
-    protected ArrayList<MProcRule> mprocs = new ArrayList<MProcRule>();
+    protected FastList<MProcRule> mprocs = new FastList<MProcRule>();
 
     private final TextBuilder persistFile = TextBuilder.newInstance();
 
@@ -128,28 +133,28 @@ public class MProcManagement implements MProcManagementMBean {
     }
 
     @Override
-    public ArrayList<MProcRule> getMProcRules() {
+    public FastList<MProcRule> getMProcRules() {
         return mprocs;
     }
 
     @Override
     public MProcRule getMProcRuleById(int id) {
-        ArrayList<MProcRule> cur = mprocs;
-        int size = cur.size();
-        for (int i1 = 0; i1 < size; i1++) {
-            MProcRule rule = cur.get(i1);
+        FastList<MProcRule> cur = mprocs;
+        for (FastList.Node<MProcRule> n = cur.head(), end = cur.tail(); (n = n.getNext()) != end;) {
+            MProcRule rule = n.getValue();
             if (rule.getId() == id)
                 return rule;
-        }
+        }        
         return null;
     }
 
-    private void resortRules(ArrayList<MProcRule> lst) {
+    private void resortRules(FastList<MProcRule> lst) {
         SortedMap<Integer, MProcRule> cur = new TreeMap<Integer, MProcRule>();
-        for (MProcRule rule : lst) {
+        for (FastList.Node<MProcRule> n = lst.head(), end = lst.tail(); (n = n.getNext()) != end;) {
+            MProcRule rule = n.getValue();
             cur.put(rule.getId(), rule);
-        }
-        ArrayList<MProcRule> res = new ArrayList<MProcRule>();
+        }        
+        FastList<MProcRule> res = new FastList<MProcRule>();
         res.addAll(cur.values());
 
         this.mprocs = res;
@@ -177,7 +182,7 @@ public class MProcManagement implements MProcManagementMBean {
         mProcRule.setId(id);
         mProcRule.setInitialRuleParameters(parametersString);
 
-        ArrayList<MProcRule> lstTag = new ArrayList<MProcRule>(this.mprocs);
+        FastList<MProcRule> lstTag = new FastList<MProcRule>(this.mprocs);
         lstTag.add(mProcRule);
         this.resortRules(lstTag);
         this.store();
@@ -207,7 +212,7 @@ public class MProcManagement implements MProcManagementMBean {
             throw new Exception(String.format(MProcRuleOamMessages.DESTROY_MPROC_RULE_FAIL_NOT_EXIST, mProcRuleId));
         }
 
-        ArrayList<MProcRule> lstTag = new ArrayList<MProcRule>(this.mprocs);
+        FastList<MProcRule> lstTag = new FastList<MProcRule>(this.mprocs);
         lstTag.remove(mProcRule);
         this.resortRules(lstTag);
         this.store();
@@ -217,141 +222,132 @@ public class MProcManagement implements MProcManagementMBean {
         return mProcRule;
     }
 
-    public MProcResult applyMProc(Sms sms) {
-        if (this.mprocs.size() == 0)
-            return new MProcResult(new Sms[] { sms }, false, false);
+    public MProcResult applyMProcArrival(Sms sms) {
+        if (this.mprocs.size() == 0) {
+            FastList<Sms> res0 = new FastList<Sms>();
+            res0.add(sms);
+            return new MProcResult(res0, false, false);
+        }
 
-        ArrayList<MProcRule> cur = this.mprocs;
+        FastList<MProcRule> cur = this.mprocs;
         PostArrivalProcessorImpl pap = new PostArrivalProcessorImpl(
                 this.smscPropertiesManagement.getDefaultValidityPeriodHours(),
                 this.smscPropertiesManagement.getMaxValidityPeriodHours());
         MProcMessage message = new MProcMessageImpl(sms);
 
         try {
-            for (int i1 = 0; i1 < cur.size(); i1++) {
-                MProcRule rule = cur.get(i1);
-                if (rule.matches(message)) {
+            for (FastList.Node<MProcRule> n = cur.head(), end = cur.tail(); (n = n.getNext()) != end;) {
+                MProcRule rule = n.getValue();
+                if (rule.isForPostArrivalState() && rule.matches(message)) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("MRule matches to a message:\nrule: " + rule + "\nmessage: " + sms);
+                        logger.debug("MRule matches at Arrival phase to a message:\nrule: " + rule + "\nmessage: " + sms);
                     }
                     rule.onPostArrival(pap, message);
                 }
             }
         } catch (Throwable e) {
             logger.error(
-                    "Exception when invoking rule.matches(message) or rule.onPostArrival(pap, message): " + e.getMessage(), e);
-            return new MProcResult(new Sms[] { sms }, false, true);
+                    "Exception when invoking rule.matches(message) or applyMProcArrival: " + e.getMessage(), e);
+            return new MProcResult(null, false, true);
         }
 
         if (pap.isNeedDropMessage()) {
-            return new MProcResult(new Sms[] { sms }, false, true);
+            return new MProcResult(null, false, true);
         }
 
         if (pap.isNeedRejectMessage()) {
-            return new MProcResult(new Sms[] { sms }, true, false);
+            return new MProcResult(null, true, false);
         }
 
-        ArrayList<MProcNewMessage> newMsgs = pap.getPostedMessages();
+        FastList<MProcNewMessage> newMsgs = pap.getPostedMessages();
         if (newMsgs == null || newMsgs.size() == 0) {
-            return new MProcResult(new Sms[] { sms }, false, false);
+            FastList<Sms> res0 = new FastList<Sms>();
+            res0.add(sms);
+            return new MProcResult(res0, false, false);
         }
 
-        Sms[] res = new Sms[newMsgs.size() + 1];
-        res[0] = sms;
-        for(int i1=0; i1<newMsgs.size(); i1++){
-            MProcNewMessageImpl newMsg = (MProcNewMessageImpl) newMsgs.get(i1);
-            res[i1 + 1] = newMsg.getSmsContent();
+        FastList<Sms> res = new FastList<Sms>();
+        res.add(sms);
+        for (FastList.Node<MProcNewMessage> n = newMsgs.head(), end = newMsgs.tail(); (n = n.getNext()) != end;) {
+            MProcNewMessageImpl newMsg = (MProcNewMessageImpl) n.getValue();
+            res.add(newMsg.getSmsContent());
         }
         return new MProcResult(res, false, false);
+    }
 
-        // TODO: implement it
-        
-//      ArrayList<Sms> res = new ArrayList<Sms>();
-        
-        // if (rule.isMessageMatchToRule(sms.getSmsSet().getDestAddrTon(), sms.getSmsSet().getDestAddrNpi(), sms.getSmsSet()
-        // .getDestAddr(), sms.getOriginationType(), sms.getSmsSet().getNetworkId())) {
-        // if (logger.isDebugEnabled()) {
-        // logger.debug("MRule matches to a message:\nrule: " + rule + "\nmessage: " + sms);
-        // }
-        //
-        // if (rule.isMakeCopy()) {
-        // res.add(sms);
-        //
-        // Sms sms0 = sms;
-        // sms = new Sms();
-        //
-        // sms.setDbId(UUID.randomUUID());
-        // sms.setSourceAddr(sms0.getSourceAddr());
-        // sms.setSourceAddrNpi(sms0.getSourceAddrNpi());
-        // sms.setSourceAddrTon(sms0.getSourceAddrTon());
-        // sms.setOrigNetworkId(sms0.getOrigNetworkId());
-        //
-        // sms.setMessageId(sms0.getMessageId());
-        // sms.setMoMessageRef(sms0.getMoMessageRef());
-        //
-        // sms.setSubmitDate(sms0.getSubmitDate());
-        // sms.setValidityPeriod(sms0.getValidityPeriod());
-        // sms.setScheduleDeliveryTime(sms0.getScheduleDeliveryTime());
-        //
-        // sms.setOrigSystemId(sms0.getOrigSystemId());
-        // sms.setOrigEsmeName(sms0.getOrigEsmeName());
-        // sms.setServiceType(sms0.getServiceType());
-        // sms.setEsmClass(sms0.getEsmClass());
-        // sms.setPriority(sms0.getPriority());
-        // sms.setProtocolId(sms0.getProtocolId());
-        //
-        // sms.setRegisteredDelivery(sms0.getRegisteredDelivery());
-        // sms.setReplaceIfPresent(sms0.getReplaceIfPresent());
-        // sms.setDataCoding(sms0.getDataCoding());
-        // sms.setDefaultMsgId(sms0.getDefaultMsgId());
-        // sms.setShortMessageText(sms0.getShortMessageText());
-        // sms.setShortMessageBin(sms0.getShortMessageBin());
-        // sms.setOriginationType(sms0.getOriginationType());
-        //
-        // for (Tlv v : sms0.getTlvSet().getOptionalParameters()) {
-        // Tlv tlv = new Tlv(v.getTag(), v.getValue());
-        // sms.getTlvSet().getOptionalParameters().add(tlv);
-        // }
-        //
-        // SmsSet smsSet = new SmsSet();
-        // smsSet.setDestAddr(sms0.getSmsSet().getDestAddr());
-        // smsSet.setDestAddrNpi(sms0.getSmsSet().getDestAddrNpi());
-        // smsSet.setDestAddrTon(sms0.getSmsSet().getDestAddrTon());
-        //
-        // smsSet.setNetworkId(sms0.getSmsSet().getNetworkId());
-        // smsSet.setCorrelationId(sms0.getSmsSet().getCorrelationId());
-        // smsSet.addSms(sms);
-        // }
-        //
-        // if (rule.getNewNetworkId() != -1) {
-        // sms.getSmsSet().setNetworkId(rule.getNewNetworkId());
-        // sms.getSmsSet().setCorrelationId(null);
-        // }
-        //
-        // if (rule.getAddDestDigPrefix() != null && !rule.getAddDestDigPrefix().equals("") &&
-        // !rule.getAddDestDigPrefix().equals("-1")) {
-        // String destAddr = rule.getAddDestDigPrefix() + sms.getSmsSet().getDestAddr();
-        // sms.getSmsSet().setDestAddr(destAddr);
-        // sms.getSmsSet().setCorrelationId(null);
-        // }
-        //
-        // if (rule.getNewDestNpi() != -1) {
-        // sms.getSmsSet().setDestAddrNpi(rule.getNewDestNpi());
-        // sms.getSmsSet();
-        // }
-        //
-        // if (rule.getNewDestTon() != -1) {
-        // sms.getSmsSet().setDestAddrTon(rule.getNewDestTon());
-        // sms.getSmsSet().setCorrelationId(null);
-        // }
-        // }
+    public MProcResult applyMProcImsiRequest(SmsSet smsSet, String imsi, String nnnDigits, int nnnNumberingPlan,
+            int nnnAddressNature) {
+        if (this.mprocs.size() == 0)
+            return new MProcResult(null, false, false);
 
-        // res.add(sms);
-        //
-        // Sms[] ress = new Sms[res.size()];
-        // res.toArray(ress);
-        //
-        // return ress;
+        FastList<MProcRule> cur = this.mprocs;
+        PostImsiProcessorImpl pap = new PostImsiProcessorImpl();
+        MProcMessageDestination messageDest = new MProcMessageDestinationImpl(smsSet);
+
+        try {
+            for (FastList.Node<MProcRule> n = cur.head(), end = cur.tail(); (n = n.getNext()) != end;) {
+                MProcRule rule = n.getValue();
+                if (rule.isForPostImsiRequestState() && rule.matches(messageDest)) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("MRule matches at ImsiRequest phase to a message:\nrule: " + rule + "\nmessage: " + smsSet);
+                    }
+                    rule.onPostImsiRequest(pap, messageDest, imsi, nnnDigits, nnnNumberingPlan, nnnAddressNature);
+                }
+            }
+        } catch (Throwable e) {
+            logger.error(
+                    "Exception when invoking rule.matches(message) or applyMProcImsiRequest(): " + e.getMessage(), e);
+            return new MProcResult(null, false, false);
+        }
+
+        if (pap.isNeedDropMessages()) {
+            return new MProcResult(null, false, true);
+        }
+        return new MProcResult(null, false, false);
+    }
+
+    public MProcResult applyMProcDelivery(Sms sms, boolean isDeliveryFailure) {
+        if (this.mprocs.size() == 0) {
+            FastList<Sms> res0 = new FastList<Sms>();
+            res0.add(sms);
+            return new MProcResult(res0, false, false);
+        }
+
+        FastList<MProcRule> cur = this.mprocs;
+        PostDeliveryProcessorImpl pap = new PostDeliveryProcessorImpl(
+                this.smscPropertiesManagement.getDefaultValidityPeriodHours(),
+                this.smscPropertiesManagement.getMaxValidityPeriodHours());
+        MProcMessage message = new MProcMessageImpl(sms);
+
+        try {
+            for (FastList.Node<MProcRule> n = cur.head(), end = cur.tail(); (n = n.getNext()) != end;) {
+                MProcRule rule = n.getValue();
+                if (rule.isForPostDeliveryState() && rule.matches(message)) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("MRule matches at Delivery phase to a message:\nrule: " + rule + "\nmessage: " + sms);
+                    }
+                    rule.onPostDelivery(pap, message, isDeliveryFailure);
+                }
+            }
+        } catch (Throwable e) {
+            logger.error(
+                    "Exception when invoking rule.matches(message) or onPostDelivery(): " + e.getMessage(), e);
+            return new MProcResult(null, false, true);
+        }
+
+        FastList<MProcNewMessage> newMsgs = pap.getPostedMessages();
+        if (newMsgs == null || newMsgs.size() == 0) {
+            FastList<Sms> res0 = new FastList<Sms>();
+            res0.add(sms);
+            return new MProcResult(res0, false, false);
+        }
+
+        FastList<Sms> res = new FastList<Sms>();
+        for (FastList.Node<MProcNewMessage> n = newMsgs.head(), end = newMsgs.tail(); (n = n.getNext()) != end;) {
+            MProcNewMessageImpl newMsg = (MProcNewMessageImpl) n.getValue();
+            res.add(newMsg.getSmsContent());
+        }
+        return new MProcResult(res, false, false);
     }
 
     public void start() throws Exception {
@@ -411,7 +407,7 @@ public class MProcManagement implements MProcManagementMBean {
             XMLObjectWriter writer = XMLObjectWriter.newInstance(new FileOutputStream(persistFile.toString()));
             writer.setBinding(binding);
             writer.setIndentation(TAB_INDENT);
-            writer.write(mprocs, MPROC_LIST, ArrayList.class);
+            writer.write(mprocs, MPROC_LIST, FastList.class);
 
             writer.close();
         } catch (Exception e) {
@@ -425,7 +421,7 @@ public class MProcManagement implements MProcManagementMBean {
             reader = XMLObjectReader.newInstance(new FileInputStream(persistFile.toString()));
 
             reader.setBinding(binding);
-            this.mprocs = reader.read(MPROC_LIST, ArrayList.class);
+            this.mprocs = reader.read(MPROC_LIST, FastList.class);
 
             reader.close();
         } catch (XMLStreamException ex) {

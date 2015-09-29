@@ -30,6 +30,8 @@ import java.util.UUID;
 import javax.slee.ActivityContextInterface;
 import javax.slee.InitialEventSelector;
 
+import javolution.util.FastList;
+
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
 import org.mobicents.protocols.ss7.map.api.MAPDialog;
@@ -1351,7 +1353,7 @@ public abstract class MoSbb extends MoCommonSbb {
         switch (chargingType) {
             case accept:
                 // applying of MProc
-                MProcResult mProcResult = MProcManagement.getInstance().applyMProc(sms0);
+                MProcResult mProcResult = MProcManagement.getInstance().applyMProcArrival(sms0);
 
                 if (mProcResult.isMessageRejected()) {
                     sms0.setMessageDeliveryResultResponse(null);
@@ -1380,9 +1382,9 @@ public abstract class MoSbb extends MoCommonSbb {
                     smscStatAggregator.updateMsgInReceivedSs7Hr();
                 }
 
-                Sms[] smss = mProcResult.getMessageList();
-
-                for (Sms sms : smss) {
+                FastList<Sms> smss = mProcResult.getMessageList();
+                for (FastList.Node<Sms> n = smss.head(), end = smss.tail(); (n = n.getNext()) != end;) {
+                    Sms sms = n.getValue();
                     TargetAddress ta = new TargetAddress(sms.getSmsSet());
                     TargetAddress lock = store.obtainSynchroObject(ta);
 

@@ -28,6 +28,8 @@ import java.util.Date;
 
 import javax.slee.ActivityContextInterface;
 
+import javolution.util.FastList;
+
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
@@ -83,6 +85,7 @@ import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.domain.MProcManagement;
 import org.mobicents.smsc.domain.MapVersionCache;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
@@ -94,6 +97,7 @@ import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.mproc.MProcResult;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 
@@ -930,11 +934,21 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                 }
 			}
 
+            // mproc rules applying for delivery phase
+            MProcResult mProcResult = MProcManagement.getInstance().applyMProcDelivery(sms, false);
+            FastList<Sms> addedMessages = mProcResult.getMessageList();
+            for (FastList.Node<Sms> n = addedMessages.head(), end = addedMessages.tail(); (n = n.getNext()) != end;) {
+                Sms smst = n.getValue();
+
+                // .....................
+                // TODO: implement it
+            }
+
 			// adding a success receipt if it is needed
-//			if (sms.getStored()) {
             int registeredDelivery = sms.getRegisteredDelivery();
             if (!smscPropertiesManagement.getReceiptsDisabling() && MessageUtil.isReceiptOnSuccess(registeredDelivery)) {
-                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr(), smsSet.getNetworkId());
+                TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr(),
+                        smsSet.getNetworkId());
                 TargetAddress lock = SmsSetCache.getInstance().addSmsSet(ta);
                 try {
                     synchronized (lock) {
@@ -945,16 +959,19 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                             receipt.setSmsSet(backSmsSet);
                             receipt.setStored(true);
                             pers.createLiveSms(receipt);
-                            pers.setNewMessageScheduled(receipt.getSmsSet(),
-                                    MessageUtil.computeDueDate(MessageUtil.computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+                            pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil
+                                    .computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
                         } else {
-                            receipt = MessageUtil.createReceiptSms(sms, true, ta, smscPropertiesManagement.getOrigNetworkIdForReceipts());
+                            receipt = MessageUtil.createReceiptSms(sms, true, ta,
+                                    smscPropertiesManagement.getOrigNetworkIdForReceipts());
                             boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
                             if (!storeAndForwMode) {
                                 try {
                                     this.scheduler.injectSmsOnFly(receipt.getSmsSet());
                                 } catch (Exception e) {
-                                    this.logger.severe("Exception when runnung injectSmsOnFly() for receipt in handleSmsResponse(): " + e.getMessage(), e);
+                                    this.logger.severe(
+                                            "Exception when runnung injectSmsOnFly() for receipt in handleSmsResponse(): "
+                                                    + e.getMessage(), e);
                                 }
                             } else {
                                 if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
@@ -962,7 +979,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                                         receipt.setStoringAfterFailure(true);
                                         this.scheduler.injectSmsOnFly(receipt.getSmsSet());
                                     } catch (Exception e) {
-                                        this.logger.severe("Exception when runnung injectSmsOnFly() for receipt in handleSmsResponse(): " + e.getMessage(), e);
+                                        this.logger.severe(
+                                                "Exception when runnung injectSmsOnFly() for receipt in handleSmsResponse(): "
+                                                        + e.getMessage(), e);
                                     }
                                 } else {
                                     receipt.setStored(true);
@@ -972,13 +991,13 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
                                 }
                             }
                         }
-                        this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr() + ", dest=" + receipt.getSmsSet().getDestAddr());
+                        this.logger.info("Adding a delivery receipt: source=" + receipt.getSourceAddr() + ", dest="
+                                + receipt.getSmsSet().getDestAddr());
                     }
                 } finally {
                     SmsSetCache.getInstance().removeSmsSet(lock);
                 }
             }
-//			}
 
 		} catch (PersistenceException e1) {
 			this.logger.severe(

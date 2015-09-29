@@ -46,4 +46,49 @@ public class RETest {
         m = p.matcher("");
         boolean b0 = m.matches();
     }
+
+    @Test(groups = { "RegularExpr" })
+    public void testRegularExpr2() {
+        String expr = "^(152)|(AWCC)$";
+        Pattern p = Pattern.compile(expr);
+
+        Matcher m = p.matcher("152");
+        boolean b1 = m.matches();
+
+        m = p.matcher("15");
+        boolean b2 = m.matches();
+
+        m = p.matcher("1152");
+        boolean b3 = m.matches();
+
+        m = p.matcher("1522");
+        boolean b4 = m.matches();
+
+        m = p.matcher("152152");
+        boolean b5 = m.matches();
+
+        m = p.matcher("AWCC");
+        boolean b6 = m.matches();
+
+        m = p.matcher("1AWCC");
+        boolean b7 = m.matches();
+
+        m = p.matcher("AWCC152");
+        boolean b8 = m.matches();
+
+        m = p.matcher("0000000");
+        boolean b9 = m.matches();
+
+        m = p.matcher("");
+        boolean b0 = m.matches();
+
+        m = p.matcher("1");
+        boolean b10 = m.matches();
+
+        m = p.matcher("2");
+        boolean b11 = m.matches();
+
+        m = p.matcher("152152");
+        boolean b12 = m.matches();
+    }
 }

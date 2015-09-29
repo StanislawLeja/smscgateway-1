@@ -20,30 +20,42 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.mproc;
+package org.mobicents.smsc.mproc.impl;
 
-import org.mobicents.smsc.library.OriginationType;
+import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.mproc.MProcMessageDestination;
 
 /**
 *
 * @author sergey vetyutnev
 *
 */
-public interface PostDeliveryProcessor {
+public class MProcMessageDestinationImpl implements MProcMessageDestination {
 
-    /**
-     * Creating a new message template for filling and sending by postNewMessage() method
-     */
-    MProcNewMessage createNewEmptyMessage(OriginationType originationType);
+    private SmsSet smsSet;
 
-    MProcNewMessage createNewCopyMessage(MProcMessage message);
+    public MProcMessageDestinationImpl(SmsSet smsSet) {
+        this.smsSet = smsSet;
+    }
 
-    MProcNewMessage createNewResponseMessage(MProcMessage message);
+    @Override
+    public int getDestAddrTon() {
+        return this.smsSet.getDestAddrTon();
+    }
 
-    /**
-     * Posting a new message. To post a new message you need: create a message template by invoking of createNewMessage(), fill
-     * it and post it be invoking of postNewMessage(). For this new message no mproc rule and diameter request will be applied.
-     */
-    void postNewMessage(MProcNewMessage message);
+    @Override
+    public int getDestAddrNpi() {
+        return this.smsSet.getDestAddrNpi();
+    }
+
+    @Override
+    public String getDestAddr() {
+        return this.smsSet.getDestAddr();
+    }
+
+    @Override
+    public int getNetworkId() {
+        return this.smsSet.getNetworkId();
+    }
 
 }
