@@ -25,16 +25,12 @@ package org.mobicents.smsc.mproc.impl;
 import java.util.Date;
 import java.util.UUID;
 
-import javolution.util.FastList;
-
 import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.mproc.MProcMessage;
 import org.mobicents.smsc.mproc.MProcNewMessage;
 import org.mobicents.smsc.mproc.MProcRuleException;
-
-import com.cloudhopper.smpp.tlv.Tlv;
 
 /**
 *
@@ -118,8 +114,13 @@ public class MProcUtility {
         }
         sms.setMessageId(sms0.getMessageId());
 
-        sms.setShortMessageText(sms0.getShortMessageText());
-        sms.setShortMessageBin(sms0.getShortMessageBin());
+        if (backDest) {
+            sms.setShortMessageText("???");
+            sms.setShortMessageBin(null);
+        } else {
+            sms.setShortMessageText(sms0.getShortMessageText());
+            sms.setShortMessageBin(sms0.getShortMessageBin());
+        }
 
         Date now = new Date();
         if (backDest) {
@@ -135,23 +136,36 @@ public class MProcUtility {
         sms.setDataCoding(sms0.getDataCoding());
         sms.setNationalLanguageLockingShift(sms0.getNationalLanguageLockingShift());
         sms.setNationalLanguageSingleShift(sms0.getNationalLanguageSingleShift());
-        sms.setEsmClass(sms0.getEsmClass());
+        if (backDest) {
+            sms.setEsmClass(sms0.getEsmClass() & 0x03);
+        } else {
+            sms.setEsmClass(sms0.getEsmClass());
+        }
 
         sms.setPriority(sms0.getPriority());
-        sms.setRegisteredDelivery(sms0.getRegisteredDelivery());
+        if (backDest) {
+        } else {
+            sms.setRegisteredDelivery(sms0.getRegisteredDelivery());
+        }
 
-        sms.setOrigSystemId(sms0.getOrigSystemId());
-        sms.setOrigEsmeName(sms0.getOrigEsmeName());
-        sms.setOriginationType(sms0.getOriginationType());
+        if (backDest) {
+        } else {
+            sms.setOrigSystemId(sms0.getOrigSystemId());
+            sms.setOrigEsmeName(sms0.getOrigEsmeName());
+            sms.setOriginationType(sms0.getOriginationType());
 
-        sms.setMoMessageRef(sms0.getMoMessageRef());
-        sms.setServiceType(sms0.getServiceType());
-        sms.setProtocolId(sms0.getProtocolId());
+            sms.setMoMessageRef(sms0.getMoMessageRef());
+            sms.setServiceType(sms0.getServiceType());
+            sms.setProtocolId(sms0.getProtocolId());
 
-        sms.setReplaceIfPresent(sms0.getReplaceIfPresent());
-        sms.setDefaultMsgId(sms0.getDefaultMsgId());
+            sms.setReplaceIfPresent(sms0.getReplaceIfPresent());
+        }
 
-        sms.getTlvSet().addAllOptionalParameter(sms0.getTlvSet().getOptionalParameters());
+        if (backDest) {
+        } else {
+            sms.setDefaultMsgId(sms0.getDefaultMsgId());
+            sms.getTlvSet().addAllOptionalParameter(sms0.getTlvSet().getOptionalParameters());
+        }
 
         SmsSet smsSet = new SmsSet();
         if (backDest) {
@@ -162,10 +176,10 @@ public class MProcUtility {
             smsSet.setDestAddr(sms0.getSmsSet().getDestAddr());
             smsSet.setDestAddrNpi(sms0.getSmsSet().getDestAddrNpi());
             smsSet.setDestAddrTon(sms0.getSmsSet().getDestAddrTon());
+            smsSet.setCorrelationId(sms0.getSmsSet().getCorrelationId());
         }
 
         smsSet.setNetworkId(sms0.getSmsSet().getNetworkId());
-        smsSet.setCorrelationId(sms0.getSmsSet().getCorrelationId());
         smsSet.addSms(sms);
 
         return new MProcNewMessageImpl(sms, defaultValidityPeriodHours, maxValidityPeriodHours);

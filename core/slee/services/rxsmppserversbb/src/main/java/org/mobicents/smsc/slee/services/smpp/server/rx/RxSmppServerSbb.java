@@ -40,6 +40,8 @@ import javax.slee.SbbContext;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
+import javolution.util.FastList;
+
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.datacoding.GSMCharset;
@@ -51,6 +53,7 @@ import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.domain.MProcManagement;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
@@ -64,6 +67,7 @@ import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.SmscProcessingException;
 import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.mproc.MProcResult;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerActivity;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
@@ -626,6 +630,61 @@ public abstract class RxSmppServerSbb implements Sbb {
             CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED_ESME, reason, smscPropertiesManagement.getGenerateReceiptCdr(),
                     MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
 
+            // mproc rules applying for delivery phase
+            MProcResult mProcResult = MProcManagement.getInstance().applyMProcDelivery(sms, true);
+            FastList<Sms> addedMessages = mProcResult.getMessageList();
+            if (addedMessages != null) {
+                for (FastList.Node<Sms> n = addedMessages.head(), end = addedMessages.tail(); (n = n.getNext()) != end;) {
+                    Sms smst = n.getValue();
+                    TargetAddress ta = new TargetAddress(smst.getSmsSet().getDestAddrTon(), smst.getSmsSet().getDestAddrNpi(),
+                            smst.getSmsSet().getDestAddr(), smst.getSmsSet().getNetworkId());
+                    TargetAddress lock2 = SmsSetCache.getInstance().addSmsSet(ta);
+                    try {
+                        synchronized (lock2) {
+                            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                            } else {
+                                boolean storeAndForwMode = MessageUtil.isStoreAndForward(smst);
+                                if (!storeAndForwMode) {
+                                    try {
+                                        this.scheduler.injectSmsOnFly(smst.getSmsSet());
+                                    } catch (Exception e) {
+                                        this.logger.severe(
+                                                "Exception when runnung injectSmsOnFly() for applyMProcDelivery created messages: "
+                                                        + e.getMessage(), e);
+                                    }
+                                } else {
+                                    if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+                                        try {
+                                            smst.setStoringAfterFailure(true);
+                                            this.scheduler.injectSmsOnFly(smst.getSmsSet());
+                                        } catch (Exception e) {
+                                            this.logger.severe(
+                                                    "Exception when runnung injectSmsOnFly() for applyMProcDelivery created messages: "
+                                                            + e.getMessage(), e);
+                                        }
+                                    } else {
+                                        smst.setStored(true);
+                                        this.scheduler.setDestCluster(smst.getSmsSet());
+                                        try {
+                                            pers.c2_scheduleMessage_ReschedDueSlot(
+                                                    smst,
+                                                    smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast,
+                                                    true);
+                                        } catch (PersistenceException e) {
+                                            this.logger.severe(
+                                                    "PersistenceException when adding applyMProcDelivery created messages"
+                                                            + e.getMessage(), e);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } finally {
+                        SmsSetCache.getInstance().removeSmsSet(lock2);
+                    }
+                }
+            }
+
 			// adding an error receipt if it is needed
             int registeredDelivery = sms.getRegisteredDelivery();
             if (!smscPropertiesManagement.getReceiptsDisabling() && MessageUtil.isReceiptOnFailure(registeredDelivery)) {
@@ -1034,6 +1093,61 @@ public abstract class RxSmppServerSbb implements Sbb {
                         pers.c2_createRecordArchive(sms);
                     }
 				}
+
+	            // mproc rules applying for delivery phase
+	            MProcResult mProcResult = MProcManagement.getInstance().applyMProcDelivery(sms, false);
+	            FastList<Sms> addedMessages = mProcResult.getMessageList();
+	            if (addedMessages != null) {
+	                for (FastList.Node<Sms> n = addedMessages.head(), end = addedMessages.tail(); (n = n.getNext()) != end;) {
+	                    Sms smst = n.getValue();
+	                    TargetAddress ta = new TargetAddress(smst.getSmsSet().getDestAddrTon(), smst.getSmsSet().getDestAddrNpi(),
+	                            smst.getSmsSet().getDestAddr(), smst.getSmsSet().getNetworkId());
+	                    TargetAddress lock2 = SmsSetCache.getInstance().addSmsSet(ta);
+	                    try {
+	                        synchronized (lock2) {
+	                            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+	                            } else {
+	                                boolean storeAndForwMode = MessageUtil.isStoreAndForward(smst);
+	                                if (!storeAndForwMode) {
+	                                    try {
+	                                        this.scheduler.injectSmsOnFly(smst.getSmsSet());
+	                                    } catch (Exception e) {
+	                                        this.logger.severe(
+	                                                "Exception when runnung injectSmsOnFly() for applyMProcDelivery created messages: "
+	                                                        + e.getMessage(), e);
+	                                    }
+	                                } else {
+	                                    if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+	                                        try {
+	                                            smst.setStoringAfterFailure(true);
+	                                            this.scheduler.injectSmsOnFly(smst.getSmsSet());
+	                                        } catch (Exception e) {
+	                                            this.logger.severe(
+	                                                    "Exception when runnung injectSmsOnFly() for applyMProcDelivery created messages: "
+	                                                            + e.getMessage(), e);
+	                                        }
+	                                    } else {
+	                                        smst.setStored(true);
+	                                        this.scheduler.setDestCluster(smst.getSmsSet());
+	                                        try {
+	                                            pers.c2_scheduleMessage_ReschedDueSlot(
+	                                                    smst,
+	                                                    smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast,
+	                                                    true);
+	                                        } catch (PersistenceException e) {
+	                                            this.logger.severe(
+	                                                    "PersistenceException when adding applyMProcDelivery created messages"
+	                                                            + e.getMessage(), e);
+	                                        }
+	                                    }
+	                                }
+	                            }
+	                        }
+	                    } finally {
+	                        SmsSetCache.getInstance().removeSmsSet(lock2);
+	                    }
+	                }
+	            }
 
 				// adding a success receipt if it is needed
                 int registeredDelivery = sms.getRegisteredDelivery();

@@ -55,6 +55,20 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
     private static final String ADD_DEST_DIG_PREFIX = "addDestDigPrefix";
     private static final String MAKE_COPY = "makeCopy";
 
+    // TODO: we need proper implementing
+    // test magic mproc rules - we need to remove then later after proper implementing
+    public static final int MAGIC_RULES_ID_START = -21100;
+    public static final int MAGIC_RULES_ID_END = -21000;
+    // Testing PostImsi case: if NNN digits are started with "1", MT messages will be dropped
+    public static final int MAGIC_RULES_ID_NNN_CHECK = -21000;
+    // Testing PostDelivery case: generating a report to originator for all delivered / failed message as a plain text message
+    public static final int MAGIC_RULES_ID_DELIVERY_ANNOUNCEMENT = -21001;
+    // Testing PostArrivale case: drop a message
+    public static final int MAGIC_RULES_ID_ARRIVAL_DROP = -21002;
+    // Testing PostArrivale case: reject a message
+    public static final int MAGIC_RULES_ID_ARRIVAL_REJECT = -21003;
+    // TODO: we need proper implementing
+
     private int destTonMask = -1;
     private int destNpiMask = -1;
     private String destDigMask = "-1";
@@ -219,7 +233,33 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
     }
 
     @Override
+    public boolean isForPostImsiRequestState() {
+        // TODO: we need proper implementing
+        if (this.getId() == MAGIC_RULES_ID_NNN_CHECK)
+            return true;
+        // TODO: we need proper implementing
+
+        return false;
+    }
+
+    @Override
+    public boolean isForPostDeliveryState() {
+        // TODO: we need proper implementing
+        if (this.getId() == MAGIC_RULES_ID_DELIVERY_ANNOUNCEMENT)
+            return true;
+        // TODO: we need proper implementing
+
+        return false;
+    }
+
+    @Override
     public boolean matches(MProcMessage message) {
+        // TODO: we need proper implementing
+        if (this.getId() >= MAGIC_RULES_ID_START && this.getId() <= MAGIC_RULES_ID_END) {
+            return true;
+        }
+        // TODO: we need proper implementing
+
         if (destTonMask != -1 && destTonMask != message.getDestAddrTon())
             return false;
         if (destNpiMask != -1 && destNpiMask != message.getDestAddrNpi())
@@ -238,7 +278,29 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
     }
 
     @Override
+    public boolean matches(MProcMessageDestination messageDest) {
+        // TODO: we need proper implementing
+        if (this.getId() >= MAGIC_RULES_ID_START && this.getId() <= MAGIC_RULES_ID_END) {
+            return true;
+        }
+        // TODO: we need proper implementing
+
+        return false;
+    }
+
+    @Override
     public void onPostArrival(PostArrivalProcessor factory, MProcMessage message) throws Exception {
+        // TODO: we need proper implementing
+        if (this.getId() == MAGIC_RULES_ID_ARRIVAL_DROP) {
+            factory.dropMessage();
+            return;
+        }
+        if (this.getId() == MAGIC_RULES_ID_ARRIVAL_REJECT) {
+            factory.rejectMessage();
+            return;
+        }
+        // TODO: we need proper implementing
+
         if (this.makeCopy) {
             MProcNewMessage copy = factory.createNewCopyMessage(message);
             factory.postNewMessage(copy);
@@ -265,15 +327,44 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
     @Override
     public void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages, String imsi, String nnnDigits,
             int nnnNumberingPlan, int nnnAddressNature) throws Exception {
+        // TODO: we need proper implementing
+        if (this.getId() == MAGIC_RULES_ID_NNN_CHECK) {
+            if (nnnDigits.startsWith("1")) {
+                factory.dropMessages();
+            }
+        }
+        // TODO: we need proper implementing
     }
 
     @Override
     public void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message, boolean isDeliveryFailure)
             throws Exception {
+        // TODO: we need proper implementing
+        if (this.getId() == MAGIC_RULES_ID_DELIVERY_ANNOUNCEMENT) {
+            // this is a protection against cyclic report for report
+            if (message.getShortMessageText().startsWith("Delivery ") || (message.getEsmClass() & 0x3C) != 0)
+                return;
+
+            String respTxt;
+            if (isDeliveryFailure)
+                respTxt = "Delivery failed for a dest:" + message.getDestAddr() + ", msg:" + message.getShortMessageText();
+            else
+                respTxt = "Delivery succeded for a dest:" + message.getDestAddr() + ", msg:" + message.getShortMessageText();
+            MProcNewMessage resp = factory.createNewResponseMessage(message);
+            resp.setShortMessageText(respTxt);
+            factory.postNewMessage(resp);
+        }
+        // TODO: we need proper implementing
     }
 
     @Override
     public void setInitialRuleParameters(String parametersString) throws Exception {
+        // TODO: we need proper implementing
+        if (this.getId() >= MAGIC_RULES_ID_START && this.getId() <= MAGIC_RULES_ID_END) {
+            return;
+        }
+        // TODO: we need proper implementing
+
         String[] args = splitParametersString(parametersString);
 
         int count = 0;
@@ -402,6 +493,18 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
 
     @Override
     public String getRuleParameters() {
+
+        // TODO: we need proper implementing
+        if (this.getId() == MAGIC_RULES_ID_NNN_CHECK)
+            return "MAGIC_RULES_ID_NNN_CHECK";
+        if (this.getId() == MAGIC_RULES_ID_DELIVERY_ANNOUNCEMENT)
+            return "MAGIC_RULES_ID_DELIVERY_ANNOUNCEMENT";
+        if (this.getId() == MAGIC_RULES_ID_ARRIVAL_DROP)
+            return "MAGIC_RULES_ID_ARRIVAL_DROP";
+        if (this.getId() == MAGIC_RULES_ID_ARRIVAL_REJECT)
+            return "MAGIC_RULES_ID_ARRIVAL_REJECT";
+        // TODO: we need proper implementing
+
         StringBuilder sb = new StringBuilder();
         int parNumber = 0;
 

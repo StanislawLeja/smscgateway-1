@@ -100,9 +100,9 @@ public abstract class MProcRuleBaseImpl implements MProcRule {
      */
     protected String[] splitParametersString(String parametersString) {
         String[] args0 = parametersString.split(" ");
-        FastList<String> al1 = new FastList<String>(args0.length);
-        for (FastList.Node<String> n = al1.head(), end = al1.tail(); (n = n.getNext()) != end;) {
-            String s = n.getValue();
+        FastList<String> al1 = new FastList<String>();
+        for (int i1 = 0; i1 < args0.length; i1++) {
+            String s = args0[i1];
             if (s != null && s.length() > 0)
                 al1.add(s);
         }

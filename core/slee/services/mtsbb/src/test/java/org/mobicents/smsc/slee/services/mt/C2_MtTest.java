@@ -82,6 +82,7 @@ import org.mobicents.slee.resource.map.events.DialogReject;
 import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.cassandra.PreparedStatementCollection_C3;
+import org.mobicents.smsc.domain.MProcManagement;
 import org.mobicents.smsc.domain.MapVersionCache;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
@@ -232,6 +233,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -391,6 +393,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -624,6 +627,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -784,6 +788,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -939,6 +944,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
 //        this.clearDatabase();
 
@@ -1121,6 +1127,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -1485,6 +1492,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -1854,6 +1862,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -2084,6 +2093,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -2319,6 +2329,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -2464,6 +2475,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -2612,6 +2624,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -2765,6 +2778,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
         smscPropertiesManagement.setStoreAndForwordMode(StoreAndForwordMode.fast);
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
@@ -2923,6 +2937,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -3017,6 +3032,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -3123,6 +3139,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -3256,6 +3273,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -3408,6 +3426,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -3500,6 +3519,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy)this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy)this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -3644,6 +3664,7 @@ public class C2_MtTest {
         MAPServiceSmsProxy serviceMt = (MAPServiceSmsProxy) this.mtSbb.mapProvider.getMAPServiceSms();
         MAPServiceSmsProxy serviceRsds = (MAPServiceSmsProxy) this.rsdsSbb.mapProvider.getMAPServiceSms();
         SmscPropertiesManagement smscPropertiesManagement = SmscPropertiesManagement.getInstance();
+        MProcManagement.getInstance("Test");
 
         ArrayList<SmsDef> lst = new ArrayList<SmsDef>();
         SmsDef sd1 = new SmsDef();
@@ -3688,7 +3709,7 @@ public class C2_MtTest {
         this.mtSbb.setSmsSubmitData(smsSubmitData);
 
         // SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason, boolean removeSmsSet
-        this.sriSbb.onDeliveryError(smsSet, ErrorAction.subscriberBusy, ErrorCode.ABSENT_SUBSCRIBER, "X error", true, null);
+        this.sriSbb.onDeliveryError(smsSet, ErrorAction.subscriberBusy, ErrorCode.ABSENT_SUBSCRIBER, "X error", true, null, false);
 
         PreparedStatementCollection_C3[] pscc = this.pers.c2_getPscList();
         long l1 = 0;

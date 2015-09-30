@@ -308,9 +308,7 @@ public class MProcManagement implements MProcManagementMBean {
 
     public MProcResult applyMProcDelivery(Sms sms, boolean isDeliveryFailure) {
         if (this.mprocs.size() == 0) {
-            FastList<Sms> res0 = new FastList<Sms>();
-            res0.add(sms);
-            return new MProcResult(res0, false, false);
+            return new MProcResult(null, false, false);
         }
 
         FastList<MProcRule> cur = this.mprocs;
@@ -337,9 +335,7 @@ public class MProcManagement implements MProcManagementMBean {
 
         FastList<MProcNewMessage> newMsgs = pap.getPostedMessages();
         if (newMsgs == null || newMsgs.size() == 0) {
-            FastList<Sms> res0 = new FastList<Sms>();
-            res0.add(sms);
-            return new MProcResult(res0, false, false);
+            return new MProcResult(null, false, false);
         }
 
         FastList<Sms> res = new FastList<Sms>();

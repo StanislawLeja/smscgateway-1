@@ -35,6 +35,8 @@ import javax.slee.SbbContext;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ResourceAdaptorTypeID;
 
+import javolution.util.FastList;
+
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
 import org.mobicents.protocols.ss7.map.api.MAPParameterFactory;
@@ -70,6 +72,7 @@ import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.DBOperations_C2;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.domain.MProcManagement;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
@@ -81,6 +84,7 @@ import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
 import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.mproc.MProcResult;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerActivity;
@@ -460,7 +464,7 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 	}
 
     protected void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason,
-            boolean removeSmsSet, MAPErrorMessage errMessage) {
+            boolean removeSmsSet, MAPErrorMessage errMessage, boolean isImsiVlrReject) {
         smscStatAggregator.updateMsgOutFailedAll();
 
         PersistenceRAInterface pers = this.getStore();
@@ -595,7 +599,8 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		}
 
         for (Sms sms : lstFailured) {
-            CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED, reason, smscPropertiesManagement.getGenerateReceiptCdr(),
+            CdrGenerator.generateCdr(sms, (isImsiVlrReject ? CdrGenerator.CDR_FAILED_IMSI : CdrGenerator.CDR_FAILED), reason,
+                    smscPropertiesManagement.getGenerateReceiptCdr(),
                     MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
 
             if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
@@ -607,6 +612,61 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
                     }
                 } catch (PersistenceException e) {
                     this.logger.severe("PersistenceException when freeSmsSetFailured(SmsSet smsSet) - c2_createRecordArchive(sms)" + e.getMessage(), e);
+                }
+            }
+
+            // mproc rules applying for delivery phase
+            MProcResult mProcResult = MProcManagement.getInstance().applyMProcDelivery(sms, true);
+            FastList<Sms> addedMessages = mProcResult.getMessageList();
+            if (addedMessages != null) {
+                for (FastList.Node<Sms> n = addedMessages.head(), end = addedMessages.tail(); (n = n.getNext()) != end;) {
+                    Sms smst = n.getValue();
+                    TargetAddress ta = new TargetAddress(smst.getSmsSet().getDestAddrTon(), smst.getSmsSet().getDestAddrNpi(),
+                            smst.getSmsSet().getDestAddr(), smst.getSmsSet().getNetworkId());
+                    TargetAddress lock2 = SmsSetCache.getInstance().addSmsSet(ta);
+                    try {
+                        synchronized (lock2) {
+                            if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                            } else {
+                                boolean storeAndForwMode = MessageUtil.isStoreAndForward(smst);
+                                if (!storeAndForwMode) {
+                                    try {
+                                        this.scheduler.injectSmsOnFly(smst.getSmsSet());
+                                    } catch (Exception e) {
+                                        this.logger.severe(
+                                                "Exception when runnung injectSmsOnFly() for applyMProcDelivery created messages in onDeliveryError(): "
+                                                        + e.getMessage(), e);
+                                    }
+                                } else {
+                                    if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+                                        try {
+                                            smst.setStoringAfterFailure(true);
+                                            this.scheduler.injectSmsOnFly(smst.getSmsSet());
+                                        } catch (Exception e) {
+                                            this.logger.severe(
+                                                    "Exception when runnung injectSmsOnFly() for applyMProcDelivery created messages in onDeliveryError(): "
+                                                            + e.getMessage(), e);
+                                        }
+                                    } else {
+                                        smst.setStored(true);
+                                        this.scheduler.setDestCluster(smst.getSmsSet());
+                                        try {
+                                            pers.c2_scheduleMessage_ReschedDueSlot(
+                                                    smst,
+                                                    smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast,
+                                                    true);
+                                        } catch (PersistenceException e) {
+                                            this.logger.severe(
+                                                    "PersistenceException when onDeliveryError(SmsSet smsSet) - adding applyMProcDelivery created messages"
+                                                            + e.getMessage(), e);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } finally {
+                        SmsSetCache.getInstance().removeSmsSet(lock2);
+                    }
                 }
             }
 
