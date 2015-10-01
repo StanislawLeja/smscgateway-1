@@ -32,3 +32,5 @@ pom.xml.releaseBackup
 /Test_sip.xml
 /Test_mproc.xml
 /01/
+/TestMo_mproc.xml
+/TestTxSmpp_mproc.xml

@@ -22,6 +22,7 @@
 
 package org.mobicents.smsc.mproc.impl;
 
+import org.apache.log4j.Logger;
 import org.mobicents.smsc.mproc.PostImsiProcessor;
 
 /**
@@ -32,8 +33,15 @@ import org.mobicents.smsc.mproc.PostImsiProcessor;
 public class PostImsiProcessorImpl implements PostImsiProcessor {
 
     private boolean needDropMessages = false;
+    private Logger logger;
 
-    public PostImsiProcessorImpl() {
+    public PostImsiProcessorImpl(Logger logger) {
+        this.logger = logger;
+    }
+
+    @Override
+    public Logger getLogger() {
+        return logger;
     }
 
     // results of message processing

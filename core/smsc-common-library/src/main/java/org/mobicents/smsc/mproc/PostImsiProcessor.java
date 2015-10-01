@@ -22,12 +22,19 @@
 
 package org.mobicents.smsc.mproc;
 
+import org.apache.log4j.Logger;
+
 /**
 *
 * @author sergey vetyutnev
 *
 */
 public interface PostImsiProcessor {
+
+    /**
+     * @return the logger that an application can use for logging info into server.log
+     */
+    Logger getLogger();
 
     void dropMessages();
 

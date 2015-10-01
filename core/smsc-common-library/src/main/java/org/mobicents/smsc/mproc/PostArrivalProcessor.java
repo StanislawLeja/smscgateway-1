@@ -24,6 +24,7 @@ package org.mobicents.smsc.mproc;
 
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.mobicents.smsc.library.OriginationType;
 
 /**
@@ -32,6 +33,11 @@ import org.mobicents.smsc.library.OriginationType;
 *
 */
 public interface PostArrivalProcessor {
+
+    /**
+     * @return the logger that an application can use for logging info into server.log
+     */
+    Logger getLogger();
 
     /**
      * Drop the message. Success response (that a message is accepted) will be return to a message originator.

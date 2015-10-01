@@ -232,7 +232,7 @@ public class MProcManagement implements MProcManagementMBean {
         FastList<MProcRule> cur = this.mprocs;
         PostArrivalProcessorImpl pap = new PostArrivalProcessorImpl(
                 this.smscPropertiesManagement.getDefaultValidityPeriodHours(),
-                this.smscPropertiesManagement.getMaxValidityPeriodHours());
+                this.smscPropertiesManagement.getMaxValidityPeriodHours(), logger);
         MProcMessage message = new MProcMessageImpl(sms);
 
         try {
@@ -281,7 +281,7 @@ public class MProcManagement implements MProcManagementMBean {
             return new MProcResult(null, false, false);
 
         FastList<MProcRule> cur = this.mprocs;
-        PostImsiProcessorImpl pap = new PostImsiProcessorImpl();
+        PostImsiProcessorImpl pap = new PostImsiProcessorImpl(logger);
         MProcMessageDestination messageDest = new MProcMessageDestinationImpl(smsSet);
 
         try {
@@ -314,7 +314,7 @@ public class MProcManagement implements MProcManagementMBean {
         FastList<MProcRule> cur = this.mprocs;
         PostDeliveryProcessorImpl pap = new PostDeliveryProcessorImpl(
                 this.smscPropertiesManagement.getDefaultValidityPeriodHours(),
-                this.smscPropertiesManagement.getMaxValidityPeriodHours());
+                this.smscPropertiesManagement.getMaxValidityPeriodHours(), logger);
         MProcMessage message = new MProcMessageImpl(sms);
 
         try {

@@ -192,30 +192,4 @@ public interface MProcNewMessage {
 
     void setRegisteredDelivery_DeliveryReceiptOnSuccess();
 
-    // private int sourceAddrTon;
-    // private int sourceAddrNpi;
-    // private String sourceAddr;
-    // private int destAddrTon;
-    // private int destAddrNpi;
-    // private String destAddr;
-    //
-    // private String shortMessageText;
-    // private byte[] shortMessageBin;
-    //
-    // private Date scheduleDeliveryTime;
-    // private Date validityPeriod;
-
-    // private int networkId;
-    // private int dataCoding;
-    // private int nationalLanguageSingleShift;
-    // private int nationalLanguageLockingShift;
-    // private int esmClass;
-    // private int priority;
-    // private int registeredDelivery;
-
-    // **** this is uncovered
-
-    // private OriginationType originationType;
-    // private TlvSet tlvSet = new TlvSet();
-
 }

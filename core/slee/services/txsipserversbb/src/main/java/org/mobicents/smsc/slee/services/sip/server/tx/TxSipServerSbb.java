@@ -204,8 +204,10 @@ public abstract class TxSipServerSbb implements Sbb {
                 sms = this.createSmsEvent(fromUser, message, ta, store, udh, codingSchme, validityPeriod, regDeliveryInt, sip.getNetworkId());
                 this.processSms(sms, store);
 			} catch (SmscProcessingException e1) {
-				this.logger.severe("SmscProcessingException while processing a message from sip", e1);
-				smscStatAggregator.updateMsgInFailedAll();
+                if (!e1.isSkipErrorLogging()) {
+                    this.logger.severe("SmscProcessingException while processing a message from sip", e1);
+                    smscStatAggregator.updateMsgInFailedAll();
+                }
 
 				ServerTransaction serverTransaction = event.getServerTransaction();
 				Response res;

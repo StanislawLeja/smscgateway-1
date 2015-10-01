@@ -26,6 +26,7 @@ import java.util.Date;
 
 import javolution.util.FastList;
 
+import org.apache.log4j.Logger;
 import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.mproc.MProcMessage;
@@ -42,15 +43,17 @@ public class PostArrivalProcessorImpl implements PostArrivalProcessor {
 
     private int defaultValidityPeriodHours;
     private int maxValidityPeriodHours;
+    private Logger logger;
 
     private boolean needDropMessage = false;
     private boolean needRejectMessage = false;
 
     private FastList<MProcNewMessage> postedMessages = new FastList<MProcNewMessage>();
 
-    public PostArrivalProcessorImpl(int defaultValidityPeriodHours, int maxValidityPeriodHours) {
+    public PostArrivalProcessorImpl(int defaultValidityPeriodHours, int maxValidityPeriodHours, Logger logger) {
         this.defaultValidityPeriodHours = defaultValidityPeriodHours;
         this.maxValidityPeriodHours = maxValidityPeriodHours;
+        this.logger = logger;
     }
 
     // results of message processing
@@ -67,6 +70,11 @@ public class PostArrivalProcessorImpl implements PostArrivalProcessor {
     }
 
     // message processing methods
+    @Override
+    public Logger getLogger() {
+        return logger;
+    }
+
     @Override
     public void dropMessage() {
         needDropMessage = true;

@@ -22,6 +22,7 @@
 
 package org.mobicents.smsc.mproc;
 
+import org.apache.log4j.Logger;
 import org.mobicents.smsc.library.OriginationType;
 
 /**
@@ -30,6 +31,11 @@ import org.mobicents.smsc.library.OriginationType;
 *
 */
 public interface PostDeliveryProcessor {
+
+    /**
+     * @return the logger that an application can use for logging info into server.log
+     */
+    Logger getLogger();
 
     /**
      * Creating a new message template for filling and sending by postNewMessage() method

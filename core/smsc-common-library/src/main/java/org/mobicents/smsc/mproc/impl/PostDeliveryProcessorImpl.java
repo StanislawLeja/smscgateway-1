@@ -24,6 +24,7 @@ package org.mobicents.smsc.mproc.impl;
 
 import javolution.util.FastList;
 
+import org.apache.log4j.Logger;
 import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.mproc.MProcMessage;
 import org.mobicents.smsc.mproc.MProcNewMessage;
@@ -38,15 +39,22 @@ public class PostDeliveryProcessorImpl implements PostDeliveryProcessor {
 
     private int defaultValidityPeriodHours;
     private int maxValidityPeriodHours;
+    private Logger logger;
 
     private FastList<MProcNewMessage> postedMessages = new FastList<MProcNewMessage>();
 
-    public PostDeliveryProcessorImpl(int defaultValidityPeriodHours, int maxValidityPeriodHours) {
+    public PostDeliveryProcessorImpl(int defaultValidityPeriodHours, int maxValidityPeriodHours, Logger logger) {
         this.defaultValidityPeriodHours = defaultValidityPeriodHours;
         this.maxValidityPeriodHours = maxValidityPeriodHours;
+        this.logger = logger;
     }
 
     // results of message processing
+    @Override
+    public Logger getLogger() {
+        return logger;
+    }
+
     public FastList<MProcNewMessage> getPostedMessages() {
         return postedMessages;
     }
