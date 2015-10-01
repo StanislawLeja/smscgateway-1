@@ -28,7 +28,7 @@
 	<property name="telscale-slee.version" value="6.1.2.GA" />
 	<property name="telscale-jss7.version" value="6.2.4.GA" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
-	<property name="telscale-diam.version" value="6.2.0.GA" />
+	<property name="telscale-diam.version" value="6.2.1.327" />
 	<property name="dse-cassandra.version" value="4.5.2" />
 	<property name="checkout.dse-cassandra.dir" value="${cassandra.dir}/dse-${dse-cassandra.version}" />
 	
@@ -47,7 +47,7 @@
 	<property name="checkout.telscale-management-hq.dir" value="${checkout.dir}/telscale-management-hq" />
 	
 	<property name="telscale-diam.download.distro.file" value="TelScale-diameter-${telscale-diam.version}.zip" />
-	<property name="telscale-diam.download.url" value="ftp://ftp.box.com/TelScale%20jDiameter/${telscale-diam.version}/${telscale-diam.download.distro.file}" />
+	<property name="telscale-diam.download.url" value="ftp://ftp.box.com/TelScale%20jDiameter/6.2.1.GA/${telscale-diam.download.distro.file}" />
 	<property name="telscale-diam.distro.zip.path" value="${checkout.dir}/${telscale-diam.download.distro.file}" />
 	
 	<property name="dse-cassandra.download.distro.file" value="dse-cassandra-only-${dse-cassandra.version}.zip" />
