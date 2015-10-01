@@ -329,15 +329,15 @@ EXAMPLES
 			<section id="locking_s_table_CLI">
 			<title>Using CLI</title>
 <para>
-You can set the 'National language locking shift table' value by issuing the command smsc set national-language-locking-shift with appropriate parameters as described below.
-You can verify this by issuing the command smsc get national-language-locking-shift which will display the value set for this property.
+You can set the 'National language locking shift table' value by issuing the command smsc set nationallanguagelockingshift with appropriate parameters as described below.
+You can verify this by issuing the command smsc get nationallanguagelockingshift which will display the value set for this property.
 </para>
 <screen><![CDATA[
 Name
-	smsc set national-language-locking-shift
+	smsc set nationallanguagelockingshift
 
 SYNOPSIS
-	smsc set national-language-locking-shift <NationalLanguageIdentifier>
+	smsc set nationallanguagelockingshift <NationalLanguageIdentifier>
 
 DESCRIPTION
 	National language locking shift table can be configured for messages
@@ -349,8 +349,8 @@ DESCRIPTION
 	This value can be also configured at ESME level.
 
 EXAMPLES
-	smsc set national-language-locking-shift 0
-	smsc set national-language-locking-shift 13
+	smsc set nationallanguagelockingshift 0
+	smsc set nationallanguagelockingshift 13
 ]]></screen>
 			</section>
 			<section id="locking_s_table_GUI">
@@ -375,15 +375,15 @@ EXAMPLES
 			<section id="single_s_table_CLI">
 			<title>Using CLI</title>
 <para>
-You can set the 'National language single shift table' value by issuing the command smsc set national-language-single-shift with appropriate parameters as described below.
-You can verify this by issuing the command smsc get national-language-single-shift which will display the value set for this property.
+You can set the 'National language single shift table' value by issuing the command smsc set nationallanguagesingleshift with appropriate parameters as described below.
+You can verify this by issuing the command smsc get nationallanguagesingleshift which will display the value set for this property.
 </para>
 <screen><![CDATA[
 Name
-	smsc set national-language-single-shift
+	smsc set nationallanguagesingleshift
 
 SYNOPSIS
-	smsc set national-language-single-shift <NationalLanguageIdentifier>
+	smsc set nationallanguagesingleshift <NationalLanguageIdentifier>
 
 DESCRIPTION
 	National language single shift table can be configured for messages
@@ -395,8 +395,8 @@ DESCRIPTION
 	This value can be also configured at ESME level.
 
 EXAMPLES
-	smsc set national-language-single-shift 0
-	smsc set national-language-single-shift 13
+	smsc set nationallanguagesingleshift 0
+	smsc set nationallanguagesingleshift 13
 ]]></screen>
 			</section>
 			<section id="single_s_table_GUI">
@@ -1499,10 +1499,10 @@ Negative values are not accepted. "In process" due_slot can be shifted only forw
 </para>
 <screen><![CDATA[
 Name
-    smsc skip-unsent-messages
+    smsc skipunsentmessages
 
 SYNOPSIS
-    smsc skip-unsent-messages <time in seconds>
+    smsc skipunsentmessages <time in seconds>
 
 DESCRIPTION
 	Executing of this command leads SMSC GW to switch "In process" due_slot
@@ -1512,7 +1512,7 @@ DESCRIPTION
 	scheduled for time in the past but have not delivered so far.
 
 EXAMPLES
-	smsc skip-unsent-messages 0
+	smsc skipunsentmessages 0
 ]]></screen>
             </section>
             <section id="SMSC_Gateway_Server_skip_diue_slot_GUI">

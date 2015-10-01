@@ -926,9 +926,9 @@ public class SMSCShellExecutor implements ShellExecutor {
 
             } else if (parName.equals("hrhlrnumber")) {
                 sb.append(smscPropertiesManagement.getHrHlrNumber());
-            } else if (parName.equals("national-language-single-shift")) {
+            } else if (parName.equals("nationallanguagesingleshift")) {
                 sb.append(smscPropertiesManagement.getNationalLanguageSingleShift());
-            } else if (parName.equals("national-language-locking-shift")) {
+            } else if (parName.equals("nationallanguagelockingshift")) {
                 sb.append(smscPropertiesManagement.getNationalLanguageLockingShift());
 
             } else if (parName.equals("deliverypause")) {
@@ -1158,11 +1158,11 @@ public class SMSCShellExecutor implements ShellExecutor {
             sb.append(smscPropertiesManagement.getHrHlrNumber());
             sb.append("\n");
 
-            sb.append("national-language-single-shift = ");
+            sb.append("nationallanguagesingleshift = ");
             sb.append(smscPropertiesManagement.getNationalLanguageSingleShift());
             sb.append("\n");
 
-            sb.append("national-language-locking-shift = ");
+            sb.append("nationallanguagelockingshift = ");
             sb.append(smscPropertiesManagement.getNationalLanguageLockingShift());
             sb.append("\n");
 

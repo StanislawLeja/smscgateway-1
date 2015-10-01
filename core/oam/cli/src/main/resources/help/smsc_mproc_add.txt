@@ -2,12 +2,12 @@ Name
 	smsc mproc add
 
 SYNOPSIS
-	smsc mproc add <id> desttonmask <destination type of number> 
-	destnpimask <destination numbering plan indicator> destdigmask 
-	<regular expression - destination number digits mask> 
-	originatingmask <SS7_MO | SS7_HR | SMPP | SIP> networkidmask <networkId value> 
-	newnetworkid <new networkId value> newdestton <new destination type of number> 
-	newdestnpi <new destination numbering plan indicator> adddestdigprefix <prefix> 
+	smsc mproc add <class name> <id> desttonmask <destination type of number>
+	destnpimask <destination numbering plan indicator> destdigmask <regular
+	expression - destination number digits mask> originatingmask <SS7_MO |
+	SS7_HR | SMPP | SIP> networkidmask <networkId value> newnetworkid
+	<new networkId value> newdestton<new destination type of number> newdestnpi
+	<new destination numbering plan indicator> adddestdigprefix <prefix>
 	makecopy <false | true>
 
 DESCRIPTION
@@ -27,6 +27,8 @@ PARAMETERS
 
 	Standard Parameters
 
+	class name      - the name of class of mproc rules implementation. For the
+	                default implementation (that is described here) class name is "mproc".
 	id				- A unique id for this message processing rule. Rules are 
 					sorted in ascending order based on this id. All the matching
 					rules are applied.

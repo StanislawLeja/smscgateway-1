@@ -156,6 +156,11 @@ The CDR text file contains a special field, <literal>Message_Delivery_Status</li
 	<listitem><para>Failed delivering a message and the SMSC will now attempt to resend the message or part of the message.
 	</para></listitem>
 	</varlistentry>
+	<varlistentry>
+	<term>failed_imsi</term>
+	<listitem><para>Delivery process was broken by a mproc rule applying at the step when a successful SRI response has been received from HLR.
+	</para></listitem>
+	</varlistentry>
 	</variablelist>
 	<variablelist>
 	<title>Message_Delivery_Status if delivering to ESME:</title>
@@ -208,6 +213,19 @@ The CDR text file contains a special field, <literal>Message_Delivery_Status</li
 	<varlistentry>
 	<term>ocs_rejected</term>
 	<listitem><para>OCS Server rejected an incoming message.
+	</para></listitem>
+	</varlistentry>
+	</variablelist>
+	<variablelist>
+	<title>Message_Delivery_Status if the message has been rejected by a mproc rule applying at the step when a message has been arrived to SMSC GW:</title>
+	<varlistentry>
+	<term>mproc_rejected</term>
+	<listitem><para>A mproc rule rejected an incoming message (and reject response was sent to a message originator).
+	</para></listitem>
+	</varlistentry>
+	<varlistentry>
+	<term>mproc_dropped</term>
+	<listitem><para>A mproc rule dropped an incoming message (and accept response was sent to a message originator).
 	</para></listitem>
 	</varlistentry>
 	</variablelist>
