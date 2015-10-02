@@ -227,7 +227,7 @@ Message processing rules (mproc rules) is a tool for applying some configurable 
 	There are following message processing steps to which mproc rules can be applied:
 	<itemizedlist>
 <listitem>
-<para>When a message has been arrived to SMSC GW. This action is applied after a message has been already processed (and accepted) by Diameter server (if this access to Diameter server is configured).
+<para>onPostArrival request: when a message has been arrived to SMSC GW. This action is applied after a message has been already processed (and accepted) by Diameter server (if this access to Diameter server is configured).
 During this step following actions are possible:
 	<itemizedlist>
 <listitem>
@@ -247,10 +247,10 @@ Only after actions applying messages will be stored into a database or/and deliv
 </para>
 </listitem>
 <listitem>
-<para>When a successful SRI response has been received from HLR for an SS7 destination message. At this step a message can be dropped (to prevent further delivery).</para>
+<para>onPostImsiRequest request: when a successful SRI response has been received from HLR for an SS7 destination message. At this step a message can be dropped (to prevent further delivery).</para>
 </listitem>
 <listitem>
-<para>When a message delivery was succeeded or failed. At this step a new message(es) can be posted for delivering (it can be for example some delivery report).</para>
+<para>onPostDelivery request: when a message delivery was succeeded or failed. At this step a new message(es) can be posted for delivering (it can be for example some delivery report).</para>
 </listitem>
 	</itemizedlist>
 	</para>
@@ -411,7 +411,763 @@ b) Actions, which will be applied to messages.
 	<section id="mproc_rules_customized">
 		<title>Customized message processing rules</title>
 		<para>
-		..................
+In case of default mproc rules implementing does not fit to a customer's needs, you can make your own implementation of mproc rules.
+We will describe here steps how to achieve this solution.
+		</para>
+
+		<para>
+			<procedure>
+				<title>Steps for custom mproc rules implementing</title>
+				<step><para>You need to create your own java code that covers your needs in message processing.
+You need to implement two interfaces using some interfaces that are provided by SMSC GW.
+You need to cover two parts of rules usage - a rule configuring part and a rule applying part.
+Please pay attention that in your code you may not perform long delays in order not to dramatically decrease of SMSC GW productivity.
+Then you will have to create your own jar and deploy it into SMSC GW.</para>
+				</step>
+				<step><para>
+					 <substeps>
+						<step><para>You need to select a rule class name that will be used for your custom rules. This can be any word without spaces.
+For default mproc rules implementation the rule class name is "mproc". Let's use in this example the rule class name "testrule".
+						</para>
+						</step>	
+						<step><para>You need to select two classes names for your own interface implementation. You need to impelent two interfaces: MProcRuleFactory and MProcRule.
+Let's use MProcRuleFactoryTestImpl and MProcRuleTestImpl class names for our example.
+						</para>
+						</step>	
+						<step><para>You need to decide which actions will your custom rules perform and for which messages.
+						Let's create a custom rule that will affect to any message at onPostArrival step that destination address digits are started with a configurable parameter "par1" and
+						add to matched messages prefix "par2" (the configurable parameter) to a message destination address.
+						</para>
+						</step>	
+					 </substeps>
+				</para>
+				</step>
+				<step><para>Creating of two empty classes to which we will add further needed logic:
+<programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc.testimpl;
+
+import org.mobicents.smsc.mproc.MProcRuleFactory;
+
+public class MProcRuleFactoryTestImpl implements MProcRuleFactory {
+}
+</programlisting>
+<programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc.testimpl;
+
+import org.mobicents.smsc.mproc.MProcRule;
+
+public class MProcRuleTestImpl implements MProcRule {
+}
+</programlisting>
+				</para>
+				</step>
+				<step><para>Implementing of MProcRuleFactory interface. The content of interface is the following:
+<programlisting language="Java" role="JAVA">
+public interface MProcRuleFactory {
+    String getRuleClassName();
+    MProcRule createMProcRuleInstance();
+}
+</programlisting>
+Method getRuleClassName() must return the rule class name.
+Method createMProcRuleInstance() must return a customer's implementation of MProcRule (in this example MProcRuleTestImpl class).
+Here is an example of implementing:
+<programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc.testimpl;
+
+import org.mobicents.smsc.mproc.MProcRule;
+import org.mobicents.smsc.mproc.MProcRuleFactory;
+
+public class MProcRuleFactoryTestImpl implements MProcRuleFactory {
+    @Override
+    public String getRuleClassName() {
+        return "testrule";
+    }
+
+    @Override
+    public MProcRule createMProcRuleInstance() {
+        return new MProcRuleTestImpl();
+    }
+}
+</programlisting>
+				</para>
+				</step>
+				<step><para>Then we need to implement of MProcRule interface. Let's start with learning of the interface. The content of the interface is the following:
+<programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc;
+
+public interface MProcRule extends MProcRuleMBean {
+
+    void setId(int val);
+
+    /**
+     * @return true if the mproc rule fits to a message (used for onPostArrival and onPostDelivery)
+     */
+    boolean matches(MProcMessage message);
+
+    /**
+     * @return true if the mproc rule fits to a message destination (used for onPostImsiRequest)
+     */
+    boolean matches(MProcMessageDestination messageDest);
+
+    /**
+     * the event occurs when a message has just come to SMSC
+     */
+    void onPostArrival(PostArrivalProcessor factory, MProcMessage message)
+            throws Exception;
+
+    /**
+     * the event occurs when IMSI / NNN has been received from HRL
+     */
+    void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages)
+    throws Exception;
+
+    /**
+     * the event occurs when a message has just been delivered (or delivery failure)
+     */
+    void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message)
+    throws Exception;
+
+    /**
+     * this method must implement setting of rule parameters as for provided CLI string
+     * at the step of rule creation
+     */
+    void setInitialRuleParameters(String parametersString) throws Exception;
+
+    /**
+     * this method must implement setting of rule parameters as for provided CLI string
+     * at the step of rules modifying
+     */
+    void updateRuleParameters(String parametersString) throws Exception;
+}
+</programlisting>
+and the parent interface content is:
+<programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc;
+
+public interface MProcRuleMBean {
+
+    /**
+     * @return the id of the mproc rule
+     */
+    int getId();
+
+    /**
+     * @return Rule class of the mproc rule ("default" or other when a customer implementation)
+     */
+    String getRuleClassName();
+
+    /**
+     * @return true if the mproc rule is used for the phase when a message has just come to SMSC
+     */
+    boolean isForPostArrivalState();
+
+    /**
+     * @return true if the mproc rule is used for the phase when IMSI / NNN has been received
+     * from HRL
+     */
+    boolean isForPostImsiRequestState();
+
+    /**
+     * @return true if the mproc rule is used for the phase when a message has just been
+     * delivered (or delivery failure)
+     */
+    boolean isForPostDeliveryState();
+
+    /**
+     * @return rule parameters as CLI return string
+     */
+    String getRuleParameters();
+}
+</programlisting>
+
+<table
+						frame="all"
+						pgwide="1">
+<title>MProcRule and MProcRuleMBean interfaces methods description</title>
+		<tgroup cols='2' colsep='1' rowsep='1'>
+		<colspec
+								colnum="1"
+								colname="c0" />
+		<colspec
+								colnum="2"
+								colname="c1" />
+		<thead>
+			<row>
+				<entry>Methods</entry>
+				<entry>Description</entry>
+			</row>
+		</thead>
+		<tbody>
+			<row>
+				<entry>getId(), setId()</entry>
+				<entry>mproc rule id getter and setter. id value is unique for each mproc rule inside SMSC GW.
+				</entry>
+			</row>
+			<row>
+				<entry>getRuleClassName()</entry>
+				<entry>Returns the rule class name ("testrule" in this example)</entry>
+			</row>
+			<row>
+				<entry>getRuleParameters(), setInitialRuleParameters(), updateRuleParameters()</entry>
+				<entry>Getter and setters of configured parameters for a rule instance. Parameters are formed as a plain text string, that can be provided by CLI interface.
+				In this example we need to configure two parameters par1 and par2. Let's specify the parameters strinf as "par1" and "par2" (two values after a space, for example "11 34").
+				</entry>
+			</row>
+			<row>
+				<entry>isForPostArrivalState(), isForPostImsiRequestState(), isForPostDeliveryState()</entry>
+				<entry>Returns true if this rule affects to a message processing step
+				(for onPostArrival, onPostDelivery and onPostImsi requests)
+				and false if not. You have to check configured parameters of a rule and return a proper value</entry>
+			</row>
+			<row>
+				<entry>matches(MProcMessage message), matches(MProcMessageDestination messageDest)</entry>
+				<entry>These methods must return true if a message fit to rule conditions and false if not.
+				Fisrt method is used for onPostArrival and onPostDelivery request, the second one for onPostImsi requests.</entry>
+			</row>
+			<row>
+				<entry>onPostArrival(), onPostImsiRequest(), onPostDelivery()</entry>
+				<entry>These methods are needed for implementing of rule applying actions.</entry>
+			</row>
+		</tbody>
+</tgroup>
+</table>
+Id parameter and custom rule parameters ("par1" and "par2" in this example) must be stored into xml config file (it is located in &lt;jboss&gt;/server/default/data/SmscManagement_mproc.xml).
+For this you need to implement several extra methods that will be described later.
+				</para>
+				</step>
+				<step><para>Reusing of base MProcRuleBaseImpl base class. There is a base class which is recommended to be used as a base class for MProcRule interface implementing.
+				MProcRuleBaseImpl class contains some useful methods that cover getter and setter and code for stroing of this parameter into xml config file (read() and write() methods),
+				default stubs for matches() and onPost*() methods
+				and a service method for splitting of a parameters plain text string into subparameters (splitParametersString()). 
+				</para>
+				<para>Here is the new template of MProcRuleTestImpl class implementation that reuses the base class MProcRuleBaseImpl:
+<programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc.testimpl;
+
+import org.mobicents.smsc.mproc.impl.MProcRuleBaseImpl;
+
+public class MProcRuleTestImpl extends MProcRuleBaseImpl {
+}
+</programlisting>
+				</para>
+				</step>
+				<step><para>Implementing of getRuleParameters() method of MProcRule. Here is an example:
+<programlisting language="Java" role="JAVA">
+    @Override
+    public String getRuleParameters() {
+        return "testrule";
+    }
+</programlisting>
+				</para>
+				</step>
+				<step><para>Implementing of methods that cover getter / setters for message custom parameters and storing them into xml config file. 
+				</para>
+				<para>
+				In the example setInitialRuleParameters() and updateRuleParameters() methods are implemented in the same way.
+				You can implement them in different ways so that updateRuleParameters() method can accept not the whole set of parameters but only that ones that a user wants to change.
+				</para>
+				<para>
+				M_PROC_RULE_TEST_XML is responsible for XML serializing / deserializing. See more info for them in javolution library specification.
+				</para>
+				<para>
+				Here is an example (only the part that is described in this step):
+<programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc.testimpl;
+
+import javolution.xml.XMLFormat;
+import javolution.xml.stream.XMLStreamException;
+import org.mobicents.smsc.mproc.impl.MProcRuleBaseImpl;
+
+public class MProcRuleTestImpl extends MProcRuleBaseImpl {
+
+    private static final String PAR1 = "par1";
+    private static final String PAR2 = "par2";
+    private String par1, par2;
+
+    @Override
+    public void setInitialRuleParameters(String parametersString) throws Exception {
+        String[] args = splitParametersString(parametersString);
+        if (args.length != 2) {
+            throw new Exception("parametersString must contains 2 parameters");
+        }
+        par1 = args[0];
+        par2 = args[1];
+    }
+
+    @Override
+    public void updateRuleParameters(String parametersString) throws Exception {
+        String[] args = splitParametersString(parametersString);
+        if (args.length != 2) {
+            throw new Exception("parametersString must contains 2 parameters");
+        }
+        par1 = args[0];
+        par2 = args[1];
+    }
+
+    @Override
+    public String getRuleClassName() {
+        return par1 + " " + par2;
+    }
+
+    /**
+     * XML Serialization/Deserialization
+     */
+    protected static final XMLFormat&lt;MProcRuleTestImpl&gt; M_PROC_RULE_TEST_XML =
+    new XMLFormat&lt;MProcRuleTestImpl&gt;(MProcRuleTestImpl.class) {
+
+        @Override
+        public void read(javolution.xml.XMLFormat.InputElement xml, MProcRuleTestImpl mProcRule)
+        throws XMLStreamException {
+            M_PROC_RULE_BASE_XML.read(xml, mProcRule);
+
+            mProcRule.par1 = xml.getAttribute(PAR1, "");
+            mProcRule.par2 = xml.getAttribute(PAR2, "");
+        }
+
+        @Override
+        public void write(MProcRuleTestImpl mProcRule, javolution.xml.XMLFormat.OutputElement xml)
+        throws XMLStreamException {
+            M_PROC_RULE_BASE_XML.write(mProcRule, xml);
+
+            xml.setAttribute(PAR1, mProcRule.par1);
+            xml.setAttribute(PAR2, mProcRule.par2);
+        }
+    };
+}
+</programlisting>
+				</para>
+				</step>
+				<step><para>Ovveriding of one of more isForPost*() methods (for allowing of processing of a needed message processing step). In our example it is isForPostArrivalState():
+<programlisting language="Java" role="JAVA">
+    @Override
+    public boolean isForPostArrivalState() {
+        return true;
+    }
+</programlisting>
+				</para>
+				</step>
+				<step><para>Implementing of a needed matches() method.
+				In our example we process messages which destination address digits are started with a configurable parameter "par1".
+<programlisting language="Java" role="JAVA">
+    @Override
+    public boolean matches(MProcMessage message) {
+        if (message.getDestAddr().startsWith(par1))
+            return true;
+        else
+            return false;
+    }
+</programlisting>
+				For matches() methods we will use interfaces MProcMessage interface (for onPostArrival and onPostDelivery) or MProcMessageDestination interface (for onPostImsiRequest).
+				MProcMessage interface provides info for processing message fields and MProcMessageDestination interface provides info for destination address and networkId fields of messages for which SRI request was made.
+				Here is a code of these interfaces. 
+<programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc;
+
+import java.util.Date;
+import org.mobicents.smsc.library.OriginationType;
+
+public interface MProcMessage {
+
+    // source address part
+    int getSourceAddrTon();
+
+    int getSourceAddrNpi();
+
+    String getSourceAddr();
+
+    // dest address part
+    int getDestAddrTon();
+
+    int getDestAddrNpi();
+
+    String getDestAddr();
+
+    // message content part
+    String getShortMessageText();
+
+    byte[] getShortMessageBin();
+
+    // other options
+    int getNetworkId();
+
+    int getOrigNetworkId();
+
+    String getOrigEsmeName();
+
+    OriginationType getOriginationType();
+
+    Date getScheduleDeliveryTime();
+
+    Date getValidityPeriod();
+
+    int getDataCoding();
+
+    int getNationalLanguageSingleShift();
+
+    int getNationalLanguageLockingShift();
+
+    int getEsmClass();
+
+    int getPriority();
+
+    int getRegisteredDelivery();
+}
+</programlisting>
+<programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc;
+
+public interface MProcMessageDestination {
+
+    // dest address part
+    int getDestAddrTon();
+
+    int getDestAddrNpi();
+
+    String getDestAddr();
+
+    // other options
+    int getNetworkId();
+}
+</programlisting>
+
+				</para>
+				</step>
+				<step><para>
+				Implementing of methods that make some actions.
+				In our example this is onPostArrival() and the action is adding "par2" prefix into destination address digits.
+				These methods will be invoked for all messages that match rule's conditions.
+<programlisting language="Java" role="JAVA">
+    @Override
+    public void onPostArrival(PostArrivalProcessor factory, MProcMessage message)
+    throws Exception {
+        String destAddr = this.par2 + message.getDestAddr();
+        factory.updateMessageDestAddr(message, destAddr);
+    }
+</programlisting>
+				In onPostArrival(), onPostImsiRequest() and onPostDelivery() methods you can use provided interfaces PostArrivalProcessor, PostImsiProcessor and PostDeliveryProcessor
+				that provide methods for message processing / adding / dropping / rejecting.
+					 <substeps>
+						<step><para>PostArrivalProcessor interface content:
+<programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc;
+
+import java.util.Date;
+import org.apache.log4j.Logger;
+import org.mobicents.smsc.library.OriginationType;
+
+public interface PostArrivalProcessor {
+    // access to environmental parameters
+    /**
+     * @return the logger that an application can use for logging info into server.log
+     */
+    Logger getLogger();
+
+    // actions
+    /**
+     * Drop the message. Success response (that a message is accepted) will be return
+     * to a message originator.
+     */
+    void dropMessage();
+
+    /**
+     * Drop the message. A reject will be sent to a message originator.
+     */
+    void rejectMessage();
+
+    // updating of a message section
+    void updateMessageNetworkId(MProcMessage message, int newNetworkId);
+
+    /**
+     * Updating of destination address message TON. In case of bad value (&lt;0 or &gt;6)
+     * MProcRuleException will be thrown
+     * 
+     * @param message
+     * @param newDestTon
+     * @throws MProcRuleException
+     */
+    void updateMessageDestAddrTon(MProcMessage message, int newDestTon)
+    throws MProcRuleException;
+
+
+    /**
+     * Updating of destination address message NPI. In case of bad value (&lt;0 or &gt;6)
+     * MProcRuleException will be thrown
+     * 
+     * @param message
+     * @param newDestNpi
+     * @throws MProcRuleException
+     */
+    void updateMessageDestAddrNpi(MProcMessage message, int newDestNpi)
+    throws MProcRuleException;
+
+    /**
+     * Updating of destination address message digits. Value can not be null and must have
+     * length 1-21 characters. In case of
+     * bad value MProcRuleException will be thrown
+     * 
+     * @param message
+     * @param newDigits
+     * @throws MProcRuleException
+     */
+    void updateMessageDestAddr(MProcMessage message, String newDigits)
+    throws MProcRuleException;
+
+    /**
+     * Updating of source address message TON. In case of bad value (&lt;0 or &gt;6)
+     * MProcRuleException will be thrown
+     * 
+     * @param message
+     * @param newDestTon
+     * @throws MProcRuleException
+     */
+    void updateMessageSourceAddrTon(MProcMessage message, int newDestTon)
+    throws MProcRuleException;
+
+    /**
+     * Updating of source address message NPI. In case of bad value (&lt;0 or &gt;6)
+     * MProcRuleException will be thrown
+     * 
+     * @param message
+     * @param newDestNpi
+     * @throws MProcRuleException
+     */
+    void updateMessageSourceAddrNpi(MProcMessage message, int newDestNpi)
+    throws MProcRuleException;
+
+    /**
+     * Updating of source address message digits. Value can not be null and must have
+     * length 1-21 characters. In case of
+     * bad value MProcRuleException will be thrown
+     * 
+     * @param message
+     * @param newDigits
+     * @throws MProcRuleException
+     */
+    void updateMessageSourceAddr(MProcMessage message, String newDigits)
+    throws MProcRuleException;
+
+    /**
+     * Updating of message text. Value must not be null and must have length 0-4300.
+     * In case of bad value MProcRuleException
+     * will be thrown
+     * 
+     * @param message
+     * @param newShortMessageText
+     * @throws MProcRuleException
+     */
+    void updateShortMessageText(MProcMessage message, String newShortMessageText)
+    throws MProcRuleException;
+
+    /**
+     * Updating of UDH binary content. Value can be null or must have length &gt; 0.
+     * In case of bad value MProcRuleException will
+     * be thrown
+     * 
+     * @param message
+     * @param newShortMessageText
+     * @throws MProcRuleException
+     */
+    void updateShortMessageBin(MProcMessage message, byte[] newShortMessageBin)
+    throws MProcRuleException;
+
+    /**
+     * Updating of ScheduleDeliveryTime - the time before which a message will not be
+     * delivered. This value can be null, this means that the message will be tried
+     * to delivery immediately. This value must be at least 3 hours before a delivery
+     * period end. If you pass the value that is later then 3 hours before a delivery
+     * period end, then 3 hours before a delivery period end will be set. If you
+     * change both ValidityPeriod and ScheduleDeliveryTime values, then you have to
+     * setup ValidityPeriod value firstly.
+     * 
+     * @param message
+     * @param newScheduleDeliveryTime
+     */
+    void updateScheduleDeliveryTime(MProcMessage message, Date newScheduleDeliveryTime);
+
+    /**
+     * Updating delivery period end time. This value can be null, this means that
+     * delivery period will be set to a default delivery period value of SMSC GW. If
+     * the value is more than max validity period that is configured for SMSC GW,
+     * then max validity period will be used instead of a provided value. If you
+     * change both ValidityPeriod and ScheduleDeliveryTime values, then you have to
+     * setup ValidityPeriod value firstly.
+     * 
+     * @param message
+     * @param newValidityPeriod
+     */
+    void updateValidityPeriod(MProcMessage message, Date newValidityPeriod);
+
+    void updateDataCoding(MProcMessage message, int newDataCoding);
+
+    void updateDataCodingGsm7(MProcMessage message);
+
+    void updateDataCodingGsm8(MProcMessage message);
+
+    void updateDataCodingUcs2(MProcMessage message);
+
+    void updateNationalLanguageSingleShift(MProcMessage message,
+    int newNationalLanguageSingleShift);
+
+    void updateNationalLanguageLockingShift(MProcMessage message,
+    int newNationalLanguageLockingShift);
+
+    void updateEsmClass(MProcMessage message, int newEsmClass);
+
+    void updateEsmClass_ModeDatagram(MProcMessage message);
+
+    void updateEsmClass_ModeTransaction(MProcMessage message);
+
+    void updateEsmClass_ModeStoreAndForward(MProcMessage message);
+
+    void updateEsmClass_TypeNormalMessage(MProcMessage message);
+
+    void updateEsmClass_TypeDeliveryReceipt(MProcMessage message);
+
+    void updateEsmClass_UDHIndicatorPresent(MProcMessage message);
+
+    void updateEsmClass_UDHIndicatorAbsent(MProcMessage message);
+
+    void updatePriority(MProcMessage message, int newPriority);
+
+    void updateRegisteredDelivery(MProcMessage message, int newRegisteredDelivery);
+
+    void updateRegisteredDelivery_DeliveryReceiptNo(MProcMessage message);
+
+    void updateRegisteredDelivery_DeliveryReceiptOnSuccessOrFailure(MProcMessage message);
+
+    void updateRegisteredDelivery_DeliveryReceiptOnFailure(MProcMessage message);
+
+    void updateRegisteredDelivery_DeliveryReceiptOnSuccess(MProcMessage message);
+
+    // new message posting section
+    /**
+     * Creating a new message template for filling and sending by postNewMessage() method
+     */
+    MProcNewMessage createNewEmptyMessage(OriginationType originationType);
+
+    MProcNewMessage createNewCopyMessage(MProcMessage message);
+
+    MProcNewMessage createNewResponseMessage(MProcMessage message);
+
+    /**
+     * Posting a new message. To post a new message you need: create a message template
+     * by invoking of createNewMessage(), fill it and post it be invoking of
+     * postNewMessage(). For this new message no mproc rule and diameter request will
+     * be applied.
+     */
+    void postNewMessage(MProcNewMessage message);
+}
+</programlisting>
+						</para>
+						</step>	
+						<step><para>PostImsiProcessor interface content:
+<programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc;
+
+import org.apache.log4j.Logger;
+
+public interface PostImsiProcessor {
+    // access to environmental parameters
+    /**
+     * @return the logger that an application can use for logging info into server.log
+     */
+    Logger getLogger();
+
+    String getImsi();
+
+    String getNnnDigits();
+
+    int getNnnNumberingPlan();
+
+    int getNnnAddressNature();
+
+    // actions
+    void dropMessages();
+}
+</programlisting>
+						</para>
+						</step>	
+						<step><para>PostDeliveryProcessor interface content:
+<programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc;
+
+import org.apache.log4j.Logger;
+import org.mobicents.smsc.library.OriginationType;
+
+public interface PostDeliveryProcessor {
+    // access to environmental parameters
+    /**
+     * @return the logger that an application can use for logging info into server.log
+     */
+    Logger getLogger();
+
+    boolean isDeliveryFailure();
+    
+    // actions
+    /**
+     * Creating a new message template for filling and sending by postNewMessage() method
+     */
+    MProcNewMessage createNewEmptyMessage(OriginationType originationType);
+
+    MProcNewMessage createNewCopyMessage(MProcMessage message);
+
+    MProcNewMessage createNewResponseMessage(MProcMessage message);
+
+    /**
+     * Posting a new message. To post a new message you need: create a message template
+     * by invoking of createNewMessage(), fill it and post it be invoking
+     * of postNewMessage(). For this new message no mproc rule and diameter request
+     * will be applied.
+     */
+    void postNewMessage(MProcNewMessage message);
+}
+</programlisting>
+						</para>
+						</step>	
+					 </substeps>
+				</para>
+				</step>
+				<step><para>
+				Now we have fully prepaired java code and then need to deploy it.
+					 <substeps>
+						<step><para>Compile java code and create a jar library. Put the created jar into the folder
+						&lt;jboss&gt;/server/default/deploy/telscale-smsc-server/lib.
+						</para>
+						</step>	
+						<step><para>You need to update &lt;jboss&gt;/server/default/deploy/telscale-smsc-server/META-INF/jboss-beans.xml config file.
+						</para>
+						<para>The first action is adding just after describing of default mproc rules bean name="MProcRuleFactoryDefault" a new bean that will describe your new created factory (MProcRuleFactoryTestImpl in our example):
+<programlisting language="XML" role="XML">
+<![CDATA[    <bean name="MProcRuleFactoryTest" class="org.mobicents.smsc.mproc.testimpl.MProcRuleFactoryTestImpl">
+    </bean>
+]]></programlisting>
+						</para>
+						<para>In the "bean name="SmscManagement"" section - property &lt;property name="MProcRuleFactories"&gt; - after the line &lt;inject bean="MProcRuleFactoryDefault"/&gt; (that means default mproc rules implementing)
+						- add the line that describes your new created bean:
+<programlisting language="XML" role="XML">
+<![CDATA[        <property name="MProcRuleFactories">
+            <list elementClass="org.mobicents.smsc.mproc.MProcRuleFactory">
+                <inject bean="MProcRuleFactoryDefault"/>
+                <inject bean="MProcRuleFactoryTest"/>
+            </list>
+        </property>
+]]></programlisting>
+						</para>
+						</step>	
+					 </substeps>
+				</para>
+				</step>
+				<step><para>Start SMSC GW</para>
+				</step>
+				<step>
+				<para>Create an mproc rule by using CLI interface. Let's create a rule with id=1 that will be applied for messages which destination adresses are started with "22" and this rule will add prefix "33".
+				To achive it run CLI console and run the following command</para>
+				<para>smsc mproc add testrule 1 22 33</para>
+				<para>where "testrule" is an implemented class name, "22 33" is aparameter string.</para>
+				</step>
+				<step><para>Send a message to the destination address that starts with "22" (for example "221111") and find that the message will be delivered to the address with prefix "33" ("33221111" in our example).</para>
+				</step>
+			</procedure>
 		</para>
 	</section>
 
