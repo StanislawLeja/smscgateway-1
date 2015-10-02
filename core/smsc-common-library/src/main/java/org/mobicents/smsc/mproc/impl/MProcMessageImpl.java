@@ -66,6 +66,16 @@ public class MProcMessageImpl implements MProcMessage {
     }
 
     @Override
+    public int getOrigNetworkId() {
+        return sms.getOrigNetworkId();
+    }
+
+    @Override
+    public String getOrigEsmeName() {
+        return sms.getOrigEsmeName();
+    }
+
+    @Override
     public int getSourceAddrTon() {
         return sms.getSourceAddrTon();
     }

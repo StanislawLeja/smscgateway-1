@@ -40,13 +40,16 @@ public class PostDeliveryProcessorImpl implements PostDeliveryProcessor {
     private int defaultValidityPeriodHours;
     private int maxValidityPeriodHours;
     private Logger logger;
+    private boolean deliveryFailure;
 
     private FastList<MProcNewMessage> postedMessages = new FastList<MProcNewMessage>();
 
-    public PostDeliveryProcessorImpl(int defaultValidityPeriodHours, int maxValidityPeriodHours, Logger logger) {
+    public PostDeliveryProcessorImpl(int defaultValidityPeriodHours, int maxValidityPeriodHours, Logger logger,
+            boolean deliveryFailure) {
         this.defaultValidityPeriodHours = defaultValidityPeriodHours;
         this.maxValidityPeriodHours = maxValidityPeriodHours;
         this.logger = logger;
+        this.deliveryFailure = deliveryFailure;
     }
 
     // results of message processing
@@ -77,6 +80,11 @@ public class PostDeliveryProcessorImpl implements PostDeliveryProcessor {
     @Override
     public void postNewMessage(MProcNewMessage message) {
         postedMessages.add(message);
+    }
+
+    @Override
+    public boolean isDeliveryFailure() {
+        return deliveryFailure;
     }
 
 }

@@ -226,7 +226,9 @@ public class MProcManagement implements MProcManagementMBean {
         if (this.mprocs.size() == 0) {
             FastList<Sms> res0 = new FastList<Sms>();
             res0.add(sms);
-            return new MProcResult(res0, false, false);
+            MProcResult res = new MProcResult();
+            res.setMessageList(res0);
+            return res;
         }
 
         FastList<MProcRule> cur = this.mprocs;
@@ -248,40 +250,50 @@ public class MProcManagement implements MProcManagementMBean {
         } catch (Throwable e) {
             logger.error(
                     "Exception when invoking rule.matches(message) or applyMProcArrival: " + e.getMessage(), e);
-            return new MProcResult(null, false, true);
+            MProcResult res = new MProcResult();
+            res.setMessageDropped(true);
+            return res;
         }
 
         if (pap.isNeedDropMessage()) {
-            return new MProcResult(null, false, true);
+            MProcResult res = new MProcResult();
+            res.setMessageDropped(true);
+            return res;
         }
 
         if (pap.isNeedRejectMessage()) {
-            return new MProcResult(null, true, false);
+            MProcResult res = new MProcResult();
+            res.setMessageRejected(true);
+            return res;
         }
 
         FastList<MProcNewMessage> newMsgs = pap.getPostedMessages();
         if (newMsgs == null || newMsgs.size() == 0) {
             FastList<Sms> res0 = new FastList<Sms>();
             res0.add(sms);
-            return new MProcResult(res0, false, false);
+            MProcResult res = new MProcResult();
+            res.setMessageList(res0);
+            return res;
         }
 
-        FastList<Sms> res = new FastList<Sms>();
-        res.add(sms);
+        FastList<Sms> res0 = new FastList<Sms>();
+        res0.add(sms);
         for (FastList.Node<MProcNewMessage> n = newMsgs.head(), end = newMsgs.tail(); (n = n.getNext()) != end;) {
             MProcNewMessageImpl newMsg = (MProcNewMessageImpl) n.getValue();
-            res.add(newMsg.getSmsContent());
+            res0.add(newMsg.getSmsContent());
         }
-        return new MProcResult(res, false, false);
+        MProcResult res = new MProcResult();
+        res.setMessageList(res0);
+        return res;
     }
 
     public MProcResult applyMProcImsiRequest(SmsSet smsSet, String imsi, String nnnDigits, int nnnNumberingPlan,
             int nnnAddressNature) {
         if (this.mprocs.size() == 0)
-            return new MProcResult(null, false, false);
+            return new MProcResult();
 
         FastList<MProcRule> cur = this.mprocs;
-        PostImsiProcessorImpl pap = new PostImsiProcessorImpl(logger);
+        PostImsiProcessorImpl pap = new PostImsiProcessorImpl(logger, imsi, nnnDigits, nnnNumberingPlan, nnnAddressNature);
         MProcMessageDestination messageDest = new MProcMessageDestinationImpl(smsSet);
 
         try {
@@ -291,30 +303,31 @@ public class MProcManagement implements MProcManagementMBean {
                     if (logger.isDebugEnabled()) {
                         logger.debug("MRule matches at ImsiRequest phase to a message:\nrule: " + rule + "\nmessage: " + smsSet);
                     }
-                    rule.onPostImsiRequest(pap, messageDest, imsi, nnnDigits, nnnNumberingPlan, nnnAddressNature);
+                    rule.onPostImsiRequest(pap, messageDest);
                 }
             }
         } catch (Throwable e) {
-            logger.error(
-                    "Exception when invoking rule.matches(message) or applyMProcImsiRequest(): " + e.getMessage(), e);
-            return new MProcResult(null, false, false);
+            logger.error("Exception when invoking rule.matches(message) or applyMProcImsiRequest(): " + e.getMessage(), e);
+            return new MProcResult();
         }
 
         if (pap.isNeedDropMessages()) {
-            return new MProcResult(null, false, true);
+            MProcResult res = new MProcResult();
+            res.setMessageDropped(true);
+            return res;
         }
-        return new MProcResult(null, false, false);
+        return new MProcResult();
     }
 
-    public MProcResult applyMProcDelivery(Sms sms, boolean isDeliveryFailure) {
+    public MProcResult applyMProcDelivery(Sms sms, boolean deliveryFailure) {
         if (this.mprocs.size() == 0) {
-            return new MProcResult(null, false, false);
+            return new MProcResult();
         }
 
         FastList<MProcRule> cur = this.mprocs;
         PostDeliveryProcessorImpl pap = new PostDeliveryProcessorImpl(
                 this.smscPropertiesManagement.getDefaultValidityPeriodHours(),
-                this.smscPropertiesManagement.getMaxValidityPeriodHours(), logger);
+                this.smscPropertiesManagement.getMaxValidityPeriodHours(), logger, deliveryFailure);
         MProcMessage message = new MProcMessageImpl(sms);
 
         try {
@@ -324,26 +337,28 @@ public class MProcManagement implements MProcManagementMBean {
                     if (logger.isDebugEnabled()) {
                         logger.debug("MRule matches at Delivery phase to a message:\nrule: " + rule + "\nmessage: " + sms);
                     }
-                    rule.onPostDelivery(pap, message, isDeliveryFailure);
+                    rule.onPostDelivery(pap, message);
                 }
             }
         } catch (Throwable e) {
             logger.error(
                     "Exception when invoking rule.matches(message) or onPostDelivery(): " + e.getMessage(), e);
-            return new MProcResult(null, false, true);
+            return new MProcResult();
         }
 
         FastList<MProcNewMessage> newMsgs = pap.getPostedMessages();
         if (newMsgs == null || newMsgs.size() == 0) {
-            return new MProcResult(null, false, false);
+            return new MProcResult();
         }
 
-        FastList<Sms> res = new FastList<Sms>();
+        FastList<Sms> res0 = new FastList<Sms>();
         for (FastList.Node<MProcNewMessage> n = newMsgs.head(), end = newMsgs.tail(); (n = n.getNext()) != end;) {
             MProcNewMessageImpl newMsg = (MProcNewMessageImpl) n.getValue();
-            res.add(newMsg.getSmsContent());
+            res0.add(newMsg.getSmsContent());
         }
-        return new MProcResult(res, false, false);
+        MProcResult res = new MProcResult();
+        res.setMessageList(res0);
+        return res;
     }
 
     public void start() throws Exception {

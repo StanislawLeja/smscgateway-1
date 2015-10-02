@@ -84,12 +84,11 @@ public abstract class MProcRuleBaseImpl implements MProcRule {
     }
 
     @Override
-    public void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages, String imsi, String nnnDigits,
-            int nnnNumberingPlan, int nnnAddressNature) throws Exception {
+    public void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages) throws Exception {
     }
 
     @Override
-    public void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message, boolean isDeliveryFailure) throws Exception {
+    public void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message) throws Exception {
     }
 
     /**

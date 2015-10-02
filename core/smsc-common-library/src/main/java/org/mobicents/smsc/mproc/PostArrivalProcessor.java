@@ -34,11 +34,13 @@ import org.mobicents.smsc.library.OriginationType;
 */
 public interface PostArrivalProcessor {
 
+    // access to environmental parameters
     /**
      * @return the logger that an application can use for logging info into server.log
      */
     Logger getLogger();
 
+    // actions
     /**
      * Drop the message. Success response (that a message is accepted) will be return to a message originator.
      */
@@ -50,7 +52,6 @@ public interface PostArrivalProcessor {
     void rejectMessage();
 
     // updating of a message section
-
     void updateMessageNetworkId(MProcMessage message, int newNetworkId);
 
     /**
@@ -193,6 +194,7 @@ public interface PostArrivalProcessor {
 
     void updateRegisteredDelivery_DeliveryReceiptOnSuccess(MProcMessage message);
 
+    // new message posting section
     /**
      * Creating a new message template for filling and sending by postNewMessage() method
      */

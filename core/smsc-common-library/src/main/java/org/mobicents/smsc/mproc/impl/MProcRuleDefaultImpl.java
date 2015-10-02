@@ -325,11 +325,10 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
     }
 
     @Override
-    public void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages, String imsi, String nnnDigits,
-            int nnnNumberingPlan, int nnnAddressNature) throws Exception {
+    public void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages) throws Exception {
         // TODO: we need proper implementing
         if (this.getId() == MAGIC_RULES_ID_NNN_CHECK) {
-            if (nnnDigits.startsWith("1")) {
+            if (factory.getNnnDigits().startsWith("1")) {
                 factory.dropMessages();
             }
         }
@@ -337,7 +336,7 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
     }
 
     @Override
-    public void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message, boolean isDeliveryFailure)
+    public void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message)
             throws Exception {
         // TODO: we need proper implementing
         if (this.getId() == MAGIC_RULES_ID_DELIVERY_ANNOUNCEMENT) {
@@ -346,7 +345,7 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
                 return;
 
             String respTxt;
-            if (isDeliveryFailure)
+            if (factory.isDeliveryFailure())
                 respTxt = "Delivery failed for a dest:" + message.getDestAddr() + ", msg:" + message.getShortMessageText();
             else
                 respTxt = "Delivery succeded for a dest:" + message.getDestAddr() + ", msg:" + message.getShortMessageText();

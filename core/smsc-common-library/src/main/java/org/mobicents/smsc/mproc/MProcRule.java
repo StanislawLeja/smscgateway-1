@@ -50,14 +50,12 @@ public interface MProcRule extends MProcRuleMBean {
     /**
      * the event occurs when IMSI / NNN has been received from HRL
      */
-    void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages, String imsi, String nnnDigits,
-            int nnnNumberingPlan, int nnnAddressNature) throws Exception;
+    void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages) throws Exception;
 
     /**
      * the event occurs when a message has just been delivered (or delivery failure)
      */
-    void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message,
-            boolean isDeliveryFailure) throws Exception;
+    void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message) throws Exception;
 
     /**
      * this method must implement setting of rule parameters as for provided CLI string at the step of rule creation

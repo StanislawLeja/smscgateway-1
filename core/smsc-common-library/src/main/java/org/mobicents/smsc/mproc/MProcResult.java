@@ -37,22 +37,31 @@ public class MProcResult {
     private boolean messageIsRejected;
     private boolean messageIsDropped;
 
-    public MProcResult(FastList<Sms> messageList, boolean messageIsRejected, boolean messageIsDropped) {
-        this.messageList = messageList;
-        this.messageIsRejected = messageIsRejected;
-        this.messageIsDropped = messageIsDropped;
+    public MProcResult() {
     }
 
     public FastList<Sms> getMessageList() {
         return messageList;
     }
 
+    public void setMessageList(FastList<Sms> val) {
+        messageList = val;
+    }
+
     public boolean isMessageRejected() {
         return messageIsRejected;
     }
 
+    public void setMessageRejected(boolean val) {
+        messageIsRejected = val;
+    }
+
     public boolean isMessageDropped() {
         return messageIsDropped;
+    }
+
+    public void setMessageDropped(boolean val) {
+        messageIsDropped = val;
     }
 
 }

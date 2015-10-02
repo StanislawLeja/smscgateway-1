@@ -31,11 +31,21 @@ import org.apache.log4j.Logger;
 */
 public interface PostImsiProcessor {
 
+    // access to environmental parameters
     /**
      * @return the logger that an application can use for logging info into server.log
      */
     Logger getLogger();
 
+    String getImsi();
+
+    String getNnnDigits();
+
+    int getNnnNumberingPlan();
+
+    int getNnnAddressNature();
+
+    // actions
     void dropMessages();
 
 }

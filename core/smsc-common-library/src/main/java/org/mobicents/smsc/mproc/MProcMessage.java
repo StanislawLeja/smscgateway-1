@@ -55,6 +55,10 @@ public interface MProcMessage {
     // other options
     int getNetworkId();
 
+    int getOrigNetworkId();
+
+    String getOrigEsmeName();
+
     OriginationType getOriginationType();
 
     Date getScheduleDeliveryTime();

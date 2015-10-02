@@ -32,11 +32,15 @@ import org.mobicents.smsc.library.OriginationType;
 */
 public interface PostDeliveryProcessor {
 
+    // access to environmental parameters
     /**
      * @return the logger that an application can use for logging info into server.log
      */
     Logger getLogger();
 
+    boolean isDeliveryFailure();
+    
+    // actions
     /**
      * Creating a new message template for filling and sending by postNewMessage() method
      */
