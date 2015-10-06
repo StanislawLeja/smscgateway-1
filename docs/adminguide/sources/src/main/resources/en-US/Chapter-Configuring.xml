@@ -220,193 +220,221 @@ Messages will be routed between subnetworks (networkIds) by mproc rules and insi
 
 	<section id="mproc_rules_fundamentals">
 		<title>Message processing rules (mproc rules)</title>
-	<para>
-Message processing rules (mproc rules) is a tool for applying some configurable actions to messages that are being processed in SMSC GW and fit to some configurable conditions.
-	</para>
-	<para>
-	There are following message processing steps to which mproc rules can be applied:
-	<itemizedlist>
-<listitem>
-<para>onPostArrival request: when a message has been arrived to SMSC GW. This action is applied after a message has been already processed (and accepted) by Diameter server (if this access to Diameter server is configured).
-During this step following actions are possible:
-	<itemizedlist>
-<listitem>
-<para>message can be dropped (a success response will be returned to a message originator)</para>
-</listitem>
-<listitem>
-<para>message can be rejected (a reject response will be returned to a message originator)</para>
-</listitem>
-<listitem>
-<para>most of a message parameters can be updated (for example destination address, networkId (this is needed for routing such messages to another subnetwork area (networkId) (see chapter <xref linkend="routing_fundamentals"/>)) or even a message content)</para>
-</listitem>
-<listitem>
-<para>a new message(es) can be posted for delivering. To posted new messages at this step no Diameter server request and no mproc rules will be applied</para>
-</listitem>
-	</itemizedlist>
-Only after actions applying messages will be stored into a database or/and delivered to a destination.
-</para>
-</listitem>
-<listitem>
-<para>onPostImsiRequest request: when a successful SRI response has been received from HLR for an SS7 destination message. At this step a message can be dropped (to prevent further delivery).</para>
-</listitem>
-<listitem>
-<para>onPostDelivery request: when a message delivery was succeeded or failed. At this step a new message(es) can be posted for delivering (it can be for example some delivery report).</para>
-</listitem>
-	</itemizedlist>
-	</para>
-	<para>We have implemented a set of mproc rules for SMSC GW (default implementation) (see chapter <xref linkend="mproc_rules_default"/>).
-	But any customer can make his own customized implementation of mproc rules by using java code programming and provided interfaces (see chapter <xref linkend="mproc_rules_customized"/>).
-	Any mproc rules implementation has its Class Name. The Class Name of a default implementation is "mproc".
-	</para>
-	<para>
-You can create one or more mproc rules, modify them, show them and remove some of them by CLI or GUI interface. See details in chapter <xref linkend="mproc_rule_settings"/>.
-Each mproc rule has it's unique digital Id. Mproc rule are sorted by this Id value.
-This means that for applying rules for a message SMSC GW starts with looking at a mproc rule with the least Id and then at a next mproc rule with next Id etc.
-	</para>
-	<para>
-When checking if mproc rule conditions match to a rule, updates (that were made after previous rules applying) are taken into account.
-For example if a message destination address has been changed by rule 1, then rule 2 will check if this updated destination address matches to rules 2 or not.
-	</para>
-
-	<section id="mproc_rules_default">
-		<title>Default message processing rules implementation</title>
-		<para>SMSC GW contains a default implementation of mproc rules that cover some requirenments.
-		Information how to manage rules can be found in chapter <xref linkend="mproc_rule_settings"/>.
-		This chapter covers a description of conditions and actions that are present in default mproc rules implementation.
+		<para>
+			Message processing rules (mproc rules) is a tool for processing messages and changing properties of message, for example source/destination TON, NPI, NetworkId etc. 
+			MProc rules are only applied if pre configured criterian match's.
 		</para>
-	<para>
-Parameters for mproc rule are divided into two cathegories:
-	</para>
-	<para>
-a) Conditions. If a message fits to all conditions then the rule will be applied to the message.
-<table
-						frame="all"
-						pgwide="1">
-<title>The list of possible conditions</title>
-		<tgroup cols='4' colsep='1' rowsep='1'>
-		<colspec
-								colnum="1"
-								colname="c0" />
-		<colspec
-								colnum="2"
-								colname="c1" />
-		<colspec
-								colnum="3"
-								colname="c2" />
-		<colspec
-								colnum="4"
-								colname="c3" />
-		<thead>
-			<row>
-				<entry>Parameter name</entry>
-				<entry>Value</entry>
-				<entry>Description</entry>
-				<entry>Default value</entry>
-			</row>
-		</thead>
-		<tbody>
-			<row>
-				<entry>desttonmask</entry>
-				<entry>&lt;destination type of number&gt;</entry>
-				<entry>a message fits to a rule if a message destination Type of Number is equal to this value "desttonmask"</entry>
-				<entry>"-1". This means then any message fit to the rule.</entry>
-			</row>
-			<row>
-				<entry>destnpimask</entry>
-				<entry>&lt;destination numbering plan indicator&gt;</entry>
-				<entry>a message fits to a rule if a message destination Numbering Plan Indicator is equal to this value "destnpimask".</entry>
-				<entry>"-1". This means then any message fit to the rule.</entry>
-			</row>
-			<row>
-				<entry>destdigmask</entry>
-				<entry>&lt;regular expression - destination number digits mask&gt;</entry>
-				<entry>a message fits to a rule if a message destination address digits are equal to this value "destdigmask".</entry>
-				<entry>"-1". This means then any message fit to the rule.</entry>
-			</row>
-			<row>
-				<entry>originatingmask</entry>
-				<entry>&lt;SS7_MO | SS7_HR | SMPP | SIP&gt;</entry>
-				<entry>a message fits to a rule if a message has come to SMSC GW via a defined in "originatingmask" connector.
-				Values means: SS7 legacy MO prodedure, SS7 home routing procedure, SMPP connector and SIP connector.</entry>
-				<entry>"-1". This means then any message fit to the rule.</entry>
-			</row>
-			<row>
-				<entry>networkidmask</entry>
-				<entry>&lt;networkId value&gt;</entry>
-				<entry>a message fits to a rule if it has come to SMSC GW via a subnetwork with networkId which is equal to this value "networkidmask".</entry>
-				<entry>"-1". This means then any message fit to the rule.</entry>
- 			</row>
-		</tbody>
-		</tgroup>
-</table>
-	</para>
-	<para>
-b) Actions, which will be applied to messages.
-<table
-						frame="all"
-						pgwide="1">
-<title>The list of possible actions</title>
-		<tgroup cols='4' colsep='1' rowsep='1'>
-		<colspec
-								colnum="1"
-								colname="c0" />
-		<colspec
-								colnum="2"
-								colname="c1" />
-		<colspec
-								colnum="3"
-								colname="c2" />
-		<colspec
-								colnum="4"
-								colname="c3" />
-		<thead>
-			<row>
-				<entry>Parameter name</entry>
-				<entry>Value</entry>
-				<entry>Description</entry>
-				<entry>Default value</entry>
-			</row>
-		</thead>
-		<tbody>
-			<row>
-				<entry>newnetworkid</entry>
-				<entry>&lt;new networkId value&gt;</entry>
-				<entry>networkId of the message will be changed to "newnetworkid" value. This means that the message will be delivered via connectors that belong to the new networId.</entry>
-				<entry>"-1". This means that networkId of the message will not be changed.</entry>
-			</row>
-			<row>
-				<entry>newdestton</entry>
-				<entry>&lt;new destination type of number&gt;</entry>
-				<entry>a message destination Type of Number will be changed to "newdestton" value.</entry>
-				<entry>"-1". This means that destination Type of Number of the message will not be changed.</entry>
- 			</row>
-			<row>
-				<entry>newdestnpi</entry>
-				<entry>&lt;new destination numbering plan indicator&gt;</entry>
-				<entry>a message destination Numbering Plan Indicator will be changed to "newdestnpi" value.</entry>
-				<entry>"-1". This means that destination Numbering Plan Indicator of the message will not be changed.</entry>
- 			</row>
-			<row>
-				<entry>adddestdigprefix</entry>
-				<entry>&lt;prefix&gt;</entry>
-				<entry>adddestdigprefix will be added into a begin of a message destination address digits, For example if adddestdigprefix is "22" and destination address digits are "3333333", then the new value of destination address digits will be "223333333".</entry>
-				<entry>"-1". This means that destination address digits of the message will not be changed.</entry>
-			</row>
-			<row>
-				<entry>makecopy</entry>
-				<entry>&lt;false | true&gt;</entry>
-				<entry>If the makecopy action is present then SMSC GW makes a copy of a message and then post the copy for further message processing in addition to the original message. 
-				All other actions in the rile will be applied only to the copy.
-				So if you for example want to make copies of messages and send them to another destinations (by sending of copies into another networkId),
-				then for this you can create a rule and set for the rule "makecopy true" and "newnetworkid &lt;new networkId value&gt;" parameters.
-				This makes a copy of a message and set for the copy a new networkId value.</entry>
-				<entry>false</entry>
-			</row>
-		</tbody>
-		</tgroup>
-</table>
-	</para>
-	</section>
+		
+		<para>
+			Following are the states at which mproc rules can be applied to messages:
+			<itemizedlist>
+				<listitem>
+					<para><literal>onPostArrival</literal> : When a message arrives in SMSC GW and has been already processed (accepted) by Diameter server (if Diameter server is configured).
+						<literal>onPostArrival</literal> following actions are possible:
+						<itemizedlist>
+							<listitem>
+								<para>message can be dropped (a success response will be returned to a message originator)</para>
+							</listitem>
+							<listitem>
+								<para>message can be rejected (a reject response will be returned to a message originator)</para>
+							</listitem>
+							<listitem>
+								<para>
+									most of a message parameters can be updated (for example destination address, networkId 
+									(this is needed for routing such messages to another subnetwork area (networkId) 
+									(see chapter <xref linkend="routing_fundamentals"/>)) or even a message content)
+								</para>
+							</listitem>
+							<listitem>
+								<para>
+									a new message(es) can be posted for delivering. To post new messages at this step no Diameter server request and 
+									no mproc rules will be applied
+								</para>
+							</listitem>
+						</itemizedlist>
+						Only after actions applying messages will be stored into a database or/and delivered to a destination.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<literal>onPostImsiRequest</literal> : When a successful SRI response has been received from HLR for an SS7 destination message. 
+						At this step a message can be dropped (to prevent further delivery). This can be very useful feature to prevent SMS being delivered to
+						off-net or romaing subscribers. 
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<literal>onPostDelivery</literal> : When a message delivery was succeeded or failed. At this step a new message(es) can be posted 
+						for delivering (it can be for example some delivery report).
+					</para>
+				</listitem>
+			</itemizedlist>
+		</para>
+		<para>
+			SMSC comes with predifined set of mproc rules (default implementation) (see chapter <xref linkend="mproc_rules_default"/>).
+			However users can make their own customized implementation of mproc rules by using java programming and implementing provided interfaces 
+			(see chapter <xref linkend="mproc_rules_customized"/>).
+			All mproc rules implementation has its Class Name. The Class Name of a default implementation is "mproc". 
+			This is the name by which users can create new mproc rule instances. 
+		</para>
+		<para>
+			Users can create one or more mproc rules, modify, show and remove some of them by CLI or GUI interface. 
+			See details in chapter <xref linkend="mproc_rule_settings"/>.
+			Each mproc rule has it's unique serial id. Mproc rule are sorted by this id value. SMSC appliec mproc rules to a message in ascending order, 
+			that is mproc rule with the least id is applied before mproc rule with next id etc.
+		</para>
+		<para>
+			While checking if mproc rule conditions match to a message, updates (that were made after previous rules applying) are taken into account.
+			For example if a message destination address has been changed by rule 1, then rule 2 will check if this updated destination address matches to rules 2 or not.
+		</para>
+
+		<section id="mproc_rules_default">
+			<title>Default message processing rules implementation</title>
+			<para>
+				SMSC GW contains a default implementation of mproc rules that cover some requirenments.
+				Information how to manage rules can be found in chapter <xref linkend="mproc_rule_settings"/>.
+				This chapter covers a description of conditions and actions that are present in default mproc rules implementation.
+			</para>
+			<para>
+				Parameters for mproc rule are divided into two cathegories:
+			</para>
+			<para>
+				a) Conditions. If a message fits to all conditions then the rule will be applied to the message.
+				<table frame="all" pgwide="1">
+					<title>The list of possible conditions</title>
+					<tgroup cols='4' colsep='1' rowsep='1'>
+					<colspec colnum="1" colname="c0" />
+					<colspec colnum="2" colname="c1" />
+					<colspec colnum="3" colname="c2" />
+					<colspec colnum="4" colname="c3" />
+					<thead>
+						<row>
+							<entry>Parameter name</entry>
+							<entry>Value</entry>
+							<entry>Description</entry>
+							<entry>Default value</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>desttonmask</entry>
+							<entry>&lt;destination type of number&gt;</entry>
+							<entry>mproc rule will be applied only if message destination Type of Number is equal to this value "desttonmask"</entry>
+							<entry>"-1" : acts as wild card and hence messages with any TON will match.</entry>
+						</row>
+						<row>
+							<entry>destnpimask</entry>
+							<entry>&lt;destination numbering plan indicator&gt;</entry>
+							<entry>mproc rule will be applied only if message destination Numbering Plan Indicator is equal to this value "destnpimask".</entry>
+							<entry>"-1" : acts as wild card and hence messages with any NPI will match.</entry>
+						</row>
+						<row>
+							<entry>destdigmask</entry>
+							<entry>&lt;java regular expression - destination number digits mask&gt;</entry>
+							<entry>mproc rule will be applied only if message destination address digits match's with "destdigmask" java regular expression.</entry>
+							<entry>"-1" : acts as wild card and hence messages with any destination number will match.</entry>
+						</row>
+						<row>
+							<entry>originatingmask</entry>
+							<entry>&lt;SS7_MO | SS7_HR | SMPP | SIP&gt;</entry>
+							<entry><para>mproc rule will be applied only if message arrived in SMSC GW via a defined "originatingmask" connector.</para>
+							<para>
+								<itemizedlist>
+									<listitem>
+										<para>
+											SS7_MO: SMS Originated from Mobile - SS7 connection
+										</para>
+									</listitem>
+									<listitem>
+										<para>
+											SS7_HR: SMS Originated from Home Routing configuartion - SS7 connection
+										</para>
+									</listitem>
+									<listitem>
+										<para>
+											SMPP: SMS Originated from SMPP connector and SIP connector.
+										</para>
+									</listitem>
+									<listitem>
+										<para>
+											SIP: SMS Originated from SIP connector.
+										</para>
+									</listitem>																											
+								</itemizedlist>
+							</para></entry>
+							<entry>"-1" : acts as wild card and hence messages originated from any channel will match.</entry>
+						</row>
+						<row>
+							<entry>networkidmask</entry>
+							<entry>&lt;networkId value&gt;</entry>
+							<entry>mproc rule will be applied only if message has come to SMSC GW via a subnetwork with networkId which is equal to this value "networkidmask".</entry>
+							<entry>"-1" : acts as wild card and hence messages from any network will match.</entry>
+			 			</row>
+					</tbody>
+					</tgroup>
+				</table>
+			</para>
+			<para>
+				b) Actions, which will be applied to messages.
+				<table	frame="all" pgwide="1">
+					<title>The list of possible actions</title>
+					<tgroup cols='4' colsep='1' rowsep='1'>
+					<colspec colnum="1" colname="c0" />
+					<colspec colnum="2" colname="c1" />
+					<colspec colnum="3" colname="c2" />
+					<colspec colnum="4" colname="c3" />
+					<thead>
+						<row>
+							<entry>Parameter name</entry>
+							<entry>Value</entry>
+							<entry>Description</entry>
+							<entry>Default value</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>newnetworkid</entry>
+							<entry>&lt;new networkId value&gt;</entry>
+							<entry>networkId of the message will be changed to "newnetworkid" value. This means that the message will be 
+							delivered via connectors that belong to the new networId.</entry>
+							<entry>"-1". This means that networkId of the message will not be changed.</entry>
+						</row>
+						<row>
+							<entry>newdestton</entry>
+							<entry>&lt;new destination type of number&gt;</entry>
+							<entry>a message destination Type of Number will be changed to "newdestton" value.</entry>
+							<entry>"-1". This means that destination Type of Number of the message will not be changed.</entry>
+			 			</row>
+						<row>
+							<entry>newdestnpi</entry>
+							<entry>&lt;new destination numbering plan indicator&gt;</entry>
+							<entry>a message destination Numbering Plan Indicator will be changed to "newdestnpi" value.</entry>
+							<entry>"-1". This means that destination Numbering Plan Indicator of the message will not be changed.</entry>
+			 			</row>
+						<row>
+							<entry>adddestdigprefix</entry>
+							<entry>&lt;prefix&gt;</entry>
+							<entry>adddestdigprefix will be added into a begin of a message destination address digits. 
+							For example if adddestdigprefix is "22" and destination address digits are "3333333", then the new value of 
+							destination address digits will be "223333333".</entry>
+							<entry>"-1". This means that destination address digits of the message will not be changed.</entry>
+						</row>
+						<row>
+							<entry>makecopy</entry>
+							<entry>&lt;false | true&gt;</entry>
+							<entry>If the makecopy action is present then SMSC GW makes a copy of a message and 
+							then post the copy for further message processing in addition to the original message. 
+							All other actions in the rule will be applied only to the copy.
+							For example user wants to make copies of messages and send them to another destinations (by sending of copies into another networkId),
+							then for this you can create a rule and set for the rule "makecopy true" and "newnetworkid &lt;new networkId value&gt;" parameters.
+							This makes a copy of a message and set for the copy a new networkId value.</entry>
+							<entry>false</entry>
+						</row>
+					</tbody>
+					</tgroup>
+				</table>
+			</para>
+		</section>
 
 	<section id="mproc_rules_customized">
 		<title>Customized message processing rules</title>
