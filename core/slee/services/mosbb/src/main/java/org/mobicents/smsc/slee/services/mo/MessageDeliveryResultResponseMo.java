@@ -40,94 +40,96 @@ import org.mobicents.smsc.library.MessageDeliveryResultResponseInterface;
  */
 public class MessageDeliveryResultResponseMo implements MessageDeliveryResultResponseInterface {
 
-    private boolean onlyChargingRequest;
-    private boolean isMoOperation;
-    private MAPDialogSms dialog;
-    private MAPProvider provider;
-    private SmsMessage evt;
-    private long invokeId;
-    private Tracer logger;
+	private boolean onlyChargingRequest;
+	private boolean isMoOperation;
+	private MAPDialogSms dialog;
+	private MAPProvider provider;
+	private SmsMessage evt;
+	private long invokeId;
+	private Tracer logger;
 
-    public MessageDeliveryResultResponseMo(boolean onlyChargingRequest, boolean isMoOperation, MAPDialogSms dialog,
-            MAPProvider provider, SmsMessage evt, long invokeId, Tracer logger) {
-        this.onlyChargingRequest = onlyChargingRequest;
-        this.isMoOperation = isMoOperation;
-        this.dialog = dialog;
-        this.provider = provider;
-        this.evt = evt;
-        this.invokeId = invokeId;
-        this.logger = logger;
-    }
+	public MessageDeliveryResultResponseMo(boolean onlyChargingRequest, boolean isMoOperation, MAPDialogSms dialog,
+			MAPProvider provider, SmsMessage evt, long invokeId, Tracer logger) {
+		this.onlyChargingRequest = onlyChargingRequest;
+		this.isMoOperation = isMoOperation;
+		this.dialog = dialog;
+		this.provider = provider;
+		this.evt = evt;
+		this.invokeId = invokeId;
+		this.logger = logger;
+	}
 
-    @Override
-    public boolean isOnlyChargingRequest() {
-        return onlyChargingRequest;
-    }
+	@Override
+	public boolean isOnlyChargingRequest() {
+		return onlyChargingRequest;
+	}
 
-    @Override
-    public void responseDeliverySuccess() {
-        try {
-            if (this.isMoOperation)
-                dialog.addMoForwardShortMessageResponse(this.invokeId, null, null);
-            else
-                dialog.addForwardShortMessageResponse(this.invokeId);
+	@Override
+	public void responseDeliverySuccess() {
+		try {
+			if (this.isMoOperation)
+				dialog.addMoForwardShortMessageResponse(this.invokeId, null, null);
+			else
+				dialog.addForwardShortMessageResponse(this.invokeId);
 
-            if (this.logger.isFineEnabled()) {
-                this.logger.fine("\nSent ForwardShortMessageResponse = " + evt);
-            }
+			if (this.logger.isFineEnabled()) {
+				this.logger.fine("\nSent ForwardShortMessageResponse = " + evt);
+			}
 
-            dialog.close(false);
-        } catch (Throwable e) {
-            logger.severe("Error while sending ForwardShortMessageResponse ", e);
-        }
-    }
+			dialog.close(false);
+		} catch (Throwable e) {
+			logger.severe("Error while sending ForwardShortMessageResponse ", e);
+		}
+	}
 
-    @Override
-    public void responseDeliveryFailure(DeliveryFailureReason reason, MAPErrorMessage errMessage) {
-        try {
-            MAPErrorMessage errorMessage;
-            if (errMessage != null && errMessage.isEmSMDeliveryFailure()) {
-                MAPErrorMessageSMDeliveryFailure smDeliveryFailure = errMessage.getEmSMDeliveryFailure();
-                errorMessage = this.provider.getMAPErrorMessageFactory().createMAPErrorMessageSMDeliveryFailure(
-                        smDeliveryFailure.getSMEnumeratedDeliveryFailureCause(), null, null);
-            } else {
-                switch (reason) {
-                    case destinationUnavalable:
-                        errorMessage = this.provider.getMAPErrorMessageFactory().createMAPErrorMessageSystemFailure(
-                                dialog.getApplicationContext().getApplicationContextVersion().getVersion(),
-                                NetworkResource.vlr, null, null);
-                        break;
-                    case invalidDestinationAddress:
-                        errorMessage = this.provider.getMAPErrorMessageFactory().createMAPErrorMessageSMDeliveryFailure(
-                                SMEnumeratedDeliveryFailureCause.subscriberNotSCSubscriber, null, null);
-                        break;
-                    case permanentNetworkError:
-                        errorMessage = this.provider.getMAPErrorMessageFactory().createMAPErrorMessageSystemFailure(
-                                dialog.getApplicationContext().getApplicationContextVersion().getVersion(),
-                                NetworkResource.vlr, null, null);
-                        break;
-                    case temporaryNetworkError:
-                        errorMessage = this.provider.getMAPErrorMessageFactory().createMAPErrorMessageSystemFailure(
-                                dialog.getApplicationContext().getApplicationContextVersion().getVersion(),
-                                NetworkResource.vlr, null, null);
-                        break;
-                    default:
-                        errorMessage = this.provider.getMAPErrorMessageFactory().createMAPErrorMessageSystemFailure(
-                                dialog.getApplicationContext().getApplicationContextVersion().getVersion(),
-                                NetworkResource.vlr, null, null);
-                        break;
-                }
-            }
-            dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
-            if (this.logger.isInfoEnabled()) {
-                this.logger.info("\nSent ErrorComponent = " + errorMessage);
-            }
+	@Override
+	public void responseDeliveryFailure(DeliveryFailureReason reason, MAPErrorMessage errMessage) {
+		try {
+			MAPErrorMessage errorMessage;
+			if (errMessage != null && errMessage.isEmSMDeliveryFailure()) {
+				MAPErrorMessageSMDeliveryFailure smDeliveryFailure = errMessage.getEmSMDeliveryFailure();
+				errorMessage = this.provider.getMAPErrorMessageFactory().createMAPErrorMessageSMDeliveryFailure(
+						dialog.getApplicationContext().getApplicationContextVersion().getVersion(),
+						smDeliveryFailure.getSMEnumeratedDeliveryFailureCause(), null, null);
+			} else {
+				switch (reason) {
+				case destinationUnavalable:
+					errorMessage = this.provider.getMAPErrorMessageFactory().createMAPErrorMessageSystemFailure(
+							dialog.getApplicationContext().getApplicationContextVersion().getVersion(),
+							NetworkResource.vlr, null, null);
+					break;
+				case invalidDestinationAddress:
+					errorMessage = this.provider.getMAPErrorMessageFactory().createMAPErrorMessageSMDeliveryFailure(
+							dialog.getApplicationContext().getApplicationContextVersion().getVersion(),
+							SMEnumeratedDeliveryFailureCause.subscriberNotSCSubscriber, null, null);
+					break;
+				case permanentNetworkError:
+					errorMessage = this.provider.getMAPErrorMessageFactory().createMAPErrorMessageSystemFailure(
+							dialog.getApplicationContext().getApplicationContextVersion().getVersion(),
+							NetworkResource.vlr, null, null);
+					break;
+				case temporaryNetworkError:
+					errorMessage = this.provider.getMAPErrorMessageFactory().createMAPErrorMessageSystemFailure(
+							dialog.getApplicationContext().getApplicationContextVersion().getVersion(),
+							NetworkResource.vlr, null, null);
+					break;
+				default:
+					errorMessage = this.provider.getMAPErrorMessageFactory().createMAPErrorMessageSystemFailure(
+							dialog.getApplicationContext().getApplicationContextVersion().getVersion(),
+							NetworkResource.vlr, null, null);
+					break;
+				}
+			}
+			dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
+			if (this.logger.isInfoEnabled()) {
+				this.logger.info("\nSent ErrorComponent = " + errorMessage);
+			}
 
-            dialog.close(false);
-        } catch (Throwable e) {
-            logger.severe("Error while sending Error message", e);
-            return;
-        }
-    }
+			dialog.close(false);
+		} catch (Throwable e) {
+			logger.severe("Error while sending Error message", e);
+			return;
+		}
+	}
 
 }
