@@ -13,7 +13,7 @@
 		<tr>
 			<td>
 				<div class="alert alert-info fade in">
-					<strong>No ESME!</strong> 
+					<strong>No ESME's defined yet!</strong> 
 				</div>
 			</td>
 		</tr>
@@ -442,9 +442,10 @@
 				
 				$('.service-row').remove();
 				$('.text-info').remove();
+				var noOfEsmes = 0;
 				jQuery.each(html.value, function() {
 					mbeanVar = this;
-					
+					noOfEsmes = noOfEsmes +1;
 					
 					jolokia.request(
 							[
@@ -1727,6 +1728,14 @@
 						); 
 
 				});
+				
+				if(noOfEsmes == 0){
+					$('#no-esmes-table').show();
+					$('#esmes-table').hide();
+				}else {
+					$('#no-esmes-table'+name).hide();
+					$('#esmes-table').show();
+				}
 			}
 		})
 		.fail(function() {

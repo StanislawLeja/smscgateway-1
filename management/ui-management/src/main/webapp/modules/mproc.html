@@ -13,7 +13,7 @@
 		<tr>
 			<td>
 				<div class="alert alert-info fade in">
-					<strong>No message processing rule defined!</strong> 
+					<strong>No message processing rule defined yet!</strong> 
 				</div>
 			</td>
 		</tr>
@@ -36,9 +36,56 @@
 		</tbody>
 	</table>
 	<p>
-		<a href="#entities-modal" role="button" class="btn btn-info btn-small" data-toggle="modal" ><i class="icon-external-link"></i> Create Message Processing Rule</a>
+		<a href="#entities-modal" role="button" class="btn btn-info btn-small" data-toggle="modal" ><i class="icon-link"></i> Create Default Message Processing Rule</a> &nbsp;&nbsp;
+		<a href="#entities-modal-custom" role="button" class="btn btn-info btn-small" data-toggle="modal" ><i class="icon-link"></i> Create Custom Message Processing Rule</a>
 	</p>	
 </span>
+
+<div id="entities-modal-custom" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3>Create Custom Message Processing Rule</h3>
+	</div>
+	
+	<div id="entities-modal-body-custom" class="modal-body">
+		<div class="alert alert-error" id="login-settings-error-custom" style="display:none;">
+		  <button type="button" class="close">&times;</button>
+		  Some Fields are not correctly filled out, please double check the settings below !
+		</div>
+		<p>
+			<span>
+				<div id="div-id-custom" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="A unique id for this message processing rule. Rules are sorted in ascending order based on this id. All the matching rules are applied">
+						<span class="add-on">Id</span>
+						<input id="id-custom" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Id" />
+					</span>				
+				</div>
+				
+				<div id="div-classname-custom" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="the name of class of mproc rules implementation. For the default implementation class name is mproc.">
+						<span class="add-on">Class Name</span>
+						<input id="classname-custom" type="text" class="input-mini" style="width: 220px; margin-right: 12px; text-align: center;" placeholder="Class Name" />
+					</span>				
+				</div>
+				
+				<div id="div-parameters-custom" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="the parameters that should be set for this mproc">
+						<span class="add-on">Parameters</span>
+						<input id="parameters-custom" type="text" class="input-mini" style="width: 420px; margin-right: 12px; text-align: center;" placeholder="parameters" />
+					</span>				
+				</div>								
+				
+				<button id="add-entity-button-custom" class="btn btn btn-primary" onclick="createMProcCustom()">Create</button>
+			</span>
+		</p>
+		<p>&nbsp;</p>
+		<div class="accordion" id="entities-accordion-custom">
+		</div>
+	</div>
+	<div class="modal-footer">
+		<a href="#" onclick="$('#entities-modal-custom').modal('hide'); return false;" class="btn">Close</a>
+	</div>
+</div>
 
 <div id="entities-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	<div class="modal-header">
@@ -285,7 +332,7 @@
 			else {		
 				
 				$('.service-row').remove();
-				$('.text-info').remove();
+
 				jQuery.each(html.value, function() {
 					mbeanVar = this;
 					
@@ -298,8 +345,10 @@
 								function(response) {
 									
 									var mProcRules = response.value.MProcRules;
-									
+									var noOfMProcRules = 0;
 									jQuery.each(mProcRules, function(index, value) {
+										
+										noOfMProcRules = noOfMProcRules + 1;
 									
 										var id = value.id;
 										var ruleclassname = value.ruleClassName;
@@ -349,7 +398,7 @@
 															'<div class="accordion-heading">' +id+ '</div>'+
 															'<div id="' + id + '" class="accordion-body">' +
 																'<div class="accordion-inner">' +
-																	'<strong><i class="icon-list"></i> Message Processing Rule</strong>' +
+																	'<strong><i class="icon-list"></i>Default Message Processing Rule</strong>' +
 																	
 																	'<div class="alert alert-error" id="login-settings-error" style="display:none;">'+
 																	  '<button type="button" class="close">&times;</button>'+
@@ -531,10 +580,76 @@
 													'<a href="#" onclick="$(\'#entities-modal'+id+'\').modal(\'hide\'); return false;" class="btn">Close</a>'+
 												'</div>'+										
 											'</div>');	
+										} else {
+											var classname = value.ruleClassName;
+											$('#esmes-table-wrapper').append('<div id="entities-modal'+id+'" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'+
+													'<div class="modal-header">'+
+														'<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>'+
+														'<h3>Message Procesing Rule # '+id+' properties</h3>'+
+													'</div>'+	
+													'<div id="entities-modal-body" class="modal-body">'+
+															'<div class="accordion-group">' +
+																'<div class="accordion-heading">' +id+ '</div>'+
+																'<div id="' + id + '" class="accordion-body">' +
+																	'<div class="accordion-inner">' +
+																		'<strong><i class="icon-list"></i>Custom Message Processing Rule</strong>' +
+																		
+																		'<div class="alert alert-error" id="login-settings-error" style="display:none;">'+
+																		  '<button type="button" class="close">&times;</button>'+
+																		  'Some Fields are not correctly filled out, please double check the settings below !'+
+																		'</div>'+																			
+																		
+																		'<table id="'+id+'-ESME" class="table table-condensed table-striped">' + 
+																			'<thead><tr><th style="width: 40%;">Name</th><th style="width: 55%;">Value</th><th>&nbsp;</th></tr></thead>' +
+																			'<tbody>'+
+																			
+																				'<tr data-toggle="tooltip" title="Rule will be applied only if destination type of number (TON) of target SMS match\'s with this rule\'s desttonmask. Set value to -1 as wild card to match all the TON. Valid values of TON are &#13; 0 : Unknown &#13; 1 : International &#13; 2 : National &#13; 3 : Network Specific &#13; 4 : Subscriber &#13; 5 : Alphanumeric &#13; 6 : Abbreviated &#13; 7 : Reserved &#13; Default value is -1">'+
+																					'<td style="font-size: 0.9em;">Class Name</td>'+
+																					'<td style="font-size: 0.9em; padding: 0;">'+
+																						'<span id="' +id + 'classname-text">' + classname + '</span>'+
+																					'</td>'+
+																					'<td> &nbsp;' +
+																					'</td>'+
+																				'</tr>'+
+																				
+																				'<tr data-toggle="tooltip" title="Once rule match\'s, and makecopy is set to true, a new copy of SMS is created. If new SMS is created all above parameters like networkidmask, newnetworkid, newdestton, newdestnpi, adddestdigprefix will be applied to new SMS">'+
+																				'<td style="font-size: 0.9em;">Rule Parameters</td>'+
+																				'<td style="font-size: 0.9em; padding: 0;">'+
+																					'<div id="div-' + id +'RuleParameters-input" class="control-group">'+
+																					'<span id="' + id +'RuleParameters-input" style="display: none;">'+
+																						'<input type="text" class="input-small" value="' + ruleparameters + '" /> ' +
+																						'<i class="icon-ok" style="cursor: pointer;" onclick="onCustomModifyEsmeOk(\'' + id+ '\', \'ruleparameters\', \'' + id+"RuleParameters" + '\', \'true\')"></i> ' +
+																						'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"RuleParameters"+']\').toggle(); $(\'input[id^='+id+"RuleParameters"+']\').focus();"></i>' + 
+																					'</span>'+
+																					'</div>' +
+																					'<span id="' +id + 'RuleParameters-text">' + ruleparameters + '</span>'+
+																				'</td>'+
+																				'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"RuleParameters"+']\').toggle(); $(\'input[id^='+id+"RuleParameters"+']\').focus();"></i>' +
+																				'</td>'+
+																			'</tr>'+																				
+																			'</tbody>' +
+																		'</table>' +	
+																	'</div>'+
+																'</div>'+
+															'</div>'+
+													'</div>'+
+													'<div class="modal-footer">'+
+														'<a href="#" onclick="$(\'#entities-modal'+id+'\').modal(\'hide\'); return false;" class="btn">Close</a>'+
+													'</div>'+										
+												'</div>');											
+											
 										}
 										
 										
 									});
+									
+									if(noOfMProcRules == 0){
+										$('#no-esmes-table').show();
+										$('#esmes-table').hide();
+									}else {
+										$('#no-esmes-table'+name).hide();
+										$('#esmes-table').show();
+									}
 								}],
 								error: function(value){
 									errorUID = ("st" + new Date().getTime()).hashCode();
@@ -568,6 +683,68 @@
 				});	
 		
 	}
+	
+	function createMProcCustom(){
+		var formInvalid = false;
+		var focusNotSet = true;
+		
+		var parametersstring = "";
+		
+		var id = $("#id-custom").val();
+		if(id.trim() == "") {
+			$("#div-id-custom").addClass("error");
+			if(focusNotSet){
+				$("#id-custom").focus();
+				focusNotSet = false;
+			}
+			formInvalid = true;
+		} else if($("#div-id-custom").hasClass("error")) {
+			$("#div-id-custom").removeClass("error");		
+		}
+		
+		var ruleclassname = $("#classname-custom").val();
+		if(ruleclassname.trim() == "") {
+			$("#div-classname-custom").addClass("error");
+			if(focusNotSet){
+				$("#classname-custom").focus();
+				focusNotSet = false;
+			}
+			formInvalid = true;
+		} else if($("#div-classname-custom").hasClass("error")) {
+			$("#div-classname-custom").removeClass("error");		
+		}
+		
+		var parametersstring = $("#parameters-custom").val();
+		if(parametersstring.trim() == "") {
+			parametersstring = null;
+		} else {
+			parametersstring = parametersstring.trim();	
+		}	
+		
+		if(formInvalid) {
+			$("#login-settings-error").show();
+			logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+			return false;
+		} else {
+			$("#login-settings-error").hide();
+		}
+		
+		jolokia.execute("com.telscale.smsc:layer=MProcManagement,name=SmscManagement","createMProcRule", id,ruleclassname,parametersstring, 
+				{
+					success: function(value) {
+						updateMProc();
+						logToConsole('INFO', 'MProc rule ' + id + ' created successfuly.');
+						$('#entities-modal').modal('hide');
+					},
+					error: function(value){
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+					}					
+				});		
+		
+	}	
+	
 	function createMProc(){
 		var formInvalid = false;
 		var focusNotSet = true;
@@ -687,7 +864,7 @@
 		onModifyEsmeOk(mbeanName, propertyName, spanId, skipCheck)
 	}
 	
-	function onModifyEsmeOk(mbeanName, propertyName, spanId, skipCheck){
+	function onCustomModifyEsmeOk(mbeanName, className, spanId, skipCheck){
 		var formInvalid = false;
 		
 		var spanElement = document.getElementById(spanId + "-input");
@@ -695,10 +872,10 @@
 		var inputTextEle = eleChild[0];
 		var spanElementTxt = document.getElementById(spanId + "-text");
 		
-		var propvalue = inputTextEle.value;
+		var propValue = inputTextEle.value;
 		
 		if(!skipCheck){
-			if(propvalue.trim() == "") {
+			if(propValue.trim() == "") {
 				$("#div-"+spanId + "-input").addClass("error");					    			
 				formInvalid = true;
 			} else if($("#div-"+spanId + "-input").hasClass("error")) {
@@ -714,7 +891,57 @@
 			}
 		}
 		
+		if(propValue == ""){
+			propValue = "-1";
+		}
+		
+		var mbeanSearch="com.telscale.smsc:layer=MProcManagement,name=SmscManagement";
+		jolokia.execute(mbeanSearch,"modifyMProcRule",mbeanName,propValue,
+				{
+					success: function(value) {
+						updateMProc();
+						logToConsole('INFO', 'Successfully modified rule ' + mbeanName );
+					},
+					error: function(value){
+						errorUID = ("st" + new Date().getTime()).hashCode();
+						createStackTrace(errorUID, value.stacktrace);
+						logToConsole("ERROR", value.error + ". (<a href=\"#" + errorUID + "-modal\" data-toggle=\"modal\">Full Stack Trace</a>)");
+					}
+				});		
+		
+		spanElement.style.display = 'none';
+		spanElementTxt.style.display = '';
+		
+		
+	}
+	
+	function onModifyEsmeOk(mbeanName, propertyName, spanId, skipCheck){
+		var formInvalid = false;
+		
+		var spanElement = document.getElementById(spanId + "-input");
+		var eleChild = spanElement.childNodes;
+		var inputTextEle = eleChild[0];
+		var spanElementTxt = document.getElementById(spanId + "-text");
+		
 		var propValue = inputTextEle.value;
+		
+		if(!skipCheck){
+			if(propValue.trim() == "") {
+				$("#div-"+spanId + "-input").addClass("error");					    			
+				formInvalid = true;
+			} else if($("#div-"+spanId + "-input").hasClass("error")) {
+				$("#div-"+spanId + "-input").removeClass("error");		
+			}	
+			
+			if(formInvalid) {
+				$("#login-settings-error").show();
+				logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
+				return false;
+			} else {
+				$("#login-settings-error").hide();
+			}
+		}
+		
 		if(propValue == ""){
 			propValue = "-1";
 		}
@@ -727,6 +954,7 @@
 					success: function(value) {
 						updateMProc();
 						logToConsole('INFO', 'Successfully modified rule ' + mbeanName );
+						spanElementTxt.innerHTML= inputTextEle.value;
 					},
 					error: function(value){
 						errorUID = ("st" + new Date().getTime()).hashCode();
