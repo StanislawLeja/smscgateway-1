@@ -44,6 +44,7 @@
         <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; introduces of message processing (mproc) rules.
         Each rule contains a set of conditions (like destination address mask).
         If an incoming message fits to the conditions then rule actions will be applied to the message (like adding a prefix into a destination address or networkId changing).
+        There is a default implementation of mproc rules which covers some cases. But a customer can implement his own custom set of mproc rules by implementing of java code.
         </para>
         </formalpara>
         <formalpara>
@@ -206,6 +207,12 @@ or in the case when the last part of a splitted message is short.
 <listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-260">SMSC-260</ulink>: mproc rules: checking conditions based on last updated values
 </para></listitem>
 <listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-261">SMSC-261</ulink>: SMSC Re-preparing already prepared query
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-265">SMSC-265</ulink>: SMSC should allow Custom MProc Rule
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-267">SMSC-267</ulink>: Add the throttling capability in smpp-load test tool
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-268">SMSC-268</ulink>: Update manuals for Customized MProc Rule
 </para></listitem>
 
 
