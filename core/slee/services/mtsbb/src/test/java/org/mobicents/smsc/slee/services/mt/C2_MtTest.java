@@ -3349,7 +3349,8 @@ public class C2_MtTest {
         assertEquals(lstEvt.size(), 2);
 
         // MT response - error
-        MAPErrorMessage mapErrorMessage = new MAPErrorMessageSMDeliveryFailureImpl(SMEnumeratedDeliveryFailureCause.memoryCapacityExceeded, null, null);
+        MAPErrorMessage mapErrorMessage = new MAPErrorMessageSMDeliveryFailureImpl(3,
+                SMEnumeratedDeliveryFailureCause.memoryCapacityExceeded, null, null);
         ErrorComponent evt2 = new ErrorComponent(dlg, 0L, mapErrorMessage);
         this.mtSbb.onErrorComponent(evt2, null);
         this.mtSbb.onDialogDelimiter(null, null);
