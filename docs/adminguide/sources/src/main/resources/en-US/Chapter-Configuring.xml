@@ -693,11 +693,11 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
 				</para>
 				</step>
 				<step>
-					<para>Implementing of <code>getRuleParameters()</code> method of <classname>MProcRule</classname>. Below is an example:
+					<para>Implementing of <code>getRuleClassName()</code> method of <classname>MProcRule</classname>. Below is an example:
 <programlisting language="Java" role="JAVA">
     @Override
-    public String getRuleParameters() {
-        return "testrule";
+    public String getRuleClassName() {
+        return return MProcRuleFactoryTestImpl.CLASS_NAME;
     }
 </programlisting>
 					</para>
