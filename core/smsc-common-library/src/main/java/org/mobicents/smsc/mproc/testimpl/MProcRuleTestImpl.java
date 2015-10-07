@@ -10,8 +10,8 @@ import org.mobicents.smsc.mproc.impl.MProcRuleBaseImpl;
 public class MProcRuleTestImpl extends MProcRuleBaseImpl {
 
     @Override
-    public String getRuleParameters() {
-        return "testrule";
+    public String getRuleClassName() {
+        return MProcRuleFactoryTestImpl.CLASS_NAME;
     }
 
 
@@ -40,7 +40,7 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
     }
 
     @Override
-    public String getRuleClassName() {
+    public String getRuleParameters() {
         return par1 + " " + par2;
     }
 

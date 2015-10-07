@@ -48,7 +48,7 @@ public interface MProcRule extends MProcRuleMBean {
             throws Exception;
 
     /**
-     * the event occurs when IMSI / NNN has been received from HRL
+     * the event occurs when IMSI / NNN has been received from HLR
      */
     void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages) throws Exception;
 
