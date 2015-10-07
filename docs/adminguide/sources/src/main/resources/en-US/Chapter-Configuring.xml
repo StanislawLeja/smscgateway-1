@@ -439,38 +439,47 @@ Messages will be routed between subnetworks (networkIds) by mproc rules and insi
 	<section id="mproc_rules_customized">
 		<title>Customized message processing rules</title>
 		<para>
-In case of default mproc rules implementing does not fit to a customer's needs, you can make your own implementation of mproc rules.
-We will describe here steps how to achieve this solution.
+			Default mproc rules allows to change the properties of a message in pre defined way, however if user wants to achieve more, SMSC allows users to implement their own 
+			custom logic. Below steps describes how to implement custom mproc rules.
 		</para>
 
 		<para>
 			<procedure>
 				<title>Steps for custom mproc rules implementing</title>
-				<step><para>You need to create your own java code that covers your needs in message processing.
-You need to implement two interfaces using some interfaces that are provided by SMSC GW.
-You need to cover two parts of rules usage - a rule configuring part and a rule applying part.
-Please pay attention that in your code you may not perform long delays in order not to dramatically decrease of SMSC GW productivity.
-Then you will have to create your own jar and deploy it into SMSC GW.</para>
+				<step>
+					<para>
+						User should implement the business logic as java code. There are couple of interface exposed by SMSC, <classname>MProcRuleFactory</classname>
+						and <classname>MProcRule</classname> that must be implemented and add the custom business logic.
+						User needs to cover two parts of rules usage - a rule configuring part and a rule applying part.
+						<important>
+							Please pay attention that in your code you may not perform long delays in order not to dramatically decrease of SMSC GW productivity.
+						</important>
+						Once custom rule is implemented, user will have to create jar file and deploy it into SMSC Gateway. 
+					</para>
 				</step>
-				<step><para>
+				<step>
+					<para>
 					 <substeps>
-						<step><para>You need to select a rule class name that will be used for your custom rules. This can be any word without spaces.
-For default mproc rules implementation the rule class name is "mproc". Let's use in this example the rule class name "testrule".
+						<step><para>User needs to decide a rule class name that will be used to uniquely identify the custom rules. This can be any word without spaces.
+							For default mproc rules implementation the rule class name is "mproc". For example consider rule class name as "testrule".
 						</para>
 						</step>	
-						<step><para>You need to select two classes names for your own interface implementation. You need to impelent two interfaces: MProcRuleFactory and MProcRule.
-Let's use MProcRuleFactoryTestImpl and MProcRuleTestImpl class names for our example.
+						<step><para>User needs to impelent two interfaces: <classname>MProcRuleFactory</classname> and <classname>MProcRule</classname>.
+							For example consider <classname>MProcRuleFactoryTestImpl</classname> and <classname>MProcRuleTestImpl</classname>.
 						</para>
 						</step>	
-						<step><para>You need to decide which actions will your custom rules perform and for which messages.
-						Let's create a custom rule that will affect to any message at onPostArrival step that destination address digits are started with a configurable parameter "par1" and
-						add to matched messages prefix "par2" (the configurable parameter) to a message destination address.
+						<step><para>User needs to decide which actions will custom rules perform and for which messages.
+							For example create a custom rule that will be applied to any message at <code>onPostArrival</code> state 
+							who's destination address digits are starting with a configurable parameter "par1". For all the messages which match's this rules condition, 
+							prefix "par2" (the configurable parameter) is to be applied to message destination address.
 						</para>
 						</step>	
 					 </substeps>
-				</para>
+					</para>
 				</step>
-				<step><para>Creating of two empty classes to which we will add further needed logic:
+				<step>
+					<para>
+						Creating custom classes:
 <programlisting language="Java" role="JAVA">
 package org.mobicents.smsc.mproc.testimpl;
 
@@ -479,6 +488,7 @@ import org.mobicents.smsc.mproc.MProcRuleFactory;
 public class MProcRuleFactoryTestImpl implements MProcRuleFactory {
 }
 </programlisting>
+
 <programlisting language="Java" role="JAVA">
 package org.mobicents.smsc.mproc.testimpl;
 
@@ -487,18 +497,21 @@ import org.mobicents.smsc.mproc.MProcRule;
 public class MProcRuleTestImpl implements MProcRule {
 }
 </programlisting>
-				</para>
+					</para>
 				</step>
-				<step><para>Implementing of MProcRuleFactory interface. The content of interface is the following:
+				<step>
+					<para>Implementing <classname>MProcRuleFactory</classname> interface. The interface is:
 <programlisting language="Java" role="JAVA">
 public interface MProcRuleFactory {
     String getRuleClassName();
     MProcRule createMProcRuleInstance();
 }
 </programlisting>
-Method getRuleClassName() must return the rule class name.
-Method createMProcRuleInstance() must return a customer's implementation of MProcRule (in this example MProcRuleTestImpl class).
-Here is an example of implementing:
+
+						Method <code>getRuleClassName()</code> must return the rule class name.
+						Method <code>createMProcRuleInstance()</code> must return a custom implementation of <classname>MProcRule</classname> 
+						(in this example instance of <classname>MProcRuleTestImpl</classname> class).
+						Here is an example of implementation:
 <programlisting language="Java" role="JAVA">
 package org.mobicents.smsc.mproc.testimpl;
 
@@ -506,9 +519,11 @@ import org.mobicents.smsc.mproc.MProcRule;
 import org.mobicents.smsc.mproc.MProcRuleFactory;
 
 public class MProcRuleFactoryTestImpl implements MProcRuleFactory {
+	public static final String CLASS_NAME = "testrule";
+
     @Override
     public String getRuleClassName() {
-        return "testrule";
+        return CLASS_NAME;
     }
 
     @Override
@@ -517,9 +532,12 @@ public class MProcRuleFactoryTestImpl implements MProcRuleFactory {
     }
 }
 </programlisting>
-				</para>
+					</para>
 				</step>
-				<step><para>Then we need to implement of MProcRule interface. Let's start with learning of the interface. The content of the interface is the following:
+				<step>
+					<para>
+						Next is actual business logic that should go in implement of <classname>MProcRule</classname> interface. 
+						Let's start with learning of the interface. The content of the interface is the following:
 <programlisting language="Java" role="JAVA">
 package org.mobicents.smsc.mproc;
 
@@ -568,7 +586,7 @@ public interface MProcRule extends MProcRuleMBean {
     void updateRuleParameters(String parametersString) throws Exception;
 }
 </programlisting>
-and the parent interface content is:
+		and the parent interface content is:
 <programlisting language="Java" role="JAVA">
 package org.mobicents.smsc.mproc;
 
@@ -591,7 +609,7 @@ public interface MProcRuleMBean {
 
     /**
      * @return true if the mproc rule is used for the phase when IMSI / NNN has been received
-     * from HRL
+     * from HLR
      */
     boolean isForPostImsiRequestState();
 
@@ -608,17 +626,11 @@ public interface MProcRuleMBean {
 }
 </programlisting>
 
-<table
-						frame="all"
-						pgwide="1">
-<title>MProcRule and MProcRuleMBean interfaces methods description</title>
+<table	frame="all" pgwide="1">
+<title><classname>MProcRule</classname> and <classname>MProcRuleMBean</classname> interfaces methods description</title>
 		<tgroup cols='2' colsep='1' rowsep='1'>
-		<colspec
-								colnum="1"
-								colname="c0" />
-		<colspec
-								colnum="2"
-								colname="c1" />
+		<colspec colnum="1" colname="c0" />
+		<colspec colnum="2" colname="c1" />
 		<thead>
 			<row>
 				<entry>Methods</entry>
@@ -627,48 +639,49 @@ public interface MProcRuleMBean {
 		</thead>
 		<tbody>
 			<row>
-				<entry>getId(), setId()</entry>
+				<entry><code>getId()</code>, <code>setId()</code> </entry>
 				<entry>mproc rule id getter and setter. id value is unique for each mproc rule inside SMSC GW.
 				</entry>
 			</row>
 			<row>
-				<entry>getRuleClassName()</entry>
+				<entry><code>getRuleClassName()</code></entry>
 				<entry>Returns the rule class name ("testrule" in this example)</entry>
 			</row>
 			<row>
-				<entry>getRuleParameters(), setInitialRuleParameters(), updateRuleParameters()</entry>
+				<entry><code>getRuleParameters()</code>, <code>setInitialRuleParameters()</code>, <code>updateRuleParameters()</code></entry>
 				<entry>Getter and setters of configured parameters for a rule instance. Parameters are formed as a plain text string, that can be provided by CLI interface.
 				In this example we need to configure two parameters par1 and par2. Let's specify the parameters strinf as "par1" and "par2" (two values after a space, for example "11 34").
 				</entry>
 			</row>
 			<row>
-				<entry>isForPostArrivalState(), isForPostImsiRequestState(), isForPostDeliveryState()</entry>
+				<entry><code>isForPostArrivalState()</code>, <code>isForPostImsiRequestState()</code>, <code>isForPostDeliveryState()</code></entry>
 				<entry>Returns true if this rule affects to a message processing step
 				(for onPostArrival, onPostDelivery and onPostImsi requests)
 				and false if not. You have to check configured parameters of a rule and return a proper value</entry>
 			</row>
 			<row>
-				<entry>matches(MProcMessage message), matches(MProcMessageDestination messageDest)</entry>
-				<entry>These methods must return true if a message fit to rule conditions and false if not.
-				Fisrt method is used for onPostArrival and onPostDelivery request, the second one for onPostImsi requests.</entry>
+				<entry><code>matches(MProcMessage message)</code>, <code>matches(MProcMessageDestination messageDest)</code></entry>
+				<entry>These methods must return true if rule should be applied false if not.
+					<code>matches(MProcMessage message)</code> is used for onPostArrival and onPostDelivery request, the second one for onPostImsi requests.</entry>
 			</row>
 			<row>
-				<entry>onPostArrival(), onPostImsiRequest(), onPostDelivery()</entry>
+				<entry><code>onPostArrival()</code>, <code>onPostImsiRequest()</code>, <code>onPostDelivery()</code></entry>
 				<entry>These methods are needed for implementing of rule applying actions.</entry>
 			</row>
 		</tbody>
 </tgroup>
 </table>
-Id parameter and custom rule parameters ("par1" and "par2" in this example) must be stored into xml config file (it is located in &lt;jboss&gt;/server/default/data/SmscManagement_mproc.xml).
-For this you need to implement several extra methods that will be described later.
+Id parameter and custom rule parameters ("par1" and "par2" in this example) must be stored into xml config file (it is located in <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/data/SmscManagement_mproc.xml</filename>).
+For this user needs to implement several extra methods that will be described later.
 				</para>
 				</step>
-				<step><para>Reusing of base MProcRuleBaseImpl base class. There is a base class which is recommended to be used as a base class for MProcRule interface implementing.
-				MProcRuleBaseImpl class contains some useful methods that cover getter and setter and code for stroing of this parameter into xml config file (read() and write() methods),
-				default stubs for matches() and onPost*() methods
+				<step><para>Reusing of base <classname>MProcRuleBaseImpl</classname> class. It is recommended for your custom <classname>MProcRuleTestImpl</classname> to extend 
+				<classname>MProcRuleBaseImpl</classname> provided by SMSC. <classname>MProcRuleBaseImpl</classname> class contains some useful methods that cover getter and setter 
+				and code for persisting of this parameter into xml config file (read() and write() methods),
+				default stubs for <code>matches()</code> and <code>onPost*()</code> methods
 				and a service method for splitting of a parameters plain text string into subparameters (splitParametersString()). 
 				</para>
-				<para>Here is the new template of MProcRuleTestImpl class implementation that reuses the base class MProcRuleBaseImpl:
+				<para>Here is the new template of <classname>MProcRuleTestImpl</classname> class implementation that reuses the base class <classname>MProcRuleBaseImpl</classname>:
 <programlisting language="Java" role="JAVA">
 package org.mobicents.smsc.mproc.testimpl;
 
@@ -679,14 +692,15 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
 </programlisting>
 				</para>
 				</step>
-				<step><para>Implementing of getRuleParameters() method of MProcRule. Here is an example:
+				<step>
+					<para>Implementing of <code>getRuleParameters()</code> method of <classname>MProcRule</classname>. Below is an example:
 <programlisting language="Java" role="JAVA">
     @Override
     public String getRuleParameters() {
         return "testrule";
     }
 </programlisting>
-				</para>
+					</para>
 				</step>
 				<step><para>Implementing of methods that cover getter / setters for message custom parameters and storing them into xml config file. 
 				</para>
@@ -733,7 +747,7 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
     }
 
     @Override
-    public String getRuleClassName() {
+    public String getRuleParameters() {
         return par1 + " " + par2;
     }
 
@@ -765,7 +779,7 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
 </programlisting>
 				</para>
 				</step>
-				<step><para>Ovveriding of one of more isForPost*() methods (for allowing of processing of a needed message processing step). In our example it is isForPostArrivalState():
+				<step><para>Overiding one of <code>isForPost*()</code> methods (for allowing of processing of a needed message processing step). In our example it is <code>isForPostArrivalState()</code>:
 <programlisting language="Java" role="JAVA">
     @Override
     public boolean isForPostArrivalState() {
@@ -774,7 +788,7 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
 </programlisting>
 				</para>
 				</step>
-				<step><para>Implementing of a needed matches() method.
+				<step><para>Implementing of a needed <code>matches()</code> method.
 				In our example we process messages which destination address digits are started with a configurable parameter "par1".
 <programlisting language="Java" role="JAVA">
     @Override
@@ -785,8 +799,10 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
             return false;
     }
 </programlisting>
-				For matches() methods we will use interfaces MProcMessage interface (for onPostArrival and onPostDelivery) or MProcMessageDestination interface (for onPostImsiRequest).
-				MProcMessage interface provides info for processing message fields and MProcMessageDestination interface provides info for destination address and networkId fields of messages for which SRI request was made.
+				For <code>matches()</code> methods we will use interfaces <classname>MProcMessage</classname> interface (for <code>onPostArrival</code> and <code>onPostDelivery</code>)
+				 or <classname>MProcMessageDestination</classname> interface (for <code>onPostImsiRequest</code>).
+				<classname>MProcMessage</classname> interface provides info for processing message fields and <classname>MProcMessageDestination</classname> interface provides 
+				info for destination address and networkId fields of messages for which SRI request was made.
 				Here is a code of these interfaces. 
 <programlisting language="Java" role="JAVA">
 package org.mobicents.smsc.mproc;
@@ -861,8 +877,8 @@ public interface MProcMessageDestination {
 				</para>
 				</step>
 				<step><para>
-				Implementing of methods that make some actions.
-				In our example this is onPostArrival() and the action is adding "par2" prefix into destination address digits.
+				Implementing of methods that make some actions : 
+				In example above this is <code>onPostArrival()</code> and the action is adding "par2" prefix into destination address digits.
 				These methods will be invoked for all messages that match rule's conditions.
 <programlisting language="Java" role="JAVA">
     @Override
@@ -872,10 +888,11 @@ public interface MProcMessageDestination {
         factory.updateMessageDestAddr(message, destAddr);
     }
 </programlisting>
-				In onPostArrival(), onPostImsiRequest() and onPostDelivery() methods you can use provided interfaces PostArrivalProcessor, PostImsiProcessor and PostDeliveryProcessor
+				In <code>onPostArrival()</code>, <code>onPostImsiRequest()</code> and <code>onPostDelivery()</code> methods user can use provided interfaces 
+				<classname>PostArrivalProcessor</classname>, <classname>PostImsiProcessor</classname> and <classname>PostDeliveryProcessor</classname>
 				that provide methods for message processing / adding / dropping / rejecting.
 					 <substeps>
-						<step><para>PostArrivalProcessor interface content:
+						<step><para><classname>PostArrivalProcessor</classname> interface content:
 <programlisting language="Java" role="JAVA">
 package org.mobicents.smsc.mproc;
 
@@ -1088,7 +1105,7 @@ public interface PostArrivalProcessor {
 </programlisting>
 						</para>
 						</step>	
-						<step><para>PostImsiProcessor interface content:
+						<step><para><classname>PostImsiProcessor</classname> interface content:
 <programlisting language="Java" role="JAVA">
 package org.mobicents.smsc.mproc;
 
@@ -1115,7 +1132,7 @@ public interface PostImsiProcessor {
 </programlisting>
 						</para>
 						</step>	
-						<step><para>PostDeliveryProcessor interface content:
+						<step><para><classname>PostDeliveryProcessor</classname> interface content:
 <programlisting language="Java" role="JAVA">
 package org.mobicents.smsc.mproc;
 
@@ -1156,19 +1173,22 @@ public interface PostDeliveryProcessor {
 				</para>
 				</step>
 				<step><para>
-				Now we have fully prepaired java code and then need to deploy it.
+				Once all the source code is fully implemented, user should deploy it. 
 					 <substeps>
-						<step><para>Compile java code and create a jar library. Put the created jar into the folder
-						&lt;jboss&gt;/server/default/deploy/telscale-smsc-server/lib.
+						<step><para>User must compile java code and create a jar library. Copy the created jar into the folder
+						<filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/deploy/telscale-smsc-server/lib</filename>.
 						</para>
 						</step>	
-						<step><para>You need to update &lt;jboss&gt;/server/default/deploy/telscale-smsc-server/META-INF/jboss-beans.xml config file.
+						<step><para>You need to update <filename>telscale-smscgateway-&lt;version&gt;/jboss-5.1.0.GA/server/&lt;profile&gt;/deploy/telscale-smsc-server/META-INF/jboss-beans.xml</filename> config file.
 						</para>
-						<para>The first action is adding just after describing of default mproc rules bean name="MProcRuleFactoryDefault" a new bean that will describe your new created factory (MProcRuleFactoryTestImpl in our example):
+						<para>Define factory implementing <classname>MProcRuleFactory</classname>in above example it will be <classname>MProcRuleFactoryTestImpl</classname>:
 <programlisting language="XML" role="XML">
 <![CDATA[    <bean name="MProcRuleFactoryTest" class="org.mobicents.smsc.mproc.testimpl.MProcRuleFactoryTestImpl">
     </bean>
 ]]></programlisting>
+
+						</para>
+						<para>bean name can be some unique name. 
 						</para>
 						<para>In the "bean name="SmscManagement"" section - property &lt;property name="MProcRuleFactories"&gt; - after the line &lt;inject bean="MProcRuleFactoryDefault"/&gt; (that means default mproc rules implementing)
 						- add the line that describes your new created bean:
