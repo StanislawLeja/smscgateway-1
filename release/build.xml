@@ -523,7 +523,7 @@
 		<mkdir dir="${docs.dir}/smsc"/>
 		<copy todir="${docs.dir}/jss7" failonerror="true">
 		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/_docs/">
-		                <include name="*User_Guide.pdf" />
+		                <include name="*.pdf" />
 		        </fileset>
 		</copy>
 		<copy todir="${docs.dir}/smsc" failonerror="true" flatten="true">
