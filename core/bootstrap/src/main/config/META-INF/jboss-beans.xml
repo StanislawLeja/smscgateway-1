@@ -230,6 +230,11 @@
     <bean name="MProcRuleFactoryDefault" class="org.mobicents.smsc.mproc.impl.MProcRuleFactoryDefault">
     </bean>
 
+<!--
+    <bean name="MProcRuleFactoryTest" class="org.mobicents.smsc.mproc.testimpl.MProcRuleFactoryTestImpl">
+    </bean>
+-->
+
     <bean name="SmscManagement" class="org.mobicents.smsc.domain.SmscManagement">
         <constructor factoryClass="org.mobicents.smsc.domain.SmscManagement"
             factoryMethod="getInstance">
@@ -242,7 +247,7 @@
         <property name="MProcRuleFactories">
             <list elementClass="org.mobicents.smsc.mproc.MProcRuleFactory">
                 <inject bean="MProcRuleFactoryDefault"/>
-                <!-- <inject bean="MProcRuleFactoryCustom"/>  -->
+                <!-- <inject bean="MProcRuleFactoryTest"/>  -->
             </list>
         </property>
         <!-- 

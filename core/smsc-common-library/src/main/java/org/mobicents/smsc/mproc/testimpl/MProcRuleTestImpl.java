@@ -44,6 +44,13 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
         return par1 + " " + par2;
     }
 
+
+    @Override
+    public boolean isForPostArrivalState() {
+        return true;
+    }
+
+
     @Override
     public boolean matches(MProcMessage message) {
         if (message.getDestAddr().startsWith(par1))
