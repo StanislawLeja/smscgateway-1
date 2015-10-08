@@ -64,11 +64,15 @@ EXAMPLES
 			<procedure>
 				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Message Processing Rules' in the left panel.
 				</para></step>
-				<step><para>The main panel will display the existing mproc rule (if any), one each in a row with corresponding actions (delete, update) for each row. Below this you will find the button 'Create Message Processing Rule'.
+				<step><para>The main panel will display the existing mproc rule (if any), one each in a row with corresponding actions (delete, update) for each row. Below this you will find buttons 
+				'Create Default Message Processing Rule' and 'Create Custom Message Processing Rule'.
+				If you have not implemented your own customized rule, the only option for you is 'Create Default Message Processing Rule'.
+				The 'Create Message Processing Rule' window will display all proc rule parameters that must be defined by you.
+				For more details of these parameters please refer to the descriptions of the CLI commands for the same in the preceding section.
 				</para></step>
-				<step><para>You can create a new mproc rule by launching the 'Create Message Processing Rule' window by clicking on the blue coloured 'Create Message Processing Rule' button.
-				The 'Create Message Processing Rule' window will display all proc rule paramters that must be defined by you.
-				For more details of these parameters please refer to the descriptions of the CLI commands for the same in the preceding section. 
+				<step><para>
+				If you have implemented your own customized rules than you can use the button 'Create Custom Message Processing Rule'.
+				For a custom mproc rule you need to configure rule Id, Class Name and Parameters (as a plain string that will be parsed by your customized rules).
 				</para></step>
 				<step><para>Enter appropriate values for all the parameters and then click on the 'Create' button at the bottom of this 'Create Message Processing Rule' window.
 				This action will create a new mproc rule with parameters as defined by you.
@@ -76,7 +80,6 @@ EXAMPLES
 				<step><para>If there is an error in defining the mproc rule, then you will find the details of the error in the Management Console Log section below.
 				</para></step>
 			</procedure>
-			<para>Creating of customized mproc rules is not supported now in GUI. Use CLI unterface for it.</para>
 			</section>
 			</section>
 
@@ -132,13 +135,13 @@ EXAMPLES
 				<step><para>You can modify an existent mproc rule by launching the 'Message Procesing Rule #... properties' window by clicking on the blue coloured 'Modify Message Processing Rule' button.
 				The 'Message Procesing Rule #... properties' window will display all proc rule paramters that must be updated by you.
 				For more details of these parameters please refer to the descriptions of the CLI commands for the same in the preceding section.
+				For customized mproc rules the set of parameters is configured as a plain string.
 				</para></step>
-				<step><para>Update appropriate values for all the parameters and then click on the 'Close' button. This action will modify a proc rule with parameters as defined by you.
+				<step><para>Update appropriate values for all the parameters and then click on the 'Close' button. This action will modify a mproc rule with parameters as defined by you.
 				</para></step>
 				<step><para>If there is an error in updating the mproc rule, then you will find the details of the error in the Management Console Log section below.
 				</para></step>
 			</procedure>
-			<para>Modifying of customized mproc rules is not supported now in GUI. Use CLI unterface for it.</para>
 			</section>
 			</section>
 
