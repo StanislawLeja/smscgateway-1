@@ -341,6 +341,13 @@
                 </fileset>
         </copy>
     	
+        <echo>Copy Diameter Config Files</echo>
+        <copy todir="${release.dir}/resources/ocs" failonerror="true">
+        	 <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ocs">
+                <include name="**" />
+            </fileset>
+        </copy>    	
+    	
         <echo>Copy SMS server</echo>
 		<!--default-->
         <copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/telscale-smsc-server" failonerror="true">
