@@ -469,7 +469,7 @@
 		        </fileset>
 		</copy>
     	
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/mobicents-diameter-mux-${telscale-diam.version}-TelScale.sar" failonerror="true">
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/TelScale-diameter-mux-${telscale-diam.version}-TelScale.sar" failonerror="true">
 	        <fileset dir="${checkout.telscale-diam.dir}/core/mux/TelScale-diameter-mux-${telscale-diam.version}.sar">
 		                <include name="**" />
 		        </fileset>
