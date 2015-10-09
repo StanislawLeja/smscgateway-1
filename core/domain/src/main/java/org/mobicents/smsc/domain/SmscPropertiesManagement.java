@@ -242,7 +242,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private int correlationIdLiveTime = 60;
 
 	// Diameter destination Realm for connection to OCS
-	private String diameterDestRealm = "mobicents.org";
+	private String diameterDestRealm = "telestax.com";
 	// Diameter destination Host for connection to OCS
 	private String diameterDestHost = "127.0.0.1"; // "127.0.0.2"
 	// Diameter destination port for connection to OCS
