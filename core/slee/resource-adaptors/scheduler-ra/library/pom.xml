@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.telscale.smsc</groupId>
 		<artifactId>scheduler-ra-parent</artifactId>
-		<version>6.2.2.GA-TelScale</version>
+		<version>6.2.3-TelScale-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>scheduler-ra-library</artifactId>

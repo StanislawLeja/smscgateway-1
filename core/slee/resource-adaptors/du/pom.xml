@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>resource-adaptors-parent</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.2.2.GA-TelScale</version>
+		<version>6.2.3-TelScale-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>smsc-resource-adaptors-du</artifactId>

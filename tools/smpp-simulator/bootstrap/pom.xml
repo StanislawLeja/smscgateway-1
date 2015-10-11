@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>smpp-simulator-parent</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.2.2.GA-TelScale</version>
+		<version>6.2.3-TelScale-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>simulator-bootstrap</artifactId>

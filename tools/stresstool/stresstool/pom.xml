@@ -2,7 +2,7 @@
 	<parent>
 		<artifactId>stresstool-parent</artifactId>
 		<groupId>com.telscale.smsc</groupId>
-		<version>6.2.2.GA-TelScale</version>
+		<version>6.2.3-TelScale-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
