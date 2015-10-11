@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.telscale.smsc</groupId>
 		<artifactId>services-parent</artifactId>
-		<version>6.2.0-TelScale-SNAPSHOT</version>
+		<version>6.2.2.GA-TelScale</version>
 	</parent>
 
 	<artifactId>smsc-library</artifactId>
