@@ -27,7 +27,6 @@ import javolution.xml.XMLFormat;
 import javolution.xml.stream.XMLStreamException;
 
 import org.mobicents.smsc.mproc.MProcMessage;
-import org.mobicents.smsc.mproc.MProcMessageDestination;
 import org.mobicents.smsc.mproc.MProcRule;
 import org.mobicents.smsc.mproc.PostArrivalProcessor;
 import org.mobicents.smsc.mproc.PostDeliveryProcessor;
@@ -70,12 +69,17 @@ public abstract class MProcRuleBaseImpl implements MProcRule {
     }
 
     @Override
-    public boolean matches(MProcMessage messageDest) {
+    public boolean matchesPostArrival(MProcMessage messageDest) {
         return false;
     }
 
     @Override
-    public boolean matches(MProcMessageDestination messageDest) {
+    public boolean matchesPostImsiRequest(MProcMessage messageDest) {
+        return false;
+    }
+
+    @Override
+    public boolean matchesPostDelivery(MProcMessage messageDest) {
         return false;
     }
 
@@ -84,7 +88,7 @@ public abstract class MProcRuleBaseImpl implements MProcRule {
     }
 
     @Override
-    public void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages) throws Exception {
+    public void onPostImsiRequest(PostImsiProcessor factory, MProcMessage messages) throws Exception {
     }
 
     @Override

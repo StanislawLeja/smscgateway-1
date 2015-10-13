@@ -30,7 +30,6 @@ import javolution.xml.stream.XMLStreamException;
 
 import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.mproc.MProcMessage;
-import org.mobicents.smsc.mproc.MProcMessageDestination;
 import org.mobicents.smsc.mproc.MProcNewMessage;
 import org.mobicents.smsc.mproc.MProcRuleDefault;
 import org.mobicents.smsc.mproc.PostArrivalProcessor;
@@ -49,11 +48,13 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
     private static final String DEST_DIG_MASK = "destDigMask";
     private static final String ORIGINATING_MASK = "originatingMask";
     private static final String NETWORK_ID_MASK = "networkIdMask";
+    private static final String ORIG_ESME_NAME_MASK = "origEsmeNameMask";
     private static final String NEW_NETWORK_ID = "newNetworkId";
     private static final String NEW_DEST_TON = "newDestTon";
     private static final String NEW_DEST_NPI = "newDestNpi";
     private static final String ADD_DEST_DIG_PREFIX = "addDestDigPrefix";
     private static final String MAKE_COPY = "makeCopy";
+    private static final String DROP_AFTER_SRI = "dropAfterSri";
 
     // TODO: we need proper implementing
 //    // test magic mproc rules - we need to remove then later after proper implementing
@@ -74,14 +75,17 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
     private String destDigMask = "-1";
     private OriginationType originatingMask = null;
     private int networkIdMask = -1;
+    private String origEsmeNameMask = "-1";
 
     private int newNetworkId = -1;
     private int newDestTon = -1;
     private int newDestNpi = -1;
     private String addDestDigPrefix = "-1";
     private boolean makeCopy = false;
+    private boolean dropAfterSri = false;
 
     private Pattern destDigMaskPattern;
+    private Pattern origEsmeNameMaskPattern;
 
     @Override
     public String getRuleClassName() {
@@ -132,6 +136,18 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
 
     public void setOriginatingMask(OriginationType originatingMask) {
         this.originatingMask = originatingMask;
+    }
+
+    @Override
+    public String getOrigEsmeNameMask() {
+        return this.origEsmeNameMask;
+    }
+
+    @Override
+    public void setOrigEsmeNameMask(String origEsmeNameMask) {
+        this.origEsmeNameMask = origEsmeNameMask;
+
+        this.resetPattern();
     }
 
     /**
@@ -201,27 +217,46 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
         this.makeCopy = makeCopy;
     }
 
+    @Override
+    public boolean isDropAfterSri() {
+        return this.dropAfterSri;
+    }
+
+    @Override
+    public void setDropAfterSri(boolean dropAfterSri) {
+        this.dropAfterSri = dropAfterSri;
+    }
+
     private void resetPattern() {
         if (this.destDigMask != null && !this.destDigMask.equals("") && !this.destDigMask.equals("-1")) {
             this.destDigMaskPattern = Pattern.compile(this.destDigMask);
         } else {
             this.destDigMaskPattern = null;
         }
+
+        if (this.origEsmeNameMask != null && !this.origEsmeNameMask.equals("") && !this.origEsmeNameMask.equals("-1")) {
+            this.origEsmeNameMaskPattern = Pattern.compile(this.origEsmeNameMask);
+        } else {
+            this.origEsmeNameMaskPattern = null;
+        }
     }
 
     protected void setRuleParameters(int destTonMask, int destNpiMask, String destDigMask, OriginationType originatingMask,
-            int networkIdMask, int newNetworkId, int newDestTon, int newDestNpi, String addDestDigPrefix, boolean makeCopy) {
+            int networkIdMask, String origEsmeNameMask, int newNetworkId, int newDestTon, int newDestNpi,
+            String addDestDigPrefix, boolean makeCopy, boolean dropAfterSri) {
         this.destTonMask = destTonMask;
         this.destNpiMask = destNpiMask;
         this.destDigMask = destDigMask;
         this.originatingMask = originatingMask;
         this.networkIdMask = networkIdMask;
+        this.origEsmeNameMask = origEsmeNameMask;
 
         this.newNetworkId = newNetworkId;
         this.newDestTon = newDestTon;
         this.newDestNpi = newDestNpi;
         this.addDestDigPrefix = addDestDigPrefix;
         this.makeCopy = makeCopy;
+        this.dropAfterSri = dropAfterSri;
 
         this.resetPattern();
     }
@@ -234,12 +269,7 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
 
     @Override
     public boolean isForPostImsiRequestState() {
-        // TODO: we need proper implementing
-//        if (this.getId() == MAGIC_RULES_ID_NNN_CHECK)
-//            return true;
-        // TODO: we need proper implementing
-
-        return false;
+        return true;
     }
 
     @Override
@@ -252,14 +282,7 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
         return false;
     }
 
-    @Override
-    public boolean matches(MProcMessage message) {
-        // TODO: we need proper implementing
-//        if (this.getId() >= MAGIC_RULES_ID_START && this.getId() <= MAGIC_RULES_ID_END) {
-//            return true;
-//        }
-        // TODO: we need proper implementing
-
+    private boolean matches(MProcMessage message) {
         if (destTonMask != -1 && destTonMask != message.getDestAddrTon())
             return false;
         if (destNpiMask != -1 && destNpiMask != message.getDestAddrNpi())
@@ -273,17 +296,53 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
             return false;
         if (networkIdMask != -1 && networkIdMask != message.getNetworkId())
             return false;
+        if (origEsmeNameMaskPattern != null) {
+            if (message.getOrigEsmeName() == null)
+                return false;
+            Matcher m = this.origEsmeNameMaskPattern.matcher(message.getOrigEsmeName());
+            if (!m.matches())
+                return false;
+        }
 
         return true;
     }
 
     @Override
-    public boolean matches(MProcMessageDestination messageDest) {
+    public boolean matchesPostArrival(MProcMessage message) {
+        // TODO: we need proper implementing
+        // if (this.getId() >= MAGIC_RULES_ID_START && this.getId() <= MAGIC_RULES_ID_END) {
+        // return true;
+        // }
+        // TODO: we need proper implementing
+
+        return matches(message);
+    }
+
+    @Override
+    public boolean matchesPostImsiRequest(MProcMessage message) {
         // TODO: we need proper implementing
 //        if (this.getId() >= MAGIC_RULES_ID_START && this.getId() <= MAGIC_RULES_ID_END) {
 //            return true;
 //        }
+//      if (this.getId() >= MAGIC_RULES_ID_START && this.getId() <= MAGIC_RULES_ID_END) {
+//          return true;
+//      }
+      // TODO: we need proper implementing
+
+
+        return matches(message);
+    }
+
+    @Override
+    public boolean matchesPostDelivery(MProcMessage message) {
         // TODO: we need proper implementing
+//        if (this.getId() >= MAGIC_RULES_ID_START && this.getId() <= MAGIC_RULES_ID_END) {
+//            return true;
+//        }
+//      if (this.getId() >= MAGIC_RULES_ID_START && this.getId() <= MAGIC_RULES_ID_END) {
+//          return true;
+//      }
+      // TODO: we need proper implementing
 
         return false;
     }
@@ -325,7 +384,7 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
     }
 
     @Override
-    public void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages) throws Exception {
+    public void onPostImsiRequest(PostImsiProcessor factory, MProcMessage messages) throws Exception {
         // TODO: we need proper implementing
 //        if (this.getId() == MAGIC_RULES_ID_NNN_CHECK) {
 //            if (factory.getNnnDigits().startsWith("1")) {
@@ -333,6 +392,9 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
 //            }
 //        }
         // TODO: we need proper implementing
+
+        if (this.dropAfterSri)
+            factory.dropMessages();
     }
 
     @Override
@@ -375,11 +437,14 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
         String destDigMask = "-1";
         String originatingMask = "-1";
         int networkIdMask = -1;
+        String origEsmeNameMask = "-1";
+
         int newNetworkId = -1;
         int newDestTon = -1;
         int newDestNpi = -1;
         String addDestDigPrefix = "-1";
         boolean makeCopy = false;
+        boolean dropAfterSri = false;
         while (count < args.length) {
             command = args[count++];
             if (count < args.length) {
@@ -394,6 +459,9 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
                     originatingMask = value;
                 } else if (command.equals("networkidmask")) {
                     networkIdMask = Integer.parseInt(value);
+                } else if (command.equals("origesmenamemask")) {
+                    origEsmeNameMask = value;
+
                 } else if (command.equals("newnetworkid")) {
                     newNetworkId = Integer.parseInt(value);
                     success = true;
@@ -409,6 +477,9 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
                 } else if (command.equals("makecopy")) {
                     makeCopy = Boolean.parseBoolean(value);
                     success = true;
+                } else if (command.equals("dropaftersri")) {
+                    dropAfterSri = Boolean.parseBoolean(value);
+                    success = true;
                 }
             }
         }// while
@@ -423,8 +494,8 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
         } catch (Exception e) {
         }
 
-        this.setRuleParameters(destTonMask, destNpiMask, destDigMask, originatingMaskVal, networkIdMask, newNetworkId, newDestTon,
-                newDestNpi, addDestDigPrefix, makeCopy);
+        this.setRuleParameters(destTonMask, destNpiMask, destDigMask, originatingMaskVal, networkIdMask, origEsmeNameMask,
+                newNetworkId, newDestTon, newDestNpi, addDestDigPrefix, makeCopy, dropAfterSri);
     }
 
     @Override
@@ -522,6 +593,10 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
         if (networkIdMask != -1) {
             writeParameter(sb, parNumber++, "networkIdMask", networkIdMask);
         }
+        if (this.origEsmeNameMask != null && !this.origEsmeNameMask.equals("") && !this.origEsmeNameMask.equals("-1")) {
+            writeParameter(sb, parNumber++, "origEsmeNameMask", origEsmeNameMask);
+        }
+
         if (newNetworkId != -1) {
             writeParameter(sb, parNumber++, "newNetworkId", newNetworkId);
         }
@@ -536,6 +611,9 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
         }
         if (makeCopy) {
             writeParameter(sb, parNumber++, "makeCopy", makeCopy);
+        }
+        if (dropAfterSri) {
+            writeParameter(sb, parNumber++, "dropAfterSri", dropAfterSri);
         }
 
         return sb.toString();
@@ -563,12 +641,14 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
             }
 
             mProcRule.networkIdMask = xml.getAttribute(NETWORK_ID_MASK, -1);
+            mProcRule.origEsmeNameMask = xml.getAttribute(ORIG_ESME_NAME_MASK, "-1");
 
             mProcRule.newNetworkId = xml.getAttribute(NEW_NETWORK_ID, -1);
             mProcRule.newDestTon = xml.getAttribute(NEW_DEST_TON, -1);
             mProcRule.newDestNpi = xml.getAttribute(NEW_DEST_NPI, -1);
             mProcRule.addDestDigPrefix = xml.getAttribute(ADD_DEST_DIG_PREFIX, "-1");
             mProcRule.makeCopy = xml.getAttribute(MAKE_COPY, false);
+            mProcRule.dropAfterSri = xml.getAttribute(DROP_AFTER_SRI, false);
 
             mProcRule.resetPattern();
         }
@@ -586,6 +666,8 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
                 xml.setAttribute(ORIGINATING_MASK, mProcRule.originatingMask.toString());
 
             xml.setAttribute(NETWORK_ID_MASK, mProcRule.networkIdMask);
+            xml.setAttribute(ORIG_ESME_NAME_MASK, mProcRule.origEsmeNameMask);
+
             xml.setAttribute(NEW_NETWORK_ID, mProcRule.newNetworkId);
             xml.setAttribute(NEW_DEST_TON, mProcRule.newDestTon);
             xml.setAttribute(NEW_DEST_NPI, mProcRule.newDestNpi);
@@ -595,6 +677,8 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
 
             if (mProcRule.makeCopy)
                 xml.setAttribute(MAKE_COPY, mProcRule.makeCopy);
+            if (mProcRule.dropAfterSri)
+                xml.setAttribute(DROP_AFTER_SRI, mProcRule.dropAfterSri);
         }
     };
 

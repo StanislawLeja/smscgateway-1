@@ -49,15 +49,12 @@ import org.apache.log4j.Logger;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.mobicents.smsc.domain.SmscManagement;
 import org.mobicents.smsc.library.Sms;
-import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.mproc.MProcMessage;
-import org.mobicents.smsc.mproc.MProcMessageDestination;
 import org.mobicents.smsc.mproc.MProcNewMessage;
 import org.mobicents.smsc.mproc.MProcResult;
 import org.mobicents.smsc.mproc.MProcRuleFactory;
 import org.mobicents.smsc.mproc.MProcRule;
 import org.mobicents.smsc.mproc.MProcRuleMBean;
-import org.mobicents.smsc.mproc.impl.MProcMessageDestinationImpl;
 import org.mobicents.smsc.mproc.impl.MProcMessageImpl;
 import org.mobicents.smsc.mproc.impl.MProcNewMessageImpl;
 import org.mobicents.smsc.mproc.impl.MProcRuleOamMessages;
@@ -240,7 +237,7 @@ public class MProcManagement implements MProcManagementMBean {
         try {
             for (FastList.Node<MProcRule> n = cur.head(), end = cur.tail(); (n = n.getNext()) != end;) {
                 MProcRule rule = n.getValue();
-                if (rule.isForPostArrivalState() && rule.matches(message)) {
+                if (rule.isForPostArrivalState() && rule.matchesPostArrival(message)) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("MRule matches at Arrival phase to a message:\nrule: " + rule + "\nmessage: " + sms);
                     }
@@ -287,23 +284,23 @@ public class MProcManagement implements MProcManagementMBean {
         return res;
     }
 
-    public MProcResult applyMProcImsiRequest(SmsSet smsSet, String imsi, String nnnDigits, int nnnNumberingPlan,
+    public MProcResult applyMProcImsiRequest(Sms sms, String imsi, String nnnDigits, int nnnNumberingPlan,
             int nnnAddressNature) {
         if (this.mprocs.size() == 0)
             return new MProcResult();
 
         FastList<MProcRule> cur = this.mprocs;
-        PostImsiProcessorImpl pap = new PostImsiProcessorImpl(logger, imsi, nnnDigits, nnnNumberingPlan, nnnAddressNature);
-        MProcMessageDestination messageDest = new MProcMessageDestinationImpl(smsSet);
+        PostImsiProcessorImpl pap = new PostImsiProcessorImpl(logger);
+        MProcMessage message = new MProcMessageImpl(sms);
 
         try {
             for (FastList.Node<MProcRule> n = cur.head(), end = cur.tail(); (n = n.getNext()) != end;) {
                 MProcRule rule = n.getValue();
-                if (rule.isForPostImsiRequestState() && rule.matches(messageDest)) {
+                if (rule.isForPostImsiRequestState() && rule.matchesPostImsiRequest(message)) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("MRule matches at ImsiRequest phase to a message:\nrule: " + rule + "\nmessage: " + smsSet);
+                        logger.debug("MRule matches at ImsiRequest phase to a message:\nrule: " + rule + "\nmessage: " + sms);
                     }
-                    rule.onPostImsiRequest(pap, messageDest);
+                    rule.onPostImsiRequest(pap, message);
                 }
             }
         } catch (Throwable e) {
@@ -333,7 +330,7 @@ public class MProcManagement implements MProcManagementMBean {
         try {
             for (FastList.Node<MProcRule> n = cur.head(), end = cur.tail(); (n = n.getNext()) != end;) {
                 MProcRule rule = n.getValue();
-                if (rule.isForPostDeliveryState() && rule.matches(message)) {
+                if (rule.isForPostDeliveryState() && rule.matchesPostDelivery(message)) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("MRule matches at Delivery phase to a message:\nrule: " + rule + "\nmessage: " + sms);
                     }

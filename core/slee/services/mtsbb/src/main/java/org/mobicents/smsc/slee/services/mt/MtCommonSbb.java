@@ -730,6 +730,114 @@ public abstract class MtCommonSbb implements Sbb, ReportSMDeliveryStatusInterfac
 		}
 	}
 
+    protected void onImsiDrop(Sms sms, String imsi, ISDNAddressString nnn) {
+//        smscStatAggregator.updateMsgOutFailedAll();
+
+        PersistenceRAInterface pers = this.getStore();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("onImsiDrop: targetId=");
+        sb.append(sms.getSmsSet().getTargetId());
+        sb.append(", sms=");
+        sb.append(sms);
+        if (this.logger.isInfoEnabled())
+            this.logger.info(sb.toString());
+
+        // sending of a failure response for transactional mode
+        MessageDeliveryResultResponseInterface.DeliveryFailureReason delReason = MessageDeliveryResultResponseInterface.DeliveryFailureReason.destinationUnavalable;
+        if (sms.getMessageDeliveryResultResponse() != null) {
+            sms.getMessageDeliveryResultResponse().responseDeliveryFailure(delReason, null);
+            sms.setMessageDeliveryResultResponse(null);
+        }
+
+        CdrGenerator.generateCdr(sms, CdrGenerator.CDR_FAILED_IMSI,
+                "Sri-ImsiRequest: incoming messages are dropped by mProc rules",
+                smscPropertiesManagement.getGenerateReceiptCdr(),
+                MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()));
+
+        try {
+            pers.c2_updateInSystem(sms, DBOperations_C2.IN_SYSTEM_SENT,
+                    smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast);
+            sms.getSmsSet().setStatus(ErrorCode.MPROC_SRI_REQUEST_DROP);
+            sms.setDeliveryDate(new Date());
+            if (MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateArchiveTable())) {
+                pers.c2_createRecordArchive(sms);
+            }
+        } catch (PersistenceException e) {
+            this.logger.severe("PersistenceException when onImsiDrop() - c2_createRecordArchive" + e.getMessage(), e);
+        }
+
+        // adding an error receipt if it is needed
+        int registeredDelivery = sms.getRegisteredDelivery();
+        if (!smscPropertiesManagement.getReceiptsDisabling() && MessageUtil.isReceiptOnFailure(registeredDelivery)) {
+            TargetAddress ta = new TargetAddress(sms.getSourceAddrTon(), sms.getSourceAddrNpi(), sms.getSourceAddr(), sms
+                    .getSmsSet().getNetworkId());
+            TargetAddress lock = SmsSetCache.getInstance().addSmsSet(ta);
+            try {
+                synchronized (lock) {
+                    try {
+                        Sms receipt;
+                        StringBuilder extraString = new StringBuilder();
+                        extraString.append(" imsi:");
+                        extraString.append(imsi);
+                        extraString.append(" nnn_digits:");
+                        extraString.append(nnn.getAddress());
+                        extraString.append(" nnn_an:");
+                        extraString.append(nnn.getAddressNature().getIndicator());
+                        extraString.append(" nnn_np:");
+                        extraString.append(nnn.getNumberingPlan().getIndicator());
+                        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                            receipt = MessageUtil.createReceiptSms(sms, false);
+                            SmsSet backSmsSet = pers.obtainSmsSet(ta);
+                            receipt.setSmsSet(backSmsSet);
+                            receipt.setStored(true);
+                            pers.createLiveSms(receipt);
+                            pers.setNewMessageScheduled(receipt.getSmsSet(), MessageUtil.computeDueDate(MessageUtil
+                                    .computeFirstDueDelay(smscPropertiesManagement.getFirstDueDelay())));
+                        } else {
+                            receipt = MessageUtil.createReceiptSms(sms, false, ta,
+                                    smscPropertiesManagement.getOrigNetworkIdForReceipts(), extraString.toString());
+                            boolean storeAndForwMode = MessageUtil.isStoreAndForward(sms);
+                            if (!storeAndForwMode) {
+                                try {
+                                    this.scheduler.injectSmsOnFly(receipt.getSmsSet());
+                                } catch (Exception e) {
+                                    this.logger.severe(
+                                            "Exception when runnung injectSmsOnFly() for receipt in onImsiDrop(): "
+                                                    + e.getMessage(), e);
+                                }
+                            } else {
+                                if (smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast) {
+                                    try {
+                                        receipt.setStoringAfterFailure(true);
+                                        this.scheduler.injectSmsOnFly(receipt.getSmsSet());
+                                    } catch (Exception e) {
+                                        this.logger.severe(
+                                                "Exception when runnung injectSmsOnFly() for receipt in onImsiDrop(): "
+                                                        + e.getMessage(), e);
+                                    }
+                                } else {
+                                    receipt.setStored(true);
+                                    this.scheduler.setDestCluster(receipt.getSmsSet());
+                                    pers.c2_scheduleMessage_ReschedDueSlot(receipt,
+                                            smscPropertiesManagement.getStoreAndForwordMode() == StoreAndForwordMode.fast, true);
+                                }
+                            }
+                        }
+                        this.logger.info("Adding an error receipt: source=" + receipt.getSourceAddr() + ", dest="
+                                + receipt.getSmsSet().getDestAddr());
+                    } catch (PersistenceException e) {
+                        this.logger.severe(
+                                "PersistenceException when onImsiDrop(Set) - adding delivery receipt"
+                                        + e.getMessage(), e);
+                    }
+                }
+            } finally {
+                SmsSetCache.getInstance().removeSmsSet(lock);
+            }
+        }
+    }
+
 	public abstract void doSetSmsSubmitData(SmsSubmitData smsDeliveryData);
 
 	public abstract SmsSubmitData doGetSmsSubmitData();

@@ -34,17 +34,9 @@ public class PostImsiProcessorImpl implements PostImsiProcessor {
 
     private boolean needDropMessages = false;
     private Logger logger;
-    private String imsi;
-    private String nnnDigits;
-    private int nnnNumberingPlan;
-    private int nnnAddressNature;
 
-    public PostImsiProcessorImpl(Logger logger, String imsi, String nnnDigits, int nnnNumberingPlan, int nnnAddressNature) {
+    public PostImsiProcessorImpl(Logger logger) {
         this.logger = logger;
-        this.imsi = imsi;
-        this.nnnDigits = nnnDigits;
-        this.nnnNumberingPlan = nnnNumberingPlan;
-        this.nnnAddressNature = nnnAddressNature;
     }
 
     @Override
@@ -60,26 +52,6 @@ public class PostImsiProcessorImpl implements PostImsiProcessor {
     @Override
     public void dropMessages() {
         needDropMessages = true;
-    }
-
-    @Override
-    public String getImsi() {
-        return imsi;
-    }
-
-    @Override
-    public String getNnnDigits() {
-        return nnnDigits;
-    }
-
-    @Override
-    public int getNnnNumberingPlan() {
-        return nnnNumberingPlan;
-    }
-
-    @Override
-    public int getNnnAddressNature() {
-        return nnnAddressNature;
     }
 
 }

@@ -36,6 +36,7 @@ import org.mobicents.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.mobicents.protocols.ss7.map.MAPSmsTpduParameterFactoryImpl;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.mobicents.protocols.ss7.map.api.MAPException;
+import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
 import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
@@ -91,6 +92,7 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 	private int mesageSegmentNumber;
 	private SM_RP_DA sm_rp_da;
 	private SM_RP_OA sm_rp_oa;
+	private ISDNAddressString nnn;
 	private long currentMsgNum;
 	private InformServiceCenterContainer informServiceCenterContainer;
 	private int tcEmptySent;
@@ -155,7 +157,17 @@ public class MtSbbProxy extends MtSbb implements ChildRelationExt, MtSbbLocalObj
 	public SM_RP_OA getSmRpOa() {
 		return this.sm_rp_oa;
 	}
-	
+
+    @Override
+    public void setNnn(ISDNAddressString nnn) {
+        this.nnn = nnn;
+    }
+
+    @Override
+    public ISDNAddressString getNnn() {
+        return nnn;
+    }
+
 	@Override
 	public long getCurrentMsgNum() {
 		return currentMsgNum;

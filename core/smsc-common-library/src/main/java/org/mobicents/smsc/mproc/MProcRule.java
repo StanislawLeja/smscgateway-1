@@ -32,25 +32,29 @@ public interface MProcRule extends MProcRuleMBean {
     void setId(int val);
 
     /**
-     * @return true if the mproc rule fits to a message (used for onPostArrival and onPostDelivery)
+     * @return true if the mproc rule fits to a message when a message has just come to SMSC
      */
-    boolean matches(MProcMessage message);
+    boolean matchesPostArrival(MProcMessage message);
 
     /**
-     * @return true if the mproc rule fits to a message destination (used for onPostImsiRequest)
+     * @return true if the mproc rule fits to a message when IMSI / NNN has been received from HLR
      */
-    boolean matches(MProcMessageDestination messageDest);
+    boolean matchesPostImsiRequest(MProcMessage message);
+
+    /**
+     * @return true if the mproc rule fits to a message when a message has just been delivered (or delivery failure)
+     */
+    boolean matchesPostDelivery(MProcMessage message);
 
     /**
      * the event occurs when a message has just come to SMSC
      */
-    void onPostArrival(PostArrivalProcessor factory, MProcMessage message)
-            throws Exception;
+    void onPostArrival(PostArrivalProcessor factory, MProcMessage message) throws Exception;
 
     /**
      * the event occurs when IMSI / NNN has been received from HLR
      */
-    void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages) throws Exception;
+    void onPostImsiRequest(PostImsiProcessor factory, MProcMessage message) throws Exception;
 
     /**
      * the event occurs when a message has just been delivered (or delivery failure)

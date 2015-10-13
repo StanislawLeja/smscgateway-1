@@ -37,14 +37,6 @@ public interface PostImsiProcessor {
      */
     Logger getLogger();
 
-    String getImsi();
-
-    String getNnnDigits();
-
-    int getNnnNumberingPlan();
-
-    int getNnnAddressNature();
-
     // actions
     void dropMessages();
 

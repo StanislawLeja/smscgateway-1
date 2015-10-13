@@ -57,14 +57,12 @@ import org.mobicents.slee.resource.map.events.ErrorComponent;
 import org.mobicents.slee.resource.map.events.RejectComponent;
 import org.mobicents.smsc.cassandra.DatabaseType;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.domain.MProcManagement;
 import org.mobicents.smsc.library.CorrelationIdValue;
 import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
-import org.mobicents.smsc.mproc.MProcResult;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 
@@ -694,17 +692,17 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
         ISDNAddressString networkNodeNumber = locationInfoWithLMSI.getNetworkNodeNumber();
 
         // apply ImsiRequest mproc rules
-        MProcResult mProcResult = MProcManagement.getInstance().applyMProcImsiRequest(smsSet, imsi,
-                networkNodeNumber.getAddress(), networkNodeNumber.getNumberingPlan().getIndicator(),
-                networkNodeNumber.getAddressNature().getIndicator());
-        if (mProcResult.isMessageDropped()) {
-            if (logger.isInfoEnabled()) {
-                logger.info("Sri-ImsiRequest: incoming messages are dropped by mProc rules, messages=[" + smsSet + "]");
-            }
-            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.MPROC_SRI_REQUEST_DROP,
-                    "Sri-ImsiRequest: incoming messages are dropped by mProc rules", true, null, true);
-            return;
-        }
+//        MProcResult mProcResult = MProcManagement.getInstance().applyMProcImsiRequest(smsSet, imsi,
+//                networkNodeNumber.getAddress(), networkNodeNumber.getNumberingPlan().getIndicator(),
+//                networkNodeNumber.getAddressNature().getIndicator());
+//        if (mProcResult.isMessageDropped()) {
+//            if (logger.isInfoEnabled()) {
+//                logger.info("Sri-ImsiRequest: incoming messages are dropped by mProc rules, messages=[" + smsSet + "]");
+//            }
+//            this.onDeliveryError(smsSet, ErrorAction.permanentFailure, ErrorCode.MPROC_SRI_REQUEST_DROP,
+//                    "Sri-ImsiRequest: incoming messages are dropped by mProc rules", true, null, true);
+//            return;
+//        }
 
         MtSbbLocalObject mtSbbLocalObject = this.getMtSbbObject();
         if (mtSbbLocalObject != null) {

@@ -720,6 +720,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		SM_RP_OA sm_RP_OA = this.mapParameterFactory.createSM_RP_OA_ServiceCentreAddressOA(this
 				.getServiceCenterAddressString(networkId));
 
+		this.setNnn(networkNode);
 		this.setNetworkNode(networkNodeSccpAddress);
 		this.setSmRpDa(sm_RP_DA);
 		this.setSmRpOa(sm_RP_OA);
@@ -735,26 +736,73 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		}
 		this.setMAPVersionTested(mapApplicationContextVersion);
 
-		try {
-			this.sendMtSms(this.getMtFoSMSMAPApplicationContext(mapApplicationContextVersion),
-					MessageProcessingState.firstMessageSending, null, smsSet.getNetworkId());
-		} catch (SmscProcessingException e) {
-			String reason = "SmscPocessingException when invoking sendMtSms() from setupMtForwardShortMessageRequest()-firstMessageSending: "
-					+ e.toString();
-			this.logger.severe(reason, e);
-			ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
-			try {
-				smStatus = ErrorCode.fromInt(e.getSmppErrorCode());
-			} catch (IllegalArgumentException e1) {
-			}
-			this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true, null, false);
-		} catch (Throwable e) {
-			String reason = "Exception when invoking sendMtSms() from setupMtForwardShortMessageRequest()-firstMessageSending: "
-					+ e.toString();
-			this.logger.severe(reason, e);
-			ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
-			this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true, null, false);
-		}
+        // dropaftersri pmproc rules
+        boolean noMoreMessages = false;
+        PersistenceRAInterface pers = this.getStore();
+        TargetAddress lock = pers.obtainSynchroObject(new TargetAddress(smsSet));
+        try {
+            synchronized (lock) {
+                long currentMsgNum = this.doGetCurrentMsgNum();
+                Sms sms = smsSet.getSms(currentMsgNum);
+                if (sms != null) {
+                    while (true) {
+                        MProcResult mProcResult = MProcManagement.getInstance().applyMProcImsiRequest(sms, imsiData,
+                                networkNode.getAddress(), networkNode.getNumberingPlan().getIndicator(),
+                                networkNode.getAddressNature().getIndicator());
+                        if (mProcResult.isMessageDropped()) {
+//                            if (logger.isInfoEnabled()) {
+//                                logger.info("Sri-ImsiRequest: incoming messages are dropped by mProc rules, messages=[" + sms
+//                                        + "]");
+//                            }
+                            this.onImsiDrop(sms, imsiData, networkNode);
+                            if (currentMsgNum < smsSet.getSmsCount() - 1) {
+                                // there are more messages to send in cache
+                                currentMsgNum++;
+                                this.doSetCurrentMsgNum(currentMsgNum);
+                                sms = smsSet.getSms(currentMsgNum);
+                                if (sms == null) {
+                                    break;
+                                }
+                                continue;
+                            } else {
+                                noMoreMessages = true;
+                                this.freeSmsSetSucceded(smsSet, pers);
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        } finally {
+            pers.releaseSynchroObject(lock);
+        }
+
+        if (noMoreMessages) {
+            setupReportSMDeliveryStatusRequestSuccess(smsSet, true);
+        } else {
+            try {
+                this.sendMtSms(this.getMtFoSMSMAPApplicationContext(mapApplicationContextVersion),
+                        MessageProcessingState.firstMessageSending, null, smsSet.getNetworkId());
+            } catch (SmscProcessingException e) {
+                String reason = "SmscPocessingException when invoking sendMtSms() from setupMtForwardShortMessageRequest()-firstMessageSending: "
+                        + e.toString();
+                this.logger.severe(reason, e);
+                ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
+                try {
+                    smStatus = ErrorCode.fromInt(e.getSmppErrorCode());
+                } catch (IllegalArgumentException e1) {
+                }
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true, null, false);
+            } catch (Throwable e) {
+                String reason = "Exception when invoking sendMtSms() from setupMtForwardShortMessageRequest()-firstMessageSending: "
+                        + e.toString();
+                this.logger.severe(reason, e);
+                ErrorCode smStatus = ErrorCode.SC_SYSTEM_ERROR;
+                this.onDeliveryError(smsSet, ErrorAction.permanentFailure, smStatus, reason, true, null, false);
+            }
+        }
 	}
 
 	public void setupReportSMDeliveryStatusRequest(String destinationAddress, int ton, int npi,
@@ -821,9 +869,9 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 	 * 
 	 * @param networkNode
 	 */
-	public abstract void setNetworkNode(SccpAddress sccpAddress);
+    public abstract void setNnn(ISDNAddressString nnn);
 
-	public abstract SccpAddress getNetworkNode();
+    public abstract ISDNAddressString getNnn();
 
 	/**
 	 * Set the counter as which SMS is sent. Max sending can be equal to
@@ -848,14 +896,23 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 
 	public abstract SM_RP_DA getSmRpDa();
 
-	/**
-	 * Originating Address
-	 * 
-	 * @param sm_rp_oa
-	 */
-	public abstract void setSmRpOa(SM_RP_OA sm_rp_oa);
+    /**
+     * Originating Address
+     * 
+     * @param sm_rp_oa
+     */
+    public abstract void setSmRpOa(SM_RP_OA sm_rp_oa);
 
-	public abstract SM_RP_OA getSmRpOa();
+    public abstract SM_RP_OA getSmRpOa();
+
+    /**
+     * NNN
+     * 
+     * @param networkNode
+     */
+    public abstract void setNetworkNode(SccpAddress sm_rp_oa);
+
+    public abstract SccpAddress getNetworkNode();
 
 	/**
 	 * Private Methods
@@ -1054,37 +1111,77 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		        smsSet.markSmsAsDelivered(currentMsgNum);
 
 		        // now we are trying to sent other messages
+                boolean moreMessages = false;
 				if (currentMsgNum < smsSet.getSmsCount() - 1) {
 					// there are more messages to send in cache
+                    moreMessages = true;
 					currentMsgNum++;
 					this.doSetCurrentMsgNum(currentMsgNum);
-					sms = smsSet.getSms(currentMsgNum);
-					if (sms != null) {
-						if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
-							this.startMessageDelivery(sms);
-						} else {
-							sms.setDeliveryCount(sms.getDeliveryCount() + 1);
-						}
-					}
+                    sms = smsSet.getSms(currentMsgNum);
 
-					try {
-		                smscStatAggregator.updateMsgOutTryAll();
-		                smscStatAggregator.updateMsgOutTrySs7();
+					// dropaftersri pmproc rules
+                    if (sms != null) {
+                        while (true) {
+                            SM_RP_DA da = this.getSmRpDa();
+                            ISDNAddressString networkNodeNumber = this.getNnn();
+                            MProcResult mProcResult = MProcManagement.getInstance().applyMProcImsiRequest(sms,
+                                    da.getIMSI().getData(), networkNodeNumber.getAddress(),
+                                    networkNodeNumber.getNumberingPlan().getIndicator(),
+                                    networkNodeNumber.getAddressNature().getIndicator());
+                            if (mProcResult.isMessageDropped()) {
+//                                if (logger.isInfoEnabled()) {
+//                                    logger.info("Sri-ImsiRequest: incoming messages are dropped by mProc rules, messages=["
+//                                            + sms + "]");
+//                                }
+                                this.onImsiDrop(sms, da.getIMSI().getData(), networkNodeNumber);
+                                if (currentMsgNum < smsSet.getSmsCount() - 1) {
+                                    // there are more messages to send in cache
+                                    currentMsgNum++;
+                                    this.doSetCurrentMsgNum(currentMsgNum);
+                                    sms = smsSet.getSms(currentMsgNum);
+                                    if (sms == null)
+                                        break;
+                                    if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                                        this.startMessageDelivery(sms);
+                                    } else {
+                                        sms.setDeliveryCount(sms.getDeliveryCount() + 1);
+                                    }
+                                    continue;
+                                } else {
+                                    moreMessages = false;
+                                    break;
+                                }
+                            } else {
+                                break;
+                            }
+                        }
 
-                        this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.firstMessageSending, continueDialog ? mapDialogSms : null,
-                                smsSet.getNetworkId());
-						return;
-					} catch (SmscProcessingException e) {
-						this.logger.severe(
-								"SmscPocessingException when invoking sendMtSms() from handleSmsResponse(): "
-										+ e.toString(), e);
-					}
+                        if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                            this.startMessageDelivery(sms);
+                        } else {
+                            sms.setDeliveryCount(sms.getDeliveryCount() + 1);
+                        }
+                    }
 				}
 
-				// no more messages are in cache now - lets check if there are
-				// more
-				// messages in a database
-				if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
+                if (moreMessages) {
+                    try {
+                        smscStatAggregator.updateMsgOutTryAll();
+                        smscStatAggregator.updateMsgOutTrySs7();
+
+                        this.sendMtSms(mapDialogSms.getApplicationContext(), MessageProcessingState.firstMessageSending,
+                                continueDialog ? mapDialogSms : null, smsSet.getNetworkId());
+                        return;
+                    } catch (SmscProcessingException e) {
+                        this.logger
+                                .severe("SmscPocessingException when invoking sendMtSms() from handleSmsResponse(): "
+                                        + e.toString(), e);
+                    }
+                }
+
+                // no more messages are in cache now - lets check if there are
+                // more messages in a database
+                if (smscPropertiesManagement.getDatabaseType() == DatabaseType.Cassandra_1) {
 					try {
 						pers.fetchSchedulableSms(smsSet, true);
 					} catch (PersistenceException e1) {
@@ -1132,16 +1229,19 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			pers.releaseSynchroObject(lock);
 		}
 
-		InformServiceCenterContainer informServiceCenterContainer = this.getInformServiceCenterContainer();
-		if (informServiceCenterContainer != null
-				&& informServiceCenterContainer.getMwStatus() != null
-				&& informServiceCenterContainer.getMwStatus().getScAddressNotIncluded() == false
-				&& mapDialogSms.getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1) {
-			// sending a report to HLR of a success delivery
+        setupReportSMDeliveryStatusRequestSuccess(smsSet,
+                mapDialogSms.getApplicationContext().getApplicationContextVersion() != MAPApplicationContextVersion.version1);
+	}
+
+    private void setupReportSMDeliveryStatusRequestSuccess(SmsSet smsSet, boolean versionMore1) {
+        InformServiceCenterContainer informServiceCenterContainer = this.getInformServiceCenterContainer();
+        if (informServiceCenterContainer != null && informServiceCenterContainer.getMwStatus() != null
+                && informServiceCenterContainer.getMwStatus().getScAddressNotIncluded() == false && versionMore1) {
+            // sending a report to HLR of a success delivery
             this.setupReportSMDeliveryStatusRequest(smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
                     SMDeliveryOutcome.successfulTransfer, smsSet.getTargetId(), smsSet.getNetworkId());
-		}
-	}
+        }
+    }
 
     private String[] sliceMessage(String msg, DataCodingScheme dataCodingScheme, int nationalLanguageLockingShift,
             int nationalLanguageSingleShift) {

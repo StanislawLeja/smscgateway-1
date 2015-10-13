@@ -26,6 +26,7 @@ import org.mobicents.smsc.library.OriginationType;
 
 public interface MProcRuleDefault extends MProcRule {
 
+    // *** conditions ***
     int getDestTonMask();
 
     void setDestTonMask(int destTonMask);
@@ -58,6 +59,15 @@ public interface MProcRuleDefault extends MProcRule {
 
     void setNetworkIdMask(int networkIdMask);
 
+    /**
+     * @return mask for message original ESME name. This condition never fits if a message comes not from SMPP. "-1" means any
+     *         value.
+     */
+    String getOrigEsmeNameMask();
+
+    void setOrigEsmeNameMask(String origEsmeNameMask);
+
+    // *** actions ***
     /**
      * @return if !=-1: the new networkId will be assigned to a message
      */
@@ -92,5 +102,12 @@ public interface MProcRuleDefault extends MProcRule {
     boolean isMakeCopy();
 
     void setMakeCopy(boolean makeCopy);
+
+    /**
+     * @return if true - drops a message after succeeded SRI response
+     */
+    boolean isDropAfterSri();
+
+    void setDropAfterSri(boolean dropAfterSri);
 
 }

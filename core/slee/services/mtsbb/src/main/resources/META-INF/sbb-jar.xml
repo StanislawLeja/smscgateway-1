@@ -290,7 +290,8 @@
 				<cmp-field><cmp-field-name>messageSegmentNumber</cmp-field-name></cmp-field>	
 				<cmp-field><cmp-field-name>smRpDa</cmp-field-name></cmp-field>
 				<cmp-field><cmp-field-name>smRpOa</cmp-field-name></cmp-field>
-				
+				<cmp-field><cmp-field-name>nnn</cmp-field-name></cmp-field>
+
 				<cmp-field><cmp-field-name>mapApplicationContextVersionsUsed</cmp-field-name></cmp-field>
 	
 			</sbb-abstract-class>
