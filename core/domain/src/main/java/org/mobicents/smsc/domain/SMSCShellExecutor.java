@@ -674,7 +674,10 @@ public class SMSCShellExecutor implements ShellExecutor {
             } else if (parName.equals("correlationidlivetime")) {
                 int val = Integer.parseInt(options[3]);
                 smscPropertiesManagement.setCorrelationIdLiveTime(val);
-			} else if (parName.equals("revisesecondsonsmscstart")) {
+            } else if (parName.equals("sriresponselivetime")) {
+                int val = Integer.parseInt(options[3]);
+                smscPropertiesManagement.setSriResponseLiveTime(val);
+            } else if (parName.equals("revisesecondsonsmscstart")) {
 				int val = Integer.parseInt(options[3]);
 				smscPropertiesManagement.setReviseSecondsOnSmscStart(val);
 			} else if (parName.equals("processingsmssettimeout")) {
@@ -886,6 +889,8 @@ public class SMSCShellExecutor implements ShellExecutor {
 //                sb.append(smscPropertiesManagement.getSMSHomeRouting());
             } else if (parName.equals("correlationidlivetime")) {
                 sb.append(smscPropertiesManagement.getCorrelationIdLiveTime());
+            } else if (parName.equals("sriresponselivetime")) {
+                sb.append(smscPropertiesManagement.getSriResponseLiveTime());
 			} else if (parName.equals("revisesecondsonsmscstart")) {
 				sb.append(smscPropertiesManagement.getReviseSecondsOnSmscStart());
 			} else if (parName.equals("processingsmssettimeout")) {
@@ -1084,6 +1089,10 @@ public class SMSCShellExecutor implements ShellExecutor {
 
             sb.append("correlationidlivetime = ");
             sb.append(smscPropertiesManagement.getCorrelationIdLiveTime());
+            sb.append("\n");
+
+            sb.append("sriresponselivetime = ");
+            sb.append(smscPropertiesManagement.getSriResponseLiveTime());
             sb.append("\n");
 
 			sb.append("revisesecondsonsmscstart = ");

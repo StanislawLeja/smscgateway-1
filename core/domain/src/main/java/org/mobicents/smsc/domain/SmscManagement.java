@@ -247,7 +247,8 @@ public class SmscManagement implements SmscManagementMBean {
                 this.smscPropertiesManagement.getReviseSecondsOnSmscStart(), this.smscPropertiesManagement.getProcessingSmsSetTimeout());
 
         // Step 3 SmsSetCashe.start()
-        SmsSetCache.start(this.smscPropertiesManagement.getCorrelationIdLiveTime());
+        SmsSetCache.start(this.smscPropertiesManagement.getCorrelationIdLiveTime(),
+                this.smscPropertiesManagement.getSriResponseLiveTime());
 
 		// Step 4 Setup ArchiveSms
 		this.archiveSms = ArchiveSms.getInstance(this.name);

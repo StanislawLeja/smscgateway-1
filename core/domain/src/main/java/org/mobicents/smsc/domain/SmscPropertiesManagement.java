@@ -98,6 +98,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private static final String GLOBAL_TITLE_INDICATOR = "globalTitleIndicator";
     private static final String TRANSLATION_TYPE = "translationType";
     private static final String CORRELATION_ID_LIVE_TIME = "correlationIdLiveTime";
+    private static final String SRI_RESPONSE_LIVE_TIME = "sriResponseLiveTime";
     private static final String DIAMETER_DEST_REALM = "diameterDestRealm";
     private static final String DIAMETER_DEST_HOST = "diameterDestHost";
 	private static final String DIAMETER_DEST_PORT = "diameterDestPort";
@@ -240,6 +241,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     // min lifetime of elements in correlationIdCache (in seconds)
     private int correlationIdLiveTime = 60;
+    // min lifetime of elements in SRI responses Cache (in seconds)
+    // default value is 0 - no caching
+    private int sriResponseLiveTime = 0;
 
 	// Diameter destination Realm for connection to OCS
 	private String diameterDestRealm = "telestax.com";
@@ -756,6 +760,15 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         this.store();
     }
 
+    public int getSriResponseLiveTime() {
+        return sriResponseLiveTime;
+    }
+
+    public void setSriResponseLiveTime(int sriresponselivetime) {
+        this.sriResponseLiveTime = sriresponselivetime;
+        this.store();
+    }
+
 	@Override
 	public String getDiameterDestRealm() {
 		return diameterDestRealm;
@@ -1018,6 +1031,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             writer.write(this.globalTitleIndicator.toString(), GLOBAL_TITLE_INDICATOR, String.class);
             writer.write(this.translationType, TRANSLATION_TYPE, Integer.class);
             writer.write(this.correlationIdLiveTime, CORRELATION_ID_LIVE_TIME, Integer.class);
+            writer.write(this.sriResponseLiveTime, SRI_RESPONSE_LIVE_TIME, Integer.class);
             writer.write(this.diameterDestRealm, DIAMETER_DEST_REALM, String.class);
 			writer.write(this.diameterDestHost, DIAMETER_DEST_HOST, String.class);
 			writer.write(this.diameterDestPort, DIAMETER_DEST_PORT, Integer.class);
@@ -1223,7 +1237,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             val = reader.read(CORRELATION_ID_LIVE_TIME, Integer.class);
             if (val != null)
                 this.correlationIdLiveTime = val;
-            
+            val = reader.read(SRI_RESPONSE_LIVE_TIME, Integer.class);
+            if (val != null)
+                this.sriResponseLiveTime = val;
+
 			this.diameterDestRealm = reader.read(DIAMETER_DEST_REALM, String.class);
 
 			this.diameterDestHost = reader.read(DIAMETER_DEST_HOST, String.class);

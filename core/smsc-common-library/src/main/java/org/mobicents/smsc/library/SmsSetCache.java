@@ -43,6 +43,7 @@ public class SmsSetCache {
 
     private int processingSmsSetTimeout;
     private int correlationIdLiveTime;
+    private int sriResponseLiveTime;
 
     private boolean isStarted = false;
 
@@ -57,6 +58,11 @@ public class SmsSetCache {
     private FastMap<String, CorrelationIdValue> correlationIdCache1 = new FastMap<String, CorrelationIdValue>();
     private FastMap<String, CorrelationIdValue> correlationIdCache2 = new FastMap<String, CorrelationIdValue>();
     private Object correlationIdCacheSync = new Object();
+
+    private FastMap<String, SriResponseValue> sriRespCache1 = new FastMap<String, SriResponseValue>();
+    private FastMap<String, SriResponseValue> sriRespCache2 = new FastMap<String, SriResponseValue>();
+    private Object sriRespCacheSync = new Object();
+
     private ScheduledExecutorService executor;
 
 	private static SmsSetCache singeltone;
@@ -72,9 +78,10 @@ public class SmsSetCache {
 		return singeltone;
 	}
 
-    public static void start(int correlationIdLiveTime) {
+    public static void start(int correlationIdLiveTime, int sriResponseLiveTime) {
         SmsSetCache ssc = SmsSetCache.getInstance();
         ssc.correlationIdLiveTime = correlationIdLiveTime;
+        ssc.sriResponseLiveTime = sriResponseLiveTime;
 
         ssc.executor = Executors.newScheduledThreadPool(1);
 
@@ -82,6 +89,9 @@ public class SmsSetCache {
 
         CacheManTask t = ssc.new CacheManTask();
         ssc.executor.schedule(t, correlationIdLiveTime, TimeUnit.SECONDS);
+
+        CacheManTask_SRI_Resp t2 = ssc.new CacheManTask_SRI_Resp();
+        ssc.executor.schedule(t2, sriResponseLiveTime, TimeUnit.SECONDS);
     }
 
     public static void stop() {
@@ -257,6 +267,26 @@ public class SmsSetCache {
         }
     }
 
+    public void putSriResponseValue(SriResponseValue elem, int sriResponseLiveTime) throws Exception {
+        this.sriResponseLiveTime = sriResponseLiveTime;
+        if (sriResponseLiveTime > 0) {
+            synchronized (this.sriRespCacheSync) {
+                this.sriRespCache1.put(elem.getTargetID(), elem);
+            }
+        }
+    }
+
+    public SriResponseValue getSriResponseValue(String targetID) throws Exception {
+        if (sriResponseLiveTime == 0)
+            return null;
+        synchronized (this.sriRespCacheSync) {
+            SriResponseValue res = this.sriRespCache1.get(targetID);
+            if (res == null)
+                res = this.sriRespCache2.get(targetID);
+            return res;
+        }
+    }
+
     private class CacheManTask implements Runnable {
         public void run() {
             try {
@@ -266,6 +296,24 @@ public class SmsSetCache {
                 if (isStarted) {
                     CacheManTask t = new CacheManTask();
                     executor.schedule(t, correlationIdLiveTime, TimeUnit.SECONDS);
+                }
+            }
+        }
+    }
+
+    private class CacheManTask_SRI_Resp implements Runnable {
+        public void run() {
+            try {
+                sriRespCache2 = sriRespCache1;
+                sriRespCache1 = new FastMap<String, SriResponseValue>();
+            } finally {
+                if (isStarted) {
+                    CacheManTask_SRI_Resp t = new CacheManTask_SRI_Resp();
+                    int time = sriResponseLiveTime;
+                    // let's make delay 60 sec for "no caching option"
+                    if (time <= 0)
+                        time = 60;
+                    executor.schedule(t, time, TimeUnit.SECONDS);
                 }
             }
         }

@@ -28,6 +28,7 @@ import org.mobicents.protocols.ss7.map.api.primitives.AddressNature;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.NumberingPlan;
+import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
 import org.mobicents.protocols.ss7.map.primitives.AddressStringImpl;
 import org.mobicents.protocols.ss7.map.primitives.ISDNAddressStringImpl;
 import org.testng.annotations.Test;
@@ -43,7 +44,8 @@ public class SmsSetCasheTest {
     public void testSmppShellExecutor() throws Exception {
 
         int correlationIdLiveTime = 2;
-        SmsSetCache.start(correlationIdLiveTime);
+        int sriResponseLiveTime = 3;
+        SmsSetCache.start(correlationIdLiveTime, sriResponseLiveTime);
         SmsSetCache ssc = SmsSetCache.getInstance();
 
         String correlationID = "000000000011111";
@@ -52,13 +54,28 @@ public class SmsSetCasheTest {
         CorrelationIdValue elem = new CorrelationIdValue(correlationID, msisdn, serviceCentreAddress, 0);
         ssc.putCorrelationIdCacheElement(elem, correlationIdLiveTime);
 
-        Thread.sleep(3000);
+        String targetID = "22222_1_1_2";
+        LocationInfoWithLMSI locationInfoWithLMSI = null;
+        SriResponseValue srv = new SriResponseValue(targetID, 2, "22222", 1, 1, locationInfoWithLMSI, "0000011111000000");
+        ssc.putSriResponseValue(srv, sriResponseLiveTime);
+
+        Thread.sleep(2500);
         CorrelationIdValue v1 = ssc.getCorrelationIdCacheElement(correlationID);
         assertNotNull(v1);
+        SriResponseValue vv1 = ssc.getSriResponseValue(targetID);
+        assertNotNull(vv1);
 
-        Thread.sleep(2000);
+        Thread.sleep(2500);
         CorrelationIdValue v2 = ssc.getCorrelationIdCacheElement(correlationID);
         assertNull(v2);
+        SriResponseValue vv2 = ssc.getSriResponseValue(targetID);
+        assertNotNull(vv2);
+
+        Thread.sleep(2000);
+        CorrelationIdValue v3 = ssc.getCorrelationIdCacheElement(correlationID);
+        assertNull(v3);
+        SriResponseValue vv3 = ssc.getSriResponseValue(targetID);
+        assertNull(vv3);
 
         SmsSetCache.stop();
     }

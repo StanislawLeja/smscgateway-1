@@ -63,6 +63,7 @@ import org.mobicents.smsc.library.MessageUtil;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.library.SmsSetCache;
+import org.mobicents.smsc.library.SriResponseValue;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.slee.resources.persistence.SmsSubmitData;
 
@@ -150,12 +151,7 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
                     this.logger.fine("HomeRouting: correlationID=" + correlationID + ", found CorrelationIdValue=" + civ);
                 }
             }
-
-            if (civ == null) {
-                // no preloaded routing info
-                this.sendSRI(smsSet, smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
-                        this.getSRIMAPApplicationContext(this.maxMAPApplicationContextVersion));
-            } else {
+            if (civ != null) {
                 // preloaded routing info is found - skip SRI request
                 MWStatus mwStatus = civ.getMwStatus();
                 if (mwStatus != null) {
@@ -167,7 +163,26 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
                 this.setSriMapVersion(civ.getSriMapVersion());
 
                 this.executeForwardSM(smsSet, civ.getLocationInfoWithLMSI(), civ.getImsi(), smsSet.getNetworkId());
+                return;
             }
+
+            // checking for cached - may be we do not need SRI
+            String targetID = smsSet.getTargetId();
+            SriResponseValue srv = null;
+            srv = SmsSetCache.getInstance().getSriResponseValue(targetID);
+            if (this.logger.isFineEnabled()) {
+                this.logger.fine("SRI requesting: targetID=" + targetID + ", found cached SriResponseValue=" + srv);
+            }
+            if (srv != null) {
+                // preloaded routing info is found - skip SRI request
+                this.setSriMapVersion(3);
+                this.executeForwardSM(smsSet, srv.getLocationInfoWithLMSI(), srv.getImsi(), smsSet.getNetworkId());
+                return;
+            }
+
+            // no preloaded routing info
+            this.sendSRI(smsSet, smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
+                    this.getSRIMAPApplicationContext(this.maxMAPApplicationContextVersion));
         } catch (Throwable e1) {
             logger.severe("Exception in SriSbb.onSms when fetching records and issuing events: " + e1.getMessage(), e1);
         }
@@ -635,6 +650,17 @@ public abstract class SriSbb extends MtCommonSbb implements ReportSMDeliveryStat
         if (sendRoutingInfoForSMResponse != null) {
             // we have positive response to SRI request -
             // we will try to send messages
+
+            // storing SRI response results into a cache firstly
+            SriResponseValue sriResponseValue = new SriResponseValue(smsSet.getTargetId(), smsSet.getNetworkId(),
+                    smsSet.getDestAddr(), smsSet.getDestAddrTon(), smsSet.getDestAddrNpi(),
+                    sendRoutingInfoForSMResponse.getLocationInfoWithLMSI(), sendRoutingInfoForSMResponse.getIMSI().getData());
+            try {
+                SmsSetCache.getInstance().putSriResponseValue(sriResponseValue, smscPropertiesManagement.getSriResponseLiveTime());
+            } catch (Exception e1) {
+                // no actions in failure
+            }
+
             executeForwardSM(smsSet, sendRoutingInfoForSMResponse.getLocationInfoWithLMSI(), sendRoutingInfoForSMResponse.getIMSI().getData(),
                     smsSet.getNetworkId());
             return;
