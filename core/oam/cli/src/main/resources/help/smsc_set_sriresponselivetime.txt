@@ -1,0 +1,22 @@
+Name
+	smsc set sriresponselivetime
+
+SYNOPSIS
+	smsc set sriresponselivetime <time in seconds>
+
+DESCRIPTION
+	This command is used to set a SRI responses Cache Time.
+	SMSC GW can store successfull SendRoutinInfo (SRI) responses (with IMSI and
+	NetworkNodeNumber data) into an internal cach for some configurable time.
+	SMSC GW parameter "sriresponselivetime" specifies the minimum time value for
+	storing of a response. Caching of SRI responses takes some system resources
+	and is recommended only if you need it for some scenarious (like you send
+	firstly only an SRI request and do not deliver a message just to understend
+	IMSI / NetworkNodeNumber (this scenario is achieavable by mproc rules) and
+	then send a message in short time if needed).
+
+EXAMPLES
+	smsc set sriresponselivetime 0
+
+SEE ALSO
+	smsc get sriresponselivetime
