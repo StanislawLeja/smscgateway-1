@@ -259,7 +259,7 @@ Messages will be routed between subnetworks (networkIds) by mproc rules and insi
 					<para>
 						<literal>onPostImsiRequest</literal> : When a successful SRI response has been received from HLR for an SS7 destination message. 
 						At this step a message can be dropped (to prevent further delivery). This can be very useful feature to prevent SMS being delivered to
-						off-net or romaing subscribers. 
+						off-net or roaming subscribers. 
 					</para>
 				</listitem>
 				<listitem>
@@ -370,6 +370,12 @@ Messages will be routed between subnetworks (networkIds) by mproc rules and insi
 							<entry>mproc rule will be applied only if message has come to SMSC GW via a subnetwork with networkId which is equal to this value "networkidmask".</entry>
 							<entry>"-1" : acts as wild card and hence messages from any network will match.</entry>
 			 			</row>
+						<row>
+							<entry>origesmenamemask</entry>
+							<entry>&lt;java regualar expression - origination ESME name mask&gt;</entry>
+							<entry>mproc rule will be applied only if message has come to SMSC GW from SMPP connector from ESME with a name that fits "origesmenamemask".</entry>
+							<entry>"-1" : acts as wild card and hence any message will match (never mind if it came from SS7 or SIP).</entry>
+			 			</row>
 					</tbody>
 					</tgroup>
 				</table>
@@ -430,6 +436,14 @@ Messages will be routed between subnetworks (networkIds) by mproc rules and insi
 							This makes a copy of a message and set for the copy a new networkId value.</entry>
 							<entry>false</entry>
 						</row>
+						<row>
+							<entry>dropaftersri</entry>
+							<entry>&lt;false | true&gt;</entry>
+							<entry>This is an action at the step when a successful SRI response has been received from HLR for an SS7 destination message.
+							If a SRI success response has received then the message will be dropped without delivery attempt.
+							A delivery response in this case will contain extra fields (IMSI and NetworkNodeNumber values).</entry>
+							<entry>false</entry>
+						</row>
 					</tbody>
 					</tgroup>
 				</table>
@@ -448,7 +462,7 @@ Messages will be routed between subnetworks (networkIds) by mproc rules and insi
 				<title>Steps for custom mproc rules implementing</title>
 				<step>
 					<para>
-						User should implement the business logic as java code. There are couple of interface exposed by SMSC, <classname>MProcRuleFactory</classname>
+						User should implement the business logic as java code. There are couple of interfaces exposed by SMSC, <classname>MProcRuleFactory</classname>
 						and <classname>MProcRule</classname> that must be implemented and add the custom business logic.
 						User needs to cover two parts of rules usage - a rule configuring part and a rule applying part.
 						<important>
@@ -546,44 +560,45 @@ public interface MProcRule extends MProcRuleMBean {
     void setId(int val);
 
     /**
-     * @return true if the mproc rule fits to a message (used for onPostArrival and onPostDelivery)
+     * @return true if the mproc rule fits to a message when a message has just come to SMSC
      */
-    boolean matches(MProcMessage message);
+    boolean matchesPostArrival(MProcMessage message);
 
     /**
-     * @return true if the mproc rule fits to a message destination (used for onPostImsiRequest)
+     * @return true if the mproc rule fits to a message when IMSI / NNN has been received from HLR
      */
-    boolean matches(MProcMessageDestination messageDest);
+    boolean matchesPostImsiRequest(MProcMessage message);
+
+    /**
+     * @return true if the mproc rule fits to a message when a message has just been delivered (or delivery failure)
+     */
+    boolean matchesPostDelivery(MProcMessage message);
 
     /**
      * the event occurs when a message has just come to SMSC
      */
-    void onPostArrival(PostArrivalProcessor factory, MProcMessage message)
-            throws Exception;
+    void onPostArrival(PostArrivalProcessor factory, MProcMessage message) throws Exception;
 
     /**
-     * the event occurs when IMSI / NNN has been received from HRL
+     * the event occurs when IMSI / NNN has been received from HLR
      */
-    void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages)
-    throws Exception;
+    void onPostImsiRequest(PostImsiProcessor factory, MProcMessage message) throws Exception;
 
     /**
      * the event occurs when a message has just been delivered (or delivery failure)
      */
-    void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message)
-    throws Exception;
+    void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message) throws Exception;
 
     /**
-     * this method must implement setting of rule parameters as for provided CLI string
-     * at the step of rule creation
+     * this method must implement setting of rule parameters as for provided CLI string at the step of rule creation
      */
     void setInitialRuleParameters(String parametersString) throws Exception;
 
     /**
-     * this method must implement setting of rule parameters as for provided CLI string
-     * at the step of rules modifying
+     * this method must implement setting of rule parameters as for provided CLI string at the step of rules modifying
      */
     void updateRuleParameters(String parametersString) throws Exception;
+
 }
 </programlisting>
 		and the parent interface content is:
@@ -660,9 +675,11 @@ public interface MProcRuleMBean {
 				and false if not. You have to check configured parameters of a rule and return a proper value</entry>
 			</row>
 			<row>
-				<entry><code>matches(MProcMessage message)</code>, <code>matches(MProcMessageDestination messageDest)</code></entry>
-				<entry>These methods must return true if rule should be applied false if not.
-					<code>matches(MProcMessage message)</code> is used for onPostArrival and onPostDelivery request, the second one for onPostImsi requests.</entry>
+				<entry><code>matchesPostArrival(MProcMessage message)</code>,
+				<code>matchesPostImsiRequest(MProcMessage message)</code>,
+				<code>matchesPostDelivery(MProcMessage message)</code>
+				</entry>
+				<entry>These methods must return true if rule should be applied false if not (for onPostArrival, onPostImsi and onPostDelivery requests).</entry>
 			</row>
 			<row>
 				<entry><code>onPostArrival()</code>, <code>onPostImsiRequest()</code>, <code>onPostDelivery()</code></entry>
@@ -788,21 +805,18 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
 </programlisting>
 				</para>
 				</step>
-				<step><para>Implementing of a needed <code>matches()</code> method.
+				<step><para>Implementing of a needed <code>matches***()</code> methods.
 				In our example we process messages which destination address digits are started with a configurable parameter "par1".
 <programlisting language="Java" role="JAVA">
     @Override
-    public boolean matches(MProcMessage message) {
+    public boolean matchesPostArrival(MProcMessage message) {
         if (message.getDestAddr().startsWith(par1))
             return true;
         else
             return false;
     }
 </programlisting>
-				For <code>matches()</code> methods we will use interfaces <classname>MProcMessage</classname> interface (for <code>onPostArrival</code> and <code>onPostDelivery</code>)
-				 or <classname>MProcMessageDestination</classname> interface (for <code>onPostImsiRequest</code>).
-				<classname>MProcMessage</classname> interface provides info for processing message fields and <classname>MProcMessageDestination</classname> interface provides 
-				info for destination address and networkId fields of messages for which SRI request was made.
+				For <code>matches***()</code> methods we will use interface <classname>MProcMessage</classname> interface which provides info for processing message fields.
 				Here is a code of these interfaces. 
 <programlisting language="Java" role="JAVA">
 package org.mobicents.smsc.mproc;
@@ -857,27 +871,11 @@ public interface MProcMessage {
     int getRegisteredDelivery();
 }
 </programlisting>
-<programlisting language="Java" role="JAVA">
-package org.mobicents.smsc.mproc;
-
-public interface MProcMessageDestination {
-
-    // dest address part
-    int getDestAddrTon();
-
-    int getDestAddrNpi();
-
-    String getDestAddr();
-
-    // other options
-    int getNetworkId();
-}
-</programlisting>
 
 				</para>
 				</step>
 				<step><para>
-				Implementing of methods that make some actions : 
+				Implementing of methods that make some actions:
 				In example above this is <code>onPostArrival()</code> and the action is adding "par2" prefix into destination address digits.
 				These methods will be invoked for all messages that match rule's conditions.
 <programlisting language="Java" role="JAVA">
@@ -1112,22 +1110,16 @@ package org.mobicents.smsc.mproc;
 import org.apache.log4j.Logger;
 
 public interface PostImsiProcessor {
+
     // access to environmental parameters
     /**
      * @return the logger that an application can use for logging info into server.log
      */
     Logger getLogger();
 
-    String getImsi();
-
-    String getNnnDigits();
-
-    int getNnnNumberingPlan();
-
-    int getNnnAddressNature();
-
     // actions
     void dropMessages();
+
 }
 </programlisting>
 						</para>

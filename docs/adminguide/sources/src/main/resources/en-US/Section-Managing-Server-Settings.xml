@@ -919,7 +919,6 @@ DESCRIPTION
 			</section>
 		</section>
 
-
 		
 		<section id="set_maxmessagelengthreducer">
 			<title>Max Message Length Reducer</title>
@@ -1017,7 +1016,62 @@ DESCRIPTION
 			</procedure>
 			</section>
 		</section>		
+
+
+		<section id="set_sriresponselivetime">
+			<title>SRI responses Cache Time (in secs)</title>
+			<section id="set_sriresponselivetime_CLI">
+			<title>Using CLI</title>
+<para>
+You can set a SRI responses Cache Time by issuing the command <command>smsc set sriresponselivetime</command> with appropriate parameters as described below.
+You can verify this by issuing the command <command>smsc get sriresponselivetime</command> which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+	smsc set sriresponselivetime
+
+SYNOPSIS
+	smsc set sriresponselivetime <time in seconds>
+
+DESCRIPTION
+	This command is used to set a SRI responses Cache Time.
+
+	SMSC GW can store successfull SendRoutinInfo (SRI) responses (with IMSI and
+	NetworkNodeNumber data) into an internal cach for some configurable time.
+	SMSC GW	parameter "sriresponselivetime" specifies the minimum time value
+	for storing of a response. Caching of SRI responses takes some system
+	resources and is recommended only if you need it for some scenarious (like
+	you send firstly only an SRI request and do not deliver a message just to
+	understend IMSI / NetworkNodeNumber (this scenario is achieavable by mproc
+	rules) and then send a message in short time if needed). 
+
+DEFAULT VALUE
+	0 - this means no caching.
+
+EXAMPLES
+	smsc set sriresponselivetime 0
+]]></screen>
+			</section>
+			<section id="set_sriresponselivetime_GUI">
+			<title>Using GUI</title>
+			<procedure>
+				<title>Set SRI responses Cache Time using the GUI</title>
+				<step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+				</para></step>
+				<step><para>The main panel will display the existing Settings, segregated into eight horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing, CDR and Home Routing. Switch to the 'SS7 Settings' tab in the GUI.
+				</para></step>
+				<step><para>You can specify (set or remove) the "SRI responses Cache Time (in secs)" by entering appropriate values.
+				For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+				</para></step>
+				<step><para>You must click on the button 'Apply Changes' at the top of the window to save your settings.
+				If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+				</para></step>
+			</procedure>
+			</section>
+		</section>		
 		</section>
+
+
 
 <!--cassandra settings -->
 		<section id="SMSC_db_Settings">
