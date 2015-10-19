@@ -24,8 +24,6 @@ package org.mobicents.smsc.mproc;
 
 import java.util.Date;
 
-import org.mobicents.smsc.library.OriginationType;
-
 /**
  *
  * @author sergey vetyutnev
@@ -59,7 +57,7 @@ public interface MProcMessage {
 
     String getOrigEsmeName();
 
-    OriginationType getOriginationType();
+    OrigType getOriginationType();
 
     Date getScheduleDeliveryTime();
 

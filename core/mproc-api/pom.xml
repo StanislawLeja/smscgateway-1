@@ -9,53 +9,19 @@
 		<version>6.2.3-TelScale-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>smsc-common-library</artifactId>
-	<name>Core : SMSC common Library</name>
+	<artifactId>mproc-api</artifactId>
+	<name>Core : MPROC API</name>
 
 	<dependencies>
 		<dependency>
-			<artifactId>map-api</artifactId>
-			<groupId>org.mobicents.protocols.ss7.map</groupId>
-			<version>${ss7.version}</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.mobicents.protocols.ss7.map</groupId>
-			<artifactId>map-impl</artifactId>
-			<version>${ss7.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.slee</groupId>
-			<artifactId>jain-slee</artifactId>
-			<scope>compile</scope>
-		</dependency>
-
-		<!-- javolution -->
 		<dependency>
 			<groupId>javolution</groupId>
 			<artifactId>javolution</artifactId>
 			<version>${javolution.version}</version>
-		</dependency>
-		<!-- cloudhopper smpp -->
-		<dependency>
-			<groupId>com.cloudhopper</groupId>
-			<artifactId>ch-smpp</artifactId>
-			<version>${ch.smpp.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.datastax.cassandra</groupId>
-			<artifactId>cassandra-driver-core</artifactId>
-			<version>${cassandra-driver-core.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${pom.groupId}</groupId>
-			<artifactId>smpp</artifactId>
-			<version>${pom.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${pom.groupId}</groupId>
-			<artifactId>mproc-api</artifactId>
-			<version>${pom.version}</version>
 		</dependency>
 	</dependencies>
 

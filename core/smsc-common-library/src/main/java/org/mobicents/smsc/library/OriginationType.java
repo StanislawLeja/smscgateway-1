@@ -22,11 +22,45 @@
 
 package org.mobicents.smsc.library;
 
+import org.mobicents.smsc.mproc.OrigType;
+
 /**
  *
  * @author sergey vetyutnev
  *
  */
 public enum OriginationType {
-    SMPP, SS7_MO, SS7_HR, SIP
+    SMPP, SS7_MO, SS7_HR, SIP;
+
+    public static OriginationType toOriginationType(OrigType origType) {
+        if (origType == null)
+            return null;
+        switch (origType) {
+            case SMPP:
+                return OriginationType.SMPP;
+            case SS7_MO:
+                return OriginationType.SS7_MO;
+            case SS7_HR:
+                return OriginationType.SS7_HR;
+            case SIP:
+                return OriginationType.SIP;
+        }
+        return null;
+    }
+
+    public static OrigType toOrigType(OriginationType originationType) {
+        if (originationType == null)
+            return null;
+        switch (originationType) {
+            case SMPP:
+                return OrigType.SMPP;
+            case SS7_MO:
+                return OrigType.SS7_MO;
+            case SS7_HR:
+                return OrigType.SS7_HR;
+            case SIP:
+                return OrigType.SIP;
+        }
+        return null;
+    }
 }

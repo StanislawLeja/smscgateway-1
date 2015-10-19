@@ -4,8 +4,8 @@ import javolution.xml.XMLFormat;
 import javolution.xml.stream.XMLStreamException;
 
 import org.mobicents.smsc.mproc.MProcMessage;
+import org.mobicents.smsc.mproc.MProcRuleBaseImpl;
 import org.mobicents.smsc.mproc.PostArrivalProcessor;
-import org.mobicents.smsc.mproc.impl.MProcRuleBaseImpl;
 
 public class MProcRuleTestImpl extends MProcRuleBaseImpl {
 

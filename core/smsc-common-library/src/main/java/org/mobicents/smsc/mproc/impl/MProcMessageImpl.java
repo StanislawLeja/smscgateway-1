@@ -27,6 +27,7 @@ import java.util.Date;
 import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.mproc.MProcMessage;
+import org.mobicents.smsc.mproc.OrigType;
 
 /**
 *
@@ -101,8 +102,8 @@ public class MProcMessageImpl implements MProcMessage {
     }
 
     @Override
-    public OriginationType getOriginationType() {
-        return sms.getOriginationType();
+    public OrigType getOriginationType() {
+        return OriginationType.toOrigType(sms.getOriginationType());
     }
 
     @Override

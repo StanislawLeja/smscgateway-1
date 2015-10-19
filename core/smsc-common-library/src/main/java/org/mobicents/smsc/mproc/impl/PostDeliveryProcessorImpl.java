@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.mproc.MProcMessage;
 import org.mobicents.smsc.mproc.MProcNewMessage;
+import org.mobicents.smsc.mproc.OrigType;
 import org.mobicents.smsc.mproc.PostDeliveryProcessor;
 
 /**
@@ -63,8 +64,9 @@ public class PostDeliveryProcessorImpl implements PostDeliveryProcessor {
     }
 
     @Override
-    public MProcNewMessage createNewEmptyMessage(OriginationType originationType) {
-        return MProcUtility.createNewEmptyMessage(this.defaultValidityPeriodHours, this.maxValidityPeriodHours, originationType);
+    public MProcNewMessage createNewEmptyMessage(OrigType origType) {
+        return MProcUtility.createNewEmptyMessage(this.defaultValidityPeriodHours, this.maxValidityPeriodHours,
+                OriginationType.toOriginationType(origType));
     }
 
     @Override

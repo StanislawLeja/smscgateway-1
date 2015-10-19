@@ -25,7 +25,6 @@ package org.mobicents.smsc.mproc;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.mobicents.smsc.library.OriginationType;
 
 /**
 *
@@ -198,7 +197,7 @@ public interface PostArrivalProcessor {
     /**
      * Creating a new message template for filling and sending by postNewMessage() method
      */
-    MProcNewMessage createNewEmptyMessage(OriginationType originationType);
+    MProcNewMessage createNewEmptyMessage(OrigType originationType);
 
     MProcNewMessage createNewCopyMessage(MProcMessage message);
 

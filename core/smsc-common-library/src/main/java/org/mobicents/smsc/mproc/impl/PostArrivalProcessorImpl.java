@@ -32,6 +32,7 @@ import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.mproc.MProcMessage;
 import org.mobicents.smsc.mproc.MProcNewMessage;
 import org.mobicents.smsc.mproc.MProcRuleException;
+import org.mobicents.smsc.mproc.OrigType;
 import org.mobicents.smsc.mproc.PostArrivalProcessor;
 
 /**
@@ -312,8 +313,9 @@ public class PostArrivalProcessorImpl implements PostArrivalProcessor {
     }
 
     @Override
-    public MProcNewMessage createNewEmptyMessage(OriginationType originationType) {
-        return MProcUtility.createNewEmptyMessage(this.defaultValidityPeriodHours, this.maxValidityPeriodHours, originationType);
+    public MProcNewMessage createNewEmptyMessage(OrigType origType) {
+        return MProcUtility.createNewEmptyMessage(this.defaultValidityPeriodHours, this.maxValidityPeriodHours,
+                OriginationType.toOriginationType(origType));
     }
 
     @Override

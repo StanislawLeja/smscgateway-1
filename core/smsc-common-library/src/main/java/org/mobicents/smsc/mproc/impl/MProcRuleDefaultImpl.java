@@ -28,10 +28,11 @@ import java.util.regex.Pattern;
 import javolution.xml.XMLFormat;
 import javolution.xml.stream.XMLStreamException;
 
-import org.mobicents.smsc.library.OriginationType;
 import org.mobicents.smsc.mproc.MProcMessage;
 import org.mobicents.smsc.mproc.MProcNewMessage;
+import org.mobicents.smsc.mproc.MProcRuleBaseImpl;
 import org.mobicents.smsc.mproc.MProcRuleDefault;
+import org.mobicents.smsc.mproc.OrigType;
 import org.mobicents.smsc.mproc.PostArrivalProcessor;
 import org.mobicents.smsc.mproc.PostDeliveryProcessor;
 import org.mobicents.smsc.mproc.PostImsiProcessor;
@@ -73,7 +74,7 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
     private int destTonMask = -1;
     private int destNpiMask = -1;
     private String destDigMask = "-1";
-    private OriginationType originatingMask = null;
+    private OrigType originatingMask = null;
     private int networkIdMask = -1;
     private String origEsmeNameMask = "-1";
 
@@ -130,11 +131,11 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
     /**
      * @return mask for message originatingMask (SMPP, SIP, MO, HR SS7). null (CLI "-1") means any value
      */
-    public OriginationType getOriginatingMask() {
+    public OrigType getOriginatingMask() {
         return originatingMask;
     }
 
-    public void setOriginatingMask(OriginationType originatingMask) {
+    public void setOriginatingMask(OrigType originatingMask) {
         this.originatingMask = originatingMask;
     }
 
@@ -241,7 +242,7 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
         }
     }
 
-    protected void setRuleParameters(int destTonMask, int destNpiMask, String destDigMask, OriginationType originatingMask,
+    protected void setRuleParameters(int destTonMask, int destNpiMask, String destDigMask, OrigType originatingMask,
             int networkIdMask, String origEsmeNameMask, int newNetworkId, int newDestTon, int newDestNpi,
             String addDestDigPrefix, boolean makeCopy, boolean dropAfterSri) {
         this.destTonMask = destTonMask;
@@ -488,9 +489,9 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
             throw new Exception(MProcRuleOamMessages.SET_RULE_PARAMETERS_FAIL_NO_PARAMETERS_POVIDED);
         }
 
-        OriginationType originatingMaskVal = null;
+        OrigType originatingMaskVal = null;
         try {
-            originatingMaskVal = OriginationType.valueOf(originatingMask);
+            originatingMaskVal = OrigType.valueOf(originatingMask);
         } catch (Exception e) {
         }
 
@@ -525,7 +526,7 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
                     if (value != null && value.equals("-1")) {
                         this.setOriginatingMask(null);
                     } else {
-                        OriginationType originatingMask = Enum.valueOf(OriginationType.class, value);
+                        OrigType originatingMask = Enum.valueOf(OrigType.class, value);
                         this.setOriginatingMask(originatingMask);
                     }
                     success = true;
@@ -642,7 +643,7 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
             String val = xml.getAttribute(ORIGINATING_MASK, "");
             if (val != null) {
                 try {
-                    mProcRule.originatingMask = Enum.valueOf(OriginationType.class, val);
+                    mProcRule.originatingMask = Enum.valueOf(OrigType.class, val);
                 } catch (Exception e) {
                 }
             }
