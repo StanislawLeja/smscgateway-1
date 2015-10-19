@@ -108,7 +108,7 @@
 				
 				<div id="div-desttonmask" class="control-group">
 					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Rule will be applied only if destination type of number (TON) of target SMS match's with this rule's desttonmask. Set value to -1 as wild card to match all the TON. Valid values of TON are &#13; 0 : Unknown &#13; 1 : International &#13; 2 : National &#13; 3 : Network Specific &#13; 4 : Subscriber &#13; 5 : Alphanumeric &#13; 6 : Abbreviated &#13; 7 : Reserved &#13; Default value is -1">
-						<span class="add-on">Destination Type of number (TON)</span>
+						<span class="add-on">Destination Type of Number (TON)</span>
 						<select id="desttonmask" >
 							<option value="-1">-1: Null</option>
 							<option value="0">0 : Unknown</option>
@@ -125,7 +125,7 @@
 								
 				<div id="div-destnpimask" class="control-group">
 					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Rule will be applied only if destination number plan indicator (NPI) of target SMS match's with this rule's destnpimask. Set value to -1 as wild card to match all the NPI. Valid values of TON are &#13; 0  : Unknown &#13; 1  : ISDN (E163/E164) &#13; 3  : Data (X.121) &#13; 4  : Telex (F.69) &#13; 6  : Land Mobile (E.212) &#13; 8  : National &#13; 9  : Private &#13; 10 : ERMES &#13; 14 : Internet &#13; 18 : WAP Client Id &#13; Default value is -1 ">
-						<span class="add-on">Destination Number plan indicator (NPI)</span>
+						<span class="add-on">Destination Number Plan Indicator (NPI)</span>
 						<select id="destnpimask" >
 							<option value="-1">-1 : Null</option>
 							<option value="0">0 : Unknown</option>
@@ -160,7 +160,14 @@
 							<option value="SIP">SIP</option>
 						</select>
 					</span>	
-				</div>		
+				</div>	
+				
+				<div id="div-origesmenamemask" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Rule will be applied only if target SMS is originated from SMPP channel (ESME) and who's name match's with originating ESME name mask (Java Regular Expression). Set -1 as wild card to match all the ESME.">
+						<span class="add-on">Originating ESME Name Mask</span>
+						<input id="origesmenamemask" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Originating ESME name mask" />
+					</span>				
+				</div>					
 				
 				<div id="div-networkidmask" class="control-group">
 					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Rule will be applied only if target SMS is origination networkid with this rule's networkidmask. Set value to -1 as wild card to match all the network id's. Default value is -1">
@@ -228,7 +235,17 @@
 						</select>
 					</span>	
 				</div>	
-								
+							
+				<div id="div-dropaftersri" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Once rule match's and if a MAP SRI success response is received, message will be dropped without delivery attempt. A delivery response in this case will contain extra fields (IMSI and NetworkNodeNumber values). This action is applied only for SMS that are attempted to be delivered to SS7 network. ">
+						<span class="add-on">Drop After MAP SRI Request</span>
+						<select id="dropaftersri" >
+							<option value="false">False</option>
+							<option value="true">True</option>
+						</select>
+					</span>	
+				</div>
+												
 				<button id="add-entity-button" class="btn btn btn-primary" onclick="createMProc()">Create</button>
 			</span>
 		</p>
@@ -387,6 +404,8 @@
 										var newdestnpi = processRuleParameters(ruleparameters, "newdestnpi");
 										var addestdigprefix = processRuleParameters(ruleparameters, "adddestdigprefix");
 										var makecopy = processRuleParameters(ruleparameters, "makecopy");
+										var origesmenamemask = processRuleParameters(ruleparameters, "origesmenamemask"); 
+										var dropaftersri = processRuleParameters(ruleparameters, "dropaftersri");
 										
 										$('#esmes-table-wrapper').append('<div id="entities-modal'+id+'" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'+
 												'<div class="modal-header">'+
@@ -472,6 +491,22 @@
 																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"OriginatingMask"+']\').toggle(); $(\'input[id^='+id+"OriginatingMask"+']\').focus();"></i>' +
 																			'</td>'+
 																		'</tr>'+	
+																		
+																		'<tr data-toggle="tooltip" title="Rule will be applied only if target SMS is originated from SMPP channel (ESME) and who\'s name match\'s with originating ESME name mask (Java Regular Expression). Set -1 as wild card to match all the ESME.">'+
+																			'<td style="font-size: 0.9em;">Originating ESME Name Mask</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'OrigEsmeNameMask-input" class="control-group">'+
+																				'<span id="' + id +'OrigEsmeNameMask-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + origesmenamemask + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'origesmenamemask\', \'' + id+"OrigEsmeNameMask" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"OrigEsmeNameMask"+']\').toggle(); $(\'input[id^='+id+"OrigEsmeNameMask"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'OrigEsmeNameMask-text">' + origesmenamemask + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"OrigEsmeNameMask"+']\').toggle(); $(\'input[id^='+id+"OrigEsmeNameMask"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+																		
 																		
 																		'<tr data-toggle="tooltip" title="Rule will be applied only if target SMS origination networkid match\'s with this rule\'s networkidmask. Set value to -1 as wild card to match all the network id\'s. Default value is -1">'+
 																			'<td style="font-size: 0.9em;">Network Id Mask</td>'+
@@ -567,7 +602,24 @@
 																			'</td>'+
 																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"MakeCopy"+']\').toggle(); $(\'input[id^='+id+"MakeCopy"+']\').focus();"></i>' +
 																			'</td>'+
-																		'</tr>'+																						
+																		'</tr>'+
+																		
+																		
+																		'<tr data-toggle="tooltip" title="Once rule match\'s and if a MAP SRI success response is received, message will be dropped without delivery attempt. A delivery response in this case will contain extra fields (IMSI and NetworkNodeNumber values). This action is applied only for SMS that are attempted to be delivered to SS7 network.">'+
+																			'<td style="font-size: 0.9em;">Drop After MAP SRI Request</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'DropAfterSri-input" class="control-group">'+
+																				'<span id="' + id +'DropAfterSri-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + dropaftersri + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'dropaftersri\', \'' + id+"DropAfterSri" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"DropAfterSri"+']\').toggle(); $(\'input[id^='+id+"DropAfterSri"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'DropAfterSri-text">' + dropaftersri + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"DropAfterSri"+']\').toggle(); $(\'input[id^='+id+"DropAfterSri"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+																		
 																		
 																		'</tbody>' +
 																	'</table>' +	
@@ -792,6 +844,13 @@
 			parametersstring = parametersstring + " originatingmask "+originatingmask;
 		}
 		
+		var origesmenamemask = $("#origesmenamemask").val();
+		if(origesmenamemask.trim() == "") {
+			destdigmask = null;		
+		} else {
+			parametersstring = parametersstring + " origesmenamemask "+origesmenamemask;
+		}		
+		
 		var networkidmask = $("#networkidmask").val();
 		if(networkidmask.trim() == "") {
 			networkidmask = "-1";
@@ -830,6 +889,10 @@
 		e = document.getElementById("makecopy");
 		var makecopy = e.options[e.selectedIndex].value;
 		parametersstring = parametersstring + " makecopy "+makecopy;
+		
+		e = document.getElementById("dropaftersri");
+		var dropaftersri = e.options[e.selectedIndex].value;
+		parametersstring = parametersstring + " dropaftersri "+dropaftersri;
 		
 		parametersstring = parametersstring.trim();
 		

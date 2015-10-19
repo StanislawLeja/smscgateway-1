@@ -32,7 +32,7 @@ import org.mobicents.smsc.mproc.MProcRule;
 */
 public class MProcRuleFactoryDefault implements MProcRuleFactory {
 
-    public static String RULE_CLASS_NAME = "mproc";
+    public static final String RULE_CLASS_NAME = "mproc";
 
     @Override
     public String getRuleClassName() {

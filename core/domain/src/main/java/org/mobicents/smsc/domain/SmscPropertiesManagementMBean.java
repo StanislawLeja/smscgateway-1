@@ -258,5 +258,9 @@ public interface SmscPropertiesManagementMBean {
     public int getNationalLanguageLockingShift();
 
     public void setNationalLanguageLockingShift(int nationalLanguageLockingShift);
+    
+    public int getSriResponseLiveTime();
+    
+    public void setSriResponseLiveTime(int sriresponselivetime);
 
 }

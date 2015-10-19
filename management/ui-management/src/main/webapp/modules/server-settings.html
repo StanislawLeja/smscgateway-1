@@ -230,7 +230,15 @@ Empty TC-BEGIN is used in MAP Version 2 and 3 for forwardSM and Mt- ForwardSM re
 									<span class="add-on">Home Routing HLR Global Title</span>
 									<input id="hrHlrNumber" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="" />
 								</span>
-							</div>							
+							</div>
+                        	
+                        	<div id="div-sriResponseLiveTime" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="SMSC GW can store successfull SendRoutinInfo (SRI) responses (with IMSI and NetworkNodeNumber data) into an internal cache for some configurable time (sec). Caching of SRI responses takes some system resources and is recommended only if you need it for some scenarios (like you send firstly only an SRI request and do not deliver a message just to understand IMSI / NetworkNodeNumber (this scenario is achievable by mproc rules) and then send a message in short time if needed). Any value less than 1 means no cache.">
+									<span class="add-on">SRI Response Cache Time (in secs)</span>
+									<input id="sriResponseLiveTime" type="text" class="input-mini" style="width: 160px; margin-right: 12px; text-align: center;" value="" />
+								</span>
+							</div>
+																					
 							<div class="control-group">
 								<span class="span12" style="text-align: left;">
 									&nbsp;<button class="btn btn-danger" onclick="updateSs7Properties();"><i class="icon-undo"></i> Revert</button>
@@ -522,7 +530,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 							 -->
                         	<div id="div-smsHomeRoutingCorrIdLivTme" class="control-group">
 								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="cahce time in sec for SMSC to store the correlation id. Do not make this value too high or too low.">
-									<span class="add-on">Correlation Id Cahc Time (in secs)</span>
+									<span class="add-on">Correlation Id Cache Time (in secs)</span>
 									<input id="smsHomeRoutingCorrIdLivTme" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" value="0" />
 								</span>
 							</div>	
@@ -670,6 +678,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										$("#maxmapv").val(response.value.MaxMapVersion);
 										$("#maxmessagelengthreducer").val(response.value.MaxMessageLengthReducer);
 										$("#hrHlrNumber").val(response.value.HrHlrNumber);
+										$("#sriResponseLiveTime").val(response.value.SriResponseLiveTime);
 																				
 										var gtiVar = response.value.GlobalTitleIndicator;
 										if(gtiVar == "GLOBAL_TITLE_INCLUDES_NATURE_OF_ADDRESS_INDICATOR_ONLY"){
@@ -1209,6 +1218,11 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 							hrhlrnumber = null;
 						}
 						
+						var sriresponselivetime = $("#sriResponseLiveTime").val();
+						if(sriresponselivetime.trim() == ""){
+							sriresponselivetime = "0";
+						}
+						
 						if(formInvalid) {
 							$("#login-settings-error").show();
 							logToConsole("ERROR", "Some Fields are not correctly filled out, please double check the settings !");
@@ -1229,6 +1243,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									{ type: "write", mbean: mbeanSearch, attribute: "GlobalTitleIndicator", value: gtiVar },
 									{ type: "write", mbean: mbeanSearch, attribute: "TranslationType", value: ttVar },
 									{ type: "write", mbean: mbeanSearch, attribute: "HrHlrNumber", value: hrhlrnumber },
+									{ type: "write", mbean: mbeanSearch, attribute: "SriResponseLiveTime", value: sriresponselivetime },
 								],
 								{
 									success: function(response) {

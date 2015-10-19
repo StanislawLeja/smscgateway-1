@@ -23,14 +23,14 @@
 package org.mobicents.smsc.mproc;
 
 /**
-*
-* @author sergey vetyutnev
-*
-*/
+ *
+ * @author sergey vetyutnev
+ *
+ */
 public interface MProcRuleFactory {
 
-    String getRuleClassName();
+	String getRuleClassName();
 
-    MProcRule createMProcRuleInstance();
+	MProcRule createMProcRuleInstance();
 
 }

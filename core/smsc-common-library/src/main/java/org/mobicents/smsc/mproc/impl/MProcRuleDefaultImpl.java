@@ -533,6 +533,9 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
                     int val = Integer.parseInt(value);
                     this.setNetworkIdMask(val);
                     success = true;
+                } else if (command.equals("origesmenamemask")) {
+                	 this.setOrigEsmeNameMask(value);
+                     success = true;
                 } else if (command.equals("newnetworkid")) {
                     int val = Integer.parseInt(value);
                     this.setNewNetworkId(val);
@@ -551,6 +554,10 @@ public class MProcRuleDefaultImpl extends MProcRuleBaseImpl implements MProcRule
                 } else if (command.equals("makecopy")) {
                     boolean val = Boolean.parseBoolean(value);
                     this.setMakeCopy(val);
+                    success = true;
+                } else if (command.equals("dropaftersri")) {
+                	boolean val = Boolean.parseBoolean(value);
+                    this.setDropAfterSri(val);
                     success = true;
                 }
             }
