@@ -28,7 +28,7 @@ import javax.slee.facilities.FacilityException;
 import javax.slee.facilities.TraceLevel;
 
 import org.mobicents.smsc.domain.SMSCShellExecutor;
-import org.mobicents.smsc.library.OriginationType;
+import org.mobicents.smsc.mproc.OrigType;
 import org.mobicents.smsc.mproc.impl.MProcRuleDefaultImpl;
 import org.mobicents.smsc.mproc.impl.MProcRuleFactoryDefault;
 import org.mobicents.smsc.smpp.SmppManagement;
@@ -131,7 +131,7 @@ public class SMSCShellExecutorTest {
         assertEquals(rule.getDestTonMask(), 2);
         assertEquals(rule.getDestNpiMask(), 3);
         assertEquals(rule.getDestDigMask(), "^[0-9a-zA-Z]*");
-        assertEquals(rule.getOriginatingMask(), OriginationType.SS7_MO);
+        assertEquals(rule.getOriginatingMask(), OrigType.SS7_MO);
         assertEquals(rule.getNetworkIdMask(), 21);
         assertEquals(rule.getNewNetworkId(), 22);
         assertEquals(rule.getNewDestTon(), 4);
@@ -150,7 +150,7 @@ public class SMSCShellExecutorTest {
         assertEquals(rule.getDestTonMask(), 2);
         assertEquals(rule.getDestNpiMask(), 3);
         assertEquals(rule.getDestDigMask(), "^[0-9a-zA-Z]*");
-        assertEquals(rule.getOriginatingMask(), OriginationType.SS7_MO);
+        assertEquals(rule.getOriginatingMask(), OrigType.SS7_MO);
         assertEquals(rule.getNetworkIdMask(), 21);
         assertEquals(rule.getNewNetworkId(), 23);
         assertEquals(rule.getNewDestTon(), 4);
@@ -193,7 +193,7 @@ public class SMSCShellExecutorTest {
         assertEquals(rule.getDestTonMask(), 2);
         assertEquals(rule.getDestNpiMask(), 3);
         assertEquals(rule.getDestDigMask(), "^[0-9a-zA-Z]*");
-        assertEquals(rule.getOriginatingMask(), OriginationType.SS7_MO);
+        assertEquals(rule.getOriginatingMask(), OrigType.SS7_MO);
         assertEquals(rule.getNetworkIdMask(), 21);
         assertEquals(rule.getNewNetworkId(), 23);
         assertEquals(rule.getNewDestTon(), 4);
