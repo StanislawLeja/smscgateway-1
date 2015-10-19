@@ -20,40 +20,48 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.mproc;
+package org.mobicents.smsc.mproc.impl;
 
-import org.apache.log4j.Logger;
-import org.mobicents.smsc.library.OriginationType;
+import javolution.util.FastList;
+
+import org.mobicents.smsc.library.Sms;
 
 /**
 *
 * @author sergey vetyutnev
 *
 */
-public interface PostDeliveryProcessor {
+public class MProcResult {
 
-    // access to environmental parameters
-    /**
-     * @return the logger that an application can use for logging info into server.log
-     */
-    Logger getLogger();
+    private FastList<Sms> messageList;
+    private boolean messageIsRejected;
+    private boolean messageIsDropped;
 
-    boolean isDeliveryFailure();
-    
-    // actions
-    /**
-     * Creating a new message template for filling and sending by postNewMessage() method
-     */
-    MProcNewMessage createNewEmptyMessage(OriginationType originationType);
+    public MProcResult() {
+    }
 
-    MProcNewMessage createNewCopyMessage(MProcMessage message);
+    public FastList<Sms> getMessageList() {
+        return messageList;
+    }
 
-    MProcNewMessage createNewResponseMessage(MProcMessage message);
+    public void setMessageList(FastList<Sms> val) {
+        messageList = val;
+    }
 
-    /**
-     * Posting a new message. To post a new message you need: create a message template by invoking of createNewMessage(), fill
-     * it and post it be invoking of postNewMessage(). For this new message no mproc rule and diameter request will be applied.
-     */
-    void postNewMessage(MProcNewMessage message);
+    public boolean isMessageRejected() {
+        return messageIsRejected;
+    }
+
+    public void setMessageRejected(boolean val) {
+        messageIsRejected = val;
+    }
+
+    public boolean isMessageDropped() {
+        return messageIsDropped;
+    }
+
+    public void setMessageDropped(boolean val) {
+        messageIsDropped = val;
+    }
 
 }

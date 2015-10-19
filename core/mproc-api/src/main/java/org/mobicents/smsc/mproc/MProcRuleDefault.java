@@ -22,7 +22,6 @@
 
 package org.mobicents.smsc.mproc;
 
-import org.mobicents.smsc.library.OriginationType;
 
 public interface MProcRuleDefault extends MProcRule {
 
@@ -48,9 +47,9 @@ public interface MProcRuleDefault extends MProcRule {
     /**
      * @return mask for message originatingMask (SMPP, SIP, MO, HR SS7). null (CLI "-1") means any value
      */
-    OriginationType getOriginatingMask();
+    OrigType getOriginatingMask();
 
-    void setOriginatingMask(OriginationType originatingMask);
+    void setOriginatingMask(OrigType originatingMask);
 
     /**
      * @return mask for message original NetworkId. "-1" means any value.

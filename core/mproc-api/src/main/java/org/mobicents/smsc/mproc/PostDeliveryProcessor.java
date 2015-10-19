@@ -22,46 +22,37 @@
 
 package org.mobicents.smsc.mproc;
 
-import javolution.util.FastList;
-
-import org.mobicents.smsc.library.Sms;
+import org.apache.log4j.Logger;
 
 /**
 *
 * @author sergey vetyutnev
 *
 */
-public class MProcResult {
+public interface PostDeliveryProcessor {
 
-    private FastList<Sms> messageList;
-    private boolean messageIsRejected;
-    private boolean messageIsDropped;
+    // access to environmental parameters
+    /**
+     * @return the logger that an application can use for logging info into server.log
+     */
+    Logger getLogger();
 
-    public MProcResult() {
-    }
+    boolean isDeliveryFailure();
+    
+    // actions
+    /**
+     * Creating a new message template for filling and sending by postNewMessage() method
+     */
+    MProcNewMessage createNewEmptyMessage(OrigType originationType);
 
-    public FastList<Sms> getMessageList() {
-        return messageList;
-    }
+    MProcNewMessage createNewCopyMessage(MProcMessage message);
 
-    public void setMessageList(FastList<Sms> val) {
-        messageList = val;
-    }
+    MProcNewMessage createNewResponseMessage(MProcMessage message);
 
-    public boolean isMessageRejected() {
-        return messageIsRejected;
-    }
-
-    public void setMessageRejected(boolean val) {
-        messageIsRejected = val;
-    }
-
-    public boolean isMessageDropped() {
-        return messageIsDropped;
-    }
-
-    public void setMessageDropped(boolean val) {
-        messageIsDropped = val;
-    }
+    /**
+     * Posting a new message. To post a new message you need: create a message template by invoking of createNewMessage(), fill
+     * it and post it be invoking of postNewMessage(). For this new message no mproc rule and diameter request will be applied.
+     */
+    void postNewMessage(MProcNewMessage message);
 
 }

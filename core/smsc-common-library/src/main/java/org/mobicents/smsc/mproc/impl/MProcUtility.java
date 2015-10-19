@@ -31,6 +31,7 @@ import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.mproc.MProcMessage;
 import org.mobicents.smsc.mproc.MProcNewMessage;
 import org.mobicents.smsc.mproc.MProcRuleException;
+import org.mobicents.smsc.mproc.OrigType;
 
 /**
 *
@@ -303,5 +304,4 @@ public class MProcUtility {
     public static int setRegisteredDelivery_DeliveryReceiptOnSuccess(int prevValue) {
         return (prevValue & 0xFC) + 3;
     }
-
 }

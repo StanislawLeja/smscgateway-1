@@ -20,17 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.mobicents.smsc.mproc.impl;
+package org.mobicents.smsc.mproc;
 
 import javolution.util.FastList;
 import javolution.xml.XMLFormat;
 import javolution.xml.stream.XMLStreamException;
-
-import org.mobicents.smsc.mproc.MProcMessage;
-import org.mobicents.smsc.mproc.MProcRule;
-import org.mobicents.smsc.mproc.PostArrivalProcessor;
-import org.mobicents.smsc.mproc.PostDeliveryProcessor;
-import org.mobicents.smsc.mproc.PostImsiProcessor;
 
 /**
 *

@@ -14,6 +14,7 @@
 
 	<modules>
 		<module>smpp</module>
+		<module>mproc-api</module>
 		<module>smsc-common-library</module>
         <module>oam/clismpp</module>
         <module>oam/cli</module>
