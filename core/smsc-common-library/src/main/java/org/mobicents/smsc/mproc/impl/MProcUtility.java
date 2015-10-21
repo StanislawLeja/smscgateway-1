@@ -31,7 +31,6 @@ import org.mobicents.smsc.library.SmsSet;
 import org.mobicents.smsc.mproc.MProcMessage;
 import org.mobicents.smsc.mproc.MProcNewMessage;
 import org.mobicents.smsc.mproc.MProcRuleException;
-import org.mobicents.smsc.mproc.OrigType;
 
 /**
 *

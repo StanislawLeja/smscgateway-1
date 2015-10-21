@@ -516,6 +516,8 @@ public class MProcRuleTestImpl implements MProcRule {
 				<step>
 					<para>Implementing <classname>MProcRuleFactory</classname> interface. The interface is:
 <programlisting language="Java" role="JAVA">
+package org.mobicents.smsc.mproc;
+
 public interface MProcRuleFactory {
     String getRuleClassName();
     MProcRule createMProcRuleInstance();
@@ -533,7 +535,7 @@ import org.mobicents.smsc.mproc.MProcRule;
 import org.mobicents.smsc.mproc.MProcRuleFactory;
 
 public class MProcRuleFactoryTestImpl implements MProcRuleFactory {
-	public static final String CLASS_NAME = "testrule";
+    public static final String CLASS_NAME = "testrule";
 
     @Override
     public String getRuleClassName() {
@@ -544,6 +546,7 @@ public class MProcRuleFactoryTestImpl implements MProcRuleFactory {
     public MProcRule createMProcRuleInstance() {
         return new MProcRuleTestImpl();
     }
+
 }
 </programlisting>
 					</para>
@@ -570,7 +573,8 @@ public interface MProcRule extends MProcRuleMBean {
     boolean matchesPostImsiRequest(MProcMessage message);
 
     /**
-     * @return true if the mproc rule fits to a message when a message has just been delivered (or delivery failure)
+     * @return true if the mproc rule fits to a message when a message has just been delivered
+     * (or delivery failure)
      */
     boolean matchesPostDelivery(MProcMessage message);
 
@@ -590,12 +594,14 @@ public interface MProcRule extends MProcRuleMBean {
     void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message) throws Exception;
 
     /**
-     * this method must implement setting of rule parameters as for provided CLI string at the step of rule creation
+     * this method must implement setting of rule parameters as for provided CLI string at
+     * the step of rule creation
      */
     void setInitialRuleParameters(String parametersString) throws Exception;
 
     /**
-     * this method must implement setting of rule parameters as for provided CLI string at the step of rules modifying
+     * this method must implement setting of rule parameters as for provided CLI string at
+     * the step of rules modifying
      */
     void updateRuleParameters(String parametersString) throws Exception;
 
@@ -638,6 +644,7 @@ public interface MProcRuleMBean {
      * @return rule parameters as CLI return string
      */
     String getRuleParameters();
+
 }
 </programlisting>
 
@@ -702,7 +709,7 @@ For this user needs to implement several extra methods that will be described la
 <programlisting language="Java" role="JAVA">
 package org.mobicents.smsc.mproc.testimpl;
 
-import org.mobicents.smsc.mproc.impl.MProcRuleBaseImpl;
+import org.mobicents.smsc.mproc.MProcRuleBaseImpl;
 
 public class MProcRuleTestImpl extends MProcRuleBaseImpl {
 }
@@ -714,7 +721,7 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
 <programlisting language="Java" role="JAVA">
     @Override
     public String getRuleClassName() {
-        return return MProcRuleFactoryTestImpl.CLASS_NAME;
+        return MProcRuleFactoryTestImpl.CLASS_NAME;
     }
 </programlisting>
 					</para>
@@ -735,7 +742,7 @@ package org.mobicents.smsc.mproc.testimpl;
 
 import javolution.xml.XMLFormat;
 import javolution.xml.stream.XMLStreamException;
-import org.mobicents.smsc.mproc.impl.MProcRuleBaseImpl;
+import org.mobicents.smsc.mproc.MProcRuleBaseImpl;
 
 public class MProcRuleTestImpl extends MProcRuleBaseImpl {
 
@@ -771,12 +778,12 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
     /**
      * XML Serialization/Deserialization
      */
-    protected static final XMLFormat&lt;MProcRuleTestImpl&gt; M_PROC_RULE_TEST_XML =
-    new XMLFormat&lt;MProcRuleTestImpl&gt;(MProcRuleTestImpl.class) {
+    protected static final XMLFormat&lt;MProcRuleTestImpl&gt; M_PROC_RULE_TEST_XML = new
+            XMLFormat&lt;MProcRuleTestImpl&gt;(MProcRuleTestImpl.class) {
 
         @Override
-        public void read(javolution.xml.XMLFormat.InputElement xml, MProcRuleTestImpl mProcRule)
-        throws XMLStreamException {
+        public void read(javolution.xml.XMLFormat.InputElement xml, MProcRuleTestImpl
+            mProcRule) throws XMLStreamException {
             M_PROC_RULE_BASE_XML.read(xml, mProcRule);
 
             mProcRule.par1 = xml.getAttribute(PAR1, "");
@@ -784,8 +791,8 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
         }
 
         @Override
-        public void write(MProcRuleTestImpl mProcRule, javolution.xml.XMLFormat.OutputElement xml)
-        throws XMLStreamException {
+        public void write(MProcRuleTestImpl mProcRule, javolution.xml.XMLFormat.OutputElement
+            xml) throws XMLStreamException {
             M_PROC_RULE_BASE_XML.write(mProcRule, xml);
 
             xml.setAttribute(PAR1, mProcRule.par1);
@@ -822,7 +829,6 @@ public class MProcRuleTestImpl extends MProcRuleBaseImpl {
 package org.mobicents.smsc.mproc;
 
 import java.util.Date;
-import org.mobicents.smsc.library.OriginationType;
 
 public interface MProcMessage {
 
@@ -852,7 +858,7 @@ public interface MProcMessage {
 
     String getOrigEsmeName();
 
-    OriginationType getOriginationType();
+    OrigType getOriginationType();
 
     Date getScheduleDeliveryTime();
 
@@ -869,6 +875,7 @@ public interface MProcMessage {
     int getPriority();
 
     int getRegisteredDelivery();
+
 }
 </programlisting>
 
@@ -880,8 +887,7 @@ public interface MProcMessage {
 				These methods will be invoked for all messages that match rule's conditions.
 <programlisting language="Java" role="JAVA">
     @Override
-    public void onPostArrival(PostArrivalProcessor factory, MProcMessage message)
-    throws Exception {
+    public void onPostArrival(PostArrivalProcessor factory, MProcMessage message) throws Exception {
         String destAddr = this.par2 + message.getDestAddr();
         factory.updateMessageDestAddr(message, destAddr);
     }
@@ -895,10 +901,11 @@ public interface MProcMessage {
 package org.mobicents.smsc.mproc;
 
 import java.util.Date;
+
 import org.apache.log4j.Logger;
-import org.mobicents.smsc.library.OriginationType;
 
 public interface PostArrivalProcessor {
+
     // access to environmental parameters
     /**
      * @return the logger that an application can use for logging info into server.log
@@ -907,8 +914,8 @@ public interface PostArrivalProcessor {
 
     // actions
     /**
-     * Drop the message. Success response (that a message is accepted) will be return
-     * to a message originator.
+     * Drop the message. Success response (that a message is accepted) will be return to
+     * a message originator.
      */
     void dropMessage();
 
@@ -928,8 +935,7 @@ public interface PostArrivalProcessor {
      * @param newDestTon
      * @throws MProcRuleException
      */
-    void updateMessageDestAddrTon(MProcMessage message, int newDestTon)
-    throws MProcRuleException;
+    void updateMessageDestAddrTon(MProcMessage message, int newDestTon) throws MProcRuleException;
 
 
     /**
@@ -940,20 +946,17 @@ public interface PostArrivalProcessor {
      * @param newDestNpi
      * @throws MProcRuleException
      */
-    void updateMessageDestAddrNpi(MProcMessage message, int newDestNpi)
-    throws MProcRuleException;
+    void updateMessageDestAddrNpi(MProcMessage message, int newDestNpi) throws MProcRuleException;
 
     /**
-     * Updating of destination address message digits. Value can not be null and must have
-     * length 1-21 characters. In case of
-     * bad value MProcRuleException will be thrown
+     * Updating of destination address message digits. Value can not be null and must have length
+     * 1-21 characters. In case of bad value MProcRuleException will be thrown
      * 
      * @param message
      * @param newDigits
      * @throws MProcRuleException
      */
-    void updateMessageDestAddr(MProcMessage message, String newDigits)
-    throws MProcRuleException;
+    void updateMessageDestAddr(MProcMessage message, String newDigits) throws MProcRuleException;
 
     /**
      * Updating of source address message TON. In case of bad value (&lt;0 or &gt;6)
@@ -963,8 +966,7 @@ public interface PostArrivalProcessor {
      * @param newDestTon
      * @throws MProcRuleException
      */
-    void updateMessageSourceAddrTon(MProcMessage message, int newDestTon)
-    throws MProcRuleException;
+    void updateMessageSourceAddrTon(MProcMessage message, int newDestTon) throws MProcRuleException;
 
     /**
      * Updating of source address message NPI. In case of bad value (&lt;0 or &gt;6)
@@ -974,49 +976,42 @@ public interface PostArrivalProcessor {
      * @param newDestNpi
      * @throws MProcRuleException
      */
-    void updateMessageSourceAddrNpi(MProcMessage message, int newDestNpi)
-    throws MProcRuleException;
+    void updateMessageSourceAddrNpi(MProcMessage message, int newDestNpi) throws MProcRuleException;
 
     /**
-     * Updating of source address message digits. Value can not be null and must have
-     * length 1-21 characters. In case of
-     * bad value MProcRuleException will be thrown
+     * Updating of source address message digits. Value can not be null and must have length
+     * 1-21 characters. In case of bad value MProcRuleException will be thrown
      * 
      * @param message
      * @param newDigits
      * @throws MProcRuleException
      */
-    void updateMessageSourceAddr(MProcMessage message, String newDigits)
-    throws MProcRuleException;
+    void updateMessageSourceAddr(MProcMessage message, String newDigits) throws MProcRuleException;
 
     /**
-     * Updating of message text. Value must not be null and must have length 0-4300.
-     * In case of bad value MProcRuleException
-     * will be thrown
+     * Updating of message text. Value must not be null and must have length 0-4300. In case
+     * of bad value MProcRuleException will be thrown
      * 
      * @param message
      * @param newShortMessageText
      * @throws MProcRuleException
      */
-    void updateShortMessageText(MProcMessage message, String newShortMessageText)
-    throws MProcRuleException;
+    void updateShortMessageText(MProcMessage message, String newShortMessageText) throws MProcRuleException;
 
     /**
-     * Updating of UDH binary content. Value can be null or must have length &gt; 0.
-     * In case of bad value MProcRuleException will
-     * be thrown
+     * Updating of UDH binary content. Value can be null or must have length &gt; 0. In case
+     * of bad value MProcRuleException will be thrown
      * 
      * @param message
      * @param newShortMessageText
      * @throws MProcRuleException
      */
-    void updateShortMessageBin(MProcMessage message, byte[] newShortMessageBin)
-    throws MProcRuleException;
+    void updateShortMessageBin(MProcMessage message, byte[] newShortMessageBin) throws MProcRuleException;
 
     /**
      * Updating of ScheduleDeliveryTime - the time before which a message will not be
-     * delivered. This value can be null, this means that the message will be tried
-     * to delivery immediately. This value must be at least 3 hours before a delivery
+     * delivered. This value can be null, this means that the message will be tried to
+     * delivery immediately. This value must be at least 3 hours before a delivery
      * period end. If you pass the value that is later then 3 hours before a delivery
      * period end, then 3 hours before a delivery period end will be set. If you
      * change both ValidityPeriod and ScheduleDeliveryTime values, then you have to
@@ -1029,11 +1024,11 @@ public interface PostArrivalProcessor {
 
     /**
      * Updating delivery period end time. This value can be null, this means that
-     * delivery period will be set to a default delivery period value of SMSC GW. If
-     * the value is more than max validity period that is configured for SMSC GW,
-     * then max validity period will be used instead of a provided value. If you
-     * change both ValidityPeriod and ScheduleDeliveryTime values, then you have to
-     * setup ValidityPeriod value firstly.
+     * delivery period will be set to a default delivery period value of SMSC GW.
+     * If the value is more than max validity period that is configured for SMSC GW,
+     * then max validity period will be used instead of a provided value. If you change
+     * both ValidityPeriod and ScheduleDeliveryTime values, then you have to setup
+     * ValidityPeriod value firstly.
      * 
      * @param message
      * @param newValidityPeriod
@@ -1049,10 +1044,10 @@ public interface PostArrivalProcessor {
     void updateDataCodingUcs2(MProcMessage message);
 
     void updateNationalLanguageSingleShift(MProcMessage message,
-    int newNationalLanguageSingleShift);
+        int newNationalLanguageSingleShift);
 
     void updateNationalLanguageLockingShift(MProcMessage message,
-    int newNationalLanguageLockingShift);
+        int newNationalLanguageLockingShift);
 
     void updateEsmClass(MProcMessage message, int newEsmClass);
 
@@ -1086,7 +1081,7 @@ public interface PostArrivalProcessor {
     /**
      * Creating a new message template for filling and sending by postNewMessage() method
      */
-    MProcNewMessage createNewEmptyMessage(OriginationType originationType);
+    MProcNewMessage createNewEmptyMessage(OrigType originationType);
 
     MProcNewMessage createNewCopyMessage(MProcMessage message);
 
@@ -1119,7 +1114,6 @@ public interface PostImsiProcessor {
 
     // actions
     void dropMessages();
-
 }
 </programlisting>
 						</para>
@@ -1129,9 +1123,9 @@ public interface PostImsiProcessor {
 package org.mobicents.smsc.mproc;
 
 import org.apache.log4j.Logger;
-import org.mobicents.smsc.library.OriginationType;
 
 public interface PostDeliveryProcessor {
+
     // access to environmental parameters
     /**
      * @return the logger that an application can use for logging info into server.log
@@ -1144,7 +1138,7 @@ public interface PostDeliveryProcessor {
     /**
      * Creating a new message template for filling and sending by postNewMessage() method
      */
-    MProcNewMessage createNewEmptyMessage(OriginationType originationType);
+    MProcNewMessage createNewEmptyMessage(OrigType originationType);
 
     MProcNewMessage createNewCopyMessage(MProcMessage message);
 
@@ -1152,11 +1146,12 @@ public interface PostDeliveryProcessor {
 
     /**
      * Posting a new message. To post a new message you need: create a message template
-     * by invoking of createNewMessage(), fill it and post it be invoking
-     * of postNewMessage(). For this new message no mproc rule and diameter request
-     * will be applied.
+     * by invoking of createNewMessage(), fill it and post it be invoking of
+     * postNewMessage(). For this new message no mproc rule and diameter request will
+     * be applied.
      */
     void postNewMessage(MProcNewMessage message);
+
 }
 </programlisting>
 						</para>

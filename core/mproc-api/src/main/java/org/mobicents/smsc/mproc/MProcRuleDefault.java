@@ -22,7 +22,11 @@
 
 package org.mobicents.smsc.mproc;
 
-
+/**
+*
+* @author sergey vetyutnev
+*
+*/
 public interface MProcRuleDefault extends MProcRule {
 
     // *** conditions ***

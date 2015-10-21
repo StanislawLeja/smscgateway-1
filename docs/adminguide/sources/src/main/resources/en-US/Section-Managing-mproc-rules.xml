@@ -28,10 +28,11 @@ SYNOPSIS
 	smsc mproc add <class name> <id> desttonmask <destination type of number>
 	destnpimask	<destination numbering plan indicator> destdigmask <regular
 	expression - destination number digits mask> originatingmask <SS7_MO |
-	SS7_HR | SMPP | SIP> networkidmask <networkId value> newnetworkid
+	SS7_HR | SMPP | SIP> networkidmask <networkId value> origesmenamemask
+	<regualr expression - origination ESME name mask> newnetworkid
 	<new networkId value> newdestton<new destination type of number> newdestnpi
 	<new destination numbering plan indicator> adddestdigprefix <prefix>
-	makecopy <false | true>
+	makecopy <false | true> dropaftersri <false | true>
 
 DESCRIPTION
 
@@ -48,11 +49,13 @@ PARAMETERS
 	destdigmask - an optional parameter.
 	originatingmask - an optional parameter.
 	networkidmask - an optional parameter.
+	origesmenamemask - an optional parameter.
 	newnetworkid - an optional parameter.
 	newdestton - an optional parameter.
 	newdestnpi - an optional parameter.
 	adddestdigprefix - an optional parameter.
 	makecopy - an optional parameter.
+	dropaftersri - an optional parameter.
 	Description of parameters is in the previous chapter.
 
 EXAMPLES
@@ -98,9 +101,11 @@ SYNOPSIS
 	smsc mproc modify <id> desttonmask <destination type of number> destnpimask
 	<destination numbering plan indicator> destdigmask <regular expression -
 	destination number digits mask> originatingmask <SS7_MO | SS7_HR | SMPP
-	| SIP> networkidmask <networkId value> newnetworkid <new networkId value>
+	| SIP> networkidmask <networkId value> origesmenamemask	<regualr expression
+	- origination ESME name mask> newnetworkid <new networkId value>
 	newdestton<new destination type of number> newdestnpi <new destination
 	numbering plan indicator> adddestdigprefix <prefix> makecopy <false | true>
+	dropaftersri <false | true>
 
 DESCRIPTION
 
@@ -115,11 +120,13 @@ PARAMETERS
 	destdigmask - an optional parameter.
 	originatingmask - an optional parameter.
 	networkidmask - an optional parameter.
+	origesmenamemask - an optional parameter.
 	newnetworkid - an optional parameter.
 	newdestton - an optional parameter.
 	newdestnpi - an optional parameter.
 	adddestdigprefix - an optional parameter.
 	makecopy - an optional parameter.
+	dropaftersri - an optional parameter.
 
 EXAMPLES
 	smsc mproc modify 1 newnetworkid 13
