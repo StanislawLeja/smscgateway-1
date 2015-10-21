@@ -9,6 +9,7 @@
 	</para>
 <screen><![CDATA[
     SUCCESS(0),
+
     UNKNOWN_SUBSCRIBER(1),
     UNDEFINED_SUBSCRIBER(2),
     ILLEGAL_SUBSCRIBER(3),
@@ -33,30 +34,30 @@
     UNKNOWN_SMC(21),
     ILLEGAL_EQUIPMENT(22),
     USER_BUSY(23),
-  
+    //Power off (24вЂ“47: CDMA network reserved). 24-27
+    //Reserved.   25-29
+    //
     HLR_MESSAGE_DECODING_ERROR(30),
     MSC_MESSAGE_DECODIG_ERROR(31),
     INFORM_SC_MESSAGE_DECODING_ERROR(32),
-  
+    //'Not obtain enough routing information' ??? what?
     NOT_ENOUGH_ROUTING_INFORMATION(33),
     UNEXPECTED_DATA_FROM_HLR(34),
     UNEXPECTED_DATA_FROM_MSC(35),
     UNKNOWN_ERROR_FROM_MSC(36),
     UNKNOWN_ERROR_FROM_HLR(37),
-  
-    RESERVED_38(38),
+    //Reserved(38-39),
+    BAD_TYPE_OF_NUMBER(38),
     RESERVED_39(39),
-
     /**
      * HLR does not send acknowledgment after routing request is sent(40),
      */
-    HLR_REJECT_AFTER_ROUTING_INFO(40), 
-
+    HLR_REJECT_AFTER_ROUTING_INFO(40),
     /**
     * HLR does not send acknowledgment after the message of setting flag bit is sent(41),
     */
     HLR_REJECT_AFTER_FLAG_BIT(41),
-
+    //Reserved(42-44),
     RESERVED_42(42),
     RESERVED_43(43),
     RESERVED_44(44),
@@ -64,26 +65,22 @@
     MAP_SERVER_VERSION_ERROR(45),
     HLR_VERSION_NEGOTIATION_ERROR(46),
     RESERVED_47(47),
-
     /**
      * MSC does not send acknowledgment(48),
      */
     MSC_NO_ACK(48),
-
     /**
      * HLR does not send acknowledgment(49),
      */
-
     HLR_NO_ACK(49),
     /**
      * GIW does not send acknowledgment(50),
      */
-
     GIW_NO_ACK(50),
     MSC_REFUSES_SM(51),
     HLR_REFUSES_SM(52),
     GIW_REFUSES_SM(53),
-
+    //No response from the SGSN,
     NO_RESPONSE_FROM_SGSN(54),
 
     SGSN_REGUSES_SM(55),
@@ -92,83 +89,69 @@
     SGSN_SYSTEM_ERROR(58),
     RESERVED_59(59),
     RESERVED_60(60),
-
     /**
      * Delivery error due to MAP Server flow control(61),
      */
     MAP_SERVER_FLOW_CONTROLL_ERROR(61),
-
     /**
      * Delivery error due to MTI Server flow control(62),
      */
     MTI_SERVER_FLOW_CONTROLL_ERROR(62),
-
     /**
      * SCCP of DSP or STP unable to send the message(63),
      */
     SCCP_UNABLE_TO_SEND(63),
     INTERFACE_NO_DELIVERY_AUTHORITY(64),
-
     /**
      * GW does not send acknowledgment(65),
      * 
      */
     GW_NO_ACK(65),
-
     /**
      * Temporary interface error (deregistered or not log in)(66),
      */
     TEMPORARY_INTERFACE_ERROR(66),
     INVALID_INTERFACE(67),
-
     /**
      * Service interface does not send acknowledgment(68),
      */
     SERVICE_INTERFACE_NO_ACK(68),
     RESERVED_69(69),
-
     /**
      * Exceeding maximum of messages in L2CacheDaemon specified by license(70),
      */
-    EXCEEDED_L2CacheDaemon_MAX_MESSAGE(70), 
-
+    EXCEEDED_L2CacheDaemon_MAX_MESSAGE(70),
     /**
      * Deletion of SMs to be imported to the database because of disconnection between the SMSC and L2CacheDaemon(71),
      */
     DELETION_OF_SM_ON_SMSC_L2CacheDaemon_DISCONNECT(71),
-
     /**
      * Exceeding the maximum L2CacheDaemon capacity specified by license(72),
      */
-    EXCEEDED_L2CacheDaemon_CAPACITY(72), 
-
+    EXCEEDED_L2CacheDaemon_CAPACITY(72),
     /**
      * Some messages in L2CacheDaemon are the same as the messages in memory(73),
      */
     L2CacheDaemon_MESSAGE_DUPLICATION(73),
     L2CacheDaemon_DB_UNAVAILABLE(74),
     L2CacheDaemon_CONGESTED(75),
-
     /**
      * Error when exporting SMs from memory to L2CacheDaemon(76),
      */
     ERROR_ON_EXPORTING_SM_FROM_MEMORY_TO_L2CacheDaemon(76),
-
     /**
      * POOL may be full in message delivery(77),
      */
     POOL_FULL_IN_DELIVERY(77),
-
     /**
      * MT speed exceeds the License threshold by 120%(78),
      */
     MT_SPEED_EXCEEDED(78),
-
     /**
      * Number of entities that exceed the maximum submission number(Delivery of the SM failed and the SM is deleted(79),
      */
     MAX_SM_DELIVERY_RETRY_EXCEEDED(79),
-
+    //Reserved(80 - 127),
     RESERVED_80(80),
     RESERVED_81(81),
     RESERVED_82(82),
@@ -225,7 +208,7 @@
     TELESERVICE_FACILITY_INTERACTION_NOT_SUPPORTED(128),
     SM_TYPE_0_NOT_SUPPORTED(129),
     CANNOT_REPLACE_SM(128),
-
+    //Reserved(131вЂ“142),
     RESERVED_131(131),
     RESERVED_132(132),
     RESERVED_133(133),
@@ -238,11 +221,10 @@
     RESERVED_140(140),
     RESERVED_141(141),
     RESERVED_142(142),
-
     UNSPECIFIED_TP_PID_ERROR(143),
     DCS_NOT_SUPPORTED(144),
-    SM_TYPE_NOT_SUPPORTED(145), 
-
+    SM_TYPE_NOT_SUPPORTED(145),
+    //Reserved(146вЂ“158),
     RESERVED_146(146),
     RESERVED_147(147),
     RESERVED_148(148),
@@ -256,10 +238,9 @@
     RESERVED_156(156),
     RESERVED_157(157),
     RESERVED_158(158),
-
     UNSPECIFIED_TP_DCS_ERROR(159),
     OPERATION_NOT_EXECUTED(160),
-
+    //Reserved(161вЂ“174),
     RESERVED_161(161),
     RESERVED_162(162),
     RESERVED_163(163),
@@ -274,9 +255,8 @@
     RESERVED_172(172),
     RESERVED_173(173),
     RESERVED_174(174),
-
     TPDU_NOT_SUPPORTED(176),
-
+    //Reserved(177вЂ“191),
     RESERVED_177(177),
     RESERVED_178(178),
     RESERVED_179(179),
@@ -296,9 +276,9 @@
     SC_BUSY(192),
     NO_SC_SPECIFIED(193),
     SC_SYSTEM_ERROR(194),
-    INVALID_SME_ADDRESS_2(195), 
+    INVALID_SME_ADDRESS_2(195),
     DESTINATION_SME_PROHIBITED(196),
-
+    //Reserved(197-207),
     RESERVED_197(197),
     RESERVED_198(198),
     RESERVED_199(199),
@@ -310,16 +290,17 @@
     RESERVED_205(205),
     RESERVED_206(206),
     RESERVED_207(207),
-
     SIM_SMS_STORAGE_IS_FULL(208),
-
     /**
      * No SMS storage capability in SIM(209),
      */
     SIM_HAS_NO_SMS_STORAGE(209),
-    ERROR_IN_MS_2(210),  
+    ERROR_IN_MS_2(210),
     ESME_MEMORY_OVERFLOW(211),
-
+    /**
+     * Reserved(212-223),
+     * 
+     */
     RESERVED_212(212),
     RESERVED_213(213),
     RESERVED_214(214),
@@ -332,13 +313,12 @@
     RESERVED_221(221),
     RESERVED_222(222),
     RESERVED_223(223),
-
     /**
      * Values specific to an application(224-254),
      */
-    APP_SPECIFIC_224(224),
-    APP_SPECIFIC_225(225),
-    APP_SPECIFIC_226(226),
+    OCS_ACCESS_NOT_GRANTED(224),
+    MPROC_ACCESS_NOT_GRANTED(225),
+    MPROC_SRI_REQUEST_DROP(226),
     APP_SPECIFIC_227(227),
     APP_SPECIFIC_228(228),
     APP_SPECIFIC_229(229),
