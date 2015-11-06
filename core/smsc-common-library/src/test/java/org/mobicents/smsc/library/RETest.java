@@ -1,5 +1,7 @@
 package org.mobicents.smsc.library;
 
+import static org.testng.Assert.*;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,5 +92,76 @@ public class RETest {
 
         m = p.matcher("152152");
         boolean b12 = m.matches();
+    }
+
+    @Test(groups = { "RegularExpr" })
+    public void testRegularExpr3() {
+        String expr = "^(152)|(AWCC)|(Shayeri)$";
+        Pattern p = Pattern.compile(expr);
+
+        Matcher m = p.matcher("152");
+        boolean b1 = m.matches();
+        assertTrue(b1);
+
+        m = p.matcher("15");
+        boolean b2 = m.matches();
+        assertFalse(b2);
+
+        m = p.matcher("1152");
+        boolean b3 = m.matches();
+        assertFalse(b3);
+
+        m = p.matcher("1522");
+        boolean b4 = m.matches();
+        assertFalse(b4);
+
+        m = p.matcher("152152");
+        boolean b5 = m.matches();
+        assertFalse(b5);
+
+        m = p.matcher("AWCC");
+        boolean b6 = m.matches();
+        assertTrue(b6);
+
+        m = p.matcher("1AWCC");
+        boolean b7 = m.matches();
+        assertFalse(b7);
+
+        m = p.matcher("AWCC152");
+        boolean b8 = m.matches();
+        assertFalse(b8);
+
+        m = p.matcher("0000000");
+        boolean b9 = m.matches();
+        assertFalse(b9);
+
+        m = p.matcher("");
+        boolean b0 = m.matches();
+        assertFalse(b0);
+
+        m = p.matcher("1");
+        boolean b10 = m.matches();
+        assertFalse(b10);
+
+        m = p.matcher("2");
+        boolean b11 = m.matches();
+        assertFalse(b11);
+
+        m = p.matcher("152152");
+        boolean b12 = m.matches();
+        assertFalse(b12);
+
+        m = p.matcher("Shayeri");
+        boolean b13 = m.matches();
+        assertTrue(b13);
+
+        m = p.matcher("hayeri");
+        boolean b14 = m.matches();
+        assertFalse(b14);
+
+        m = p.matcher("Shayer");
+        boolean b15 = m.matches();
+        assertFalse(b15);
+
     }
 }
