@@ -34,11 +34,12 @@ You can configure a new ESME by issuing the command <command> smpp esme create</
 </para>
 <screen><![CDATA[
 Name
-	smsc esme create
+	smpp esme create
 
 SYNOPSIS
-	smsc esme create name <systemId> <host-ip> <port> <SmppBindType>  
-	<SmppSession.Type> password <password> system-type <sms | vms | ota > 
+	smpp esme create name <systemId> <host-ip> <port> <SmppBindType>  
+	<SmppSession.Type> password <password> networkid <networkId>
+	system-type <sms | vms | ota > 
 	interface-version <3.3 | 3.4 | 5.0> esme-ton <esme address ton> 
 	esme-npi <esme address npi> esme-range <esme address range> 
 	cluster-name <clusterName> window-size <windowSize> 
@@ -112,6 +113,13 @@ PARAMETERS
 	Password		- It is used by the SMSC to authenticate the identity of 
 				  the binding ESME. The Service Provider may require 
 				  ESME’s to provide a password when binding to the SMSC.	
+
+	networkId       - indicates virtual subnetwork that this ESME belongs. SMS 
+	                flows within same netwrokId, unless changed using mproc
+	                (this is for multi-tenancy support). If this parameter is
+                    skipped - networkId will be set to "0" when ESME creation.
+                    If you do not use multi-tenancy support - set this value
+                    to 0 or skip.   			  
 
 	system-type 		- Default value is null. 
 				  This is used to categorize the type of ESME that is 
@@ -428,10 +436,11 @@ You can modify an existing ESME by issuing the command <command>smpp esme modify
 </para>
 <screen><![CDATA[
 Name
-	smsc esme modify
+	smpp esme modify
 
 SYNOPSIS
-	smsc esme modify <name> password <Specify new password> 
+	smpp esme modify <name> password <Specify new password>
+	networkid <networkId>
 	esme-ton <esme address ton> esme-npi <esme address npi> 
 	esme-range <esme address range> window-size <windowSize> 
 	connect-timeout <connectTimeout> request-expiry-timeout <requestExpiryTimeout> 
@@ -457,6 +466,8 @@ PARAMETERS
 
 	Name			- The name of the ESME that is being modified.
 
+	Optional Parameters
+
 	Password		- Specify the new password.
 				  It is used by the SMSC to authenticate the identity of 
 				  the binding ESME. The Service Provider may require 
@@ -464,7 +475,12 @@ PARAMETERS
 
 				  The new value takes effect when SMPP is restarted.
 
-	Optional Parameters
+	networkId       - indicates virtual subnetwork that this ESME belongs. SMS 
+	                flows within same netwrokId, unless changed using mproc
+	                (this is for multi-tenancy support). If this parameter is
+                    skipped - networkId will be set to "0" when ESME creation.
+                    If you do not use multi-tenancy support - set this value
+                    to 0 or skip.   			  
 
 	esme-ton 		- Specify new ESME TON. 
 				  If the SMPP Session Type is CLIENT,
@@ -749,7 +765,7 @@ PARAMETERS
 SEE ALSO
 	smsc get scgt, smsc set scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
 	smsc set hlrssn, smsc get mscssn, smsc set mscssn, smsc get maxmapv, 
-	smsc set maxmapv, smsc esme create
+	smsc set maxmapv, smpp esme create
 
 ]]></screen>
 			</section>

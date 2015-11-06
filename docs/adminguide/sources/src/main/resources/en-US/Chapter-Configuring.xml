@@ -96,6 +96,8 @@ Multi-tenancy support is also based on this routing procedure. For each networkI
 		</para>
 		<para>For configuring of option "Delivery receipts will be routed to the origination networkId" - see the chapter <xref linkend="SMSC_Gateway_Server_Routing_DLV"/>.
 		</para>
+		<para>For configuring of SMSC Global Titles - see chapters <xref linkend="set_scgt"/>.
+		</para>
 </section>
 
 <section id="routing_fundamentals_2">

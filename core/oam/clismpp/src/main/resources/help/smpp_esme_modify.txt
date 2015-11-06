@@ -1,8 +1,8 @@
 Name
-	smsc esme modify
+	smpp esme modify
 
 SYNOPSIS
-	smsc esme modify <name> password <Specify new password> networkid <networkid> 
+	smpp esme modify <name> password <Specify new password> networkid <networkid> 
 	esme-ton <esme address ton> esme-npi <esme address npi> 
 	esme-range <esme address range> window-size <windowSize> 
 	connect-timeout <connectTimeout> request-expiry-timeout <requestExpiryTimeout> 
@@ -348,4 +348,4 @@ PARAMETERS
 SEE ALSO
 	smsc get scgt, smsc set scgt, smsc get scssn, smsc set scssn, smsc get hlrssn,
 	smsc set hlrssn, smsc get mscssn, smsc set mscssn, smsc get maxmapv, 
-	smsc set maxmapv, smsc esme create
+	smsc set maxmapv, smpp esme create
