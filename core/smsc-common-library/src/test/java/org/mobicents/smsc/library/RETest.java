@@ -164,4 +164,27 @@ public class RETest {
         assertFalse(b15);
 
     }
+
+    @Test(groups = { "RegularExpr" })
+    public void testRegularExpr4() {
+        String expr = "^27.*";
+        Pattern p = Pattern.compile(expr);
+        Matcher m = p.matcher("2711111");
+        boolean b1 = m.matches();
+
+        m = p.matcher("2");
+        boolean b2 = m.matches();
+
+        m = p.matcher("27");
+        boolean b3 = m.matches();
+
+        m = p.matcher("3700000");
+        boolean b4 = m.matches();
+
+        m = p.matcher("");
+        boolean b5 = m.matches();
+
+        m = p.matcher("200700");
+        boolean b6 = m.matches();
+    }
 }
