@@ -63,7 +63,12 @@ PARAMETERS
 						SS7_HR
 						SIP	
 					Default value is null
-	
+
+	originatorsccpaddressmask - Rule will be applied only if CallingPartyAddress digits match's 
+					with this rule's originatorsccpaddressmask. originatorsccpaddressmask is java
+					regular expression. Set value to null or -1 as wild card to match all the digits
+					of CallingPartyAddress digits. Default value is -1
+
 	networkidmask	- Rule will be applied only if target SMS is origination networkid with 
 					this rule's networkidmask. Set value to -1 as wild card to match all 
 					the network id's. Default value is -1  	

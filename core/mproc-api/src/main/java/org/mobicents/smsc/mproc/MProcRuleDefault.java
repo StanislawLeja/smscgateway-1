@@ -70,6 +70,14 @@ public interface MProcRuleDefault extends MProcRule {
 
     void setOrigEsmeNameMask(String origEsmeNameMask);
 
+    /**
+     * @return mask for message original SCCP CallingPartyAddress digits. This condition never fits if a message comes not from
+     *         SS7. "-1" means any value.
+     */
+    String getOriginatorSccpAddressMask();
+
+    void setOriginatorSccpAddressMask(String originatorSccpAddressMask);
+
     // *** actions ***
     /**
      * @return if !=-1: the new networkId will be assigned to a message

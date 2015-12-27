@@ -6,8 +6,8 @@ import com.datastax.driver.core.Session;
 
 public class CassTest {
 
-    @Test(groups = { "cassandra" })
-    public void test1() throws Exception {
+    // @Test(groups = { "cassandra" })
+    private void test1() throws Exception {
         DBOperations_C2_Proxy db = new DBOperations_C2_Proxy();
         String keySpacename = "TelestaxSMSC";
 //        try {

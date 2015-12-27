@@ -79,6 +79,7 @@ import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.smpp.Esme;
 import org.mobicents.smsc.smpp.EsmeManagement;
 import org.mobicents.smsc.smpp.SmppEncoding;
+import org.mobicents.smsc.smpp.SmppInterfaceVersionType;
 
 import com.cloudhopper.smpp.SmppConstants;
 import com.cloudhopper.smpp.SmppSession.Type;
@@ -378,8 +379,9 @@ public abstract class RxSmppServerSbb implements Sbb {
                     if (sms.getScheduleDeliveryTime() != null) {
                         deliverSm.setScheduleDeliveryTime(MessageUtil.printSmppAbsoluteDate(sms.getScheduleDeliveryTime(), -(new Date()).getTimezoneOffset()));
                     }
-                    if (sms.getValidityPeriod() != null) {
-                        deliverSm.setValidityPeriod(MessageUtil.printSmppAbsoluteDate(sms.getValidityPeriod(), -(new Date()).getTimezoneOffset()));
+                    if (sms.getValidityPeriod() != null && esme.getSmppVersion() == SmppInterfaceVersionType.SMPP50) {
+                        deliverSm.setValidityPeriod(MessageUtil.printSmppAbsoluteDate(sms.getValidityPeriod(),
+                                -(new Date()).getTimezoneOffset()));
                     }
                     deliverSm.setRegisteredDelivery((byte) sms.getRegisteredDelivery());
                     deliverSm.setReplaceIfPresent((byte) sms.getReplaceIfPresent());

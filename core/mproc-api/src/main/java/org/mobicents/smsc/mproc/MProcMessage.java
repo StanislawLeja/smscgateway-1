@@ -75,4 +75,6 @@ public interface MProcMessage {
 
     int getRegisteredDelivery();
 
+    String getOriginatorSccpAddress();
+
 }

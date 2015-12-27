@@ -142,6 +142,11 @@ public class MProcMessageImpl implements MProcMessage {
     }
 
     @Override
+    public String getOriginatorSccpAddress() {
+        return sms.getOriginatorSccpAddress();
+    }
+
+    @Override
     public int getRegisteredDelivery() {
         return sms.getRegisteredDelivery();
     }

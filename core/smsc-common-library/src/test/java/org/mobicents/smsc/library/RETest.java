@@ -187,4 +187,18 @@ public class RETest {
         m = p.matcher("200700");
         boolean b6 = m.matches();
     }
+
+    @Test(groups = { "RegularExpr" })
+    public void testRegularExpr5() {
+        String expr = "^[0-9a-zA-Z \n]*"; // "^.*"
+        Pattern p = Pattern.compile(expr);
+        Matcher m = p.matcher("2711111");
+        boolean b1 = m.matches();
+
+        m = p.matcher("2711111\n");
+        boolean b2 = m.matches();
+
+        m = p.matcher("27 11111\n");
+        boolean b3 = m.matches();
+    }
 }
