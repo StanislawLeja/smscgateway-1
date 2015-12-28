@@ -367,6 +367,13 @@ Messages will be routed between subnetworks (networkIds) by mproc rules and insi
 							<entry>"-1" : acts as wild card and hence messages originated from any channel will match.</entry>
 						</row>
 						<row>
+							<entry>originatorsccpaddress- mask</entry>
+							<entry>&lt;java regular expression - originator CallingPartyAddress digits mask&gt;</entry>
+							<entry>mproc rule will be applied only if CallingPartyAddress digits match's with "originatorsccpaddress mask" java regular expression.
+							</entry>
+							<entry>"-1" : acts as wild card and hence messages with any CallingPartyAddress digits or without it will match.</entry>
+						</row>
+						<row>
 							<entry>networkidmask</entry>
 							<entry>&lt;networkId value&gt;</entry>
 							<entry>mproc rule will be applied only if message has come to SMSC GW via a subnetwork with networkId which is equal to this value "networkidmask".</entry>
@@ -878,6 +885,8 @@ public interface MProcMessage {
 
     int getRegisteredDelivery();
 
+    String getOriginatorSccpAddress();
+
 }
 </programlisting>
 
@@ -1250,53 +1259,140 @@ For interconnecting with OCS Server SMSC GW uses diameter CCR (Credit-Control Re
 						frame="all"
 						pgwide="1">
 <title>The AVP list</title>
-		<tgroup cols='3' colsep='1' rowsep='1'>
+		<tgroup cols='5' colsep='1' rowsep='1'>
 		<colspec
 								colnum="1"
 								colname="c0" />
 		<colspec
 								colnum="2"
-								colname="c1" />
+								colname="c1"
+								colwidth="0.6*" />
 		<colspec
 								colnum="3"
-								colname="c2" />
+								colname="c2"
+								colwidth="0.6*" />
+		<colspec
+								colnum="4"
+								colname="c3" />
+		<colspec
+								colnum="5"
+								colname="c4"
+								colwidth="2*" />
 		<thead>
 			<row>
 				<entry>AVP name</entry>
 				<entry>AVP code</entry>
+				<entry>AVP Type</entry>
+				<entry>Parent AVP</entry>
 				<entry>Description</entry>
 			</row>
 		</thead>
 		<tbody>
 			<row>
-				<entry>Originator-Received-Address</entry>
-				<entry>2027</entry>
-				<entry>The address of message sender (source address)</entry>
+				<entry>SMS-Information</entry>
+				<entry>2000</entry>
+				<entry>Grouped</entry>
+				<entry>Service-Information</entry>
+				<entry>SMS service specific information elements</entry>
 			</row>
 			<row>
 				<entry>Originator-SCCP-Address</entry>
 				<entry>2008</entry>
+				<entry>Address</entry>
+				<entry>SMS-Information</entry>
 				<entry>The CallingParty SCCP Address of MO message</entry>
-			</row>
-			<row>
-				<entry>Recipient-Address</entry>
-				<entry>1201</entry>
-				<entry>The address of message receiver (destination address)</entry>
-			</row>
-			<row>
-				<entry>Data-Coding-Scheme</entry>
-				<entry>2001</entry>
-				<entry>Data Coding Scheme of a message (for example 0 for GSM7 encoding or 8 for USC2 encoding)</entry>
-			</row>
-			<row>
-				<entry>SM-Message-Type</entry>
-				<entry>2007</entry>
-				<entry>Message type, usually SUBMISSION (value = 0)</entry>
 			</row>
 			<row>
 				<entry>SMSC-Address</entry>
 				<entry>2017</entry>
-				<entry>SMSC address as it is present in SM_RP_DA field in MO request</entry>
+				<entry>Address</entry>
+				<entry>SMS-Information</entry>
+				<entry>SMSC address as it is present in SM_RP_DA field in MO request.
+				For not MO messages the value will be taken as a configured SMSC GT for networkId area</entry>
+			</row>
+			<row>
+				<entry>Data-Coding-Scheme</entry>
+				<entry>2001</entry>
+				<entry>Integer 32</entry>
+				<entry>SMS-Information</entry>
+				<entry>Data Coding Scheme of a message (for example 0 for GSM7 encoding or 8 for UCS2 encoding)</entry>
+			</row>
+			<row>
+				<entry>SM-Message-Type</entry>
+				<entry>2007</entry>
+				<entry></entry>
+				<entry></entry>
+				<entry>Message type, usually SUBMISSION (value = 0)</entry>
+			</row>
+			<row>
+				<entry>Originator-Interface</entry>
+				<entry>2009</entry>
+				<entry>Grouped</entry>
+				<entry>SMS-Information</entry>
+				<entry>Information related to the Interface on which the message originated.</entry>
+			</row>
+			<row>
+				<entry>Interface-Id</entry>
+				<entry>2003</entry>
+				<entry>UTF8-String</entry>
+				<entry>Originator-Interface</entry>
+				<entry>NetworkID value of the Interface on which the message originated.</entry>
+			</row>
+			<row>
+				<entry>Interface-Text</entry>
+				<entry>2005</entry>
+				<entry>UTF8-String</entry>
+				<entry>Originator-Interface</entry>
+				<entry>Name of ESME / SIP connector on which the message originated.</entry>
+			</row>
+			<row>
+				<entry>Recipient-Info</entry>
+				<entry>2026</entry>
+				<entry>Grouped</entry>
+				<entry>SMS-Information</entry>
+				<entry>Information associated with a recipient.</entry>
+			</row>
+			<row>
+				<entry>Recipient-Address</entry>
+				<entry>1201</entry>
+				<entry>Grouped</entry>
+				<entry>Recipient-Info</entry>
+				<entry>The address of message receiver (destination address)</entry>
+			</row>
+			<row>
+				<entry>Address-Type</entry>
+				<entry>899</entry>
+				<entry>Enum</entry>
+				<entry>Recipient-Address</entry>
+				<entry>Type of Recipient-Address: 1-MSISDN (for TON=1 - international) or 6-Other (for TON!=1)</entry>
+			</row>
+			<row>
+				<entry>Address-Data</entry>
+				<entry>897</entry>
+				<entry>UTF8-String</entry>
+				<entry>Recipient-Address</entry>
+				<entry>Digits of Recipient-Address</entry>
+			</row>
+			<row>
+				<entry>Originator-Received-Address</entry>
+				<entry>2027</entry>
+				<entry>Grouped</entry>
+				<entry>SMS-Information</entry>
+				<entry>The address of message sender (source address)</entry>
+			</row>
+			<row>
+				<entry>Address-Type</entry>
+				<entry>899</entry>
+				<entry>Enum</entry>
+				<entry>Originator-Received-Address</entry>
+				<entry>Type of Originator-Received-Address: 1-MSISDN (for TON=1 - international) or 6-Other (for TON!=1)</entry>
+			</row>
+			<row>
+				<entry>Address-Data</entry>
+				<entry>897</entry>
+				<entry>UTF8-String</entry>
+				<entry>Originator-Received-Address</entry>
+				<entry>Digits of Originator-Received-Address</entry>
 			</row>
 		</tbody>
 </tgroup>

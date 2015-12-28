@@ -32,62 +32,17 @@
 		</itemizedlist>
 		</para>
 	</section>
+
 	<section id="notes_whats_new">
 		<title>What's New?</title>
         <formalpara>
-        <title>Lightweight pass-through mode</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; now for sending of only SMPP originated datagramm and transactional messages does not need to install any database. 
+        <title>Changing of set of Diameter AVP fields</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; has an updated set of Diameter AVP fields for more compliance to a specification,
+        "Recipient-Address" AVP is under a new "Recipient-Info" AVP now, so if you use this AVP you need to update your diameter application.
+        Added AVPs: "Originator-Interface" / "Interface-Id" / "Interface-Text" (Originator's networkID and ESME names).
+        AVP "SMSC-Address" for non-MO originated messages contains now SMSC GW GlobalTitle for networkId of a message.
         </para>
-        </formalpara>
-        <formalpara>
-        <title>Message processing rules</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; introduces of message processing (mproc) rules.
-        Each rule contains a set of conditions (like destination address mask).
-        If an incoming message fits to the conditions then rule actions will be applied to the message (like adding a prefix into a destination address or networkId changing).
-        There is a default implementation of mproc rules which covers some cases. But a customer can implement his own custom set of mproc rules by implementing of java code.
-        </para>
-        </formalpara>
-        <formalpara>
-        <title>Diameter rejections</title>
-        <para>When Diameter server rejects an incoming message then &THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; will send those rejects as responses back to an message originator (for SMPP and MO originated messages).
-        So the message originator will know if the message is accepted or not. 
-        </para>
-        </formalpara>
-        <formalpara>
-        <title>Fixing of GSM7 messages encoding issues</title>
-        <para>Fixed several issues of GSM7 encoding errors in case of two-septets characters (like "[" or "]") are present
-or in the case when the last part of a splitted message is short.
-        </para>
-        </formalpara>
-        <formalpara>
-        <title>GSM7 encoding at SMPP part</title>
-        <para> 
-        </para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports now GSM7 encoding at SMPP part (in addition to UTF-8 and Unicode encoding).
-        </formalpara>
-        <formalpara>
-        <title>Preconfigured HLR address</title>
-        <para>There is now a possibility of using a special preconfigured HLR address instead of MSISDN for SCCP CalledPartyAddress in SRI request. 
-        </para>
-        </formalpara>
-        <formalpara>
-        <title>National Language Shift Tables</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports now National Language Shift Tables which are used in encoding of GSM7 encoding.
-        </para>
-        </formalpara>
-        <formalpara>
-        <title>Message restrictions for ESMEs</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports now a minimal/maximal message length and rate per a second (a minute, a hour, a day) limits per ESME.
-        </para>
-        </formalpara>
-        <formalpara>
-        <title>GSM message classes</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports now dest_addr_subunit parameter at SMPP part. This parameter specifies GSM message classes.
-        </para>
-        </formalpara>
-        <formalpara>
-        <title>New license library</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; has switched to license library 2.2.3.
-        </para>
+
         </formalpara>
 	</section>
 	<section id="features_bug_fixes">
