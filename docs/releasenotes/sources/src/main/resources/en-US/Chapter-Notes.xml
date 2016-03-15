@@ -35,141 +35,135 @@
 
 	<section id="notes_whats_new">
 		<title>What's New?</title>
-        <formalpara>
-        <title>Changing of set of Diameter AVP fields</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; has an updated set of Diameter AVP fields for more compliance to a specification,
-        "Recipient-Address" AVP is under a new "Recipient-Info" AVP now, so if you use this AVP you need to update your diameter application.
-        Added AVPs: "Originator-Interface" / "Interface-Id" / "Interface-Text" (Originator's networkID and ESME names).
-        AVP "SMSC-Address" for non-MO originated messages contains now SMSC GW GlobalTitle for networkId of a message.
-        </para>
 
+        <formalpara>
+        <title>Switched to cassandra database driver 2.1</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; switched to cassandra database driver 2.1. Cassandra databases 2.0 and 2.1 are supported now (2.1 is preferred).
+Cassandra database 1.2 is not supported more. If you use this or newer release you need to switch to 2.* SMSC GW before update.
+        </para>
         </formalpara>
+
+        <formalpara>
+        <title>mproc rules interface was changed</title>
+        <para>The list of changes:
+<itemizedlist>
+<listitem><para>mproc rules interface was moved to a separate package (mproc-api)
+</para></listitem>
+<listitem><para>changing of MProcRule interface: onPostImsiRequest() is applied to a concrete Sms, to for SmsSet
+</para></listitem>
+<listitem><para>minor mproc rules MProcRule interface updates
+		<programlisting
+			language="Java"
+			role="JAVA"><![CDATA[
+    boolean matches(MProcMessage message);
+    boolean matches(MProcMessageDestination messageDest);
+    void onPostImsiRequest(PostImsiProcessor factory, MProcMessageDestination messages) throws Exception;
+]]>
+	</programlisting>
+was changed to
+		<programlisting
+			language="Java"
+			role="JAVA"><![CDATA[
+    boolean matchesPostArrival(MProcMessage message);
+    boolean matchesPostImsiRequest(MProcMessage message);
+    boolean matchesPostDelivery(MProcMessage message);
+    void onPostImsiRequest(PostImsiProcessor factory, MProcMessage message) throws Exception;
+]]>
+	</programlisting>
+
+</para></listitem>
+<listitem><para>adding of originatorSccpAddress parameter into MProcMessage interface
+</para></listitem>
+</itemizedlist>
+        </para>
+        </formalpara>
+
+        <formalpara>
+        <title>New parameters for default mproc rules</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; introduced new parameters for default mproc rules: dropaftersri and origesmenamemask. 
+        </para>
+        </formalpara>
+
+        <formalpara>
+        <title>Cashing of SRI responses</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; introduced a functionality for cashing of SRI responses.
+        </para>
+        </formalpara>
+
+        <formalpara>
+        <title>Diameter interface AVP list updateed</title>
+        <para>In &THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; Diameter interface AVP list was updated. 
+<itemizedlist>
+<listitem><para>SMSC-Address 2017 is filled not only for MO messages (value is taken from SMSC GW config - ServiceCenterAddress field that depends on networkId of a message)
+</para></listitem>
+<listitem><para>Originator-Interface AVP - contains origination interface message definition (networkId and ESME name)
+</para></listitem>
+<listitem><para>Address-Type of (Originator-Received-Address and Recipient-Address) can have two values: 1 (msisdn) for TON=1 and 6 (others) for others TON
+</para></listitem>
+<listitem><para>AVP order is changed (to fit a specification)
+</para></listitem>
+</itemizedlist>
+        </para>
+        </formalpara>
+
+        <formalpara>
+        <title>Bypass SRI requests to a local HLR</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; introduced a special Home routing mode when SMSC GW bypass SRI requests to a local HLR.
+        </para>
+        </formalpara>
+
+        <formalpara>
+        <title>ENQUIRE messages and dropping of TCP connectiom for SERVER type ESMEs</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports now ENQUIRE messages and dropping of TCP connectiom for SERVER type ESMEs.
+        </para>
+        </formalpara>
+
 	</section>
 	<section id="features_bug_fixes">
 		<title>Issues Fixed</title>
-		<para>For a full list of resolved issues and their details, please refer to <ulink url="https://telestax.atlassian.net/browse/SMSC/" />.</para>	
-<itemizedlist>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-144">SMSC-144</ulink>: Document and blog with examples about the different send modes - datagram, forward and store, store and forward
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-177">SMSC-177</ulink>: GSM7 Bit SMS with special character and length of 140 chars throws exception
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-179">SMSC-179</ulink>: SMSC GW: lightweight pass-through mode
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-186">SMSC-186</ulink>: A special mode when all generated by SMSC GW messages will be routed to originated ESMEs
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-191">SMSC-191</ulink>: Old style home routing functionality
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-194">SMSC-194</ulink>: Message splitting procedure must care on GSM7 extention table characters
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-198">SMSC-198</ulink>: Using in CalledPartyAddress (SRI) a preconfigured HLR address instead of MSISDN
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-199">SMSC-199</ulink>: Docs: add description for HLR addressing of SRI messages in HR mode
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-200">SMSC-200</ulink>: MessageProcessing (MProc) functionality just after a message has come to SMSC GW
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-201">SMSC-201</ulink>: Converting of national -> international numbers for incoming SS7 messages
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-202">SMSC-202</ulink>: Different networkId for incoming / outgoing messages at SMPP ESME / SIP
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-204">SMSC-204</ulink>: Docs: Remove of mentioning of cassandra.cql from SMSC GW Intsallation Guide
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-205">SMSC-205</ulink>: Needed to update InSystem field for FAS mode when a message has beed invoked form a database
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-206">SMSC-206</ulink>: Docs: add a chapter that describes all aspects of SMSC message routing
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-207">SMSC-207</ulink>: PotentialVersionIncompatibility response -> switching to MAP V1 message problems
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-209">SMSC-209</ulink>: GUI for MapVersionCacheMBean has to be updated
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-210">SMSC-210</ulink>: Delivery reciepts for the several permanent undelivered messages contain the content of the first message
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-211">SMSC-211</ulink>: NetworkId of originated ESME will be assigned to a delivery receipt (optional)
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-213">SMSC-213</ulink>: National Language Shift Table support
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-214">SMSC-214</ulink>: Improper logger spelling
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-216">SMSC-216</ulink>: SS7 GUI shows Service running only for jSS7 but when packaged with SMSC it always shows down
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-217">SMSC-217</ulink>: Double logging issue
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-218">SMSC-218</ulink>: Docs: adding "SCTP libraries" into "SMSC GW installation Guide"
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-219">SMSC-219</ulink>: Add "TelScale_SS7Stack_Release_Notes" and "TelScale_SS7Stack_Installation_Guide"
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-222">SMSC-222</ulink>: Too long time duration to restore of functionality after long time shutdown
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-223">SMSC-223</ulink>: Exception when GSM7 encoding of the short message with UDH
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-224">SMSC-224</ulink>: Splitting messages for specified length in SMPP-Simulator
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-225">SMSC-225</ulink>: Adding support for GSM7 encoding at SMPP part
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-226">SMSC-226</ulink>: GUI update after introducing of GSM7 style encoding at SMPP part
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-227">SMSC-227</ulink>: Docs: introducing of GSM7 style encoding at SMPP part
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-228">SMSC-228</ulink>: min-message-length / max-message-length ESME options
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-229">SMSC-229</ulink>: SMSC tries to store receipts into SLOT_MESSAGES_TABLE_2000_01_01 table
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-230">SMSC-230</ulink>: GUI: mproc and orignetworkidforreceipts
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-231">SMSC-231</ulink>: Docs: mproc and orignetworkidforreceipts
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-232">SMSC-232</ulink>: GUI: adding min-message-length / max-message-length ESME options
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-233">SMSC-233</ulink>: Docs: adding min-message-length / max-message-length ESME options
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-234">SMSC-234</ulink>: GUI: National Language Shift Table support
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-235">SMSC-235</ulink>: Docs: National Language Shift Table support
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-237">SMSC-237</ulink>: Support for dest_addr_subunit at SMPP part
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-238">SMSC-238</ulink>: GUI: for skip-unsent-messages command
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-239">SMSC-239</ulink>: Docs: "smsc skip-unsent-messages" command and a new fields in "smsc stat get"
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-240">SMSC-240</ulink>: Docs: update a chapter for manual's for CDR format
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-241">SMSC-241</ulink>: GUI: for hrhlrumber parameter
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-242">SMSC-242</ulink>: Docs: for hrhlrumber parameter
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-245">SMSC-245</ulink>: Switching to a license lib 2.2.3.Final
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-246">SMSC-246</ulink>: Docs : Add new chapter explaining how to use TelScale-smpp-simulator tool
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-247">SMSC-247</ulink>: Response to an originator after a diameter response (MO/SMPP orig)
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-248">SMSC-248</ulink>: Adding SMSC-Address 2017 parameter into diameter request
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-249">SMSC-249</ulink>: Bad processing the case when there are very many messages to the one dest
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-250">SMSC-250</ulink>: BIND request sent by SMSC doesn't respect System Type parameter
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-251">SMSC-251</ulink>: Review SMSC Docs for Improvements
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-252">SMSC-252</ulink>: Big message count can be stored into one due_slot
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-253">SMSC-253</ulink>: Reduced sending rate when very many messages to the one dest address
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-256">SMSC-256</ulink>: Docs: adding a manual chapter for smsc-diameter interconnection
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-258">SMSC-258</ulink>: NullPointerException when receipt creating after ValidityPeriod expiring filter
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-260">SMSC-260</ulink>: mproc rules: checking conditions based on last updated values
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-261">SMSC-261</ulink>: SMSC Re-preparing already prepared query
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-265">SMSC-265</ulink>: SMSC should allow Custom MProc Rule
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-267">SMSC-267</ulink>: Add the throttling capability in smpp-load test tool
-</para></listitem>
-<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-268">SMSC-268</ulink>: Update manuals for Customized MProc Rule
-</para></listitem>
+		<para>For a full list of resolved issues and their details, please refer to <ulink url="https://telestax.atlassian.net/browse/SMSC/"/> and <ulink url="https://github.com/RestComm/smscgateway/issues"/>.</para>	
 
+<itemizedlist>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-236">SMSC-236</ulink>: support for cassandra database versions 2.0 and 2.1
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-263">SMSC-263</ulink>: mproc rules: onPostImsiRequest is needed to be applied to Sms, not ot SmsSet
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-264">SMSC-264</ulink>: Adding dropaftersri / origesmenamemask into default mproc rules
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-270">SMSC-270</ulink>: SRI response caching
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-271">SMSC-271</ulink>: GUI update for SMSC-264 and 270 (dropaftersri / origesmenamemask, SRI caching)
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-272">SMSC-272</ulink>: Manual update for SMSC-263, 264 and 270
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-274">SMSC-274</ulink>: Separate mproc-api library
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-275">SMSC-275</ulink>: Remove maxBackupIndex and maxFileSize for DailyRollingFileAppender
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-283">SMSC-283</ulink>: Extra AVP fields in diameter request (networkId issue)
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-284">SMSC-284</ulink>: Docs : networkid parameter missing in ESME creation
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-285">SMSC-285</ulink>: Adding originatorSccpAddress inro mproc rules
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-286">SMSC-286</ulink>: Differentiating of Address-Type for addressed for Diameter
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-289">SMSC-289</ulink>: validity_period fields for deliver_sm (smpp 3.3 / 3.4)
+</para></listitem>
+<listitem><para><ulink url="https://telestax.atlassian.net/browse/SMSC-291">SMSC-291</ulink>: Docs: update manuals after SMSC-285,286,283
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/22">SMSC-22</ulink>: ENQUIRE messages also for SERVER type ESMEs
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/29">SMSC-29</ulink>: Multitenancy for hrhlrnumber
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/42">SMSC-42</ulink>: BindTimeout option for ESME
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/45">SMSC-45</ulink>: Bypass of SRI request from SMSC GW to HLR for home routing procedure
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/47">SMSC-47</ulink>: Timeout for ESMEs after which SMSC GW will drop a TCP connection without message activity
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/54">SMSC-54</ulink>: Possible unbind() and close() Exception
+</para></listitem>
 
 </itemizedlist>
 	</section>
