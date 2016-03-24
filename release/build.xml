@@ -22,11 +22,11 @@
 			ant -Dtelscale.smsc.git.tag=ts115ga -Dtelscale.smsc.release.version=6.1.5.GA-TelScale
 		-->
 		<property name="telscale.smsc.git.tag" value="master"/>
-		<property name="telscale.smsc.release.version" value="6.2.0-TelScale-SNAPSHOT"/>
+		<property name="telscale.smsc.release.version" value="6.2.3-TelScale-SNAPSHOT"/>
 		<!-- **//-->
 	
 	<property name="telscale-slee.version" value="6.1.2.GA" />
-	<property name="telscale-jss7.version" value="6.2.5.GA" />
+	<property name="telscale-jss7.version" value="6.2.6.GA" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
 	<property name="telscale-diam.version" value="6.2.1.327" />
 	<property name="dse-cassandra.version" value="4.5.2" />
@@ -37,7 +37,7 @@
 	<property name="telscale-slee.download.distro.file" value="${telscale-slee.download.distro.name}.zip" />
 	<property name="telscale-slee.download.url" value="ftp://ftp.box.com/TelScale%20JAIN-SLEE/${telscale-slee.version}/slim-with-lce223/${telscale-slee.download.distro.file}" />
 	<property name="telscale-slee.distro.zip.path" value="${checkout.dir}/${telscale-slee.download.distro.file}" />
-	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}-1510060913.zip" />
+	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}-1603221450.zip" />
 	<property name="telscale-jss7.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-jss7.version}/${telscale-jss7.download.distro.file}" />
 	<property name="telscale-jss7.distro.zip.path" value="${checkout.dir}/${telscale-jss7.download.distro.file}" />
 	
@@ -357,7 +357,7 @@
         </copy>
         <copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-6.2.4.GA-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-6.2.6.GA-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
     	<mkdir dir="${release.dir}/jboss-5.1.0.GA/server/default/data"/>
@@ -370,7 +370,7 @@
         </copy>
         <copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-6.2.4.GA-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${release.dir}/resources/map/mobicents-slee-ra-map-du-6.2.6.GA-TelScale.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
         <copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/data" failonerror="true">
                 <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/data">
