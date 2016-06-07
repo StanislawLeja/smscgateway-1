@@ -2530,6 +2530,49 @@ DESCRIPTION
             </section>
             </section>
 
+
+
+
+            <section id="enableintermediatereceipts">
+            <title>Allowing of generating of intermediate receipts</title>
+            <section id="enableintermediatereceipts_CLI">
+            <title>Using CLI</title>
+<para>
+SMCS can generate intermediate receipts (for temporary failures). You can set the 'enableintermediatereceipts' value to true/false by issuing the command `smsc set enableintermediatereceipts` with appropriate parameters as described below.
+You can verify this by issuing the command `smsc get enableintermediatereceipts` which will display the value set for this property.
+</para>
+<screen><![CDATA[
+Name
+    smsc set enableintermediatereceipts
+
+SYNOPSIS
+    smsc set enableintermediatereceipts <true | false>
+
+DESCRIPTION
+	The SMSC can be configured to generate or not delivery intermediate receipts
+	(these are receipts for temporary delivery failures).
+	Default value: false (intermediate receipts will not be generated).
+]]></screen>
+            </section>
+            <section id="enableintermediatereceipts_GUI">
+            <title>Using GUI</title>
+            <procedure>
+                <title>Disabling of Reciepts generating using the GUI</title>
+                <step><para>In the GUI Management Console for SMSC Gateway, click on 'Server Settings' in the left panel.
+                </para></step>
+                <step><para>The main panel will display the existing Settings, segregated into eight horizontal tabs: Properties, SS7 Settings, Cassandra, Scheduler, Diameter, Processing, CDR and Home Routing. Switch to the 'Processing' tab in the GUI.
+                </para></step>
+                <step><para>You can specify if the SMSC should disable of receipt generating by setting the value for the field 'Enable intermediate receipts' to true or false accordingly.
+                For more details of this parameter, please refer to the description of the CLI command for the same in the preceding section. 
+                </para></step>
+                <step><para>You must click on the button 'Save' at the top of the window to save your settings. If there is an error in setting the value, then you will find the details of the error in the Management Console Log section below.
+                </para></step>
+            </procedure>
+            </section>
+            </section>
+
+
+
 			<section id="SMSC_Gateway_Server_Routing_DLV">
 					<title>Routing of delivery receipts</title>
             <section id="SMSC_Gateway_Server_Routing_DLV_CLI">
