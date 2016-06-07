@@ -79,8 +79,14 @@ was changed to
         </formalpara>
 
         <formalpara>
-        <title>New parameters for default mproc rules</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; introduced new parameters for default mproc rules: dropaftersri and origesmenamemask. 
+        <title>Default mproc rules update</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; introduced following updates for default mproc rules: 
+<itemizedlist>
+<listitem><para>adding dropaftersri / origesmenamemask parameters
+</para></listitem>
+<listitem><para>fixing issue when originatorSccpAddress was null for home routing originating messages
+</para></listitem>
+</itemizedlist>
         </para>
         </formalpara>
 
@@ -108,17 +114,24 @@ was changed to
 
         <formalpara>
         <title>Bypass SRI requests to a local HLR</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; introduced a special Home routing mode when SMSC GW bypass SRI requests to a local HLR.
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; introduced a special Home routing mode when SMSC GW bypasses SRI requests to a local HLR.
         </para>
         </formalpara>
 
         <formalpara>
-        <title>ENQUIRE messages and dropping of TCP connectiom for SERVER type ESMEs</title>
-        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports now ENQUIRE messages and dropping of TCP connectiom for SERVER type ESMEs.
+        <title>ENQUIRE messages for SERVER type ESMEs</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports now ENQUIRE messages for SERVER type ESMEs.
+        </para>
+        </formalpara>
+
+        <formalpara>
+        <title>Intermediate Delivery Reports</title>
+        <para>&THIS.PLATFORM; &THIS.APPLICATION; &THIS.VERSION; supports "Intermediate Delivery Reports" (delivery receipts after temporary failures).
         </para>
         </formalpara>
 
 	</section>
+
 	<section id="features_bug_fixes">
 		<title>Issues Fixed</title>
 		<para>For a full list of resolved issues and their details, please refer to <ulink url="https://telestax.atlassian.net/browse/SMSC/"/> and <ulink url="https://github.com/RestComm/smscgateway/issues"/>.</para>	
@@ -160,13 +173,30 @@ was changed to
 </para></listitem>
 <listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/45">SMSC-45</ulink>: Bypass of SRI request from SMSC GW to HLR for home routing procedure
 </para></listitem>
-<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/47">SMSC-47</ulink>: Timeout for ESMEs after which SMSC GW will drop a TCP connection without message activity
-</para></listitem>
 <listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/54">SMSC-54</ulink>: Possible unbind() and close() Exception
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/57">SMSC-57</ulink>: Exception when creating of delivery receipt in case of a message validity period expire
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/61">SMSC-61</ulink>: Schedule RA must not fire events for sending if SBB are not active
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/62">SMSC-62</ulink>: Intermediate Delivery Reports
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/63">SMSC-63</ulink>: "null" string at the end of delivery receipt
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/64">SMSC-64</ulink>: PersistenceResourceAdaptorisDatabaseAvailable() - NullPointerException
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/72">SMSC-72</ulink>: Client ESME ENQUIRE message sending is not disabable
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/75">SMSC-75</ulink>: originatorSccpAddress=null when MProc originatingMask=SS7_HR
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/76">SMSC-76</ulink>: HrSriServerSbb Notification: logs the event "Created correlationId" as ERROR when sriBypass=true
+</para></listitem>
+<listitem><para><ulink url="https://github.com/RestComm/smscgateway/issues/81">SMSC-81</ulink>: Make Intermediate Delivery Reports generation configurable
 </para></listitem>
 
 </itemizedlist>
 	</section>
+
 	<section id="Config_settings">
 		<title>Configuration Settings</title>
 		<para>You must perform post-installation configuration of the Gateway according to instructions in the &THIS.PLATFORM; &THIS.APPLICATION; Admin Guide. Before using in Production, you must remember to fine-tune Memory, Database and logging settings for better performance.</para>
