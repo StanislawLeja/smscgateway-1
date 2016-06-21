@@ -1,0 +1,590 @@
+<?xml version="1.0"?>
+<project name="telscale.smscgw.release" default="release" basedir=".">
+	<property environment="sys"/>
+	<property name="release.dir" location="${ant.file.telscale.smscgw.release}/../target" />
+	<property name="base.dir" location="${ant.file.telscale.smscgw.release}/.." />
+	<property name="docs.dir" location="${release.dir}/docs" />
+	<property name="bundle.docs.dir" location="${base.dir}/docs-bundle" />
+	<property name="cassandra.dir" value="${release.dir}/cassandra" />
+	<property name="checkout.dir" value="${base.dir}/checkout" />	
+	<property name="checkout.telscale-slee.dir" value="${checkout.dir}/telscale-slee" />
+	<property name="checkout.telscale-jss7.dir" value="${checkout.dir}/telscale-jss7" />
+	<property name="checkout.telscale-smsc.dir" value="${base.dir}/.." />
+	<property name="checkout.telscale-jss7-build.dir" value="${checkout.dir}/telscale-jss7-build" />
+	<property name="checkout.telscale-diam.dir" value="${checkout.dir}/telscale-diam" />
+	<property name="checkout.telscale-slee.jss7-build.dir" value="${checkout.dir}/telscale-slee.jss7-build" />
+	<property name="checkout.map.dir" value="${base.dir}/checkout/map" />
+	<property name="release.map.dir" value="${base.dir}/checkout/map-release" />
+
+	<!-- version properties-->
+	<!-- //** change this properties from CLI to build specific versions-->
+	<!-- Eg: 
+			ant -Dtelscale.smsc.git.tag=ts115ga -Dtelscale.smsc.release.version=6.1.5.GA-TelScale
+	-->
+	<property name="telscale.smsc.git.tag" value="master"/>
+	<property name="telscale.smsc.release.version" value="7.0.0-TelScale-SNAPSHOT"/>
+
+	<property name="telscale-slee.version" value="6.1.4" />
+	<property name="telscale-slee.build-number" value="52.468" />
+	<property name="telscale-jss7.version" value="6.2.6.GA" />
+	<property name="telscale-map-ra.version" value="6.2.6.GA" />
+	<property name="telscale-management-hq.version" value="6.1.4.GA" />
+	<property name="telscale-diam.version" value="6.2.1.327" />
+	<property name="telscale-sip.version" value="6.1.4.22" />
+	<property name="dse-cassandra.version" value="4.5.2" />
+	<property name="checkout.dse-cassandra.dir" value="${cassandra.dir}/dse-${dse-cassandra.version}" />
+
+	<!--GET Telscale-Slee & Telscale-jss7 & Telscale-diameter & DSE Cassandra - properties-->
+	<property name="telscale-slee.download.distro.name" value="telscale-slee-${telscale-slee.version}.${telscale-slee.build-number}" />
+	<property name="telscale-slee.download.distro.file" value="${telscale-slee.download.distro.name}.zip" />
+	<property name="telscale-slee.download.url" value="ftp://ftp.box.com/TelScale%20JAIN-SLEE/${telscale-slee.version}.GA/${telscale-slee.download.distro.file}" />
+	<property name="telscale-slee.distro.zip.path" value="${checkout.dir}/${telscale-slee.download.distro.file}" />
+	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}-1603221450.zip" />
+	<property name="telscale-jss7.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-jss7.version}/${telscale-jss7.download.distro.file}" />
+	<property name="telscale-jss7.distro.zip.path" value="${checkout.dir}/${telscale-jss7.download.distro.file}" />
+	<property name="telscale-map-ra.download.distro.file" value="mobicents-slee-ra-map-du-${telscale-map-ra.version}-TelScale.jar" />
+	<property name="telscale-map-ra.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-map-ra.version}/slee.ss7/MAP%20SLEE%20Resource%20Adaptor/${telscale-map-ra.download.distro.file}" />
+	<property name="telscale-map-ra.distro.zip.path" value="${checkout.dir}/${telscale-map-ra.download.distro.file}" />
+	<property name="telscale-map-ra-docs.download.distro.file" value="Mobicents_SLEE_RA_MAP_User_Guide.pdf" />
+	<property name="telscale-map-ra-docs.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-map-ra.version}/slee.ss7/MAP%20SLEE%20Resource%20Adaptor/${telscale-map-ra-docs.download.distro.file}" />
+	<property name="telscale-map-ra-docs.distro.zip.path" value="${checkout.dir}/${telscale-map-ra-docs.download.distro.file}" />
+
+	<property name="telscale-management-hq.download.distro.file" value="management-hq-${telscale-management-hq.version}.zip" />
+	<property name="telscale-management-hq.distro.zip.path" value="${checkout.dir}/${telscale-management-hq.download.distro.file}" />
+	<property name="telscale-management-hq.download.url" value="ftp://ftp.box.com/TelScale%20Management%20HQ/6.1.4.GA/${telscale-management-hq.download.distro.file}" />
+	<property name="checkout.telscale-management-hq.dir" value="${checkout.dir}/telscale-management-hq" />
+	
+	<property name="telscale-diam.download.distro.file" value="TelScale-diameter-${telscale-diam.version}.zip" />
+	<property name="telscale-diam.download.url" value="ftp://ftp.box.com/TelScale%20jDiameter/6.2.1.GA/${telscale-diam.download.distro.file}" />
+	<property name="telscale-diam.distro.zip.path" value="${checkout.dir}/${telscale-diam.download.distro.file}" />
+	
+	<property name="dse-cassandra.download.distro.file" value="dse-cassandra-only-${dse-cassandra.version}.zip" />
+	<property name="dse-cassandra.download.url" value="ftp://ftp.box.com/TelScale%20SMSC%20Gateway/DSE/${dse-cassandra.download.distro.file}" />
+	<property name="dse-cassandra.distro.zip.path" value="${checkout.dir}/${dse-cassandra.download.distro.file}" />
+	
+	<property name="release.build.goals" value="clean install dependency:tree"/>
+	<property name="release.ts.deploy.goals" value="clean deploy -DaltDeploymentRepository=telscale-releases-repository::default::http://telestax.artifactoryonline.com/telestax/releases"/>
+	<property name="release.ts.deploy.goals.local" value="clean deploy -DaltDeploymentRepository=local-output::default::file:///tmp/output"/>	
+	
+
+	<condition property="mvn.executable" value="${sys.M2_HOME}\bin\mvn.bat" else="mvn">
+		<os family="windows"/>
+	</condition>
+	
+	<taskdef onerror="fail" resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+			<pathelement location="${ant.file.mobicents.ussdgw.release}/../ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+	
+	<target name="clean">
+	    <delete dir="${release.dir}"/>
+	    <delete dir="${base.dir}/checkout"/>
+	    <delete dir="${bundle.docs.dir}"/>
+	</target>
+
+
+	<target name="release" depends="get-deps,extract-deps,clean-up-telscale-slee,build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
+
+	<target name="release-with-jss7-and-ras" depends="build-with-jss7-and-ras.ss7, build-with-jss7-and-ras.ras, release"/>
+	
+	<target name="build-with-jss7-and-ras.ss7">
+        <echo>Clone TelScale jss7</echo>
+        <exec failonerror="true" executable="git">
+            <arg value="clone" />
+            <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jss7.git" />
+            <arg value="-b" />
+            <arg value="master" />
+            <arg value="${checkout.telscale-jss7-build.dir}" />
+        </exec>
+		
+        <echo>Building TelScale jss7 from sources</echo>
+		
+		<ant antfile="${checkout.telscale-jss7-build.dir}/release/build.xml" target="build-asn"/>
+		<ant antfile="${checkout.telscale-jss7-build.dir}/release/build.xml" target="build-sctp"/>
+		<ant antfile="${checkout.telscale-jss7-build.dir}/release/build.xml" target="build-upstream-jss7"/>
+		<ant antfile="${checkout.telscale-jss7-build.dir}/release/build.xml" target="build-jss7-addon"/>
+	</target>
+	
+	<target name="build-with-jss7-and-ras.ras">		
+        <echo>Clone TelScale JainSlee.jss7 (JSS7 RA's)</echo>
+        <exec failonerror="true" executable="git">
+            <arg value="clone" />
+            <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jain-slee.ss7.git" />
+            <arg value="-b" />
+            <arg value="ts1" />
+            <arg value="${checkout.telscale-slee.jss7-build.dir}" />
+        </exec>
+		
+        <echo>Building JainSlee.jss7 (JSS7 RA's) from sources</echo>
+		
+        <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.telscale-slee.jss7-build.dir}">
+                <arg line="clean install -Prelease -Dmaven.test.skip=true" />
+        </exec>
+	</target>
+		
+    <target name="deploy">
+    	<ant antfile="${ant.file.telscale.smscgw.release}" target="release">
+    		<property name="release.build.goals" value="${release.ts.deploy.goals}" />
+    	</ant>
+    </target>
+	
+    <target name="deploy-local">
+    	<ant antfile="${ant.file.telscale.smscgw.release}" target="release">
+    		<property name="release.build.goals" value="${release.ts.deploy.goals.local}" />
+    	</ant>
+    </target>
+
+
+	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-telscale-diam" />
+	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-management-hq,extract-telscale-diam" />
+
+	<available file="${telscale-slee.distro.zip.path}" property="got.telscale-slee" />
+	<target name="get-telscale-slee" unless="got.telscale-slee">
+		<echo>Downloading Telscale Slee version: ${telscale-slee.version}</echo>
+		<exec failonerror="true" executable="wget">
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${telscale-slee.download.url}" />
+		</exec>
+		<move file="${base.dir}/${telscale-slee.download.distro.file}" todir="${checkout.dir}"/>
+	</target>
+
+	<target name="extract-telscale-slee" depends="get-telscale-slee">
+		<delete dir="${checkout.telscale-slee.dir}" failonerror="false" />
+		<unzip src="${telscale-slee.distro.zip.path}" dest="${release.dir}"/>
+		<copy todir="${release.dir}" failonerror="true">
+			<fileset dir="${release.dir}/telscale-slee-${telscale-slee.version}.${telscale-slee.build-number}">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<delete dir="${release.dir}/telscale-slee-${telscale-slee.version}.${telscale-slee.build-number}" includeemptydirs="true" failonerror="false" verbose="false"/>
+		<delete dir="${checkout.telscale-slee.dir}/jboss-5.1.0.GA/server/all" includeemptydirs="true" failonerror="false" verbose="false"/>
+	</target>
+
+	<available file="${telscale-jss7.distro.zip.path}" property="got.telscale-jss7" />
+	<target name="get-telscale-jss7" unless="got.telscale-jss7">
+		<echo>Downloading Telscale JSS7 version: ${telscale-jss7.version}</echo>
+		<exec failonerror="true" executable="wget">
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${telscale-jss7.download.url}" />
+		</exec>
+		<move file="${base.dir}/${telscale-jss7.download.distro.file}" todir="${checkout.dir}"/>
+	</target>
+
+	<target name="extract-telscale-jss7" depends="get-telscale-jss7">
+		<delete dir="${checkout.telscale-jss7.dir}" failonerror="false" />
+		<unzip src="${telscale-jss7.distro.zip.path}" dest="${checkout.telscale-jss7.dir}"/>
+		<move file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}-TelScale" tofile="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}" failonerror="false"/>
+	</target>
+
+	<available file="${telscale-map-ra.distro.zip.path}" property="got.telscale-map-ra" />
+	<target name="get-telscale-map-ra" unless="got.telscale-map-ra">
+		<echo>Downloading Telscale MAP RA version: ${telscale-map-ra.version}</echo>
+		<exec failonerror="true" executable="wget">
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${telscale-map-ra.download.url}" />
+		</exec>
+		<move file="${base.dir}/${telscale-map-ra.download.distro.file}" todir="${checkout.dir}"/>
+	</target>
+
+	<available file="${telscale-map-ra-docs.distro.zip.path}" property="got.telscale-map-ra-docs" />
+	<target name="get-telscale-map-ra-docs" unless="got.telscale-map-ra-docs">
+		<echo>Downloading Telscale MAP RA Docs version: ${telscale-map-ra.version}</echo>
+		<exec failonerror="true" executable="wget">
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${telscale-map-ra-docs.download.url}" />
+		</exec>
+		<move file="${base.dir}/${telscale-map-ra-docs.download.distro.file}" todir="${checkout.dir}"/>
+	</target>
+
+	<available file="${telscale-management-hq.distro.zip.path}" property="got.telscale-management-hq" />
+	<target name="get-telscale-management-hq" unless="got.telscale-management-hq">
+		<echo>Downloading Telscale Management HQ version: ${telscale-management-hq.version}</echo>
+		<exec failonerror="true" executable="wget">
+			<arg value="--user=telscale-file-server@telestax.com" />
+			<arg value="--password=t31sca13fi13s" />
+			<arg value="${telscale-management-hq.download.url}" />
+		</exec>
+		<move file="${base.dir}/${telscale-management-hq.download.distro.file}" todir="${checkout.dir}" />
+	</target>	
+
+	<target name="extract-telscale-management-hq" depends="get-telscale-management-hq">
+		<delete dir="${checkout.telscale-management-hq.dir}" failonerror="false" />
+		<unzip src="${telscale-management-hq.distro.zip.path}" dest="${checkout.telscale-management-hq.dir}" />
+	</target>
+	
+	<available file="${telscale-diam.distro.zip.path}" property="got.telscale-diam" />
+	<target name="get-telscale-diam" unless="got.telscale-diam">
+		<echo>Downloading Telscale Diameter version: ${telscale-diam.version}</echo>
+		<exec failonerror="true" executable="wget">
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${telscale-diam.download.url}" />
+		</exec>
+		<move file="${base.dir}/${telscale-diam.download.distro.file}" todir="${checkout.dir}"/>
+	</target>
+	
+	<target name="extract-telscale-diam" depends="get-telscale-diam">
+		<delete dir="${checkout.telscale-diam.dir}" failonerror="false" />
+		<unzip src="${telscale-diam.distro.zip.path}" dest="${checkout.telscale-diam.dir}"/>
+	</target>
+	
+	<!-- Cassandra DSE -->
+	<available file="${dse-cassandra.distro.zip.path}" property="got.dse-cassandra" />
+	<target name="get-dse-cassandra" unless="got.dse-cassandra">
+		<echo>Downloading DSE Cassandra only version: ${dse-cassandra.version}</echo>
+		<exec failonerror="true" executable="wget">
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${dse-cassandra.download.url}" />
+		</exec>
+		<move file="${base.dir}/${dse-cassandra.download.distro.file}" todir="${checkout.dir}"/>
+	</target>
+
+	<target name="extract-dse-cassandra" depends="get-dse-cassandra">
+		<delete dir="${checkout.dse-cassandra.dir}" failonerror="false" />
+		<unzip src="${dse-cassandra.distro.zip.path}" dest="${cassandra.dir}"/>
+	</target>
+
+
+	<target name="clean-up-telscale-slee">
+		<mkdir dir="${release.dir}/jboss-5.1.0.GA/server/simulator"/>
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator" failonerror="true">
+			<fileset dir="${release.dir}/jboss-5.1.0.GA/server/default">
+				<include name="**" />
+			</fileset>
+		</copy>
+		<delete dir="${release.dir}/jboss-5.1.0.GA/server/all" includeemptydirs="true" failonerror="true"/>    	
+		<delete includeemptydirs="true" failonerror="true">
+            <fileset dir="${release.dir}/docs/resources">
+                    <include name="**" />
+                	<exclude name="**/map/**" />
+	        		<exclude name="**/sip11/**" />
+            </fileset>
+		</delete>
+		<delete dir="${release.dir}/docs/enablers" includeemptydirs="true" failonerror="true" />
+		<delete dir="${release.dir}/docs/examples" includeemptydirs="true" failonerror="true" />
+		<delete includeemptydirs="true" failonerror="true">
+			<fileset dir="${release.dir}/resources">
+				<include name="**" />
+				<exclude name="**/sip11/**" />
+			</fileset>
+		</delete>
+		<delete dir="${release.dir}/extra" includeemptydirs="true" failonerror="true" />
+		<delete dir="${release.dir}/enablers" includeemptydirs="true" failonerror="true" />
+		<delete dir="${release.dir}/examples" includeemptydirs="true" failonerror="true" />
+		<delete file="${release.dir}/readme.txt" failonerror="true" />
+		<delete file="${release.dir}/sources.zip" failonerror="true" />
+<!--
+		<delete failonerror="true">
+            <fileset dir="${release.dir}/jboss-5.1.0.GA/server/simulator/lib">
+                    <include name="**" />
+            </fileset>
+		</delete>
+
+		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/cluster" includeemptydirs="true" failonerror="true" />
+		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/deploy.last" includeemptydirs="true" failonerror="true" />
+		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/snmp-adaptor.sar" includeemptydirs="true" failonerror="true" />
+		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/juddi-service.sar" includeemptydirs="true" failonerror="true" />
+		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/mobicents-slee/profiles-external-ds.xml" failonerror="true" />
+		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/mobicents-slee/META-INF/jboss-cache-config.xml" failonerror="true" />
+		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/iiop-service.xml" failonerror="true" />
+		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/jacorb.properties" failonerror="true" />
+		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/iiop-service.xml" failonerror="true" />
+		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy-hasingleton/" includeemptydirs="true" failonerror="true" />
+		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/farm/" includeemptydirs="true" failonerror="true" />
+-->
+	</target>
+
+    <target name="checkout-smsc-persistence">
+        <echo>Checking out SMSC persistence branch</echo>
+        <exec failonerror="true" executable="git">
+            <arg value="clone" />
+            <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-smscgateway.git" />
+            <arg value="${checkout.telscale-smsc.dir}" />
+        </exec>
+        <exec failonerror="true" executable="git">
+            <arg value="--git-dir=${checkout.telscale-smsc.dir}/.git" />
+            <arg value="--work-tree=${checkout.telscale-smsc.dir}" />
+            <arg value="checkout" />
+            <arg value="${telscale.smsc.git.tag}" />
+        </exec>
+    	
+    </target>
+
+    <target name="build-smsc">
+        <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.telscale-smsc.dir}">
+                <arg line="${release.build.goals} -Dmaven.test.skip=true -Passembly" />
+        </exec>
+		<ant antfile="build.xml" dir="${checkout.telscale-smsc.dir}/test/smpp-load/" />
+    </target>
+
+<!--
+    <target name="build-map-ra">
+        <exec failonerror="true" executable="${mvn.executable}" dir="${base.dir}/map-ra">
+                <arg line="clean install" />
+        </exec>
+    	<move file="${base.dir}/map-ra/target/map-ts-ra.dir" tofile="${base.dir}/map-ra/target/map-ts-ra" failonerror="false"/>
+    </target>
+-->
+
+	<target name="copy-smsc">
+		<echo>Copy Telscale Map RA</echo>
+		<copy todir="${release.dir}/resources/map" failonerror="true">
+			<fileset dir="${checkout.dir}">
+				<include name="${telscale-map-ra.download.distro.file}" />
+			</fileset>
+		</copy>
+
+        <echo>Copy Diameter Config Files</echo>
+        <copy todir="${release.dir}/resources/ocs" failonerror="true">
+        	 <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ocs">
+                <include name="**" />
+            </fileset>
+        </copy>    	
+    	
+        <echo>Copy SMS server</echo>
+		<!--default-->
+        <copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/telscale-smsc-server" failonerror="true">
+                <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/target/telscale-smsc-server">
+                        <include name="**" />
+                </fileset>
+        </copy>
+        <copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${checkout.dir}/${telscale-map-ra.download.distro.file}" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+    	<mkdir dir="${release.dir}/jboss-5.1.0.GA/server/default/data"/>
+	    <copy file="${basedir}/profile.xml" todir="${release.dir}/jboss-5.1.0.GA/server/default/conf/bootstrap" failonerror="true" overwrite="true"/>
+		<!--simulator-->
+        <copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/telscale-smsc-server" failonerror="true">
+                <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/target/telscale-smsc-server">
+                        <include name="**" />
+                </fileset>
+        </copy>
+        <copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${checkout.dir}/${telscale-map-ra.download.distro.file}" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+        <copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/data" failonerror="true">
+                <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/data">
+                        <include name="**" />
+                </fileset>
+        </copy>
+
+	    <copy file="${basedir}/profile.xml" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/bootstrap" failonerror="true" overwrite="true"/>
+		<!--tools-->
+		<copy todir="${release.dir}/tools/TelScale-jss7-simulator" failonerror="true">
+		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/ss7/Telscale-ss7-simulator">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+	    <copy file="${basedir}/telestax-license_template.xml" tofile="${release.dir}/tools/TelScale-jss7-simulator/bin/telestax-license.xml" failonerror="true" />
+		<copy todir="${release.dir}/tools/TelScale-smpp-simulator" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/tools/smpp-simulator/bootstrap/target/simulator-smpp">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+    	<!-- tools : smpp-load -->
+		<copy todir="${release.dir}/tools/TelScale-smpp-load/target/load" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/test/smpp-load/target/smpp-load">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+		<copy todir="${release.dir}/tools/TelScale-smpp-load/src/main/resources" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/test/smpp-load/src/main/resources">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+	    <copy file="${checkout.telscale-smsc.dir}/test/smpp-load/build.xml" todir="${release.dir}/tools/TelScale-smpp-load" failonerror="true" />
+    	
+    	<!-- tools : HLR Simulator -->
+		<copy todir="${release.dir}/tools/TelScale-hlr-simulator" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/test/hlr-simulator/bootstrap/target/hlr-simulator-server">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+	    <copy file="${basedir}/telestax-license_template.xml" tofile="${release.dir}/tools/TelScale-hlr-simulator/bin/telestax-license.xml" failonerror="true" />
+		                	
+    	<!--CLI-->
+        <copy file="${checkout.telscale-smsc.dir}/core/oam/clismpp/target/smpp-cli-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
+		<copy todir="${release.dir}/jboss-5.1.0.GA/" failonerror="true">
+		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/ss7/shell">
+		                <include name="**/*" />
+		        </fileset>
+		</copy>
+        <copy file="${checkout.telscale-smsc.dir}/core/oam/cli/target/smsc-cli-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
+        <copy todir="${release.dir}/jboss-5.1.0.GA/" failonerror="true">
+                <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/ss7/shell">
+                        <include name="**/*" />
+                </fileset>
+        </copy>
+    	
+    	<!--logs-->
+		<echo>Copy jboss-log4j*.xml</echo>
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/telscale-smsc-server/log4j-templates" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/log4j">
+		                <include name="**/*" />
+		        </fileset>
+		</copy>
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/telscale-smsc-server/log4j-templates" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/log4j">
+		                <include name="**/*" />
+		        </fileset>
+		</copy>
+
+    	<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/log4j/jboss-log4j-default.xml" tofile="${release.dir}/jboss-5.1.0.GA/server/default/conf/jboss-log4j.xml" overwrite="true"></copy>
+    	<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/log4j/jboss-log4j-default.xml" tofile="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/jboss-log4j.xml" overwrite="true"></copy>
+
+    	<!-- oam/new-ui - jolokia war & jss7-management-console.war-->
+	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/oam/new-ui/jolokia.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/oam/new-ui/jolokia.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/oam/new-ui/jss7-management-console.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/oam/new-ui/jss7-management-console.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+    	
+		<!-- TelScale Management HQ -->
+		<echo>TelScale Management Hq</echo>
+		<copy file="${checkout.telscale-management-hq.dir}/telscale-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-management-hq.dir}/telscale-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+
+		<!-- Cassandra -->
+		<echo>Copy Cassandra conf</echo>
+		<copy todir="${cassandra.dir}" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/cassandra">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+		<!-- jss7 config-->    	
+		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/main_simulator2.xml" todir="${release.dir}/tools/TelScale-jss7-simulator/data" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/win_simulator2.xml" todir="${release.dir}/tools/TelScale-jss7-simulator/data" failonerror="true" />
+    	
+		<!-- jDiameter - mux & RA's-->    	
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar" failonerror="true">
+		        <fileset dir="${checkout.telscale-diam.dir}/core/mux/TelScale-diameter-mux-${telscale-diam.version}.sar">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+    	
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/TelScale-diameter-mux-${telscale-diam.version}-TelScale.sar" failonerror="true">
+	        <fileset dir="${checkout.telscale-diam.dir}/core/mux/TelScale-diameter-mux-${telscale-diam.version}.sar">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+    	
+		<copy file="${checkout.telscale-diam.dir}/resources/diameter-base/diameter-mobicents-slee-ra-diameter-base-ra-DU-${telscale-diam.version}.jar" 
+			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-diam.dir}/resources/diameter-base/diameter-mobicents-slee-ra-diameter-base-ra-DU-${telscale-diam.version}.jar" 
+			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-diam.dir}/resources/diameter-ro/diameter-mobicents-slee-ra-diameter-ro-ra-DU-${telscale-diam.version}.jar" 
+			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-diam.dir}/resources/diameter-ro/diameter-mobicents-slee-ra-diameter-ro-ra-DU-${telscale-diam.version}.jar" 
+			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+		<copy file="${release.dir}/resources/sip11/sip11-ra-DU-${telscale-sip.version}.jar" 
+			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${release.dir}/resources/sip11/sip11-ra-DU-${telscale-sip.version}.jar" 
+			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+    	
+    	
+    	
+    </target>
+
+    <target name="build-docs">
+        <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.telscale-smsc.dir}/docs">
+                <arg line="${release.build.goals} -Dmaven.test.skip=true -Pall" />
+        </exec>
+    </target>
+
+    <target name="copy-docs">
+		<!--docs-->
+
+		<mkdir dir="${docs.dir}/jss7"/>
+		<mkdir dir="${docs.dir}/smsc"/>
+		<copy todir="${docs.dir}/jss7" failonerror="true">
+		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/_docs/">
+		                <include name="*.pdf" />
+		        </fileset>
+		</copy>
+		<copy todir="${docs.dir}/smsc" failonerror="true" flatten="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/docs/">
+		                <include name="**/*.pdf" />
+		        </fileset>
+		</copy>
+    	
+		<mkdir dir="${docs.dir}/management-hq" />
+		<copy todir="${docs.dir}/management-hq" failonerror="true" flatten="true">
+			<fileset dir="${checkout.telscale-management-hq.dir}/docs/">
+				<include name="**/*.pdf" />
+			</fileset>			
+		</copy>		
+
+		<mkdir dir="${bundle.docs.dir}"/>
+		<copy toDir="${bundle.docs.dir}" overwrite="true">
+			<fileset dir="${docs.dir}">
+				<include name="**" />
+			</fileset>
+		</copy>
+    </target>
+	
+	
+	<target name="make-final-zip" depends="set-time-stamp">
+		<zip destfile="${base.dir}/TelScale-smsc-${telscale.smsc.release.version}-${time.stamp}.zip" filesonly="false">
+			<zipfileset dir="${release.dir}" prefix="TelScale-smsc-${telscale.smsc.release.version}">
+				<include name="**" />
+			</zipfileset>
+		</zip>
+	</target>
+	
+	<target name="set-time-stamp" unless="skip.timestamp">
+		<tstamp>
+			<format property="time.stamp" pattern="yyMMddHHmm" />
+		</tstamp>
+	</target>
+	
+    <target name="bundle-documentation" >
+	    <echo>bundling documentation</echo>
+    	
+		<delete dir="${bundle.docs.dir}/slee/resources/map"/>    	
+		<copy todir="${bundle.docs.dir}/slee/resources/map" failonerror="true">
+		        <fileset dir="${docs.dir}/resources/map">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+
+		<delete dir="${bundle.docs.dir}/slee/tools/slee-management-console"/>    	
+		<mkdir dir="${bundle.docs.dir}/jss7"/>
+		<mkdir dir="${bundle.docs.dir}/smsc"/>
+		<copy todir="${bundle.docs.dir}/jss7" failonerror="true">
+		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/_docs/">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+		<copy todir="${bundle.docs.dir}/smsc/adminguide" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/docs/adminguide/jdocbook-telscale/target/docbook/publish/">
+		        	<include name="**"/>
+		        </fileset>
+		</copy>
+		<copy todir="${bundle.docs.dir}/smsc/installationguide" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/docs/installationguide/jdocbook-telscale/target/docbook/publish/">
+		        	<include name="**"/>
+		        </fileset>
+		</copy>
+		<copy todir="${bundle.docs.dir}/smsc/releasenotes" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/docs/releasenotes/jdocbook-telscale/target/docbook/publish/">
+		        	<include name="**"/>
+		        </fileset>
+		</copy>
+    	
+        <zip destfile="${base.dir}/TelScale-smsc-${telscale.smsc.release.version}-docs-${time.stamp}.zip" filesonly="false">
+                <zipfileset dir="${bundle.docs.dir}" prefix="TelScale-smsc-${telscale.smsc.release.version}/docs">
+                        <include name="**/*" />
+                </zipfileset>
+        </zip>
+    </target>
+	
+	
+	
+</project>
