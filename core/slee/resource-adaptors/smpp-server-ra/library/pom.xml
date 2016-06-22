@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.smsc</groupId>
 		<artifactId>smpp-server-ra</artifactId>
-		<version>7.0.0-TelScale-SNAPSHOT</version>
+		<version>7.0.1.758</version>
 	</parent>
 
 	<artifactId>smpp-server-ra-library</artifactId>
