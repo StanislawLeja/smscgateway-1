@@ -13,6 +13,7 @@
 	<property name="checkout.telscale-jss7-build.dir" value="${checkout.dir}/telscale-jss7-build" />
 	<property name="checkout.telscale-diam.dir" value="${checkout.dir}/telscale-diam" />
 	<property name="checkout.telscale-slee.jss7-build.dir" value="${checkout.dir}/telscale-slee.jss7-build" />
+	<property name="checkout.restcomm-cloudhopper.smpp.dir" value="${checkout.dir}/restcomm-cloudhopper-smpp-build" />
 	<property name="checkout.map.dir" value="${base.dir}/checkout/map" />
 	<property name="release.map.dir" value="${base.dir}/checkout/map-release" />
 
@@ -33,6 +34,9 @@
 	<property name="telscale-sip.version" value="6.1.4.22" />
 	<property name="dse-cassandra.version" value="4.5.2" />
 	<property name="checkout.dse-cassandra.dir" value="${cassandra.dir}/dse-${dse-cassandra.version}" />
+
+	<!-- Cloudhopper will be removed when the code ready in official github -->
+	<property name="restcomm-cloudhopper.smpp.tag" value="master_submit_multi-2" />
 
 	<!--GET Telscale-Slee & Telscale-jss7 & Telscale-diameter & DSE Cassandra - properties-->
 	<property name="telscale-slee.download.distro.name" value="telscale-slee-${telscale-slee.version}.${telscale-slee.build-number}" />
@@ -84,7 +88,7 @@
 	</target>
 
 
-	<target name="release" depends="get-deps,extract-deps,clean-up-telscale-slee,build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
+	<target name="release" depends="get-deps,extract-deps,clean-up-telscale-slee,build-clhpp,build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
 
 	<target name="release-with-jss7-and-ras" depends="build-with-jss7-and-ras.ss7, build-with-jss7-and-ras.ras, release"/>
 	
@@ -315,6 +319,23 @@
         </exec>
     	
     </target>
+
+	<target name="build-clhpp">
+		<echo>Clone RestComm SMPP</echo>
+		<exec failonerror="true" executable="git">
+			<arg value="clone" />
+			<arg value="https://github.com/RestComm/cloudhopper-smpp.git" />
+			<arg value="-b" />
+			<arg value="${restcomm-cloudhopper.smpp.tag}" />
+			<arg value="${checkout.restcomm-cloudhopper.smpp.dir}" />
+		</exec>
+
+		<echo>Building RestComm SMPP from source</echo>
+
+		<exec failonerror="true" executable="${mvn.executable}" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
+			<arg line="clean install -Prelease -Dmaven.test.skip=true" />
+		</exec>
+	</target>
 
     <target name="build-smsc">
         <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.telscale-smsc.dir}">
