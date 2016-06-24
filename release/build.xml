@@ -341,7 +341,7 @@
 		</exec>
 -->
 
-		<exec failonerror="true" executable="${base.dir}/../../maven/apache-maven-3.3.3/bin/mvn" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
+		<exec failonerror="true" executable="${base.dir}/../../../maven/apache-maven-3.3.3/bin/mvn" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
 			<arg line="clean install -Prelease -Dmaven.test.skip=true" />
 		</exec>
 	</target>
