@@ -335,6 +335,8 @@
 
 		<echo>Building RestComm SMPP from source</echo>
 
+		<echo>WORKSPACE = ${WORKSPACE}</echo>
+
 <!--
 		<exec failonerror="true" executable="${mvn.executable}" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
 			<arg line="clean install -Prelease -Dmaven.test.skip=true" />
