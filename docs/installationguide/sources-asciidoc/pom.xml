@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>restcomm-smsc-installguide</artifactId>
 		<groupId>org.mobicents.smsc.docs.installguide</groupId>
-		<version>7.0.0-TelScale-SNAPSHOT</version>
+		<version>7.0.1.776</version>
 	</parent>
 
 	<artifactId>restcomm-smsc-installguide-sources-asciidoc</artifactId>
