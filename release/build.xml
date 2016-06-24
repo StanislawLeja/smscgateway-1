@@ -88,7 +88,7 @@
 	</target>
 
 
-	<target name="release" depends="build-clhpp" />
+	<target name="release" depends="build-clhpp,build-smsc" />
 <!--
 	<target name="release" depends="get-deps,extract-deps,clean-up-telscale-slee,build-clhpp,build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
 -->
@@ -335,15 +335,13 @@
 
 		<echo>Building RestComm SMPP from source</echo>
 
-		<echo>WORKSPACE = ${WORKSPACE}</echo>
-
 <!--
 		<exec failonerror="true" executable="${mvn.executable}" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
 			<arg line="clean install -Prelease -Dmaven.test.skip=true" />
 		</exec>
 -->
 
-		<exec failonerror="true" executable="/opt/maven/apache-maven-3.3.3/bin/mvn" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
+		<exec failonerror="true" executable="${base.dir}/../maven/apache-maven-3.3.3/bin/mvn" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
 			<arg line="clean install -Prelease -Dmaven.test.skip=true" />
 		</exec>
 	</target>
