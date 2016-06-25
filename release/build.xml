@@ -369,7 +369,7 @@
 		<echo>Building RestComm SMPP from source</echo>
 
 		<echo>maven.ci.home.bin=${maven.ci.home.bin}</echo>
-		<exec failonerror="true" executable="${maven.ci.home.bin}/mvn" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
+		<exec failonerror="true" executable="mvn" dir="${maven.ci.home.bin}">
 			<arg line="clean install -Prelease -Dmaven.test.skip=true" />
 		</exec>
 	</target>
