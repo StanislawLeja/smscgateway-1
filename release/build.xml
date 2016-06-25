@@ -16,6 +16,7 @@
 	<property name="checkout.restcomm-cloudhopper.smpp.dir" value="${checkout.dir}/restcomm-cloudhopper-smpp-build" />
 	<property name="checkout.map.dir" value="${base.dir}/checkout/map" />
 	<property name="release.map.dir" value="${base.dir}/checkout/map-release" />
+	<property name="maven.ci.home.bin" value="${env.MVN_333_HOME_BIN}" />
 
 	<!-- version properties-->
 	<!-- //** change this properties from CLI to build specific versions-->
@@ -88,10 +89,8 @@
 	</target>
 
 
-	<target name="release" depends="build-clhpp,build-smsc" />
-<!--
-	<target name="release" depends="get-deps,extract-deps,clean-up-telscale-slee,build-clhpp,build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
--->
+	<target name="release-telscale" depends="get-deps,extract-deps,clean-up-telscale-slee,build-clhpp-citask,build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
+	<target name="release"          depends="get-deps,extract-deps,clean-up-telscale-slee,build-clhpp,       build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
 
 	<target name="release-with-jss7-and-ras" depends="build-with-jss7-and-ras.ss7, build-with-jss7-and-ras.ras, release"/>
 	
@@ -129,7 +128,7 @@
                 <arg line="clean install -Prelease -Dmaven.test.skip=true" />
         </exec>
 	</target>
-		
+
     <target name="deploy">
     	<ant antfile="${ant.file.telscale.smscgw.release}" target="release">
     		<property name="release.build.goals" value="${release.ts.deploy.goals}" />
@@ -239,7 +238,7 @@
 		<delete dir="${checkout.telscale-diam.dir}" failonerror="false" />
 		<unzip src="${telscale-diam.distro.zip.path}" dest="${checkout.telscale-diam.dir}"/>
 	</target>
-	
+
 	<!-- Cassandra DSE -->
 	<available file="${dse-cassandra.distro.zip.path}" property="got.dse-cassandra" />
 	<target name="get-dse-cassandra" unless="got.dse-cassandra">
@@ -323,7 +322,7 @@
     	
     </target>
 
-	<target name="build-clhpp">
+	<target name="get-clhpp">
 		<echo>Clone RestComm SMPP</echo>
 		<exec failonerror="true" executable="git">
 			<arg value="clone" />
@@ -332,16 +331,21 @@
 			<arg value="${restcomm-cloudhopper.smpp.tag}" />
 			<arg value="${checkout.restcomm-cloudhopper.smpp.dir}" />
 		</exec>
+	</target>
 
+	<target name="build-clhpp">
 		<echo>Building RestComm SMPP from source</echo>
 
-<!--
 		<exec failonerror="true" executable="${mvn.executable}" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
 			<arg line="clean install -Prelease -Dmaven.test.skip=true" />
 		</exec>
--->
+	</target>
 
-		<exec failonerror="true" executable="${base.dir}/../../maven/apache-maven-3.3.3/bin/mvn" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
+	<target name="build-clhpp-citask">
+		<echo>Building RestComm SMPP from source</echo>
+
+		<echo>maven.ci.home.bin=${maven.ci.home.bin}</echo>
+		<exec failonerror="true" executable="${maven.ci.home.bin}/mvn" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
 			<arg line="clean install -Prelease -Dmaven.test.skip=true" />
 		</exec>
 	</target>
