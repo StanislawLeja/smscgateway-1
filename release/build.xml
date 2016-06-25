@@ -561,17 +561,32 @@
 
 		<mkdir dir="${docs.dir}/jss7"/>
 		<mkdir dir="${docs.dir}/smsc"/>
+		<mkdir dir="${docs.dir}/smsc/adminguide"/>
+		<mkdir dir="${docs.dir}/smsc/installationguide"/>
 		<copy todir="${docs.dir}/jss7" failonerror="true">
 		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/_docs/">
 		                <include name="*.pdf" />
 		        </fileset>
 		</copy>
-		<copy todir="${docs.dir}/smsc" failonerror="true" flatten="true">
-		        <fileset dir="${checkout.telscale-smsc.dir}/docs/">
-		                <include name="**/*.pdf" />
-		        </fileset>
+		<copy todir="${docs.dir}/smsc/adminguide/html-book" failonerror="true">
+			<fileset dir="${checkout.telscale-smsc.dir}/docs/adminguide/sources-asciidoc/target/generated-docs/html-book">
+			</fileset>
 		</copy>
-    	
+		<copy todir="${docs.dir}/smsc/adminguide/pdf" failonerror="true">
+			<fileset dir="${checkout.telscale-smsc.dir}/docs/adminguide/sources-asciidoc/target/generated-docs/pdf">
+				<include name="*.pdf" />
+			</fileset>
+		</copy>
+		<copy todir="${docs.dir}/smsc/installationguide/html-book" failonerror="true">
+			<fileset dir="${checkout.telscale-smsc.dir}/docs/installationguide/sources-asciidoc/target/generated-docs/html-book">
+			</fileset>
+		</copy>
+		<copy todir="${docs.dir}/smsc/installationguide/pdf" failonerror="true">
+			<fileset dir="${checkout.telscale-smsc.dir}/docs/installationguide/sources-asciidoc/target/generated-docs/pdf">
+				<include name="*.pdf" />
+			</fileset>
+		</copy>
+
 		<mkdir dir="${docs.dir}/management-hq" />
 		<copy todir="${docs.dir}/management-hq" failonerror="true" flatten="true">
 			<fileset dir="${checkout.telscale-management-hq.dir}/docs/">
@@ -579,64 +594,33 @@
 			</fileset>			
 		</copy>		
 
-		<mkdir dir="${bundle.docs.dir}"/>
+    	<mkdir dir="${bundle.docs.dir}"/>
 		<copy toDir="${bundle.docs.dir}" overwrite="true">
 			<fileset dir="${docs.dir}">
 				<include name="**" />
 			</fileset>
 		</copy>
     </target>
-	
-	
+
+
 	<target name="make-final-zip" depends="set-time-stamp">
-		<zip destfile="${base.dir}/TelScale-smsc-${telscale.smsc.release.version}-${time.stamp}.zip" filesonly="false">
+		<zip destfile="${base.dir}/TelScale-smsc-${telscale.smsc.release.version}.zip" filesonly="false">
 			<zipfileset dir="${release.dir}" prefix="TelScale-smsc-${telscale.smsc.release.version}">
 				<include name="**" />
 			</zipfileset>
 		</zip>
 	</target>
-	
+
 	<target name="set-time-stamp" unless="skip.timestamp">
 		<tstamp>
 			<format property="time.stamp" pattern="yyMMddHHmm" />
 		</tstamp>
 	</target>
-	
-    <target name="bundle-documentation" >
-	    <echo>bundling documentation</echo>
-    	
-		<delete dir="${bundle.docs.dir}/slee/resources/map"/>    	
-		<copy todir="${bundle.docs.dir}/slee/resources/map" failonerror="true">
-		        <fileset dir="${docs.dir}/resources/map">
-		                <include name="**" />
-		        </fileset>
-		</copy>
 
-		<delete dir="${bundle.docs.dir}/slee/tools/slee-management-console"/>    	
-		<mkdir dir="${bundle.docs.dir}/jss7"/>
-		<mkdir dir="${bundle.docs.dir}/smsc"/>
-		<copy todir="${bundle.docs.dir}/jss7" failonerror="true">
-		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/_docs/">
-		                <include name="**" />
-		        </fileset>
-		</copy>
-		<copy todir="${bundle.docs.dir}/smsc/adminguide" failonerror="true">
-		        <fileset dir="${checkout.telscale-smsc.dir}/docs/adminguide/jdocbook-telscale/target/docbook/publish/">
-		        	<include name="**"/>
-		        </fileset>
-		</copy>
-		<copy todir="${bundle.docs.dir}/smsc/installationguide" failonerror="true">
-		        <fileset dir="${checkout.telscale-smsc.dir}/docs/installationguide/jdocbook-telscale/target/docbook/publish/">
-		        	<include name="**"/>
-		        </fileset>
-		</copy>
-		<copy todir="${bundle.docs.dir}/smsc/releasenotes" failonerror="true">
-		        <fileset dir="${checkout.telscale-smsc.dir}/docs/releasenotes/jdocbook-telscale/target/docbook/publish/">
-		        	<include name="**"/>
-		        </fileset>
-		</copy>
-    	
-        <zip destfile="${base.dir}/TelScale-smsc-${telscale.smsc.release.version}-docs-${time.stamp}.zip" filesonly="false">
+    <target name="bundle-documentation">
+	    <echo>bundling documentation</echo>
+
+        <zip destfile="${base.dir}/TelScale-smsc-${telscale.smsc.release.version}-docs.zip" filesonly="false">
                 <zipfileset dir="${bundle.docs.dir}" prefix="TelScale-smsc-${telscale.smsc.release.version}/docs">
                         <include name="**/*" />
                 </zipfileset>
