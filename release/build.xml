@@ -16,7 +16,7 @@
 	<property name="checkout.restcomm-cloudhopper.smpp.dir" value="${checkout.dir}/restcomm-cloudhopper-smpp-build" />
 	<property name="checkout.map.dir" value="${base.dir}/checkout/map" />
 	<property name="release.map.dir" value="${base.dir}/checkout/map-release" />
-	<property name="maven.ci.home.bin" value="${env.MVN_333_HOME_BIN}" />
+	<property name="maven.ci.home.bin" value="${sys.MVN_333_HOME_BIN}" />
 
 	<!-- version properties-->
 	<!-- //** change this properties from CLI to build specific versions-->
@@ -34,7 +34,7 @@
 	<property name="telscale-diam.version" value="6.2.1.327" />
 	<property name="telscale-sip.version" value="6.1.4.22" />
 	<property name="dse-cassandra.version" value="4.5.2" />
-	<property name="checkout.dse-cassandra.dir" value="${cassandra.dir}/dse-${dse-cassandra.version}" />
+	<property name="community-cassandra.version" value="3.7" /> <!-- 2.2.6 -->
 
 	<!-- Cloudhopper will be removed when the code ready in official github -->
 	<property name="restcomm-cloudhopper.smpp.tag" value="master_submit_multi-2" />
@@ -63,9 +63,17 @@
 	<property name="telscale-diam.download.url" value="ftp://ftp.box.com/TelScale%20jDiameter/6.2.1.GA/${telscale-diam.download.distro.file}" />
 	<property name="telscale-diam.distro.zip.path" value="${checkout.dir}/${telscale-diam.download.distro.file}" />
 	
+	<property name="checkout.dse-cassandra.dir" value="${cassandra.dir}/dse-${dse-cassandra.version}" />
 	<property name="dse-cassandra.download.distro.file" value="dse-cassandra-only-${dse-cassandra.version}.zip" />
 	<property name="dse-cassandra.download.url" value="ftp://ftp.box.com/TelScale%20SMSC%20Gateway/DSE/${dse-cassandra.download.distro.file}" />
 	<property name="dse-cassandra.distro.zip.path" value="${checkout.dir}/${dse-cassandra.download.distro.file}" />
+
+	<property name="checkout.community-cassandra.dir" value="${cassandra.dir}/apache-${community-cassandra.version}" />
+	<property name="community-cassandra.download.distro.file" value="apache-cassandra-${community-cassandra.version}-bin.tar.gz" />
+	<property name="community-cassandra.untar.distro.file" value="apache-cassandra-${community-cassandra.version}-bin.tar" />
+	<property name="community-cassandra.download.url" value="http://mirror.cc.columbia.edu/pub/software/apache/cassandra/${community-cassandra.version}/${community-cassandra.download.distro.file}" />
+	<property name="community-cassandra.distro.zip.path" value="${checkout.dir}/${community-cassandra.download.distro.file}" />
+	<property name="community-cassandra.distro.untar.path" value="${checkout.dir}/${community-cassandra.untar.distro.file}" />
 	
 	<property name="release.build.goals" value="clean install dependency:tree"/>
 	<property name="release.ts.deploy.goals" value="clean deploy -DaltDeploymentRepository=telscale-releases-repository::default::http://telestax.artifactoryonline.com/telestax/releases"/>
@@ -142,8 +150,8 @@
     </target>
 
 
-	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-telscale-diam" />
-	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-management-hq,extract-telscale-diam" />
+	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-telscale-diam,get-community-cassandra" />
+	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-management-hq,extract-telscale-diam,extract-community-cassandra" />
 
 	<available file="${telscale-slee.distro.zip.path}" property="got.telscale-slee" />
 	<target name="get-telscale-slee" unless="got.telscale-slee">
@@ -254,6 +262,22 @@
 	<target name="extract-dse-cassandra" depends="get-dse-cassandra">
 		<delete dir="${checkout.dse-cassandra.dir}" failonerror="false" />
 		<unzip src="${dse-cassandra.distro.zip.path}" dest="${cassandra.dir}"/>
+	</target>
+
+	<!-- Cassandra community -->
+	<available file="${community-cassandra.distro.zip.path}" property="got.community-cassandra" />
+	<target name="get-community-cassandra" unless="got.community-cassandra">
+		<echo>Downloading Community Cassandra only version: ${community-cassandra.version}</echo>
+		<exec failonerror="true" executable="wget">
+		    <arg value="${community-cassandra.download.url}" />
+		</exec>
+		<move file="${base.dir}/${community-cassandra.download.distro.file}" todir="${checkout.dir}"/>
+	</target>
+
+	<target name="extract-community-cassandra" depends="get-community-cassandra">
+		<delete dir="${checkout.community-cassandra.dir}" failonerror="false" />
+		<gunzip src="${community-cassandra.distro.zip.path}"/>
+		<untar src="${community-cassandra.distro.untar.path}"  dest="${cassandra.dir}"/>
 	</target>
 
 
