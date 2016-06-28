@@ -16,6 +16,7 @@
 	<property name="checkout.restcomm-cloudhopper.smpp.dir" value="${checkout.dir}/restcomm-cloudhopper-smpp-build" />
 	<property name="checkout.map.dir" value="${base.dir}/checkout/map" />
 	<property name="release.map.dir" value="${base.dir}/checkout/map-release" />
+	<property name="maven.ci.home.bin" value="${sys.MVN_333_HOME_BIN}" />
 
 	<!-- version properties-->
 	<!-- //** change this properties from CLI to build specific versions-->
@@ -33,7 +34,7 @@
 	<property name="telscale-diam.version" value="6.2.1.327" />
 	<property name="telscale-sip.version" value="6.1.4.22" />
 	<property name="dse-cassandra.version" value="4.5.2" />
-	<property name="checkout.dse-cassandra.dir" value="${cassandra.dir}/dse-${dse-cassandra.version}" />
+	<property name="community-cassandra.version" value="3.7" /> <!-- 2.2.6 -->
 
 	<!-- Cloudhopper will be removed when the code ready in official github -->
 	<property name="restcomm-cloudhopper.smpp.tag" value="master_submit_multi-2" />
@@ -62,9 +63,17 @@
 	<property name="telscale-diam.download.url" value="ftp://ftp.box.com/TelScale%20jDiameter/6.2.1.GA/${telscale-diam.download.distro.file}" />
 	<property name="telscale-diam.distro.zip.path" value="${checkout.dir}/${telscale-diam.download.distro.file}" />
 	
+	<property name="checkout.dse-cassandra.dir" value="${cassandra.dir}/dse-${dse-cassandra.version}" />
 	<property name="dse-cassandra.download.distro.file" value="dse-cassandra-only-${dse-cassandra.version}.zip" />
 	<property name="dse-cassandra.download.url" value="ftp://ftp.box.com/TelScale%20SMSC%20Gateway/DSE/${dse-cassandra.download.distro.file}" />
 	<property name="dse-cassandra.distro.zip.path" value="${checkout.dir}/${dse-cassandra.download.distro.file}" />
+
+	<property name="checkout.community-cassandra.dir" value="${cassandra.dir}/apache-${community-cassandra.version}" />
+	<property name="community-cassandra.download.distro.file" value="apache-cassandra-${community-cassandra.version}-bin.tar.gz" />
+	<property name="community-cassandra.untar.distro.file" value="apache-cassandra-${community-cassandra.version}-bin.tar" />
+	<property name="community-cassandra.download.url" value="http://mirror.cc.columbia.edu/pub/software/apache/cassandra/${community-cassandra.version}/${community-cassandra.download.distro.file}" />
+	<property name="community-cassandra.distro.zip.path" value="${checkout.dir}/${community-cassandra.download.distro.file}" />
+	<property name="community-cassandra.distro.untar.path" value="${checkout.dir}/${community-cassandra.untar.distro.file}" />
 	
 	<property name="release.build.goals" value="clean install dependency:tree"/>
 	<property name="release.ts.deploy.goals" value="clean deploy -DaltDeploymentRepository=telscale-releases-repository::default::http://telestax.artifactoryonline.com/telestax/releases"/>
@@ -88,7 +97,8 @@
 	</target>
 
 
-	<target name="release" depends="get-deps,extract-deps,clean-up-telscale-slee,build-clhpp,build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
+	<target name="release-telscale" depends="get-deps,extract-deps,clean-up-telscale-slee,get-clhpp,build-clhpp-citask,build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
+	<target name="release"          depends="get-deps,extract-deps,clean-up-telscale-slee,get-clhpp,build-clhpp,       build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
 
 	<target name="release-with-jss7-and-ras" depends="build-with-jss7-and-ras.ss7, build-with-jss7-and-ras.ras, release"/>
 	
@@ -126,7 +136,7 @@
                 <arg line="clean install -Prelease -Dmaven.test.skip=true" />
         </exec>
 	</target>
-		
+
     <target name="deploy">
     	<ant antfile="${ant.file.telscale.smscgw.release}" target="release">
     		<property name="release.build.goals" value="${release.ts.deploy.goals}" />
@@ -140,8 +150,8 @@
     </target>
 
 
-	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-telscale-diam" />
-	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-management-hq,extract-telscale-diam" />
+	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-telscale-diam,get-community-cassandra" />
+	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-management-hq,extract-telscale-diam,extract-community-cassandra" />
 
 	<available file="${telscale-slee.distro.zip.path}" property="got.telscale-slee" />
 	<target name="get-telscale-slee" unless="got.telscale-slee">
@@ -236,7 +246,7 @@
 		<delete dir="${checkout.telscale-diam.dir}" failonerror="false" />
 		<unzip src="${telscale-diam.distro.zip.path}" dest="${checkout.telscale-diam.dir}"/>
 	</target>
-	
+
 	<!-- Cassandra DSE -->
 	<available file="${dse-cassandra.distro.zip.path}" property="got.dse-cassandra" />
 	<target name="get-dse-cassandra" unless="got.dse-cassandra">
@@ -252,6 +262,22 @@
 	<target name="extract-dse-cassandra" depends="get-dse-cassandra">
 		<delete dir="${checkout.dse-cassandra.dir}" failonerror="false" />
 		<unzip src="${dse-cassandra.distro.zip.path}" dest="${cassandra.dir}"/>
+	</target>
+
+	<!-- Cassandra community -->
+	<available file="${community-cassandra.distro.zip.path}" property="got.community-cassandra" />
+	<target name="get-community-cassandra" unless="got.community-cassandra">
+		<echo>Downloading Community Cassandra only version: ${community-cassandra.version}</echo>
+		<exec failonerror="true" executable="wget">
+		    <arg value="${community-cassandra.download.url}" />
+		</exec>
+		<move file="${base.dir}/${community-cassandra.download.distro.file}" todir="${checkout.dir}"/>
+	</target>
+
+	<target name="extract-community-cassandra" depends="get-community-cassandra">
+		<delete dir="${checkout.community-cassandra.dir}" failonerror="false" />
+		<gunzip src="${community-cassandra.distro.zip.path}"/>
+		<untar src="${community-cassandra.distro.untar.path}"  dest="${cassandra.dir}"/>
 	</target>
 
 
@@ -320,7 +346,7 @@
     	
     </target>
 
-	<target name="build-clhpp">
+	<target name="get-clhpp">
 		<echo>Clone RestComm SMPP</echo>
 		<exec failonerror="true" executable="git">
 			<arg value="clone" />
@@ -329,10 +355,21 @@
 			<arg value="${restcomm-cloudhopper.smpp.tag}" />
 			<arg value="${checkout.restcomm-cloudhopper.smpp.dir}" />
 		</exec>
+	</target>
 
+	<target name="build-clhpp">
 		<echo>Building RestComm SMPP from source</echo>
 
 		<exec failonerror="true" executable="${mvn.executable}" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
+			<arg line="clean install -Prelease -Dmaven.test.skip=true" />
+		</exec>
+	</target>
+
+	<target name="build-clhpp-citask">
+		<echo>Building RestComm SMPP from source</echo>
+
+		<echo>maven.ci.home.bin=${maven.ci.home.bin}</echo>
+		<exec failonerror="true" executable="${maven.ci.home.bin}/mvn" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
 			<arg line="clean install -Prelease -Dmaven.test.skip=true" />
 		</exec>
 	</target>
@@ -524,17 +561,32 @@
 
 		<mkdir dir="${docs.dir}/jss7"/>
 		<mkdir dir="${docs.dir}/smsc"/>
+		<mkdir dir="${docs.dir}/smsc/adminguide"/>
+		<mkdir dir="${docs.dir}/smsc/installationguide"/>
 		<copy todir="${docs.dir}/jss7" failonerror="true">
 		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/_docs/">
 		                <include name="*.pdf" />
 		        </fileset>
 		</copy>
-		<copy todir="${docs.dir}/smsc" failonerror="true" flatten="true">
-		        <fileset dir="${checkout.telscale-smsc.dir}/docs/">
-		                <include name="**/*.pdf" />
-		        </fileset>
+		<copy todir="${docs.dir}/smsc/adminguide/html-book" failonerror="true">
+			<fileset dir="${checkout.telscale-smsc.dir}/docs/adminguide/sources-asciidoc/target/generated-docs/html-book">
+			</fileset>
 		</copy>
-    	
+		<copy todir="${docs.dir}/smsc/adminguide/pdf" failonerror="true">
+			<fileset dir="${checkout.telscale-smsc.dir}/docs/adminguide/sources-asciidoc/target/generated-docs/pdf">
+				<include name="*.pdf" />
+			</fileset>
+		</copy>
+		<copy todir="${docs.dir}/smsc/installationguide/html-book" failonerror="true">
+			<fileset dir="${checkout.telscale-smsc.dir}/docs/installationguide/sources-asciidoc/target/generated-docs/html-book">
+			</fileset>
+		</copy>
+		<copy todir="${docs.dir}/smsc/installationguide/pdf" failonerror="true">
+			<fileset dir="${checkout.telscale-smsc.dir}/docs/installationguide/sources-asciidoc/target/generated-docs/pdf">
+				<include name="*.pdf" />
+			</fileset>
+		</copy>
+
 		<mkdir dir="${docs.dir}/management-hq" />
 		<copy todir="${docs.dir}/management-hq" failonerror="true" flatten="true">
 			<fileset dir="${checkout.telscale-management-hq.dir}/docs/">
@@ -542,64 +594,33 @@
 			</fileset>			
 		</copy>		
 
-		<mkdir dir="${bundle.docs.dir}"/>
+    	<mkdir dir="${bundle.docs.dir}"/>
 		<copy toDir="${bundle.docs.dir}" overwrite="true">
 			<fileset dir="${docs.dir}">
 				<include name="**" />
 			</fileset>
 		</copy>
     </target>
-	
-	
+
+
 	<target name="make-final-zip" depends="set-time-stamp">
-		<zip destfile="${base.dir}/TelScale-smsc-${telscale.smsc.release.version}-${time.stamp}.zip" filesonly="false">
+		<zip destfile="${base.dir}/TelScale-smsc-${telscale.smsc.release.version}.zip" filesonly="false">
 			<zipfileset dir="${release.dir}" prefix="TelScale-smsc-${telscale.smsc.release.version}">
 				<include name="**" />
 			</zipfileset>
 		</zip>
 	</target>
-	
+
 	<target name="set-time-stamp" unless="skip.timestamp">
 		<tstamp>
 			<format property="time.stamp" pattern="yyMMddHHmm" />
 		</tstamp>
 	</target>
-	
-    <target name="bundle-documentation" >
-	    <echo>bundling documentation</echo>
-    	
-		<delete dir="${bundle.docs.dir}/slee/resources/map"/>    	
-		<copy todir="${bundle.docs.dir}/slee/resources/map" failonerror="true">
-		        <fileset dir="${docs.dir}/resources/map">
-		                <include name="**" />
-		        </fileset>
-		</copy>
 
-		<delete dir="${bundle.docs.dir}/slee/tools/slee-management-console"/>    	
-		<mkdir dir="${bundle.docs.dir}/jss7"/>
-		<mkdir dir="${bundle.docs.dir}/smsc"/>
-		<copy todir="${bundle.docs.dir}/jss7" failonerror="true">
-		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/_docs/">
-		                <include name="**" />
-		        </fileset>
-		</copy>
-		<copy todir="${bundle.docs.dir}/smsc/adminguide" failonerror="true">
-		        <fileset dir="${checkout.telscale-smsc.dir}/docs/adminguide/jdocbook-telscale/target/docbook/publish/">
-		        	<include name="**"/>
-		        </fileset>
-		</copy>
-		<copy todir="${bundle.docs.dir}/smsc/installationguide" failonerror="true">
-		        <fileset dir="${checkout.telscale-smsc.dir}/docs/installationguide/jdocbook-telscale/target/docbook/publish/">
-		        	<include name="**"/>
-		        </fileset>
-		</copy>
-		<copy todir="${bundle.docs.dir}/smsc/releasenotes" failonerror="true">
-		        <fileset dir="${checkout.telscale-smsc.dir}/docs/releasenotes/jdocbook-telscale/target/docbook/publish/">
-		        	<include name="**"/>
-		        </fileset>
-		</copy>
-    	
-        <zip destfile="${base.dir}/TelScale-smsc-${telscale.smsc.release.version}-docs-${time.stamp}.zip" filesonly="false">
+    <target name="bundle-documentation">
+	    <echo>bundling documentation</echo>
+
+        <zip destfile="${base.dir}/TelScale-smsc-${telscale.smsc.release.version}-docs.zip" filesonly="false">
                 <zipfileset dir="${bundle.docs.dir}" prefix="TelScale-smsc-${telscale.smsc.release.version}/docs">
                         <include name="**/*" />
                 </zipfileset>
