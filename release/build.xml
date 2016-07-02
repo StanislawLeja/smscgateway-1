@@ -587,14 +587,14 @@
 		<!--docs-->
 
 		<mkdir dir="${docs.dir}/jss7"/>
+		<copy todir="${docs.dir}/jss7" failonerror="true">
+			<fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/_docs/">
+			</fileset>
+		</copy>
+
 		<mkdir dir="${docs.dir}/smsc"/>
 		<mkdir dir="${docs.dir}/smsc/adminguide"/>
 		<mkdir dir="${docs.dir}/smsc/installationguide"/>
-		<copy todir="${docs.dir}/jss7" failonerror="true">
-		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/_docs/">
-		                <include name="*.pdf" />
-		        </fileset>
-		</copy>
 		<copy todir="${docs.dir}/smsc/adminguide/html-book" failonerror="true">
 			<fileset dir="${checkout.telscale-smsc.dir}/docs/adminguide/sources-asciidoc/target/generated-docs/html-book">
 			</fileset>
