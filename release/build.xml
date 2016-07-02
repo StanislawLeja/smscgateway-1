@@ -616,10 +616,13 @@
 
 		<echo>Copy Telscale Map RA docs</echo>
 		<delete dir="${docs.dir}/resources/map" failonerror="true" />
-		<copy todir="${docs.dir}/resources/map" failonerror="true">
-			<fileset dir="${checkout.telscale-jss7-map-ra-docs.dir}/generated-docs">
-				<include name="html-book/*.*" />
-				<include name="pdf/*.*" />
+    	<copy todir="${docs.dir}/resources/map/html-book" failonerror="true">
+			<fileset dir="${checkout.telscale-jss7-map-ra-docs.dir}/generated-docs/html-book">
+			</fileset>
+		</copy>
+    	<copy todir="${docs.dir}/resources/map/pdf" failonerror="true">
+			<fileset dir="${checkout.telscale-jss7-map-ra-docs.dir}/generated-docs/pdf">
+				<include name="*.pdf" />
 			</fileset>
 		</copy>
 
