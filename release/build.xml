@@ -618,7 +618,8 @@
 		<delete dir="${docs.dir}/resources/map" failonerror="true" />
 		<copy todir="${docs.dir}/resources/map" failonerror="true">
 			<fileset dir="${checkout.telscale-jss7-map-ra-docs.dir}/generated-docs">
-				<include name="**/*.*" />
+				<include name="html-book/*.*" />
+				<include name="pdf/*.*" />
 			</fileset>
 		</copy>
 
