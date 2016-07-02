@@ -9,6 +9,7 @@
 	<property name="checkout.dir" value="${base.dir}/checkout" />	
 	<property name="checkout.telscale-slee.dir" value="${checkout.dir}/telscale-slee" />
 	<property name="checkout.telscale-jss7.dir" value="${checkout.dir}/telscale-jss7" />
+	<property name="checkout.telscale-jss7-map-ra-docs.dir" value="${checkout.dir}/telscale-jss7-map-ra-docs" />
 	<property name="checkout.telscale-smsc.dir" value="${base.dir}/.." />
 	<property name="checkout.telscale-jss7-build.dir" value="${checkout.dir}/telscale-jss7-build" />
 	<property name="checkout.telscale-diam.dir" value="${checkout.dir}/telscale-diam" />
@@ -28,8 +29,10 @@
 
 	<property name="telscale-slee.version" value="6.1.4" />
 	<property name="telscale-slee.build-number" value="52.468" />
-	<property name="telscale-jss7.version" value="6.2.6.GA" />
-	<property name="telscale-map-ra.version" value="6.2.6.GA" />
+	<property name="telscale-jss7.version" value="7.0.1" />
+	<property name="telscale-jss7.build-number" value="519" />
+	<property name="telscale-map-ra.version" value="7.0.1" />
+	<property name="telscale-map-ra.build-number" value="16" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
 	<property name="telscale-diam.version" value="6.2.1.327" />
 	<property name="telscale-sip.version" value="6.1.4.22" />
@@ -44,14 +47,14 @@
 	<property name="telscale-slee.download.distro.file" value="${telscale-slee.download.distro.name}.zip" />
 	<property name="telscale-slee.download.url" value="ftp://ftp.box.com/TelScale%20JAIN-SLEE/${telscale-slee.version}.GA/${telscale-slee.download.distro.file}" />
 	<property name="telscale-slee.distro.zip.path" value="${checkout.dir}/${telscale-slee.download.distro.file}" />
-	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}-1603221450.zip" />
-	<property name="telscale-jss7.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-jss7.version}/${telscale-jss7.download.distro.file}" />
+	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}.zip" />
+	<property name="telscale-jss7.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-jss7.version}.GA/${telscale-jss7.download.distro.file}" />
 	<property name="telscale-jss7.distro.zip.path" value="${checkout.dir}/${telscale-jss7.download.distro.file}" />
-	<property name="telscale-map-ra.download.distro.file" value="mobicents-slee-ra-map-du-${telscale-map-ra.version}-TelScale.jar" />
-	<property name="telscale-map-ra.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-map-ra.version}/slee.ss7/MAP%20SLEE%20Resource%20Adaptor/${telscale-map-ra.download.distro.file}" />
+	<property name="telscale-map-ra.download.distro.file" value="restcomm-slee-ra-map-du-${telscale-map-ra.version}.${telscale-map-ra.build-number}.jar" />
+	<property name="telscale-map-ra.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-map-ra.version}.GA/slee.ss7/MAP%20SLEE%20Resource%20Adaptor/${telscale-map-ra.download.distro.file}" />
 	<property name="telscale-map-ra.distro.zip.path" value="${checkout.dir}/${telscale-map-ra.download.distro.file}" />
-	<property name="telscale-map-ra-docs.download.distro.file" value="Mobicents_SLEE_RA_MAP_User_Guide.pdf" />
-	<property name="telscale-map-ra-docs.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-map-ra.version}/slee.ss7/MAP%20SLEE%20Resource%20Adaptor/${telscale-map-ra-docs.download.distro.file}" />
+	<property name="telscale-map-ra-docs.download.distro.file" value="map-ra-generated-docs.zip" />
+	<property name="telscale-map-ra-docs.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-map-ra.version}.GA/slee.ss7/MAP%20SLEE%20Resource%20Adaptor/${telscale-map-ra-docs.download.distro.file}" />
 	<property name="telscale-map-ra-docs.distro.zip.path" value="${checkout.dir}/${telscale-map-ra-docs.download.distro.file}" />
 
 	<property name="telscale-management-hq.download.distro.file" value="management-hq-${telscale-management-hq.version}.zip" />
@@ -94,6 +97,11 @@
 	    <delete dir="${release.dir}"/>
 	    <delete dir="${base.dir}/checkout"/>
 	    <delete dir="${bundle.docs.dir}"/>
+		<delete includeemptydirs="true" failonerror="true">
+            <fileset dir="${base.dir}">
+                    <include name="TelScale-smsc-*.zip" />
+            </fileset>
+		</delete>
 	</target>
 
 
@@ -151,7 +159,7 @@
 
 
 	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-telscale-diam,get-community-cassandra" />
-	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-management-hq,extract-telscale-diam,extract-community-cassandra" />
+	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-map-ra-docs,extract-telscale-management-hq,extract-telscale-diam,extract-community-cassandra" />
 
 	<available file="${telscale-slee.distro.zip.path}" property="got.telscale-slee" />
 	<target name="get-telscale-slee" unless="got.telscale-slee">
@@ -191,6 +199,11 @@
 		<delete dir="${checkout.telscale-jss7.dir}" failonerror="false" />
 		<unzip src="${telscale-jss7.distro.zip.path}" dest="${checkout.telscale-jss7.dir}"/>
 		<move file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}-TelScale" tofile="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}" failonerror="false"/>
+	</target>
+
+	<target name="extract-telscale-map-ra-docs" depends="get-telscale-map-ra-docs">
+		<delete dir="${checkout.telscale-jss7-map-ra-docs.dir}" failonerror="false" />
+		<unzip src="${telscale-map-ra-docs.distro.zip.path}" dest="${checkout.telscale-jss7-map-ra-docs.dir}"/>
 	</target>
 
 	<available file="${telscale-map-ra.distro.zip.path}" property="got.telscale-map-ra" />
@@ -404,7 +417,7 @@
                 <include name="**" />
             </fileset>
         </copy>    	
-    	
+
         <echo>Copy SMS server</echo>
 		<!--default-->
         <copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/telscale-smsc-server" failonerror="true">
@@ -437,7 +450,7 @@
 	    <copy file="${basedir}/profile.xml" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/bootstrap" failonerror="true" overwrite="true"/>
 		<!--tools-->
 		<copy todir="${release.dir}/tools/TelScale-jss7-simulator" failonerror="true">
-		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/ss7/Telscale-ss7-simulator">
+		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/ss7/Telscale-ss7-simulator">
 		                <include name="**" />
 		        </fileset>
 		</copy>
@@ -471,13 +484,13 @@
     	<!--CLI-->
         <copy file="${checkout.telscale-smsc.dir}/core/oam/clismpp/target/smpp-cli-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
 		<copy todir="${release.dir}/jboss-5.1.0.GA/" failonerror="true">
-		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/ss7/shell">
+		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/ss7/shell">
 		                <include name="**/*" />
 		        </fileset>
 		</copy>
         <copy file="${checkout.telscale-smsc.dir}/core/oam/cli/target/smsc-cli-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
         <copy todir="${release.dir}/jboss-5.1.0.GA/" failonerror="true">
-                <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/ss7/shell">
+                <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/ss7/shell">
                         <include name="**/*" />
                 </fileset>
         </copy>
@@ -499,10 +512,10 @@
     	<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/log4j/jboss-log4j-default.xml" tofile="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/jboss-log4j.xml" overwrite="true"></copy>
 
     	<!-- oam/new-ui - jolokia war & jss7-management-console.war-->
-	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/oam/new-ui/jolokia.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/oam/new-ui/jolokia.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/oam/new-ui/jss7-management-console.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/oam/new-ui/jss7-management-console.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/oam/new-ui/jolokia.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/oam/new-ui/jolokia.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/oam/new-ui/jss7-management-console.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/oam/new-ui/jss7-management-console.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
     	
 		<!-- TelScale Management HQ -->
 		<echo>TelScale Management Hq</echo>
@@ -526,8 +539,8 @@
 		                <include name="**" />
 		        </fileset>
 		</copy>
-    	
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/TelScale-diameter-mux-${telscale-diam.version}-TelScale.sar" failonerror="true">
+
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar" failonerror="true">
 	        <fileset dir="${checkout.telscale-diam.dir}/core/mux/TelScale-diameter-mux-${telscale-diam.version}.sar">
 		                <include name="**" />
 		        </fileset>
@@ -545,9 +558,23 @@
 			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 		<copy file="${release.dir}/resources/sip11/sip11-ra-DU-${telscale-sip.version}.jar" 
 			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-    	
-    	
-    	
+
+		<!-- jDiameter - remove SCTP lib - we will reuse the lib from JSS7 -->    	
+		<delete includeemptydirs="true" failonerror="true">
+            <fileset dir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar/lib">
+                    <include name="sctp-api-*.jar" />
+                	<include name="sctp-impl-*.jar" />
+            </fileset>
+		</delete>
+		<delete includeemptydirs="true" failonerror="true">
+            <fileset dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar/lib">
+                    <include name="sctp-api-*.jar" />
+                	<include name="sctp-impl-*.jar" />
+            </fileset>
+		</delete>
+
+
+
     </target>
 
     <target name="build-docs">
@@ -564,7 +591,7 @@
 		<mkdir dir="${docs.dir}/smsc/adminguide"/>
 		<mkdir dir="${docs.dir}/smsc/installationguide"/>
 		<copy todir="${docs.dir}/jss7" failonerror="true">
-		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}/_docs/">
+		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/_docs/">
 		                <include name="*.pdf" />
 		        </fileset>
 		</copy>
@@ -584,6 +611,14 @@
 		<copy todir="${docs.dir}/smsc/installationguide/pdf" failonerror="true">
 			<fileset dir="${checkout.telscale-smsc.dir}/docs/installationguide/sources-asciidoc/target/generated-docs/pdf">
 				<include name="*.pdf" />
+			</fileset>
+		</copy>
+
+		<echo>Copy Telscale Map RA docs</echo>
+		<delete dir="${docs.dir}/resources/map" failonerror="true" />
+		<copy todir="${docs.dir}/resources/map" failonerror="true">
+			<fileset dir="${checkout.telscale-jss7-map-ra-docs.dir}/generated-docs">
+				<include name="**/*.*" />
 			</fileset>
 		</copy>
 

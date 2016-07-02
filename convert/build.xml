@@ -5,11 +5,12 @@
 
 	<property name="parent.pom.version" value="6.1.7.18" />
 	<property name="pom.version" value="7.0.0-TelScale-SNAPSHOT" />
+	<property name="jss7.version" value="7.0.1.519" />
 
 	<condition property="mvn.executable" value="${sys.M2_HOME}\bin\mvn.bat" else="mvn">
 		<os family="windows"/>
 	</condition>
-	
+
 	<target name="convert" depends="convert-parent-pom,version-set,convert-telscale" />
 
 	<target name="convert-parent-pom">
@@ -72,6 +73,15 @@
 	</target>
 
 	<target name="convert-telscale">
+		<!-- switching to JSS7 Telscale version -->
+		<replaceregexp byline="true">
+			<regexp pattern="&lt;jss7.restcomm.version&gt;[0-9.]+&lt;/jss7.restcomm.version&gt;" />
+			<substitution expression="&lt;jss7.restcomm.version&gt;${jss7.version}&lt;/jss7.restcomm.version&gt;" />
+			<fileset dir="${base.dir}">
+				<include name="pom.xml" />
+			</fileset>
+		</replaceregexp>
+
 		<!-- parent pom eclipseProjectName -->
 		<replace file="${base.dir}/pom.xml" token="restcomm-smscgateway" value="telscale-smscgateway">
 		</replace>
