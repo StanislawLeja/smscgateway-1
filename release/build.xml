@@ -28,14 +28,15 @@
 	<property name="telscale.smsc.release.version" value="7.0.0-TelScale-SNAPSHOT"/>
 
 	<property name="telscale-slee.version" value="6.1.4" />
-	<property name="telscale-slee.build-number" value="52.468" />
+	<property name="telscale-slee.build-number" value="GA" />
+	<property name="telscale-slee.build-number-dir" value="56.477" />
 	<property name="telscale-jss7.version" value="7.0.1" />
 	<property name="telscale-jss7.build-number" value="519" />
 	<property name="telscale-map-ra.version" value="7.0.1" />
 	<property name="telscale-map-ra.build-number" value="16" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
 	<property name="telscale-diam.version" value="6.2.1.327" />
-	<property name="telscale-sip.version" value="6.1.4.22" />
+	<property name="telscale-sip.version" value="6.1.4.27" />
 	<property name="dse-cassandra.version" value="4.5.2" />
 	<property name="community-cassandra.version" value="3.7" /> <!-- 2.2.6 -->
 
@@ -176,11 +177,11 @@
 		<delete dir="${checkout.telscale-slee.dir}" failonerror="false" />
 		<unzip src="${telscale-slee.distro.zip.path}" dest="${release.dir}"/>
 		<copy todir="${release.dir}" failonerror="true">
-			<fileset dir="${release.dir}/telscale-slee-${telscale-slee.version}.${telscale-slee.build-number}">
+			<fileset dir="${release.dir}/telscale-slee-${telscale-slee.version}.${telscale-slee.build-number-dir}">
 				<include name="**/*" />
 			</fileset>
 		</copy>
-		<delete dir="${release.dir}/telscale-slee-${telscale-slee.version}.${telscale-slee.build-number}" includeemptydirs="true" failonerror="false" verbose="false"/>
+		<delete dir="${release.dir}/telscale-slee-${telscale-slee.version}.${telscale-slee.build-number-dir}" includeemptydirs="true" failonerror="false" verbose="false"/>
 		<delete dir="${checkout.telscale-slee.dir}/jboss-5.1.0.GA/server/all" includeemptydirs="true" failonerror="false" verbose="false"/>
 	</target>
 
