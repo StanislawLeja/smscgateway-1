@@ -36,6 +36,7 @@
 	<property name="telscale-map-ra.build-number" value="16" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
 	<property name="telscale-diam.version" value="6.2.1.327" />
+	<property name="telscale-diam-ra.version" value="6.2.1.12" />
 	<property name="telscale-sip.version" value="6.1.4.27" />
 	<property name="dse-cassandra.version" value="4.5.2" />
 	<property name="community-cassandra.version" value="3.7" /> <!-- 2.2.6 -->
@@ -159,9 +160,12 @@
     </target>
 
 
+	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-community-cassandra" />
+	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-map-ra-docs,extract-telscale-management-hq,extract-community-cassandra" />
+<!-- ** script with downloading dialmeter as a separate release **
 	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-telscale-diam,get-community-cassandra" />
 	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-map-ra-docs,extract-telscale-management-hq,extract-telscale-diam,extract-community-cassandra" />
-
+-->
 	<available file="${telscale-slee.distro.zip.path}" property="got.telscale-slee" />
 	<target name="get-telscale-slee" unless="got.telscale-slee">
 		<echo>Downloading Telscale Slee version: ${telscale-slee.version}</echo>
@@ -304,11 +308,13 @@
 		</copy>
 		<delete dir="${release.dir}/jboss-5.1.0.GA/server/all" includeemptydirs="true" failonerror="true"/>    	
 		<delete includeemptydirs="true" failonerror="true">
-            <fileset dir="${release.dir}/docs/resources">
-                    <include name="**" />
-                	<exclude name="**/map/**" />
-	        		<exclude name="**/sip11/**" />
-            </fileset>
+			<fileset dir="${release.dir}/docs/resources">
+				<include name="**" />
+				<exclude name="**/map/**" />
+				<exclude name="**/sip11/**" />
+				<exclude name="**/diameter-base/**" />
+				<exclude name="**/diameter-ro/**" />
+			</fileset>
 		</delete>
 		<delete dir="${release.dir}/docs/enablers" includeemptydirs="true" failonerror="true" />
 		<delete dir="${release.dir}/docs/examples" includeemptydirs="true" failonerror="true" />
@@ -316,32 +322,20 @@
 			<fileset dir="${release.dir}/resources">
 				<include name="**" />
 				<exclude name="**/sip11/**" />
+				<exclude name="**/diameter-base/**" />
+				<exclude name="**/diameter-ro/**" />
 			</fileset>
 		</delete>
-		<delete dir="${release.dir}/extra" includeemptydirs="true" failonerror="true" />
+		<delete includeemptydirs="true" failonerror="true">
+			<fileset dir="${release.dir}/extra">
+				<include name="**" />
+				<exclude name="**/telscale-diameter/**" />
+			</fileset>
+		</delete>
 		<delete dir="${release.dir}/enablers" includeemptydirs="true" failonerror="true" />
 		<delete dir="${release.dir}/examples" includeemptydirs="true" failonerror="true" />
 		<delete file="${release.dir}/readme.txt" failonerror="true" />
 		<delete file="${release.dir}/sources.zip" failonerror="true" />
-<!--
-		<delete failonerror="true">
-            <fileset dir="${release.dir}/jboss-5.1.0.GA/server/simulator/lib">
-                    <include name="**" />
-            </fileset>
-		</delete>
-
-		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/cluster" includeemptydirs="true" failonerror="true" />
-		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/deploy.last" includeemptydirs="true" failonerror="true" />
-		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/snmp-adaptor.sar" includeemptydirs="true" failonerror="true" />
-		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/juddi-service.sar" includeemptydirs="true" failonerror="true" />
-		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/mobicents-slee/profiles-external-ds.xml" failonerror="true" />
-		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/mobicents-slee/META-INF/jboss-cache-config.xml" failonerror="true" />
-		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/iiop-service.xml" failonerror="true" />
-		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/jacorb.properties" failonerror="true" />
-		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/iiop-service.xml" failonerror="true" />
-		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy-hasingleton/" includeemptydirs="true" failonerror="true" />
-		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/farm/" includeemptydirs="true" failonerror="true" />
--->
 	</target>
 
     <target name="checkout-smsc-persistence">
@@ -533,8 +527,29 @@
 		<!-- jss7 config-->    	
 		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/main_simulator2.xml" todir="${release.dir}/tools/TelScale-jss7-simulator/data" failonerror="true" />
 		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/win_simulator2.xml" todir="${release.dir}/tools/TelScale-jss7-simulator/data" failonerror="true" />
-    	
+
 		<!-- jDiameter - mux & RA's-->    	
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar" failonerror="true">
+			<fileset dir="${release.dir}/extra/telscale-diameter/mux/TelScale-diameter-mux-${telscale-diam.version}.sar">
+				<include name="**" />
+			</fileset>
+		</copy>
+
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar" failonerror="true">
+			<fileset dir="${release.dir}/extra/telscale-diameter/mux/TelScale-diameter-mux-${telscale-diam.version}.sar">
+				<include name="**" />
+			</fileset>
+		</copy>
+
+		<copy file="${release.dir}/resources/diameter-base/diameter-mobicents-slee-ra-diameter-base-ra-DU-${telscale-diam-ra.version}.jar"
+			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${release.dir}/resources/diameter-base/diameter-mobicents-slee-ra-diameter-base-ra-DU-${telscale-diam-ra.version}.jar"
+			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+		<copy file="${release.dir}/resources/diameter-ro/diameter-mobicents-slee-ra-diameter-ro-ra-DU-${telscale-diam-ra.version}.jar"
+			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${release.dir}/resources/diameter-ro/diameter-mobicents-slee-ra-diameter-ro-ra-DU-${telscale-diam-ra.version}.jar"
+			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+<!-- ** script with downloading dialmeter as a separate release **
 		<copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar" failonerror="true">
 		        <fileset dir="${checkout.telscale-diam.dir}/core/mux/TelScale-diameter-mux-${telscale-diam.version}.sar">
 		                <include name="**" />
@@ -555,6 +570,9 @@
 			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 		<copy file="${checkout.telscale-diam.dir}/resources/diameter-ro/diameter-mobicents-slee-ra-diameter-ro-ra-DU-${telscale-diam.version}.jar" 
 			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+-->
+
+		<!-- sip - RA -->    	
 		<copy file="${release.dir}/resources/sip11/sip11-ra-DU-${telscale-sip.version}.jar" 
 			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 		<copy file="${release.dir}/resources/sip11/sip11-ra-DU-${telscale-sip.version}.jar" 
