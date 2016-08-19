@@ -4,7 +4,7 @@
 	<property name="base.dir" location="${ant.file.smscgw.telscale-convert.sf}/.." />
 
 	<property name="parent.pom.version" value="6.1.7.18" />
-	<property name="pom.version" value="7.0.0-TelScale-SNAPSHOT" />
+	<property name="pom.version" value="7.1.0-TelScale-SNAPSHOT" />
 	<property name="jss7.version" value="7.0.1.519" />
 
 	<condition property="mvn.executable" value="${sys.M2_HOME}\bin\mvn.bat" else="mvn">
