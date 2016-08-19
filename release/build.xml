@@ -1,99 +1,87 @@
 <?xml version="1.0"?>
-<project name="restcomm.smscgw.release" default="release" basedir=".">
+<project name="telscale.smscgw.release" default="release" basedir=".">
 	<property environment="sys"/>
-    <property name="release.dir" location="${ant.file.restcomm.smscgw.release}/../target" />
-	<property name="base.dir" location="${ant.file.restcomm.smscgw.release}/.." />
+	<property name="release.dir" location="${ant.file.telscale.smscgw.release}/../target" />
+	<property name="base.dir" location="${ant.file.telscale.smscgw.release}/.." />
 	<property name="docs.dir" location="${release.dir}/docs" />
 	<property name="bundle.docs.dir" location="${base.dir}/docs-bundle" />
-    <property name="cassandra.dir" value="${release.dir}/cassandra" />
+	<property name="cassandra.dir" value="${release.dir}/cassandra" />
 	<property name="checkout.dir" value="${base.dir}/checkout" />	
-	<property name="checkout.restcomm-slee.dir" value="${checkout.dir}/restcomm-slee" />
-	<property name="checkout.restcomm-jss7.dir" value="${checkout.dir}/restcomm-jss7" />
-	<property name="checkout.restcomm-jss7-ra.dir" value="${checkout.dir}/restcomm-jss7-ra" />
-	<property name="checkout.restcomm-map-ra.dir" value="${checkout.dir}/restcomm-map-ra" />
-	<property name="checkout.restcomm-smsc.dir" value="${base.dir}/.." />
-	<property name="checkout.restcomm-jss7-build.dir" value="${checkout.dir}/restcomm-jss7-build" />
-	<property name="checkout.restcomm-diam.dir" value="${checkout.dir}/restcomm-diam" />
-	<property name="checkout.restcomm-slee.jss7-build.dir" value="${checkout.dir}/restcomm-slee.jss7-build" />
-	<property name="checkout.restcomm-slee.jainslee-jss7-build.dir" value="${checkout.dir}/restcomm-jains-slee-jss7-build" />
+	<property name="checkout.telscale-slee.dir" value="${checkout.dir}/telscale-slee" />
+	<property name="checkout.telscale-jss7.dir" value="${checkout.dir}/telscale-jss7" />
+	<property name="checkout.telscale-jss7-map-ra-docs.dir" value="${checkout.dir}/telscale-jss7-map-ra-docs" />
+	<property name="checkout.telscale-smsc.dir" value="${base.dir}/.." />
+	<property name="checkout.telscale-jss7-build.dir" value="${checkout.dir}/telscale-jss7-build" />
+	<property name="checkout.telscale-diam.dir" value="${checkout.dir}/telscale-diam" />
+	<property name="checkout.telscale-slee.jss7-build.dir" value="${checkout.dir}/telscale-slee.jss7-build" />
 	<property name="checkout.restcomm-cloudhopper.smpp.dir" value="${checkout.dir}/restcomm-cloudhopper-smpp-build" />
-    <property name="checkout.map.dir" value="${base.dir}/checkout/map" />
-    <property name="release.map.dir" value="${base.dir}/checkout/map-release" />
+	<property name="checkout.map.dir" value="${base.dir}/checkout/map" />
+	<property name="release.map.dir" value="${base.dir}/checkout/map-release" />
+	<property name="maven.ci.home.bin" value="${sys.MVN_333_HOME_BIN}" />
 
-	<property name="restcomm.smsc.git.tag" value="master"/>
-	<property name="restcomm.smsc.release.version" value="7.0.0-SNAPSHOT"/>
+	<!-- version properties-->
+	<!-- //** change this properties from CLI to build specific versions-->
+	<!-- Eg: 
+			ant -Dtelscale.smsc.git.tag=ts115ga -Dtelscale.smsc.release.version=6.1.5.GA-TelScale
+	-->
+	<property name="telscale.smsc.git.tag" value="master"/>
+	<property name="telscale.smsc.release.version" value="7.0.0-TelScale-SNAPSHOT"/>
 
-	<!-- Options for referring to release resoure verions -->
-	<!-- SLEE staff -->
-	<property name="restcomm-slee.build-number" value="36.73" />
-	<property name="restcomm-slee.version" value="2.8" />
-	<property name="restcomm-slee.release" value="2.8.0.FINAL" />
-
-	<!-- jss7 stack and MAP RA -->
-	<property name="restcomm-jss7.build-number" value="1383" />
-	<property name="restcomm-jss7.version" value="7.0.${restcomm-jss7.build-number}" />
-	<property name="restcomm-jss7.release" value="7.0.1383" />
-
-	<property name="restcomm-map-ra.build-number" value="53" />
-	<property name="restcomm-map-ra.version" value="7.0.${restcomm-map-ra.build-number}" />
-	<property name="restcomm-map-ra.release" value="7.0.53" />
-
-	<!-- Diameter mux and RAs -->
-	<property name="restcomm-diam.build-number" value="89" />
-	<property name="restcomm-diam.version" value="1.7.0" />
-	<property name="restcomm-diam.resources.version" value="2.8.0-SNAPSHOT" />
-
-	<!-- Cassandra community version -->
+	<property name="telscale-slee.version" value="6.1.4" />
+	<property name="telscale-slee.build-number" value="GA" />
+	<property name="telscale-slee.build-number-dir" value="56.477" />
+	<property name="telscale-jss7.version" value="7.0.1" />
+	<property name="telscale-jss7.build-number" value="519" />
+	<property name="telscale-map-ra.version" value="7.0.1" />
+	<property name="telscale-map-ra.build-number" value="16" />
+	<property name="telscale-management-hq.version" value="6.1.4.GA" />
+	<property name="telscale-diam.version" value="6.2.1.327" />
+	<property name="telscale-diam-ra.version" value="6.2.1.12" />
+	<property name="telscale-sip.version" value="6.1.4.27" />
+	<property name="dse-cassandra.version" value="4.5.2" />
 	<property name="community-cassandra.version" value="3.7" /> <!-- 2.2.6 -->
-
-
-	<!-- JainSlee SIP RA DU - we do not use it now - getting from SLEE binaries -->
-	<property name="restcomm-slee-sip11.build-number" value="20" />	
-	<property name="restcomm-slee-sip11.tag" value="2.8.${restcomm-slee-sip11.build-number}" />
-	<property name="restcomm-slee-sip11.version" value="${restcomm-slee-sip11.tag}" />
 
 	<!-- Cloudhopper will be removed when the code ready in official github -->
 	<property name="restcomm-cloudhopper.smpp.tag" value="master_submit_multi-2" />
 
+	<!--GET Telscale-Slee & Telscale-jss7 & Telscale-diameter & DSE Cassandra - properties-->
+	<property name="telscale-slee.download.distro.name" value="telscale-slee-${telscale-slee.version}.${telscale-slee.build-number}" />
+	<property name="telscale-slee.download.distro.file" value="${telscale-slee.download.distro.name}.zip" />
+	<property name="telscale-slee.download.url" value="ftp://ftp.box.com/TelScale%20JAIN-SLEE/${telscale-slee.version}.GA/${telscale-slee.download.distro.file}" />
+	<property name="telscale-slee.distro.zip.path" value="${checkout.dir}/${telscale-slee.download.distro.file}" />
+	<property name="telscale-jss7.download.distro.file" value="TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}.zip" />
+	<property name="telscale-jss7.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-jss7.version}.GA/${telscale-jss7.download.distro.file}" />
+	<property name="telscale-jss7.distro.zip.path" value="${checkout.dir}/${telscale-jss7.download.distro.file}" />
+	<property name="telscale-map-ra.download.distro.file" value="restcomm-slee-ra-map-du-${telscale-map-ra.version}.${telscale-map-ra.build-number}.jar" />
+	<property name="telscale-map-ra.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-map-ra.version}.GA/slee.ss7/MAP%20SLEE%20Resource%20Adaptor/${telscale-map-ra.download.distro.file}" />
+	<property name="telscale-map-ra.distro.zip.path" value="${checkout.dir}/${telscale-map-ra.download.distro.file}" />
+	<property name="telscale-map-ra-docs.download.distro.file" value="map-ra-generated-docs.zip" />
+	<property name="telscale-map-ra-docs.download.url" value="ftp://ftp.box.com/TelScale%20jSS7/${telscale-map-ra.version}.GA/slee.ss7/MAP%20SLEE%20Resource%20Adaptor/${telscale-map-ra-docs.download.distro.file}" />
+	<property name="telscale-map-ra-docs.distro.zip.path" value="${checkout.dir}/${telscale-map-ra-docs.download.distro.file}" />
 
-	<property name="cloudbees.url" value="https://mobicents.ci.cloudbees.com" />
-	<property name="github.url" value="https://github.com/RestComm" />
-
-	<!--GET restcomm-Slee & restcomm-jss7 & restcomm-diameter & DSE Cassandra - properties-->
-	<property name="restcomm-jss7.tag" value="${restcomm-jss7.version}" />
-	<property name="restcomm-slee.ss7.tag" value="${restcomm-map-ra.version}" />
-	<property name="restcomm-slee.download.distro.name" value="restcomm-slee-${restcomm-slee.version}.${restcomm-slee.build-number}" />
-	<property name="restcomm-slee.download.distro.file" value="${restcomm-slee.download.distro.name}.zip" />
-	<property name="restcomm-slee.download.url" value="${github.url}/jain-slee/releases/download/${restcomm-slee.release}/${restcomm-slee.download.distro.file}" />
-	<property name="restcomm-slee.distro.zip.path" value="${checkout.dir}/${restcomm-slee.download.distro.file}" />
-	<property name="restcomm-jss7.download.distro.file" value="restcomm-jss7-${restcomm-jss7.version}.zip" />
-	<property name="restcomm-jss7.download.url" value="${github.url}/jss7/releases/download/${restcomm-jss7.release}/${restcomm-jss7.download.distro.file}" />
-	<property name="restcomm-jss7.distro.zip.path" value="${checkout.dir}/${restcomm-jss7.download.distro.file}" />
-	<property name="restcomm-map-ra.download.jar.file" value="restcomm-slee-ra-map-du-${restcomm-map-ra.version}.jar" />
-	<property name="restcomm-map-ra.download.docs.file" value="RA_docs.zip" />
-	<property name="restcomm-map-ra.download.jar.url" value="${github.url}/jain-slee.ss7/releases/download/${restcomm-map-ra.release}/${restcomm-map-ra.download.jar.file}" />
-	<property name="restcomm-map-ra.download.docs.url" value="${github.url}/jain-slee.ss7/releases/download/${restcomm-map-ra.release}/${restcomm-map-ra.download.docs.file}" />
-	<property name="restcomm-map-ra.distro.jar.path" value="${checkout.dir}/${restcomm-map-ra.download.jar.file}" />
-	<property name="restcomm-map-ra.distro.docs.path" value="${checkout.dir}/${restcomm-map-ra.download.docs.file}" />
-
-	<property name="restcomm-diam.download.distro.file" value="restcomm-diameter-${restcomm-diam.version}.${restcomm-diam.build-number}.zip" />
-	<property name="restcomm-diam.download.url" value="${cloudbees.url}/job/RestComm-jDiameter-1.x/${restcomm-diam.build-number}/artifact/release/${restcomm-diam.download.distro.file}" />
-	<property name="restcomm-diam.distro.zip.path" value="${checkout.dir}/${restcomm-diam.download.distro.file}" />
+	<property name="telscale-management-hq.download.distro.file" value="management-hq-${telscale-management-hq.version}.zip" />
+	<property name="telscale-management-hq.distro.zip.path" value="${checkout.dir}/${telscale-management-hq.download.distro.file}" />
+	<property name="telscale-management-hq.download.url" value="ftp://ftp.box.com/TelScale%20Management%20HQ/6.1.4.GA/${telscale-management-hq.download.distro.file}" />
+	<property name="checkout.telscale-management-hq.dir" value="${checkout.dir}/telscale-management-hq" />
 	
+	<property name="telscale-diam.download.distro.file" value="TelScale-diameter-${telscale-diam.version}.zip" />
+	<property name="telscale-diam.download.url" value="ftp://ftp.box.com/TelScale%20jDiameter/6.2.1.GA/${telscale-diam.download.distro.file}" />
+	<property name="telscale-diam.distro.zip.path" value="${checkout.dir}/${telscale-diam.download.distro.file}" />
+	
+	<property name="checkout.dse-cassandra.dir" value="${cassandra.dir}/dse-${dse-cassandra.version}" />
+	<property name="dse-cassandra.download.distro.file" value="dse-cassandra-only-${dse-cassandra.version}.zip" />
+	<property name="dse-cassandra.download.url" value="ftp://ftp.box.com/TelScale%20SMSC%20Gateway/DSE/${dse-cassandra.download.distro.file}" />
+	<property name="dse-cassandra.distro.zip.path" value="${checkout.dir}/${dse-cassandra.download.distro.file}" />
+
 	<property name="checkout.community-cassandra.dir" value="${cassandra.dir}/apache-${community-cassandra.version}" />
 	<property name="community-cassandra.download.distro.file" value="apache-cassandra-${community-cassandra.version}-bin.tar.gz" />
 	<property name="community-cassandra.untar.distro.file" value="apache-cassandra-${community-cassandra.version}-bin.tar" />
 	<property name="community-cassandra.download.url" value="http://mirror.cc.columbia.edu/pub/software/apache/cassandra/${community-cassandra.version}/${community-cassandra.download.distro.file}" />
 	<property name="community-cassandra.distro.zip.path" value="${checkout.dir}/${community-cassandra.download.distro.file}" />
 	<property name="community-cassandra.distro.untar.path" value="${checkout.dir}/${community-cassandra.untar.distro.file}" />
-
-
-	<property name="restcomm-slee-sip11.download.distro.file" value="sip11-ra-DU-${restcomm-slee-sip11.version}.jar" />
-	<property name="restcomm-slee-sip11.download.url" value="${cloudbees.url}/job/Restcomm-JAIN-SLEE-SIP-RA/${restcomm-slee-sip11.build-number}/artifact/resources/sip11/du/target/${restcomm-slee-sip11.download.distro.file}" />
-	<property name="restcomm-slee-sip11.distro.zip.path" value="${checkout.dir}/${restcomm-slee-sip11.download.distro.file}" />
-
 	
-	<property name="release.build.goals" value="clean install dependency:tree -Dmaven.test.skip=true"/>
+	<property name="release.build.goals" value="clean install dependency:tree"/>
+	<property name="release.ts.deploy.goals" value="clean deploy -DaltDeploymentRepository=telscale-releases-repository::default::http://telestax.artifactoryonline.com/telestax/releases"/>
 	<property name="release.ts.deploy.goals.local" value="clean deploy -DaltDeploymentRepository=local-output::default::file:///tmp/output"/>	
 	
 
@@ -103,197 +91,198 @@
 	
 	<taskdef onerror="fail" resource="net/sf/antcontrib/antlib.xml">
 		<classpath>
-			<pathelement location="${ant.file.restcomm.smscgw.release}/../ant-contrib-1.0b3.jar" />
+			<pathelement location="${ant.file.mobicents.ussdgw.release}/../ant-contrib-1.0b3.jar" />
 		</classpath>
 	</taskdef>
 	
 	<target name="clean">
 	    <delete dir="${release.dir}"/>
 	    <delete dir="${base.dir}/checkout"/>
-	    <delete dir="${base.dir}/docs-bundle"/>
-	    <delete dir="${base.dir}/docs-bundle"/>
-		<delete>
-			<fileset dir="${base.dir}">
-				<include name="restcomm-smsc-*.*" />
-			</fileset>
+	    <delete dir="${bundle.docs.dir}"/>
+		<delete includeemptydirs="true" failonerror="true">
+            <fileset dir="${base.dir}">
+                    <include name="TelScale-smsc-*.zip" />
+            </fileset>
 		</delete>
 	</target>
-	
-	
-	<target name="release" depends="get-deps,extract-deps,clean-up-restcomm-slee,build-clhpp,build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
+
+
+	<target name="release-telscale" depends="get-deps,extract-deps,clean-up-telscale-slee,get-clhpp,build-clhpp-citask,build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
+	<target name="release"          depends="get-deps,extract-deps,clean-up-telscale-slee,get-clhpp,build-clhpp,       build-smsc,copy-smsc,build-docs,copy-docs,make-final-zip,bundle-documentation" />
 
 	<target name="release-with-jss7-and-ras" depends="build-with-jss7-and-ras.ss7, build-with-jss7-and-ras.ras, release"/>
 	
 	<target name="build-with-jss7-and-ras.ss7">
-        <echo>Clone restcomm jss7</echo>
+        <echo>Clone TelScale jss7</echo>
         <exec failonerror="true" executable="git">
             <arg value="clone" />
-            <arg value="https://github.com/RestComm/jss7" />
+            <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jss7.git" />
             <arg value="-b" />
-            <arg value="${restcomm-jss7.tag}" />
-            <arg value="${checkout.restcomm-jss7-build.dir}" />
+            <arg value="master" />
+            <arg value="${checkout.telscale-jss7-build.dir}" />
         </exec>
 		
-        <echo>Building RestComm jss7 from sources</echo>
+        <echo>Building TelScale jss7 from sources</echo>
 		
-		<ant antfile="${checkout.restcomm-jss7-build.dir}/release/build.xml" target="build-asn"/>
-		<ant antfile="${checkout.restcomm-jss7-build.dir}/release/build.xml" target="build-sctp"/>
-		<ant antfile="${checkout.restcomm-jss7-build.dir}/release/build.xml" target="build-upstream-jss7"/>
-		<ant antfile="${checkout.restcomm-jss7-build.dir}/release/build.xml" target="build-jss7-addon"/>
+		<ant antfile="${checkout.telscale-jss7-build.dir}/release/build.xml" target="build-asn"/>
+		<ant antfile="${checkout.telscale-jss7-build.dir}/release/build.xml" target="build-sctp"/>
+		<ant antfile="${checkout.telscale-jss7-build.dir}/release/build.xml" target="build-upstream-jss7"/>
+		<ant antfile="${checkout.telscale-jss7-build.dir}/release/build.xml" target="build-jss7-addon"/>
 	</target>
 	
 	<target name="build-with-jss7-and-ras.ras">		
-        <echo>Clone RestComm JainSlee.jss7 (JSS7 RA's)</echo>
+        <echo>Clone TelScale JainSlee.jss7 (JSS7 RA's)</echo>
         <exec failonerror="true" executable="git">
             <arg value="clone" />
-            <arg value="https://github.com/RestComm/jain-slee.ss7.git" />
+            <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-jain-slee.ss7.git" />
             <arg value="-b" />
-            <arg value="${restcomm-slee.ss7.tag}" />
-            <arg value="${checkout.restcomm-slee.jainslee-jss7-build.dir}" />
+            <arg value="ts1" />
+            <arg value="${checkout.telscale-slee.jss7-build.dir}" />
         </exec>
 		
         <echo>Building JainSlee.jss7 (JSS7 RA's) from sources</echo>
 		
-        <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.restcomm-slee.jainslee-jss7-build.dir}">
+        <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.telscale-slee.jss7-build.dir}">
                 <arg line="clean install -Prelease -Dmaven.test.skip=true" />
         </exec>
 	</target>
 
-	<target name="checkout-ss7-map">		
-		<echo>Clone restcomm JainSlee.jss7 (JSS7 RA's)</echo>
-		<exec failonerror="true" executable="git">
-			<arg value="clone" />
-			<arg value="https://github.com/RestComm/jain-slee.ss7.git" />
-			<arg value="-b" />
-			<arg value="${restcomm-slee.ss7.tag}" />
-			<arg value="${checkout.restcomm-slee.jainslee-jss7-build.dir}" />
-		</exec>
-	</target>
-
-		
     <target name="deploy">
-    	<ant antfile="${ant.file.restcomm.smscgw.release}" target="release">
+    	<ant antfile="${ant.file.telscale.smscgw.release}" target="release">
     		<property name="release.build.goals" value="${release.ts.deploy.goals}" />
     	</ant>
     </target>
 	
     <target name="deploy-local">
-    	<ant antfile="${ant.file.restcomm.smscgw.release}" target="release">
+    	<ant antfile="${ant.file.telscale.smscgw.release}" target="release">
     		<property name="release.build.goals" value="${release.ts.deploy.goals.local}" />
     	</ant>
     </target>
 
 
-	<target name="get-deps" depends="get-restcomm-slee,get-restcomm-jss7,get-restcomm-map-ra,get-restcomm-map-ra-docs,get-restcomm-diam,get-community-cassandra" />
-	<target name="extract-deps" depends="extract-restcomm-slee,extract-restcomm-jss7,extract-restcomm-map-ra-docs,extract-restcomm-diam,extract-community-cassandra" />
-
-	
-	<available file="${restcomm-slee.distro.zip.path}" property="got.restcomm-slee" />
-	<target name="get-restcomm-slee" unless="got.restcomm-slee">
-		<echo>Downloading RestComm Slee version: ${restcomm-slee.version}</echo>
+	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-community-cassandra" />
+	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-map-ra-docs,extract-telscale-management-hq,extract-community-cassandra" />
+<!-- ** script with downloading dialmeter as a separate release **
+	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-telscale-diam,get-community-cassandra" />
+	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-map-ra-docs,extract-telscale-management-hq,extract-telscale-diam,extract-community-cassandra" />
+-->
+	<available file="${telscale-slee.distro.zip.path}" property="got.telscale-slee" />
+	<target name="get-telscale-slee" unless="got.telscale-slee">
+		<echo>Downloading Telscale Slee version: ${telscale-slee.version}</echo>
 		<exec failonerror="true" executable="wget">
-		    <arg value="${restcomm-slee.download.url}" />
-		    <arg value="--output-document=${restcomm-slee.download.distro.file}" />
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${telscale-slee.download.url}" />
 		</exec>
-		<move file="${base.dir}/${restcomm-slee.download.distro.file}" todir="${checkout.dir}"/>
+		<move file="${base.dir}/${telscale-slee.download.distro.file}" todir="${checkout.dir}"/>
 	</target>
 
-	<target name="extract-restcomm-slee" depends="get-restcomm-slee">
-		<delete dir="${checkout.restcomm-slee.dir}" failonerror="false" />
-		<unzip src="${restcomm-slee.distro.zip.path}" dest="${release.dir}"/>
-        <copy todir="${release.dir}" failonerror="true">
-                <fileset dir="${release.dir}/restcomm-slee-${restcomm-slee.version}.${restcomm-slee.build-number}">
-                        <include name="**/*" />
-                </fileset>
-        </copy>
-		<delete dir="${release.dir}/restcomm-slee-${restcomm-slee.version}.${restcomm-slee.build-number}" includeemptydirs="true" failonerror="false" verbose="false"/>
-		<delete dir="${checkout.restcomm-slee.dir}/jboss-5.1.0.GA/server/all" includeemptydirs="true" failonerror="false" verbose="false"/>
+	<target name="extract-telscale-slee" depends="get-telscale-slee">
+		<delete dir="${checkout.telscale-slee.dir}" failonerror="false" />
+		<unzip src="${telscale-slee.distro.zip.path}" dest="${release.dir}"/>
+		<copy todir="${release.dir}" failonerror="true">
+			<fileset dir="${release.dir}/telscale-slee-${telscale-slee.version}.${telscale-slee.build-number-dir}">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<delete dir="${release.dir}/telscale-slee-${telscale-slee.version}.${telscale-slee.build-number-dir}" includeemptydirs="true" failonerror="false" verbose="false"/>
+		<delete dir="${checkout.telscale-slee.dir}/jboss-5.1.0.GA/server/all" includeemptydirs="true" failonerror="false" verbose="false"/>
 	</target>
 
-	<available file="${restcomm-jss7.distro.zip.path}" property="got.restcomm-jss7" />
-	<target name="get-restcomm-jss7" unless="got.restcomm-jss7">
-		<echo>Downloading RestComm JSS7 version: ${restcomm-jss7.version}</echo>
+	<available file="${telscale-jss7.distro.zip.path}" property="got.telscale-jss7" />
+	<target name="get-telscale-jss7" unless="got.telscale-jss7">
+		<echo>Downloading Telscale JSS7 version: ${telscale-jss7.version}</echo>
 		<exec failonerror="true" executable="wget">
-			<arg value="${restcomm-jss7.download.url}" />
-		    <arg value="--output-document=${restcomm-jss7.download.distro.file}" />
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${telscale-jss7.download.url}" />
 		</exec>
-		<move file="${base.dir}/${restcomm-jss7.download.distro.file}" todir="${checkout.dir}"/>
+		<move file="${base.dir}/${telscale-jss7.download.distro.file}" todir="${checkout.dir}"/>
 	</target>
 
-	<target name="extract-restcomm-jss7" depends="get-restcomm-jss7">
-		<delete dir="${checkout.restcomm-jss7.dir}" failonerror="false" />
-		<unzip src="${restcomm-jss7.distro.zip.path}" dest="${checkout.restcomm-jss7.dir}"/>
-		<move file="${checkout.restcomm-jss7.dir}/restcomm-jss7-${restcomm-jss7.version}-restcomm" tofile="${checkout.restcomm-jss7.dir}/restcomm-jss7-${restcomm-jss7.version}" failonerror="false"/>
+	<target name="extract-telscale-jss7" depends="get-telscale-jss7">
+		<delete dir="${checkout.telscale-jss7.dir}" failonerror="false" />
+		<unzip src="${telscale-jss7.distro.zip.path}" dest="${checkout.telscale-jss7.dir}"/>
+		<move file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}-TelScale" tofile="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}" failonerror="false"/>
 	</target>
 
-	<available file="${restcomm-map-ra.distro.jar.path}" property="got.restcomm-map-ra" />
-	<target name="get-restcomm-map-ra" unless="got.restcomm-map-ra">
-		<echo>Downloading RestComm MAP RA version: ${restcomm-map-ra.version}</echo>
+	<target name="extract-telscale-map-ra-docs" depends="get-telscale-map-ra-docs">
+		<delete dir="${checkout.telscale-jss7-map-ra-docs.dir}" failonerror="false" />
+		<unzip src="${telscale-map-ra-docs.distro.zip.path}" dest="${checkout.telscale-jss7-map-ra-docs.dir}"/>
+	</target>
+
+	<available file="${telscale-map-ra.distro.zip.path}" property="got.telscale-map-ra" />
+	<target name="get-telscale-map-ra" unless="got.telscale-map-ra">
+		<echo>Downloading Telscale MAP RA version: ${telscale-map-ra.version}</echo>
 		<exec failonerror="true" executable="wget">
-			<arg value="${restcomm-map-ra.download.jar.url}" />
-		    <arg value="--output-document=${restcomm-map-ra.download.jar.file}" />
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${telscale-map-ra.download.url}" />
 		</exec>
-		<move file="${base.dir}/${restcomm-map-ra.download.jar.file}" todir="${checkout.dir}"/>
+		<move file="${base.dir}/${telscale-map-ra.download.distro.file}" todir="${checkout.dir}"/>
 	</target>
 
-	<available file="${restcomm-map-ra.distro.docs.path}" property="got.restcomm-map-ra-docs" />
-	<target name="get-restcomm-map-ra-docs" unless="got.restcomm-map-ra-docs">
-		<echo>Downloading RestComm MAP RA docs version: ${restcomm-map-ra.version}</echo>
+	<available file="${telscale-map-ra-docs.distro.zip.path}" property="got.telscale-map-ra-docs" />
+	<target name="get-telscale-map-ra-docs" unless="got.telscale-map-ra-docs">
+		<echo>Downloading Telscale MAP RA Docs version: ${telscale-map-ra.version}</echo>
 		<exec failonerror="true" executable="wget">
-			<arg value="${restcomm-map-ra.download.docs.url}" />
-		    <arg value="--output-document=${restcomm-map-ra.download.docs.file}" />
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${telscale-map-ra-docs.download.url}" />
 		</exec>
-		<move file="${base.dir}/${restcomm-map-ra.download.docs.file}" todir="${checkout.dir}"/>
+		<move file="${base.dir}/${telscale-map-ra-docs.download.distro.file}" todir="${checkout.dir}"/>
 	</target>
 
-	<target name="extract-restcomm-map-ra-docs" depends="get-restcomm-map-ra-docs">
-		<delete dir="${checkout.restcomm-jss7-ra.dir}" failonerror="false" />
-		<delete dir="${checkout.restcomm-map-ra.dir}" failonerror="false" />
-		<unzip src="${restcomm-map-ra.distro.docs.path}" dest="${checkout.restcomm-jss7-ra.dir}"/>
-		<unzip src="${checkout.restcomm-jss7-ra.dir}/MAP/generated-docs.zip" dest="${checkout.restcomm-map-ra.dir}"/>
-	</target>
-
-	<available file="${restcomm-slee-sip11.distro.zip.path}" property="got-restcomm-sip-ra" />
-	<target name="get-restcomm-sip-ra" unless="got-restcomm-sip-ra">
-		<echo>Downloading RestComm SIP RA version: ${restcomm-slee-sip11.tag}</echo>
+	<available file="${telscale-management-hq.distro.zip.path}" property="got.telscale-management-hq" />
+	<target name="get-telscale-management-hq" unless="got.telscale-management-hq">
+		<echo>Downloading Telscale Management HQ version: ${telscale-management-hq.version}</echo>
 		<exec failonerror="true" executable="wget">
-			<arg value="${restcomm-slee-sip11.download.url}" />
+			<arg value="--user=telscale-file-server@telestax.com" />
+			<arg value="--password=t31sca13fi13s" />
+			<arg value="${telscale-management-hq.download.url}" />
 		</exec>
-		<move file="${base.dir}/${restcomm-slee-sip11.download.distro.file}" todir="${checkout.dir}"/>
-	</target>
-	
-	<!--
-	<available file="${restcomm-management-hq.distro.zip.path}" property="got.restcomm-management-hq" />
-	<target name="get-restcomm-management-hq" unless="got.restcomm-management-hq">
-		<echo>Downloading restcomm Management HQ version: ${restcomm-management-hq.version}</echo>
-		<exec failonerror="true" executable="wget">
-			<arg value="${restcomm-management-hq.download.url}" />
-		</exec>
-		<move file="${base.dir}/${restcomm-management-hq.download.distro.file}" todir="${checkout.dir}" />
+		<move file="${base.dir}/${telscale-management-hq.download.distro.file}" todir="${checkout.dir}" />
 	</target>	
 
-	<target name="extract-restcomm-management-hq" depends="get-restcomm-management-hq">
-		<delete dir="${checkout.restcomm-management-hq.dir}" failonerror="false" />
-		<unzip src="${restcomm-management-hq.distro.zip.path}" dest="${checkout.restcomm-management-hq.dir}" />
+	<target name="extract-telscale-management-hq" depends="get-telscale-management-hq">
+		<delete dir="${checkout.telscale-management-hq.dir}" failonerror="false" />
+		<unzip src="${telscale-management-hq.distro.zip.path}" dest="${checkout.telscale-management-hq.dir}" />
 	</target>
-	-->
-
-
-	<available file="${restcomm-diam.distro.zip.path}" property="got.restcomm-diam" />
-	<target name="get-restcomm-diam" unless="got.restcomm-diam">
-		<echo>Downloading RestComm Diameter version: ${restcomm-diam.version}</echo>
+	
+	<available file="${telscale-diam.distro.zip.path}" property="got.telscale-diam" />
+	<target name="get-telscale-diam" unless="got.telscale-diam">
+		<echo>Downloading Telscale Diameter version: ${telscale-diam.version}</echo>
 		<exec failonerror="true" executable="wget">
-		    <arg value="${restcomm-diam.download.url}" />
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${telscale-diam.download.url}" />
 		</exec>
-		<move file="${base.dir}/${restcomm-diam.download.distro.file}" todir="${checkout.dir}"/>
+		<move file="${base.dir}/${telscale-diam.download.distro.file}" todir="${checkout.dir}"/>
 	</target>
 	
-	<target name="extract-restcomm-diam" depends="get-restcomm-diam">
-		<delete dir="${checkout.restcomm-diam.dir}" failonerror="false" />
-		<unzip src="${restcomm-diam.distro.zip.path}" dest="${checkout.restcomm-diam.dir}"/>
+	<target name="extract-telscale-diam" depends="get-telscale-diam">
+		<delete dir="${checkout.telscale-diam.dir}" failonerror="false" />
+		<unzip src="${telscale-diam.distro.zip.path}" dest="${checkout.telscale-diam.dir}"/>
 	</target>
-	
-	<!-- Cassandra  -->
+
+	<!-- Cassandra DSE -->
+	<available file="${dse-cassandra.distro.zip.path}" property="got.dse-cassandra" />
+	<target name="get-dse-cassandra" unless="got.dse-cassandra">
+		<echo>Downloading DSE Cassandra only version: ${dse-cassandra.version}</echo>
+		<exec failonerror="true" executable="wget">
+		    <arg value="--user=telscale-file-server@telestax.com" />
+		    <arg value="--password=t31sca13fi13s" />
+		    <arg value="${dse-cassandra.download.url}" />
+		</exec>
+		<move file="${base.dir}/${dse-cassandra.download.distro.file}" todir="${checkout.dir}"/>
+	</target>
+
+	<target name="extract-dse-cassandra" depends="get-dse-cassandra">
+		<delete dir="${checkout.dse-cassandra.dir}" failonerror="false" />
+		<unzip src="${dse-cassandra.distro.zip.path}" dest="${cassandra.dir}"/>
+	</target>
+
+	<!-- Cassandra community -->
 	<available file="${community-cassandra.distro.zip.path}" property="got.community-cassandra" />
 	<target name="get-community-cassandra" unless="got.community-cassandra">
 		<echo>Downloading Community Cassandra only version: ${community-cassandra.version}</echo>
@@ -308,406 +297,394 @@
 		<gunzip src="${community-cassandra.distro.zip.path}"/>
 		<untar src="${community-cassandra.distro.untar.path}"  dest="${cassandra.dir}"/>
 	</target>
-	
-	
-	
-	<!-- NOT used bellow targets -->
-	<!--
-    <target name="checkout-ss7-map">
-        <echo>Checking out Map resource</echo>
-        <exec failonerror="true" executable="git">
-            <arg value="clone" />
-            <arg value="https://code.google.com/p/jain-slee.ss7/" />
-            <arg value="${checkout.map.dir}" />
-        </exec>
 
-        <exec executable="git" dir="${checkout.map.dir}">               
-            <arg value="checkout" />
-            <arg value="release-2.0.0.BETA4" />
-        </exec>
-    </target>
-	
-	<target name="build-ss7-map">
-        <echo>Building Map resource</echo>
-		<replace dir="${checkout.map.dir}/resources/map" value="">
-		  <include name="**/pom.xml"/>
-		  <replacetoken><![CDATA[2.0.0.BETA4]]></replacetoken>
-		</replace>		
-        <copy file="${base.dir}/map-ra/pom.xml" tofile="${checkout.map.dir}/resources/map/pom.xml" failonerror="true" overwrite="true"/>
-        <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.map.dir}">
-                <arg line="clean install -Prelease -Drelease.dir=${release.map.dir} -Dmaven.test.skip=true" />
-        </exec>
-	</target>
-	-->
-	
-	<target name="clean-up-restcomm-slee">
+
+	<target name="clean-up-telscale-slee">
 		<mkdir dir="${release.dir}/jboss-5.1.0.GA/server/simulator"/>
-        <copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator" failonerror="true">
-                <fileset dir="${release.dir}/jboss-5.1.0.GA/server/default">
-                        <include name="**" />
-                </fileset>
-        </copy>
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator" failonerror="true">
+			<fileset dir="${release.dir}/jboss-5.1.0.GA/server/default">
+				<include name="**" />
+			</fileset>
+		</copy>
 		<delete dir="${release.dir}/jboss-5.1.0.GA/server/all" includeemptydirs="true" failonerror="true"/>    	
 		<delete includeemptydirs="true" failonerror="true">
-            <fileset dir="${release.dir}/docs/resources">
-                    <include name="**" />
-                	<exclude name="**/map/**" />
-	        		<exclude name="**/sip11/**" />
-            </fileset>
-		</delete>	
+			<fileset dir="${release.dir}/docs/resources">
+				<include name="**" />
+				<exclude name="**/map/**" />
+				<exclude name="**/sip11/**" />
+				<exclude name="**/diameter-base/**" />
+				<exclude name="**/diameter-ro/**" />
+			</fileset>
+		</delete>
 		<delete dir="${release.dir}/docs/enablers" includeemptydirs="true" failonerror="true" />
 		<delete dir="${release.dir}/docs/examples" includeemptydirs="true" failonerror="true" />
 		<delete includeemptydirs="true" failonerror="true">
-            <fileset dir="${release.dir}/resources">
-                    <include name="**" />
-            		<exclude name="**/sip11/**" />
-            </fileset>
+			<fileset dir="${release.dir}/resources">
+				<include name="**" />
+				<exclude name="**/sip11/**" />
+				<exclude name="**/diameter-base/**" />
+				<exclude name="**/diameter-ro/**" />
+			</fileset>
 		</delete>
-		<delete failonerror="true">
-            <fileset dir="${release.dir}/jboss-5.1.0.GA/server/simulator/lib">
-                    <include name="**" />
-            </fileset>
-		</delete>	
-		<delete dir="${release.dir}/extra" includeemptydirs="true" failonerror="true" />
+		<delete includeemptydirs="true" failonerror="true">
+			<fileset dir="${release.dir}/extra">
+				<include name="**" />
+				<exclude name="**/telscale-diameter/**" />
+			</fileset>
+		</delete>
 		<delete dir="${release.dir}/enablers" includeemptydirs="true" failonerror="true" />
 		<delete dir="${release.dir}/examples" includeemptydirs="true" failonerror="true" />
 		<delete file="${release.dir}/readme.txt" failonerror="true" />
 		<delete file="${release.dir}/sources.zip" failonerror="true" />
-		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/cluster" includeemptydirs="true" failonerror="true" />
-		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/deploy.last" includeemptydirs="true" failonerror="true" />
-		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/snmp-adaptor.sar" includeemptydirs="true" failonerror="true" />
-		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/juddi-service.sar" includeemptydirs="true" failonerror="true" />
-		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/restcomm-slee/profiles-external-ds.xml" failonerror="true" />
-		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/restcomm-slee/META-INF/jboss-cache-config.xml" failonerror="true" />
-		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/iiop-service.xml" failonerror="true" />
-		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/jacorb.properties" failonerror="true" />
-		<delete file="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/iiop-service.xml" failonerror="true" />
-		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy-hasingleton/" includeemptydirs="true" failonerror="true" />
-		<delete dir="${release.dir}/jboss-5.1.0.GA/server/simulator/farm/" includeemptydirs="true" failonerror="true" />
 	</target>
-	
+
     <target name="checkout-smsc-persistence">
-        <echo>Checking out RestComm SMSC persistence branch</echo>
+        <echo>Checking out SMSC persistence branch</echo>
         <exec failonerror="true" executable="git">
             <arg value="clone" />
-            <arg value="https://github.com/RestComm/smscgateway.git" />
-            <arg value="${checkout.restcomm-smsc.dir}" />
+            <arg value="https://telscalejenkins:m0b1c3nts@bitbucket.org/telestax/telscale-smscgateway.git" />
+            <arg value="${checkout.telscale-smsc.dir}" />
         </exec>
         <exec failonerror="true" executable="git">
-            <arg value="--git-dir=${checkout.restcomm-smsc.dir}/.git" />
-            <arg value="--work-tree=${checkout.restcomm-smsc.dir}" />
+            <arg value="--git-dir=${checkout.telscale-smsc.dir}/.git" />
+            <arg value="--work-tree=${checkout.telscale-smsc.dir}" />
             <arg value="checkout" />
-            <arg value="${restcomm.smsc.git.tag}" />
+            <arg value="${telscale.smsc.git.tag}" />
         </exec>
     	
     </target>
-	
-	<target name="build-map-ra">
-		<exec failonerror="true" executable="${mvn.executable}" dir="${checkout.restcomm-slee.jainslee-jss7-build.dir}/resources/map/">
-			<arg line="clean install" />
+
+	<target name="get-clhpp">
+		<echo>Clone RestComm SMPP</echo>
+		<exec failonerror="true" executable="git">
+			<arg value="clone" />
+			<arg value="https://github.com/RestComm/cloudhopper-smpp.git" />
+			<arg value="-b" />
+			<arg value="${restcomm-cloudhopper.smpp.tag}" />
+			<arg value="${checkout.restcomm-cloudhopper.smpp.dir}" />
 		</exec>
-		<move file="${checkout.restcomm-slee.jainslee-jss7-build.dir}/resources/map/du/target" tofile="${base.dir}/map-ra/target/map-du" failonerror="false"/>
 	</target>
 
 	<target name="build-clhpp">
-		<exec failonerror="true" executable="${mvn.executable}" dir="${checkout.restcomm-smsc.dir}">
-			<arg line="-version" />
-		</exec>
+		<echo>Building RestComm SMPP from source</echo>
 
-		<echo>Clone RestComm SMPP</echo>
-        <exec failonerror="true" executable="git">
-            <arg value="clone" />
-            <arg value="https://github.com/RestComm/cloudhopper-smpp.git" />
-            <arg value="-b" />
-            <arg value="${restcomm-cloudhopper.smpp.tag}" />
-            <arg value="${checkout.restcomm-cloudhopper.smpp.dir}" />
-        </exec>
-		
-        <echo>Building RestComm SMPP from source</echo>
-		
-        <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
-                <arg line="clean install -Prelease -Dmaven.test.skip=true" />
-        </exec>
+		<exec failonerror="true" executable="${mvn.executable}" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
+			<arg line="clean install -Prelease -Dmaven.test.skip=true" />
+		</exec>
 	</target>
 
-	<target name="build-smsc">
-		<exec failonerror="true" executable="${mvn.executable}" dir="${checkout.restcomm-smsc.dir}">
-			<arg line="${release.build.goals} -Dmaven.test.skip=true -Passembly" />
+	<target name="build-clhpp-citask">
+		<echo>Building RestComm SMPP from source</echo>
+
+		<echo>maven.ci.home.bin=${maven.ci.home.bin}</echo>
+		<exec failonerror="true" executable="${maven.ci.home.bin}/mvn" dir="${checkout.restcomm-cloudhopper.smpp.dir}">
+			<arg line="clean install -Prelease -Dmaven.test.skip=true" />
 		</exec>
-		<ant antfile="build.xml" dir="${checkout.restcomm-smsc.dir}/test/smpp-load/" />
 	</target>
 
-
-	<target name="copy-smsc">
-		<echo>Copy RestComm Map RA DU</echo>
-		<copy todir="${release.dir}/resources/map" failonerror="true">
-			<fileset dir="${checkout.dir}">
-				<include name="${restcomm-map-ra.download.jar.file}" />
-			</fileset>
-		</copy>
+    <target name="build-smsc">
+        <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.telscale-smsc.dir}">
+                <arg line="${release.build.goals} -Dmaven.test.skip=true -Passembly" />
+        </exec>
+		<ant antfile="build.xml" dir="${checkout.telscale-smsc.dir}/test/smpp-load/" />
+    </target>
 
 <!--
-		<echo>Copy RestComm SIP RA DU</echo>
-        <copy todir="${release.dir}/resources/sip11" failonerror="true">
-                <fileset dir="${checkout.dir}">
-                        <include name="${restcomm-slee-sip11.download.distro.file}" />
-                </fileset>
-        </copy>
+    <target name="build-map-ra">
+        <exec failonerror="true" executable="${mvn.executable}" dir="${base.dir}/map-ra">
+                <arg line="clean install" />
+        </exec>
+    	<move file="${base.dir}/map-ra/target/map-ts-ra.dir" tofile="${base.dir}/map-ra/target/map-ts-ra" failonerror="false"/>
+    </target>
 -->
 
-		<echo>Copy Diameter Config Files</echo>
-		<copy todir="${release.dir}/resources/ocs" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/core/bootstrap/src/main/config/ocs">
-				<include name="**" />
+	<target name="copy-smsc">
+		<echo>Copy Telscale Map RA</echo>
+		<copy todir="${release.dir}/resources/map" failonerror="true">
+			<fileset dir="${checkout.dir}">
+				<include name="${telscale-map-ra.download.distro.file}" />
 			</fileset>
-		</copy>    	
+		</copy>
 
-		<echo>Copy SMSC server</echo>
+        <echo>Copy Diameter Config Files</echo>
+        <copy todir="${release.dir}/resources/ocs" failonerror="true">
+        	 <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ocs">
+                <include name="**" />
+            </fileset>
+        </copy>    	
 
+        <echo>Copy SMS server</echo>
 		<!--default-->
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/restcomm-smsc-server" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/core/bootstrap/target/restcomm-smsc-server">
-				<include name="**" />
-			</fileset>
-		</copy>
-		<copy file="${checkout.restcomm-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${restcomm.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-		<copy file="${checkout.restcomm-smsc.dir}/core/slee/services/du/target/smsc-services-du-${restcomm.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-		<copy file="${checkout.dir}/${restcomm-map-ra.download.jar.file}" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-		<copy file="${checkout.restcomm-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-		<mkdir dir="${release.dir}/jboss-5.1.0.GA/server/default/data"/>
-		<copy file="${basedir}/profile.xml" todir="${release.dir}/jboss-5.1.0.GA/server/default/conf/bootstrap" failonerror="true" overwrite="true"/>
-
+        <copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/telscale-smsc-server" failonerror="true">
+                <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/target/telscale-smsc-server">
+                        <include name="**" />
+                </fileset>
+        </copy>
+        <copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${checkout.dir}/${telscale-map-ra.download.distro.file}" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+    	<mkdir dir="${release.dir}/jboss-5.1.0.GA/server/default/data"/>
+	    <copy file="${basedir}/profile.xml" todir="${release.dir}/jboss-5.1.0.GA/server/default/conf/bootstrap" failonerror="true" overwrite="true"/>
 		<!--simulator-->
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/restcomm-smsc-server" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/core/bootstrap/target/restcomm-smsc-server">
-				<include name="**" />
-			</fileset>
-		</copy>
-		<copy file="${checkout.restcomm-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${restcomm.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-		<copy file="${checkout.restcomm-smsc.dir}/core/slee/services/du/target/smsc-services-du-${restcomm.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-    	<copy file="${checkout.dir}/${restcomm-map-ra.download.jar.file}" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-		<copy file="${checkout.restcomm-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/data" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/core/bootstrap/src/main/config/data">
-				<include name="**" />
-			</fileset>
-		</copy>
+        <copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/telscale-smsc-server" failonerror="true">
+                <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/target/telscale-smsc-server">
+                        <include name="**" />
+                </fileset>
+        </copy>
+        <copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${checkout.dir}/${telscale-map-ra.download.distro.file}" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+        <copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/data" failonerror="true">
+                <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/data">
+                        <include name="**" />
+                </fileset>
+        </copy>
+
 	    <copy file="${basedir}/profile.xml" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/bootstrap" failonerror="true" overwrite="true"/>
-
 		<!--tools-->
-		<copy todir="${release.dir}/tools/restcomm-jss7-simulator" failonerror="true">
-			<fileset dir="${checkout.restcomm-jss7.dir}/restcomm-jss7-${restcomm-jss7.version}/ss7/restcomm-ss7-simulator">
-				<include name="**" />
-			</fileset>
+		<copy todir="${release.dir}/tools/TelScale-jss7-simulator" failonerror="true">
+		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/ss7/Telscale-ss7-simulator">
+		                <include name="**" />
+		        </fileset>
 		</copy>
-		<copy todir="${release.dir}/tools/restcomm-smpp-simulator" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/tools/smpp-simulator/bootstrap/target/simulator-smpp">
-				<include name="**" />
-			</fileset>
+	    <copy file="${basedir}/telestax-license_template.xml" tofile="${release.dir}/tools/TelScale-jss7-simulator/bin/telestax-license.xml" failonerror="true" />
+		<copy todir="${release.dir}/tools/TelScale-smpp-simulator" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/tools/smpp-simulator/bootstrap/target/simulator-smpp">
+		                <include name="**" />
+		        </fileset>
 		</copy>
-
-		<!-- tools : smpp-load -->
-		<copy todir="${release.dir}/tools/restcomm-smpp-load/target/load" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/test/smpp-load/target/smpp-load">
-				<include name="**" />
-			</fileset>
+    	<!-- tools : smpp-load -->
+		<copy todir="${release.dir}/tools/TelScale-smpp-load/target/load" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/test/smpp-load/target/smpp-load">
+		                <include name="**" />
+		        </fileset>
 		</copy>
-		<copy todir="${release.dir}/tools/restcomm-smpp-load/src/main/resources" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/test/smpp-load/src/main/resources">
-				<include name="**" />
-			</fileset>
+		<copy todir="${release.dir}/tools/TelScale-smpp-load/src/main/resources" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/test/smpp-load/src/main/resources">
+		                <include name="**" />
+		        </fileset>
 		</copy>
-		<copy file="${checkout.restcomm-smsc.dir}/test/smpp-load/build.xml" todir="${release.dir}/tools/restcomm-smpp-load" failonerror="true" />
-
-		<!--CLI-->
-		<copy file="${checkout.restcomm-smsc.dir}/core/oam/clismpp/target/smpp-cli-${restcomm.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
+	    <copy file="${checkout.telscale-smsc.dir}/test/smpp-load/build.xml" todir="${release.dir}/tools/TelScale-smpp-load" failonerror="true" />
+    	
+    	<!-- tools : HLR Simulator -->
+		<copy todir="${release.dir}/tools/TelScale-hlr-simulator" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/test/hlr-simulator/bootstrap/target/hlr-simulator-server">
+		                <include name="**" />
+		        </fileset>
+		</copy>
+	    <copy file="${basedir}/telestax-license_template.xml" tofile="${release.dir}/tools/TelScale-hlr-simulator/bin/telestax-license.xml" failonerror="true" />
+		                	
+    	<!--CLI-->
+        <copy file="${checkout.telscale-smsc.dir}/core/oam/clismpp/target/smpp-cli-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
 		<copy todir="${release.dir}/jboss-5.1.0.GA/" failonerror="true">
-    		<fileset dir="${checkout.restcomm-jss7.dir}/restcomm-jss7-${restcomm-jss7.version}/ss7/shell">
-				<include name="**/*" />
-			</fileset>
+		        <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/ss7/shell">
+		                <include name="**/*" />
+		        </fileset>
 		</copy>
-		<copy file="${checkout.restcomm-smsc.dir}/core/oam/cli/target/smsc-cli-${restcomm.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
-		<copy todir="${release.dir}/jboss-5.1.0.GA/" failonerror="true">
-			<fileset dir="${checkout.restcomm-jss7.dir}/restcomm-jss7-${restcomm-jss7.version}/ss7/shell">
-				<include name="**/*" />
-			</fileset>
-		</copy>
-
-		<!--logs-->
+        <copy file="${checkout.telscale-smsc.dir}/core/oam/cli/target/smsc-cli-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/lib" failonerror="true" />
+        <copy todir="${release.dir}/jboss-5.1.0.GA/" failonerror="true">
+                <fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/ss7/shell">
+                        <include name="**/*" />
+                </fileset>
+        </copy>
+    	
+    	<!--logs-->
 		<echo>Copy jboss-log4j*.xml</echo>
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/restcomm-smsc-server/log4j-templates" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/core/bootstrap/src/main/config/log4j">
-				<include name="**/*" />
-			</fileset>
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/telscale-smsc-server/log4j-templates" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/log4j">
+		                <include name="**/*" />
+		        </fileset>
 		</copy>
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/restcomm-smsc-server/log4j-templates" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/core/bootstrap/src/main/config/log4j">
-				<include name="**/*" />
-			</fileset>
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/telscale-smsc-server/log4j-templates" failonerror="true">
+		        <fileset dir="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/log4j">
+		                <include name="**/*" />
+		        </fileset>
 		</copy>
 
-    	<copy file="${checkout.restcomm-smsc.dir}/core/bootstrap/src/main/config/log4j/jboss-log4j-default.xml" tofile="${release.dir}/jboss-5.1.0.GA/server/default/conf/jboss-log4j.xml" overwrite="true"></copy>
-    	<copy file="${checkout.restcomm-smsc.dir}/core/bootstrap/src/main/config/log4j/jboss-log4j-default.xml" tofile="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/jboss-log4j.xml" overwrite="true"></copy>
+    	<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/log4j/jboss-log4j-default.xml" tofile="${release.dir}/jboss-5.1.0.GA/server/default/conf/jboss-log4j.xml" overwrite="true"></copy>
+    	<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/log4j/jboss-log4j-default.xml" tofile="${release.dir}/jboss-5.1.0.GA/server/simulator/conf/jboss-log4j.xml" overwrite="true"></copy>
 
     	<!-- oam/new-ui - jolokia war & jss7-management-console.war-->
-	    <copy file="${checkout.restcomm-jss7.dir}/restcomm-jss7-${restcomm-jss7.version}/oam/new-ui/jolokia.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-	    <copy file="${checkout.restcomm-jss7.dir}/restcomm-jss7-${restcomm-jss7.version}/oam/new-ui/jolokia.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-	    <copy file="${checkout.restcomm-jss7.dir}/restcomm-jss7-${restcomm-jss7.version}/oam/new-ui/jss7-management-console.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-	    <copy file="${checkout.restcomm-jss7.dir}/restcomm-jss7-${restcomm-jss7.version}/oam/new-ui/jss7-management-console.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-
-		<!-- restcomm Management HQ is not needed
-		<echo>restcomm Management Hq</echo>
-		<copy file="${checkout.restcomm-management-hq.dir}/restcomm-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-		<copy file="${checkout.restcomm-management-hq.dir}/restcomm-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-    	-->
+	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/oam/new-ui/jolokia.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/oam/new-ui/jolokia.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/oam/new-ui/jss7-management-console.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+	    <copy file="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/oam/new-ui/jss7-management-console.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+    	
+		<!-- TelScale Management HQ -->
+		<echo>TelScale Management Hq</echo>
+		<copy file="${checkout.telscale-management-hq.dir}/telscale-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-management-hq.dir}/telscale-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
 
 		<!-- Cassandra -->
 		<echo>Copy Cassandra conf</echo>
 		<copy todir="${cassandra.dir}" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/cassandra">
-				<include name="**" />
-			</fileset>
+		        <fileset dir="${checkout.telscale-smsc.dir}/cassandra">
+		                <include name="**" />
+		        </fileset>
 		</copy>
-
 		<!-- jss7 config-->    	
-		<copy file="${checkout.restcomm-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/main_simulator2.xml" todir="${release.dir}/tools/restcomm-jss7-simulator/data" failonerror="true" />
-		<copy file="${checkout.restcomm-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/win_simulator2.xml" todir="${release.dir}/tools/restcomm-jss7-simulator/data" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/main_simulator2.xml" todir="${release.dir}/tools/TelScale-jss7-simulator/data" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/bootstrap/src/main/config/ss7-simulator/win_simulator2.xml" todir="${release.dir}/tools/TelScale-jss7-simulator/data" failonerror="true" />
 
 		<!-- jDiameter - mux & RA's-->    	
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/restcomm-diameter-mux-${restcomm-diam.version}.sar" failonerror="true">
-	        <fileset dir="${checkout.restcomm-diam.dir}/core/mux/restcomm-diameter-mux.sar">
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar" failonerror="true">
+			<fileset dir="${release.dir}/extra/telscale-diameter/mux/TelScale-diameter-mux-${telscale-diam.version}.sar">
 				<include name="**" />
 			</fileset>
 		</copy>
 
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/restcomm-diameter-mux-${restcomm-diam.version}.sar" failonerror="true">
-			<fileset dir="${checkout.restcomm-diam.dir}/core/mux/restcomm-diameter-mux.sar">
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar" failonerror="true">
+			<fileset dir="${release.dir}/extra/telscale-diameter/mux/TelScale-diameter-mux-${telscale-diam.version}.sar">
 				<include name="**" />
 			</fileset>
 		</copy>
 
-		<copy file="${checkout.restcomm-diam.dir}/resources/base/diameter-restcomm-slee-ra-diameter-base-ra-DU-${restcomm-diam.resources.version}.jar" 
+		<copy file="${release.dir}/resources/diameter-base/diameter-mobicents-slee-ra-diameter-base-ra-DU-${telscale-diam-ra.version}.jar"
 			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-		<copy file="${checkout.restcomm-diam.dir}/resources/base/diameter-restcomm-slee-ra-diameter-base-ra-DU-${restcomm-diam.resources.version}.jar" 
+		<copy file="${release.dir}/resources/diameter-base/diameter-mobicents-slee-ra-diameter-base-ra-DU-${telscale-diam-ra.version}.jar"
 			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-		<copy file="${checkout.restcomm-diam.dir}/resources/ro/diameter-restcomm-slee-ra-diameter-ro-ra-DU-${restcomm-diam.resources.version}.jar" 
+		<copy file="${release.dir}/resources/diameter-ro/diameter-mobicents-slee-ra-diameter-ro-ra-DU-${telscale-diam-ra.version}.jar"
 			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-		<copy file="${checkout.restcomm-diam.dir}/resources/ro/diameter-restcomm-slee-ra-diameter-ro-ra-DU-${restcomm-diam.resources.version}.jar" 
+		<copy file="${release.dir}/resources/diameter-ro/diameter-mobicents-slee-ra-diameter-ro-ra-DU-${telscale-diam-ra.version}.jar"
 			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+<!-- ** script with downloading dialmeter as a separate release **
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar" failonerror="true">
+		        <fileset dir="${checkout.telscale-diam.dir}/core/mux/TelScale-diameter-mux-${telscale-diam.version}.sar">
+		                <include name="**" />
+		        </fileset>
+		</copy>
 
-		
-		
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true">
-			<fileset dir="${release.dir}/resources/sip11">
-				<include name="sip11-ra-DU-**.**" />
-			</fileset>
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar" failonerror="true">
+	        <fileset dir="${checkout.telscale-diam.dir}/core/mux/TelScale-diameter-mux-${telscale-diam.version}.sar">
+		                <include name="**" />
+		        </fileset>
 		</copy>
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true">
-			<fileset dir="${release.dir}/resources/sip11">
-				<include name="sip11-ra-DU-**.**" />
-			</fileset>
-		</copy>
+    	
+		<copy file="${checkout.telscale-diam.dir}/resources/diameter-base/diameter-mobicents-slee-ra-diameter-base-ra-DU-${telscale-diam.version}.jar" 
+			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-diam.dir}/resources/diameter-base/diameter-mobicents-slee-ra-diameter-base-ra-DU-${telscale-diam.version}.jar" 
+			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-diam.dir}/resources/diameter-ro/diameter-mobicents-slee-ra-diameter-ro-ra-DU-${telscale-diam.version}.jar" 
+			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-diam.dir}/resources/diameter-ro/diameter-mobicents-slee-ra-diameter-ro-ra-DU-${telscale-diam.version}.jar" 
+			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+-->
+
+		<!-- sip - RA -->    	
+		<copy file="${release.dir}/resources/sip11/sip11-ra-DU-${telscale-sip.version}.jar" 
+			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${release.dir}/resources/sip11/sip11-ra-DU-${telscale-sip.version}.jar" 
+			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
 
 		<!-- jDiameter - remove SCTP lib - we will reuse the lib from JSS7 -->    	
 		<delete includeemptydirs="true" failonerror="true">
-            <fileset dir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/restcomm-diameter-mux-${restcomm-diam.version}.sar/lib">
+            <fileset dir="${release.dir}/jboss-5.1.0.GA/server/default/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar/lib">
                     <include name="sctp-api-*.jar" />
                 	<include name="sctp-impl-*.jar" />
             </fileset>
 		</delete>
 		<delete includeemptydirs="true" failonerror="true">
-            <fileset dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/restcomm-diameter-mux-${restcomm-diam.version}.sar/lib">
+            <fileset dir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar/lib">
                     <include name="sctp-api-*.jar" />
                 	<include name="sctp-impl-*.jar" />
             </fileset>
 		</delete>
 
 
-<!--		
-		<copy file="${release.dir}/resources/sip11/sip11-ra-DU-${restcomm-slee-sip11.version}.jar" 
-			todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-		<copy file="${release.dir}/resources/sip11/sip11-ra-DU-${restcomm-slee-sip11.version}.jar" 
-			todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
--->
+
     </target>
 
-	<target name="build-docs">
-		<exec failonerror="true" executable="${mvn.executable}" dir="${checkout.restcomm-smsc.dir}/docs">
-			<arg line="${release.build.goals} -Pall -Dmaven.test.skip=true" />
-		</exec>
-	</target>
+    <target name="build-docs">
+        <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.telscale-smsc.dir}/docs">
+                <arg line="${release.build.goals} -Dmaven.test.skip=true -Pall" />
+        </exec>
+    </target>
 
-	<target name="copy-docs">
+    <target name="copy-docs">
 		<!--docs-->
 
-		<delete dir="${docs.dir}/resources/map"/>    	
-
-		<copy todir="${docs.dir}/resources/map/html-book" failonerror="true">
-			<fileset dir="${checkout.restcomm-map-ra.dir}/generated-docs/html-book">
-			</fileset>
-		</copy>
-		<copy todir="${docs.dir}/resources/map/pdf" failonerror="true">
-			<fileset dir="${checkout.restcomm-map-ra.dir}/generated-docs/pdf">
-			</fileset>
-		</copy>
-
 		<mkdir dir="${docs.dir}/jss7"/>
-		<mkdir dir="${docs.dir}/smsc"/>
 		<copy todir="${docs.dir}/jss7" failonerror="true">
-			<fileset dir="${checkout.restcomm-jss7.dir}/restcomm-jss7-${restcomm-jss7.version}/_docs/">
+			<fileset dir="${checkout.telscale-jss7.dir}/TelScale-jss7-${telscale-jss7.version}.${telscale-jss7.build-number}/_docs/">
 			</fileset>
 		</copy>
+
+		<mkdir dir="${docs.dir}/smsc"/>
+		<mkdir dir="${docs.dir}/smsc/adminguide"/>
+		<mkdir dir="${docs.dir}/smsc/installationguide"/>
 		<copy todir="${docs.dir}/smsc/adminguide/html-book" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/docs/adminguide/sources-asciidoc/target/generated-docs/html-book">
+			<fileset dir="${checkout.telscale-smsc.dir}/docs/adminguide/sources-asciidoc/target/generated-docs/html-book">
 			</fileset>
 		</copy>
 		<copy todir="${docs.dir}/smsc/adminguide/pdf" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/docs/adminguide/sources-asciidoc/target/generated-docs/pdf">
+			<fileset dir="${checkout.telscale-smsc.dir}/docs/adminguide/sources-asciidoc/target/generated-docs/pdf">
 				<include name="*.pdf" />
 			</fileset>
 		</copy>
 		<copy todir="${docs.dir}/smsc/installationguide/html-book" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/docs/installationguide/sources-asciidoc/target/generated-docs/html-book">
+			<fileset dir="${checkout.telscale-smsc.dir}/docs/installationguide/sources-asciidoc/target/generated-docs/html-book">
 			</fileset>
 		</copy>
 		<copy todir="${docs.dir}/smsc/installationguide/pdf" failonerror="true">
-			<fileset dir="${checkout.restcomm-smsc.dir}/docs/installationguide/sources-asciidoc/target/generated-docs/pdf">
+			<fileset dir="${checkout.telscale-smsc.dir}/docs/installationguide/sources-asciidoc/target/generated-docs/pdf">
 				<include name="*.pdf" />
+			</fileset>
+		</copy>
+
+		<echo>Copy Telscale Map RA docs</echo>
+		<delete dir="${docs.dir}/resources/map" failonerror="true" />
+    	<copy todir="${docs.dir}/resources/map/html-book" failonerror="true">
+			<fileset dir="${checkout.telscale-jss7-map-ra-docs.dir}/generated-docs/html-book">
+			</fileset>
+		</copy>
+    	<copy todir="${docs.dir}/resources/map/pdf" failonerror="true">
+			<fileset dir="${checkout.telscale-jss7-map-ra-docs.dir}/generated-docs/pdf">
+				<include name="*.pdf" />
+			</fileset>
+		</copy>
+
+		<mkdir dir="${docs.dir}/management-hq" />
+		<copy todir="${docs.dir}/management-hq" failonerror="true" flatten="true">
+			<fileset dir="${checkout.telscale-management-hq.dir}/docs/">
+				<include name="**/*.pdf" />
+			</fileset>			
+		</copy>		
+
+    	<mkdir dir="${bundle.docs.dir}"/>
+		<copy toDir="${bundle.docs.dir}" overwrite="true">
+			<fileset dir="${docs.dir}">
+				<include name="**" />
 			</fileset>
 		</copy>
     </target>
 
 
 	<target name="make-final-zip" depends="set-time-stamp">
-		<zip destfile="${base.dir}/restcomm-smsc-${restcomm.smsc.release.version}.zip" filesonly="false">
-			<zipfileset dir="${release.dir}" prefix="restcomm-smsc-${restcomm.smsc.release.version}">
+		<zip destfile="${base.dir}/TelScale-smsc-${telscale.smsc.release.version}.zip" filesonly="false">
+			<zipfileset dir="${release.dir}" prefix="TelScale-smsc-${telscale.smsc.release.version}">
 				<include name="**" />
 			</zipfileset>
 		</zip>
 	</target>
-	
+
 	<target name="set-time-stamp" unless="skip.timestamp">
 		<tstamp>
 			<format property="time.stamp" pattern="yyMMddHHmm" />
 		</tstamp>
 	</target>
 
-	<target name="bundle-documentation" >
-		<echo>bundling documentation</echo>
+    <target name="bundle-documentation">
+	    <echo>bundling documentation</echo>
 
-		<mkdir dir="${bundle.docs.dir}"/>
-
-		<copy toDir="${bundle.docs.dir}" overwrite="true">
-			<fileset dir="${docs.dir}">
-				<include name="**" />
-			</fileset>
-		</copy>
-
-        <zip destfile="${base.dir}/restcomm-smsc-${restcomm.smsc.release.version}-docs.zip" filesonly="false">
-                <zipfileset dir="${bundle.docs.dir}" prefix="restcomm-smsc-${restcomm.smsc.release.version}/docs">
+        <zip destfile="${base.dir}/TelScale-smsc-${telscale.smsc.release.version}-docs.zip" filesonly="false">
+                <zipfileset dir="${bundle.docs.dir}" prefix="TelScale-smsc-${telscale.smsc.release.version}/docs">
                         <include name="**/*" />
                 </zipfileset>
         </zip>
-	</target>
-
+    </target>
+	
+	
+	
 </project>
