@@ -152,7 +152,13 @@
     		<property name="release.build.goals" value="${release.ts.deploy.goals}" />
     	</ant>
     </target>
-	
+
+    <target name="deploy-telscale">
+    	<ant antfile="${ant.file.telscale.smscgw.release}" target="release-telscale">
+    		<property name="release.build.goals" value="${release.ts.deploy.goals}" />
+    	</ant>
+    </target>
+
     <target name="deploy-local">
     	<ant antfile="${ant.file.telscale.smscgw.release}" target="release">
     		<property name="release.build.goals" value="${release.ts.deploy.goals.local}" />
