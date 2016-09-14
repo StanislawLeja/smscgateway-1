@@ -22,25 +22,14 @@
 
 package org.mobicents.smsc.mproc.dlrmnp;
 
-import org.mobicents.smsc.mproc.MProcRule;
-import org.mobicents.smsc.mproc.MProcRuleFactory;
-
 /**
 *
 * @author sergey vetyutnev
 *
 */
-public class MProcRuleFactoryDlrMnpImpl implements MProcRuleFactory {
-    public static final String CLASS_NAME = "dlrmnprule";
+public interface MProcRuleOamMessagesDlrMnp {
 
-    @Override
-    public String getRuleClassName() {
-        return CLASS_NAME;
-    }
-
-    @Override
-    public MProcRule createMProcRuleInstance() {
-        return new MProcRuleDlrMnpImpl();
-    }
+    public static final String SET_RULE_PARAMETERS_FAIL_NO_PARAMETERS_PROVIDED = "Setting of MProcRule parameters failed: no parameter is provided";
+    public static final String SET_RULE_PARAMETERS_FAIL_NO_ACTIONS_PROVIDED = "Setting of MProcRule parameters failed: no action is provided";
 
 }
