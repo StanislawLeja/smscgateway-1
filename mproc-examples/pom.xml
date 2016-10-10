@@ -13,6 +13,7 @@
 	<name>MProc rules Examples</name>
 
 	<modules>
+		<module>mproc-simple-example</module>
 		<module>mproc-dlr-mnp</module>
 	</modules>
 </project>
