@@ -15,5 +15,7 @@
 	<modules>
 		<module>mproc-simple-example</module>
 		<module>mproc-dlr-mnp</module>
+		<module>mproc-basic</module>
 	</modules>
+
 </project>
