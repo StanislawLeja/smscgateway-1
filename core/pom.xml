@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>restcomm-smsc-parent</artifactId>
 		<groupId>org.mobicents.smsc</groupId>
-		<version>7.1.0-TelScale-SNAPSHOT</version>
+		<version>7.1.1.813</version>
 	</parent>
 
 	<artifactId>core</artifactId>
