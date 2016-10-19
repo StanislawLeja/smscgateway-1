@@ -30,10 +30,10 @@
 	<property name="telscale-slee.version" value="6.1.4" />
 	<property name="telscale-slee.build-number" value="GA" />
 	<property name="telscale-slee.build-number-dir" value="56.477" />
-	<property name="telscale-jss7.version" value="7.0.1" />
-	<property name="telscale-jss7.build-number" value="519" />
-	<property name="telscale-map-ra.version" value="7.0.1" />
-	<property name="telscale-map-ra.build-number" value="16" />
+	<property name="telscale-jss7.version" value="7.1.1" />
+	<property name="telscale-jss7.build-number" value="545" />
+	<property name="telscale-map-ra.version" value="7.1.1" />
+	<property name="telscale-map-ra.build-number" value="23" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
 	<property name="telscale-diam.version" value="6.2.1.327" />
 	<property name="telscale-diam-ra.version" value="6.2.1.12" />
