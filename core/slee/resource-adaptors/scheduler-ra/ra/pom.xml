@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.smsc</groupId>
 		<artifactId>scheduler-ra-parent</artifactId>
-		<version>7.1.0-TelScale-SNAPSHOT</version>
+		<version>7.1.1.815</version>
 	</parent>
 
 	<artifactId>scheduler-ra</artifactId>
