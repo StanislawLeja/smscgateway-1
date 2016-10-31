@@ -659,7 +659,7 @@
 -->
 
 		<!-- Copying of SLEE lce libs for jboss -->
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/common/lib" failonerror="true">
+		<copy todir="${release.dir}/jboss-5.1.0.GA/common/lib" failonerror="true">
 			<fileset dir="${checkout.telscale-lce.dir}/${telscale-lce.download.distro.folder}/lib/">
                 <include name="lce-*.jar" />
 			</fileset>
