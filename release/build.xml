@@ -632,7 +632,7 @@
 		</delete>
 
 		<!-- jDiameter - copying of jdiameter-config.xml into diameter mux (only simulator profile) -->    	
-		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/restcomm-diameter-mux-${restcomm-diam.version}.sar/config" failonerror="true" overwrite="true">
+		<copy todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy/TelScale-diameter-mux-${telscale-diam.version}.sar/config" failonerror="true" overwrite="true">
 			<fileset dir="${release.dir}/resources/ocs/smsc-part">
 				<include name="jdiameter-config.xml" />
 			</fileset>
