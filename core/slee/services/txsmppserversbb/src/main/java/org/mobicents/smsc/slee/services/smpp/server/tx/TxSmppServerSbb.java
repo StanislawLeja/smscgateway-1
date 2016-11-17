@@ -1561,6 +1561,10 @@ public abstract class TxSmppServerSbb implements Sbb {
             DeliveryReceiptData deliveryReceiptData = MessageUtil.parseDeliveryReceipt(sms0.getShortMessageText(),
                     sms0.getTlvSet());
 
+            // !!!!- TODO: remove it .........................................
+            this.logger.info("***** 001 deliveryReceiptData found: " + deliveryReceiptData);
+            // !!!!- TODO: remove it .........................................
+
             if (deliveryReceiptData != null) {
                 String clusterName = esme.getClusterName();
                 String dlvTlvMessageId = deliveryReceiptData.getTlvReceiptedMessageId();
@@ -1608,6 +1612,11 @@ public abstract class TxSmppServerSbb implements Sbb {
 //                }
 
                 if (messageId != null) {
+                    // !!!!- TODO: remove it .........................................
+                    this.logger.info("***** 003 messageId found: " + messageId);
+                    // !!!!- TODO: remove it .........................................
+
+
                     // we found in local cache / database a reference to an origin
                     logger.info("Remote delivery receipt: clusterName=" + clusterName + ", dlvMessageId=" + dlvMessageId
                             + ", dlvTlvMessageId=" + dlvTlvMessageId + ", receipt=" + sms0.getShortMessageText()
