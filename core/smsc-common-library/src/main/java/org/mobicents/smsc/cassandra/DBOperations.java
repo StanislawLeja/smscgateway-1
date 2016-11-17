@@ -888,7 +888,13 @@ public class DBOperations {
                 boundStatement.setString(Schema.COLUMN_DEST_ID, dlvDestId);
                 boundStatement.setLong(Schema.COLUMN_MESSAGE_ID, sms.getMessageId());
                 ResultSet res = session.execute(boundStatement);
-            } catch (Exception e1) {
+
+                // !!!!- TODO: remove it .........................................
+                this.logger.info("***** ++ createRecordArchiveDlvMesId: dlvMessageId=" + dlvMessageId + ", dlvDestId="
+                        + dlvDestId + ", MessageId=" + sms.getMessageId() + ",\n sms=" + sms);
+                // !!!!- TODO: remove it .........................................
+
+           } catch (Exception e1) {
                 String msg = "Failed createRecordArchive - 3 !, dlvMessageId=" + dlvMessageId + ", dlvDestId=" + dlvDestId
                         + ", messageId=" + sms.getMessageId() + " - " + e1.getMessage();
 
@@ -1222,10 +1228,23 @@ public class DBOperations {
     }
 
     public Long c2_getMessageIdByRemoteMessageId(String remoteMessageId, String destId) throws PersistenceException {
+
+        // !!!!- TODO: remove it .........................................
+        this.logger.info("***** 0020 c2_getMessageIdByRemoteMessageId getting info: remoteMessageId=" + remoteMessageId
+                + ", destId=" + destId);
+        // !!!!- TODO: remove it .........................................
+
         Long result = null;
         result = SmsSetCache.getInstance().getDeliveredRemoteMsgIdValue(remoteMessageId, destId);
-        if (result != null)
+        if (result != null) {
+
+            // !!!!- TODO: remove it .........................................
+            this.logger.info("***** 0021 c2_getMessageIdByRemoteMessageId found in cache: remoteMessageId=" + remoteMessageId
+                    + ", destId=" + destId + ", result=" + result);
+            // !!!!- TODO: remove it .........................................
+
             return result;
+        }
 
         try {
             // first step - today search
@@ -1233,11 +1252,31 @@ public class DBOperations {
             PreparedStatementCollection psc = getStatementCollection(date);
             result = this.doGetMessageIdByRemoteMessageId(remoteMessageId, destId, psc);
 
+            if (result != null) {
+                // !!!!- TODO: remove it .........................................
+                this.logger.info("***** 0022 c2_getMessageIdByRemoteMessageId found in database - today: remoteMessageId="
+                        + remoteMessageId + ", destId=" + destId + ", result=" + result);
+                // !!!!- TODO: remove it .........................................
+            }
+
             if (result == null) {
                 // second step - yesterday search
                 Date date2 = new Date(date.getTime() - 1000 * 3600 * 24);
                 psc = getStatementCollection(date2);
                 result = this.doGetMessageIdByRemoteMessageId(remoteMessageId, destId, psc);
+
+                if (result != null) {
+                    // !!!!- TODO: remove it .........................................
+                    this.logger
+                            .info("***** 0023 c2_getMessageIdByRemoteMessageId found in database - yesterday: remoteMessageId="
+                                    + remoteMessageId + ", destId=" + destId + ", result=" + result);
+                    // !!!!- TODO: remove it .........................................
+                } else {
+                    // !!!!- TODO: remove it .........................................
+                    this.logger.info("***** 0024 c2_getMessageIdByRemoteMessageId not found remoteMessageId=" + remoteMessageId
+                            + ", destId=" + destId + ", result=" + result);
+                    // !!!!- TODO: remove it .........................................
+                }
             }
         } catch (Exception e1) {
             String msg = "Failed c2_getMessageIdByRemoteMessageId()";
