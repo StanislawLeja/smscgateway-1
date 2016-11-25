@@ -45,6 +45,7 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
     private static final String ORIG_NETWORK_ID_MASK = "origNetworkIdMask";
     private static final String ERROR_CODE = "errorCode";
     private static final String DELIVERY_STATUS = "deliveryStatus";
+    private static final String UNRECOGNIZED_RECEIPT = "unrecognizedReceipt";
 
     private static final String NEW_NETWORK_ID = "newNetworkId";
     private static final String DROP_DR = "dropDR";
@@ -54,6 +55,7 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
     private int origNetworkIdMask = -1;
     private int errorCode = -1;
     private String deliveryStatus = "-1";
+    private boolean unrecognizedReceipt = false;
 
     private int newNetworkId = -1;
     private boolean dropDR = false;
@@ -96,6 +98,14 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
         this.deliveryStatus = deliveryStatus;
     }
 
+    public boolean isUnrecognizedReceipt() {
+        return unrecognizedReceipt;
+    }
+
+    public void setUnrecognizedReceipt(boolean unrecognizedReceipt) {
+        this.unrecognizedReceipt = unrecognizedReceipt;
+    }
+
     public int getNewNetworkId() {
         return newNetworkId;
     }
@@ -121,11 +131,12 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
     }
 
     protected void setRuleParameters(int networkIdMask, int origNetworkIdMask, int errorCode, String deliveryStatus,
-            int newNetworkId, boolean dropDR, int rerouteDR) {
+            boolean unrecognizedReceipt, int newNetworkId, boolean dropDR, int rerouteDR) {
         this.networkIdMask = networkIdMask;
         this.origNetworkIdMask = origNetworkIdMask;
         this.errorCode = errorCode;
         this.deliveryStatus = deliveryStatus;
+        this.unrecognizedReceipt = unrecognizedReceipt;
 
         this.newNetworkId = newNetworkId;
         this.dropDR = dropDR;
@@ -166,40 +177,48 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
 
     @Override
     public void onPostArrival(PostArrivalProcessor factory, MProcMessage message) throws Exception {
+        DeliveryReceiptData deliveryReceiptData = null;
+        MProcMessage sentMsg = null;
+
         if (message.isDeliveryReceipt()) {
             Long receiptLocalMessageId = message.getReceiptLocalMessageId();
-            DeliveryReceiptData deliveryReceiptData = message.getDeliveryReceiptData();
+            deliveryReceiptData = message.getDeliveryReceiptData();
             if (receiptLocalMessageId != null && deliveryReceiptData != null) {
-                MProcMessage sentMsg = message.getOriginMessageForDeliveryReceipt(receiptLocalMessageId);
-                if (sentMsg != null) {
-                    if (origNetworkIdMask != -1 && origNetworkIdMask != sentMsg.getOrigNetworkId()) {
-                        return;
-                    }
+                sentMsg = message.getOriginMessageForDeliveryReceipt(receiptLocalMessageId);
+            }
 
-                    if (newNetworkId != -1) {
-                        logger.info("MProcRuleDlrMnp: received a delivery receipt: origNetworkId=" + message.getOrigNetworkId()
-                                + ", deliveryReceiptData=" + deliveryReceiptData
-                                + "\nThe receipt is dropped and an original message is rerouted to newNetworkId="
-                                + newNetworkId);
-
-                        factory.dropMessage();
-
-                        MProcNewMessage newMsg = factory.createNewCopyMessage(sentMsg);
-                        newMsg.setNetworkId(newNetworkId);
-                        factory.postNewMessage(newMsg);
-                    } else if (rerouteDR != -1) {
-                        logger.info("MProcRuleDlrMnp: received a delivery receipt: origNetworkId=" + message.getOrigNetworkId()
-                                + ", deliveryReceiptData=" + deliveryReceiptData + "\nThe receipt is rerouted to " + rerouteDR);
-
-                        factory.updateMessageNetworkId(message, rerouteDR);
-                    } else if (dropDR) {
-                        logger.info("MProcRuleDlrMnp: received a delivery receipt: origNetworkId=" + message.getOrigNetworkId()
-                                + ", deliveryReceiptData=" + deliveryReceiptData
-                                + "\nThe receipt is dropped");
-
-                        factory.dropMessage();
-                    }
+            // unrecognizedReceipt
+            if (unrecognizedReceipt) {
+                if (deliveryReceiptData != null && receiptLocalMessageId != null && sentMsg != null) {
+                    return;
                 }
+            }
+            if (origNetworkIdMask != -1) {
+                if (sentMsg == null || origNetworkIdMask != sentMsg.getOrigNetworkId()) {
+                    return;
+                }
+            }
+
+            if (newNetworkId != -1 && sentMsg != null) {
+                logger.info("MProcRuleDlrMnp: received a delivery receipt: origNetworkId=" + message.getOrigNetworkId()
+                        + ", deliveryReceiptData=" + deliveryReceiptData
+                        + "\nThe receipt is dropped and an original message is rerouted to newNetworkId=" + newNetworkId);
+
+                factory.dropMessage();
+
+                MProcNewMessage newMsg = factory.createNewCopyMessage(sentMsg);
+                newMsg.setNetworkId(newNetworkId);
+                factory.postNewMessage(newMsg);
+            } else if (rerouteDR != -1) {
+                logger.info("MProcRuleDlrMnp: received a delivery receipt: origNetworkId=" + message.getOrigNetworkId()
+                        + ", deliveryReceiptData=" + deliveryReceiptData + "\nThe receipt is rerouted to " + rerouteDR);
+
+                factory.updateMessageNetworkId(message, rerouteDR);
+            } else if (dropDR) {
+                logger.info("MProcRuleDlrMnp: received a delivery receipt: origNetworkId=" + message.getOrigNetworkId()
+                        + ", deliveryReceiptData=" + deliveryReceiptData + "\nThe receipt is dropped");
+
+                factory.dropMessage();
             }
         }
     }
@@ -216,6 +235,7 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
         int origNetworkIdMask = -1;
         int errorCode = -1;
         String deliveryStatus = "-1";
+        boolean unrecognizedReceipt = false;
 
         int newNetworkId = -1;
         boolean dropDR = false;
@@ -233,6 +253,8 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
                     errorCode = Integer.parseInt(value);
                 } else if (command.equals("deliverystatus")) {
                     deliveryStatus = value;
+                } else if (command.equals("unrecognizedreceipt")) {
+                    unrecognizedReceipt = Boolean.parseBoolean(value);
 
                 } else if (command.equals("newnetworkid")) {
                     newNetworkId = Integer.parseInt(value);
@@ -251,7 +273,8 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
             throw new Exception(MProcRuleOamMessagesDlrMnp.SET_RULE_PARAMETERS_FAIL_NO_ACTIONS_PROVIDED);
         }
 
-        this.setRuleParameters(networkIdMask, origNetworkIdMask, errorCode, deliveryStatus, newNetworkId, dropDR, rerouteDR);
+        this.setRuleParameters(networkIdMask, origNetworkIdMask, errorCode, deliveryStatus, unrecognizedReceipt, newNetworkId,
+                dropDR, rerouteDR);
     }
 
     @Override
@@ -280,6 +303,10 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
                     success = true;
                 } else if (command.equals("deliverystatus")) {
                     this.setDeliveryStatus(value);
+                    success = true;
+                } else if (command.equals("unrecognizedreceipt")) {
+                    boolean val = Boolean.parseBoolean(value);
+                    this.setUnrecognizedReceipt(val);
                     success = true;
 
                 } else if (command.equals("newnetworkid")) {
@@ -319,6 +346,9 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
         if (this.deliveryStatus != null && !this.deliveryStatus.equals("") && !this.deliveryStatus.equals("-1")) {
             writeParameter(sb, parNumber++, "deliverystatus", deliveryStatus, " ", " ");
         }
+        if (this.unrecognizedReceipt) {
+            writeParameter(sb, parNumber++, "unrecognizedreceipt", "true", " ", " ");
+        }
 
         if (newNetworkId != -1) {
             writeParameter(sb, parNumber++, "newnetworkid", newNetworkId, " ", " ");
@@ -347,6 +377,7 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
             mProcRule.origNetworkIdMask = xml.getAttribute(ORIG_NETWORK_ID_MASK, -1);
             mProcRule.errorCode = xml.getAttribute(ERROR_CODE, -1);
             mProcRule.deliveryStatus = xml.getAttribute(DELIVERY_STATUS, "-1");
+            mProcRule.unrecognizedReceipt = xml.getAttribute(UNRECOGNIZED_RECEIPT, false);
 
             mProcRule.dropDR = xml.getAttribute(DROP_DR, false);
             mProcRule.rerouteDR = xml.getAttribute(REROUTE_DR, -1);
@@ -366,6 +397,8 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
             if (mProcRule.deliveryStatus != null && !mProcRule.deliveryStatus.equals("")
                     && !mProcRule.deliveryStatus.equals("-1"))
                 xml.setAttribute(DELIVERY_STATUS, mProcRule.deliveryStatus);
+            if (mProcRule.unrecognizedReceipt)
+                xml.setAttribute(UNRECOGNIZED_RECEIPT, mProcRule.unrecognizedReceipt);
 
             if (mProcRule.dropDR)
                 xml.setAttribute(DROP_DR, mProcRule.dropDR);
