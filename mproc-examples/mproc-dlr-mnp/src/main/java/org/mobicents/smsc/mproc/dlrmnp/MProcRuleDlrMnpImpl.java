@@ -31,6 +31,7 @@ import org.mobicents.smsc.mproc.MProcMessage;
 import org.mobicents.smsc.mproc.MProcNewMessage;
 import org.mobicents.smsc.mproc.MProcRuleBaseImpl;
 import org.mobicents.smsc.mproc.PostArrivalProcessor;
+import org.mobicents.smsc.mproc.PostDeliveryProcessor;
 
 /**
 *
@@ -44,6 +45,7 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
     private static final String NETWORK_ID_MASK = "networkIdMask";
     private static final String ORIG_NETWORK_ID_MASK = "origNetworkIdMask";
     private static final String ERROR_CODE = "errorCode";
+    private static final String ERROR_CODE_SMPP = "errorCodeSmpp";
     private static final String DELIVERY_STATUS = "deliveryStatus";
     private static final String UNRECOGNIZED_RECEIPT = "unrecognizedReceipt";
 
@@ -54,6 +56,7 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
     private int networkIdMask = -1;
     private int origNetworkIdMask = -1;
     private int errorCode = -1;
+    private int errorCodeSmpp = -1;
     private String deliveryStatus = "-1";
     private boolean unrecognizedReceipt = false;
 
@@ -88,6 +91,14 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
 
     public void setErrorCode(int errorCode) {
         this.errorCode = errorCode;
+    }
+
+    public int getErrorCodeSmpp() {
+        return errorCodeSmpp;
+    }
+
+    public void setErrorCodeSmpp(int errorCodeSmpp) {
+        this.errorCodeSmpp = errorCodeSmpp;
     }
 
     public String getDeliveryStatus() {
@@ -130,11 +141,12 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
         this.rerouteDR = rerouteDR;
     }
 
-    protected void setRuleParameters(int networkIdMask, int origNetworkIdMask, int errorCode, String deliveryStatus,
-            boolean unrecognizedReceipt, int newNetworkId, boolean dropDR, int rerouteDR) {
+    protected void setRuleParameters(int networkIdMask, int origNetworkIdMask, int errorCode, int errorCodeSmpp,
+            String deliveryStatus, boolean unrecognizedReceipt, int newNetworkId, boolean dropDR, int rerouteDR) {
         this.networkIdMask = networkIdMask;
         this.origNetworkIdMask = origNetworkIdMask;
         this.errorCode = errorCode;
+        this.errorCodeSmpp = errorCodeSmpp;
         this.deliveryStatus = deliveryStatus;
         this.unrecognizedReceipt = unrecognizedReceipt;
 
@@ -148,7 +160,12 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
         return true;
     }
 
-    private boolean matches(MProcMessage message) {
+    @Override
+    public boolean isForPostDeliveryState() {
+        return true;
+    }
+
+    private boolean mArrival(MProcMessage message) {
         if (message.isDeliveryReceipt()) {
             DeliveryReceiptData drd = message.getDeliveryReceiptData();
             if (drd != null) {
@@ -170,9 +187,30 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
         return false;
     }
 
+    private boolean mFailure(MProcMessage message) {
+        if (message.getSmppCommandStatus() != 0 && errorCodeSmpp != -1) {
+            if (networkIdMask != -1 && networkIdMask != message.getNetworkId()) {
+                return false;
+            }
+
+            if (errorCodeSmpp != -1 && errorCodeSmpp != message.getSmppCommandStatus()) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     public boolean matchesPostArrival(MProcMessage message) {
-        return matches(message);
+        return mArrival(message);
+    }
+
+    @Override
+    public boolean matchesPostDelivery(MProcMessage message) {
+        return mFailure(message);
     }
 
     @Override
@@ -224,6 +262,20 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
     }
 
     @Override
+    public void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message) throws Exception {
+        if (!factory.isDeliveryFailure())
+            return;
+
+        if (newNetworkId != -1) {
+            logger.info("MProcRuleDlrMnp: received a rejected SMPP response: origNetworkId=" + message.getOrigNetworkId()
+                    + ", errorCodeSmppData=" + message.getSmppCommandStatus()
+                    + "\nAn original message is rerouted to newNetworkId=" + newNetworkId);
+
+            factory.rerouteMessage(newNetworkId);
+        }
+    }
+
+    @Override
     public void setInitialRuleParameters(String parametersString) throws Exception {
         String[] args = splitParametersString(parametersString);
 
@@ -234,6 +286,7 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
         int networkIdMask = -1;
         int origNetworkIdMask = -1;
         int errorCode = -1;
+        int errorCodeSmpp = -1;
         String deliveryStatus = "-1";
         boolean unrecognizedReceipt = false;
 
@@ -251,6 +304,8 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
                     origNetworkIdMask = Integer.parseInt(value);
                 } else if (command.equals("errorcode")) {
                     errorCode = Integer.parseInt(value);
+                } else if (command.equals("errorcodesmpp")) {
+                    errorCodeSmpp = Integer.parseInt(value);
                 } else if (command.equals("deliverystatus")) {
                     deliveryStatus = value;
                 } else if (command.equals("unrecognizedreceipt")) {
@@ -273,8 +328,8 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
             throw new Exception(MProcRuleOamMessagesDlrMnp.SET_RULE_PARAMETERS_FAIL_NO_ACTIONS_PROVIDED);
         }
 
-        this.setRuleParameters(networkIdMask, origNetworkIdMask, errorCode, deliveryStatus, unrecognizedReceipt, newNetworkId,
-                dropDR, rerouteDR);
+        this.setRuleParameters(networkIdMask, origNetworkIdMask, errorCode, errorCodeSmpp, deliveryStatus, unrecognizedReceipt,
+                newNetworkId, dropDR, rerouteDR);
     }
 
     @Override
@@ -300,6 +355,10 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
                 } else if (command.equals("errorcode")) {
                     int val = Integer.parseInt(value);
                     this.setErrorCode(val);
+                    success = true;
+                } else if (command.equals("errorcodesmpp")) {
+                    int val = Integer.parseInt(value);
+                    this.setErrorCodeSmpp(val);
                     success = true;
                 } else if (command.equals("deliverystatus")) {
                     this.setDeliveryStatus(value);
@@ -343,6 +402,9 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
         if (errorCode != -1) {
             writeParameter(sb, parNumber++, "errorcode", errorCode, " ", " ");
         }
+        if (errorCodeSmpp != -1) {
+            writeParameter(sb, parNumber++, "errorcodesmpp", errorCodeSmpp, " ", " ");
+        }
         if (this.deliveryStatus != null && !this.deliveryStatus.equals("") && !this.deliveryStatus.equals("-1")) {
             writeParameter(sb, parNumber++, "deliverystatus", deliveryStatus, " ", " ");
         }
@@ -376,6 +438,7 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
             mProcRule.networkIdMask = xml.getAttribute(NETWORK_ID_MASK, -1);
             mProcRule.origNetworkIdMask = xml.getAttribute(ORIG_NETWORK_ID_MASK, -1);
             mProcRule.errorCode = xml.getAttribute(ERROR_CODE, -1);
+            mProcRule.errorCodeSmpp = xml.getAttribute(ERROR_CODE_SMPP, -1);
             mProcRule.deliveryStatus = xml.getAttribute(DELIVERY_STATUS, "-1");
             mProcRule.unrecognizedReceipt = xml.getAttribute(UNRECOGNIZED_RECEIPT, false);
 
@@ -394,6 +457,8 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
                 xml.setAttribute(ORIG_NETWORK_ID_MASK, mProcRule.origNetworkIdMask);
             if (mProcRule.errorCode != -1)
                 xml.setAttribute(ERROR_CODE, mProcRule.errorCode);
+            if (mProcRule.errorCodeSmpp != -1)
+                xml.setAttribute(ERROR_CODE_SMPP, mProcRule.errorCodeSmpp);
             if (mProcRule.deliveryStatus != null && !mProcRule.deliveryStatus.equals("")
                     && !mProcRule.deliveryStatus.equals("-1"))
                 xml.setAttribute(DELIVERY_STATUS, mProcRule.deliveryStatus);
