@@ -29,6 +29,7 @@ import org.mobicents.smsc.mproc.DeliveryReceiptData;
 import org.mobicents.smsc.mproc.MProcMessage;
 import org.mobicents.smsc.mproc.MProcNewMessage;
 import org.mobicents.smsc.mproc.MProcRuleBaseImpl;
+import org.mobicents.smsc.mproc.MProcRuleRaProvider;
 import org.mobicents.smsc.mproc.PostArrivalProcessor;
 
 
@@ -84,7 +85,8 @@ public class MProcRuleBasicDemoImpl extends MProcRuleBaseImpl {
 	}
 
 	@Override
-	public void onPostArrival(PostArrivalProcessor factory, MProcMessage message) throws Exception {
+    public void onPostArrival(MProcRuleRaProvider anMProcRuleRa, PostArrivalProcessor factory, MProcMessage message)
+            throws Exception {
 		factory.updateMessageDestAddr(message, "1234");
 		logger.info("onPostArrival is called");
 	}

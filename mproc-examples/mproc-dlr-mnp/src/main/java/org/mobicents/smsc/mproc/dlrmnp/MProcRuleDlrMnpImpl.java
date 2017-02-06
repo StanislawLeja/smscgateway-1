@@ -30,6 +30,7 @@ import org.mobicents.smsc.mproc.DeliveryReceiptData;
 import org.mobicents.smsc.mproc.MProcMessage;
 import org.mobicents.smsc.mproc.MProcNewMessage;
 import org.mobicents.smsc.mproc.MProcRuleBaseImpl;
+import org.mobicents.smsc.mproc.MProcRuleRaProvider;
 import org.mobicents.smsc.mproc.PostArrivalProcessor;
 import org.mobicents.smsc.mproc.PostDeliveryProcessor;
 
@@ -214,7 +215,8 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
     }
 
     @Override
-    public void onPostArrival(PostArrivalProcessor factory, MProcMessage message) throws Exception {
+    public void onPostArrival(MProcRuleRaProvider anMProcRuleRa, PostArrivalProcessor factory, MProcMessage message)
+            throws Exception {
         DeliveryReceiptData deliveryReceiptData = null;
         MProcMessage sentMsg = null;
 
@@ -262,7 +264,8 @@ public class MProcRuleDlrMnpImpl extends MProcRuleBaseImpl {
     }
 
     @Override
-    public void onPostDelivery(PostDeliveryProcessor factory, MProcMessage message) throws Exception {
+    public void onPostDelivery(MProcRuleRaProvider anMProcRuleRa, PostDeliveryProcessor factory, MProcMessage message)
+            throws Exception {
         if (!factory.isDeliveryFailure())
             return;
 
