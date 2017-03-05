@@ -359,6 +359,10 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
     private String shownServicesDownList = null;
     private long shownServicesDownTime = 0;
 
+    // !!!!- TODO: remove it ......................
+    private long loggedTime = 0;
+    // !!!!- TODO: remove it ......................
+
 	// /////////////////
 	// Helper methods //
 	// /////////////////
@@ -375,6 +379,42 @@ public class SchedulerResourceAdaptor implements ResourceAdaptor {
             }
             return;
         }
+
+        // !!!!- TODO: remove it ......................
+        if ((System.currentTimeMillis() - loggedTime) > 10000) {
+            loggedTime = System.currentTimeMillis();
+
+            StringBuilder sb = new StringBuilder();
+
+            SmscStatProvider smscStatProvider = SmscStatProvider.getInstance();
+            sb.append("Stat: ");
+            sb.append("Time: ");
+            sb.append(new Date());
+            sb.append(", MessageInProcess: ");
+            sb.append(smscStatProvider.getMessageInProcess());
+            sb.append(", MessageId: ");
+            sb.append(smscStatProvider.getCurrentMessageId());
+            sb.append(", MessageScheduledTotal: ");
+            sb.append(smscStatProvider.getMessageScheduledTotal());
+            sb.append(", DueSlotProcessingLag: ");
+            sb.append(smscStatProvider.getDueSlotProcessingLag());
+            sb.append(", DueSlotProcessingTime: ");
+            sb.append(smscStatProvider.getDueSlotProcessingTime());
+            sb.append(", Param1: ");
+            sb.append(smscStatProvider.getParam1());
+            sb.append(", Param2: ");
+            sb.append(smscStatProvider.getParam2());
+            sb.append(", SmscStartTime: ");
+            sb.append(smscStatProvider.getSmscStartTime());
+
+            String s1 = SmsSetCache.getInstance().getLstSmsSetWithBigMessageCountState();
+            if (s1 != null) {
+                sb.append("\nLstSmsSetWithBigMessageCountState:\n");
+                sb.append(s1);
+            }
+            this.tracer.info("***** smsc_stat_log : " + sb.toString());
+        }
+        // !!!!- TODO: remove it ......................
 
 		try {
 			// garbageCollectionTime

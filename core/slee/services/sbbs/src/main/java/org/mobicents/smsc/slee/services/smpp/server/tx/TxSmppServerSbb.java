@@ -179,6 +179,12 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 			this.logger.fine("\nReceived SUBMIT_SM = " + event + " from Esme name=" + esmeName);
 		}
 
+
+        // !!!!- TODO: remove it ......................
+        this.logger.info("***** smpp_in_smsc : Received SUBMIT_SM = " + event + " from Esme name=" + esmeName);
+        // !!!!- TODO: remove it ......................
+
+
         CheckMessageLimitResult cres = esme.onMessageReceived(1);
         if (cres.getResult() != CheckMessageLimitResult.Result.ok) {
             if (cres.getResult() == CheckMessageLimitResult.Result.firstFault) {
@@ -272,6 +278,12 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
 		SubmitSmResp response = event.createResponse();
 		response.setMessageId(sms.getMessageIdText());
+
+
+        // !!!!- TODO: remove it ......................
+        this.logger.info("***** smpp_in_smsc : Sending SUBMIT_SM_RESPONSE = " + event + " from Esme name=" + esmeName);
+        // !!!!- TODO: remove it ......................
+
 
 		// Lets send the Response with success here
 		try {
