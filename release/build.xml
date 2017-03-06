@@ -510,8 +510,9 @@
                 </fileset>
         </copy>
         <copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-		<copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/mproc-ra/du/target/mproc-ra-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
-	    <copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/mproc-ra/du-ratype/target/mproc-ratype-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/mproc-ra/du-ra/target/mproc-ra-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 	    <copy file="${checkout.dir}/${telscale-map-ra.download.distro.file}" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/default/deploy" failonerror="true" />
 		<copy file="${checkout.restcomm-smpp-extensions.dir}/restcomm-smpp-extensions-${restcomm-smpp-extensions.version}.${restcomm-smpp-extensions.build-number}/oam/new-ui/smpp-management.war"
@@ -525,8 +526,9 @@
                 </fileset>
         </copy>
         <copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/du/target/smsc-resource-adaptors-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-		<copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/mproc-ra/du/target/mproc-ra-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
-	    <copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/mproc-ra/du-ratype/target/mproc-ratype-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/slee/resource-adaptors/mproc-ra/du-ra/target/mproc-ra-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
+		<copy file="${checkout.telscale-smsc.dir}/core/slee/services/du/target/smsc-services-du-${telscale.smsc.release.version}.jar" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
 	    <copy file="${checkout.dir}/${telscale-map-ra.download.distro.file}" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
 	    <copy file="${checkout.telscale-smsc.dir}/management/ui-management/target/smsc-management.war" todir="${release.dir}/jboss-5.1.0.GA/server/simulator/deploy" failonerror="true" />
 		<copy file="${checkout.restcomm-smpp-extensions.dir}/restcomm-smpp-extensions-${restcomm-smpp-extensions.version}.${restcomm-smpp-extensions.build-number}/oam/new-ui/smpp-management.war"
