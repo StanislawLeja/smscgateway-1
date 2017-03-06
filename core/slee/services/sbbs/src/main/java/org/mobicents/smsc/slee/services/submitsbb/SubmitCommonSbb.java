@@ -273,7 +273,32 @@ public abstract class SubmitCommonSbb implements Sbb {
             chargingSbb.setupChargingRequestInterface(chargingMedium, sms0);
         } else {
             // applying of MProc
+
+
+
+            // !!!!- TODO: remove it ......................
+            StringBuilder sb = new StringBuilder();
+            sb.append("destAddr=");
+            sb.append(sms0.getSmsSet().getDestAddr());
+            sb.append(", message=");
+            sb.append(sms0.getShortMessageText());
+            sb.append(", messageId=");
+            sb.append(sms0.getMessageId());
+            sb.append(", DbId=");
+            sb.append(sms0.getDbId());
+            this.logger.info("***** smpp_in_smsc : Before MProcArrival " + sb.toString());
+            // !!!!- TODO: remove it ......................
+
+
+
             MProcResult mProcResult = MProcManagement.getInstance().applyMProcArrival(itsMProcRa, sms0, persistence);
+
+
+            // !!!!- TODO: remove it ......................
+            this.logger.info("***** smpp_in_smsc : After MProcArrival " + sb.toString());
+            // !!!!- TODO: remove it ......................
+
+
 
             FastList<Sms> smss = mProcResult.getMessageList();
             for (FastList.Node<Sms> n = smss.head(), end = smss.tail(); (n = n.getNext()) != end;) {
