@@ -24,6 +24,7 @@ package org.mobicents.smsc.slee.services.deliverysbb;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.slee.ActivityContextInterface;
 import javax.slee.CreateException;
@@ -110,6 +111,10 @@ public abstract class DeliveryCommonSbb implements Sbb {
     private boolean pendingRequestsListIsLoaded;
     private boolean pendingRequestsListIsDirty;
 
+    // TODO: !!!!! extra logging - may be leave it later
+    protected UUID sbbId = UUID.randomUUID();
+    // TODO: !!!!! extra logging - may be leave it later
+
     public DeliveryCommonSbb(String className) {
         this.className = className;
     }
@@ -127,14 +132,14 @@ public abstract class DeliveryCommonSbb implements Sbb {
             if (dlvIsInited && !dlvIsEnded) {
                 targetId = this.getTargetId();
                 if (targetId == null) {
-                    this.logger.warning("targetId is null for DeliveryCommonSbb in dlvIsInited state:\n"
-                            + MessageUtil.stackTraceToString());
+                    this.logger.warning("targetId is null for DeliveryCommonSbb in dlvIsInited state: sbbId=" + sbbId
+                            + ", targetId" + this.getTargetId() + "\n" + MessageUtil.stackTraceToString());
                     return;
                 }
                 smsSet = SmsSetCache.getInstance().getProcessingSmsSet(targetId);
                 if (smsSet == null) {
-                    this.logger.warning("smsSet is null for DeliveryCommonSbb in dlvIsInited state:\n"
-                            + MessageUtil.stackTraceToString());
+                    this.logger.warning("smsSet is null for DeliveryCommonSbb in dlvIsInited state:sbbId=" + sbbId
+                            + ", targetId" + this.getTargetId() + "\n" + MessageUtil.stackTraceToString());
                     return;
                 }
             }
@@ -177,6 +182,10 @@ public abstract class DeliveryCommonSbb implements Sbb {
 
         this.pendingRequestsListIsLoaded = false;
         this.pendingRequestsListIsDirty = false;
+
+        // TODO: !!!!! extra logging remove it
+        this.logger.severe("##### info sbbLoad: sbbId=" + sbbId + ", targetId" + this.getTargetId());
+        // TODO: !!!!! extra logging remove it
     }
 
     @Override
@@ -425,13 +434,27 @@ public abstract class DeliveryCommonSbb implements Sbb {
 
         if (numInSendingPool < 0 || numInSendingPool >= this.getSendingPoolMessageCount()) {
             // this is a case when a message number is outside sendingPoolMsgCount
+
+
+            // TODO: !!!!! extra logging - may be leave it later
+            this.logger.severe("##### error getMessageInSendingPool() numInSendingPool is bad: numInSendingPool="
+                    + numInSendingPool + ", getSendingPoolMessageCount()" + getSendingPoolMessageCount() + ", sbbId=" + sbbId
+                    + ", targetId" + this.getTargetId() + ", smsSet=" + this.getSmsSet());
+            // TODO: !!!!! extra logging - may be leave it later
+
+
             return null;
         }
 
         if (smsSet != null) {
             return smsSet.getMessageFromSendingPool(numInSendingPool);
-        } else
+        } else {
+            // TODO: !!!!! extra logging - may be leave it later
+            this.logger.severe("##### error smsSet is null, sbbId=" + sbbId + ", targetId" + this.getTargetId());
+            // TODO: !!!!! extra logging - may be leave it later
+
             return null;
+        }
     }
 
     /**

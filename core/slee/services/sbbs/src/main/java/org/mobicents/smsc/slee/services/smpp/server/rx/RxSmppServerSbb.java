@@ -195,9 +195,16 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
 			this.handleResponse(event);
 		} catch (Throwable e1) {
-			logger.severe("Exception in RxSmppServerSbb.onDeliverSmResp() when fetching records and issuing events: "
-					+ e1.getMessage(), e1);
-            markDeliveringIsEnded(true);
+            SmsSet smsSet = this.getSmsSet();
+            logger.severe(
+                    "Exception in RxSmppServerSbb.onDeliverSmResp() when fetching records and issuing events: "
+                            + e1.getMessage() + "\nsmsSet=" + smsSet, e1);
+            if (smsSet != null) {
+                this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR,
+                        "Internal error - Exception in processing: " + event.getSequenceNumber() + ", SmsSet=" + smsSet);
+            } else {
+                markDeliveringIsEnded(true);
+            }
 		}
 	}
 
@@ -209,9 +216,16 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
 			this.handleResponse(event);
 		} catch (Throwable e1) {
-			logger.severe("Exception in RxSmppServerSbb.onDeliverSmResp() when fetching records and issuing events: "
-					+ e1.getMessage(), e1);
-            markDeliveringIsEnded(true);
+            SmsSet smsSet = this.getSmsSet();
+            logger.severe(
+                    "Exception in RxSmppServerSbb.onDeliverSmResp() when fetching records and issuing events: "
+                            + e1.getMessage() + "\nsmsSet=" + smsSet, e1);
+            if (smsSet != null) {
+                this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR,
+                        "Internal error - Exception in processing: " + event.getSequenceNumber() + ", SmsSet=" + smsSet);
+            } else {
+                markDeliveringIsEnded(true);
+            }
 		}
 	}
 
@@ -548,7 +562,8 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
         SmsSet smsSet = getSmsSet();
         if (smsSet == null) {
-            logger.severe("RxSmppServerSbb.handleResponse(): CMP smsSet is missed");
+            logger.severe("RxSmppServerSbb.handleResponse(): CMP smsSet is missed, sbbId=" + sbbId + ", targetId"
+                    + this.getTargetId());            
             markDeliveringIsEnded(true);
             return;
         }
@@ -569,6 +584,14 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
             Sms sms = confirmMessageInSendingPool.sms;
             if (!confirmMessageInSendingPool.confirmed) {
                 this.generateCDR(sms, CdrGenerator.CDR_PARTIAL_ESME, CdrGenerator.CDR_SUCCESS_NO_REASON, true, false);
+                return;
+            }
+
+            if (sms == null) {
+                this.logger.severe("##### error Rx sms is null: sbbId=" + sbbId + ", targetId" + this.getTargetId()
+                        + ", smsSet=" + this.getSmsSet() + "\nconfirmMessageInSendingPool=" + confirmMessageInSendingPool);
+                this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR,
+                        "Internal error - sms is null: " + event.getSequenceNumber() + ", SmsSet=" + smsSet);
                 return;
             }
 
