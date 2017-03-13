@@ -184,7 +184,7 @@ public abstract class DeliveryCommonSbb implements Sbb {
         this.pendingRequestsListIsDirty = false;
 
         // TODO: !!!!! extra logging remove it
-        this.logger.severe("##### info sbbLoad: sbbId=" + sbbId + ", targetId" + this.getTargetId());
+//        this.logger.severe("##### info sbbLoad: sbbId=" + sbbId + ", targetId=" + this.getTargetId());
         // TODO: !!!!! extra logging remove it
     }
 
