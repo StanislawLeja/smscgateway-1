@@ -437,9 +437,9 @@ public abstract class DeliveryCommonSbb implements Sbb {
 
 
             // TODO: !!!!! extra logging - may be leave it later
-            this.logger.severe("##### error getMessageInSendingPool() numInSendingPool is bad: numInSendingPool="
-                    + numInSendingPool + ", getSendingPoolMessageCount()" + getSendingPoolMessageCount() + ", sbbId=" + sbbId
-                    + ", targetId" + this.getTargetId() + ", smsSet=" + this.getSmsSet());
+//            this.logger.severe("##### error getMessageInSendingPool() numInSendingPool is bad: numInSendingPool="
+//                    + numInSendingPool + ", getSendingPoolMessageCount()" + getSendingPoolMessageCount() + ", sbbId=" + sbbId
+//                    + ", targetId" + this.getTargetId() + ", smsSet=" + this.getSmsSet());
             // TODO: !!!!! extra logging - may be leave it later
 
 
