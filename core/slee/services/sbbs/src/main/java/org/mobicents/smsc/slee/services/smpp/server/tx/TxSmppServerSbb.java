@@ -300,6 +300,9 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 		SmscStatProvider.getInstance().setParam2((int) (dt3.getTime() - dt1.getTime()));
 		// TODO remove it ...........................
 
+        // !!!!- TODO: remove it ......................
+        this.logger.info("***** smpp_in_smsc : After Sending SUBMIT_SM_RESPONSE = " + event + " from Esme name=" + esmeName);
+        // !!!!- TODO: remove it ......................
 	}
 
 	public void onDataSm(com.cloudhopper.smpp.pdu.DataSm event, ActivityContextInterface aci) {

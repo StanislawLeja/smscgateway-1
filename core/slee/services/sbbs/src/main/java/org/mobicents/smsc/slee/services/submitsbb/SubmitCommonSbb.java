@@ -286,7 +286,8 @@ public abstract class SubmitCommonSbb implements Sbb {
             sb.append(sms0.getMessageId());
             sb.append(", DbId=");
             sb.append(sms0.getDbId());
-            this.logger.info("***** smpp_in_smsc : Before MProcArrival " + sb.toString());
+//            this.logger.info("***** smpp_in_smsc : Before MProcArrival " + sb.toString());
+            long timeBefore = System.currentTimeMillis();
             // !!!!- TODO: remove it ......................
 
 
@@ -295,7 +296,13 @@ public abstract class SubmitCommonSbb implements Sbb {
 
 
             // !!!!- TODO: remove it ......................
-            this.logger.info("***** smpp_in_smsc : After MProcArrival " + sb.toString());
+//            this.logger.info("***** smpp_in_smsc : After MProcArrival " + sb.toString());
+
+            long timeAfter = System.currentTimeMillis();
+            if (timeAfter - timeBefore > 1000) {
+                // mproc > 1 sec
+                this.logger.severe("***** smpp_in_smsc : Delay more then 1 sec in applyMProcArrival: " + sb.toString());
+            }
             // !!!!- TODO: remove it ......................
 
 
