@@ -192,10 +192,8 @@
     	</ant>
     </target>
 
-	<target name="get-deps" depends="get-telscale-sleeget-telscale-management-hq,get-telscale-lce,get-restcomm-smpp-extensions,get-restcomm-smpp-ra,get-community-cassandra" />
-	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-management-hq,extract-telscale-lce,extract-restcomm-smpp-extensions,extract-community-cassandra" />
-	<!--target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-telscale-lce,get-restcomm-smpp-extensions,get-restcomm-smpp-ra,get-community-cassandra" />
-	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-map-ra-docs,extract-telscale-management-hq,extract-telscale-lce,extract-restcomm-smpp-extensions,extract-community-cassandra" /-->
+	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-telscale-lce,get-restcomm-smpp-extensions,get-restcomm-smpp-ra,get-community-cassandra" />
+	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-map-ra-docs,extract-telscale-management-hq,extract-telscale-lce,extract-restcomm-smpp-extensions,extract-community-cassandra" />
 <!-- ** script with downloading dialmeter as a separate release **
 	<target name="get-deps" depends="get-telscale-slee,get-telscale-jss7,get-telscale-map-ra,get-telscale-map-ra-docs,get-telscale-management-hq,get-telscale-diam,get-community-cassandra" />
 	<target name="extract-deps" depends="extract-telscale-slee,extract-telscale-jss7,extract-telscale-map-ra-docs,extract-telscale-management-hq,extract-telscale-diam,extract-community-cassandra" />
