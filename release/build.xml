@@ -29,9 +29,9 @@
 	<property name="telscale.smsc.git.tag" value="master"/>
 	<property name="telscale.smsc.release.version" value="7.2.0-TelScale-SNAPSHOT"/>
 
-	<property name="telscale-slee.version" value="6.1.4" />
-	<property name="telscale-slee.build-number" value="GA-CP01" />
-	<property name="telscale-slee.build-number-dir" value="58.480" />
+	<property name="telscale-slee.version" value="6.1.5" />
+	<property name="telscale-slee.build-number" value="63.498" />
+	<property name="telscale-slee.build-number-dir" value="63.498" />
 	<property name="telscale-jss7.version" value="7.1.1" />
 	<property name="telscale-jss7.build-number" value="545" />
 	<property name="telscale-map-ra.version" value="7.1.1" />
