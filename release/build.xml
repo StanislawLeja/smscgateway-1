@@ -39,7 +39,7 @@
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
 	<property name="telscale-diam.version" value="6.2.2.376" />
 	<property name="telscale-diam-ra.version" value="6.2.2.25" />
-	<property name="telscale-sip.version" value="6.1.5.38" />
+	<property name="telscale-sip.version" value="6.1.5.39" />
 	<property name="dse-cassandra.version" value="4.5.2" />
 	<property name="telscale-lce.version" value="2.2.4.Final" />
 	<property name="community-cassandra.version" value="3.9" /> <!-- 2.2.6 -->
