@@ -33,7 +33,7 @@
 	<property name="telscale-slee.build-number" value="63.503" />
 	<property name="telscale-slee.build-number-dir" value="63.503" />
 	<property name="telscale-jss7.version" value="7.2.1" />
-	<property name="telscale-jss7.build-number" value="583" />
+	<property name="telscale-jss7.build-number" value="582" />
 	<property name="telscale-map-ra.version" value="7.2.1" />
 	<property name="telscale-map-ra.build-number" value="33" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
