@@ -404,14 +404,25 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
         // if not - skip sending and set temporary error
 
         try {
-            int deliveryMsgCnt = this.obtainNextMessagesSendingPool(MAX_MESSAGES_PER_STEP, ProcessingType.SMPP);
+
+
+            // !!!!--------
+            int deliveryMsgCnt = 0;
+            EsmeManagement esmeManagement = null;
+            Esme esme = null;
+            try {
+                // !!!!--------
+            
+            
+            
+            deliveryMsgCnt = this.obtainNextMessagesSendingPool(MAX_MESSAGES_PER_STEP, ProcessingType.SMPP);
             if (deliveryMsgCnt == 0) {
                 this.markDeliveringIsEnded(true);
                 return;
             }
 
-            EsmeManagement esmeManagement = EsmeManagement.getInstance();
-			Esme esme = esmeManagement.getEsmeByClusterName(smsSet.getDestClusterName());
+            esmeManagement = EsmeManagement.getInstance();
+			esme = esmeManagement.getEsmeByClusterName(smsSet.getDestClusterName());
 			if (esme == null) {
 				String s = "\nRxSmppServerSbb.sendDeliverSm(): Received DELIVER_SM SmsEvent but no Esme found for destClusterName: "
 						+ smsSet.getDestClusterName() + ", smsSet=" + smsSet;
@@ -423,11 +434,33 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 			smsSet.setDestSystemId(esme.getSystemId());
             smsSet.setDestEsmeName(esme.getName());
 
+            
+            
+            // !!!!--------
+            } catch (Throwable e) {
+                logger.severe("Exception ** 000001 " + e);
+                throw new SmscProcessingException(
+                        "RxSmppServerSbb.sendDeliverSm(): Exception 00000001 - "
+                                + e.getMessage() + "\nsmsSet: " + smsSet,
+                        0, 0, SmscProcessingException.HTTP_ERROR_CODE_NOT_SET, null, e);
+            }
+            // !!!!--------
+            
+            
+            
+            
             for (int poolIndex = 0; poolIndex < deliveryMsgCnt; poolIndex++) {
+
+                // !!!!--------
+                Sms sms = null;
+                try {
+                    // !!!!--------
+                
+                
                 smscStatAggregator.updateMsgOutTryAll();
                 smscStatAggregator.updateMsgOutTrySmpp();
 
-                Sms sms = this.getMessageInSendingPool(poolIndex);
+                sms = this.getMessageInSendingPool(poolIndex);
                 if (sms == null) {
                     // this should not be
                     throw new SmscProcessingException(
@@ -509,6 +542,12 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         String msgStr = lstStrings.get(segmentIndex);
                         byte[] msgUdh = lstUdhs.get(segmentIndex);
                         if (msgStr != null || msgUdh != null) {
+                            
+                            // !!!!--------
+                            try {
+                                // !!!!--------
+                            
+                            
                             byte[] msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
 
                             if (msg.length <= 255) {
@@ -517,12 +556,32 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                                 Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, msg, null);
                                 submitSm.addOptionalParameter(tlv);
                             }
+
+                            
+                            
+                            // !!!!--------
+                            } catch (Throwable e) {
+                                logger.severe("Exception ** 000003 " + e);
+                                throw new SmscProcessingException(
+                                        "RxSmppServerSbb.sendDeliverSm(): Exception 00000003 - poolIndex="+poolIndex
+                                                + e.getMessage() + "\nsms: " + sms,
+                                        0, 0, SmscProcessingException.HTTP_ERROR_CODE_NOT_SET, null, e);
+                            }
+                            // !!!!--------
+                            
+                            
+                            
                         }
 
                         for (Tlv tlv : sms.getTlvSet().getOptionalParameters()) {
                             submitSm.addOptionalParameter(tlv);
                         }
 
+                        // !!!!--------
+                        try {
+                            // !!!!--------
+                        
+                        
                         SmppTransaction smppServerTransaction = this.smppServerSessions.sendRequestPdu(esme, submitSm,
                                 esme.getWindowWaitTimeout());
                         if (logger.isInfoEnabled()) {
@@ -538,6 +597,19 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory
                                 .getActivityContextInterface(smppServerTransaction);
                         smppTxaci.attach(this.sbbContext.getSbbLocalObject());
+
+                        
+                        // !!!!--------
+                        } catch (Throwable e) {
+                            logger.severe("Exception ** 000004 " + e);
+                            throw new SmscProcessingException(
+                                    "RxSmppServerSbb.sendDeliverSm(): Exception 00000004 - poolIndex="+poolIndex
+                                            + e.getMessage() + "\nsms: " + sms,
+                                    0, 0, SmscProcessingException.HTTP_ERROR_CODE_NOT_SET, null, e);
+                        }
+                        // !!!!--------
+                        
+                        
                     } else {
                         DeliverSm deliverSm = new DeliverSm();
                         deliverSm.setSourceAddress(new Address((byte) sms.getSourceAddrTon(), (byte) sms.getSourceAddrNpi(),
@@ -562,6 +634,13 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         String msgStr = lstStrings.get(segmentIndex);
                         byte[] msgUdh = lstUdhs.get(segmentIndex);
                         if (msgStr != null || msgUdh != null) {
+
+                            
+                            // !!!!--------
+                            try {
+                                // !!!!--------
+                            
+                            
                             byte[] msg = recodeShortMessage(sms.getDataCoding(), msgStr, msgUdh);
 
                             if (msg.length <= 255) {
@@ -570,12 +649,34 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                                 Tlv tlv = new Tlv(SmppConstants.TAG_MESSAGE_PAYLOAD, msg, null);
                                 deliverSm.addOptionalParameter(tlv);
                             }
+
+                            
+                            
+                            
+                            // !!!!--------
+                            } catch (Throwable e) {
+                                logger.severe("Exception ** 000005 " + e);
+                                throw new SmscProcessingException(
+                                        "RxSmppServerSbb.sendDeliverSm(): Exception 00000005 - poolIndex="+poolIndex
+                                                + e.getMessage() + "\nsms: " + sms,
+                                        0, 0, SmscProcessingException.HTTP_ERROR_CODE_NOT_SET, null, e);
+                            }
+                            // !!!!--------
+
+                        
+                        
                         }
 
                         for (Tlv tlv : sms.getTlvSet().getOptionalParameters()) {
                             deliverSm.addOptionalParameter(tlv);
                         }
 
+                        
+                        // !!!!--------
+                        try {
+                            // !!!!--------
+                        
+                        
                         // TODO : waiting for 2 secs for window to accept our
                         // request,
                         // is it good? Should time be more here?
@@ -594,10 +695,33 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         ActivityContextInterface smppTxaci = this.smppServerTransactionACIFactory
                                 .getActivityContextInterface(smppServerTransaction);
                         smppTxaci.attach(this.sbbContext.getSbbLocalObject());
+
+                        
+                        // !!!!--------
+                        } catch (Throwable e) {
+                            throw new SmscProcessingException(
+                                    "RxSmppServerSbb.sendDeliverSm(): Exception 00000006 - poolIndex="+poolIndex
+                                            + e.getMessage() + "\nsms: " + sms,
+                                    0, 0, SmscProcessingException.HTTP_ERROR_CODE_NOT_SET, null, e);
+                        }
+                        // !!!!--------
                     }
                 }
 
                 this.registerMessageInSendingPool(poolIndex, sequenceNumber, sequenceNumberExt);
+
+                // !!!!--------
+                } catch (Throwable e) {
+                    logger.severe("Exception ** 000002 " + e);
+                    throw new SmscProcessingException(
+                            "RxSmppServerSbb.sendDeliverSm(): Exception 00000002 - poolIndex="+poolIndex
+                                    + e.getMessage() + "\nsms: " + sms,
+                            0, 0, SmscProcessingException.HTTP_ERROR_CODE_NOT_SET, null, e);
+                }
+                // !!!!--------
+
+                
+                
             }
             this.endRegisterMessageInSendingPool();
 
