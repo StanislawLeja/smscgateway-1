@@ -45,9 +45,9 @@
 	<property name="community-cassandra.version" value="3.10" /> <!-- 2.2.6 -->
 
 	<!-- SMPP extentions and and RAs -->
-	<property name="restcomm-smpp-extensions.build-number" value="15" />
+	<property name="restcomm-smpp-extensions.build-number" value="17" />
 	<property name="restcomm-smpp-extensions.version" value="1.0" />
-	<property name="restcomm-smpp-ra.build-number" value="27" /> <!-- 11 -->
+	<property name="restcomm-smpp-ra.build-number" value="30" /> <!-- 11 -->
 	<property name="restcomm-smpp-ra.version" value="7.0" />
 
 	<property name="cloudbees.url" value="https://mobicents.ci.cloudbees.com" />
