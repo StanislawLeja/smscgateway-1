@@ -490,38 +490,49 @@ public abstract class DeliveryCommonSbb implements Sbb {
 
         if (smsSet != null) {
             int addedMessageCnt = 0;
-            int gotMessageCnt = 0;
-            int sendingPoolMsgCount = this.getTotalUnsentMessageCount();
-            for (int i1 = 0; i1 < sendingPoolMsgCount; i1++) {
-                if (addedMessageCnt >= poolMessageCount) {
-                    break;
-                }
 
-                gotMessageCnt++;
-                Sms sms = smsSet.getSms(currentMsgNum + i1);
-                if (sms.getValidityPeriod() != null && sms.getValidityPeriod().getTime() <= System.currentTimeMillis()) {
-                    this.endDeliveryAfterValidityPeriod(sms, processingType, null, null);
-                } else {
-                    boolean res1 = applyMProcPreDelivery(sms, processingType);
-                    if (res1) {
-                        addedMessageCnt++;
-                        sms.setDeliveryCount(sms.getDeliveryCount() + 1);
-                        smsSet.markSmsAsDelivered(currentMsgNum + i1);
-                        smsSet.addMessageToSendingPool(sms);
+            TargetAddress lock = persistence.obtainSynchroObject(new TargetAddress(smsSet));
+            // ***** lock ******
+            try {
+                synchronized (lock) {
+
+                    int gotMessageCnt = 0;
+                    int sendingPoolMsgCount = this.getTotalUnsentMessageCount();
+                    for (int i1 = 0; i1 < sendingPoolMsgCount; i1++) {
+                        if (addedMessageCnt >= poolMessageCount) {
+                            break;
+                        }
+
+                        gotMessageCnt++;
+                        Sms sms = smsSet.getSms(currentMsgNum + i1);
+                        if (sms.getValidityPeriod() != null && sms.getValidityPeriod().getTime() <= System.currentTimeMillis()) {
+                            this.endDeliveryAfterValidityPeriod(sms, processingType, null, null);
+                        } else {
+                            boolean res1 = applyMProcPreDelivery(sms, processingType);
+                            if (res1) {
+                                addedMessageCnt++;
+                                sms.setDeliveryCount(sms.getDeliveryCount() + 1);
+                                smsSet.markSmsAsDelivered(currentMsgNum + i1);
+                                smsSet.addMessageToSendingPool(sms);
+                            }
+                        }
                     }
+
+                    sequenceNumbers = new int[addedMessageCnt];
+                    sequenceNumbersExtra = new int[addedMessageCnt][];
+
+                    if (gotMessageCnt > 0) {
+                        currentMsgNum += gotMessageCnt;
+                        this.setCurrentMsgNum(currentMsgNum);
+                    }
+
+                    this.rescheduleDeliveryTimer();
+
                 }
-            }            
-
-            sequenceNumbers = new int[addedMessageCnt];
-            sequenceNumbersExtra = new int[addedMessageCnt][];
-
-            if (gotMessageCnt > 0) {
-                currentMsgNum += gotMessageCnt;
-                this.setCurrentMsgNum(currentMsgNum);
+            } finally {
+                persistence.releaseSynchroObject(lock);
             }
 
-            this.rescheduleDeliveryTimer();
-            
             return addedMessageCnt;
         } else
             return 0;
@@ -541,42 +552,51 @@ public abstract class DeliveryCommonSbb implements Sbb {
         commitSendingPoolMsgCount();
 
         if (smsSet != null) {
-            int addedMessageCnt = 0;
-            int gotMessageCnt = 0;
-            int sendingPoolMsgCount = this.getTotalUnsentMessageCount();
+            TargetAddress lock = persistence.obtainSynchroObject(new TargetAddress(smsSet));
+            // ***** lock ******
             Sms sms = null;
-            for (int i1 = 0; i1 < sendingPoolMsgCount; i1++) {
-                if (addedMessageCnt >= 1) {
-                    break;
-                }
+            try {
+                synchronized (lock) {
+                    int addedMessageCnt = 0;
+                    int gotMessageCnt = 0;
+                    int sendingPoolMsgCount = this.getTotalUnsentMessageCount();
+                    for (int i1 = 0; i1 < sendingPoolMsgCount; i1++) {
+                        if (addedMessageCnt >= 1) {
+                            break;
+                        }
 
-                gotMessageCnt++;
-                sms = smsSet.getSms(currentMsgNum + i1);
-                if (sms.getValidityPeriod() != null && sms.getValidityPeriod().getTime() <= System.currentTimeMillis()) {
-                    this.endDeliveryAfterValidityPeriod(sms, processingType, null, null);
-                    sms = null;
-                } else {
-                    boolean res1 = applyMProcPreDelivery(sms, processingType);
-                    if (!res1) {
-                        sms = null;
-                    } else {
-                        addedMessageCnt++;
-                        sms.setDeliveryCount(sms.getDeliveryCount() + 1);
-                        smsSet.markSmsAsDelivered(currentMsgNum + i1);
-                        smsSet.addMessageToSendingPool(sms);
+                        gotMessageCnt++;
+                        sms = smsSet.getSms(currentMsgNum + i1);
+                        if (sms.getValidityPeriod() != null && sms.getValidityPeriod().getTime() <= System.currentTimeMillis()) {
+                            this.endDeliveryAfterValidityPeriod(sms, processingType, null, null);
+                            sms = null;
+                        } else {
+                            boolean res1 = applyMProcPreDelivery(sms, processingType);
+                            if (!res1) {
+                                sms = null;
+                            } else {
+                                addedMessageCnt++;
+                                sms.setDeliveryCount(sms.getDeliveryCount() + 1);
+                                smsSet.markSmsAsDelivered(currentMsgNum + i1);
+                                smsSet.addMessageToSendingPool(sms);
+                            }
+                        }
                     }
+
+                    if (gotMessageCnt > 0) {
+                        currentMsgNum += gotMessageCnt;
+                        this.setCurrentMsgNum(currentMsgNum);
+                    }
+
+                    sequenceNumbers = null;
+                    sequenceNumbersExtra = null;
+
+                    this.rescheduleDeliveryTimer();
+
                 }
-            }            
-
-            if (gotMessageCnt > 0) {
-                currentMsgNum += gotMessageCnt;
-                this.setCurrentMsgNum(currentMsgNum);
+            } finally {
+                persistence.releaseSynchroObject(lock);
             }
-
-            sequenceNumbers = null;
-            sequenceNumbersExtra = null;
-
-            this.rescheduleDeliveryTimer();
 
             return sms;
         } else
