@@ -5,7 +5,7 @@
     <parent>
         <artifactId>resource-adaptors-parent</artifactId>
         <groupId>org.mobicents.smsc</groupId>
-        <version>7.3.1-TelScale-SNAPSHOT</version>
+        <version>7.3.1.849</version>
     </parent>
     <artifactId>mproc-ra-parent</artifactId>
     <name>Core : SLEE : MProc RA Parent</name>
