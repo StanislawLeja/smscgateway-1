@@ -30,15 +30,15 @@
 	<property name="telscale.smsc.release.version" value="7.3.1-TelScale-SNAPSHOT"/>
 
 	<property name="telscale-slee.version" value="6.1.6" />
-	<property name="telscale-slee.build-number" value="67.510" />
-	<property name="telscale-slee.build-number-dir" value="67.510" />
+	<property name="telscale-slee.build-number" value="67.514" />
+	<property name="telscale-slee.build-number-dir" value="67.514" />
 	<property name="telscale-jss7.version" value="7.3.1" />
 	<property name="telscale-jss7.build-number" value="600" />
 	<property name="telscale-map-ra.version" value="7.3.1" />
 	<property name="telscale-map-ra.build-number" value="42" />
 	<property name="telscale-management-hq.version" value="6.1.4.GA" />
-	<property name="telscale-diam.version" value="6.2.3.389" />
-	<property name="telscale-diam-ra.version" value="6.2.3.36" />
+	<property name="telscale-diam.version" value="6.2.3.393" />
+	<property name="telscale-diam-ra.version" value="6.2.3.39" />
 	<property name="telscale-sip.version" value="6.1.6.45" />
 	<property name="dse-cassandra.version" value="4.5.2" />
 	<property name="telscale-lce.version" value="2.2.4.Final" />
