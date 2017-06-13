@@ -47,7 +47,7 @@
 	<!-- SMPP extentions and and RAs -->
 	<property name="restcomm-smpp-extensions.build-number" value="35" />
 	<property name="restcomm-smpp-extensions.version" value="7.1" />
-	<property name="restcomm-smpp-ra.build-number" value="52" />
+	<property name="restcomm-smpp-ra.build-number" value="54" />
 	<property name="restcomm-smpp-ra.version" value="7.1" />
 
 	<property name="cloudbees.url" value="https://mobicents.ci.cloudbees.com" />
