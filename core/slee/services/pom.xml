@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>slee</artifactId>
 		<groupId>org.mobicents.smsc</groupId>
-		<version>7.4.1-TelScale-SNAPSHOT</version>
+		<version>7.4.1.867</version>
 	</parent>
 
 	<artifactId>services-parent</artifactId>
