@@ -2,7 +2,7 @@
 	<parent>
 		<artifactId>cassandra-tool-parent</artifactId>
 		<groupId>org.mobicents.smsc</groupId>
-		<version>7.4.1-TelScale-SNAPSHOT</version>
+		<version>7.4.1.871</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
