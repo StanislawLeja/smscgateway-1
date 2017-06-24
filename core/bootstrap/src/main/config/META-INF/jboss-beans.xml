@@ -38,7 +38,7 @@
 		class="org.mobicents.protocols.ss7.m3ua.impl.M3UAManagementImpl">
 		<constructor>
 			<parameter>Mtp3UserPart</parameter>
-			<parameter>RestComm-SMSC</parameter>
+			<parameter>TelScale-SMSC</parameter>
 		</constructor>
 		<property name="persistDir">${jboss.server.data.dir}</property>
 		<property name="maxSequenceNumber">256</property>
