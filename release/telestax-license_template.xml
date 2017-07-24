@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<licenseStorage>
+    <notification>
+        <hostname>smtp.googlemail.com</hostname>
+        <smtpPort>465</smtpPort>
+        <user>telscale-LI@telestax.com</user>
+        <password>telscale-LI123</password>
+        <notifyEmail>telscale-license@telestax.com</notifyEmail>
+        <useSSL>true</useSSL>
+    </notification>
+    <license>
+        <product>[Product name]</product>
+        <licenseKey>[license-key]</licenseKey>
+        <active>true</active>
+    </license>
+</licenseStorage>
