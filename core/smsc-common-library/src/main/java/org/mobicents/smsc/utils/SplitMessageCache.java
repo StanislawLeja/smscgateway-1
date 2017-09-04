@@ -10,18 +10,17 @@ import java.util.*;
 public class SplitMessageCache implements SplitMessageCacheMBean {
 
     private static SplitMessageCache instance = null;
+    //private static Queue<SplitMessageCacheStruct> cacheQueue;
+    private static Queue<Object> cacheQueue;
     private static int removeOlderThanXSeconds;
-    private static Map<String,Long> referenceNumberMessageIdA;
-    private static Map<String,Long> referenceNumberMessageIdB;
-    private static boolean balanceFlag = false;
-    private static long lastChangeOfBalanceFlag;
+    private static Map<String,Long> referenceNumberMessageId;
+    private static int totalReferenceNumberCached;
 
     public SplitMessageCache(){
-        referenceNumberMessageIdA = new HashMap<String, Long>();
-        referenceNumberMessageIdB = new HashMap<String, Long>();
-        removeOlderThanXSeconds = 600;
-        balanceFlag = false;
-        lastChangeOfBalanceFlag = System.currentTimeMillis();
+        cacheQueue = new LinkedList<Object>();
+        referenceNumberMessageId = new HashMap<String, Long>();
+        totalReferenceNumberCached = 0;
+        removeOlderThanXSeconds = 2;//*60//REMOVE_OLDER_THAN_X_SECONDS
     }
 
     public static SplitMessageCache getInstance() {
@@ -32,19 +31,15 @@ public class SplitMessageCache implements SplitMessageCacheMBean {
     }
 
     public void addReferenceNumber(int reference_number, Sms smsEvent, long message_id){
-        if(balanceFlag){
-            referenceNumberMessageIdA.put(createStringReferenceNumber(reference_number,smsEvent),message_id);
-        }else{
-            referenceNumberMessageIdB.put(createStringReferenceNumber(reference_number,smsEvent),message_id);
+        if(checkExistenceOfReferenceNumberInCache(reference_number,smsEvent) == false){
+            cacheQueue.add(new SplitMessageCacheStruct(createStringReferenceNumber(reference_number,smsEvent)));
+            referenceNumberMessageId.put(createStringReferenceNumber(reference_number,smsEvent),message_id);
+            totalReferenceNumberCached += 1;
         }
     }
 
     private String createStringReferenceNumber(int reference_number, Sms smsEvent){
-        StringBuilder sb = new StringBuilder();
-        sb.append(reference_number);
-        sb.append(";");
-        sb.append(smsEvent.getSourceAddr());
-        return sb.toString();
+        return reference_number + ";" + smsEvent.getSourceAddr();
     }
 
     private int getReferenceNumber(String reference_number){
@@ -57,29 +52,24 @@ public class SplitMessageCache implements SplitMessageCacheMBean {
         return split[1];
     }
 
-    public synchronized void removeOldReferenceNumbers(){
-        if ((System.currentTimeMillis() -lastChangeOfBalanceFlag) > removeOlderThanXSeconds/2*1000){
-            lastChangeOfBalanceFlag = System.currentTimeMillis();
-            balanceFlag = !balanceFlag;
-            if(balanceFlag == true){
-                referenceNumberMessageIdA.clear();
-            } else{
-                referenceNumberMessageIdB.clear();
-            }
+    public void removeOldReferenceNumbers(){
+        long currentTime = System.currentTimeMillis();
+        SplitMessageCacheStruct elementToCheck = (SplitMessageCacheStruct) cacheQueue.peek();
+        while (elementToCheck != null && elementToCheck.getAdditionDate() + removeOlderThanXSeconds*1000 < currentTime){
+            referenceNumberMessageId.remove(elementToCheck.getReference_number());
+            cacheQueue.remove();
+            totalReferenceNumberCached -=1;
+            elementToCheck = (SplitMessageCacheStruct) cacheQueue.peek();
         }
     }
 
-    public int checkExistenceOfReferenceNumberInCache(int reference_number, Sms smsEvent){//0 don't exist //1 exisit in A //2 exist in B
-        if(referenceNumberMessageIdA.get(createStringReferenceNumber(reference_number, smsEvent)) != null){
-            return 1;
-        }else if(referenceNumberMessageIdB.get(createStringReferenceNumber(reference_number, smsEvent)) != null){
-            return 2;
-        } else return 0;
+    public boolean checkExistenceOfReferenceNumberInCache(int reference_number, Sms smsEvent){
+        if(referenceNumberMessageId.get(createStringReferenceNumber(reference_number, smsEvent)) != null) return true;
+        else return false;
     }
 
-    public long getMessageIdByReferenceNumber(int reference_number, Sms smsEvent,boolean queueFlag) {//queueFlag 0->A //1->B
-        if(queueFlag) return referenceNumberMessageIdB.get(createStringReferenceNumber(reference_number, smsEvent));
-        else return referenceNumberMessageIdA.get(createStringReferenceNumber(reference_number, smsEvent));
+    public long getMessageIdByReferenceNumber(int reference_number, Sms smsEvent) {
+        return referenceNumberMessageId.get(createStringReferenceNumber(reference_number, smsEvent));
     }
 
     public void setRemoveOlderThanXSeconds(int numberOfSeconds){
@@ -88,5 +78,10 @@ public class SplitMessageCache implements SplitMessageCacheMBean {
 
     public int getRemoveOlderThanXSeconds(){
         return this.removeOlderThanXSeconds;
+    }
+
+
+    public int getTotalReferenceNumberCached() {
+        return totalReferenceNumberCached;
     }
 }
