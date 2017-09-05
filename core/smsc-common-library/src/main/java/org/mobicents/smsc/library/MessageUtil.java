@@ -874,7 +874,7 @@ public class MessageUtil {
                     splitMessageData.setSplitedMessagePartNumber(smsEvent.getShortMessageBin()[6]);
                     break;
             }
-        }else if(smsEvent.getTlvSet().hasOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM)){
+        }else if(((smsEvent.getEsmClass()) & 1)==1  && ((smsEvent.getEsmClass() >> 1) & 1) ==1){
             splitMessageData.setMsgSplitInUse(true);
             try {
                 Tlv splitedMessageIDtemp = smsEvent.getTlvSet().getOptionalParameter(SmppConstants.TAG_SAR_MSG_REF_NUM);
@@ -889,14 +889,11 @@ public class MessageUtil {
             }
         }
         if(splitMessageData.isMsgSplitInUse() == true){
-            synchronized (splitMessageData){
-                int queueFlag =splitMessageData.getSplitMessageCache().checkExistenceOfReferenceNumberInCache(splitMessageData.getSplitedMessageReferenceNumber(),smsEvent);
-                if(queueFlag != 0){
-                    splitMessageData.setSplitedMessageID(splitMessageData.getSplitMessageCache().getMessageIdByReferenceNumber(splitMessageData.getSplitedMessageReferenceNumber(),smsEvent,(queueFlag > 1 ? true : false)));
-                }else{
-                    splitMessageData.getSplitMessageCache().addReferenceNumber(splitMessageData.getSplitedMessageReferenceNumber(), smsEvent,smsEvent.getMessageId());
-                    splitMessageData.setSplitedMessageID(smsEvent.getMessageId());
-                }
+            if(splitMessageData.getSplitMessageCache().checkExistenceOfReferenceNumberInCache(splitMessageData.getSplitedMessageReferenceNumber(),smsEvent)){
+                splitMessageData.setSplitedMessageID(splitMessageData.getSplitMessageCache().getMessageIdByReferenceNumber(splitMessageData.getSplitedMessageReferenceNumber(),smsEvent));
+            }else{
+                splitMessageData.getSplitMessageCache().addReferenceNumber(splitMessageData.getSplitedMessageReferenceNumber(), smsEvent,smsEvent.getMessageId());
+                splitMessageData.setSplitedMessageID(smsEvent.getMessageId());
             }
         }
 
