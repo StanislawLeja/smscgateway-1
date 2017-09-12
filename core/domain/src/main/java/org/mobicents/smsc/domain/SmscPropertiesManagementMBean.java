@@ -397,4 +397,18 @@ public interface SmscPropertiesManagementMBean {
 
     public String getCassandraPass();
 
+    /**
+     * Sets the delivery receipt HTTP notification URL.
+     *
+     * @param anUrl the new delivery receipt HTTP notification URL
+     */
+    void setDeliveryReceiptHttpNotificationUrl(String anUrl);
+
+    /**
+     * Gets the delivery receipt HTTP notification URL.
+     *
+     * @return the delivery receipt HTTP notification URL
+     */
+    String getDeliveryReceiptHttpNotificationUrl();
+
 }
