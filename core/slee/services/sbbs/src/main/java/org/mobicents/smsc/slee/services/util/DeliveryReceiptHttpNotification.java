@@ -29,7 +29,14 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.mobicents.slee.SbbContextExt;
+import org.mobicents.smsc.cassandra.PersistenceException;
+import org.mobicents.smsc.domain.HttpUserMBean;
+import org.mobicents.smsc.domain.HttpUsersManagement;
+import org.mobicents.smsc.domain.HttpUsersManagementMBean;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsExposureLayerData;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.restcomm.slee.ra.httpclient.nio.ratype.HttpClientNIOResourceAdaptorSbbInterface;
 import org.restcomm.slee.ra.httpclient.nio.ratype.HttpClientNIOResourceAdaptorType;
 
@@ -42,11 +49,14 @@ public final class DeliveryReceiptHttpNotification {
 
     private static final String HTTP_CLIENT_NIO_RA_LINK = "HttpClientNioRa";
 
-    private static final String PROPERTY_MESSAGE_ID = "messageId";
-    private static final String PROPERTY_STATUS = "status";
+    private static final String PROPERTY_CORRELATION_ID = "correlationId";
+    private static final String PROPERTY_DELIVERY_RECEIPT_STATUS = "deliveryReceiptStatus";
+    private static final String PROPERTY_ORIGINAL_REQUEST_USER_NAME = "originalRequestUserName";
 
     private final Tracer itsTracer;
     private final HttpPost itsDeliveryReceiptHttpMethod;
+    private final PersistenceRAInterface itsPersistenceRa;
+    private final HttpUsersManagementMBean itsHttpUsersManagement;
     private final HttpClientNIOResourceAdaptorSbbInterface itsHttpClientNio;
 
     /**
@@ -55,13 +65,16 @@ public final class DeliveryReceiptHttpNotification {
      * @param aTracer the tracer
      * @param anSmscProperties the SMSC properties
      * @param aContext the context
+     * @param aPersistenceRa the persistence RA
      */
     public DeliveryReceiptHttpNotification(final Tracer aTracer, final SmscPropertiesManagement anSmscProperties,
-            final SbbContextExt aContext) {
+            final SbbContextExt aContext, final PersistenceRAInterface aPersistenceRa) {
         itsTracer = aTracer;
+        itsHttpUsersManagement = HttpUsersManagement.getInstance();
         itsDeliveryReceiptHttpMethod = getPost(anSmscProperties);
         itsHttpClientNio = (HttpClientNIOResourceAdaptorSbbInterface) aContext
                 .getResourceAdaptorInterface(HttpClientNIOResourceAdaptorType.ID, HTTP_CLIENT_NIO_RA_LINK);
+        itsPersistenceRa = aPersistenceRa;
     }
 
     /**
@@ -75,12 +88,30 @@ public final class DeliveryReceiptHttpNotification {
             return;
         }
         final JsonObject json = new JsonObject();
-        json.addProperty(PROPERTY_MESSAGE_ID, aMessageId);
-        json.addProperty(PROPERTY_STATUS, aStatus);
-        itsDeliveryReceiptHttpMethod.setEntity(new StringEntity(json.toString(), ContentType.APPLICATION_JSON));
         try {
+            final Sms originalRequest = itsPersistenceRa.c2_getRecordArchiveForMessageId(aMessageId);
+            if (originalRequest == null) {
+                itsTracer.warning("Unable to report DR with HTTP. Original SMS not found.");
+                return;
+            }
+            final HttpUserMBean hu = itsHttpUsersManagement.getHttpUserByNetworkId(originalRequest.getOrigNetworkId());
+            if (hu == null) {
+                itsTracer.warning("Unable to report DR with HTTP. HTTP User for Orig NetworkId "
+                        + originalRequest.getOrigNetworkId() + " is not found.");
+                return;
+            }
+            final String exposureLayerData = originalRequest.getExposureLayerData();
+            if (exposureLayerData == null) {
+                itsTracer.warning("Unable to report DR with HTTP. Exposure Layer Data is not set.");
+                return;
+            }
+            json.addProperty(PROPERTY_DELIVERY_RECEIPT_STATUS, aStatus);
+            json.addProperty(PROPERTY_ORIGINAL_REQUEST_USER_NAME, hu.getUserName());
+            json.addProperty(PROPERTY_CORRELATION_ID, parseCorrelationId(new SmsExposureLayerData(exposureLayerData)));
+            itsDeliveryReceiptHttpMethod.setEntity(new StringEntity(json.toString(), ContentType.APPLICATION_JSON));
             itsHttpClientNio.execute(itsDeliveryReceiptHttpMethod, null, null);
-        } catch (NullPointerException | IllegalStateException | SLEEException | StartActivityException e) {
+        } catch (NullPointerException | IllegalStateException | SLEEException | StartActivityException
+                | PersistenceException e) {
             itsTracer.warning("Unable to report DR with HTTP. Message: " + e.getMessage() + ".", e);
         }
     }
@@ -94,6 +125,10 @@ public final class DeliveryReceiptHttpNotification {
             return null;
         }
         return new HttpPost(url);
+    }
+
+    private static String parseCorrelationId(final SmsExposureLayerData aData) {
+        return aData.getCorrelationId();
     }
 
 }

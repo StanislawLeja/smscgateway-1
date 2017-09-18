@@ -125,7 +125,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
                     .lookup("slee/resources/smppp/server/1.0/acifactory");
             this.smppServerSessions = (SmppSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
             itsDeliveryReceiptHttpNotification = new DeliveryReceiptHttpNotification(logger, smscPropertiesManagement,
-                    (SbbContextExt) sbbContext);
+                    (SbbContextExt) sbbContext, persistence);
         } catch (Exception ne) {
             logger.severe("Could not set SBB context:", ne);
         }

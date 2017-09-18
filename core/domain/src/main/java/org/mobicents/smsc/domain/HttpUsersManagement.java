@@ -120,6 +120,17 @@ public class HttpUsersManagement implements HttpUsersManagementMBean {
     }
 
     @Override
+    public final HttpUser getHttpUserByNetworkId(final int aNetworkId) {
+        for (FastList.Node<HttpUser> n = httpUsers.head(), end = httpUsers.tail(); (n = n.getNext()) != end;) {
+            final HttpUser httpUser = n.getValue();
+            if (httpUser.getNetworkId() == aNetworkId) {
+                return httpUser;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public HttpUser createHttpUser(String userName, String password, final int aNetworkId) throws Exception {
         if (userName == null || userName.isEmpty()) {
             throw new Exception("userName must not be null or an empty String");

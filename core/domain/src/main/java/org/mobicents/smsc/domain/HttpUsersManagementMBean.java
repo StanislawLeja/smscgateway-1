@@ -34,6 +34,8 @@ public interface HttpUsersManagementMBean {
     FastList<HttpUser> getHttpUsers();
 
     HttpUser getHttpUserByName(String userName);
+    
+    HttpUser getHttpUserByNetworkId(int aNetworkId);
 
     /**
      * Creates the http user.
