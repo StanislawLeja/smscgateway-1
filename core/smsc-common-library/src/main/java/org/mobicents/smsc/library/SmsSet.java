@@ -22,14 +22,10 @@
 
 package org.mobicents.smsc.library;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-
 import org.mobicents.protocols.ss7.map.api.service.sms.LocationInfoWithLMSI;
+
+import java.io.Serializable;
+import java.util.*;
 
 
 /**
@@ -514,6 +510,8 @@ public class SmsSet implements Serializable {
 
     public void addMessageToSendingPool(Sms sms) {
         this.sendingMessagePool.add(sms);
+        //sms.setGw_que_start(System.currentTimeMillis());
+        //System.out.println("--------------------------RUN!-------------_____________________----____----__-");
     }
 
     public Sms getMessageFromSendingPool(int number) {

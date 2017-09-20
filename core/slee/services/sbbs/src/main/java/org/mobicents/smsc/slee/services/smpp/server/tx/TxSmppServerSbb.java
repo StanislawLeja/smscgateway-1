@@ -22,28 +22,15 @@
 
 package org.mobicents.smsc.slee.services.smpp.server.tx;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.slee.ActivityContextInterface;
-import javax.slee.ActivityEndEvent;
-import javax.slee.EventContext;
-import javax.slee.Sbb;
-import javax.slee.SbbContext;
-import javax.slee.ServiceID;
-import javax.slee.serviceactivity.ServiceActivity;
-import javax.slee.serviceactivity.ServiceStartedEvent;
-
+import com.cloudhopper.smpp.SmppConstants;
+import com.cloudhopper.smpp.pdu.*;
+import com.cloudhopper.smpp.tlv.Tlv;
+import com.cloudhopper.smpp.tlv.TlvConvertException;
+import com.cloudhopper.smpp.type.Address;
+import com.cloudhopper.smpp.type.RecoverablePduException;
+import com.cloudhopper.smpp.type.SmppInvalidArgumentException;
+import com.cloudhopper.smpp.type.UnsucessfulSME;
+import com.cloudhopper.smpp.util.TlvUtil;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
@@ -63,33 +50,27 @@ import org.mobicents.smsc.mproc.DeliveryReceiptData;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.services.submitsbb.SubmitCommonSbb;
 import org.mobicents.smsc.slee.services.util.SbbStatsUtils;
-import org.restcomm.slee.resource.smpp.PduRequestTimeout;
-import org.restcomm.slee.resource.smpp.SendPduStatus;
-import org.restcomm.slee.resource.smpp.SmppExtraConstants;
-import org.restcomm.slee.resource.smpp.SmppSessions;
-import org.restcomm.slee.resource.smpp.SmppTransaction;
-import org.restcomm.slee.resource.smpp.SmppTransactionACIFactory;
+import org.restcomm.slee.resource.smpp.*;
 import org.restcomm.smpp.CheckMessageLimitResult;
 import org.restcomm.smpp.Esme;
 import org.restcomm.smpp.SmppEncoding;
 import org.restcomm.smpp.parameter.TlvSet;
 
-import com.cloudhopper.smpp.SmppConstants;
-import com.cloudhopper.smpp.pdu.BaseSm;
-import com.cloudhopper.smpp.pdu.DataSm;
-import com.cloudhopper.smpp.pdu.DataSmResp;
-import com.cloudhopper.smpp.pdu.DeliverSmResp;
-import com.cloudhopper.smpp.pdu.SubmitMulti;
-import com.cloudhopper.smpp.pdu.SubmitMultiResp;
-import com.cloudhopper.smpp.pdu.SubmitSm;
-import com.cloudhopper.smpp.pdu.SubmitSmResp;
-import com.cloudhopper.smpp.tlv.Tlv;
-import com.cloudhopper.smpp.tlv.TlvConvertException;
-import com.cloudhopper.smpp.type.Address;
-import com.cloudhopper.smpp.type.RecoverablePduException;
-import com.cloudhopper.smpp.type.SmppInvalidArgumentException;
-import com.cloudhopper.smpp.type.UnsucessfulSME;
-import com.cloudhopper.smpp.util.TlvUtil;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.slee.*;
+import javax.slee.serviceactivity.ServiceActivity;
+import javax.slee.serviceactivity.ServiceStartedEvent;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -152,12 +133,14 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     public abstract TxSmppServerSbbUsage getDefaultSbbUsageParameterSet();
 
     public void onServiceStartedEvent(ServiceStartedEvent event, ActivityContextInterface aci, EventContext eventContext) {
+        this.logger.info("_______________________________________________________--onServiceStartedEvent");
         ServiceID serviceID = event.getService();
         this.logger.info("Rx: onServiceStartedEvent: event=" + event + ", serviceID=" + serviceID);
         SbbStates.setSmscTxSmppServerServiceState(true);
     }
 
     public void onActivityEndEvent(ActivityEndEvent event, ActivityContextInterface aci, EventContext eventContext) {
+        this.logger.info("_______________________________________________________--onActivityEndEvent");
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterActivityEnd(ONE);
         boolean isServiceActivity = (aci.getActivity() instanceof ServiceActivity);
@@ -165,12 +148,17 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             this.logger.info("Rx: onActivityEndEvent: event=" + event + ", isServiceActivity=" + isServiceActivity);
             SbbStates.setSmscTxSmppServerServiceState(false);
         }
+        Timestamp gw_inc_stop  = new Timestamp(System.currentTimeMillis());
+        this.logger.info("____________________________________________________________________________Start adfoefsdfa gw_inc_start: "+gw_inc_stop.getTime());
     }
 
     // *********
     // SMPP Event Handlers
 
     public void onSubmitSm(com.cloudhopper.smpp.pdu.SubmitSm event, ActivityContextInterface aci) {
+        Timestamp gw_inc_start  = new Timestamp(System.currentTimeMillis());
+        this.logger.info("_______________________________________________________--onSubmitSm");
+        this.logger.info("____________________________________________________________________________Start adfoefsdfa gw_inc_start: "+gw_inc_start.getTime());
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterSubmitSm(ONE);
         final long start = System.currentTimeMillis();
@@ -179,6 +167,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     }
 
     public void onDataSm(com.cloudhopper.smpp.pdu.DataSm event, ActivityContextInterface aci) {
+        this.logger.info("_______________________________________________________--onDataSm");
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterDataSm(ONE);
         final long start = System.currentTimeMillis();
@@ -187,6 +176,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     }
 
     public void onSubmitMulti(com.cloudhopper.smpp.pdu.SubmitMulti event, ActivityContextInterface aci) {
+        this.logger.info("_______________________________________________________--onSubmitMulti");
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterSubmitMultiSm(ONE);
         final long start = System.currentTimeMillis();
@@ -195,6 +185,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     }
 
     public void onDeliverSm(com.cloudhopper.smpp.pdu.DeliverSm event, ActivityContextInterface aci) {
+        this.logger.info("_______________________________________________________--onDeliverSm");
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterDeliverSm(ONE);
         final long start = System.currentTimeMillis();
@@ -203,6 +194,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     }
 
     public void onPduRequestTimeout(PduRequestTimeout event, ActivityContextInterface aci, EventContext eventContext) {
+        this.logger.info("_______________________________________________________--onPduRequestTimeout");
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterErrorPduRequestTimeout(ONE);
         sbbu.samplePduRequestTimeout(0L);
@@ -212,6 +204,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
     public void onRecoverablePduException(RecoverablePduException event, ActivityContextInterface aci,
             EventContext eventContext) {
+        this.logger.info("_______________________________________________________--onRecoverablePduException");
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementErrorRecoverablePduException(ONE);
         sbbu.sampleRecoverablePduException(0L);
@@ -220,6 +213,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     }
 
     public void onSendPduStatus(SendPduStatus event, ActivityContextInterface aci, EventContext eventContext) {
+        this.logger.info("_______________________________________________________--onSendPduStatus");
         if (logger.isFineEnabled()) {
             logger.fine(String.format("onSendPduStatus : SendPduStatus=%s", event));
         }
@@ -232,6 +226,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
     private void onSubmitSmLocal(final TxSmppServerSbbUsage anSbbUsage, final com.cloudhopper.smpp.pdu.SubmitSm event,
             final ActivityContextInterface aci) {
+        this.logger.info("_______________________________________________________--onSubmitSmLocal");
         // TODO remove it ...........................
         // long l2 = Date.parse(event.getServiceType());
         // Date dt0 = new Date(l2);
@@ -244,7 +239,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
         String esmeName = esme.getName();
 
         long timestampB = 0;
-
+        long gw_inc_stop = 0;
         if (this.logger.isFineEnabled()) {
             this.logger.fine("\nReceived SUBMIT_SM = " + event + " from Esme name=" + esmeName);
         }
@@ -280,6 +275,8 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             try {
                 this.smppServerSessions.sendResponsePdu(esme, event, response);
                 timestampB = System.currentTimeMillis();
+                gw_inc_stop = System.currentTimeMillis();
+
             } catch (Exception e) {
                 anSbbUsage.incrementCounterErrorSubmitSmResponding(ONE);
                 this.logger.severe("Error while trying to send SubmitSmResponse. Message: " + e.getMessage() + ".\nResponse: "
@@ -290,6 +287,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
                 TargetAddress ta = createDestTargetAddress(event.getDestAddress(), esme.getNetworkId());
                 Sms sms = this.createSmsEvent(event, esme, ta, persistence);
                 sms.setTimestampB(timestampB);
+                sms.setGw_inc_stop(gw_inc_stop);
                 generateFailureDetailedCdr(sms, EventType.IN_SMPP_REJECT_CONG, ErrorCode.REJECT_INCOMING,
                         CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITSM, SmppConstants.STATUS_THROTTLED,
                         esme.getRemoteAddressAndPort(), event.getSequenceNumber());
@@ -348,6 +346,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             try {
                 this.smppServerSessions.sendResponsePdu(esme, event, response);
                 timestampB = System.currentTimeMillis();
+                gw_inc_stop = System.currentTimeMillis();
             } catch (Exception e) {
                 anSbbUsage.incrementCounterErrorSubmitSmResponding(ONE);
                 this.logger.severe("Error while trying to send SubmitSmResponse. Message: " + e.getMessage() + ".\nResponse: "
@@ -364,6 +363,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
             if (sms != null) {
                 sms.setTimestampB(timestampB);
+                sms.setGw_inc_stop(gw_inc_stop);
                 generateRejectDetailedCdr(e1.getInternalErrorCode(), sms, eventType, ErrorCode.REJECT_INCOMING,
                         CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITSM, e1.getSmppErrorCode(), esme.getRemoteAddressAndPort(),
                         event.getSequenceNumber());
@@ -402,6 +402,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
                 this.smppServerSessions.sendResponsePdu(esme, event, response);
                 if (sms != null) {
                     sms.setTimestampB(System.currentTimeMillis());
+                    sms.setGw_inc_stop(System.currentTimeMillis());
                     generateFailureDetailedCdr(sms, EventType.IN_SMPP_ERROR, ErrorCode.REJECT_INCOMING,
                             CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITSM, SmppConstants.STATUS_SYSERR,
                             esme.getRemoteAddressAndPort(), event.getSequenceNumber());
@@ -423,6 +424,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             if (sms.getMessageDeliveryResultResponse() == null) {
                 this.smppServerSessions.sendResponsePdu(esme, event, response);
                 sms.setTimestampB(System.currentTimeMillis());
+                sms.setGw_inc_stop(System.currentTimeMillis());
                 generateDetailedCDR(sms, EventType.IN_SMPP_RECEIVED, CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITSM,
                         SmppConstants.STATUS_OK, esme.getRemoteAddressAndPort(), event.getSequenceNumber());
             }
@@ -437,11 +439,12 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
         SmscStatProvider.getInstance().setParam1((int) (dt3.getTime() - dt0.getTime()));
         SmscStatProvider.getInstance().setParam2((int) (dt3.getTime() - dt1.getTime()));
         // TODO remove it ...........................
-
+        this.logger.info("_______________________________________________________--TimestampB: "+sms.getTimestampB());
     }
 
     private void onDataSmLocal(final TxSmppServerSbbUsage anSbbUsage, final com.cloudhopper.smpp.pdu.DataSm event,
             ActivityContextInterface aci) {
+        this.logger.info("_______________________________________________________--onDataSmLocal");
         SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
         Esme esme = smppServerTransaction.getEsme();
         String esmeName = esme.getName();
@@ -489,6 +492,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
                 TargetAddress ta = createDestTargetAddress(event.getDestAddress(), esme.getNetworkId());
                 Sms sms = this.createSmsEvent(event, esme, ta, persistence);
                 sms.setTimestampB(System.currentTimeMillis());
+                sms.setGw_inc_stop(System.currentTimeMillis());
                 generateFailureDetailedCdr(sms, EventType.IN_SMPP_REJECT_CONG, ErrorCode.REJECT_INCOMING,
                         CdrDetailedGenerator.CDR_MSG_TYPE_DATASM, SmppConstants.STATUS_THROTTLED,
                         esme.getRemoteAddressAndPort(), event.getSequenceNumber());
@@ -562,6 +566,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
             if (sms != null) {
                 sms.setTimestampB(System.currentTimeMillis());
+                sms.setGw_inc_stop(System.currentTimeMillis());
                 generateRejectDetailedCdr(e1.getInternalErrorCode(), sms, eventType, ErrorCode.REJECT_INCOMING,
                         CdrDetailedGenerator.CDR_MSG_TYPE_DATASM, e1.getSmppErrorCode(), esme.getRemoteAddressAndPort(),
                         event.getSequenceNumber());
@@ -601,6 +606,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
                 this.smppServerSessions.sendResponsePdu(esme, event, response);
                 if (sms != null) {
                     sms.setTimestampB(System.currentTimeMillis());
+                    sms.setGw_inc_stop(System.currentTimeMillis());
                     generateFailureDetailedCdr(sms, EventType.IN_SMPP_ERROR, ErrorCode.REJECT_INCOMING,
                             CdrDetailedGenerator.CDR_MSG_TYPE_DATASM, SmppConstants.STATUS_SYSERR,
                             esme.getRemoteAddressAndPort(), event.getSequenceNumber());
@@ -621,6 +627,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             if (sms.getMessageDeliveryResultResponse() == null) {
                 this.smppServerSessions.sendResponsePdu(esme, event, response);
                 sms.setTimestampB(System.currentTimeMillis());
+                sms.setGw_inc_stop(System.currentTimeMillis());
                 generateDetailedCDR(sms, EventType.IN_SMPP_RECEIVED, CdrDetailedGenerator.CDR_MSG_TYPE_DATASM,
                         SmppConstants.STATUS_OK, esme.getRemoteAddressAndPort(), event.getSequenceNumber());
             }
@@ -632,6 +639,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
     private void onSubmitMultiLocal(final TxSmppServerSbbUsage anSbbUsage, final com.cloudhopper.smpp.pdu.SubmitMulti event,
             final ActivityContextInterface aci) {
+        this.logger.info("_______________________________________________________--onSubmitMultiLocal");
         SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
         Esme esme = smppServerTransaction.getEsme();
         String esmeName = esme.getName();
@@ -673,9 +681,11 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
             // Lets send the Response with error here
             long timestampB = 0L;
+            long gw_inc_stop = 0L;
             try {
                 this.smppServerSessions.sendResponsePdu(esme, event, response);
                 timestampB = System.currentTimeMillis();
+                gw_inc_stop = System.currentTimeMillis();
             } catch (Exception e) {
                 anSbbUsage.incrementCounterErrorSubmitMultiSmResponding(ONE);
                 this.logger.severe("Error while trying to send SubmitMultiResponse=" + response, e);
@@ -685,6 +695,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
                 TargetAddress ta = createDestTargetAddress(event.getDestAddress(), esme.getNetworkId());
                 Sms sms = this.createSmsEvent(event, esme, ta, persistence);
                 sms.setTimestampB(timestampB);
+                sms.setGw_inc_stop(gw_inc_stop);
                 generateFailureDetailedCdr(sms, EventType.IN_SMPP_REJECT_CONG, ErrorCode.REJECT_INCOMING,
                         CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITMULTI, SmppConstants.STATUS_THROTTLED,
                         esme.getRemoteAddressAndPort(), event.getSequenceNumber());
@@ -744,9 +755,11 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
             // Lets send the Response with error here
             long timestampB = 0L;
+            long gw_inc_stop = 0L;
             try {
                 this.smppServerSessions.sendResponsePdu(esme, event, response);
                 timestampB = System.currentTimeMillis();
+                gw_inc_stop = System.currentTimeMillis();
             } catch (Exception e) {
                 anSbbUsage.incrementCounterErrorSubmitMultiSmResponding(ONE);
                 this.logger.severe("Error while trying to send SubmitMultiResponse=" + response, e);
@@ -761,6 +774,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
             if (singleSms != null) {
                 singleSms.setTimestampB(timestampB);
+                singleSms.setGw_inc_stop(gw_inc_stop);
                 generateRejectDetailedCdr(e1.getInternalErrorCode(), singleSms, eventType, ErrorCode.REJECT_INCOMING,
                         CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITMULTI, e1.getSmppErrorCode(), esme.getRemoteAddressAndPort(),
                         event.getSequenceNumber());
@@ -799,6 +813,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
                 this.smppServerSessions.sendResponsePdu(esme, event, response);
                 if (singleSms != null) {
                     singleSms.setTimestampB(System.currentTimeMillis());
+                    singleSms.setGw_inc_stop(System.currentTimeMillis());
                     generateFailureDetailedCdr(singleSms, EventType.IN_SMPP_ERROR, ErrorCode.REJECT_INCOMING,
                             CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITMULTI, SmppConstants.STATUS_SYSERR,
                             esme.getRemoteAddressAndPort(), event.getSequenceNumber());
@@ -831,6 +846,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             if (sms == null || sms.getMessageDeliveryResultResponse() == null) {
                 this.smppServerSessions.sendResponsePdu(esme, event, response);
                 sms.setTimestampB(System.currentTimeMillis());
+                sms.setGw_inc_stop(System.currentTimeMillis());
                 generateDetailedCDR(sms, EventType.IN_SMPP_RECEIVED, CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITMULTI,
                         SmppConstants.STATUS_OK, esme.getRemoteAddressAndPort(), event.getSequenceNumber());
             }
@@ -842,6 +858,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
     private void onDeliverSmLocal(final TxSmppServerSbbUsage anSbbUsage, final com.cloudhopper.smpp.pdu.DeliverSm event,
             final ActivityContextInterface aci) {
+        this.logger.info("_______________________________________________________--onDeliverSmLocal");
         SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
         Esme esme = smppServerTransaction.getEsme();
         String esmeName = esme.getName();
@@ -889,6 +906,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
                 TargetAddress ta = createDestTargetAddress(event.getDestAddress(), esme.getNetworkId());
                 Sms sms = this.createSmsEvent(event, esme, ta, persistence);
                 sms.setTimestampB(System.currentTimeMillis());
+                sms.setGw_inc_stop(System.currentTimeMillis());
                 generateFailureDetailedCdr(sms, EventType.IN_SMPP_REJECT_CONG, ErrorCode.REJECT_INCOMING,
                         CdrDetailedGenerator.CDR_MSG_TYPE_DELIVERSM, SmppConstants.STATUS_THROTTLED,
                         esme.getRemoteAddressAndPort(), event.getSequenceNumber());
@@ -946,9 +964,11 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
             // Lets send the Response with error here
             long timestampB = 0L;
+            long gw_inc_stop = 0L;
             try {
                 this.smppServerSessions.sendResponsePdu(esme, event, response);
                 timestampB = System.currentTimeMillis();
+                gw_inc_stop = System.currentTimeMillis();
             } catch (Exception e) {
                 anSbbUsage.incrementCounterErrorDeliverSmResponding(ONE);
                 this.logger.severe("Error while trying to send SubmitSmResponse=" + response, e);
@@ -963,6 +983,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
             if (sms != null) {
                 sms.setTimestampB(timestampB);
+                sms.setGw_inc_stop(gw_inc_stop);
                 generateRejectDetailedCdr(e1.getInternalErrorCode(), sms, eventType, ErrorCode.REJECT_INCOMING,
                         CdrDetailedGenerator.CDR_MSG_TYPE_DELIVERSM, e1.getSmppErrorCode(), esme.getRemoteAddressAndPort(),
                         event.getSequenceNumber());
@@ -1002,6 +1023,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
                 this.smppServerSessions.sendResponsePdu(esme, event, response);
                 if (sms != null) {
                     sms.setTimestampB(System.currentTimeMillis());
+                    sms.setGw_inc_stop(System.currentTimeMillis());
                     generateFailureDetailedCdr(sms, EventType.IN_SMPP_ERROR, ErrorCode.REJECT_INCOMING,
                             CdrDetailedGenerator.CDR_MSG_TYPE_DELIVERSM, SmppConstants.STATUS_SYSERR,
                             esme.getRemoteAddressAndPort(), event.getSequenceNumber());
@@ -1021,6 +1043,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
         try {
             this.smppServerSessions.sendResponsePdu(esme, event, response);
             sms.setTimestampB(System.currentTimeMillis());
+            sms.setGw_inc_stop(System.currentTimeMillis());
             generateDetailedCDR(sms, EventType.IN_SMPP_RECEIVED, CdrDetailedGenerator.CDR_MSG_TYPE_DELIVERSM,
                     SmppConstants.STATUS_OK, esme.getRemoteAddressAndPort(), event.getSequenceNumber());
         } catch (Throwable e) {
@@ -1526,6 +1549,8 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             throws SmscProcessingException {
 
         sms0.setTimestampA(System.currentTimeMillis());
+        sms0.setGw_inc_start(System.currentTimeMillis());
+        this.logger.info("_______________________________________________________--processSms TimestampA: "+sms0.getTimestampA());
         if (logger.isInfoEnabled()) {
             logger.info(String.format("\nReceived %s to ESME: %s, sms=%s", incomingMessageType.toString(), esme.getName(),
                     sms0.toString()));

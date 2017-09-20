@@ -21,13 +21,13 @@
  */
 package org.mobicents.smsc.library;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.apache.log4j.Logger;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.mproc.DeliveryReceiptData;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * 
@@ -117,7 +117,11 @@ public class CdrGenerator {
             tlvMessageState = deliveryReceiptData.getTlvMessageState() == null ? -1 : deliveryReceiptData.getTlvMessageState();
             err = deliveryReceiptData.getError();
         }
-        
+
+
+
+
+
         StringBuffer sb = new StringBuffer();
         sb.append(DATE_FORMAT.format(smsEvent.getSubmitDate()))
                 .append(CdrGenerator.CDR_SEPARATOR)
@@ -186,7 +190,19 @@ public class CdrGenerator {
 		        .append(CdrGenerator.CDR_SEPARATOR)
 		        .append(tlvMessageState != -1 ? tlvMessageState : CdrGenerator.CDR_EMPTY)
     	        .append(CdrGenerator.CDR_SEPARATOR)
-    	        .append(err != -1 ? err : CdrGenerator.CDR_EMPTY);
+    	        .append(err != -1 ? err : CdrGenerator.CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getGw_inc_start() >0 ? 1 : CdrGenerator.CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getGw_inc_stop() >0 ? 1 : CdrGenerator.CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getGw_out_start() >0 ? 1 : CdrGenerator.CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getGw_out_stop() >0 ? 1 : CdrGenerator.CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getGw_que_start() >0 ? 1 : CdrGenerator.CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getGw_que_stop() >0 ? 1 : CdrGenerator.CDR_EMPTY);
         
         CdrGenerator.generateCdr(sb.toString());
     }
