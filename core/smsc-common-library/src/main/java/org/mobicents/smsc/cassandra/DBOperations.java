@@ -1037,6 +1037,10 @@ public class DBOperations {
                 boundStatement.setString(Schema.COLUMN_EXTRA_DATA_4, sms.getExtraData_4());
             } else
                 boundStatement.setToNull(Schema.COLUMN_EXTRA_DATA_4);
+			if (sms.getExposureLayerData() != null) {
+				boundStatement.setString(Schema.COLUMN_EXPOSURE_LAYER_DATA, sms.getExposureLayerData());
+			} else
+				boundStatement.setToNull(Schema.COLUMN_EXPOSURE_LAYER_DATA);
         }
 
 		if (sms.getTlvSet().getOptionalParameterCount() > 0) {
@@ -1363,6 +1367,7 @@ public class DBOperations {
             sms.setExtraData_2(row.getString(Schema.COLUMN_EXTRA_DATA_2));
             sms.setExtraData_3(row.getString(Schema.COLUMN_EXTRA_DATA_3));
             sms.setExtraData_4(row.getString(Schema.COLUMN_EXTRA_DATA_4));
+			sms.setExposureLayerData(row.getString(Schema.COLUMN_EXPOSURE_LAYER_DATA));
         }
 
 		String s = row.getString(Schema.COLUMN_OPTIONAL_PARAMETERS);
@@ -1819,6 +1824,7 @@ public class DBOperations {
         appendField(sb, Schema.COLUMN_EXTRA_DATA_2, "text");
         appendField(sb, Schema.COLUMN_EXTRA_DATA_3, "text");
         appendField(sb, Schema.COLUMN_EXTRA_DATA_4, "text");
+		appendField(sb, Schema.COLUMN_EXPOSURE_LAYER_DATA, "text");
 	}
 
 	private synchronized void checkCurrentSlotTableExists() throws PersistenceException {

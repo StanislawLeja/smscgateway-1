@@ -304,9 +304,10 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
             final String senderTon = request.getParameter(RequestParameter.SENDER_TON.getName());
             final String senderNpi = request.getParameter(RequestParameter.SENDER_NPI.getName());
             final String udhStr = request.getParameter(RequestParameter.UDH.getName());
+            final String exposureLayerData = request.getParameter(RequestParameter.EXPOSURE_LAYER_DATA.getName());
             final String[] destAddresses = destAddressParam != null ? destAddressParam.split(",") : new String[] {};
             return new HttpSendMessageIncomingData(userId, password, encodedMsg, format, msgEncoding, bodyEncoding, senderId,
-                    senderTon, senderNpi, destAddresses, smscPropertiesManagement, httpUsersManagement, udhStr);
+                    senderTon, senderNpi, destAddresses, smscPropertiesManagement, httpUsersManagement, udhStr, exposureLayerData);
 
         } else if (POST.equals(request.getMethod())) {
             String userId = request.getParameter(RequestParameter.USER_ID.getName());
@@ -320,6 +321,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
             String senderNpi = request.getParameter(RequestParameter.SENDER_NPI.getName());
             String destAddressParam = request.getParameter(RequestParameter.TO.getName());
             String udhStr = request.getParameter(RequestParameter.UDH.getName());
+            String exposureLayerData = request.getParameter(RequestParameter.EXPOSURE_LAYER_DATA.getName());
             String[] destAddresses = destAddressParam != null ? destAddressParam.split(",") : new String[] {};
 
             Map<String, String[]> map = HttpRequestUtils.extractParametersFromPost(logger, request);
@@ -354,13 +356,16 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
             if (udhStr == null || udhStr.isEmpty()) {
                 udhStr = getValueFromMap(map, RequestParameter.UDH.getName());
             }
+            if (exposureLayerData == null || exposureLayerData.isEmpty()) {
+                exposureLayerData = getValueFromMap(map, RequestParameter.EXPOSURE_LAYER_DATA.getName());
+            }
             if (destAddresses == null || destAddresses.length < 1) {
                 String[] tmp = map.get(RequestParameter.TO.getName());
                 destAddresses = (tmp == null ? new String[] { "" } : tmp);
             }
             HttpSendMessageIncomingData incomingData = new HttpSendMessageIncomingData(userId, password, encodedMsg, format,
                     msgEncoding, bodyEncoding, senderId, senderTon, senderNpi, destAddresses, smscPropertiesManagement,
-                    httpUsersManagement, udhStr);
+                    httpUsersManagement, udhStr, exposureLayerData);
             return incomingData;
         } else {
             throw new HttpApiException("Unsupported method of the Http Request. Method is: " + request.getMethod());
@@ -695,6 +700,11 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
 
         ArrayList<Sms> msgList = new ArrayList<Sms>(addressList.size());
 
+        SmsExposureLayerData elData = null;
+        if (incomingData.getExposureLayerData() != null) {
+            elData = new SmsExposureLayerData(incomingData.getExposureLayerData());
+        }
+
         for (String address : addressList) {
             // generating message id for each message.
             long messageId = store.c2_getNextMessageId();
@@ -732,6 +742,20 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
                 } else {
                     // TODO: esmCls - read from smpp documentation
                     sms.setEsmClass(smscPropertiesManagement.getHttpDefaultMessagingMode());
+                }
+
+                if (elData != null) {
+                    String messageIds = elData.getMessageId();
+                    String correlationIds = elData.getCorrelationId();
+
+                    elData.setMessageId(elData.getFirstMessageId());
+                    elData.setCorrelationId(elData.getFirstCorrelationId());
+                    sms.setExposureLayerData(elData.getExposureLayerDataString());
+
+                    elData.setMessageId(messageIds);
+                    elData.setCorrelationId(correlationIds);
+                    elData.removeFirstMessageId();
+                    elData.removeFirstCorrelationId();
                 }
                 // TODO: regDlvry - read from smpp documentation
                 int registeredDelivery = smscPropertiesManagement.getHttpDefaultRDDeliveryReceipt();

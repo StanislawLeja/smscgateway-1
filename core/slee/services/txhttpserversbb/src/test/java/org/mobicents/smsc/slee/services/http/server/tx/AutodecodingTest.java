@@ -17,6 +17,8 @@ public class AutodecodingTest {
 
         byte[] udh = {0x06, 0x05, 0x04, 0x13, 0x01, 0x13, 0x01};
         String udhStr = new String(udh, "iso-8859-1");
+        String elDataStr = "111:333:15123:15124:15125:15126";
+
         // alphanumerical
         HttpUsersManagement httpUsersManagement = HttpUsersManagement.getInstance("AutodecodingTest");
         try {
@@ -26,16 +28,17 @@ public class AutodecodingTest {
         httpUsersManagement.createHttpUser("userId", "password", 0);
 
         HttpSendMessageIncomingData idata = new HttpSendMessageIncomingData("userId", "password", "msg", null, null, null,
-                "wwwwww", null, null, new String[] { "6666" }, smscPropertiesManagement, httpUsersManagement,"");
+                "wwwwww", null, null, new String[] { "6666" }, smscPropertiesManagement, httpUsersManagement,"", "");
 
         assertEquals(idata.getSender(), "wwwwww");
         assertEquals(idata.getSenderTon(), org.mobicents.smsc.slee.services.http.server.tx.enums.TON.ALFANUMERIC);
         assertEquals(idata.getSenderNpi(), org.mobicents.smsc.slee.services.http.server.tx.enums.NPI.UNKNOWN);
         assertEquals(idata.getUdh(), null);
+        assertEquals(idata.getExposureLayerData(), null);
 
         // international
         idata = new HttpSendMessageIncomingData("userId", "password", "msg", null, null, null, "+33334444", null, null,
-                new String[] { "6666" }, smscPropertiesManagement, httpUsersManagement, "");
+                new String[] { "6666" }, smscPropertiesManagement, httpUsersManagement, "", "");
 
         assertEquals(idata.getSender(), "33334444");
         assertEquals(idata.getSenderTon(), org.mobicents.smsc.slee.services.http.server.tx.enums.TON.INTERNATIONAL);
@@ -44,12 +47,13 @@ public class AutodecodingTest {
 
         // national
         idata = new HttpSendMessageIncomingData("userId", "password", "www", null, null, null, "33334444", null, null,
-                new String[] { "6666" }, smscPropertiesManagement, httpUsersManagement, udhStr);
+                new String[] { "6666" }, smscPropertiesManagement, httpUsersManagement, udhStr, elDataStr);
 
         assertEquals(idata.getSender(), "33334444");
         assertEquals(idata.getSenderTon(), org.mobicents.smsc.slee.services.http.server.tx.enums.TON.NATIONAL);
         assertEquals(idata.getSenderNpi(), org.mobicents.smsc.slee.services.http.server.tx.enums.NPI.ISDN);
         assertEquals(idata.udhToString(idata.getUdh()), "06 05 04 13 01 13 01 ");
+        assertEquals(idata.getExposureLayerData(), elDataStr);
     }
 
     @Test
@@ -59,6 +63,7 @@ public class AutodecodingTest {
         smscPropertiesManagement.setHttpDefaultSourceTon(-2);
         byte[] udh = {0x06, 0x05, 0x04, 0x13, 0x01, 0x13, 0x01};
         String udhStr = new String(udh, "iso-8859-1");
+        String elDataStr = "111:333:15123:15124:15125:15126";
 
         // alphanumerical
         HttpUsersManagement httpUsersManagement = HttpUsersManagement.getInstance("AutodecodingTest");
@@ -69,7 +74,7 @@ public class AutodecodingTest {
         httpUsersManagement.createHttpUser("userId", "password", 0);
 
         HttpSendMessageIncomingData idata = new HttpSendMessageIncomingData("userId", "password", "msg", null, null, null,
-                "wwwwww", null, null, new String[] { "6666" }, smscPropertiesManagement, httpUsersManagement,"");
+                "wwwwww", null, null, new String[] { "6666" }, smscPropertiesManagement, httpUsersManagement,"", "");
 
         assertEquals(idata.getSender(), "wwwwww");
         assertEquals(idata.getSenderTon(), org.mobicents.smsc.slee.services.http.server.tx.enums.TON.ALFANUMERIC);
@@ -78,13 +83,13 @@ public class AutodecodingTest {
 
         // international
         idata = new HttpSendMessageIncomingData("userId", "password", "msg", null, null, null, "33334444", null, null,
-                new String[] { "6666" }, smscPropertiesManagement, httpUsersManagement, udhStr);
+                new String[] { "6666" }, smscPropertiesManagement, httpUsersManagement, udhStr, elDataStr);
 
         assertEquals(idata.getSender(), "33334444");
         assertEquals(idata.getSenderTon(), org.mobicents.smsc.slee.services.http.server.tx.enums.TON.INTERNATIONAL);
         assertEquals(idata.getSenderNpi(), org.mobicents.smsc.slee.services.http.server.tx.enums.NPI.ISDN);
         assertEquals(idata.udhToString(idata.getUdh()), "06 05 04 13 01 13 01 ");
-
+        assertEquals(idata.getExposureLayerData(), elDataStr);
 	}
 
 }
