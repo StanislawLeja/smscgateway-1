@@ -47,7 +47,7 @@ import com.google.gson.JsonObject;
  */
 public final class DeliveryReceiptHttpNotification {
 
-    private static final String HTTP_CLIENT_NIO_RA_LINK = "HttpClientNioRa";
+    private static final String HTTP_CLIENT_NIO_RA_LINK = "HttpClientNIO";
 
     private static final String PROPERTY_CORRELATION_ID = "correlationId";
     private static final String PROPERTY_DELIVERY_RECEIPT_STATUS = "deliveryReceiptStatus";
