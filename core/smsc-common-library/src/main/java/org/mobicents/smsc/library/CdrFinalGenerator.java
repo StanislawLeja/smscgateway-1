@@ -165,14 +165,60 @@ public class CdrFinalGenerator {
             sourcePort = parts[1];
         }
 
-        String timestampA = null, timestampB = null, timestampC = null;
+       /* String timestampA = null, timestampB = null, timestampC = null;
         if (tsA != null && tsA != 0)
             timestampA = DATE_FORMAT.format(tsA);
         if (tsB != null && tsB != 0)
             timestampB = DATE_FORMAT.format(tsB);
         if (tsC != null && tsC != 0)
-            timestampC = DATE_FORMAT.format(tsC);
+            timestampC = DATE_FORMAT.format(tsC);*/
 
+        SmsExposureLayerData objSmsExposureLayerData = null;
+        boolean exposureLayerDataSet = false;
+        String expLayerData = smsEvent.getExposureLayerData();
+        System.out.println("expLayerData: "+expLayerData);
+        if(smsEvent.getExposureLayerData() != null){
+            objSmsExposureLayerData = new SmsExposureLayerData(smsEvent.getExposureLayerData());
+            exposureLayerDataSet = true;
+        }
+
+        long el_api_start;
+        long el_api_stop ;
+        long el_que_start ;
+        long el_que_stop;
+
+        if(exposureLayerDataSet == true){
+            el_api_start = objSmsExposureLayerData.getElApiStart();
+            el_api_stop = objSmsExposureLayerData.getElApiStop();
+            el_que_start = objSmsExposureLayerData.getElQueStart();
+            el_que_stop = objSmsExposureLayerData.getElQueStop();
+        }else{
+            el_api_start = 0;
+            el_api_stop = 0;
+            el_que_start = 0;
+            el_que_stop = 0;
+        }
+
+        long gw_inc_start = smsEvent.getGw_inc_start();
+        long gw_inc_stop = smsEvent.getGw_inc_stop();
+        long gw_que_start = smsEvent.getGw_que_start();
+        long gw_que_stop = smsEvent.getGw_que_stop();
+        long gw_out_start = smsEvent.getGw_out_start();
+        long gw_out_stop = smsEvent.getGw_out_stop();
+        long oc_dia_start = 0;
+        long oc_dia_stop = 0;
+
+
+        long T1 = el_api_start - gw_out_stop - gw_out_stop + gw_out_start;
+        long T2 = el_api_stop - el_api_start;
+        long T3 = gw_out_stop - gw_out_start;
+        long T4 = oc_dia_stop - oc_dia_start;
+        long T5 = gw_inc_stop - gw_inc_start;
+        long T6 = el_api_stop - el_api_start;
+        long T7 = el_api_start - gw_out_stop - gw_out_stop + gw_out_start - el_que_stop + el_que_start - gw_que_stop + gw_que_start;
+        long T8 = T1 - T7;
+        long T9 = el_que_stop - el_que_start;
+        long T10 = gw_out_stop - gw_que_start;
 
 
         StringBuffer sb = new StringBuffer();
@@ -204,17 +250,17 @@ public class CdrFinalGenerator {
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append((receiptLocalMessageId != null && receiptLocalMessageId == -1) ? "xxxx" : smsEvent.getReceiptLocalMessageId())
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(smsEvent.getSmsSet().getLocationInfoWithLMSI() != null ? smsEvent.getSmsSet().getLocationInfoWithLMSI()
-                        .getNetworkNodeNumber().getAddress() : null)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(smsEvent.getSmsSet().getImsi())
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(smsEvent.getSmsSet().getCorrelationId())
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(smsEvent.getOriginatorSccpAddress())
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(smsEvent.getMtServiceCenterAddress())
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(smsEvent.getSmsSet().getLocationInfoWithLMSI() != null ? smsEvent.getSmsSet().getLocationInfoWithLMSI()
+                 //       .getNetworkNodeNumber().getAddress() : null)
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(smsEvent.getSmsSet().getImsi())
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+               // .append(smsEvent.getSmsSet().getCorrelationId())
+               // .append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(smsEvent.getOriginatorSccpAddress())
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(smsEvent.getMtServiceCenterAddress())
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(smsEvent.getOrigNetworkId())
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(smsEvent.getSmsSet().getNetworkId())
@@ -226,8 +272,8 @@ public class CdrFinalGenerator {
                 .append(charNumbers)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(delayParametersInCdr ? getProcessingTime(smsEvent.getSubmitDate()) : CDR_EMPTY)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(delayParametersInCdr ? getScheduleDeliveryDelayMilis(smsEvent.getSubmitDate(), smsEvent.getScheduleDeliveryTime()) : CDR_EMPTY)
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(delayParametersInCdr ? getScheduleDeliveryDelayMilis(smsEvent.getSubmitDate(), smsEvent.getScheduleDeliveryTime()) : CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(delayParametersInCdr ? smsEvent.getDeliveryCount() : CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
@@ -236,14 +282,14 @@ public class CdrFinalGenerator {
                 .append("\"")
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append("\"")
-                .append(getEscapedString(reason))
+                .append(getEscapedString(reason))//Reason_For_Failure
                 .append("\"")
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(st != null ? st : CdrFinalGenerator.CDR_EMPTY)
+                .append(st != null ? st : CdrFinalGenerator.CDR_EMPTY)//DeliveryState
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(tlvMessageState != -1 ? tlvMessageState : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(err != -1 ? err : CdrFinalGenerator.CDR_EMPTY)
+                .append(err != -1 ? err : CdrFinalGenerator.CDR_EMPTY)// "DeliveryErrorCode"
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(smsEvent.getGw_inc_start() >0 ? 1 : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
@@ -259,30 +305,30 @@ public class CdrFinalGenerator {
                 .append(CdrFinalGenerator.CDR_SEPARATOR)//Begining of CdrDetailed
                 .append(timestamp)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(eventType)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(errorCode)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(messageType)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(statusCode)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(messageId)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(origMessageID)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(dlrStatus)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(Long.valueOf(mprocRuleId))
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(eventType)
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(errorCode)
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(messageType)
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(statusCode)
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(messageId)
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(origMessageID)
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(dlrStatus)
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(Long.valueOf(mprocRuleId))
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(origEsmeName)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(timestampA)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(timestampB)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(timestampC)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(timestampA)
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(timestampB)
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
+                //.append(timestampC)
+                //.append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(sourceIP)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(sourcePort)
@@ -291,7 +337,70 @@ public class CdrFinalGenerator {
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(destPort)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(Long.valueOf(seqNumber));
+                .append(Long.valueOf(seqNumber))
+                .append(CdrFinalGenerator.CDR_SEPARATOR)//Begining of only final CDR (GW)
+                .append(smsEvent.getReroutingCount())//ReroutingCount
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(CdrFinalGenerator.CDR_EMPTY)//ELUserId
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(CdrFinalGenerator.CDR_EMPTY)//ELProductId
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(exposureLayerDataSet == true ? objSmsExposureLayerData.getMessageId() : CdrFinalGenerator.CDR_EMPTY)//ELMessageId
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(exposureLayerDataSet == true ? objSmsExposureLayerData.getCorrelationId() : CdrFinalGenerator.CDR_EMPTY)//ELCorrelationId
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(0)//UDHFirstMessageId
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(0)//UDHPartsCount
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(0)//UDHCurrentPartNumber
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(0)//UDHMessagePartText
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getGw_inc_start() >0 ? 1 : CdrFinalGenerator.CDR_EMPTY)//GWIncStart
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getGw_inc_stop() >0 ? 1 : CdrFinalGenerator.CDR_EMPTY)//GWIncStop
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getGw_que_start() >0 ? 1 : CdrFinalGenerator.CDR_EMPTY)//GWQueStart
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getGw_que_stop() >0 ? 1 : CdrFinalGenerator.CDR_EMPTY)//GWQueStop
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getGw_out_start() >0 ? 1 : CdrFinalGenerator.CDR_EMPTY)//GWOutStart
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getGw_out_stop() >0 ? 1 : CdrFinalGenerator.CDR_EMPTY)//GWOutStop
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(0)//OCDiaStart
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(0)//OCDiaStop
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(exposureLayerDataSet == true ? objSmsExposureLayerData.getElApiStart() : CdrFinalGenerator.CDR_EMPTY)//ELApiStart
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(exposureLayerDataSet == true ? objSmsExposureLayerData.getElApiStop() : CdrFinalGenerator.CDR_EMPTY)//ELApiStop
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(exposureLayerDataSet == true ? objSmsExposureLayerData.getElQueStart() : CdrFinalGenerator.CDR_EMPTY)//ELQueStart
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(exposureLayerDataSet == true ? objSmsExposureLayerData.getElQueStop() : CdrFinalGenerator.CDR_EMPTY)//ELQueStop
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T1)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T2)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T3)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T4)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T5)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T6)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T7)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T8)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T9)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T10)
+                .append(CdrFinalGenerator.CDR_SEPARATOR);
 
 
 

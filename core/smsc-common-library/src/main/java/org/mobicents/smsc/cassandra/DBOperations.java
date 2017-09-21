@@ -761,6 +761,7 @@ public class DBOperations {
 
 		Date dt = this.c2_getTimeForDueSlot(dueSlot);
 
+		sms.setGw_que_start(System.currentTimeMillis());
 		// special case for ScheduleDeliveryTime
 		Date schedTime = sms.getScheduleDeliveryTime();
 		if (schedTime != null && schedTime.after(dt)) {
@@ -805,7 +806,6 @@ public class DBOperations {
 		try {
 			PreparedStatement ps = psc.createRecordCurrent;
 			BoundStatement boundStatement = new BoundStatement(ps);
-			sms.setGw_que_start(System.currentTimeMillis());
             setSmsFields(sms, dueSlot, boundStatement, false, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(),
                     psc.getAddedNetworkId(), psc.getAddedOrigNetworkId(), psc.getAddedPacket1());
 			ResultSet res = session.execute(boundStatement);
@@ -1267,6 +1267,7 @@ public class DBOperations {
 		}
 
 		Sms sms = new Sms();
+		sms.setGw_out_stop(System.currentTimeMillis());
 		sms.setStored(true);
 		sms.setDbId(row.getUUID(Schema.COLUMN_ID));
 		sms.setDueSlot(row.getLong(Schema.COLUMN_DUE_SLOT));

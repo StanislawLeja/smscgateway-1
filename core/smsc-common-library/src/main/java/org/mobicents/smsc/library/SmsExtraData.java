@@ -260,37 +260,37 @@ public class SmsExtraData {
                 xml.add(extraData.receiptLocalMessageId, RECEIPT_LOCAL_MESSAGEID, Long.class);
             }
 
-            if (extraData.gw_inc_start != 0){
+           // if (extraData.gw_inc_start != 0){
                 xml.add(extraData.gw_inc_start, GW_INC_START, Long.class);
-            }
+           // }
 
-            if (extraData.gw_inc_stop != 0){
+          //  if (extraData.gw_inc_stop != 0){
                 xml.add(extraData.gw_inc_stop, GW_INC_STOP, Long.class);
-            }
+           // }
 
-            if (extraData.gw_que_start != 0){
+           // if (extraData.gw_que_start != 0){
                 xml.add(extraData.gw_que_start, GW_QUE_START, Long.class);
-            }
+          //  }
 
-            if (extraData.gw_que_stop != 0){
+          //  if (extraData.gw_que_stop != 0){
                 xml.add(extraData.gw_que_stop, GW_QUE_STOP, Long.class);
-            }
+         //   }
 
-            if (extraData.gw_out_start != 0){
+         //   if (extraData.gw_out_start != 0){
                 xml.add(extraData.gw_out_start, GW_OUT_START, Long.class);
-            }
+         //   }
 
-            if (extraData.gw_out_stop != 0){
+         //   if (extraData.gw_out_stop != 0){
                 xml.add(extraData.gw_out_stop, GW_OUT_STOP, Long.class);
-            }
+         //   }
 
-            if (extraData.oc_dia_start != 0){
+         //   if (extraData.oc_dia_start != 0){
                 xml.add(extraData.oc_dia_start, OC_DIA_START, Long.class);
-            }
+         //   }
 
-            if (extraData.oc_dia_stop != 0){
+         //   if (extraData.oc_dia_stop != 0){
                 xml.add(extraData.oc_dia_stop, OC_DIA_STOP, Long.class);
-            }
+         //   }
         }
     };
 
