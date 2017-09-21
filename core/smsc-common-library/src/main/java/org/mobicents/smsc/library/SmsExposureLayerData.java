@@ -29,6 +29,7 @@ public class SmsExposureLayerData {
 
     private String messageId;
     private String correlationId;
+    private String userId;
 
     private long elApiStart;
     private long elApiStop;
@@ -40,13 +41,14 @@ public class SmsExposureLayerData {
 
     public SmsExposureLayerData(String elDataString) throws NumberFormatException {
         String[] splitted = elDataString.split(DATA_SEPARATOR);
-        if (splitted.length >= 6) {
+        if (splitted.length >= 7) {
             messageId = splitted[0];
             correlationId = splitted[1];
-            elApiStart = Long.valueOf(splitted[2]);
-            elApiStop = Long.valueOf(splitted[3]);
-            elQueStart = Long.valueOf(splitted[4]);
-            elQueStop = Long.valueOf(splitted[5]);
+            userId = splitted[2];
+            elApiStart = Long.valueOf(splitted[3]);
+            elApiStop = Long.valueOf(splitted[4]);
+            elQueStart = Long.valueOf(splitted[5]);
+            elQueStop = Long.valueOf(splitted[6]);
         }
     }
 
@@ -88,6 +90,8 @@ public class SmsExposureLayerData {
                 .append(DATA_SEPARATOR)
                 .append(correlationId)
                 .append(DATA_SEPARATOR)
+                .append(userId)
+                .append(DATA_SEPARATOR)
                 .append(elApiStart)
                 .append(DATA_SEPARATOR)
                 .append(elApiStop)
@@ -112,6 +116,14 @@ public class SmsExposureLayerData {
 
     public void setCorrelationId(String correlationId) {
         this.correlationId = correlationId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public long getElApiStart() {
@@ -158,6 +170,11 @@ public class SmsExposureLayerData {
         if (correlationId != null) {
             sb.append("correlationId=");
             sb.append(correlationId);
+            sb.append(", ");
+        }
+        if (userId != null) {
+            sb.append("userId=");
+            sb.append(userId);
             sb.append(", ");
         }
         if (elApiStart != 0) {
