@@ -39,7 +39,6 @@ public class SmsExposureLayerDataTest {
         String userId = "exposure";
 
         long elApiStart = 1503655696096L;
-        long elApiStop = 1503655721872L;
         long elQueStart = 1503655736078L;
         long elQueStop = 1503655741991L;
 
@@ -54,8 +53,6 @@ public class SmsExposureLayerDataTest {
                 .append(SEPARATOR)
                 .append(elApiStart)
                 .append(SEPARATOR)
-                .append(elApiStop)
-                .append(SEPARATOR)
                 .append(elQueStart)
                 .append(SEPARATOR)
                 .append(elQueStop);
@@ -68,7 +65,6 @@ public class SmsExposureLayerDataTest {
         Assert.assertEquals(data.getCorrelationId(), correlationId);
         Assert.assertEquals(data.getUserId(), userId);
         Assert.assertEquals(data.getElApiStart(), elApiStart);
-        Assert.assertEquals(data.getElApiStop(), elApiStop);
         Assert.assertEquals(data.getElQueStart(), elQueStart);
         Assert.assertEquals(data.getElQueStop(), elQueStop);
     }

@@ -32,7 +32,6 @@ public class SmsExposureLayerData {
     private String userId;
 
     private long elApiStart;
-    private long elApiStop;
     private long elQueStart;
     private long elQueStop;
 
@@ -41,14 +40,13 @@ public class SmsExposureLayerData {
 
     public SmsExposureLayerData(String elDataString) throws NumberFormatException {
         String[] splitted = elDataString.split(DATA_SEPARATOR);
-        if (splitted.length >= 7) {
+        if (splitted.length >= 6) {
             messageId = splitted[0];
             correlationId = splitted[1];
             userId = splitted[2];
             elApiStart = Long.valueOf(splitted[3]);
-            elApiStop = Long.valueOf(splitted[4]);
-            elQueStart = Long.valueOf(splitted[5]);
-            elQueStop = Long.valueOf(splitted[6]);
+            elQueStart = Long.valueOf(splitted[4]);
+            elQueStop = Long.valueOf(splitted[5]);
         }
     }
 
@@ -94,8 +92,6 @@ public class SmsExposureLayerData {
                 .append(DATA_SEPARATOR)
                 .append(elApiStart)
                 .append(DATA_SEPARATOR)
-                .append(elApiStop)
-                .append(DATA_SEPARATOR)
                 .append(elQueStart)
                 .append(DATA_SEPARATOR)
                 .append(elQueStop);
@@ -132,14 +128,6 @@ public class SmsExposureLayerData {
 
     public void setElApiStart(long elApiStart) {
         this.elApiStart = elApiStart;
-    }
-
-    public long getElApiStop() {
-        return elApiStop;
-    }
-
-    public void setElApiStop(long elApiStop) {
-        this.elApiStop = elApiStop;
     }
 
     public long getElQueStart() {
@@ -180,11 +168,6 @@ public class SmsExposureLayerData {
         if (elApiStart != 0) {
             sb.append("elApiStart=");
             sb.append(elApiStart);
-            sb.append(", ");
-        }
-        if (elApiStop != 0) {
-            sb.append("elApiStop=");
-            sb.append(elApiStop);
             sb.append(", ");
         }
         if (elQueStart != 0) {
