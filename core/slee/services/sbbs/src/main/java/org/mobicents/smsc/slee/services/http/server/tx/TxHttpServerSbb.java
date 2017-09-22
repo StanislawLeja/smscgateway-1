@@ -23,9 +23,6 @@
 package org.mobicents.smsc.slee.services.http.server.tx;
 
 import com.cloudhopper.smpp.SmppConstants;
-import com.cloudhopper.smpp.pdu.BaseSm;
-import com.cloudhopper.smpp.tlv.Tlv;
-
 import net.java.slee.resource.http.events.HttpServletRequestEvent;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
@@ -42,7 +39,6 @@ import org.mobicents.smsc.slee.services.http.server.tx.utils.HttpRequestUtils;
 import org.mobicents.smsc.slee.services.http.server.tx.utils.HttpUtils;
 import org.mobicents.smsc.slee.services.http.server.tx.utils.ResponseFormatter;
 import org.mobicents.smsc.slee.services.submitsbb.SubmitCommonSbb;
-import org.restcomm.smpp.parameter.TlvSet;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -54,7 +50,10 @@ import javax.slee.serviceactivity.ServiceStartedEvent;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by tpalucki on 05.09.16.
@@ -116,12 +115,14 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
         HttpServletRequest request = event.getRequest();
         String remoteAddrAndPort = request.getRemoteAddr() + ":" + request.getRemotePort();
         long timestampB = 0L;
+        long gw_inc_stop = 0L;
         // decision if getStatus or sendMessage
         try {
             if (checkCharging()) {
                 final String message = "The operation is forbidden";
                 HttpUtils.sendErrorResponse(logger, event.getResponse(), HttpServletResponse.SC_FORBIDDEN, message);
                 timestampB = System.currentTimeMillis();
+                gw_inc_stop = System.currentTimeMillis();
                 if (smscPropertiesManagement.isGenerateRejectionCdr()) {
                     generateCDR(request, CdrGenerator.CDR_SUBMIT_FAILED_HTTP, message, true);
                 }
@@ -156,6 +157,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
                 }
                 HttpUtils.sendErrorResponse(logger, event.getResponse(), HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
                 timestampB = System.currentTimeMillis();
+                gw_inc_stop = System.currentTimeMillis();
                 if (smscPropertiesManagement.isGenerateRejectionCdr()) {
                     generateCDR(request, CdrGenerator.CDR_SUBMIT_FAILED_HTTP, e.getMessage(), true);
                 }
@@ -183,12 +185,14 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
         HttpServletRequest request = event.getRequest();
         String remoteAddrAndPort = request.getRemoteAddr() + ":" + request.getRemotePort();
         long timestampB = 0L;
+        long gw_inc_stop = 0L;
         // decision if getStatus or sendMessage
         try {
             if (checkCharging()) {
                 final String message = "The operation is forbidden";
                 HttpUtils.sendErrorResponse(logger, event.getResponse(), HttpServletResponse.SC_FORBIDDEN, message);
                 timestampB = System.currentTimeMillis();
+                gw_inc_stop = System.currentTimeMillis();
                 if (smscPropertiesManagement.isGenerateRejectionCdr()) {
                     generateCDR(request, CdrGenerator.CDR_SUBMIT_FAILED_HTTP, message, true);
                 }
@@ -224,6 +228,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
                 }
                 HttpUtils.sendErrorResponse(logger, event.getResponse(), HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
                 timestampB = System.currentTimeMillis();
+                gw_inc_stop = System.currentTimeMillis();
                 if (smscPropertiesManagement.isGenerateRejectionCdr()) {
                     generateCDR(request, CdrGenerator.CDR_SUBMIT_FAILED_HTTP, e.getMessage(), true);
                 }
@@ -254,6 +259,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
         HttpUtils.sendErrorResponseWithContent(logger, event.getResponse(), HttpServletResponse.SC_OK,
                 outgoingData.getMessage(), ResponseFormatter.format(outgoingData, responseFormat), responseFormat);
         long timestampB = System.currentTimeMillis();
+        long gw_inc_stop = System.currentTimeMillis();
         if (smscPropertiesManagement.isGenerateRejectionCdr()) {
             generateCDR(event.getRequest(), CdrGenerator.CDR_SUBMIT_FAILED_HTTP, e.getMessage(), true);
         }
@@ -417,12 +423,13 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
         SendMessageParseResult parseResult;
         Sms currSms = null;
         long timestampB = 0L;
-
+        long gw_inc_stop = 0L;
         try {
             parseResult = createSmsEventMultiDest(incomingData, persistence);
             for (Sms sms : parseResult.getParsedMessages()) {
                 currSms = sms;
                 currSms.setTimestampA(System.currentTimeMillis());
+                currSms.setGw_inc_start(System.currentTimeMillis());
                 processSms(sms, persistence, incomingData);
             }
         } catch (SmscProcessingException e1) {
@@ -446,6 +453,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
                 HttpUtils.sendErrorResponseWithContent(logger, event.getResponse(), HttpServletResponse.SC_OK, message,
                         ResponseFormatter.format(outgoingData, incomingData.getFormat()), incomingData.getFormat());
                 timestampB = System.currentTimeMillis();
+                gw_inc_stop = System.currentTimeMillis();
                 if (smscPropertiesManagement.isGenerateRejectionCdr()) {
                     generateCDR(event.getRequest(), CdrGenerator.CDR_SUBMIT_FAILED_HTTP, message, true);
                 }
@@ -464,6 +472,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
             if (currSms != null) {
 
                 currSms.setTimestampB(timestampB);
+                currSms.setGw_inc_stop(gw_inc_stop);
                 generateRejectDetailedCdr(e1.getInternalErrorCode(), currSms, eventType, ErrorCode.REJECT_INCOMING,
                         CdrDetailedGenerator.CDR_MSG_TYPE_HTTP, HttpServletResponse.SC_OK, remoteAddrAndPort, -1);
             } else {
@@ -492,6 +501,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
                         message + " " + e1.getMessage(), ResponseFormatter.format(outgoingData, incomingData.getFormat()),
                         incomingData.getFormat());
                 timestampB = System.currentTimeMillis();
+                gw_inc_stop = System.currentTimeMillis();
                 if (smscPropertiesManagement.isGenerateRejectionCdr()) {
                     generateCDR(event.getRequest(), CdrGenerator.CDR_SUBMIT_FAILED_HTTP, message, true);
                 }
@@ -504,6 +514,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
 
             if (currSms != null) {
                 currSms.setTimestampB(System.currentTimeMillis());
+                currSms.setGw_inc_stop(gw_inc_stop);
                 generateFailureDetailedCdr(currSms, EventType.IN_HTTP_ERROR, ErrorCode.REJECT_INCOMING,
                         CdrDetailedGenerator.CDR_MSG_TYPE_HTTP, HttpServletResponse.SC_OK, remoteAddrAndPort, -1);
             } else {
@@ -526,9 +537,11 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
             HttpUtils.sendOkResponseWithContent(logger, event.getResponse(),
                     ResponseFormatter.format(outgoingData, incomingData.getFormat()), incomingData.getFormat());
             timestampB = System.currentTimeMillis();
+            gw_inc_stop = System.currentTimeMillis();
             for (Sms sms : parseResult.getParsedMessages()) {
                 currSms = sms;
                 sms.setTimestampB(timestampB);
+                currSms.setGw_inc_stop(gw_inc_stop);
                 generateDetailedCDR(sms, EventType.IN_HTTP_RECEIVED, CdrDetailedGenerator.CDR_MSG_TYPE_HTTP, 0,
                         remoteAddrAndPort, -1);
             }

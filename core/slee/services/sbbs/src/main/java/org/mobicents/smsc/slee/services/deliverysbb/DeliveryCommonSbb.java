@@ -1481,7 +1481,6 @@ public abstract class DeliveryCommonSbb implements Sbb {
             if (!this.isMessageConfirmedInSendingPool(i1)) {
                 Sms sms = this.getMessageInSendingPool(i1);
                 if (sms != null) {
-
                     CdrDetailedGenerator.generateDetailedCdr(sms, eventType, errorCode, messageType,
                             sms.getSmsSet().getSmppCommandStatus(), -1, null, destAddrAndPort, seqNumber,
                             smscPropertiesManagement.getGenerateReceiptCdr(),
