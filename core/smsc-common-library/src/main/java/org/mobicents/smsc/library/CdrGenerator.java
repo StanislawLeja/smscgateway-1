@@ -74,6 +74,8 @@ public class CdrGenerator {
 		logger.debug(message);
 	}
 
+
+
     public static void generateCdr(Sms smsEvent, String status, String reason, boolean generateReceiptCdr, boolean generateCdr,
             boolean messageIsSplitted, boolean lastSegment, boolean calculateMsgPartsLenCdr, boolean delayParametersInCdr) {
         // Format is
@@ -120,8 +122,6 @@ public class CdrGenerator {
 
 
 
-
-
         StringBuffer sb = new StringBuffer();
         sb.append(DATE_FORMAT.format(smsEvent.getSubmitDate()))
                 .append(CdrGenerator.CDR_SEPARATOR)
@@ -151,17 +151,17 @@ public class CdrGenerator {
                 .append(CdrGenerator.CDR_SEPARATOR)
                 .append((receiptLocalMessageId != null && receiptLocalMessageId == -1) ? "xxxx" : smsEvent.getReceiptLocalMessageId())
                 .append(CdrGenerator.CDR_SEPARATOR)
-               // .append(smsEvent.getSmsSet().getLocationInfoWithLMSI() != null ? smsEvent.getSmsSet().getLocationInfoWithLMSI()
-               //         .getNetworkNodeNumber().getAddress() : null)
-                //.append(CdrGenerator.CDR_SEPARATOR)
-                //.append(smsEvent.getSmsSet().getImsi())
-                //.append(CdrGenerator.CDR_SEPARATOR)
-                //.append(smsEvent.getSmsSet().getCorrelationId())
-                //.append(CdrGenerator.CDR_SEPARATOR)
-                //.append(smsEvent.getOriginatorSccpAddress())
-                //.append(CdrGenerator.CDR_SEPARATOR)
-               // .append(smsEvent.getMtServiceCenterAddress())
-                //.append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSmsSet().getLocationInfoWithLMSI() != null ? smsEvent.getSmsSet().getLocationInfoWithLMSI()
+                        .getNetworkNodeNumber().getAddress() : null)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSmsSet().getImsi())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getSmsSet().getCorrelationId())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getOriginatorSccpAddress())
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(smsEvent.getMtServiceCenterAddress())
+                .append(CdrGenerator.CDR_SEPARATOR)
                 .append(smsEvent.getOrigNetworkId())
                 .append(CdrGenerator.CDR_SEPARATOR)
                 .append(smsEvent.getSmsSet().getNetworkId())
@@ -173,8 +173,8 @@ public class CdrGenerator {
                 .append(charNumbers)
                 .append(CdrGenerator.CDR_SEPARATOR)
                 .append(delayParametersInCdr ? getProcessingTime(smsEvent.getSubmitDate()) : CDR_EMPTY)
-                //.append(CdrGenerator.CDR_SEPARATOR)
-                //.append(delayParametersInCdr ? getScheduleDeliveryDelayMilis(smsEvent.getSubmitDate(), smsEvent.getScheduleDeliveryTime()) : CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(delayParametersInCdr ? getScheduleDeliveryDelayMilis(smsEvent.getSubmitDate(), smsEvent.getScheduleDeliveryTime()) : CDR_EMPTY)
                 .append(CdrGenerator.CDR_SEPARATOR)
                 .append(delayParametersInCdr ? smsEvent.getDeliveryCount() : CDR_EMPTY)
                 .append(CdrGenerator.CDR_SEPARATOR)
@@ -191,6 +191,7 @@ public class CdrGenerator {
 		        .append(tlvMessageState != -1 ? tlvMessageState : CdrGenerator.CDR_EMPTY)
     	        .append(CdrGenerator.CDR_SEPARATOR)
     	        .append(err != -1 ? err : CdrGenerator.CDR_EMPTY);
+
         
         CdrGenerator.generateCdr(sb.toString());
     }
@@ -242,12 +243,12 @@ public class CdrGenerator {
                 .append(CDR_EMPTY)
                 .append(CdrGenerator.CDR_SEPARATOR)
                 .append(CDR_EMPTY)
-                //.append(CdrGenerator.CDR_SEPARATOR)
-                //.append(CDR_EMPTY)
-                //.append(CdrGenerator.CDR_SEPARATOR)
-                //.append(imsi)
-                //.append(CdrGenerator.CDR_SEPARATOR)
-                //.append(CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(imsi)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(CDR_EMPTY)
                 .append(CdrGenerator.CDR_SEPARATOR)
                 .append(originatorSccpAddress)
                 .append(CdrGenerator.CDR_SEPARATOR)

@@ -319,6 +319,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             if (smscPropertiesManagement.isGenerateRejectionCdr() && !e1.isMessageRejectCdrCreated()) {
                 if (sms != null) {
                     generateCDR(sms, CdrGenerator.CDR_SUBMIT_FAILED_ESME, e1.getMessage(), false, true);
+                    generateFinalCDR(sms, CdrGenerator.CDR_SUBMIT_FAILED_ESME, e1.getMessage(), false, true,esme.getRemoteAddressAndPort());
                 } else {
                     generateCDR(parseShortMessageText(event), esme.getNetworkId(), esme.getSystemId(),
                             event.getSourceAddress().getAddress(), event.getSourceAddress().getTon(),
@@ -524,6 +525,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             if (smscPropertiesManagement.isGenerateRejectionCdr() && !e1.isMessageRejectCdrCreated()) {
                 if (sms != null) {
                     generateCDR(sms, CdrGenerator.CDR_SUBMIT_FAILED_ESME, e1.getMessage(), false, true);
+                    generateFinalCDR(sms, CdrGenerator.CDR_SUBMIT_FAILED_ESME, e1.getMessage(), false, true,esme.getRemoteAddressAndPort());
                 } else {
                     generateCDR(parseShortMessageText(event), esme.getNetworkId(), esme.getSystemId(),
                             event.getSourceAddress().getAddress(), event.getSourceAddress().getTon(),
@@ -730,6 +732,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             if (smscPropertiesManagement.isGenerateRejectionCdr() && !e1.isMessageRejectCdrCreated()) {
                 if (singleSms != null) {
                     generateCDR(singleSms, CdrGenerator.CDR_SUBMIT_FAILED_ESME, e1.getMessage(), false, true);
+                    generateFinalCDR(singleSms, CdrGenerator.CDR_SUBMIT_FAILED_ESME, e1.getMessage(), false, true,esme.getRemoteAddressAndPort());
                 } else {
                     generateCDR(parseShortMessageText(event), esme.getNetworkId(), esme.getSystemId(),
                             event.getSourceAddress().getAddress(), event.getSourceAddress().getTon(),
@@ -938,6 +941,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             if (smscPropertiesManagement.isGenerateRejectionCdr() && !e1.isMessageRejectCdrCreated()) {
                 if (sms != null) {
                     generateCDR(sms, CdrGenerator.CDR_SUBMIT_FAILED_ESME, e1.getMessage(), false, true);
+                    generateFinalCDR(sms, CdrGenerator.CDR_SUBMIT_FAILED_ESME, e1.getMessage(), false, true,esme.getRemoteAddressAndPort());
                 } else {
                     generateCDR(parseShortMessageText(event), esme.getNetworkId(), esme.getSystemId(),
                             event.getSourceAddress().getAddress(), event.getSourceAddress().getTon(),
@@ -1784,6 +1788,13 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
                 MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()), messageIsSplitted,
                 lastSegment, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
                 smscPropertiesManagement.getDelayParametersInCdr());
+    }
+
+    protected void generateFinalCDR(Sms sms, String status, String reason, boolean messageIsSplitted, boolean lastSegment,
+                                    String destAddrAndPort) {
+        CdrFinalGenerator.generateFinalCdr(sms, status, reason, smscPropertiesManagement.getGenerateReceiptCdr(), messageIsSplitted,
+                lastSegment, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                smscPropertiesManagement.getDelayParametersInCdr(), sms, null, destAddrAndPort, smscPropertiesManagement.getGenerateFinalCdr());
     }
 
     private void generateRejectDetailedCdr(int smscProcessingExceptionInternalType, Sms sms, EventType eventType,

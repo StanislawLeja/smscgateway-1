@@ -1525,15 +1525,11 @@ public abstract class DeliveryCommonSbb implements Sbb {
                 seqNumber, smscPropertiesManagement.getGenerateReceiptCdr(), smscPropertiesManagement.getGenerateDetailedCdr());
     }
 
-
     protected void generateFinalCDR(Sms sms, String status, String reason, boolean messageIsSplitted, boolean lastSegment,
-                                    EventType eventType, ErrorCode errorCode, String messageType, int statusCode,
-                               String destAddrAndPort, int seqNumber) {
-        CdrFinalGenerator.generateFinalCdr(sms, status, reason, smscPropertiesManagement.getGenerateReceiptCdr(),
-                MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()), messageIsSplitted,
+                               String destAddrAndPort) {
+        CdrFinalGenerator.generateFinalCdr(sms, status, reason, smscPropertiesManagement.getGenerateReceiptCdr(), messageIsSplitted,
                 lastSegment, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
-                smscPropertiesManagement.getDelayParametersInCdr(), sms, eventType, errorCode, messageType, statusCode, -1, null, destAddrAndPort,
-                seqNumber, smscPropertiesManagement.getGenerateDetailedCdr());
+                smscPropertiesManagement.getDelayParametersInCdr(), sms, null, destAddrAndPort, smscPropertiesManagement.getGenerateFinalCdr());
     }
 
     /**
@@ -1559,7 +1555,6 @@ public abstract class DeliveryCommonSbb implements Sbb {
                     smscPropertiesManagement.getGenerateReceiptCdr(), smscPropertiesManagement.getGenerateDetailedCdr());
         }
     }
-
 
 
     // *********

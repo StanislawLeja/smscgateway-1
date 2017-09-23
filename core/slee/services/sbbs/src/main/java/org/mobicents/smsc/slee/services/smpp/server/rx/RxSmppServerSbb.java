@@ -834,7 +834,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                             sms.setGw_out_start(System.currentTimeMillis());
                             sentSequenceNumber = sentItem.getRemoteSequenceNumber();
                         }
-                        sms.setGw_out_stop(System.currentTimeMillis());
                         if (logger.isInfoEnabled()) {
                             logger.info(String.format("\nSent deliverSm to ESME: %s, msgNumInSendingPool: %d, sms=%s",
                                     esme.getName(), poolIndex, sms.toString()));
@@ -1080,6 +1079,9 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                 this.generateDetailedCDR(sms, EventType.OUT_SMPP_SENT, sms.getSmsSet().getStatus(), messageType, status,
                         esme.getRemoteAddressAndPort(), event.getSequenceNumber());
 
+                this.generateFinalCDR(sms, CdrGenerator.CDR_PARTIAL_ESME, CdrGenerator.CDR_SUCCESS_NO_REASON, true, false,
+                        esme.getRemoteAddressAndPort());
+
                 return;
             }
 
@@ -1108,6 +1110,8 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
             this.generateCDR(sms, isPartial ? CdrGenerator.CDR_PARTIAL_ESME : CdrGenerator.CDR_SUCCESS_ESME,
                     CdrGenerator.CDR_SUCCESS_NO_REASON, confirmMessageInSendingPool.splittedMessage, true);
 
+
+
             String messageType = esme.getSmppSessionType() == Type.CLIENT ? CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITSM
                     : CdrDetailedGenerator.CDR_MSG_TYPE_DELIVERSM;
 
@@ -1116,8 +1120,7 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
             this.generateFinalCDR(sms, isPartial ? CdrGenerator.CDR_PARTIAL_ESME : CdrGenerator.CDR_SUCCESS_ESME,
                     CdrGenerator.CDR_SUCCESS_NO_REASON, confirmMessageInSendingPool.splittedMessage, true,
-                    EventType.OUT_SMPP_SENT, sms.getSmsSet().getStatus(), messageType, status,
-                    esme.getRemoteAddressAndPort(), event.getSequenceNumber());
+                    esme.getRemoteAddressAndPort());
 
             // adding a success receipt if it is needed
             this.generateSuccessReceipt(smsSet, sms);

@@ -122,7 +122,6 @@ public class SmsExtraData {
 
 	public void setTimestampA(long timestampA) {
         this.timestampA = timestampA;
-        setGw_inc_start(timestampA);
 	}
 
 	public long getTimestampB() {
