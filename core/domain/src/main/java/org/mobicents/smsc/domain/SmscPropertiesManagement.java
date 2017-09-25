@@ -1804,7 +1804,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
                 this.generateDetailedCdr = valB.booleanValue();
             }
             valB = reader.read(GENERATE_FINAL_CDR, Boolean.class);
-            if (val != null) {
+            if (valB != null) {
                 this.generateFinalCdr = valB.booleanValue();
             }
             valB = reader.read(GENERATE_TEMP_FAILURE_CDR, Boolean.class);
