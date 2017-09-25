@@ -757,8 +757,8 @@ public class DBOperations {
     protected boolean do_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode,
             boolean removeExpiredValidityPeriod) throws PersistenceException {
 
-		if(sms.getGw_que_start() == 0){
-			sms.setGw_que_start(System.currentTimeMillis());
+		if(sms.getGwQueStart() == 0){
+			sms.setGwQueStart(System.currentTimeMillis());
 		}
 
 		sms.setDueSlot(dueSlot);
@@ -1372,7 +1372,7 @@ public class DBOperations {
             sms.setExtraData_3(row.getString(Schema.COLUMN_EXTRA_DATA_3));
             sms.setExtraData_4(row.getString(Schema.COLUMN_EXTRA_DATA_4));
 			sms.setExposureLayerData(row.getString(Schema.COLUMN_EXPOSURE_LAYER_DATA));
-			sms.setGw_que_stop(System.currentTimeMillis());
+			sms.setGwQueStop(System.currentTimeMillis());
         }
 
 		String s = row.getString(Schema.COLUMN_OPTIONAL_PARAMETERS);

@@ -37,14 +37,14 @@ public class SmsExtraData {
     public static final String TIMESTAMP_A = "timestampA";
     public static final String TIMESTAMP_B = "timestampB";
     public static final String TIMESTAMP_C = "timestampC";
-    public static final String GW_INC_START = "gw_inc_start";
-    public static final String GW_INC_STOP = "gw_inc_stop";
-    public static final String GW_QUE_START = "gw_que_stop";
-    public static final String GW_QUE_STOP = "gw_que_stop";
-    public static final String GW_OUT_START = "gw_out_start";
-    public static final String GW_OUT_STOP = "gw_out_stop";
-    public static final String OC_DIA_START = "gw_dia_start";
-    public static final String OC_DIA_STOP = "gw_dia_stop";
+    public static final String GW_INC_START = "gwIncStart";
+    public static final String GW_INC_STOP = "gwIncStop";
+    public static final String GW_QUE_START = "gwQueStart";
+    public static final String GW_QUE_STOP = "gwQueStop";
+    public static final String GW_OUT_START = "gwOutStart";
+    public static final String GW_OUT_STOP = "gwOutStop";
+    public static final String OC_DIA_START = "ocDiaStart";
+    public static final String OC_DIA_STOP = "ocDiaStop";
 
 
     public static final String ZERO_STRING = null;
@@ -57,21 +57,21 @@ public class SmsExtraData {
     private long timestampB;
     private long timestampC;
 
-    private long gw_inc_start;
-    private long gw_inc_stop;
+    private long gwIncStart;
+    private long gwIncStop;
 
-    private long gw_que_start;
-    private long gw_que_stop;
-    private long gw_out_start;
-    private long gw_out_stop;
-    private long oc_dia_start;
-    private long oc_dia_stop;
+    private long gwQueStart;
+    private long gwQueStop;
+    private long gwOutStart;
+    private long gwOutStop;
+    private long ocDiaStart;
+    private long ocDiaStop;
 
     public boolean isEmpty() {
         if (this.mprocNotes != null || this.originationType != null || this.receiptLocalMessageId != null 
-        		|| this.timestampA != 0 || this.timestampB != 0 || this.timestampC != 0 || this.gw_inc_start != 0
-                || this.gw_inc_stop != 0 || this.gw_que_start != 0 || this.getGw_que_stop() != 0 || this.gw_out_start != 0
-                || this.gw_out_stop != 0 || this.oc_dia_start != 0 || this.oc_dia_stop != 0 )
+        		|| this.timestampA != 0 || this.timestampB != 0 || this.timestampC != 0 || this.gwIncStart != 0
+                || this.gwIncStop != 0 || this.gwQueStart != 0 || this.gwQueStop != 0 || this.gwOutStart != 0
+                || this.gwOutStop != 0 || this.ocDiaStart != 0 || this.ocDiaStop != 0 )
             return false;
         else
             return true;
@@ -84,14 +84,14 @@ public class SmsExtraData {
         timestampA = 0;
         timestampB = 0;
         timestampC = 0;
-        gw_inc_start = 0;
-        gw_inc_stop = 0;
-        gw_que_start = 0;
-        gw_que_stop = 0;
-        gw_out_start = 0;
-        gw_out_stop = 0;
-        oc_dia_start = 0;
-        oc_dia_stop = 0;
+        gwIncStart = 0;
+        gwIncStop = 0;
+        gwQueStart = 0;
+        gwQueStop = 0;
+        gwOutStart = 0;
+        gwOutStop = 0;
+        ocDiaStart = 0;
+        ocDiaStop = 0;
     }
 
     public String getMprocNotes() {
@@ -133,7 +133,6 @@ public class SmsExtraData {
 
 	public void setTimestampB(long timestampB) {
 		this.timestampB = timestampB;
-        setGw_inc_stop(timestampB);
 	}
 
 	public long getTimestampC() {
@@ -179,42 +178,42 @@ public class SmsExtraData {
         	sb.append(timestampC);
         	sb.append(", ");
         }
-        if (gw_inc_start != 0) {
-            sb.append("gw_inc_start=");
-            sb.append(gw_inc_start);
+        if (gwIncStart != 0) {
+            sb.append("gwIncStart=");
+            sb.append(gwIncStart);
             sb.append(", ");
         }
-        if (gw_inc_stop != 0) {
-            sb.append("gw_inc_stop=");
-            sb.append(gw_inc_stop);
+        if (gwIncStop != 0) {
+            sb.append("gwIncStop=");
+            sb.append(gwIncStop);
             sb.append(", ");
         }
-        if (gw_que_start != 0) {
-            sb.append("gw_que_start=");
-            sb.append(gw_que_start);
+        if (gwQueStart != 0) {
+            sb.append("gwQueStart=");
+            sb.append(gwQueStart);
             sb.append(", ");
         }
-        if (gw_que_stop != 0) {
-            sb.append("gw_que_stop=");
-            sb.append(gw_que_stop);
+        if (gwQueStop != 0) {
+            sb.append("gwQueStop=");
+            sb.append(gwQueStop);
             sb.append(", ");
         }
-        if (gw_out_start != 0) {
-            sb.append("gw_out_start=");
-            sb.append(gw_out_start);
+        if (gwOutStart != 0) {
+            sb.append("gwOutStart=");
+            sb.append(gwOutStart);
             sb.append(", ");
         }
-        if (gw_out_stop != 0) {
-            sb.append("gw_out_stop=");
-            sb.append(gw_out_stop);
+        if (gwOutStop != 0) {
+            sb.append("gwOutStop=");
+            sb.append(gwOutStop);
             sb.append(", ");
-        }if (oc_dia_start != 0) {
-            sb.append("oc_dia_start=");
-            sb.append(oc_dia_start);
+        }if (ocDiaStart != 0) {
+            sb.append("ocDiaStart=");
+            sb.append(ocDiaStart);
             sb.append(", ");
-        }if (oc_dia_stop != 0) {
-            sb.append("oc_dia_stop=");
-            sb.append(oc_dia_stop);
+        }if (ocDiaStop != 0) {
+            sb.append("ocDiaStop=");
+            sb.append(ocDiaStop);
             sb.append(", ");
         }
         sb.append("]");
@@ -238,14 +237,14 @@ public class SmsExtraData {
 
             extraData.mprocNotes = xml.get(MPROC_NOTES, String.class);
             extraData.receiptLocalMessageId = xml.get(RECEIPT_LOCAL_MESSAGEID, Long.class);
-            extraData.gw_inc_start = xml.get(GW_INC_START,Long.class);
-            extraData.gw_inc_stop = xml.get(GW_INC_STOP,Long.class);
-            extraData.gw_que_start = xml.get(GW_QUE_START,Long.class);
-            extraData.gw_que_stop = xml.get(GW_QUE_STOP,Long.class);
-            extraData.gw_out_start = xml.get(GW_OUT_START,Long.class);
-            extraData.gw_out_stop = xml.get(GW_OUT_STOP,Long.class);
-            extraData.oc_dia_start = xml.get(OC_DIA_START,Long.class);
-            extraData.oc_dia_stop = xml.get(OC_DIA_STOP,Long.class);
+            extraData.gwIncStart = xml.get(GW_INC_START,Long.class);
+            extraData.gwIncStop = xml.get(GW_INC_STOP,Long.class);
+            extraData.gwQueStart = xml.get(GW_QUE_START,Long.class);
+            extraData.gwQueStop = xml.get(GW_QUE_STOP,Long.class);
+            extraData.gwOutStart = xml.get(GW_OUT_START,Long.class);
+            extraData.gwOutStop = xml.get(GW_OUT_STOP,Long.class);
+            extraData.ocDiaStart = xml.get(OC_DIA_START,Long.class);
+            extraData.ocDiaStop = xml.get(OC_DIA_STOP,Long.class);
         }
 
         @Override
@@ -261,101 +260,101 @@ public class SmsExtraData {
                 xml.add(extraData.receiptLocalMessageId, RECEIPT_LOCAL_MESSAGEID, Long.class);
             }
 
-           // if (extraData.gw_inc_start != 0){
-                xml.add(extraData.gw_inc_start, GW_INC_START, Long.class);
+           // if (extraData.gwIncStart != 0){
+                xml.add(extraData.gwIncStart, GW_INC_START, Long.class);
            // }
 
-          //  if (extraData.gw_inc_stop != 0){
-                xml.add(extraData.gw_inc_stop, GW_INC_STOP, Long.class);
+          //  if (extraData.gwIncStop != 0){
+                xml.add(extraData.gwIncStop, GW_INC_STOP, Long.class);
            // }
 
-           // if (extraData.gw_que_start != 0){
-                xml.add(extraData.gw_que_start, GW_QUE_START, Long.class);
+           // if (extraData.gwQueStart != 0){
+                xml.add(extraData.gwQueStart, GW_QUE_START, Long.class);
           //  }
 
-          //  if (extraData.gw_que_stop != 0){
-                xml.add(extraData.gw_que_stop, GW_QUE_STOP, Long.class);
+          //  if (extraData.gwQueStop != 0){
+                xml.add(extraData.gwQueStop, GW_QUE_STOP, Long.class);
          //   }
 
-         //   if (extraData.gw_out_start != 0){
-                xml.add(extraData.gw_out_start, GW_OUT_START, Long.class);
+         //   if (extraData.gwOutStart != 0){
+                xml.add(extraData.gwOutStart, GW_OUT_START, Long.class);
          //   }
 
-         //   if (extraData.gw_out_stop != 0){
-                xml.add(extraData.gw_out_stop, GW_OUT_STOP, Long.class);
+         //   if (extraData.gwOutStop != 0){
+                xml.add(extraData.gwOutStop, GW_OUT_STOP, Long.class);
          //   }
 
-         //   if (extraData.oc_dia_start != 0){
-                xml.add(extraData.oc_dia_start, OC_DIA_START, Long.class);
+         //   if (extraData.ocDiaStart != 0){
+                xml.add(extraData.ocDiaStart, OC_DIA_START, Long.class);
          //   }
 
-         //   if (extraData.oc_dia_stop != 0){
-                xml.add(extraData.oc_dia_stop, OC_DIA_STOP, Long.class);
+         //   if (extraData.ocDiaStop != 0){
+                xml.add(extraData.ocDiaStop, OC_DIA_STOP, Long.class);
          //   }
         }
     };
 
-    public long getGw_inc_start() {
-        return gw_inc_start;
+    public long getGwIncStart() {
+        return gwIncStart;
     }
 
-    public void setGw_inc_start(long gw_inc_start) {
-        this.gw_inc_start = gw_inc_start;
+    public void setGwIncStart(long gwIncStart) {
+        this.gwIncStart = gwIncStart;
     }
 
-    public long getGw_inc_stop() {
-        return gw_inc_stop;
+    public long getGwIncStop() {
+        return gwIncStop;
     }
 
-    public void setGw_inc_stop(long gw_inc_stop) {
-        this.gw_inc_stop = gw_inc_stop;
+    public void setGwIncStop(long gwIncStop) {
+        this.gwIncStop = gwIncStop;
     }
 
-    public long getGw_que_start() {
-        return gw_que_start;
+    public long getGwQueStart() {
+        return gwQueStart;
     }
 
-    public void setGw_que_start(long gw_que_start) {
-        this.gw_que_start = gw_que_start;
+    public void setGwQueStart(long gwQueStart) {
+        this.gwQueStart = gwQueStart;
     }
 
-    public long getGw_que_stop() {
-        return gw_que_stop;
+    public long getGwQueStop() {
+        return gwQueStop;
     }
 
-    public void setGw_que_stop(long gw_que_stop) {
-        this.gw_que_stop = gw_que_stop;
+    public void setGwQueStop(long gwQueStop) {
+        this.gwQueStop = gwQueStop;
     }
 
-    public long getGw_out_start() {
-        return gw_out_start;
+    public long getGwOutStart() {
+        return gwOutStart;
     }
 
-    public void setGw_out_start(long gw_out_start) {
-        this.gw_out_start = gw_out_start;
+    public void setGwOutStart(long gwOutStart) {
+        this.gwOutStart = gwOutStart;
     }
 
-    public long getGw_out_stop() {
-        return gw_out_stop;
+    public long getGwOutStop() {
+        return gwOutStop;
     }
 
-    public void setGw_out_stop(long gw_out_stop) {
-        this.gw_out_stop = gw_out_stop;
+    public void setGwOutStop(long gwOutStop) {
+        this.gwOutStop = gwOutStop;
     }
 
-    public long getOc_dia_start() {
-        return oc_dia_start;
+    public long getOcDiaStart() {
+        return ocDiaStart;
     }
 
-    public void setOc_dia_start(long oc_dia_start) {
-        this.oc_dia_start = oc_dia_start;
+    public void setOcDiaStart(long ocDiaStart) {
+        this.ocDiaStart = ocDiaStart;
     }
 
-    public long getOc_dia_stop() {
-        return oc_dia_stop;
+    public long getOcDiaStop() {
+        return ocDiaStop;
     }
 
-    public void setOc_dia_stop(long oc_dia_stop) {
-        this.oc_dia_stop = oc_dia_stop;
+    public void setOcDiaStop(long ocDiaStop) {
+        this.ocDiaStop = ocDiaStop;
     }
 }

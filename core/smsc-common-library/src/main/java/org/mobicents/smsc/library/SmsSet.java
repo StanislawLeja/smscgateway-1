@@ -510,8 +510,6 @@ public class SmsSet implements Serializable {
 
     public void addMessageToSendingPool(Sms sms) {
         this.sendingMessagePool.add(sms);
-        //sms.setGw_que_start(System.currentTimeMillis());
-        //System.out.println("--------------------------RUN!-------------_____________________----____----__-");
     }
 
     public Sms getMessageFromSendingPool(int number) {
