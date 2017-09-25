@@ -69,7 +69,9 @@ public class SmsExtraData {
 
     public boolean isEmpty() {
         if (this.mprocNotes != null || this.originationType != null || this.receiptLocalMessageId != null 
-        		|| this.timestampA != 0 || this.timestampB != 0 || this.timestampC != 0 )
+        		|| this.timestampA != 0 || this.timestampB != 0 || this.timestampC != 0 || this.gw_inc_start != 0
+                || this.gw_inc_stop != 0 || this.gw_que_start != 0 || this.getGw_que_stop() != 0 || this.gw_out_start != 0
+                || this.gw_out_stop != 0 || this.oc_dia_start != 0 || this.oc_dia_stop != 0 )
             return false;
         else
             return true;
