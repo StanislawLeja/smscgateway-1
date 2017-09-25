@@ -136,14 +136,12 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     public abstract RxSmppServerSbbUsage getDefaultSbbUsageParameterSet();
 
     public void onServiceStartedEvent(ServiceStartedEvent event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onServiceStartedEvent");
         ServiceID serviceID = event.getService();
         this.logger.info("Rx: onServiceStartedEvent: event=" + event + ", serviceID=" + serviceID);
         SbbStates.setSmscRxSmppServerServiceState(true);
     }
 
     public void onActivityEndEvent(ActivityEndEvent event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onActivityEndEvent");
         final RxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterActivityEnd(ONE);
         boolean isServiceActivity = (aci.getActivity() instanceof ServiceActivity);
@@ -157,7 +155,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     // initial event
 
     public void onDeliverSm(SmsSetEvent event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onDeliverSm");
         final RxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterDeliverSm(ONE);
         final long start = System.currentTimeMillis();
@@ -169,7 +166,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     // SMPP events
 
     public void onSubmitSmRespParent(SubmitSmResp event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onSubmitSmRespParent");
         final RxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterSubmitSmRespParent(ONE);
         final long start = System.currentTimeMillis();
@@ -178,7 +174,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     }
 
     public void onDeliverSmRespParent(DeliverSmResp event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onDeliverSmRespParent");
         final RxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterDeliverSmRespParent(ONE);
         final long start = System.currentTimeMillis();
@@ -187,7 +182,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     }
 
     public void onPduRequestTimeoutParent(PduRequestTimeout2 event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onPduRequestTimeoutParent");
         final RxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterErrorPduRequestTimeoutParent(ONE);
         final long start = System.currentTimeMillis();
@@ -197,7 +191,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
     public void onRecoverablePduExceptionParent(RecoverablePduException event, ActivityContextInterface aci,
             EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onRecoverablePduExceptionParent");
         final RxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterRecoverablePduExceptionParent(ONE);
         final long start = System.currentTimeMillis();
@@ -206,7 +199,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     }
 
     public void onSendPduStatusParent(SendPduStatus2 event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onSendPduStatusParent");
         if (logger.isFineEnabled()) {
             logger.fine(String.format("onSendPduStatus : SendPduStatus=%s", event));
         }
@@ -245,7 +237,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     }
 
     public void onDeliverSmResp(DeliverSmResp event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onDeliverSmResp");
         final RxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterDeliverSmResp(ONE);
         final long start = System.currentTimeMillis();
@@ -254,7 +245,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     }
 
     public void onSubmitSmResp(SubmitSmResp event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onSubmitSmResp");
         final RxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterSubmitSmResp(ONE);
         final long start = System.currentTimeMillis();
@@ -263,7 +253,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     }
 
     public void onPduRequestTimeout(PduRequestTimeout event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onPduRequestTimeout");
         final RxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterErrorPduRequestTimeout(ONE);
         final long start = System.currentTimeMillis();
@@ -273,7 +262,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
     public void onRecoverablePduException(RecoverablePduException event, ActivityContextInterface aci,
             EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onRecoverablePduException");
         final RxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementErrorRecoverablePduException(ONE);
         final long start = System.currentTimeMillis();
@@ -282,7 +270,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     }
 
     public void onSendPduStatus(SendPduStatus event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onSendPduStatus");
         onSendPduStatusLocal(event, aci);
     }
 
@@ -303,7 +290,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     public abstract ChildRelationExt getRxSmppServerChildSbb();
 
     private void onDeliverSmLocal(final RxSmppServerSbbUsage anSbbUsage, final SmsSetEvent event) {
-        this.logger.info("_______________________________________________________--onDeliverSmLocal");
 
         try {
             if (this.logger.isFineEnabled()) {
@@ -336,7 +322,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     // SMPP events
 
     private void onSubmitSmRespParentLocal(final RxSmppServerSbbUsage anSbbUsage, final SubmitSmResp event) {
-        this.logger.info("_______________________________________________________--onSubmitSmRespParentLocal");
         try {
             if (logger.isFineEnabled()) {
                 logger.fine(String.format("onSubmitSmResp : SubmitSmResp=%s", event));
@@ -359,7 +344,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     }
 
     private void onDeliverSmRespParentLocal(final RxSmppServerSbbUsage anSbbUsage, final DeliverSmResp event) {
-        this.logger.info("_______________________________________________________--onDeliverSmRespParentLocal");
         try {
             if (logger.isFineEnabled()) {
                 logger.fine(String.format("\nonDeliverSmResp : DeliverSmResp=%s", event));
@@ -382,7 +366,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     }
 
     private void onPduRequestTimeoutParentLocal(final RxSmppServerSbbUsage anSbbUsage, final PduRequestTimeout2 event) {
-        this.logger.info("_______________________________________________________--onPduRequestTimeoutParentLocal");
         try {
             if (isDeliveringEnded()) {
                 logger.info(
@@ -412,7 +395,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
     private void onRecoverablePduExceptionParentLocal(final RxSmppServerSbbUsage anSbbUsage,
             final RecoverablePduException event) {
-        this.logger.info("_______________________________________________________--onRecoverablePduExceptionParentLocal");
         try {
             if (isDeliveringEnded()) {
                 logger.info(
@@ -442,7 +424,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
     private void onDeliverSmRespLocal(final RxSmppServerSbbUsage anSbbUsage, final DeliverSmResp event,
             final ActivityContextInterface aci) {
-        this.logger.info("_______________________________________________________--onDeliverSmRespLocal");
         if (logger.isFineEnabled())
             logger.fine("onDeliverSmResp - refire to RxSmppServerChildSbb : activity=" + aci.getActivity());
 
@@ -466,7 +447,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
     private void onSubmitSmRespLocal(final RxSmppServerSbbUsage anSbbUsage, final SubmitSmResp event,
             final ActivityContextInterface aci) {
-        this.logger.info("_______________________________________________________--onSubmitSmRespLocal");
         if (logger.isFineEnabled())
             logger.fine("onSubmitSmResp - refire to RxSmppServerChildSbb : activity=" + aci.getActivity());
 
@@ -490,7 +470,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
     private void onPduRequestTimeoutLocal(final RxSmppServerSbbUsage anSbbUsage, final PduRequestTimeout event,
             final ActivityContextInterface aci) {
-        this.logger.info("_______________________________________________________--onPduRequestTimeoutLocal");
         if (logger.isFineEnabled())
             logger.fine("onPduRequestTimeout - refire to RxSmppServerChildSbb : activity=" + aci.getActivity());
 
@@ -515,7 +494,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
     private void onRecoverablePduExceptionLocal(final RxSmppServerSbbUsage anSbbUsage, final RecoverablePduException event,
             final ActivityContextInterface aci) {
-        this.logger.info("_______________________________________________________--onRecoverablePduExceptionLocal");
         if (logger.isFineEnabled())
             logger.fine("onRecoverablePduException - refire to RxSmppServerChildSbb : activity=" + aci.getActivity());
 
@@ -538,7 +516,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     }
 
     private void onSendPduStatusLocal(final SendPduStatus event, final ActivityContextInterface aci) {
-        this.logger.info("_______________________________________________________--onSendPduStatusLocal");
         if (logger.isFineEnabled())
             logger.fine("onSendPduStatusParent - refire to RxSmppServerChildSbb : activity=" + aci.getActivity());
 
@@ -617,7 +594,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
      * @throws SmscProcessingException
      */
     private void sendDeliverSm(SmsSet smsSet) throws SmscProcessingException {
-        this.logger.info("_______________________________________________________--sendDeliverSm");
 
         // TODO: let make here a special check if ESME in a good state
         // if not - skip sending and set temporary error
@@ -888,8 +864,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                     0, 0, SmscProcessingException.HTTP_ERROR_CODE_NOT_SET, null, e,
                     SmscProcessingException.INTERNAL_ERROR_SEND_DELIVER_SM_000008);
         }
-
-        System.out.println("sdfasdfadf_____________________-----------------adfasd---------+-+-");
     }
 
     private SentItem sendNextChunk(ChunkData currItem, SmsSet smsSet, Esme esme) throws SmscProcessingException {
@@ -970,7 +944,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
      */
     @Override
     protected void onDeliveryTimeout(SmsSet smsSet, String reason) {
-        this.logger.info("_______________________________________________________--onDeliveryTimeout");
         this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, reason,
                 EventType.OUT_SMPP_TIMEOUT, -1);
     }
@@ -1185,7 +1158,6 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
      */
     private void onDeliveryError(SmsSet smsSet, ErrorAction errorAction, ErrorCode smStatus, String reason, EventType eventType,
             int seqNumber) {
-        this.logger.info("_______________________________________________________--onDeliveryError");
         getDefaultSbbUsageParameterSet().incrementCounterErrorDelivery(ONE);
         try {
             smscStatAggregator.updateMsgOutFailedAll();

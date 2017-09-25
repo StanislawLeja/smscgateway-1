@@ -133,14 +133,12 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     public abstract TxSmppServerSbbUsage getDefaultSbbUsageParameterSet();
 
     public void onServiceStartedEvent(ServiceStartedEvent event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onServiceStartedEvent");
         ServiceID serviceID = event.getService();
         this.logger.info("Rx: onServiceStartedEvent: event=" + event + ", serviceID=" + serviceID);
         SbbStates.setSmscTxSmppServerServiceState(true);
     }
 
     public void onActivityEndEvent(ActivityEndEvent event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onActivityEndEvent");
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterActivityEnd(ONE);
         boolean isServiceActivity = (aci.getActivity() instanceof ServiceActivity);
@@ -149,7 +147,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             SbbStates.setSmscTxSmppServerServiceState(false);
         }
         Timestamp gw_inc_stop  = new Timestamp(System.currentTimeMillis());
-        this.logger.info("____________________________________________________________________________Start adfoefsdfa gw_inc_start: "+gw_inc_stop.getTime());
     }
 
     // *********
@@ -157,8 +154,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
     public void onSubmitSm(com.cloudhopper.smpp.pdu.SubmitSm event, ActivityContextInterface aci) {
         Timestamp gw_inc_start  = new Timestamp(System.currentTimeMillis());
-        this.logger.info("_______________________________________________________--onSubmitSm");
-        this.logger.info("____________________________________________________________________________Start adfoefsdfa gw_inc_start: "+gw_inc_start.getTime());
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterSubmitSm(ONE);
         final long start = System.currentTimeMillis();
@@ -167,7 +162,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     }
 
     public void onDataSm(com.cloudhopper.smpp.pdu.DataSm event, ActivityContextInterface aci) {
-        this.logger.info("_______________________________________________________--onDataSm");
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterDataSm(ONE);
         final long start = System.currentTimeMillis();
@@ -176,7 +170,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     }
 
     public void onSubmitMulti(com.cloudhopper.smpp.pdu.SubmitMulti event, ActivityContextInterface aci) {
-        this.logger.info("_______________________________________________________--onSubmitMulti");
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterSubmitMultiSm(ONE);
         final long start = System.currentTimeMillis();
@@ -185,7 +178,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     }
 
     public void onDeliverSm(com.cloudhopper.smpp.pdu.DeliverSm event, ActivityContextInterface aci) {
-        this.logger.info("_______________________________________________________--onDeliverSm");
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterDeliverSm(ONE);
         final long start = System.currentTimeMillis();
@@ -194,7 +186,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     }
 
     public void onPduRequestTimeout(PduRequestTimeout event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onPduRequestTimeout");
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterErrorPduRequestTimeout(ONE);
         sbbu.samplePduRequestTimeout(0L);
@@ -204,7 +195,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
     public void onRecoverablePduException(RecoverablePduException event, ActivityContextInterface aci,
             EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onRecoverablePduException");
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementErrorRecoverablePduException(ONE);
         sbbu.sampleRecoverablePduException(0L);
@@ -213,7 +203,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     }
 
     public void onSendPduStatus(SendPduStatus event, ActivityContextInterface aci, EventContext eventContext) {
-        this.logger.info("_______________________________________________________--onSendPduStatus");
         if (logger.isFineEnabled()) {
             logger.fine(String.format("onSendPduStatus : SendPduStatus=%s", event));
         }
@@ -226,7 +215,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
     private void onSubmitSmLocal(final TxSmppServerSbbUsage anSbbUsage, final com.cloudhopper.smpp.pdu.SubmitSm event,
             final ActivityContextInterface aci) {
-        this.logger.info("_______________________________________________________--onSubmitSmLocal");
         // TODO remove it ...........................
         // long l2 = Date.parse(event.getServiceType());
         // Date dt0 = new Date(l2);
@@ -440,12 +428,10 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
         SmscStatProvider.getInstance().setParam1((int) (dt3.getTime() - dt0.getTime()));
         SmscStatProvider.getInstance().setParam2((int) (dt3.getTime() - dt1.getTime()));
         // TODO remove it ...........................
-        this.logger.info("_______________________________________________________--TimestampB: "+sms.getTimestampB());
     }
 
     private void onDataSmLocal(final TxSmppServerSbbUsage anSbbUsage, final com.cloudhopper.smpp.pdu.DataSm event,
             ActivityContextInterface aci) {
-        this.logger.info("_______________________________________________________--onDataSmLocal");
         SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
         Esme esme = smppServerTransaction.getEsme();
         String esmeName = esme.getName();
@@ -641,7 +627,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
     private void onSubmitMultiLocal(final TxSmppServerSbbUsage anSbbUsage, final com.cloudhopper.smpp.pdu.SubmitMulti event,
             final ActivityContextInterface aci) {
-        this.logger.info("_______________________________________________________--onSubmitMultiLocal");
         SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
         Esme esme = smppServerTransaction.getEsme();
         String esmeName = esme.getName();
@@ -861,7 +846,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
     private void onDeliverSmLocal(final TxSmppServerSbbUsage anSbbUsage, final com.cloudhopper.smpp.pdu.DeliverSm event,
             final ActivityContextInterface aci) {
-        this.logger.info("_______________________________________________________--onDeliverSmLocal");
         SmppTransaction smppServerTransaction = (SmppTransaction) aci.getActivity();
         Esme esme = smppServerTransaction.getEsme();
         String esmeName = esme.getName();
@@ -1554,7 +1538,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
         sms0.setTimestampA(System.currentTimeMillis());
         sms0.setGwIncStart(System.currentTimeMillis());
-        this.logger.info("_______________________________________________________--processSms TimestampA: "+sms0.getTimestampA());
         if (logger.isInfoEnabled()) {
             logger.info(String.format("\nReceived %s to ESME: %s, sms=%s", incomingMessageType.toString(), esme.getName(),
                     sms0.toString()));
