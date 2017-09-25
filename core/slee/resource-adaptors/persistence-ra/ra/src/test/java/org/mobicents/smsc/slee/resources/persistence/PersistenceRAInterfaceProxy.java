@@ -411,6 +411,7 @@ public class PersistenceRAInterfaceProxy extends DBOperations implements Persist
             appendField(sb, Schema.COLUMN_EXTRA_DATA_2, "text");
             appendField(sb, Schema.COLUMN_EXTRA_DATA_3, "text");
             appendField(sb, Schema.COLUMN_EXTRA_DATA_4, "text");
+            appendField(sb, Schema.COLUMN_EXPOSURE_LAYER_DATA, "text");
         }
     }
 

@@ -49,6 +49,7 @@ public class HttpRequestUtils {
     public final static String P_FORMAT = "format";
     public final static String P_SMSC_ENCODING = "smscEncoding";
     public final static String P_MESSAGE_BODY_ENCODING = "messageBodyEncoding";
+    public final static String P_EXPOSURE_LAYER_DATA = "exposureLayerData";
 
     public static Map<String, String[]> extractParametersFromPost(Tracer logger, HttpServletRequest request) throws HttpApiException {
         try {
@@ -67,7 +68,7 @@ public class HttpRequestUtils {
             String body = sb.toString();
 
             List<String> paramsList = new ArrayList<>(Arrays.asList(P_MSG, P_SENDER, P_TO, P_USERID,
-                    P_PASSWORD, P_MSGID, P_FORMAT, P_SMSC_ENCODING, P_MESSAGE_BODY_ENCODING));
+                    P_PASSWORD, P_MSGID, P_FORMAT, P_SMSC_ENCODING, P_MESSAGE_BODY_ENCODING, P_EXPOSURE_LAYER_DATA));
 
             String[] splitted = body.split("&");
             List<String> splittedList = new ArrayList<>();

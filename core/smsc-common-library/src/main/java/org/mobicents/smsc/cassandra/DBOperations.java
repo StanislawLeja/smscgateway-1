@@ -22,54 +22,28 @@
 
 package org.mobicents.smsc.cassandra;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
+import com.cloudhopper.smpp.SmppConstants;
+import com.datastax.driver.core.*;
+import com.datastax.driver.core.Cluster.Builder;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
 import javolution.util.FastList;
 import javolution.util.FastMap;
 import javolution.xml.XMLObjectReader;
 import javolution.xml.XMLObjectWriter;
 import javolution.xml.stream.XMLStreamException;
-
 import org.apache.log4j.Logger;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
 import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
-import org.mobicents.smsc.library.DbSmsRoutingRule;
-import org.mobicents.smsc.library.ErrorCode;
-import org.mobicents.smsc.library.MessageState;
-import org.mobicents.smsc.library.MessageUtil;
-import org.mobicents.smsc.library.QuerySmResponse;
-import org.mobicents.smsc.library.SmType;
-import org.mobicents.smsc.library.Sms;
-import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCache;
-import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.library.*;
 import org.restcomm.smpp.parameter.TlvSet;
 
-import com.cloudhopper.smpp.SmppConstants;
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Cluster.Builder;
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Metadata;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.exceptions.InvalidQueryException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.util.*;
 
 /**
  *
@@ -783,9 +757,14 @@ public class DBOperations {
     protected boolean do_scheduleMessage(Sms sms, long dueSlot, ArrayList<Sms> lstFailured, boolean fastStoreAndForwordMode,
             boolean removeExpiredValidityPeriod) throws PersistenceException {
 
+		if(sms.getGw_que_start() == 0){
+			sms.setGw_que_start(System.currentTimeMillis());
+		}
+
 		sms.setDueSlot(dueSlot);
 
 		Date dt = this.c2_getTimeForDueSlot(dueSlot);
+
 
 		// special case for ScheduleDeliveryTime
 		Date schedTime = sms.getScheduleDeliveryTime();
@@ -831,10 +810,8 @@ public class DBOperations {
 		try {
 			PreparedStatement ps = psc.createRecordCurrent;
 			BoundStatement boundStatement = new BoundStatement(ps);
-
             setSmsFields(sms, dueSlot, boundStatement, false, psc.getShortMessageNewStringFormat(), psc.getAddedCorrId(),
                     psc.getAddedNetworkId(), psc.getAddedOrigNetworkId(), psc.getAddedPacket1());
-
 			ResultSet res = session.execute(boundStatement);
 		} catch (Exception e1) {
 			String msg = "Failed createRecordCurrent !" + e1.getMessage();
@@ -1064,6 +1041,10 @@ public class DBOperations {
                 boundStatement.setString(Schema.COLUMN_EXTRA_DATA_4, sms.getExtraData_4());
             } else
                 boundStatement.setToNull(Schema.COLUMN_EXTRA_DATA_4);
+			if (sms.getExposureLayerData() != null) {
+				boundStatement.setString(Schema.COLUMN_EXPOSURE_LAYER_DATA, sms.getExposureLayerData());
+			} else
+				boundStatement.setToNull(Schema.COLUMN_EXPOSURE_LAYER_DATA);
         }
 
 		if (sms.getTlvSet().getOptionalParameterCount() > 0) {
@@ -1122,6 +1103,7 @@ public class DBOperations {
             }
             boundStatement.setString(Schema.COLUMN_IMSI, sms.getSmsSet().getImsi());
         }
+
 	}
 
 	public ArrayList<SmsSet> c2_getRecordList(long dueSlot) throws PersistenceException {
@@ -1145,7 +1127,6 @@ public class DBOperations {
 
 			throw new PersistenceException(msg, e1);
 		}
-
 		return result;
 	}
 
@@ -1390,6 +1371,8 @@ public class DBOperations {
             sms.setExtraData_2(row.getString(Schema.COLUMN_EXTRA_DATA_2));
             sms.setExtraData_3(row.getString(Schema.COLUMN_EXTRA_DATA_3));
             sms.setExtraData_4(row.getString(Schema.COLUMN_EXTRA_DATA_4));
+			sms.setExposureLayerData(row.getString(Schema.COLUMN_EXPOSURE_LAYER_DATA));
+			sms.setGw_que_stop(System.currentTimeMillis());
         }
 
 		String s = row.getString(Schema.COLUMN_OPTIONAL_PARAMETERS);
@@ -1846,6 +1829,7 @@ public class DBOperations {
         appendField(sb, Schema.COLUMN_EXTRA_DATA_2, "text");
         appendField(sb, Schema.COLUMN_EXTRA_DATA_3, "text");
         appendField(sb, Schema.COLUMN_EXTRA_DATA_4, "text");
+		appendField(sb, Schema.COLUMN_EXPOSURE_LAYER_DATA, "text");
 	}
 
 	private synchronized void checkCurrentSlotTableExists() throws PersistenceException {

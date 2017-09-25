@@ -1423,7 +1423,7 @@ DCS parameter means the encoding that will be used when a message will be transf
 For DCS 0 (GSM7 encdoing) and 8 (UCS2 encoding) SMSC GW decodes messages when receiving from SMPP connector and encode messages before sending them into SMPP connector. For this task it is important which data coding schema will be used for messages decoding / encoding.
 SMSC GW has two configurable parameters for decoding / encodoing, one for GSM 7 ancoding and another for UCS2 encoding (SMPP Encoding for GSM7 / SMPP Encoding for UCS2). See following chapter for configuring details: <<_smpp_encoding_for_ucs2>>. A user schould configure these parameters before of SMSC GW usage depending on which encoding are used by user's SMPP applications for message body encoding.
 
-One of indication that says that message encoding parameters are wrongly configured is messages in server.log like `Message length in bytes is too big for solid message: 268>134`. This may mean that SMPP application sends messages to SMSC GW in UCS2 encoding and SMSC GW decodes them in UTF8 encodoing and a message bode becomes too big length after it.
+One of indication that says that message encoding parameters are wrongly configured is messages in server.log like `Message length in bytes is too big for solid message: 268>134`. This may mean that SMPP application sends messages to SMSC GW in UCS2 encoding and SMSC GW decodes them in UTF8 encodoing and a message bode becomes too big length after it. Another reason for `Message length in bytes is too big` message may be that you are trying to use GSM7 encoding and your message contains characters from GSM7 extended table (like '[' or ']'). Such characters demands 2 septets for encdoning and so a message / message segment (if it contains such characters) must contain lower character count.
 
 [[_smpp_dlivery_receipt_transit]]
 === Delivery receipts transit at SMPP interface
@@ -1471,6 +1471,7 @@ are GET and POST. Request URL must have “sendSms” context and contain all of
 | senderTon | TON value for a source address (if missed then <<_httpdefaultsourceton>> value will be used)
 | senderNpi | NPI value for a source address (if missed then <<_httpdefaultsourcenpi>> value will be used)
 | udh | Optional User Data Header (UDH) part of the message. Must be URL encoded (if missed then SMSC GW will not include UDH value into message). UDH should be created by client
+| exposureLayerData | Data from Exposure Layer. Colon separated values presented in following order: messageId, correlationId, elApiStart (time of http request), alApiStop (time of http response), elQueStart (time when message is placed in queue), elQueStop (time when message is taken from queue).
 |===
 
 Format parameter controls the response format to the request. Response contains the status of request, it can be “Success” or “Error”. In case of error it contains an error code and error message. In case of success response contains a list of pairs: “request ID / destination
@@ -1483,7 +1484,7 @@ http://127.0.0.1:8080/{this-httpprefix}/sendSms?userid=user1&password=password&m
 
 http://127.0.0.1:8080/{this-httpprefix}/sendSms?userid=user1&password=password&msg=exampleMessage_02&format=String&smscEncoding=GSM7&messageBodyEncoding=UTF8&sender=1234&to=1111
 
-http://127.0.0.1:8080/{this-httpprefix}/sendSms?userid=user1&password=password&msg=exampleMessage_03&format=json&smscEncoding=UCS2&messageBodyEncoding=UTF16&sender=4321&to=6666,6667&senderTon=5&senderNpi=0&udh=%06%05%04%13%01%13%01
+http://127.0.0.1:8080/{this-httpprefix}/sendSms?userid=user1&password=password&msg=exampleMessage_03&format=json&smscEncoding=UCS2&messageBodyEncoding=UTF16&sender=4321&to=6666,6667&senderTon=5&senderNpi=0&udh=%06%05%04%13%01%13%01&exposureLayerData=123456:112233:1503655696096:1503655721872:1503655736078:1503655741991
 ----
 
 Response examples:

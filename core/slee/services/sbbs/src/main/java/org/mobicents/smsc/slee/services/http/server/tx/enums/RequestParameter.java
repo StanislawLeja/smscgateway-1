@@ -16,7 +16,8 @@ public enum RequestParameter {
     MESSAGE_BODY_ENCODING("messageBodyEncoding"),
     SENDER_TON("senderTon"),
     SENDER_NPI("senderNpi"),
-    UDH("udh");
+    UDH("udh"),
+    EXPOSURE_LAYER_DATA("exposureLayerData");
 
     private String name;
 

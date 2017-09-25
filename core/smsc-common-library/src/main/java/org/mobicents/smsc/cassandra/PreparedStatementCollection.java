@@ -291,6 +291,8 @@ public class PreparedStatementCollection {
             sb.append(Schema.COLUMN_EXTRA_DATA_3);
             sb.append("\", \"");
             sb.append(Schema.COLUMN_EXTRA_DATA_4);
+            sb.append("\", \"");
+            sb.append(Schema.COLUMN_EXPOSURE_LAYER_DATA);
         }
         sb.append("\"");
 
@@ -327,7 +329,7 @@ public class PreparedStatementCollection {
         if (this.addedOrigNetworkId)
             cnt++;
         if (this.addedPacket1)
-            cnt += 8;
+            cnt += 9;
 
         StringBuilder sb = new StringBuilder();
         int i2 = 0;

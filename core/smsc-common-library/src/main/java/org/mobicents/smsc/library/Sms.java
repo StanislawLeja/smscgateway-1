@@ -22,6 +22,9 @@
 
 package org.mobicents.smsc.library;
 
+import javolution.xml.XMLObjectReader;
+import javolution.xml.XMLObjectWriter;
+import javolution.xml.stream.XMLStreamException;
 import org.restcomm.smpp.parameter.TlvSet;
 
 import java.io.Serializable;
@@ -29,10 +32,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.UUID;
-
-import javolution.xml.XMLObjectReader;
-import javolution.xml.XMLObjectWriter;
-import javolution.xml.stream.XMLStreamException;
 
 
 /**
@@ -115,6 +114,8 @@ public class Sms implements Serializable {
     private String extraData_2;
     private String extraData_3;
     private String extraData_4;
+
+    private String exposureLayerData;
     
     private MessageDeliveryResultResponseInterface messageDeliveryResultResponse;
 
@@ -846,6 +847,76 @@ public class Sms implements Serializable {
 		this.extraData.setTimestampC(timestampC);
 	}
 
+
+
+
+	public long getGw_inc_start() {
+		return this.extraData.getGw_inc_start();
+	}
+
+	public void setGw_inc_start(long gw_inc_start) {
+		this.extraData.setGw_inc_start(gw_inc_start);
+	}
+
+	public long getGw_inc_stop() {
+		return this.extraData.getGw_inc_stop();
+	}
+
+	public void setGw_inc_stop(long gw_inc_stop) {
+		this.extraData.setGw_inc_stop(gw_inc_stop);
+	}
+
+	public long getGw_que_start() {
+		return this.extraData.getGw_que_start();
+	}
+
+	public void setGw_que_start(long gw_que_start) {
+		this.extraData.setGw_que_start(gw_que_start);
+	}
+
+	public long getGw_que_stop() {
+		return this.extraData.getGw_que_stop();
+	}
+
+	public void setGw_que_stop(long gw_que_stop) {
+		this.extraData.setGw_que_stop(gw_que_stop);
+	}
+
+	public long getGw_out_start() {
+		return this.extraData.getGw_out_start();
+	}
+
+	public void setGw_out_start(long gw_out_start) {
+		this.extraData.setGw_out_start(gw_out_start);
+	}
+
+	public long getGw_out_stop() {
+		return this.extraData.getGw_out_stop();
+	}
+
+	public void setGw_out_stop(long gw_out_stop) {
+		this.extraData.setGw_out_stop(gw_out_stop);
+	}
+
+	public long getOc_dia_start() {
+		return this.extraData.getOc_dia_start();
+	}
+
+	public void setOc_dia_start(long oc_dia_start) {
+		this.extraData.setOc_dia_start(oc_dia_start);
+	}
+
+	public long getOc_dia_stop() {
+		return this.extraData.getOc_dia_stop();
+	}
+
+	public void setOc_dia_stop(long oc_dia_stop) {
+		this.extraData.setOc_dia_stop(oc_dia_stop);
+	}
+
+
+
+
     public String getExtraData() {
         if (this.extraData.isEmpty()) {
             return null;
@@ -884,4 +955,11 @@ public class Sms implements Serializable {
         }
     }
 
+	public String getExposureLayerData() {
+		return exposureLayerData;
+	}
+
+	public void setExposureLayerData(String exposureLayerData) {
+		this.exposureLayerData = exposureLayerData;
+	}
 }

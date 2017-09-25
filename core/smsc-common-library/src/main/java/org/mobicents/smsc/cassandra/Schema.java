@@ -103,6 +103,7 @@ public class Schema {
     public static final String COLUMN_EXTRA_DATA_2 = "EXTRA_DATA_2";
     public static final String COLUMN_EXTRA_DATA_3 = "EXTRA_DATA_3";
     public static final String COLUMN_EXTRA_DATA_4 = "EXTRA_DATA_4";
+    public static final String COLUMN_EXPOSURE_LAYER_DATA = "EXPOSURE_LAYER_DATA";
 
     //SmsRoutingRule tables columns and names
     public static final String COLUMN_ADDRESS = "ADDRESS";
@@ -197,6 +198,7 @@ public class Schema {
         tmp.add(COLUMN_EXTRA_DATA_2);
         tmp.add(COLUMN_EXTRA_DATA_3);
         tmp.add(COLUMN_EXTRA_DATA_4);
+        tmp.add(COLUMN_EXPOSURE_LAYER_DATA);
 
         COLUMNS_LIVE_SMS = Collections.unmodifiableList(tmp);
 
@@ -252,6 +254,7 @@ public class Schema {
         tmp.add(COLUMN_EXTRA_DATA_2);
         tmp.add(COLUMN_EXTRA_DATA_3);
         tmp.add(COLUMN_EXTRA_DATA_4);
+        tmp.add(COLUMN_EXPOSURE_LAYER_DATA);
 
         COLUMNS_ARCHIVE = Collections.unmodifiableList(tmp);
 

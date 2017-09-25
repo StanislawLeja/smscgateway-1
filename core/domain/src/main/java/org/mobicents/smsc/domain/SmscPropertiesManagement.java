@@ -22,6 +22,18 @@
 
 package org.mobicents.smsc.domain;
 
+import javolution.text.TextBuilder;
+import javolution.util.FastMap;
+import javolution.xml.XMLBinding;
+import javolution.xml.XMLObjectReader;
+import javolution.xml.XMLObjectWriter;
+import javolution.xml.stream.XMLStreamException;
+import org.apache.log4j.Logger;
+import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
+import org.mobicents.protocols.ss7.map.primitives.ArrayListSerializingBase;
+import org.restcomm.smpp.GenerateType;
+import org.restcomm.smpp.SmppEncoding;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -29,19 +41,6 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import javolution.text.TextBuilder;
-import javolution.util.FastMap;
-import javolution.xml.XMLBinding;
-import javolution.xml.XMLObjectReader;
-import javolution.xml.XMLObjectWriter;
-import javolution.xml.stream.XMLStreamException;
-
-import org.apache.log4j.Logger;
-import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
-import org.mobicents.protocols.ss7.map.primitives.ArrayListSerializingBase;
-import org.restcomm.smpp.GenerateType;
-import org.restcomm.smpp.SmppEncoding;
 
 /**
  * 
@@ -88,6 +87,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 	private static final String PROCESSING_SMS_SET_TIMEOUT = "processingSmsSetTimeout";
     private static final String GENERATE_RECEIPT_CDR = "generateReceiptCdr";
     private static final String GENERATE_DETAILED_CDR = "generateDetailedCdr";
+    private static final String GENERATE_FINAL_CDR = "generateFinalCdr";
     private static final String GENERATE_REJECTION_CDR = "generateRejectionCdr";
     private static final String GENERATE_TEMP_FAILURE_CDR = "generateTempFailureCdr";
     private static final String CALCULATE_MSG_PARTS_LEN_CDR = "calculateMsgPartsLenCdr";
@@ -251,6 +251,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // true: we generate detailed CDR for messages
     // false: we do not generate detailed CDR 
     private boolean generateDetailedCdr = false;
+    // true: we generate final CDR for messages
+    // false: we do not generate final CDR
+    private boolean generateFinalCdr = false;
     // true: we generate CDR also for temp failures (along with success and permanent failure cases)
     // false: we generate CDR only for success and permanent failure cases (no CDRs for temp failures)
     private boolean generateTempFailureCdr = true;
@@ -283,6 +286,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     private GenerateType generateCdr = new GenerateType(true, true, true);
     // generating archive table records option
     private GenerateType generateArchiveTable = new GenerateType(true, true, true);
+
+
 
     // options for storeAndForward mode: will messages be store into a database
     // firstly (normal mode) or not
@@ -875,6 +880,17 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 		this.generateDetailedCdr = generateDetailedCdr;
 		this.store();
 	}
+
+    @Override
+    public boolean getGenerateFinalCdr() {
+        return this.generateFinalCdr;
+    }
+
+    @Override
+    public void setGenerateFinalCdr(boolean generateFinalCdr) {
+        this.generateFinalCdr = generateFinalCdr;
+        this.store();
+    }
 
     @Override
     public boolean getGenerateTempFailureCdr() {
@@ -1554,6 +1570,7 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.processingSmsSetTimeout, PROCESSING_SMS_SET_TIMEOUT, Integer.class);
             writer.write(this.generateReceiptCdr, GENERATE_RECEIPT_CDR, Boolean.class);
             writer.write(this.generateDetailedCdr, GENERATE_DETAILED_CDR, Boolean.class);
+            writer.write(this.generateFinalCdr, GENERATE_FINAL_CDR, Boolean.class);
             writer.write(this.generateTempFailureCdr, GENERATE_TEMP_FAILURE_CDR, Boolean.class);
             writer.write(this.generateRejectionCdr, GENERATE_REJECTION_CDR, Boolean.class);
             writer.write(this.calculateMsgPartsLenCdr, CALCULATE_MSG_PARTS_LEN_CDR, Boolean.class);
@@ -1786,6 +1803,10 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             if (valB != null) {
                 this.generateDetailedCdr = valB.booleanValue();
             }
+            valB = reader.read(GENERATE_FINAL_CDR, Boolean.class);
+            if (valB != null) {
+                this.generateFinalCdr = valB.booleanValue();
+            }
             valB = reader.read(GENERATE_TEMP_FAILURE_CDR, Boolean.class);
             if (valB != null) {
                 this.generateTempFailureCdr = valB.booleanValue();
@@ -1840,6 +1861,8 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
             val = reader.read(GENERATE_ARCHIVE_TABLE, Integer.class);
             if (val != null)
                 this.generateArchiveTable = new GenerateType(val);
+
+
 
             vals = reader.read(STORE_AND_FORWORD_MODE, String.class);
             if (vals != null)
