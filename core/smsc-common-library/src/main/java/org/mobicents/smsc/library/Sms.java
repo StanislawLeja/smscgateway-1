@@ -850,68 +850,68 @@ public class Sms implements Serializable {
 
 
 
-	public long getGw_inc_start() {
-		return this.extraData.getGw_inc_start();
+	public long getGwIncStart() {
+		return this.extraData.getGwIncStart();
 	}
 
-	public void setGw_inc_start(long gw_inc_start) {
-		this.extraData.setGw_inc_start(gw_inc_start);
+	public void setGwIncStart(long gwIncStart) {
+		this.extraData.setGwIncStart(gwIncStart);
 	}
 
-	public long getGw_inc_stop() {
-		return this.extraData.getGw_inc_stop();
+	public long getGwIncStop() {
+		return this.extraData.getGwIncStop();
 	}
 
-	public void setGw_inc_stop(long gw_inc_stop) {
-		this.extraData.setGw_inc_stop(gw_inc_stop);
+	public void setGwIncStop(long gwIncStop) {
+		this.extraData.setGwIncStop(gwIncStop);
 	}
 
-	public long getGw_que_start() {
-		return this.extraData.getGw_que_start();
+	public long getGwQueStart() {
+		return this.extraData.getGwQueStart();
 	}
 
-	public void setGw_que_start(long gw_que_start) {
-		this.extraData.setGw_que_start(gw_que_start);
+	public void setGwQueStart(long gwQueStart) {
+		this.extraData.setGwQueStart(gwQueStart);
 	}
 
-	public long getGw_que_stop() {
-		return this.extraData.getGw_que_stop();
+	public long getGwQueStop() {
+		return this.extraData.getGwQueStop();
 	}
 
-	public void setGw_que_stop(long gw_que_stop) {
-		this.extraData.setGw_que_stop(gw_que_stop);
+	public void setGwQueStop(long gwQueStop) {
+		this.extraData.setGwQueStop(gwQueStop);
 	}
 
-	public long getGw_out_start() {
-		return this.extraData.getGw_out_start();
+	public long getGwOutStart() {
+		return this.extraData.getGwOutStart();
 	}
 
-	public void setGw_out_start(long gw_out_start) {
-		this.extraData.setGw_out_start(gw_out_start);
+	public void setGwOutStart(long gwOutStart) {
+		this.extraData.setGwOutStart(gwOutStart);
 	}
 
-	public long getGw_out_stop() {
-		return this.extraData.getGw_out_stop();
+	public long getGwOutStop() {
+		return this.extraData.getGwOutStop();
 	}
 
-	public void setGw_out_stop(long gw_out_stop) {
-		this.extraData.setGw_out_stop(gw_out_stop);
+	public void setGwOutStop(long gwOutStop) {
+		this.extraData.setGwOutStop(gwOutStop);
 	}
 
-	public long getOc_dia_start() {
-		return this.extraData.getOc_dia_start();
+	public long getOcDiaStart() {
+		return this.extraData.getOcDiaStart();
 	}
 
-	public void setOc_dia_start(long oc_dia_start) {
-		this.extraData.setOc_dia_start(oc_dia_start);
+	public void setOcDiaStart(long ocDiaStart) {
+		this.extraData.setOcDiaStart(ocDiaStart);
 	}
 
-	public long getOc_dia_stop() {
-		return this.extraData.getOc_dia_stop();
+	public long getOcDiaStop() {
+		return this.extraData.getOcDiaStop();
 	}
 
-	public void setOc_dia_stop(long oc_dia_stop) {
-		this.extraData.setOc_dia_stop(oc_dia_stop);
+	public void setOcDiaStop(long ocDiaStop) {
+		this.extraData.setOcDiaStop(ocDiaStop);
 	}
 
 

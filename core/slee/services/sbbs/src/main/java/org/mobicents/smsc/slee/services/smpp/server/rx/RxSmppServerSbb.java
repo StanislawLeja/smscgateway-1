@@ -762,7 +762,7 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         } else {
                             SentItem sentItem = sendNextChunk(currData, smsSet, esme);
                             sms.setTimestampB(System.currentTimeMillis());
-                            sms.setGw_out_start(System.currentTimeMillis());
+                            sms.setGwOutStart(System.currentTimeMillis());
                             sentSequenceNumber = sentItem.getRemoteSequenceNumber();
                         }
 
@@ -831,7 +831,7 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         } else {
                             SentItem sentItem = sendNextChunk(currData, smsSet, esme);
                             sms.setTimestampB(System.currentTimeMillis());
-                            sms.setGw_out_start(System.currentTimeMillis());
+                            sms.setGwOutStart(System.currentTimeMillis());
                             sentSequenceNumber = sentItem.getRemoteSequenceNumber();
                         }
                         if (logger.isInfoEnabled()) {
@@ -1046,7 +1046,7 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
             }
 
             confirmMessageInSendingPool.sms.setTimestampC(System.currentTimeMillis());
-            confirmMessageInSendingPool.sms.setGw_out_stop(System.currentTimeMillis());
+            confirmMessageInSendingPool.sms.setGwOutStop(System.currentTimeMillis());
             if (destAddressLimitationEnabled) {
                 ChunkDataList dataList = retreivePendingChunks();
                 if (dataList != null && !dataList.getPendingList().isEmpty()) {

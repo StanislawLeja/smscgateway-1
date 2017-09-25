@@ -24,7 +24,7 @@ package org.mobicents.smsc.slee.services.util;
 import javax.slee.facilities.Tracer;
 
 import org.mobicents.smsc.library.SmscProcessingException;
-import org.mobicents.smsc.slee.services.smpp.server.SmppServerSbbUsage;
+import org.mobicents.smsc.slee.services.smpp.server.tx.SmppServerSbbUsage;
 
 /**
  * The Class SbbStatsUtils.

@@ -429,7 +429,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
             for (Sms sms : parseResult.getParsedMessages()) {
                 currSms = sms;
                 currSms.setTimestampA(System.currentTimeMillis());
-                currSms.setGw_inc_start(System.currentTimeMillis());
+                currSms.setGwIncStart(System.currentTimeMillis());
                 processSms(sms, persistence, incomingData);
             }
         } catch (SmscProcessingException e1) {
@@ -472,7 +472,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
             if (currSms != null) {
 
                 currSms.setTimestampB(timestampB);
-                currSms.setGw_inc_stop(gw_inc_stop);
+                currSms.setGwIncStop(gw_inc_stop);
                 generateRejectDetailedCdr(e1.getInternalErrorCode(), currSms, eventType, ErrorCode.REJECT_INCOMING,
                         CdrDetailedGenerator.CDR_MSG_TYPE_HTTP, HttpServletResponse.SC_OK, remoteAddrAndPort, -1);
             } else {
@@ -514,7 +514,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
 
             if (currSms != null) {
                 currSms.setTimestampB(System.currentTimeMillis());
-                currSms.setGw_inc_stop(gw_inc_stop);
+                currSms.setGwIncStop(gw_inc_stop);
                 generateFailureDetailedCdr(currSms, EventType.IN_HTTP_ERROR, ErrorCode.REJECT_INCOMING,
                         CdrDetailedGenerator.CDR_MSG_TYPE_HTTP, HttpServletResponse.SC_OK, remoteAddrAndPort, -1);
             } else {
@@ -541,7 +541,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
             for (Sms sms : parseResult.getParsedMessages()) {
                 currSms = sms;
                 sms.setTimestampB(timestampB);
-                currSms.setGw_inc_stop(gw_inc_stop);
+                currSms.setGwIncStop(gw_inc_stop);
                 generateDetailedCDR(sms, EventType.IN_HTTP_RECEIVED, CdrDetailedGenerator.CDR_MSG_TYPE_HTTP, 0,
                         remoteAddrAndPort, -1);
             }
