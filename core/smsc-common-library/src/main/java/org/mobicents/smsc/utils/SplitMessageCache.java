@@ -19,7 +19,7 @@ public class SplitMessageCache implements SplitMessageCacheMBean {
     public SplitMessageCache(){
         referenceNumberMessageIdA = new HashMap<String, Long>();
         referenceNumberMessageIdB = new HashMap<String, Long>();
-        removeOlderThanXSeconds = 60;
+        removeOlderThanXSeconds = 600;
         balanceFlag = false;
         lastChangeOfBalanceFlag = System.currentTimeMillis();
     }
