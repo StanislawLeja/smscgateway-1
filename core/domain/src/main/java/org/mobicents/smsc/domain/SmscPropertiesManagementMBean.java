@@ -169,6 +169,10 @@ public interface SmscPropertiesManagementMBean {
 
 	public void setGenerateDetailedCdr(boolean generateDetailedCdr);
 
+    public boolean getGenerateFinalCdr();
+
+    public void setGenerateFinalCdr(boolean generateFinalCdr);
+
     public boolean getGenerateTempFailureCdr();
 
     public void setGenerateTempFailureCdr(boolean generateTempFailureCdr);
@@ -262,10 +266,6 @@ public interface SmscPropertiesManagementMBean {
     public int getGenerateCdrInt();
     
     public void setGenerateCdrInt(int generateCdr);
-
-    public boolean getGenerateFinalCdr();
-
-    public void setGenerateFinalCdr(boolean generateFinalCdr);
     
     public GenerateType getGenerateArchiveTable();
 
