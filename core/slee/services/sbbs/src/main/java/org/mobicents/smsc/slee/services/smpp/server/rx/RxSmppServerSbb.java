@@ -73,7 +73,6 @@ import static org.mobicents.smsc.slee.services.util.SbbStatsUtils.warnIfLong;
  * @author sergey vetyutnev
  *
  */
- */
 public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     private static final String className = RxSmppServerSbb.class.getSimpleName();
 

@@ -47,6 +47,7 @@ import org.mobicents.smsc.domain.SmscCongestionControl;
 import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.domain.SmscStatProvider;
 import org.mobicents.smsc.library.CdrDetailedGenerator;
+import org.mobicents.smsc.library.CdrFinalGenerator;
 import org.mobicents.smsc.library.CdrGenerator;
 import org.mobicents.smsc.library.ErrorCode;
 import org.mobicents.smsc.library.EventType;
