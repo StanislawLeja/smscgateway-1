@@ -52,6 +52,8 @@ public final class DeliveryReceiptHttpNotification {
     private static final String PROPERTY_CORRELATION_ID = "correlationId";
     private static final String PROPERTY_DELIVERY_RECEIPT_STATUS = "deliveryReceiptStatus";
     private static final String PROPERTY_ORIGINAL_REQUEST_USER_NAME = "originalRequestUserName";
+    private static final String PROPERTY_EXPOSURE_LAYER_MESSAGE_ID = "exposureLayerMessageId";
+    private static final String PROPERTY_EXPOSURE_LAYER_USER_NAME = "exposureLayerUserName";
 
     private final Tracer itsTracer;
     private final HttpPost itsDeliveryReceiptHttpMethod;
@@ -105,9 +107,12 @@ public final class DeliveryReceiptHttpNotification {
                 itsTracer.warning("Unable to report DR with HTTP. Exposure Layer Data is not set.");
                 return;
             }
-            json.addProperty(PROPERTY_DELIVERY_RECEIPT_STATUS, aStatus);
+            final SmsExposureLayerData eld = new SmsExposureLayerData(exposureLayerData);
+            json.addProperty(PROPERTY_EXPOSURE_LAYER_MESSAGE_ID, eld.getMessageId());
+            json.addProperty(PROPERTY_CORRELATION_ID, eld.getCorrelationId());
+            json.addProperty(PROPERTY_EXPOSURE_LAYER_USER_NAME, eld.getUserId());
             json.addProperty(PROPERTY_ORIGINAL_REQUEST_USER_NAME, hu.getUserName());
-            json.addProperty(PROPERTY_CORRELATION_ID, parseCorrelationId(new SmsExposureLayerData(exposureLayerData)));
+            json.addProperty(PROPERTY_DELIVERY_RECEIPT_STATUS, aStatus);
             itsDeliveryReceiptHttpMethod.setEntity(new StringEntity(json.toString(), ContentType.APPLICATION_JSON));
             itsHttpClientNio.execute(itsDeliveryReceiptHttpMethod, null, null);
         } catch (NullPointerException | IllegalStateException | SLEEException | StartActivityException
@@ -125,10 +130,6 @@ public final class DeliveryReceiptHttpNotification {
             return null;
         }
         return new HttpPost(url);
-    }
-
-    private static String parseCorrelationId(final SmsExposureLayerData aData) {
-        return aData.getCorrelationId();
     }
 
 }
