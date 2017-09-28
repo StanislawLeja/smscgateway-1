@@ -715,7 +715,14 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
 
         SmsExposureLayerData elData = null;
         if (incomingData.getExposureLayerData() != null) {
-            elData = new SmsExposureLayerData(incomingData.getExposureLayerData());
+            try {
+                elData = new SmsExposureLayerData(incomingData.getExposureLayerData());
+            } catch (SmsExposureLayerDataException e) {
+                if (logger.isWarningEnabled()) {
+                    logger.warning(e.getMessage());
+                }
+                elData = null;
+            }
         }
 
         for (String address : addressList) {

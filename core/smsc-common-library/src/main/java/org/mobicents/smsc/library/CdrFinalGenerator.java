@@ -95,8 +95,12 @@ public class CdrFinalGenerator {
         SmsExposureLayerData objSmsExposureLayerData = null;
         boolean exposureLayerDataSet = false;
         if(smsEvent.getExposureLayerData() != null){
-            objSmsExposureLayerData = new SmsExposureLayerData(smsEvent.getExposureLayerData());
-            exposureLayerDataSet = true;
+            try {
+                objSmsExposureLayerData = new SmsExposureLayerData(smsEvent.getExposureLayerData());
+                exposureLayerDataSet = true;
+            } catch (SmsExposureLayerDataException e) {
+                exposureLayerDataSet = false;
+            }
         }
 
         long el_api_start;

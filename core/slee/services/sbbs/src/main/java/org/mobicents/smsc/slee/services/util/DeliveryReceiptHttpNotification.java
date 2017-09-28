@@ -36,6 +36,7 @@ import org.mobicents.smsc.domain.HttpUsersManagementMBean;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsExposureLayerData;
+import org.mobicents.smsc.library.SmsExposureLayerDataException;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.restcomm.slee.ra.httpclient.nio.ratype.HttpClientNIOResourceAdaptorSbbInterface;
 import org.restcomm.slee.ra.httpclient.nio.ratype.HttpClientNIOResourceAdaptorType;
@@ -111,7 +112,7 @@ public final class DeliveryReceiptHttpNotification {
             itsDeliveryReceiptHttpMethod.setEntity(new StringEntity(json.toString(), ContentType.APPLICATION_JSON));
             itsHttpClientNio.execute(itsDeliveryReceiptHttpMethod, null, null);
         } catch (NullPointerException | IllegalStateException | SLEEException | StartActivityException
-                | PersistenceException e) {
+                | PersistenceException |SmsExposureLayerDataException e) {
             itsTracer.warning("Unable to report DR with HTTP. Message: " + e.getMessage() + ".", e);
         }
     }

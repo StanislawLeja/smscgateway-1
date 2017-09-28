@@ -58,13 +58,13 @@ public class CdrDetailedGenerator {
         int NetworkId = sms.getOrigNetworkId();
 
         SmsExposureLayerData objSmsExposureLayerData = null;
-        boolean exposureLayerDataSet = false;
         if(sms.getExposureLayerData() != null){
-            objSmsExposureLayerData = new SmsExposureLayerData(sms.getExposureLayerData());
-            exposureLayerDataSet = true;
-            EL_messageId = objSmsExposureLayerData.getMessageId();
-            EL_correlationId = objSmsExposureLayerData.getCorrelationId();
-
+            try {
+                objSmsExposureLayerData = new SmsExposureLayerData(sms.getExposureLayerData());
+                EL_messageId = objSmsExposureLayerData.getMessageId();
+                EL_correlationId = objSmsExposureLayerData.getCorrelationId();
+            } catch (SmsExposureLayerDataException e) {
+            }
         }
 
         if (!generateDetailedCdr) {

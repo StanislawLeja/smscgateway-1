@@ -32,7 +32,7 @@ import org.testng.annotations.Test;
 public class SmsExposureLayerDataTest {
 
     @Test(groups = { "SmsSet" })
-    public void testExposureLayerDataParse() {
+    public void testExposureLayerDataParse() throws Exception {
 
         String messageId = "123456";
         String correlationId = "112233";
