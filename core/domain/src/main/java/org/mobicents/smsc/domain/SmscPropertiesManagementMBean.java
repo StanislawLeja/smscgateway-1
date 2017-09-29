@@ -1,8 +1,8 @@
 /*
- * TeleStax, Open Source Cloud Communications  
- * Copyright 2012, Telestax Inc and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * Telestax, Open Source Cloud Communications Copyright 2011-2017,
+ * Telestax Inc and individual contributors by the @authors tag.
+ * See the copyright.txt in the distribution for a full listing of
+ * individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -396,7 +396,7 @@ public interface SmscPropertiesManagementMBean {
     public void setCassandraPass(String pass) throws  IllegalArgumentException;
 
     public String getCassandraPass();
-
+    
     /**
      * Sets the delivery receipt HTTP notification URL.
      *
@@ -410,5 +410,19 @@ public interface SmscPropertiesManagementMBean {
      * @return the delivery receipt HTTP notification URL
      */
     String getDeliveryReceiptHttpNotificationUrl();
+
+    /**
+     * Gets the delivery receipt notification application SID.
+     *
+     * @return the delivery receipt notification application SID
+     */
+    String getDeliveryReceiptHttpNotificationAppSid();
+    
+    /**
+     * Sets the delivery receipt notification application SID.
+     *
+     * @param anApplicationSid the new delivery receipt notification application SID
+     */
+    void setDeliveryReceiptHttpNotificationAppSid(String anApplicationSid);
 
 }

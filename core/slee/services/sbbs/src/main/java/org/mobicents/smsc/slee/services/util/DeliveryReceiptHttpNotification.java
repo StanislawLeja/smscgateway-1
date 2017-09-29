@@ -55,9 +55,11 @@ public final class DeliveryReceiptHttpNotification {
     private static final String PROPERTY_ORIGINAL_REQUEST_USER_NAME = "originalRequestUserName";
     private static final String PROPERTY_EXPOSURE_LAYER_MESSAGE_ID = "exposureLayerMessageId";
     private static final String PROPERTY_EXPOSURE_LAYER_USER_NAME = "exposureLayerUserName";
+    private static final String PROPERTY_EXPOSURE_LAYER_APPLICATION_SID = "appSid";
 
     private final Tracer itsTracer;
     private final HttpPost itsDeliveryReceiptHttpMethod;
+    private final String itsDeliveryReceiptApplicationSid;
     private final PersistenceRAInterface itsPersistenceRa;
     private final HttpUsersManagementMBean itsHttpUsersManagement;
     private final HttpClientNIOResourceAdaptorSbbInterface itsHttpClientNio;
@@ -75,6 +77,7 @@ public final class DeliveryReceiptHttpNotification {
         itsTracer = aTracer;
         itsHttpUsersManagement = HttpUsersManagement.getInstance();
         itsDeliveryReceiptHttpMethod = getPost(anSmscProperties);
+        itsDeliveryReceiptApplicationSid = anSmscProperties.getDeliveryReceiptHttpNotificationAppSid();
         itsHttpClientNio = (HttpClientNIOResourceAdaptorSbbInterface) aContext
                 .getResourceAdaptorInterface(HttpClientNIOResourceAdaptorType.ID, HTTP_CLIENT_NIO_RA_LINK);
         itsPersistenceRa = aPersistenceRa;
@@ -114,10 +117,13 @@ public final class DeliveryReceiptHttpNotification {
             json.addProperty(PROPERTY_EXPOSURE_LAYER_USER_NAME, eld.getUserId());
             json.addProperty(PROPERTY_ORIGINAL_REQUEST_USER_NAME, hu.getUserName());
             json.addProperty(PROPERTY_DELIVERY_RECEIPT_STATUS, aStatus);
+            if (itsDeliveryReceiptApplicationSid != null) {
+                json.addProperty(PROPERTY_EXPOSURE_LAYER_APPLICATION_SID, itsDeliveryReceiptApplicationSid);
+            }
             itsDeliveryReceiptHttpMethod.setEntity(new StringEntity(json.toString(), ContentType.APPLICATION_JSON));
             itsHttpClientNio.execute(itsDeliveryReceiptHttpMethod, null, null);
         } catch (NullPointerException | IllegalStateException | SLEEException | StartActivityException
-                | PersistenceException |SmsExposureLayerDataException e) {
+                | PersistenceException | SmsExposureLayerDataException e) {
             itsTracer.warning("Unable to report DR with HTTP. Message: " + e.getMessage() + ".", e);
         }
     }
