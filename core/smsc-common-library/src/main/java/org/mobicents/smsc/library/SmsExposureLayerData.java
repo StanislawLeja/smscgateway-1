@@ -38,15 +38,21 @@ public class SmsExposureLayerData {
     private final String DATA_SEPARATOR = ":";
     private final String IDS_SEPARATOR = ",";
 
-    public SmsExposureLayerData(String elDataString) throws NumberFormatException {
+    public SmsExposureLayerData(String elDataString) throws SmsExposureLayerDataException {
         String[] splitted = elDataString.split(DATA_SEPARATOR);
-        if (splitted.length >= 6) {
-            messageId = splitted[0];
-            correlationId = splitted[1];
-            userId = splitted[2];
-            elApiStart = Long.valueOf(splitted[3]);
-            elQueStart = Long.valueOf(splitted[4]);
-            elQueStop = Long.valueOf(splitted[5]);
+        try {
+            if (splitted.length >= 6) {
+                messageId = splitted[0];
+                correlationId = splitted[1];
+                userId = splitted[2];
+                elApiStart = Long.valueOf(splitted[3]);
+                elQueStart = Long.valueOf(splitted[4]);
+                elQueStop = Long.valueOf(splitted[5]);
+            } else {
+                throw new SmsExposureLayerDataException("Not enough parameters in exposure layer data");
+            }
+        } catch (NumberFormatException e) {
+            throw new SmsExposureLayerDataException("Incorrect exposure layer data");
         }
     }
 
