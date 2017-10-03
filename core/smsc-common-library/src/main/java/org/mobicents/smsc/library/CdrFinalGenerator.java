@@ -83,6 +83,9 @@ public class CdrFinalGenerator {
             String[] parts = destAddrAndPort.split(":");
             destIP = parts[0];
             destPort = parts[1];
+        }else{
+            destIP = smsEvent.getDestIP();
+            destPort = smsEvent.getDestPort();
         }
 
         String sourceIP = null, sourcePort = null;
@@ -90,6 +93,9 @@ public class CdrFinalGenerator {
             String[] parts = sourceAddrAndPort.split(":");
             sourceIP = parts[0];
             sourcePort = parts[1];
+        }else{
+            sourceIP = smsEvent.getSourceIP();
+            sourcePort = smsEvent.getSourcePort();
         }
 
         SmsExposureLayerData objSmsExposureLayerData = null;

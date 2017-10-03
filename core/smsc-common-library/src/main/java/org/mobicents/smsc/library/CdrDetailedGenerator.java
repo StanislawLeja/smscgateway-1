@@ -102,6 +102,15 @@ public class CdrDetailedGenerator {
             String[] parts = destAddrAndPort.split(":");
             destIP = parts[0];
             destPort = parts[1];
+            if(sms.getDestIP() == null){
+                sms.setDestIP(destIP);
+        }
+            if(sms.getDestPort() == null){
+                sms.setDestPort(destPort);
+            }
+        }else{
+            destIP = sms.getDestIP();
+            destPort = sms.getDestPort();
         }
 
         String sourceIP = null, sourcePort = null;
@@ -109,6 +118,15 @@ public class CdrDetailedGenerator {
             String[] parts = sourceAddrAndPort.split(":");
             sourceIP = parts[0];
             sourcePort = parts[1];
+            if(sms.getSourceIP() == null){
+                sms.setSourceIP(sourceIP);
+        }
+            if(sms.getSourcePort() == null){
+                sms.setSourcePort(sourcePort);
+            }
+        }else{
+            sourceIP = sms.getSourceIP();
+            sourcePort = sms.getSourcePort();
         }
 
         String timestampA = null, timestampB = null, timestampC = null;

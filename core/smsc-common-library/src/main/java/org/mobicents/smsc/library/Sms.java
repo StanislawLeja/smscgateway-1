@@ -917,6 +917,41 @@ public class Sms implements Serializable {
 
 
 
+
+	public String getDestIP() {
+		return this.extraData.getDestIP();
+	}
+
+	public void setDestIP(String destIP) {
+		this.extraData.setDestIP(destIP);
+	}
+
+	public String getDestPort() {
+		return this.extraData.getDestPort();
+	}
+
+	public void setDestPort(String destPort) {
+		this.extraData.setDestPort(destPort);
+	}
+
+	public String getSourceIP() {
+		return this.extraData.getSourceIP();
+	}
+
+	public void setSourceIP(String sourceIP) {
+		this.extraData.setSourceIP(sourceIP);
+	}
+
+	public String getSourcePort() {
+		return this.extraData.getSourcePort();
+	}
+
+	public void setSourcePort(String sourcePort) {
+		this.extraData.setSourcePort(sourcePort);
+	}
+
+
+
     public String getExtraData() {
         if (this.extraData.isEmpty()) {
             return null;
