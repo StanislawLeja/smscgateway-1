@@ -45,6 +45,10 @@ public class SmsExtraData {
     public static final String GW_OUT_STOP = "gwOutStop";
     public static final String OC_DIA_START = "ocDiaStart";
     public static final String OC_DIA_STOP = "ocDiaStop";
+    public static final String DEST_IP = "destIP";
+    public static final String DEST_PORT = "destPort";
+    public static final String SOURCE_IP = "sourceIP";
+    public static final String SOURCE_PORT = "sourcePort";
 
 
     public static final String ZERO_STRING = null;
@@ -67,11 +71,19 @@ public class SmsExtraData {
     private long ocDiaStart;
     private long ocDiaStop;
 
+
+    private String destIP;
+    private String destPort;
+    private String sourceIP;
+    private String sourcePort;
+
+
     public boolean isEmpty() {
         if (this.mprocNotes != null || this.originationType != null || this.receiptLocalMessageId != null 
         		|| this.timestampA != 0 || this.timestampB != 0 || this.timestampC != 0 || this.gwIncStart != 0
                 || this.gwIncStop != 0 || this.gwQueStart != 0 || this.gwQueStop != 0 || this.gwOutStart != 0
-                || this.gwOutStop != 0 || this.ocDiaStart != 0 || this.ocDiaStop != 0 )
+                || this.gwOutStop != 0 || this.ocDiaStart != 0 || this.ocDiaStop != 0 || this.destIP != null
+                || this.destPort != null || this.sourceIP != null || this.sourcePort != null)
             return false;
         else
             return true;
@@ -92,6 +104,10 @@ public class SmsExtraData {
         gwOutStop = 0;
         ocDiaStart = 0;
         ocDiaStop = 0;
+        destIP = null;
+        destPort = null;
+        sourceIP = null;
+        sourcePort = null;
     }
 
     public String getMprocNotes() {
@@ -211,9 +227,30 @@ public class SmsExtraData {
             sb.append("ocDiaStart=");
             sb.append(ocDiaStart);
             sb.append(", ");
-        }if (ocDiaStop != 0) {
+        }
+        if (ocDiaStop != 0) {
             sb.append("ocDiaStop=");
             sb.append(ocDiaStop);
+            sb.append(", ");
+        }
+        if (destIP != null) {
+            sb.append("destIP=");
+            sb.append(destIP);
+            sb.append(", ");
+        }
+        if (destPort != null) {
+            sb.append("destPort=");
+            sb.append(destPort);
+            sb.append(", ");
+        }
+        if (sourceIP != null) {
+            sb.append("sourceIP=");
+            sb.append(sourceIP);
+            sb.append(", ");
+        }
+        if (sourcePort != null) {
+            sb.append("sourcePort=");
+            sb.append(sourcePort);
             sb.append(", ");
         }
         sb.append("]");
@@ -245,6 +282,10 @@ public class SmsExtraData {
             extraData.gwOutStop = xml.get(GW_OUT_STOP,Long.class);
             extraData.ocDiaStart = xml.get(OC_DIA_START,Long.class);
             extraData.ocDiaStop = xml.get(OC_DIA_STOP,Long.class);
+            extraData.destIP = xml.get(DEST_IP,String.class);
+            extraData.destPort = xml.get(DEST_PORT,String.class);
+            extraData.sourceIP = xml.get(SOURCE_IP,String.class);
+            extraData.sourcePort = xml.get(SOURCE_PORT,String.class);
         }
 
         @Override
@@ -291,6 +332,18 @@ public class SmsExtraData {
          //   if (extraData.ocDiaStop != 0){
                 xml.add(extraData.ocDiaStop, OC_DIA_STOP, Long.class);
          //   }
+            //   if (extraData.ocDiaStop != 0){
+                xml.add(extraData.destIP, DEST_IP, String.class);
+            //   }
+            //   if (extraData.ocDiaStop != 0){
+                xml.add(extraData.destPort, DEST_PORT, String.class);
+            //   }
+            //   if (extraData.ocDiaStop != 0){
+                xml.add(extraData.sourceIP, SOURCE_IP, String.class);
+            //   }
+            //   if (extraData.ocDiaStop != 0){
+                xml.add(extraData.sourcePort, SOURCE_PORT, String.class);
+            //   }
         }
     };
 
@@ -356,5 +409,37 @@ public class SmsExtraData {
 
     public void setOcDiaStop(long ocDiaStop) {
         this.ocDiaStop = ocDiaStop;
+    }
+
+    public String getDestIP() {
+        return destIP;
+    }
+
+    public void setDestIP(String destIP) {
+        this.destIP = destIP;
+    }
+
+    public String getDestPort() {
+        return destPort;
+    }
+
+    public void setDestPort(String destPort) {
+        this.destPort = destPort;
+    }
+
+    public String getSourceIP() {
+        return sourceIP;
+    }
+
+    public void setSourceIP(String sourceIP) {
+        this.sourceIP = sourceIP;
+    }
+
+    public String getSourcePort() {
+        return sourcePort;
+    }
+
+    public void setSourcePort(String sourcePort) {
+        this.sourcePort = sourcePort;
     }
 }
