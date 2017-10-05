@@ -19,33 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package pl.ovoo.unifonic.service.smsc.status;
+package org.mobicents.smsc.slee.service.smsc.status;
 
+import net.java.slee.resource.http.events.HttpServletRequestEvent;
+
+import javax.management.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.slee.*;
+import javax.slee.facilities.FacilityException;
+import javax.slee.facilities.Tracer;
+import javax.slee.serviceactivity.ServiceStartedEvent;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.slee.ActivityContextInterface;
-import javax.slee.ActivityEndEvent;
-import javax.slee.EventContext;
-import javax.slee.InitialEventSelector;
-import javax.slee.RolledBackContext;
-import javax.slee.Sbb;
-import javax.slee.SbbContext;
-import javax.slee.facilities.FacilityException;
-import javax.slee.facilities.Tracer;
-import javax.slee.serviceactivity.ServiceStartedEvent;
-
-import net.java.slee.resource.http.events.HttpServletRequestEvent;
 
 /**
  * The Class UnifonicSmscStatusSbb.

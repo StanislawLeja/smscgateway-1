@@ -1,20 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
     COPYRIGHT Ovoo Sp. z o. o. 2017.
     The copyright to the computer program(s) herein is the property of Ovoo.
     The programs may be used and/or copied only with written permission from
     Ovoo.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
-        <groupId>pl.ovoo.unifonic</groupId>
-        <artifactId>unifonic-slee-service-smsc-status</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-        <relativePath>..</relativePath>
+        <groupId>org.mobicents.smsc</groupId>
+        <artifactId>services-parent</artifactId>
+        <version>7.4.0-SNAPSHOT</version>
     </parent>
-    <artifactId>unifonic-slee-service-smsc-status-sbb</artifactId>
-    <name>Unifonic SLEE Service SMSC Status SBB</name>
+
+    <artifactId>smsc-status-sbb</artifactId>
+    <name>Core : SLEE : Service SMSC Status SBB</name>
+
     <dependencies>
         <dependency>
             <groupId>javax.slee</groupId>
@@ -24,13 +26,13 @@
         <dependency>
             <groupId>org.mobicents.resources</groupId>
             <artifactId>http-servlet-events</artifactId>
+            <version>${org.mobicents.http.ra.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.servlet</groupId>
                     <artifactId>servlet-api</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jboss.web</groupId>
@@ -38,4 +40,12 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
 </project>

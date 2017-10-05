@@ -32,6 +32,7 @@
 		<module>homeroutingsbb</module>
 
 		<module>du</module>
+		<module>smscstatussbb</module>
 	</modules>
 
 	<dependencyManagement>

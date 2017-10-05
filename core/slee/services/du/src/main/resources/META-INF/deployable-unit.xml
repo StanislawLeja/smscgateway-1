@@ -9,5 +9,6 @@
 	<jar>jars/rx-smppserver-sbb-6.1.2-RestComm-SNAPSHOT.jar</jar>
 	<jar>jars/persistence-sbb-6.1.2-RestComm-SNAPSHOT.jar</jar>
 	<jar>jars/mo-sbb-6.1.2-RestComm-SNAPSHOT.jar</jar>
+	<jar>jars/unifonic-slee-service-smsc-status-sbb-7.4.0-SNAPSHOT.jar</jar>
 	<service-xml>services/service.xml</service-xml>
 </deployable-unit>
