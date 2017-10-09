@@ -1455,6 +1455,9 @@ public abstract class DeliveryCommonSbb implements Sbb {
                             MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()), false, true,
                             smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
                             smscPropertiesManagement.getDelayParametersInCdr());
+                    CdrFinalGenerator.generateFinalCdr(sms,  status, s1, smscPropertiesManagement.getGenerateReceiptCdr(),
+                            false, true, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                            smscPropertiesManagement.getDelayParametersInCdr(), null, null, smscPropertiesManagement.getGenerateFinalCdr());
                     return;
                 }
             }
@@ -1470,6 +1473,9 @@ public abstract class DeliveryCommonSbb implements Sbb {
             CdrGenerator.generateCdr(sms, status, s1, smscPropertiesManagement.getGenerateReceiptCdr(),
                     MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()), false, true,
                     smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr());
+            CdrFinalGenerator.generateFinalCdr(sms,  status, s1, smscPropertiesManagement.getGenerateReceiptCdr(),
+                    false, true, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                    smscPropertiesManagement.getDelayParametersInCdr(), null, null, smscPropertiesManagement.getGenerateFinalCdr());
             return;
         }
     }
@@ -1529,7 +1535,7 @@ public abstract class DeliveryCommonSbb implements Sbb {
                                String destAddrAndPort) {
         CdrFinalGenerator.generateFinalCdr(sms, status, reason, smscPropertiesManagement.getGenerateReceiptCdr(), messageIsSplitted,
                 lastSegment, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
-                smscPropertiesManagement.getDelayParametersInCdr(), sms, null, destAddrAndPort, smscPropertiesManagement.getGenerateFinalCdr());
+                smscPropertiesManagement.getDelayParametersInCdr(), null, destAddrAndPort, smscPropertiesManagement.getGenerateFinalCdr());
     }
 
     /**
@@ -1544,6 +1550,9 @@ public abstract class DeliveryCommonSbb implements Sbb {
             CdrGenerator.generateCdr(sms, status, reason, smscPropertiesManagement.getGenerateReceiptCdr(),
                     MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()), false, true,
                     smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr());
+            CdrFinalGenerator.generateFinalCdr(sms, status, reason, smscPropertiesManagement.getGenerateReceiptCdr(), false,
+                    true, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                    smscPropertiesManagement.getDelayParametersInCdr(), null, null, smscPropertiesManagement.getGenerateFinalCdr());
         }
     }
 

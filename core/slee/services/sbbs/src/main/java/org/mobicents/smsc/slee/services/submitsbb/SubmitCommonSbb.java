@@ -474,6 +474,10 @@ public abstract class SubmitCommonSbb implements Sbb {
                     aReason, smscPropertiesManagement.getGenerateReceiptCdr(),
                     MessageUtil.isNeedWriteArchiveMessage(anSms, smscPropertiesManagement.getGenerateCdr()), false, true,
                     smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr());
+            CdrFinalGenerator.generateFinalCdr(anSms, (anMProcResult.isMessageRejected() ? CdrGenerator.CDR_MPROC_REJECTED : CdrGenerator.CDR_MPROC_DROPPED),
+                    aReason, smscPropertiesManagement.getGenerateReceiptCdr(),
+                    false, true, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                    smscPropertiesManagement.getDelayParametersInCdr(), null, null, smscPropertiesManagement.getGenerateFinalCdr());
         }
         throw e;
     }
