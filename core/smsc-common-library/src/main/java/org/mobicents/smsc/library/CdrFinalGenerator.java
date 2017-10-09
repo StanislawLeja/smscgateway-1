@@ -170,7 +170,11 @@ public class CdrFinalGenerator {
             }
         }
 
-        T4 = oc_dia_stop - oc_dia_start;
+        if(oc_dia_stop == 0 || oc_dia_start == 0){
+            T4 = 0;
+        }else{
+            T4 = oc_dia_stop - oc_dia_start;
+        }
         if(gw_inc_stop == 0 || gw_inc_start == 0){
             T5 = 0;
         }else {
