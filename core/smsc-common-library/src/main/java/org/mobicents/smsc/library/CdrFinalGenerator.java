@@ -129,8 +129,8 @@ public class CdrFinalGenerator {
         long gw_que_stop = smsEvent.getGwQueStop();
         long gw_out_start = smsEvent.getGwOutStart();
         long gw_out_stop = smsEvent.getGwOutStop();
-        long oc_dia_start = 0;
-        long oc_dia_stop = 0;
+        long oc_dia_start = smsEvent.getOcDiaStart();
+        long oc_dia_stop = smsEvent.getOcDiaStop();
 
         long T1,T3,T4,T5,T8,T9,T10,T11,T12;
 
@@ -284,9 +284,9 @@ public class CdrFinalGenerator {
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(smsEvent.getGwOutStop() >0 ? DATE_FORMAT.format(smsEvent.getGwOutStop()) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(CdrFinalGenerator.CDR_EMPTY)//// TODO: 22.09.17   add OCDiaStart
+                .append(oc_dia_start >0 ? DATE_FORMAT.format(oc_dia_start) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(CdrFinalGenerator.CDR_EMPTY)//// TODO: 22.09.17 add OCDiaStop
+                .append(oc_dia_stop >0 ? DATE_FORMAT.format(oc_dia_stop) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(exposureLayerDataSet == true ? DATE_FORMAT.format(objSmsExposureLayerData.getElApiStart()) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
@@ -312,6 +312,7 @@ public class CdrFinalGenerator {
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(T12 != 0 ? T12 : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR);
+
 
         CdrFinalGenerator.generateFinalCdr(sb.toString());
     }
