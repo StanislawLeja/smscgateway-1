@@ -448,6 +448,7 @@ public abstract class ChargingSbb implements Sbb {
             logger.severe("setupChargingRequestInterface(): error while sending RoCreditControlRequest: " + e1.getMessage(),
                     e1);
             generateCDR(sms, CdrGenerator.CDR_SUBMIT_FAILED_CHARGING, e1.getMessage(), false, true);
+            generateFinalCDR(sms, CdrGenerator.CDR_SUBMIT_FAILED_CHARGING, e1.getMessage(), false, true);
         }
     }
 
@@ -657,6 +658,7 @@ public abstract class ChargingSbb implements Sbb {
         } catch (PersistenceException e) {
             if (sms0 != null) {
                 generateCDR(sms0, CdrGenerator.CDR_SUBMIT_FAILED_CHARGING, e.getMessage(), false, true);
+                generateFinalCDR(sms0, CdrGenerator.CDR_SUBMIT_FAILED_CHARGING, e.getMessage(), false, true);
             }
             throw new SmscProcessingException("PersistenceException when storing LIVE_SMS : " + e.getMessage(),
                     SmppConstants.STATUS_SUBMITFAIL, MAPErrorCode.systemFailure,
@@ -740,6 +742,9 @@ public abstract class ChargingSbb implements Sbb {
                     smscPropertiesManagement.getGenerateReceiptCdr(),
                     MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()), false, true,
                     smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr());
+            CdrFinalGenerator.generateFinalCdr(sms,  CdrGenerator.CDR_OCS_REJECTED, CdrGenerator.CDR_SUCCESS_NO_REASON,
+                    smscPropertiesManagement.getGenerateReceiptCdr(), false, true, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                    smscPropertiesManagement.getDelayParametersInCdr(), null, null, smscPropertiesManagement.getGenerateFinalCdr());
 
         } catch (PersistenceException e) {
             throw new SmscProcessingException(
@@ -759,6 +764,9 @@ public abstract class ChargingSbb implements Sbb {
                 "Message is rejected by MProc rules.", smscPropertiesManagement.getGenerateReceiptCdr(),
                 MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()), false, true,
                 smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr());
+        CdrFinalGenerator.generateFinalCdr(sms,  (isRejected ? CdrGenerator.CDR_MPROC_REJECTED : CdrGenerator.CDR_MPROC_DROPPED), "Message is rejected by MProc rules.",
+                smscPropertiesManagement.getGenerateReceiptCdr(), false, true, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                smscPropertiesManagement.getDelayParametersInCdr(), null, null, smscPropertiesManagement.getGenerateFinalCdr());
 
         try {
             // sending of a failure response for transactional mode / delaying for charging result
@@ -828,6 +836,10 @@ public abstract class ChargingSbb implements Sbb {
                     CdrGenerator.CDR_SUCCESS_NO_REASON, smscPropertiesManagement.getGenerateReceiptCdr(),
                     MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()), false, true,
                     smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr());
+            CdrFinalGenerator.generateFinalCdr(sms,  (isRejected ? CdrGenerator.CDR_MPROC_REJECTED : CdrGenerator.CDR_MPROC_DROPPED),
+                    CdrGenerator.CDR_SUCCESS_NO_REASON, smscPropertiesManagement.getGenerateReceiptCdr(), false, true,
+                    smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr(),
+                    null, null, smscPropertiesManagement.getGenerateFinalCdr());
         } catch (PersistenceException e) {
             throw new SmscProcessingException(
                     "PersistenceException when storing into Archive rejected by MProc message : " + e.getMessage(),
@@ -846,6 +858,15 @@ public abstract class ChargingSbb implements Sbb {
                 lastSegment, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
                 smscPropertiesManagement.getDelayParametersInCdr());
     }
+
+    private void generateFinalCDR(Sms sms, String status, String reason, boolean messageIsSplitted, boolean lastSegment) {
+        CdrFinalGenerator.generateFinalCdr(sms,  status, reason, smscPropertiesManagement.getGenerateReceiptCdr(), messageIsSplitted, lastSegment,
+                smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr(),
+                null, null, smscPropertiesManagement.getGenerateFinalCdr());
+    }
+
+
+
 
     public enum AddressTypeEnum implements net.java.slee.resource.diameter.base.events.avp.Enumerated {
         Msisdn(1), Others(6);

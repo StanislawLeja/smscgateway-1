@@ -630,6 +630,10 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
         CdrGenerator.generateCdr(senderId, senderTon, senderNpi, destAddresses[0], 0, 0, OriginationType.HTTP, null, null, null,
                 0, 0, null, 0, message, status, reason, true, true, lastSegment,
                 smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr());
+        CdrFinalGenerator.generateFinalCdr(senderId, senderTon, senderNpi, destAddresses[0], 0, 0, OriginationType.HTTP, null, null, null,
+                0, 0, null, 0, message, status, reason, true, lastSegment,
+                smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr(),null,
+                null, null, 0L, null, smscPropertiesManagement.getGenerateFinalCdr());
     }
 
     private void generateCDR(HttpSendMessageIncomingData data, String status, String reason, boolean lastSegment) {
@@ -638,6 +642,12 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
                 data.getDestAddresses().get(0), 0, 0, OriginationType.HTTP, null, null, null, 0, 0, null, 0,
                 data.getShortMessage(), status, reason, true, true, lastSegment,
                 smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr());
+
+        CdrFinalGenerator.generateFinalCdr(data.getSender(), data.getSenderTon().getCode(), data.getSenderNpi().getCode(),
+                data.getDestAddresses().get(0), 0, 0, OriginationType.HTTP, null, null, null, 0, 0, null, 0,
+                data.getShortMessage(), status, reason, true, lastSegment,
+                smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr(),null,
+                null, null, 0L, null, smscPropertiesManagement.getGenerateFinalCdr());
     }
 
     @Override

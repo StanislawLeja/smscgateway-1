@@ -27,12 +27,12 @@ public class CdrFinalGenerator {
 
     public static void generateFinalCdr(Sms smsEvent, String status, String reason, boolean generateReceiptCdr,
                                         boolean messageIsSplitted, boolean lastSegment,
-                                        boolean calculateMsgPartsLenCdr, boolean delayParametersInCdr, Sms sms,
+                                        boolean calculateMsgPartsLenCdr, boolean delayParametersInCdr,
                                         String sourceAddrAndPort, String destAddrAndPort,
                                         boolean generateFinalCdr) {
         generateFinalCdr(smsEvent,status,reason,generateReceiptCdr,messageIsSplitted,lastSegment,
-                calculateMsgPartsLenCdr,delayParametersInCdr, sms.isMcDeliveryReceipt(), sms.getTlvSet(),
-                sms.getOrigEsmeName(), sourceAddrAndPort, destAddrAndPort, generateFinalCdr);
+                calculateMsgPartsLenCdr,delayParametersInCdr, smsEvent.isMcDeliveryReceipt(), smsEvent.getTlvSet(),
+                smsEvent.getOrigEsmeName(), sourceAddrAndPort, destAddrAndPort, generateFinalCdr);
     }
 
     public static void generateFinalCdr(Sms smsEvent, String status, String reason, boolean generateReceiptCdr,
@@ -289,6 +289,234 @@ public class CdrFinalGenerator {
                 .append(exposureLayerDataSet == true ? DATE_FORMAT.format(objSmsExposureLayerData.getElQueStart()) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(exposureLayerDataSet == true ? DATE_FORMAT.format(objSmsExposureLayerData.getElQueStop()) : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T1 != 0 ? T1 : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T3 != 0 ? T3 : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T4 != 0 ? T4 : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T5 != 0 ? T5 : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T8 != 0 ? T8 : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T9 != 0 ? T9 : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T10 != 0 ? T10 : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T11 != 0 ? T11 : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(T12 != 0 ? T12 : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR);
+
+        CdrFinalGenerator.generateFinalCdr(sb.toString());
+    }
+
+
+
+    public static void generateFinalCdr(String sourceAddr, int sourceAddressTon, int sourceAddrNpi, String destAddr, int destAddrTon,
+                                        int destAddrNpi, OriginationType originationType, String origSystemId, String imsi,
+                                        String originatorSccpAddress, int origNetworkId, int networkId, Date scheduleDeliveryTime,
+                                        int deliveryCount, String message, String status, String reason, boolean generateReceiptCdr,
+                                        boolean lastSegment, boolean calculateMsgPartsLenCdr, boolean delayParametersInCdr,
+                                        String sourceAddrAndPort, String destAddrAndPort,String origEsmeName,Long receiptLocalMessageId,
+                                        DeliveryReceiptData deliveryReceiptData, boolean generateFinalCdr) {
+
+        if (!generateFinalCdr || !generateReceiptCdr)
+            return;
+
+        int msgParts = 0;
+        int charNumbers = 0;
+
+        String st = null;
+        int tlvMessageState = -1;
+        int err = -1;
+
+        if (deliveryReceiptData != null) {
+            st = deliveryReceiptData.getStatus();
+            tlvMessageState = deliveryReceiptData.getTlvMessageState() == null ? -1 : deliveryReceiptData.getTlvMessageState();
+            err = deliveryReceiptData.getError();
+        }
+
+        String destIP = null, destPort = null;
+        if (destAddrAndPort != null) {
+            String[] parts = destAddrAndPort.split(":");
+            destIP = parts[0];
+            destPort = parts[1];
+        }
+
+        String sourceIP = null, sourcePort = null;
+        if (sourceAddrAndPort != null) {
+            String[] parts = sourceAddrAndPort.split(":");
+            sourceIP = parts[0];
+            sourcePort = parts[1];
+        }
+
+        long gw_inc_start = 0;
+        long gw_inc_stop = 0;
+        long gw_que_start = 0;
+        long gw_que_stop = 0;
+        long gw_out_start = 0;
+        long gw_out_stop = 0;
+        long oc_dia_start = 0;
+        long oc_dia_stop = 0;
+
+        long el_api_start = 0;
+        long el_que_start = 0;
+        long el_que_stop = 0;
+
+
+        long T1,T3,T4,T5,T8,T9,T10,T11,T12;
+
+        if(gw_que_start == 0 || gw_que_stop == 0){
+            gw_que_start = 0;
+            gw_que_stop = 0;
+        }
+        if(el_que_start == 0 || el_que_stop == 0){
+            el_que_start = 0;
+            el_que_stop = 0;
+        }
+        if(gw_out_stop == 0){
+            T1 = 0;
+            T3 = 0;
+            T8 = 0;
+            T12 = 0;
+        }else{
+            T3 = gw_out_stop - gw_out_start;
+            if(gw_inc_start == 0){
+                T1 = 0;
+                T8 = 0;
+                T12 = 0;
+            }else{
+                T1 = gw_out_stop - gw_inc_start;
+                T8 = gw_out_stop - gw_inc_start - (gw_que_stop - gw_que_start);
+                T12 = gw_out_stop - gw_inc_start - (gw_que_stop - gw_que_start);
+            }
+        }
+
+        if(oc_dia_stop == 0 || oc_dia_start == 0){
+            T4 = 0;
+        }else{
+            T4 = oc_dia_stop - oc_dia_start;
+        }
+        if(gw_inc_stop == 0 || gw_inc_start == 0){
+            T5 = 0;
+        }else {
+            T5 = gw_inc_stop - gw_inc_start;
+        }
+        T9 = el_que_stop - el_que_start + gw_que_stop - gw_que_start;
+        T10 = el_que_stop - el_que_start;
+        T11  = gw_que_stop - gw_que_start;
+
+        //SplitMessageData splitMessageData = MessageUtil.parseSplitMessageData(smsEvent); todo handle it
+
+        Date submitDate = new Date();
+
+        StringBuffer sb = new StringBuffer();
+        sb.append(DATE_FORMAT.format(submitDate))
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(sourceAddr)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(sourceAddressTon)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(sourceAddrNpi)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(destAddr)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(destAddrTon)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(destAddrNpi)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(status)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(originationType)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append("message")
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(origSystemId)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(CDR_EMPTY)//??
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(origNetworkId)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(networkId)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(msgParts != 0 ? msgParts : msgParts)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(charNumbers != 0 ? msgParts : charNumbers)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(delayParametersInCdr ? getProcessingTime(submitDate) : CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append(delayParametersInCdr ? deliveryCount : CDR_EMPTY)
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append("\"")
+                .append(getEscapedString(getFirst20CharOfSMS(message)))
+                .append("\"")
+                .append(CdrGenerator.CDR_SEPARATOR)
+                .append("\"")
+                .append(getEscapedString(reason))//Reason_For_Failure
+                .append("\"")
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(st != null ? st : CdrFinalGenerator.CDR_EMPTY)//DeliveryState
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(tlvMessageState != -1 ? tlvMessageState : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(err != -1 ? err : CdrFinalGenerator.CDR_EMPTY)// "DeliveryErrorCode"
+                .append(CdrFinalGenerator.CDR_SEPARATOR)//Begining of CdrDetailed
+                .append(origEsmeName)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(sourceAddrAndPort != null ? sourceIP :CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(sourceAddrAndPort != null ? sourcePort :CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(sourceAddrAndPort != null ? destIP :CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(sourceAddrAndPort != null ? destPort :CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)//Begining of only final CDR (GW)
+                .append(CdrFinalGenerator.CDR_EMPTY)//smsEvent.getReroutingCount()
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(CdrFinalGenerator.CDR_EMPTY)//objSmsExposureLayerData.getUserId()
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(CdrFinalGenerator.CDR_EMPTY)//ELProductId
+                //// TODO: 21.09.17  Insert ELProductId from ExposureLayereData
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(CdrFinalGenerator.CDR_EMPTY)//objSmsExposureLayerData.getMessageId()
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(CdrFinalGenerator.CDR_EMPTY)//objSmsExposureLayerData.getCorrelationId()
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(CdrGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(CdrGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(CdrGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(gw_inc_start >0 ? DATE_FORMAT.format(gw_inc_start) : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(gw_inc_stop >0 ? DATE_FORMAT.format(gw_inc_stop) : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(gw_que_start >0 ? DATE_FORMAT.format(gw_que_start) : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(gw_que_stop >0 ? DATE_FORMAT.format(gw_que_stop) : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(gw_out_start >0 ? DATE_FORMAT.format(gw_out_start) : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(gw_out_stop >0 ? DATE_FORMAT.format(gw_out_stop) : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(oc_dia_start >0 ? DATE_FORMAT.format(oc_dia_start) : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(oc_dia_stop >0 ? DATE_FORMAT.format(oc_dia_stop) : CdrFinalGenerator.CDR_EMPTY)
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(el_api_start >0 ? DATE_FORMAT.format(el_api_start) : CdrFinalGenerator.CDR_EMPTY)//objSmsExposureLayerData.getElApiStart()
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(el_que_start >0? DATE_FORMAT.format(el_que_start) : CdrFinalGenerator.CDR_EMPTY)//objSmsExposureLayerData.getElQueStart()
+                .append(CdrFinalGenerator.CDR_SEPARATOR)
+                .append(el_que_stop >0 ? DATE_FORMAT.format(el_que_stop) : CdrFinalGenerator.CDR_EMPTY)//objSmsExposureLayerData.getElQueStop()
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(T1 != 0 ? T1 : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
