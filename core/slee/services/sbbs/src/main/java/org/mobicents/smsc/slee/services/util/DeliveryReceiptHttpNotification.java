@@ -91,6 +91,9 @@ public final class DeliveryReceiptHttpNotification {
      */
     public void handleDeliveryReceiptData(final long aMessageId, final String aStatus) {
         if (itsDeliveryReceiptHttpMethod == null) {
+            if (itsTracer.isFineEnabled()) {
+                itsTracer.fine("Delivery Receipt HTTP Notification is not enabled (no HTTP Post is not initialized.)");
+            }
             return;
         }
         final JsonObject json = new JsonObject();
@@ -118,10 +121,16 @@ public final class DeliveryReceiptHttpNotification {
             json.addProperty(PROPERTY_ORIGINAL_REQUEST_USER_NAME, hu.getUserName());
             json.addProperty(PROPERTY_DELIVERY_RECEIPT_STATUS, aStatus);
             if (itsDeliveryReceiptApplicationSid != null) {
+                if (itsTracer.isFineEnabled()) {
+                    itsTracer.fine("DeliveryReceiptApplicationSid is not set.");
+                }
                 json.addProperty(PROPERTY_EXPOSURE_LAYER_APPLICATION_SID, itsDeliveryReceiptApplicationSid);
             }
             itsDeliveryReceiptHttpMethod.setEntity(new StringEntity(json.toString(), ContentType.APPLICATION_JSON));
             itsHttpClientNio.execute(itsDeliveryReceiptHttpMethod, null, null);
+            if (itsTracer.isFineEnabled()) {
+                itsTracer.fine("Delivery Receipt HTTP Notification [" + json + "] was sent.");
+            }
         } catch (NullPointerException | IllegalStateException | SLEEException | StartActivityException
                 | PersistenceException | SmsExposureLayerDataException e) {
             itsTracer.warning("Unable to report DR with HTTP. Message: " + e.getMessage() + ".", e);
@@ -131,9 +140,11 @@ public final class DeliveryReceiptHttpNotification {
     private HttpPost getPost(final SmscPropertiesManagement anSmscProperties) {
         final String url = anSmscProperties.getDeliveryReceiptHttpNotificationUrl();
         if (url == null) {
+            itsTracer.info("DeliveryReceiptHttpNotificationUrl is not set.");
             return null;
         }
         if (url.isEmpty()) {
+            itsTracer.info("DeliveryReceiptHttpNotificationUrl is empty.");
             return null;
         }
         return new HttpPost(url);
