@@ -399,26 +399,21 @@ where `ESME_NAME, SOURCE_IP, SOURCE_PORT, DEST_IP, DEST_PORT` are as explained i
 
 NOTE: Final CDR once turned on, will only be generated for SMPP (IN and OUT) and HTTP (OUT only) messages like in detailed CDR case. Notice that final CDR has common fields with CDR and DetailedCDR.
 
-.Event type
-Event types can be of two categories - `IN` and `OUT`:
-`IN` event types (a result of message receiving). Only SMPP and HTTP events of this type will be recorded in detailed log.
-
-`IN_SMPP_RECEIVED`:: a message is accepted from SMPP connector and is processed without error.
 
 .REROUTING_COUNT
-toDO: description
+Number of message rerouting attempts.
 
 .EL_USER_ID
-toDO: description
+A userId of a user from Exposure Layer system.
 
 .EL_PRODUCT_ID
-toDO: description
+A productId of a product from Exposure Layer system.
 
 .EL_MESSAAGE_ID
-toDO: description
+A messageId of a message from Exposure Layer system.
 
 .EL_CORRELATION_ID
-toDO: description
+A correlationId of a message from Exposure Layer system.
 
 .UDH_1_MESSAGE_ID_OF_FIRST_PART_OF_MESSAGE
 If message is splitted, ID of the frist part of the message. Otherwise the field will be empty.
