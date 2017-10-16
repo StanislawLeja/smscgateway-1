@@ -1,8 +1,6 @@
 package org.mobicents.smsc.library;
 
 import org.apache.log4j.Logger;
-import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
-import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.smsc.mproc.DeliveryReceiptData;
 import org.mobicents.smsc.utils.SplitMessageData;
 import org.restcomm.smpp.parameter.TlvSet;
@@ -48,15 +46,8 @@ public class CdrFinalGenerator {
             return;
         }
 
-        int msgParts = 0, charNumbers = 0;
+        int charNumbers = 0;
         if (calculateMsgPartsLenCdr) {
-            if (messageIsSplitted) {
-                msgParts = 1;
-            } else {
-                DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(smsEvent.getDataCoding());
-                msgParts = MessageUtil.calculateMsgParts(smsEvent.getShortMessageText(), dataCodingScheme,
-                        smsEvent.getNationalLanguageLockingShift(), smsEvent.getNationalLanguageSingleShift());
-            }
             if (lastSegment) {
                 charNumbers = smsEvent.getShortMessageText().length();
             } else {
@@ -219,8 +210,6 @@ public class CdrFinalGenerator {
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(smsEvent.getMprocNotes())
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(msgParts)
-                .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(charNumbers)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(delayParametersInCdr ? getProcessingTime(smsEvent.getSubmitDate()) : CDR_EMPTY)
@@ -264,7 +253,7 @@ public class CdrFinalGenerator {
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(splitMessageData.isMsgSplitInUse() ? splitMessageData.getSplitedMessageID(): CdrGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(splitMessageData.isMsgSplitInUse() ? splitMessageData.getSplitedMessageParts() : CdrGenerator.CDR_EMPTY)
+                .append(splitMessageData.isMsgSplitInUse() ? splitMessageData.getSplitedMessageParts() : 1)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(splitMessageData.isMsgSplitInUse() ? splitMessageData.getSplitedMessagePartNumber(): CdrGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
