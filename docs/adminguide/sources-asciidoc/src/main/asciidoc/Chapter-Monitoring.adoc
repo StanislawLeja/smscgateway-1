@@ -379,3 +379,112 @@ Port to which message has been sent from SMSC GW if a value is available for a c
 
 .Sequence Number
 This value will be recorded for SMPP messages in both sending and receiving cases.
+
+ [[_monitoring_smsc_cdr_final_log]]
+== Final CDR Log
+
+{this-platform} {this-application} is configured to generate final CDR logs in a plain text file located at [path]_{this-folder}-smscgateway-<version>/jboss-5.1.0.GA/server/<profile>/log/fcdr.log_.
+Final CDR generated in the text file is of the below format:
+----
+
+DELIVERY_DATE, SUBMIT_DATE, ADDR_SRC_DIGITS, ADDR_SRC_TON, ADDR_SRC_NPI, ADDR_DST_DIGITS, ADDR_DST_TON, ADDR_DST_NPI, MESSAGE_DELIVERY_STATUS, ORIGINATION_TYPE, MESSAGE_TYPE, ORIG_SYSTEM_ID, MESSAGE_ID, DVL_MESSAGE_ID, RECEIPT_LOCAL_MESSAGE_ID, ORIG_NETWORK_ID, NETWORK_ID, MPROC_NOTES, MSG_PARTS, CHAR_NUMBERS, PROCESSING_TIME, DELIVERY_COUNT, FIRST_20_CHARACTER_OF_SMS, REASON_FOR_FAILURE, DELIVERY_STATE, TLV_MESSAGE_STATE, DELIVERY_ERROR_CODE, ESME_NAME, SOURCE_IP, SOURCE_PORT, DEST_IP, DEST_PORT, REROUTING_COUNT, EL_USER_ID, EL_PRODUCT_ID, EL_MESSAAGE_ID, EL_CORRELATION_ID, UDH_1_MESSAGE_ID_OF_FIRST_PART_OF_MESSAGE, UDH_2_NUMBER_OF_PARTS, UDH_3_NUMBER_OF_CURRENT_PART, GW_INC_START, GW_INC_STOP, GW_QUE_START, GW_QUE_STOP, GW_OUT_START, GW_OUT_STOP, OC_DIA_START, OC_DIA_STOP, EL_API_START, EL_QUE_START, EL_QUE_STOP, T1, T3, T4, T5, T8, T9, T10, T11, T12
+----
+
+where `ADDR_SRC_DIGITS, ADDR_SRC_TON, ADDR_SRC_NPI, ADDR_DST_DIGITS, ADDR_DST_TON, ADDR_DST_NPI, ORIG_SYSTEM_ID, MESSAGE_ID, ORIG_NETWORK_ID, NETWORK_ID` and `DELIVERY_COUNT` are as explained in <<_slot_messages_table_yyyy_mm_dd>>.
+
+where `MESSAGE_DELIVERY_STATUS, ORIGINATION_TYPE, MESSAGE_TYPE, DVL_MESSAGE_ID, RECEIPT_LOCAL_MESSAGE_ID, MPROC_NOTES 1, CHAR_NUMBERS, PROCESSING_TIME, FIRST_20_CHARACTER_OF_SMS, REASON_FOR_FAILURE, DELIVERY_STATE, TLV_MESSAGE_STATE, DELIVERY_ERROR_CODE` are as explained in <<_monitoring_smsc_cdr_log>>.
+
+where `ESME_NAME, SOURCE_IP, SOURCE_PORT, DEST_IP, DEST_PORT` are as explained in <<_monitoring_smsc_cdr_detailed_log>> and other values are described below in this section.
+
+
+NOTE: Final CDR once turned on, will only be generated for SMPP (IN and OUT) and HTTP (OUT only) messages like in detailed CDR case. Notice that final CDR has common fields with CDR and DetailedCDR.
+
+.Event type
+Event types can be of two categories - `IN` and `OUT`:
+`IN` event types (a result of message receiving). Only SMPP and HTTP events of this type will be recorded in detailed log.
+
+`IN_SMPP_RECEIVED`:: a message is accepted from SMPP connector and is processed without error.
+
+.REROUTING_COUNT
+toDO: description
+
+.EL_USER_ID
+toDO: description
+
+.EL_PRODUCT_ID
+toDO: description
+
+.EL_MESSAAGE_ID
+toDO: description
+
+.EL_CORRELATION_ID
+toDO: description
+
+.UDH_1_MESSAGE_ID_OF_FIRST_PART_OF_MESSAGE
+If message is splitted, ID of the frist part of the message. Otherwise the field will be empty.
+
+.UDH_2_NUMBER_OF_PARTS
+If message is splitted, number of the message parts. Otherwise the value will be equal to 1.
+
+.UDH_3_NUMBER_OF_CURRENT_PART
+If message is splitted, number of the current part. Otherwise the field will be empty.
+
+.GW_INC_START
+Incomming request start (SMPP/HTTP) timestamp.
+
+.GW_INC_STOP
+Incomming request stop (SMPP/HTTP) timestamp.
+
+.GW_QUE_START
+Timestamp of putting the SMS in the queue in the SMSCGW if attempt to send it to the operator was unsuccessful.
+
+.GW_QUE_STOP
+Timestamp of pulling the SMS from the queue in the SMSCGW for another send attempt to the operator.
+
+.GW_OUT_START
+Outgoing request start (SMPP) timestamp.
+
+.GW_OUT_STOP
+Outgoing request stop (SMPP) timestamp.
+
+.OC_DIA_START
+OC request via Diameter start timestamp.
+
+.OC_DIA_STOP
+OC request via Diameter stop timestamp.
+
+.EL_API_START
+EL api start timestamp.
+
+.EL_QUE_START
+Timestamp of putting the SMS in the queue in the EL if attempt to send it to the SMSCGW was unsuccessful.
+
+.EL_QUE_STOP
+Timestamp of pulling the SMS from the queue in the EL for another attempt of sending it.
+
+.T1
+Latency time KPI (Exposure Layer + SMSCGW).
+
+.T3
+SMPP response time from operator KPI.
+
+.T4
+Charging response time KPI.
+
+.T5
+(SMPP/HTTP) response time from clients KPI.
+
+.T8
+Latency time without queuing KPI (Exposure Layer + SMSCGW).
+
+.T9
+Queuing time KPI (El queue + Gw queue).
+
+.T10
+EL queuing KPI.
+
+.T11
+SMSCGW queuing KPI.
+
+.T12
+SMSCGW latency time withou queuing KPI.
