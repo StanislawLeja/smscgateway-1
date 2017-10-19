@@ -91,6 +91,9 @@ public abstract class DeliveryCommonSbb implements Sbb {
     private PendingRequestsList pendingRequestsList;
     private int[] sequenceNumbers;
     private int[][] sequenceNumbersExtra;
+
+    private byte[][][] messagePartsNumbers;
+
     private boolean pendingRequestsListIsLoaded;
     private boolean pendingRequestsListIsDirty;
 
@@ -438,6 +441,7 @@ public abstract class DeliveryCommonSbb implements Sbb {
             pendingRequestsListIsDirty = true;
             pendingRequestsList = null;
             sequenceNumbers = null;
+            messagePartsNumbers = null;
             sequenceNumbersExtra = null;
         }
     }
@@ -492,6 +496,8 @@ public abstract class DeliveryCommonSbb implements Sbb {
 
                     sequenceNumbers = new int[addedMessageCnt];
                     sequenceNumbersExtra = new int[addedMessageCnt][];
+
+                    messagePartsNumbers = new byte[addedMessageCnt][][];
 
                     if (gotMessageCnt > 0) {
                         currentMsgNum += gotMessageCnt;
@@ -567,6 +573,8 @@ public abstract class DeliveryCommonSbb implements Sbb {
 
                     sequenceNumbers = null;
                     sequenceNumbersExtra = null;
+
+                    messagePartsNumbers = null;
 
                     this.rescheduleDeliveryTimer();
 
@@ -710,11 +718,12 @@ public abstract class DeliveryCommonSbb implements Sbb {
      * @param sequenceNumberExtra Extra sequence numbers of a message (2, 3, ... message parts) for which we will be able of
      *        confirming
      */
-    protected void registerMessageInSendingPool(int numInSendingPool, int sequenceNumber, int[] sequenceNumberExtra) {
+    protected void registerMessageInSendingPool(int numInSendingPool, int sequenceNumber, int[] sequenceNumberExtra, byte[][] messagePartsNumber) {
         if (sequenceNumbers != null && sequenceNumbersExtra != null && numInSendingPool >= 0
                 && numInSendingPool < sequenceNumbers.length && numInSendingPool < sequenceNumbersExtra.length) {
             sequenceNumbers[numInSendingPool] = sequenceNumber;
             sequenceNumbersExtra[numInSendingPool] = sequenceNumberExtra;
+            messagePartsNumbers[numInSendingPool] = messagePartsNumber;
         }
     }
 
@@ -725,12 +734,13 @@ public abstract class DeliveryCommonSbb implements Sbb {
     protected void endRegisterMessageInSendingPool() {
         pendingRequestsListIsDirty = true;
         if (sequenceNumbers != null && sequenceNumbersExtra != null) {
-            pendingRequestsList = new PendingRequestsList(sequenceNumbers, sequenceNumbersExtra);
+            pendingRequestsList = new PendingRequestsList(sequenceNumbers, sequenceNumbersExtra,messagePartsNumbers);
         } else {
             pendingRequestsList = null;
         }
         sequenceNumbers = null;
         sequenceNumbersExtra = null;
+        messagePartsNumbers = null;
     }
 
     /**
@@ -756,8 +766,19 @@ public abstract class DeliveryCommonSbb implements Sbb {
             res.sms = getMessageInSendingPool(0);
         }
 
+        res.sms = setUDHInSMS(res.sms,res.messagePartsNumbers);
+
         return res;
     }
+
+    protected Sms setUDHInSMS(Sms sms , byte[] messagePartsNumbers){
+        if(sms.getReceiptLocalMessageId() == null && messagePartsNumbers != null){
+            sms.setEsmClass(67);
+            sms.setShortMessageBin(messagePartsNumbers);
+        }
+        return sms;
+    }
+
 
     // we need to get message by its id without confirming it
     protected ConfirmMessageInSendingPool getMessageInSendingPoolBySeqNumber(int sequenceNumber) {
