@@ -680,9 +680,11 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
                 int sequenceNumber = 0;
                 int[] sequenceNumberExt = null;
+                byte[][] messagePartsNumbers = null;
                 int segmCnt = lstStrings.size();
                 if (segmCnt > 1) {
                     sequenceNumberExt = new int[segmCnt - 1];
+                    messagePartsNumbers = new byte[segmCnt][];
                 }
 
                 for (int segmentIndex = 0; segmentIndex < segmCnt; segmentIndex++) {
@@ -748,8 +750,14 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         }
                         if (segmentIndex == 0) {
                             sequenceNumber = sentSequenceNumber;
+
                         } else {
                             sequenceNumberExt[segmentIndex - 1] = sentSequenceNumber;
+                        }
+                        if(!lstUdhs.isEmpty()){
+                            if(lstUdhs.size() > 1 && lstUdhs.size() > segmentIndex ){
+                                messagePartsNumbers[segmentIndex] = lstUdhs.get(segmentIndex);
+                            }
                         }
                     } else {
                         DeliverSm deliverSm = new DeliverSm();
@@ -818,10 +826,15 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         } else {
                             sequenceNumberExt[segmentIndex - 1] = sentSequenceNumber;
                         }
+                        if(!lstUdhs.isEmpty()){
+                            if(lstUdhs.size() > 1 && lstUdhs.size() > segmentIndex ){
+                                messagePartsNumbers[segmentIndex] = lstUdhs.get(segmentIndex);
+                            }
+                        }
                     }
                 }
 
-                this.registerMessageInSendingPool(poolIndex, sequenceNumber, sequenceNumberExt);
+                this.registerMessageInSendingPool(poolIndex, sequenceNumber, sequenceNumberExt,messagePartsNumbers);
             }
 
             this.endRegisterMessageInSendingPool();
