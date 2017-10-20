@@ -96,50 +96,50 @@ public class CdrFinalGenerator {
             exposureLayerDataSet = true;
         }
 
-        long el_api_start;
-        long el_que_start ;
-        long el_que_stop;
+        long elApiStart;
+        long elQueStart ;
+        long elQueStop;
 
         if(exposureLayerDataSet == true){
-            el_api_start = objSmsExposureLayerData.getElApiStart();
-            el_que_start = objSmsExposureLayerData.getElQueStart();
-            el_que_stop = objSmsExposureLayerData.getElQueStop();
+            elApiStart = objSmsExposureLayerData.getElApiStart();
+            elQueStart = objSmsExposureLayerData.getElQueStart();
+            elQueStop = objSmsExposureLayerData.getElQueStop();
         }else{
-            el_api_start = 0;
-            el_que_start = 0;
-            el_que_stop = 0;
+            elApiStart = 0;
+            elQueStart = 0;
+            elQueStop = 0;
         }
 
-        long gw_inc_start = smsEvent.getGwIncStart();
-        long gw_inc_stop = smsEvent.getGwIncStop();
-        long gw_que_start = smsEvent.getGwQueStart();
-        long gw_que_stop = smsEvent.getGwQueStop();
-        long gw_out_start = smsEvent.getGwOutStart();
-        long gw_out_stop = smsEvent.getGwOutStop();
-        long oc_dia_start = smsEvent.getOcDiaStart();
-        long oc_dia_stop = smsEvent.getOcDiaStop();
+        long gwIncStart = smsEvent.getGwIncStart();
+        long gwIncStop = smsEvent.getGwIncStop();
+        long gwQueStart = smsEvent.getGwQueStart();
+        long gwQueStop = smsEvent.getGwQueStop();
+        long gwOutStart = smsEvent.getGwOutStart();
+        long gwOutStop = smsEvent.getGwOutStop();
+        long ocDiaStart = smsEvent.getOcDiaStart();
+        long ocDiaStop = smsEvent.getOcDiaStop();
 
         long T1,T3,T4,T5,T8,T9,T10,T11,T12;
 
-        if(gw_que_start == 0 || gw_que_stop == 0){
-            gw_que_start = 0;
-            gw_que_stop = 0;
+        if(gwQueStart == 0 || gwQueStop == 0){
+            gwQueStart = 0;
+            gwQueStop = 0;
         }
-        if(el_que_start == 0 || el_que_stop == 0){
-            el_que_start = 0;
-            el_que_stop = 0;
+        if(elQueStart == 0 || elQueStop == 0){
+            elQueStart = 0;
+            elQueStop = 0;
         }
-        if(gw_out_stop == 0){
+        if(gwOutStop == 0){
             T1 = 0;
             T3 = 0;
             T8 = 0;
             T12 = 0;
         }else{
-            T3 = gw_out_stop - gw_out_start;
-            if(gw_inc_start == 0){
+            T3 = gwOutStop - gwOutStart;
+            if(gwIncStart == 0){
                 if(exposureLayerDataSet == true){
-                    T1 = gw_out_stop - el_api_start;
-                    T8 = gw_out_stop - el_api_start - (gw_que_stop - gw_que_start) - (el_que_stop - el_que_start);
+                    T1 = gwOutStop - elApiStart;
+                    T8 = gwOutStop - elApiStart - (gwQueStop - gwQueStart) - (elQueStop - elQueStart);
                 }else {
                     T1 = 0;
                     T8 = 0;
@@ -147,29 +147,29 @@ public class CdrFinalGenerator {
                 T12 = 0;
             }else{
                 if(exposureLayerDataSet == true){
-                    T1 = gw_out_stop - el_api_start;
-                    T8 = gw_out_stop - el_api_start - (gw_que_stop - gw_que_start) - (el_que_stop - el_que_start);
+                    T1 = gwOutStop - elApiStart;
+                    T8 = gwOutStop - elApiStart - (gwQueStop - gwQueStart) - (elQueStop - elQueStart);
                 }else {
-                    T1 = gw_out_stop - gw_inc_start;
-                    T8 = gw_out_stop - gw_inc_start - (gw_que_stop - gw_que_start);
+                    T1 = gwOutStop - gwIncStart;
+                    T8 = gwOutStop - gwIncStart - (gwQueStop - gwQueStart);
                 }
-                T12 = gw_out_stop - gw_inc_start - (gw_que_stop - gw_que_start);
+                T12 = gwOutStop - gwIncStart - (gwQueStop - gwQueStart);
             }
         }
 
-        if(oc_dia_stop == 0 || oc_dia_start == 0){
+        if(ocDiaStop == 0 || ocDiaStart == 0){
             T4 = 0;
         }else{
-            T4 = oc_dia_stop - oc_dia_start;
+            T4 = ocDiaStop - ocDiaStart;
         }
-        if(gw_inc_stop == 0 || gw_inc_start == 0){
+        if(gwIncStop == 0 || gwIncStart == 0){
             T5 = 0;
         }else {
-            T5 = gw_inc_stop - gw_inc_start;
+            T5 = gwIncStop - gwIncStart;
         }
-        T9 = el_que_stop - el_que_start + gw_que_stop - gw_que_start;
-        T10 = el_que_stop - el_que_start;
-        T11  = gw_que_stop - gw_que_start;
+        T9 = elQueStop - elQueStart + gwQueStop - gwQueStart;
+        T10 = elQueStop - elQueStart;
+        T11  = gwQueStop - gwQueStart;
 
 
 
@@ -269,9 +269,9 @@ public class CdrFinalGenerator {
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(smsEvent.getGwOutStop() >0 ? DATE_FORMAT.format(smsEvent.getGwOutStop()) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(oc_dia_start >0 ? DATE_FORMAT.format(oc_dia_start) : CdrFinalGenerator.CDR_EMPTY)
+                .append(ocDiaStart >0 ? DATE_FORMAT.format(ocDiaStart) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(oc_dia_stop >0 ? DATE_FORMAT.format(oc_dia_stop) : CdrFinalGenerator.CDR_EMPTY)
+                .append(ocDiaStop >0 ? DATE_FORMAT.format(ocDiaStop) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(exposureLayerDataSet == true ? DATE_FORMAT.format(objSmsExposureLayerData.getElApiStart()) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
@@ -342,61 +342,61 @@ public class CdrFinalGenerator {
             sourcePort = parts[1];
         }
 
-        long gw_inc_start = 0;
-        long gw_inc_stop = 0;
-        long gw_que_start = 0;
-        long gw_que_stop = 0;
-        long gw_out_start = 0;
-        long gw_out_stop = 0;
-        long oc_dia_start = 0;
-        long oc_dia_stop = 0;
+        long gwIncStart = 0;
+        long gwIncStop = 0;
+        long gwQueStart = 0;
+        long gwQueStop = 0;
+        long gwOutStart = 0;
+        long gwOutStop = 0;
+        long ocDiaStart = 0;
+        long ocDiaStop = 0;
 
-        long el_api_start = 0;
-        long el_que_start = 0;
-        long el_que_stop = 0;
+        long elApiStart = 0;
+        long elQueStart = 0;
+        long elQueStop = 0;
 
 
         long T1,T3,T4,T5,T8,T9,T10,T11,T12;
 
-        if(gw_que_start == 0 || gw_que_stop == 0){
-            gw_que_start = 0;
-            gw_que_stop = 0;
+        if(gwQueStart == 0 || gwQueStop == 0){
+            gwQueStart = 0;
+            gwQueStop = 0;
         }
-        if(el_que_start == 0 || el_que_stop == 0){
-            el_que_start = 0;
-            el_que_stop = 0;
+        if(elQueStart == 0 || elQueStop == 0){
+            elQueStart = 0;
+            elQueStop = 0;
         }
-        if(gw_out_stop == 0){
+        if(gwOutStop == 0){
             T1 = 0;
             T3 = 0;
             T8 = 0;
             T12 = 0;
         }else{
-            T3 = gw_out_stop - gw_out_start;
-            if(gw_inc_start == 0){
+            T3 = gwOutStop - gwOutStart;
+            if(gwIncStart == 0){
                 T1 = 0;
                 T8 = 0;
                 T12 = 0;
             }else{
-                T1 = gw_out_stop - gw_inc_start;
-                T8 = gw_out_stop - gw_inc_start - (gw_que_stop - gw_que_start);
-                T12 = gw_out_stop - gw_inc_start - (gw_que_stop - gw_que_start);
+                T1 = gwOutStop - gwIncStart;
+                T8 = gwOutStop - gwIncStart - (gwQueStop - gwQueStart);
+                T12 = gwOutStop - gwIncStart - (gwQueStop - gwQueStart);
             }
         }
 
-        if(oc_dia_stop == 0 || oc_dia_start == 0){
+        if(ocDiaStop == 0 || ocDiaStart == 0){
             T4 = 0;
         }else{
-            T4 = oc_dia_stop - oc_dia_start;
+            T4 = ocDiaStop - ocDiaStart;
         }
-        if(gw_inc_stop == 0 || gw_inc_start == 0){
+        if(gwIncStop == 0 || gwIncStart == 0){
             T5 = 0;
         }else {
-            T5 = gw_inc_stop - gw_inc_start;
+            T5 = gwIncStop - gwIncStart;
         }
-        T9 = el_que_stop - el_que_start + gw_que_stop - gw_que_start;
-        T10 = el_que_stop - el_que_start;
-        T11  = gw_que_stop - gw_que_start;
+        T9 = elQueStop - elQueStart + gwQueStop - gwQueStart;
+        T10 = elQueStop - elQueStart;
+        T11  = gwQueStop - gwQueStart;
 
         //SplitMessageData splitMessageData = MessageUtil.parseSplitMessageData(smsEvent); todo handle it
 
@@ -486,27 +486,27 @@ public class CdrFinalGenerator {
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(CdrGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(gw_inc_start >0 ? DATE_FORMAT.format(gw_inc_start) : CdrFinalGenerator.CDR_EMPTY)
+                .append(gwIncStart >0 ? DATE_FORMAT.format(gwIncStart) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(gw_inc_stop >0 ? DATE_FORMAT.format(gw_inc_stop) : CdrFinalGenerator.CDR_EMPTY)
+                .append(gwIncStop >0 ? DATE_FORMAT.format(gwIncStop) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(gw_que_start >0 ? DATE_FORMAT.format(gw_que_start) : CdrFinalGenerator.CDR_EMPTY)
+                .append(gwQueStart >0 ? DATE_FORMAT.format(gwQueStart) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(gw_que_stop >0 ? DATE_FORMAT.format(gw_que_stop) : CdrFinalGenerator.CDR_EMPTY)
+                .append(gwQueStop >0 ? DATE_FORMAT.format(gwQueStop) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(gw_out_start >0 ? DATE_FORMAT.format(gw_out_start) : CdrFinalGenerator.CDR_EMPTY)
+                .append(gwOutStart >0 ? DATE_FORMAT.format(gwOutStart) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(gw_out_stop >0 ? DATE_FORMAT.format(gw_out_stop) : CdrFinalGenerator.CDR_EMPTY)
+                .append(gwOutStop >0 ? DATE_FORMAT.format(gwOutStop) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(oc_dia_start >0 ? DATE_FORMAT.format(oc_dia_start) : CdrFinalGenerator.CDR_EMPTY)
+                .append(ocDiaStart >0 ? DATE_FORMAT.format(ocDiaStart) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(oc_dia_stop >0 ? DATE_FORMAT.format(oc_dia_stop) : CdrFinalGenerator.CDR_EMPTY)
+                .append(ocDiaStop >0 ? DATE_FORMAT.format(ocDiaStop) : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(el_api_start >0 ? DATE_FORMAT.format(el_api_start) : CdrFinalGenerator.CDR_EMPTY)//objSmsExposureLayerData.getElApiStart()
+                .append(elApiStart >0 ? DATE_FORMAT.format(elApiStart) : CdrFinalGenerator.CDR_EMPTY)//objSmsExposureLayerData.getElApiStart()
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(el_que_start >0? DATE_FORMAT.format(el_que_start) : CdrFinalGenerator.CDR_EMPTY)//objSmsExposureLayerData.getElQueStart()
+                .append(elQueStart >0? DATE_FORMAT.format(elQueStart) : CdrFinalGenerator.CDR_EMPTY)//objSmsExposureLayerData.getElQueStart()
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(el_que_stop >0 ? DATE_FORMAT.format(el_que_stop) : CdrFinalGenerator.CDR_EMPTY)//objSmsExposureLayerData.getElQueStop()
+                .append(elQueStop >0 ? DATE_FORMAT.format(elQueStop) : CdrFinalGenerator.CDR_EMPTY)//objSmsExposureLayerData.getElQueStop()
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(T1 != 0 ? T1 : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
