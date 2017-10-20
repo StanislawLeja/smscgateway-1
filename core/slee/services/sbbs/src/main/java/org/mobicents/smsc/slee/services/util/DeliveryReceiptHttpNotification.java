@@ -120,10 +120,11 @@ public final class DeliveryReceiptHttpNotification {
             json.addProperty(PROPERTY_EXPOSURE_LAYER_USER_NAME, eld.getUserId());
             json.addProperty(PROPERTY_ORIGINAL_REQUEST_USER_NAME, hu.getUserName());
             json.addProperty(PROPERTY_DELIVERY_RECEIPT_STATUS, aStatus);
-            if (itsDeliveryReceiptApplicationSid != null) {
+            if (itsDeliveryReceiptApplicationSid == null) {
                 if (itsTracer.isFineEnabled()) {
                     itsTracer.fine("DeliveryReceiptApplicationSid is not set.");
                 }
+            } else {
                 json.addProperty(PROPERTY_EXPOSURE_LAYER_APPLICATION_SID, itsDeliveryReceiptApplicationSid);
             }
             itsDeliveryReceiptHttpMethod.setEntity(new StringEntity(json.toString(), ContentType.APPLICATION_JSON));
