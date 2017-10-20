@@ -681,11 +681,11 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
                 int sequenceNumber = 0;
                 int[] sequenceNumberExt = null;
-                byte[][] messagePartsNumbers = null;
+                byte[][] udhData = null;
                 int segmCnt = lstStrings.size();
                 if (segmCnt > 1) {
                     sequenceNumberExt = new int[segmCnt - 1];
-                    messagePartsNumbers = new byte[segmCnt][];
+                    udhData = new byte[segmCnt][];
                 }
 
                 for (int segmentIndex = 0; segmentIndex < segmCnt; segmentIndex++) {
@@ -757,7 +757,7 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         }
                         if(!lstUdhs.isEmpty()){
                             if(lstUdhs.size() > 1 && lstUdhs.size() > segmentIndex ){
-                                messagePartsNumbers[segmentIndex] = lstUdhs.get(segmentIndex);
+                                udhData[segmentIndex] = lstUdhs.get(segmentIndex);
                             }
                         }
                     } else {
@@ -829,13 +829,13 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         }
                         if(!lstUdhs.isEmpty()){
                             if(lstUdhs.size() > 1 && lstUdhs.size() > segmentIndex ){
-                                messagePartsNumbers[segmentIndex] = lstUdhs.get(segmentIndex);
+                                udhData[segmentIndex] = lstUdhs.get(segmentIndex);
                             }
                         }
                     }
                 }
 
-                this.registerMessageInSendingPool(poolIndex, sequenceNumber, sequenceNumberExt,messagePartsNumbers);
+                this.registerMessageInSendingPool(poolIndex, sequenceNumber, sequenceNumberExt,udhData);
             }
 
             this.endRegisterMessageInSendingPool();

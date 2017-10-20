@@ -92,7 +92,7 @@ public abstract class DeliveryCommonSbb implements Sbb {
     private int[] sequenceNumbers;
     private int[][] sequenceNumbersExtra;
 
-    private byte[][][] messagePartsNumbers;
+    private byte[][][] udhData;
 
     private boolean pendingRequestsListIsLoaded;
     private boolean pendingRequestsListIsDirty;
@@ -441,7 +441,7 @@ public abstract class DeliveryCommonSbb implements Sbb {
             pendingRequestsListIsDirty = true;
             pendingRequestsList = null;
             sequenceNumbers = null;
-            messagePartsNumbers = null;
+            udhData = null;
             sequenceNumbersExtra = null;
         }
     }
@@ -497,7 +497,7 @@ public abstract class DeliveryCommonSbb implements Sbb {
                     sequenceNumbers = new int[addedMessageCnt];
                     sequenceNumbersExtra = new int[addedMessageCnt][];
 
-                    messagePartsNumbers = new byte[addedMessageCnt][][];
+                    udhData = new byte[addedMessageCnt][][];
 
                     if (gotMessageCnt > 0) {
                         currentMsgNum += gotMessageCnt;
@@ -574,7 +574,7 @@ public abstract class DeliveryCommonSbb implements Sbb {
                     sequenceNumbers = null;
                     sequenceNumbersExtra = null;
 
-                    messagePartsNumbers = null;
+                    udhData = null;
 
                     this.rescheduleDeliveryTimer();
 
@@ -723,7 +723,7 @@ public abstract class DeliveryCommonSbb implements Sbb {
                 && numInSendingPool < sequenceNumbers.length && numInSendingPool < sequenceNumbersExtra.length) {
             sequenceNumbers[numInSendingPool] = sequenceNumber;
             sequenceNumbersExtra[numInSendingPool] = sequenceNumberExtra;
-            messagePartsNumbers[numInSendingPool] = messagePartsNumber;
+            udhData[numInSendingPool] = messagePartsNumber;
         }
     }
 
@@ -734,13 +734,13 @@ public abstract class DeliveryCommonSbb implements Sbb {
     protected void endRegisterMessageInSendingPool() {
         pendingRequestsListIsDirty = true;
         if (sequenceNumbers != null && sequenceNumbersExtra != null) {
-            pendingRequestsList = new PendingRequestsList(sequenceNumbers, sequenceNumbersExtra,messagePartsNumbers);
+            pendingRequestsList = new PendingRequestsList(sequenceNumbers, sequenceNumbersExtra,udhData);
         } else {
             pendingRequestsList = null;
         }
         sequenceNumbers = null;
         sequenceNumbersExtra = null;
-        messagePartsNumbers = null;
+        udhData = null;
     }
 
     /**
@@ -766,15 +766,15 @@ public abstract class DeliveryCommonSbb implements Sbb {
             res.sms = getMessageInSendingPool(0);
         }
 
-        res.sms = setUDHInSMS(res.sms,res.messagePartsNumbers);
+        res.sms = setUDHInSMS(res.sms,res.udhData);
 
         return res;
     }
 
-    protected Sms setUDHInSMS(Sms sms , byte[] messagePartsNumbers){
-        if(sms.getReceiptLocalMessageId() == null && messagePartsNumbers != null){
+    protected Sms setUDHInSMS(Sms sms , byte[] udhData){
+        if(sms.getReceiptLocalMessageId() == null && udhData != null){
             sms.setEsmClass(67);
-            sms.setShortMessageBin(messagePartsNumbers);
+            sms.setShortMessageBin(udhData);
         }
         return sms;
     }
