@@ -22,49 +22,16 @@
 
 package org.mobicents.smsc.slee.services.charging;
 
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Calendar;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.slee.ActivityContextInterface;
-import javax.slee.ActivityEndEvent;
-import javax.slee.CreateException;
-import javax.slee.EventContext;
-import javax.slee.RolledBackContext;
-import javax.slee.Sbb;
-import javax.slee.SbbContext;
-import javax.slee.ServiceID;
-import javax.slee.facilities.TimerEvent;
-import javax.slee.facilities.TimerFacility;
-import javax.slee.facilities.TimerOptions;
-import javax.slee.facilities.TimerPreserveMissed;
-import javax.slee.facilities.Tracer;
-import javax.slee.nullactivity.NullActivityContextInterfaceFactory;
-import javax.slee.nullactivity.NullActivityFactory;
-import javax.slee.resource.ResourceAdaptorTypeID;
-import javax.slee.serviceactivity.ServiceActivity;
-import javax.slee.serviceactivity.ServiceStartedEvent;
-
+import com.cloudhopper.smpp.SmppConstants;
+import com.cloudhopper.smpp.SmppSession.Type;
 import javolution.util.FastList;
 import net.java.slee.resource.diameter.base.events.avp.DiameterAvp;
 import net.java.slee.resource.diameter.base.events.avp.DiameterIdentity;
-import net.java.slee.resource.diameter.cca.events.avp.CcRequestType;
-import net.java.slee.resource.diameter.cca.events.avp.MultipleServicesCreditControlAvp;
-import net.java.slee.resource.diameter.cca.events.avp.RequestedActionType;
-import net.java.slee.resource.diameter.cca.events.avp.RequestedServiceUnitAvp;
-import net.java.slee.resource.diameter.cca.events.avp.SubscriptionIdAvp;
-import net.java.slee.resource.diameter.cca.events.avp.SubscriptionIdType;
-import net.java.slee.resource.diameter.ro.RoActivityContextInterfaceFactory;
-import net.java.slee.resource.diameter.ro.RoAvpFactory;
-import net.java.slee.resource.diameter.ro.RoClientSessionActivity;
-import net.java.slee.resource.diameter.ro.RoMessageFactory;
-import net.java.slee.resource.diameter.ro.RoProvider;
+import net.java.slee.resource.diameter.cca.events.avp.*;
+import net.java.slee.resource.diameter.ro.*;
 import net.java.slee.resource.diameter.ro.events.RoCreditControlAnswer;
 import net.java.slee.resource.diameter.ro.events.RoCreditControlRequest;
 import net.java.slee.resource.diameter.ro.events.avp.ServiceInformation;
-
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.PersistenceException;
@@ -72,16 +39,7 @@ import org.mobicents.smsc.domain.MProcManagement;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
-import org.mobicents.smsc.library.CdrDetailedGenerator;
-import org.mobicents.smsc.library.CdrGenerator;
-import org.mobicents.smsc.library.ErrorCode;
-import org.mobicents.smsc.library.EventType;
-import org.mobicents.smsc.library.MessageDeliveryResultResponseInterface;
-import org.mobicents.smsc.library.MessageUtil;
-import org.mobicents.smsc.library.SbbStates;
-import org.mobicents.smsc.library.Sms;
-import org.mobicents.smsc.library.SmscProcessingException;
-import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.library.*;
 import org.mobicents.smsc.mproc.MProcRuleRaProvider;
 import org.mobicents.smsc.mproc.impl.MProcResult;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
@@ -89,8 +47,18 @@ import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.restcomm.smpp.Esme;
 import org.restcomm.smpp.EsmeManagement;
 
-import com.cloudhopper.smpp.SmppConstants;
-import com.cloudhopper.smpp.SmppSession.Type;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.slee.*;
+import javax.slee.facilities.*;
+import javax.slee.nullactivity.NullActivityContextInterfaceFactory;
+import javax.slee.nullactivity.NullActivityFactory;
+import javax.slee.resource.ResourceAdaptorTypeID;
+import javax.slee.serviceactivity.ServiceActivity;
+import javax.slee.serviceactivity.ServiceStartedEvent;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Calendar;
 
 /**
  * 
@@ -278,7 +246,6 @@ public abstract class ChargingSbb implements Sbb {
             logger.fine("ChargingSbb: received message for process charging process: chargingType=" + chargingType
                     + ", message=[" + sms + "]");
         }
-
         ChargingData chargingData = new ChargingData();
         chargingData.setSms(sms);
         chargingData.setChargingType(chargingType);
@@ -469,7 +436,7 @@ public abstract class ChargingSbb implements Sbb {
             ServiceInformation si = avpFactory.createServiceInformation();
             si.setExtensionAvps(smsInfo);
             ccr.setServiceInformation(si);
-
+            sms.setOcDiaStart(System.currentTimeMillis());
             activity.sendEventRoCreditControlRequest(ccr);
             if (logger.isFineEnabled()) {
                 logger.fine("Sent INITIAL CCR: \n" + ccr);
@@ -512,6 +479,7 @@ public abstract class ChargingSbb implements Sbb {
         }
 
         ChargingData chargingData = getChargingData();
+        chargingData.getSms().setOcDiaStop(System.currentTimeMillis());
         if (chargingData == null) {
             logger.warning("RoCreditControlAnswer is recieved but chargingData is null");
             return;
