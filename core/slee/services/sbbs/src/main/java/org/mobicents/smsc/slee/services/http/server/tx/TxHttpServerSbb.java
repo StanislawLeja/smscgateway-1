@@ -23,6 +23,7 @@
 package org.mobicents.smsc.slee.services.http.server.tx;
 
 import com.cloudhopper.smpp.SmppConstants;
+
 import net.java.slee.resource.http.events.HttpServletRequestEvent;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.smsc.cassandra.PersistenceException;
@@ -38,6 +39,7 @@ import org.mobicents.smsc.slee.services.http.server.tx.exceptions.UnauthorizedEx
 import org.mobicents.smsc.slee.services.http.server.tx.utils.HttpRequestUtils;
 import org.mobicents.smsc.slee.services.http.server.tx.utils.HttpUtils;
 import org.mobicents.smsc.slee.services.http.server.tx.utils.ResponseFormatter;
+import org.mobicents.smsc.slee.services.smpp.server.tx.TxSmppServerSbbUsage;
 import org.mobicents.smsc.slee.services.submitsbb.SubmitCommonSbb;
 
 import javax.naming.Context;
@@ -79,7 +81,23 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
         super(className);
     }
 
+    /**
+     * Gets the default SBB usage parameter set.
+     *
+     * @return the default SBB usage parameter set
+     */
+    public abstract TxHttpServerSbbUsage getDefaultSbbUsageParameterSet();
+
     public InitialEventSelector isInitialHttpRequestEvent(final InitialEventSelector ies) {
+        try {
+            return isInitialHttpRequestEventLocal(ies);
+        } catch (Exception e) {
+            logger.warning("Unable to check if HTTP event is an initial one. Message: " + e.getMessage() + ".", e);
+            return ies;
+        }
+    }
+    
+    private InitialEventSelector isInitialHttpRequestEventLocal(final InitialEventSelector ies) {
         if (logger.isFinestEnabled()) {
             logger.finest("incomming http event: " + ies.getEvent());
         }
@@ -111,7 +129,15 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
     }
 
     public void onHttpGet(HttpServletRequestEvent event, ActivityContextInterface aci) {
+        final long start = System.currentTimeMillis();
+        final TxHttpServerSbbUsage u = getDefaultSbbUsageParameterSet();
+        onHttpGetLocal(event, aci, u);
+        u.sampleGetProcessing(System.currentTimeMillis() - start);
+    }
+
+    private void onHttpGetLocal(HttpServletRequestEvent event, ActivityContextInterface aci, final TxHttpServerSbbUsage anUsage) {
         logger.fine("onHttpGet");
+        getDefaultSbbUsageParameterSet().incrementCounterGet(1L);
         HttpServletRequest request = event.getRequest();
         String remoteAddrAndPort = request.getRemoteAddr() + ":" + request.getRemotePort();
         long timestampB = 0L;
@@ -181,6 +207,13 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
     }
 
     public void onHttpPost(HttpServletRequestEvent event, ActivityContextInterface aci) {
+        final long start = System.currentTimeMillis();
+        final TxHttpServerSbbUsage u = getDefaultSbbUsageParameterSet();
+        onHttpPostLocal(event, aci, u);
+        u.samplePostProcessing(System.currentTimeMillis() - start);
+    }
+
+    private void onHttpPostLocal(HttpServletRequestEvent event, ActivityContextInterface aci, final TxHttpServerSbbUsage anUsage) {
         logger.fine("onHttpPost");
         HttpServletRequest request = event.getRequest();
         String remoteAddrAndPort = request.getRemoteAddr() + ":" + request.getRemotePort();
