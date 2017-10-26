@@ -137,7 +137,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
 
     private void onHttpGetLocal(HttpServletRequestEvent event, ActivityContextInterface aci, final TxHttpServerSbbUsage anUsage) {
         logger.fine("onHttpGet");
-        getDefaultSbbUsageParameterSet().incrementCounterGet(1L);
+        anUsage.incrementCounterGet(1L);
         HttpServletRequest request = event.getRequest();
         String remoteAddrAndPort = request.getRemoteAddr() + ":" + request.getRemotePort();
         long timestampB = 0L;
@@ -215,6 +215,7 @@ public abstract class TxHttpServerSbb extends SubmitCommonSbb implements Sbb {
 
     private void onHttpPostLocal(HttpServletRequestEvent event, ActivityContextInterface aci, final TxHttpServerSbbUsage anUsage) {
         logger.fine("onHttpPost");
+        anUsage.incrementCounterPost(1L);
         HttpServletRequest request = event.getRequest();
         String remoteAddrAndPort = request.getRemoteAddr() + ":" + request.getRemotePort();
         long timestampB = 0L;

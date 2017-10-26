@@ -1,14 +1,15 @@
 package org.mobicents.smsc.slee.services.http.server.tx;
 
+import javax.slee.ActivityContextInterface;
+import javax.slee.CreateException;
+import javax.slee.RolledBackContext;
+
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.domain.MoChargingType;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
 import org.mobicents.smsc.slee.resources.persistence.TraceProxy;
-
-import javax.slee.ActivityContextInterface;
-import javax.slee.CreateException;
-import javax.slee.RolledBackContext;
+import org.mobicents.smsc.slee.services.http.server.tx.stub.TxHttpServerSbbUsageStub;
 
 /**
  * Created by tpalucki on 14.09.16.
@@ -22,6 +23,11 @@ public class TxHttpServerSbbProxy extends TxHttpServerSbb {
         this.logger = new TraceProxy();
         this.scheduler = new SchedulerResourceAdaptorProxy();
         TxHttpServerSbb.smscPropertiesManagement = SmscPropertiesManagement.getInstance("Test");
+    }
+    
+    @Override
+    public final TxHttpServerSbbUsage getDefaultSbbUsageParameterSet() {
+            return new TxHttpServerSbbUsageStub();
     }
 
 //    @Override
