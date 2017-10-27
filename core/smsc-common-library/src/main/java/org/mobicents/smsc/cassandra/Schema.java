@@ -28,10 +28,10 @@ import java.util.List;
 
 /**
  * Helper class to store all that CQL mumbo jumbo
- * 
+ *
  * @author baranowb
  * @author sergey vetyutnev
- * 
+ *
  */
 public class Schema {
 
@@ -85,14 +85,14 @@ public class Schema {
     public static final String COLUMN_DUE_DATE = "DUE_DATE";
     public static final String COLUMN_DUE_DELAY = "DUE_DELAY";
 
-	public static final String COLUMN_DEST_CLUSTER_NAME = "DEST_CLUSTER_NAME";
-	public static final String COLUMN_DEST_ESME_NAME = "DEST_ESME_NAME";
-	public static final String COLUMN_DEST_SYSTEM_ID = "DEST_SYSTEM_ID";
-	public static final String COLUMN_DELIVERY_DATE = "DELIVERY_DATE";
-	public static final String COLUMN_IMSI = "IMSI";
+    public static final String COLUMN_DEST_CLUSTER_NAME = "DEST_CLUSTER_NAME";
+    public static final String COLUMN_DEST_ESME_NAME = "DEST_ESME_NAME";
+    public static final String COLUMN_DEST_SYSTEM_ID = "DEST_SYSTEM_ID";
+    public static final String COLUMN_DELIVERY_DATE = "DELIVERY_DATE";
+    public static final String COLUMN_IMSI = "IMSI";
     public static final String COLUMN_CORR_ID = "CORR_ID";
-	public static final String COLUMN_NNN_DIGITS = "NNN_DIGITS";
-	public static final String COLUMN_NNN_AN = "NNN_AN";
+    public static final String COLUMN_NNN_DIGITS = "NNN_DIGITS";
+    public static final String COLUMN_NNN_AN = "NNN_AN";
     public static final String COLUMN_NNN_NP = "NNN_NP";
 
     public static final String COLUMN_ORIGINATOR_SCCP_ADDRESS = "ORIGINATOR_SCCP_ADDRESS";
@@ -103,6 +103,7 @@ public class Schema {
     public static final String COLUMN_EXTRA_DATA_2 = "EXTRA_DATA_2";
     public static final String COLUMN_EXTRA_DATA_3 = "EXTRA_DATA_3";
     public static final String COLUMN_EXTRA_DATA_4 = "EXTRA_DATA_4";
+    public static final String COLUMN_EXPOSURE_LAYER_DATA = "EXPOSURE_LAYER_DATA";
 
     //SmsRoutingRule tables columns and names
     public static final String COLUMN_ADDRESS = "ADDRESS";
@@ -153,12 +154,12 @@ public class Schema {
         tmp.add(COLUMN_DUE_DELAY);
         tmp.add(COLUMN_DUE_DATE);
         tmp.add(COLUMN_ALERTING_SUPPORTED);
-		tmp.add(COLUMN_LAST_DELIVERY);
+        tmp.add(COLUMN_LAST_DELIVERY);
 
         COLUMNS_LIVE = Collections.unmodifiableList(tmp);
-        
-		tmp = new ArrayList<String>();
-		tmp.add(COLUMN_ID);
+
+        tmp = new ArrayList<String>();
+        tmp.add(COLUMN_ID);
         tmp.add(COLUMN_TARGET_ID);
         tmp.add(COLUMN_ADDR_DST_DIGITS);
         tmp.add(COLUMN_ADDR_DST_TON);
@@ -168,26 +169,26 @@ public class Schema {
         tmp.add(COLUMN_MO_MESSAGE_REF);
         tmp.add(COLUMN_ORIG_ESME_NAME);
         tmp.add(COLUMN_ORIG_SYSTEM_ID);
-		tmp.add(COLUMN_SUBMIT_DATE);
-		tmp.add(COLUMN_ADDR_SRC_DIGITS);
-		tmp.add(COLUMN_ADDR_SRC_TON);
-		tmp.add(COLUMN_ADDR_SRC_NPI);
+        tmp.add(COLUMN_SUBMIT_DATE);
+        tmp.add(COLUMN_ADDR_SRC_DIGITS);
+        tmp.add(COLUMN_ADDR_SRC_TON);
+        tmp.add(COLUMN_ADDR_SRC_NPI);
         tmp.add(COLUMN_ORIG_NETWORK_ID);
 
-		tmp.add(COLUMN_SERVICE_TYPE);
-		tmp.add(COLUMN_ESM_CLASS);
-		tmp.add(COLUMN_PROTOCOL_ID);
-		tmp.add(COLUMN_PRIORITY);
-		tmp.add(COLUMN_REGISTERED_DELIVERY);
-		tmp.add(COLUMN_REPLACE);
-		tmp.add(COLUMN_DATA_CODING);
-		tmp.add(COLUMN_DEFAULT_MSG_ID);
+        tmp.add(COLUMN_SERVICE_TYPE);
+        tmp.add(COLUMN_ESM_CLASS);
+        tmp.add(COLUMN_PROTOCOL_ID);
+        tmp.add(COLUMN_PRIORITY);
+        tmp.add(COLUMN_REGISTERED_DELIVERY);
+        tmp.add(COLUMN_REPLACE);
+        tmp.add(COLUMN_DATA_CODING);
+        tmp.add(COLUMN_DEFAULT_MSG_ID);
         tmp.add(COLUMN_MESSAGE);
         tmp.add(COLUMN_MESSAGE_TEXT);
         tmp.add(COLUMN_MESSAGE_BIN);
-		tmp.add(COLUMN_OPTIONAL_PARAMETERS);
-		tmp.add(COLUMN_SCHEDULE_DELIVERY_TIME);
-		tmp.add(COLUMN_VALIDITY_PERIOD);
+        tmp.add(COLUMN_OPTIONAL_PARAMETERS);
+        tmp.add(COLUMN_SCHEDULE_DELIVERY_TIME);
+        tmp.add(COLUMN_VALIDITY_PERIOD);
         tmp.add(COLUMN_DELIVERY_COUNT);
         tmp.add(COLUMN_ORIGINATOR_SCCP_ADDRESS);
         tmp.add(COLUMN_STATUS_REPORT_REQUEST);
@@ -197,22 +198,23 @@ public class Schema {
         tmp.add(COLUMN_EXTRA_DATA_2);
         tmp.add(COLUMN_EXTRA_DATA_3);
         tmp.add(COLUMN_EXTRA_DATA_4);
+        tmp.add(COLUMN_EXPOSURE_LAYER_DATA);
 
         COLUMNS_LIVE_SMS = Collections.unmodifiableList(tmp);
 
         tmp = new ArrayList<String>();
-		tmp.add(COLUMN_ID);
+        tmp.add(COLUMN_ID);
         tmp.add(COLUMN_IN_SYSTEM);
         tmp.add(COLUMN_ADDR_DST_DIGITS);
         tmp.add(COLUMN_ADDR_DST_TON);
         tmp.add(COLUMN_ADDR_DST_NPI);
-		tmp.add(COLUMN_NETWORK_ID);
+        tmp.add(COLUMN_NETWORK_ID);
         tmp.add(COLUMN_ADDR_SRC_DIGITS);
-		tmp.add(COLUMN_ADDR_SRC_TON);
-		tmp.add(COLUMN_ADDR_SRC_NPI);
+        tmp.add(COLUMN_ADDR_SRC_TON);
+        tmp.add(COLUMN_ADDR_SRC_NPI);
         tmp.add(COLUMN_ORIG_NETWORK_ID);
 
-		tmp.add(COLUMN_MESSAGE_ID);
+        tmp.add(COLUMN_MESSAGE_ID);
         tmp.add(COLUMN_MO_MESSAGE_REF);
         tmp.add(COLUMN_ORIG_ESME_NAME);
         tmp.add(COLUMN_ORIG_SYSTEM_ID);
@@ -222,7 +224,7 @@ public class Schema {
         tmp.add(COLUMN_SUBMIT_DATE);
         tmp.add(COLUMN_DELIVERY_DATE);
 
-		tmp.add(COLUMN_SERVICE_TYPE);
+        tmp.add(COLUMN_SERVICE_TYPE);
         tmp.add(COLUMN_ESM_CLASS);
         tmp.add(COLUMN_PROTOCOL_ID);
         tmp.add(COLUMN_PRIORITY);
@@ -252,6 +254,7 @@ public class Schema {
         tmp.add(COLUMN_EXTRA_DATA_2);
         tmp.add(COLUMN_EXTRA_DATA_3);
         tmp.add(COLUMN_EXTRA_DATA_4);
+        tmp.add(COLUMN_EXPOSURE_LAYER_DATA);
 
         COLUMNS_ARCHIVE = Collections.unmodifiableList(tmp);
 

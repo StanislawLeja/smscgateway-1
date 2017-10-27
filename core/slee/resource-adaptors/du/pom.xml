@@ -33,7 +33,24 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>persistence-ra</artifactId>
 			<version>${project.version}</version>
-		</dependency> 
+		</dependency>
+
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>exposure-layer-persistence-ra-library</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>exposure-layer-persistence-ratype</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>exposure-layer-persistence-ra</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- Scheduler --> 
 		<dependency>
 			<groupId>${project.groupId}</groupId>

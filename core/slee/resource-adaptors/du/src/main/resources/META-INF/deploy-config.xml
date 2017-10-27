@@ -12,4 +12,10 @@
 		<properties />
 		<ra-link name="SchedulerResourceAdaptor" />
 	</ra-entity>
+	<ra-entity
+			resource-adaptor-id="ResourceAdaptorID[name=ExposureLayerPersistenceResourceAdaptor,vendor=org.mobicents,version=1.0]"
+			entity-name="ExposureLayerPersistenceResourceAdaptor">
+		<properties />
+		<ra-link name="ExposureLayerPersistenceResourceAdaptor" />
+	</ra-entity>
 </deploy-config>

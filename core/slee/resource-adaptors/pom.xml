@@ -19,5 +19,6 @@
 		<module>scheduler-ra</module>
 		<module>mproc-ra</module>
 		<module>du</module>
+		<module>exposure-layer-persistence-ra</module>
 	</modules>
 </project>
