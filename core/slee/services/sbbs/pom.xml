@@ -97,6 +97,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.mobicents.slee.ra</groupId>
+            <artifactId>slee-ra-http-client-nio-ratype</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>mproc-ra</artifactId>
             <scope>test</scope>
