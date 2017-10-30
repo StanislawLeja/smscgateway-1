@@ -142,6 +142,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 
     private static final String CASSANDRA_USER = "cassandraUser";
     private static final String CASSANDRA_PASS = "cassandraPass";
+    
+    private static final String DELIVERY_RECEIPT_HTTP_NOTIFICATION_URL = "deliveryReceiptHttpNotificationUrl";
+    private static final String DELIVERY_RECEIPT_HTTP_NOTIFICATION_APP_SID = "deliveryReceiptHttpNotificationAppSid";
 
 	private static final String TAB_INDENT = "\t";
 	private static final String CLASS_ATTRIBUTE = "type";
@@ -414,6 +417,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
     // previous dueSlots. Value of this message means time offset in seconds
     // before actual time.
     private int skipUnsentMessages = -1;
+    
+    private String deliveryReceiptHttpNotificationUrl;
+    private String deliveryReceiptHttpNotificationAppSid;
 
     private SmscPropertiesManagement(String name) {
 		this.name = name;
@@ -1430,6 +1436,26 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
         generateRejectionCdr = aGenerateRejectionCdr;
     }
 
+    @Override
+    public final void setDeliveryReceiptHttpNotificationUrl(final String anUrl) {
+        deliveryReceiptHttpNotificationUrl = anUrl;
+    }
+
+    @Override
+    public final String getDeliveryReceiptHttpNotificationUrl() {
+        return deliveryReceiptHttpNotificationUrl;
+    }
+    
+    @Override
+    public final String getDeliveryReceiptHttpNotificationAppSid() {
+        return deliveryReceiptHttpNotificationAppSid;
+    }
+    
+    @Override
+    public final void setDeliveryReceiptHttpNotificationAppSid(final String anApplicationSid) {
+        deliveryReceiptHttpNotificationAppSid = anApplicationSid;
+    }
+
     public void start() throws Exception {
 
 		this.persistFile.clear();
@@ -1604,6 +1630,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 			writer.write(this.diameterDestHost, DIAMETER_DEST_HOST, String.class);
 			writer.write(this.diameterDestPort, DIAMETER_DEST_PORT, Integer.class);
 			writer.write(this.diameterUserName, DIAMETER_USER_NAME, String.class);
+			
+			writer.write(deliveryReceiptHttpNotificationUrl, DELIVERY_RECEIPT_HTTP_NOTIFICATION_URL, String.class);
+            writer.write(deliveryReceiptHttpNotificationAppSid, DELIVERY_RECEIPT_HTTP_NOTIFICATION_APP_SID, String.class);
 
 			writer.close();
 		} catch (Exception e) {
@@ -1949,6 +1978,9 @@ public class SmscPropertiesManagement implements SmscPropertiesManagementMBean {
 				this.diameterDestPort = val;
 
 			this.diameterUserName = reader.read(DIAMETER_USER_NAME, String.class);
+			
+            deliveryReceiptHttpNotificationUrl = reader.read(DELIVERY_RECEIPT_HTTP_NOTIFICATION_URL, String.class);
+            deliveryReceiptHttpNotificationAppSid = reader.read(DELIVERY_RECEIPT_HTTP_NOTIFICATION_APP_SID, String.class);
 
 			reader.close();
 		} catch (XMLStreamException ex) {

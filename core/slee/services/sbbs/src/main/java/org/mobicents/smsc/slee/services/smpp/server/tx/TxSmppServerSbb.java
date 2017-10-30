@@ -54,14 +54,27 @@ import org.mobicents.protocols.ss7.map.datacoding.GSMCharsetDecodingData;
 import org.mobicents.protocols.ss7.map.datacoding.Gsm7EncodingStyle;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
+import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.SmscCongestionControl;
 import org.mobicents.smsc.domain.SmscStatAggregator;
 import org.mobicents.smsc.domain.SmscStatProvider;
-import org.mobicents.smsc.library.*;
+import org.mobicents.smsc.library.CdrDetailedGenerator;
+import org.mobicents.smsc.library.CdrFinalGenerator;
+import org.mobicents.smsc.library.CdrGenerator;
+import org.mobicents.smsc.library.ErrorCode;
+import org.mobicents.smsc.library.EventType;
+import org.mobicents.smsc.library.MessageUtil;
+import org.mobicents.smsc.library.OriginationType;
+import org.mobicents.smsc.library.SbbStates;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.library.SmscProcessingException;
+import org.mobicents.smsc.library.TargetAddress;
 import org.mobicents.smsc.mproc.DeliveryReceiptData;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.services.submitsbb.SubmitCommonSbb;
+import org.mobicents.smsc.slee.services.util.DeliveryReceiptHttpNotification;
 import org.mobicents.smsc.slee.services.util.SbbStatsUtils;
 import org.restcomm.slee.resource.smpp.PduRequestTimeout;
 import org.restcomm.slee.resource.smpp.SendPduStatus;
@@ -101,7 +114,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     private static final String className = TxSmppServerSbb.class.getSimpleName();
 
     private static final long ONE = 1L;
-
+    
     private SmppTransactionACIFactory smppServerTransactionACIFactory = null;
     protected SmppSessions smppServerSessions = null;
     private SmscStatAggregator smscStatAggregator = SmscStatAggregator.getInstance();
@@ -112,6 +125,8 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
     private static Charset isoCharset = Charset.forName("ISO-8859-1");
     private static Charset gsm7Charset = new GSMCharset("GSM", new String[] {});
 
+    private DeliveryReceiptHttpNotification itsDeliveryReceiptHttpNotification;
+    
     public TxSmppServerSbb() {
         super(className);
     }
@@ -129,9 +144,17 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
             this.smppServerTransactionACIFactory = (SmppTransactionACIFactory) ctx
                     .lookup("slee/resources/smppp/server/1.0/acifactory");
             this.smppServerSessions = (SmppSessions) ctx.lookup("slee/resources/smpp/server/1.0/provider");
+            itsDeliveryReceiptHttpNotification = new DeliveryReceiptHttpNotification(logger, smscPropertiesManagement,
+                    (SbbContextExt) sbbContext, persistence);
         } catch (Exception ne) {
             logger.severe("Could not set SBB context:", ne);
         }
+    }
+
+    @Override
+    public void unsetSbbContext() {
+        itsDeliveryReceiptHttpNotification = null;
+        super.unsetSbbContext();
     }
 
     @Override
@@ -1613,6 +1636,8 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
                             deliveryReceiptData.getStatus().equals(MessageUtil.DELIVERY_ACK_STATE_DELIVERED), null,
                             deliveryReceiptData.getStatus().equals(MessageUtil.DELIVERY_ACK_STATE_ENROUTE));
                     sms0.setShortMessageText(updatedReceiptText);
+                    itsDeliveryReceiptHttpNotification.handleDeliveryReceiptData(messageId,
+                            deliveryReceiptData.getStatus());
                 } else {
                     // we have not found a local message - marking as unrecognized receipt
                     logger.warning("Remote delivery receipt - but no original message is found in local cache: clusterName="
@@ -1626,7 +1651,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
 
         this.forwardMessage(sms0, withCharging, smscStatAggregator, messageType, seqNumber);
     }
-
+    
     // *********
     // private methods
 

@@ -161,16 +161,31 @@
 							</span>
 						</div>
 
-						<div class="control-group">
-							<span class="span12" style="text-align: left;">
-								&nbsp;<button class="btn btn-danger" onclick="updateProperties();"><i class="icon-undo"></i> Revert</button>
-								&nbsp;<button class="btn btn-primary" onclick="applyProperties();"><i class="icon-save"></i> Save</button>
-							</span>
-						</div>								
 					</div>
 
+                    <h5>Delivery Receipt HTTP Notification</h5>
+                    <div id="dbrr-update-configuration-wrapper-2">
+                        <div id="div-httpdeliveryreceiptnotification-url" class="control-group">
+                            <span id="httpdeliveryreceiptnotification-url-span" class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="URL of the HTTP server that is able to receive delivery receipt notifications.">
+                                <span class="add-on">Delivery Receipt HTTP URL</span>
+                                <input id="httpdeliveryreceiptnotification-url" type="text" class="input-mini" style="width: 220px; margin-right: 12px; text-align: center;" value="" />
+                            </span>
+                        </div>
+                        <div id="div-httpdeliveryreceiptnotification-appsid" class="control-group">
+                            <span id="httpdeliveryreceiptnotification-appsid-span" class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Application SID used for HTTP delivery receipt notifications.">
+                                <span class="add-on">Delivery Receipt HTTP Application SID</span>
+                                <input id="httpdeliveryreceiptnotification-appsid" type="text" class="input-mini" style="width: 220px; margin-right: 12px; text-align: center;" value="" />
+                            </span>
+                        </div>
+                        <div class="control-group">
+                            <span class="span12" style="text-align: left;">
+                                &nbsp;<button class="btn btn-danger" onclick="updateProperties();"><i class="icon-undo"></i> Revert</button>
+                                &nbsp;<button class="btn btn-primary" onclick="applyProperties();"><i class="icon-save"></i> Save</button>
+                            </span>
+                        </div>
+                    </div>
 
-					
+
 				<script type="text/javascript">
 					$('#login-settings-error .close').on("click", function(e) {
 					    $(this).parent().hide();
@@ -323,6 +338,9 @@
 										} else { 
 											httpencodingforucs2.options[1].selected = true;
 										}										
+                                        $("#httpdeliveryreceiptnotification-url").val(response.value.DeliveryReceiptHttpNotificationUrl);
+                                        $("#httpdeliveryreceiptnotification-appsid").val(response.value.DeliveryReceiptHttpNotificationAppSid);
+
 									}],
 									error: function(value) {
 										errorUID = ("st" + new Date().getTime()).hashCode();
@@ -400,6 +418,8 @@
 			    			$("#div-httpencodingforucs2").removeClass("error");		
 			    		}
 
+                        var httpDeliveryReceiptNotificationUrl = $("#httpdeliveryreceiptnotification-url").val();
+                        var httpDeliveryReceiptNotificationAppSid = $("#httpdeliveryreceiptnotification-appsid").val();
 
 						if(formInvalid) {
 							$("#login-settings-error").show();
@@ -432,6 +452,8 @@
 									{ type: "write", mbean: mbeanSearch, attribute: "HttpDefaultDataCoding", value: httpdefaultdatacoding },
 									{ type: "write", mbean: mbeanSearch, attribute: "HttpEncodingForGsm7", value: httpencodingforgsm7 },
 									{ type: "write", mbean: mbeanSearch, attribute: "HttpEncodingForUCS2", value: httpencodingforucs2 },
+									{ type: "write", mbean: mbeanSearch, attribute: "DeliveryReceiptHttpNotificationUrl", value: httpDeliveryReceiptNotificationUrl },
+									{ type: "write", mbean: mbeanSearch, attribute: "DeliveryReceiptHttpNotificationAppSid", value: httpDeliveryReceiptNotificationAppSid },
 								],
 								{
 									success: function(response) {
