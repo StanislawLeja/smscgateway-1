@@ -22,27 +22,12 @@
 
 package org.mobicents.smsc.slee.services.smpp.server.rx;
 
-import static org.mobicents.smsc.slee.services.util.SbbStatsUtils.warnIfLong;
-
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.slee.ActivityContextInterface;
-import javax.slee.ActivityEndEvent;
-import javax.slee.EventContext;
-import javax.slee.Sbb;
-import javax.slee.SbbContext;
-import javax.slee.ServiceID;
-import javax.slee.serviceactivity.ServiceActivity;
-import javax.slee.serviceactivity.ServiceStartedEvent;
-
+import com.cloudhopper.smpp.SmppConstants;
+import com.cloudhopper.smpp.SmppSession.Type;
+import com.cloudhopper.smpp.pdu.*;
+import com.cloudhopper.smpp.tlv.Tlv;
+import com.cloudhopper.smpp.type.Address;
+import com.cloudhopper.smpp.type.RecoverablePduException;
 import org.mobicents.protocols.ss7.map.api.MAPProvider;
 import org.mobicents.protocols.ss7.map.api.MAPSmsTpduParameterFactory;
 import org.mobicents.protocols.ss7.map.api.smstpdu.CharacterSet;
@@ -55,49 +40,33 @@ import org.mobicents.protocols.ss7.map.datacoding.Gsm7EncodingStyle;
 import org.mobicents.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.smsc.domain.SmscStatAggregator;
-import org.mobicents.smsc.library.CdrDetailedGenerator;
-import org.mobicents.smsc.library.CdrGenerator;
-import org.mobicents.smsc.library.ErrorAction;
-import org.mobicents.smsc.library.ErrorCode;
-import org.mobicents.smsc.library.EventType;
-import org.mobicents.smsc.library.MessageUtil;
-import org.mobicents.smsc.library.SbbStates;
-import org.mobicents.smsc.library.Sms;
-import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmscProcessingException;
-import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.library.*;
 import org.mobicents.smsc.mproc.ProcessingType;
 import org.mobicents.smsc.slee.resources.scheduler.PduRequestTimeout2;
 import org.mobicents.smsc.slee.resources.scheduler.SendPduStatus2;
-import org.mobicents.smsc.slee.services.deliverysbb.ChunkData;
-import org.mobicents.smsc.slee.services.deliverysbb.ChunkDataList;
-import org.mobicents.smsc.slee.services.deliverysbb.ConfirmMessageInSendingPool;
-import org.mobicents.smsc.slee.services.deliverysbb.DeliveryCommonSbb;
-import org.mobicents.smsc.slee.services.deliverysbb.SentItem;
-import org.mobicents.smsc.slee.services.deliverysbb.SentItemsList;
+import org.mobicents.smsc.slee.services.deliverysbb.*;
 import org.mobicents.smsc.slee.services.smpp.server.events.SmsSetEvent;
 import org.mobicents.smsc.slee.services.util.SbbStatsUtils;
-import org.restcomm.slee.resource.smpp.PduRequestTimeout;
-import org.restcomm.slee.resource.smpp.SendPduStatus;
-import org.restcomm.slee.resource.smpp.SmppSessions;
-import org.restcomm.slee.resource.smpp.SmppTransaction;
-import org.restcomm.slee.resource.smpp.SmppTransactionACIFactory;
+import org.restcomm.slee.resource.smpp.*;
 import org.restcomm.smpp.Esme;
 import org.restcomm.smpp.EsmeManagement;
 import org.restcomm.smpp.SmppEncoding;
 import org.restcomm.smpp.SmppInterfaceVersionType;
 
-import com.cloudhopper.smpp.SmppConstants;
-import com.cloudhopper.smpp.SmppSession.Type;
-import com.cloudhopper.smpp.pdu.BaseSmResp;
-import com.cloudhopper.smpp.pdu.DeliverSm;
-import com.cloudhopper.smpp.pdu.DeliverSmResp;
-import com.cloudhopper.smpp.pdu.Pdu;
-import com.cloudhopper.smpp.pdu.SubmitSm;
-import com.cloudhopper.smpp.pdu.SubmitSmResp;
-import com.cloudhopper.smpp.tlv.Tlv;
-import com.cloudhopper.smpp.type.Address;
-import com.cloudhopper.smpp.type.RecoverablePduException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.slee.*;
+import javax.slee.serviceactivity.ServiceActivity;
+import javax.slee.serviceactivity.ServiceStartedEvent;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static org.mobicents.smsc.slee.services.util.SbbStatsUtils.warnIfLong;
 
 /**
  * 
@@ -321,6 +290,7 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
     public abstract ChildRelationExt getRxSmppServerChildSbb();
 
     private void onDeliverSmLocal(final RxSmppServerSbbUsage anSbbUsage, final SmsSetEvent event) {
+
         try {
             if (this.logger.isFineEnabled()) {
                 this.logger.fine("\nReceived Deliver SMS. event= " + event + "this=" + this);
@@ -711,9 +681,11 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
                 int sequenceNumber = 0;
                 int[] sequenceNumberExt = null;
+                byte[][] udhData = null;
                 int segmCnt = lstStrings.size();
                 if (segmCnt > 1) {
                     sequenceNumberExt = new int[segmCnt - 1];
+                    udhData = new byte[segmCnt][];
                 }
 
                 for (int segmentIndex = 0; segmentIndex < segmCnt; segmentIndex++) {
@@ -768,8 +740,10 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         } else {
                             SentItem sentItem = sendNextChunk(currData, smsSet, esme);
                             sms.setTimestampB(System.currentTimeMillis());
+                            sms.setGwOutStart(System.currentTimeMillis());
                             sentSequenceNumber = sentItem.getRemoteSequenceNumber();
                         }
+
 
                         if (logger.isInfoEnabled()) {
                             logger.info(String.format("\nSent submitSm to ESME: %s, msgNumInSendingPool: %d, sms=%s",
@@ -777,8 +751,14 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         }
                         if (segmentIndex == 0) {
                             sequenceNumber = sentSequenceNumber;
+
                         } else {
                             sequenceNumberExt[segmentIndex - 1] = sentSequenceNumber;
+                        }
+                        if(!lstUdhs.isEmpty()){
+                            if(lstUdhs.size() > 1 && lstUdhs.size() > segmentIndex ){
+                                udhData[segmentIndex] = lstUdhs.get(segmentIndex);
+                            }
                         }
                     } else {
                         DeliverSm deliverSm = new DeliverSm();
@@ -835,9 +815,9 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         } else {
                             SentItem sentItem = sendNextChunk(currData, smsSet, esme);
                             sms.setTimestampB(System.currentTimeMillis());
+                            sms.setGwOutStart(System.currentTimeMillis());
                             sentSequenceNumber = sentItem.getRemoteSequenceNumber();
                         }
-
                         if (logger.isInfoEnabled()) {
                             logger.info(String.format("\nSent deliverSm to ESME: %s, msgNumInSendingPool: %d, sms=%s",
                                     esme.getName(), poolIndex, sms.toString()));
@@ -847,10 +827,15 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                         } else {
                             sequenceNumberExt[segmentIndex - 1] = sentSequenceNumber;
                         }
+                        if(!lstUdhs.isEmpty()){
+                            if(lstUdhs.size() > 1 && lstUdhs.size() > segmentIndex ){
+                                udhData[segmentIndex] = lstUdhs.get(segmentIndex);
+                            }
+                        }
                     }
                 }
 
-                this.registerMessageInSendingPool(poolIndex, sequenceNumber, sequenceNumberExt);
+                this.registerMessageInSendingPool(poolIndex, sequenceNumber, sequenceNumberExt,udhData);
             }
 
             this.endRegisterMessageInSendingPool();
@@ -1047,6 +1032,7 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
             }
 
             confirmMessageInSendingPool.sms.setTimestampC(System.currentTimeMillis());
+            confirmMessageInSendingPool.sms.setGwOutStop(System.currentTimeMillis());
             if (destAddressLimitationEnabled) {
                 ChunkDataList dataList = retreivePendingChunks();
                 if (dataList != null && !dataList.getPendingList().isEmpty()) {
@@ -1079,6 +1065,9 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                 this.generateDetailedCDR(sms, EventType.OUT_SMPP_SENT, sms.getSmsSet().getStatus(), messageType, status,
                         esme.getRemoteAddressAndPort(), event.getSequenceNumber());
 
+                this.generateFinalCDR(sms, CdrGenerator.CDR_PARTIAL_ESME, CdrGenerator.CDR_SUCCESS_NO_REASON, true, false,
+                        esme.getRemoteAddressAndPort());
+
                 return;
             }
 
@@ -1107,11 +1096,17 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
             this.generateCDR(sms, isPartial ? CdrGenerator.CDR_PARTIAL_ESME : CdrGenerator.CDR_SUCCESS_ESME,
                     CdrGenerator.CDR_SUCCESS_NO_REASON, confirmMessageInSendingPool.splittedMessage, true);
 
+
+
             String messageType = esme.getSmppSessionType() == Type.CLIENT ? CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITSM
                     : CdrDetailedGenerator.CDR_MSG_TYPE_DELIVERSM;
 
             this.generateDetailedCDR(sms, EventType.OUT_SMPP_SENT, sms.getSmsSet().getStatus(), messageType, status,
                     esme.getRemoteAddressAndPort(), event.getSequenceNumber());
+
+            this.generateFinalCDR(sms, isPartial ? CdrGenerator.CDR_PARTIAL_ESME : CdrGenerator.CDR_SUCCESS_ESME,
+                    CdrGenerator.CDR_SUCCESS_NO_REASON, confirmMessageInSendingPool.splittedMessage, true,
+                    esme.getRemoteAddressAndPort());
 
             // adding a success receipt if it is needed
             this.generateSuccessReceipt(smsSet, sms);

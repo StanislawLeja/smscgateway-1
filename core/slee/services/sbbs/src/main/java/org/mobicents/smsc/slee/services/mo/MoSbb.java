@@ -22,19 +22,7 @@
 
 package org.mobicents.smsc.slee.services.mo;
 
-import java.nio.charset.Charset;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.UUID;
-
-import javax.slee.ActivityContextInterface;
-import javax.slee.ActivityEndEvent;
-import javax.slee.EventContext;
-import javax.slee.InitialEventSelector;
-import javax.slee.ServiceID;
-import javax.slee.serviceactivity.ServiceActivity;
-import javax.slee.serviceactivity.ServiceStartedEvent;
-
+import com.cloudhopper.smpp.SmppConstants;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContext;
 import org.mobicents.protocols.ss7.map.api.MAPApplicationContextName;
 import org.mobicents.protocols.ss7.map.api.MAPDialog;
@@ -44,49 +32,24 @@ import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.primitives.AddressString;
 import org.mobicents.protocols.ss7.map.api.primitives.IMSI;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
-import org.mobicents.protocols.ss7.map.api.service.sms.ForwardShortMessageRequest;
-import org.mobicents.protocols.ss7.map.api.service.sms.ForwardShortMessageResponse;
-import org.mobicents.protocols.ss7.map.api.service.sms.MAPDialogSms;
-import org.mobicents.protocols.ss7.map.api.service.sms.MoForwardShortMessageRequest;
-import org.mobicents.protocols.ss7.map.api.service.sms.MoForwardShortMessageResponse;
-import org.mobicents.protocols.ss7.map.api.service.sms.MtForwardShortMessageRequest;
-import org.mobicents.protocols.ss7.map.api.service.sms.MtForwardShortMessageResponse;
-import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_DA;
-import org.mobicents.protocols.ss7.map.api.service.sms.SM_RP_OA;
-import org.mobicents.protocols.ss7.map.api.service.sms.SmsMessage;
-import org.mobicents.protocols.ss7.map.api.service.sms.SmsSignalInfo;
-import org.mobicents.protocols.ss7.map.api.smstpdu.AbsoluteTimeStamp;
-import org.mobicents.protocols.ss7.map.api.smstpdu.AddressField;
-import org.mobicents.protocols.ss7.map.api.smstpdu.DataCodingScheme;
-import org.mobicents.protocols.ss7.map.api.smstpdu.NumberingPlanIdentification;
-import org.mobicents.protocols.ss7.map.api.smstpdu.SmsCommandTpdu;
-import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverReportTpdu;
-import org.mobicents.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
-import org.mobicents.protocols.ss7.map.api.smstpdu.SmsSubmitTpdu;
-import org.mobicents.protocols.ss7.map.api.smstpdu.SmsTpdu;
-import org.mobicents.protocols.ss7.map.api.smstpdu.TypeOfNumber;
-import org.mobicents.protocols.ss7.map.api.smstpdu.UserData;
-import org.mobicents.protocols.ss7.map.api.smstpdu.UserDataHeader;
-import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriod;
-import org.mobicents.protocols.ss7.map.api.smstpdu.ValidityPeriodFormat;
+import org.mobicents.protocols.ss7.map.api.service.sms.*;
+import org.mobicents.protocols.ss7.map.api.smstpdu.*;
 import org.mobicents.protocols.ss7.sccp.parameter.GlobalTitle;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
-import org.mobicents.slee.resource.map.events.DialogDelimiter;
-import org.mobicents.slee.resource.map.events.DialogNotice;
-import org.mobicents.slee.resource.map.events.DialogProviderAbort;
-import org.mobicents.slee.resource.map.events.DialogReject;
-import org.mobicents.slee.resource.map.events.DialogRequest;
-import org.mobicents.slee.resource.map.events.DialogTimeout;
-import org.mobicents.slee.resource.map.events.DialogUserAbort;
-import org.mobicents.slee.resource.map.events.ErrorComponent;
-import org.mobicents.slee.resource.map.events.RejectComponent;
+import org.mobicents.slee.resource.map.events.*;
 import org.mobicents.smsc.domain.MoChargingType;
 import org.mobicents.smsc.domain.SmscStatProvider;
 import org.mobicents.smsc.library.*;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.services.submitsbb.SubmitCommonSbb;
 
-import com.cloudhopper.smpp.SmppConstants;
+import javax.slee.*;
+import javax.slee.serviceactivity.ServiceActivity;
+import javax.slee.serviceactivity.ServiceStartedEvent;
+import java.nio.charset.Charset;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * 
@@ -246,6 +209,8 @@ public abstract class MoSbb extends MoCommonSbb {
 				if (smscPropertiesManagement.isGenerateRejectionCdr()) {
 					generateCDR(dialog.getNetworkId(), evt.getIMSI().getData(), dialog.getLocalAddress(),
 							CdrGenerator.CDR_SUBMIT_FAILED_MO, errorMessage.toString(), true);
+                    generateFinalCDR(dialog.getNetworkId(), evt.getIMSI().getData(), dialog.getLocalAddress(),
+                            CdrGenerator.CDR_SUBMIT_FAILED_MO, errorMessage.toString(), true, null,null, null, 0L);
 				}
 				dialog.close(false);
                 return;
@@ -314,9 +279,12 @@ public abstract class MoSbb extends MoCommonSbb {
 				if (smscPropertiesManagement.isGenerateRejectionCdr() && !e1.isMessageRejectCdrCreated()) {
                     if (sms != null) {
                         generateCDR(sms, CdrGenerator.CDR_SUBMIT_FAILED_MO, e1.getMessage(), false, true);
+                        generateFinalCDR(sms, CdrGenerator.CDR_SUBMIT_FAILED_MO, e1.getMessage(), false, true, null);
                     } else {
                         generateCDR(dialog.getNetworkId(), evt.getIMSI().getData(), dialog.getLocalAddress(),
                                 CdrGenerator.CDR_SUBMIT_FAILED_MO, errorMessage.toString(), true);
+                        generateFinalCDR(dialog.getNetworkId(), evt.getIMSI().getData(), dialog.getLocalAddress(),
+                                CdrGenerator.CDR_SUBMIT_FAILED_MO, errorMessage.toString(), true, null,null, null, 0L);
                     }
 				}
 				dialog.close(false);
@@ -338,6 +306,8 @@ public abstract class MoSbb extends MoCommonSbb {
 				if (smscPropertiesManagement.isGenerateRejectionCdr()) {
 					generateCDR(dialog.getNetworkId(), evt.getIMSI().getData(), dialog.getLocalAddress(),
 							CdrGenerator.CDR_SUBMIT_FAILED_MO, errorMessage.toString(), true);
+                    generateFinalCDR(dialog.getNetworkId(), evt.getIMSI().getData(), dialog.getLocalAddress(),
+                            CdrGenerator.CDR_SUBMIT_FAILED_MO, errorMessage.toString(), true, null,null, null, 0L);
 				}
 				dialog.close(false);
 			} catch (Throwable e) {
@@ -413,6 +383,8 @@ public abstract class MoSbb extends MoCommonSbb {
 	                this.logger.warning("************* 0002");
                     generateCDR(dialog.getNetworkId(), null, dialog.getLocalAddress(), isMt ? CdrGenerator.CDR_SUBMIT_FAILED_HR
                             : CdrGenerator.CDR_SUBMIT_FAILED_MO, errorMessage.toString(), true);
+                    generateFinalCDR(dialog.getNetworkId(), null, dialog.getLocalAddress(), isMt ? CdrGenerator.CDR_SUBMIT_FAILED_HR
+                            : CdrGenerator.CDR_SUBMIT_FAILED_MO, errorMessage.toString(), true, null,null, null, 0L);
                     this.logger.warning("************* 0003");
 				}
                 dialog.close(false);
@@ -484,10 +456,15 @@ public abstract class MoSbb extends MoCommonSbb {
                     if (sms != null) {
                         generateCDR(sms, isMt ? CdrGenerator.CDR_SUBMIT_FAILED_HR
                                 : CdrGenerator.CDR_SUBMIT_FAILED_MO, e1.getMessage(), false, true);
+                        generateFinalCDR(sms, isMt ? CdrGenerator.CDR_SUBMIT_FAILED_HR
+                                : CdrGenerator.CDR_SUBMIT_FAILED_MO, e1.getMessage(), false, true, null);
                     } else {
                         generateCDR(dialog.getNetworkId(), null, dialog.getLocalAddress(),
                                 isMt ? CdrGenerator.CDR_SUBMIT_FAILED_HR : CdrGenerator.CDR_SUBMIT_FAILED_MO,
                                 errorMessage.toString(), true);
+                        generateFinalCDR(dialog.getNetworkId(), null, dialog.getLocalAddress(),
+                                isMt ? CdrGenerator.CDR_SUBMIT_FAILED_HR : CdrGenerator.CDR_SUBMIT_FAILED_MO,
+                                errorMessage.toString(), true, null,null, null, 0L);
                     }
                 }
 
@@ -513,6 +490,9 @@ public abstract class MoSbb extends MoCommonSbb {
 	            if (smscPropertiesManagement.isGenerateRejectionCdr()) {
 	                generateCDR(dialog.getNetworkId(), null, dialog.getLocalAddress(), isMt ? CdrGenerator.CDR_SUBMIT_FAILED_HR
 	                        : CdrGenerator.CDR_SUBMIT_FAILED_MO, errorMessage.toString(), true);
+                    generateFinalCDR(dialog.getNetworkId(), null, dialog.getLocalAddress(), isMt ? CdrGenerator.CDR_SUBMIT_FAILED_HR
+                            : CdrGenerator.CDR_SUBMIT_FAILED_MO, errorMessage.toString(), true, null,null, null, 0L);
+
 	            }
 
 	            dialog.sendErrorComponent(evt.getInvokeId(), errorMessage);
@@ -572,6 +552,9 @@ public abstract class MoSbb extends MoCommonSbb {
 				if (smscPropertiesManagement.isGenerateRejectionCdr()) {
 					generateCDR(dialog.getNetworkId(), null, dialog.getLocalAddress(), CdrGenerator.CDR_SUBMIT_FAILED_HR,
 							errorMessage.toString(), true);
+                    generateFinalCDR(dialog.getNetworkId(), null, dialog.getLocalAddress(), CdrGenerator.CDR_SUBMIT_FAILED_HR,
+                            errorMessage.toString(), true, null,null, null, 0L);
+
 				}
                 dialog.close(false);
                 return;
@@ -630,9 +613,12 @@ public abstract class MoSbb extends MoCommonSbb {
 				if (smscPropertiesManagement.isGenerateRejectionCdr() && !e1.isMessageRejectCdrCreated()) {
                     if (sms != null) {
                         generateCDR(sms, CdrGenerator.CDR_SUBMIT_FAILED_HR, e1.getMessage(), false, true);
+                        generateFinalCDR(sms, CdrGenerator.CDR_SUBMIT_FAILED_HR, e1.getMessage(), false, true, null);
                     } else {
                         generateCDR(dialog.getNetworkId(), null, dialog.getLocalAddress(), CdrGenerator.CDR_SUBMIT_FAILED_HR,
                                 errorMessage.toString(), true);
+                        generateFinalCDR(dialog.getNetworkId(), null, dialog.getLocalAddress(), CdrGenerator.CDR_SUBMIT_FAILED_HR,
+                                errorMessage.toString(), true, null,null, null, 0L);
                     }
 				}
 				dialog.close(false);
@@ -653,6 +639,8 @@ public abstract class MoSbb extends MoCommonSbb {
 				if (smscPropertiesManagement.isGenerateRejectionCdr()) {
 					generateCDR(dialog.getNetworkId(), null, dialog.getLocalAddress(), CdrGenerator.CDR_SUBMIT_FAILED_HR,
 							errorMessage.toString(), true);
+                    generateFinalCDR(dialog.getNetworkId(), null, dialog.getLocalAddress(), CdrGenerator.CDR_SUBMIT_FAILED_HR,
+                            errorMessage.toString(), true, null,null, null, 0L);
 				}
 			} catch (Throwable e) {
 				logger.severe("Error while sending Error message", e);
@@ -1274,4 +1262,22 @@ public abstract class MoSbb extends MoCommonSbb {
                 0, null, 0, null, status, reason, true, true, lastSegment,
                 smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr());
 	}
+
+    protected void generateFinalCDR(Sms sms, String status, String reason, boolean messageIsSplitted, boolean lastSegment,
+                                    String destAddrAndPort) {
+        CdrFinalGenerator.generateFinalCdr(sms, status, reason, smscPropertiesManagement.getGenerateReceiptCdr(), messageIsSplitted,
+                lastSegment, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                smscPropertiesManagement.getDelayParametersInCdr(), null, destAddrAndPort, smscPropertiesManagement.getGenerateFinalCdr());
+    }
+
+    protected void generateFinalCDR(int networkId, String imsi, SccpAddress sccpAddress, String status, String reason,
+                                    boolean lastSegment, String sourceAddrAndPort,
+                                    String destAddrAndPort, String origEsmeName, Long receiptLocalMessageId) {
+        CdrFinalGenerator.generateFinalCdr(null, 0, 0, null, 0, 0, OriginationType.SS7_MO, null, imsi, sccpAddress.toString(),
+                networkId, 0, null, 0, null, status, reason, true, lastSegment, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                smscPropertiesManagement.getDelayParametersInCdr(),sourceAddrAndPort, destAddrAndPort, origEsmeName,
+                receiptLocalMessageId, null, smscPropertiesManagement.getGenerateFinalCdr());
+    }
+
+
 }

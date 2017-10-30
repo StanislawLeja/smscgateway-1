@@ -184,6 +184,7 @@ The fields "DUE_SLOT", "TARGET_ID", "ID" together act as the primary key.
 | EXTRA_DATA_2 | ASCII | A field for future usage.
 | EXTRA_DATA_3 | ASCII | A field for future usage.
 | EXTRA_DATA_4 | ASCII | A field for future usage.
+| EXPOSURE_LAYER_DATA | ASCII | A field that contains data from Exposure Layer in CSV format such as messageId, correlationId and timestamps.
 |===
 
 === MESSAGES_yyyy_mm_dd
@@ -250,6 +251,7 @@ The fields "ADDR_DST_DIGITS", "ID" together act as the primary key.
 | EXTRA_DATA_2 | ASCII | A field for future usage.
 | EXTRA_DATA_3 | ASCII | A field for future usage.
 | EXTRA_DATA_4 | ASCII | A field for future usage.
+| EXPOSURE_LAYER_DATA | ASCII | A field that contains data from Exposure Layer in CSV format such as messageId, correlationId and timestamps.
 |===
 
 === MES_ID_YYYY_MM_DD

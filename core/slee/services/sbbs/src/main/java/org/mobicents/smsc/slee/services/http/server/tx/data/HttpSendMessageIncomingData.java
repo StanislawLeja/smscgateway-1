@@ -68,8 +68,11 @@ public class HttpSendMessageIncomingData extends BaseIncomingData {
     private NPI senderNpi;
     private byte[] udh;
 
+    private String exposureLayerData;
+
     public HttpSendMessageIncomingData(String userId, String password, String msg, String formatParam, String smscEncodingStr, String messageBodyEncodingStr,
-                                       String sender, String senderTon, String senderNpi, String[] to, SmscPropertiesManagement smscPropertiesManagement, HttpUsersManagement httpUsersManagement, String udhStr) throws HttpApiException, UnauthorizedException {
+                                       String sender, String senderTon, String senderNpi, String[] to, SmscPropertiesManagement smscPropertiesManagement,
+                                       HttpUsersManagement httpUsersManagement, String udhStr, String exposureLayerData) throws HttpApiException, UnauthorizedException {
         super(userId, password, formatParam, httpUsersManagement);
 
         if (isEmptyOrNull(msg)) {
@@ -134,6 +137,9 @@ public class HttpSendMessageIncomingData extends BaseIncomingData {
 
         if (!isEmptyOrNull(udhStr)) {
             this.udh = udhToByte(udhStr);
+        }
+        if (!isEmptyOrNull(exposureLayerData)) {
+            this.exposureLayerData = exposureLayerData;
         }
 
         this.sender = sender;
@@ -297,6 +303,10 @@ public class HttpSendMessageIncomingData extends BaseIncomingData {
         return udh;
     }
 
+    public String getExposureLayerData() {
+        return exposureLayerData;
+    }
+
     public String udhToString (byte[] udhs) {
         if (udhs != null) {
 			StringBuilder udhtoString = new StringBuilder();
@@ -327,6 +337,7 @@ public class HttpSendMessageIncomingData extends BaseIncomingData {
                 ", senderNpi='" + senderNpi + '\'' +
                 ", destAddresses=" + destAddresses + '\'' +
                 ", udh=" + udhToString(udh) + '\'' +
+                ", exposureLayerData=" + exposureLayerData + '\'' +
                 '}';
     }
 }

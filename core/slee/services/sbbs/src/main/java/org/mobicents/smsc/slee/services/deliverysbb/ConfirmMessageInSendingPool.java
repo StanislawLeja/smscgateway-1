@@ -36,6 +36,7 @@ public class ConfirmMessageInSendingPool {
     public Sms sms;
     public int msgNum;
     public boolean splittedMessage;
+    public byte[] udhData;
 
     @Override
     public String toString() {
@@ -50,6 +51,8 @@ public class ConfirmMessageInSendingPool {
         }
         if (splittedMessage)
             sb.append(", splittedMessage");
+            sb.append(", udhData=");
+            sb.append(udhData);
         sb.append("]");
 
         return sb.toString();

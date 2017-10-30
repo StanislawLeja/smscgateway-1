@@ -22,16 +22,18 @@
 
 package org.mobicents.smsc.slee.services.deliverysbb;
 
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import org.mobicents.smsc.domain.MProcManagement;
+import org.mobicents.smsc.domain.SmscPropertiesManagement;
+import org.mobicents.smsc.library.ErrorAction;
+import org.mobicents.smsc.library.Sms;
+import org.mobicents.smsc.library.SmsSet;
+import org.mobicents.smsc.library.SmsSetCache;
+import org.mobicents.smsc.mproc.ProcessingType;
+import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
+import org.restcomm.smpp.GenerateType;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import javax.slee.ActivityContextInterface;
 import javax.slee.CreateException;
@@ -41,23 +43,11 @@ import javax.slee.facilities.FacilityException;
 import javax.slee.facilities.TimerID;
 import javax.slee.facilities.TraceLevel;
 import javax.slee.facilities.Tracer;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.UUID;
 
-import org.mobicents.smsc.domain.MProcManagement;
-import org.mobicents.smsc.domain.SmscPropertiesManagement;
-import org.mobicents.smsc.library.ErrorAction;
-import org.mobicents.smsc.library.Sms;
-import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCache;
-import org.mobicents.smsc.mproc.ProcessingType;
-import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterfaceProxy;
-import org.mobicents.smsc.slee.services.deliverysbb.DeliveryCommonSbb;
-import org.mobicents.smsc.slee.services.deliverysbb.PendingRequestsList;
-import org.restcomm.smpp.GenerateType;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import com.cloudhopper.smpp.pdu.PduRequest;
+import static org.testng.Assert.*;
 
 /**
 *
@@ -154,11 +144,11 @@ public class DeliveryCommonSbbTest {
         assertEquals(sbb.getUnconfirmedMessageCountInSendingPool(), 5);
         assertFalse(sbb.isMessageConfirmedInSendingPool(1));
 
-        sbb.registerMessageInSendingPool(0, 100, null);
-        sbb.registerMessageInSendingPool(1, 101, null);
-        sbb.registerMessageInSendingPool(2, 102, null);
-        sbb.registerMessageInSendingPool(3, 103, null);
-        sbb.registerMessageInSendingPool(4, 104, null);
+        sbb.registerMessageInSendingPool(0, 100, null, null);
+        sbb.registerMessageInSendingPool(1, 101, null, null);
+        sbb.registerMessageInSendingPool(2, 102, null, null);
+        sbb.registerMessageInSendingPool(3, 103, null, null);
+        sbb.registerMessageInSendingPool(4, 104, null, null);
         sbb.endRegisterMessageInSendingPool();
 
         assertFalse(sbb.isDeliveringEnded());
@@ -340,11 +330,11 @@ public class DeliveryCommonSbbTest {
         loadSbb(sbb);
 
         int cnt = sbb.obtainNextMessagesSendingPool(5, ProcessingType.SMPP);
-        sbb.registerMessageInSendingPool(0, 100, null);
-        sbb.registerMessageInSendingPool(1, 101, null);
-        sbb.registerMessageInSendingPool(2, 102, null);
-        sbb.registerMessageInSendingPool(3, 103, null);
-        sbb.registerMessageInSendingPool(4, 104, null);
+        sbb.registerMessageInSendingPool(0, 100, null, null);
+        sbb.registerMessageInSendingPool(1, 101, null, null);
+        sbb.registerMessageInSendingPool(2, 102, null, null);
+        sbb.registerMessageInSendingPool(3, 103, null, null);
+        sbb.registerMessageInSendingPool(4, 104, null, null);
         sbb.endRegisterMessageInSendingPool();
 
         assertEquals(sbb.getCurrentMsgNumValue(), 6);
@@ -492,11 +482,11 @@ public class DeliveryCommonSbbTest {
         int[] ext0 = new int[0];
         int[] ext1 = new int[] { 201, 202 };
         int[] ext2 = new int[] { 301, 302, 303, 304 };
-        sbb.registerMessageInSendingPool(0, 100, ext0);
-        sbb.registerMessageInSendingPool(1, 101, ext1);
-        sbb.registerMessageInSendingPool(2, 102, null);
-        sbb.registerMessageInSendingPool(3, 103, null);
-        sbb.registerMessageInSendingPool(4, 104, ext2);
+        sbb.registerMessageInSendingPool(0, 100, ext0, null);
+        sbb.registerMessageInSendingPool(1, 101, ext1, null);
+        sbb.registerMessageInSendingPool(2, 102, null, null);
+        sbb.registerMessageInSendingPool(3, 103, null, null);
+        sbb.registerMessageInSendingPool(4, 104, ext2, null);
         sbb.endRegisterMessageInSendingPool();
 
         assertEquals(cnt, 5);

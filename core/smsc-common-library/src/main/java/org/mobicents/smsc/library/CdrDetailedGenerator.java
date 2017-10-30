@@ -1,11 +1,11 @@
 package org.mobicents.smsc.library;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.apache.log4j.Logger;
 import org.mobicents.smsc.mproc.DeliveryReceiptData;
 import org.restcomm.smpp.parameter.TlvSet;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class CdrDetailedGenerator {
     private static final Logger logger = Logger.getLogger(CdrDetailedGenerator.class);
@@ -42,10 +42,141 @@ public class CdrDetailedGenerator {
             long statusCode, int mprocRuleId, String sourceAddrAndPort, String destAddrAndPort, int seqNumber,
             boolean generateReceiptCdr, boolean generateDetailedCdr) {
 
-        generateDetailedCdr(sms.isMcDeliveryReceipt(), sms.getShortMessageText(), sms.getTlvSet(), sms.getTimestampA(),
+        boolean mcDeliveryReceipt = sms.isMcDeliveryReceipt();
+        String shortMessageText = sms.getShortMessageText();
+        TlvSet tlvSet = sms.getTlvSet();
+        Long tsA = sms.getTimestampA();
+        Long tsB = sms.getTimestampB();
+        Long tsC = sms.getTimestampC();
+        Long messageId = sms.getMessageId();
+        String origEsmeName = sms.getOrigEsmeName();
+        String EL_messageId = "";
+        String EL_correlationId = "";
+        String SourceAddr = sms.getSourceAddr();
+        String DestAddr = sms.getSmsSet().getDestAddr();
+        int OrigNetworkId = sms.getOrigNetworkId();
+        int NetworkId = sms.getOrigNetworkId();
+
+        SmsExposureLayerData objSmsExposureLayerData = null;
+        if(sms.getExposureLayerData() != null){
+            objSmsExposureLayerData = new SmsExposureLayerData(sms.getExposureLayerData());
+            EL_messageId = objSmsExposureLayerData.getMessageId();
+            EL_correlationId = objSmsExposureLayerData.getCorrelationId();
+
+        }
+
+        if (!generateDetailedCdr) {
+            return;
+        }
+
+        if (!generateReceiptCdr && mcDeliveryReceipt) {
+            // we do not generate CDR's for receipt if generateReceiptCdr option is off
+            return;
+        }
+        String timestamp = DATE_FORMAT.format(new Date());
+
+        String dlrStatus = null;
+        String origMessageID = null;
+
+        DeliveryReceiptData deliveryReceiptData = null;
+        if (shortMessageText != null && tlvSet != null) {
+            deliveryReceiptData = MessageUtil.parseDeliveryReceipt(shortMessageText, tlvSet);
+            if (deliveryReceiptData != null) {
+                dlrStatus = deliveryReceiptData.getStatus();
+                if (deliveryReceiptData.getTlvMessageState() != null) {
+                    int tlvMessageState = deliveryReceiptData.getTlvMessageState();
+                    if (tlvMessageState != 0 && dlrStatus != null)
+                        if (!dlrStatus.substring(0, 4)
+                                .equals(MessageState.fromInt(tlvMessageState).toString().substring(0, 5))) {
+                            dlrStatus = "err";
+                        }
+                }
+                origMessageID = deliveryReceiptData.getMessageId();
+            }
+        }
+
+        String destIP = null, destPort = null;
+        if (destAddrAndPort != null) {
+            String[] parts = destAddrAndPort.split(":");
+            destIP = parts[0];
+            destPort = parts[1];
+            if(sms.getDestIP() == null){
+                sms.setDestIP(destIP);
+            }
+            if(sms.getDestPort() == null){
+                sms.setDestPort(destPort);
+            }
+        }else{
+            destIP = sms.getDestIP();
+            destPort = sms.getDestPort();
+        }
+
+        String sourceIP = null, sourcePort = null;
+        if (sourceAddrAndPort != null) {
+            String[] parts = sourceAddrAndPort.split(":");
+            sourceIP = parts[0];
+            sourcePort = parts[1];
+            if(sms.getSourceIP() == null){
+                sms.setSourceIP(sourceIP);
+            }
+            if(sms.getSourcePort() == null){
+                sms.setSourcePort(sourcePort);
+            }
+        }else{
+            sourceIP = sms.getSourceIP();
+            sourcePort = sms.getSourcePort();
+        }
+
+        String timestampA = null, timestampB = null, timestampC = null;
+        if (tsA != null && tsA != 0)
+            timestampA = DATE_FORMAT.format(tsA);
+        if (tsB != null && tsB != 0)
+            timestampB = DATE_FORMAT.format(tsB);
+        if (tsC != null && tsC != 0)
+            timestampC = DATE_FORMAT.format(tsC);
+
+       /* SmsExposureLayerData objSmsExposureLayerData = null;
+        boolean exposureLayerDataSet = false;
+        if(smsEvent.getExposureLayerData() != null){
+            objSmsExposureLayerData = new SmsExposureLayerData(smsEvent.getExposureLayerData());
+            exposureLayerDataSet = true;
+        }*/
+
+        StringBuilder sb = new StringBuilder();
+        appendObject(sb, timestamp);
+        appendObject(sb, eventType);
+        appendObject(sb, errorCode);
+        appendObject(sb, messageType);
+        appendNumber(sb, statusCode);
+        appendNumber(sb, messageId);
+        appendObject(sb, origMessageID);
+        appendObject(sb, dlrStatus);
+        appendNumber(sb, Long.valueOf(mprocRuleId));
+        appendObject(sb, origEsmeName);
+        appendObject(sb, timestampA);
+        appendObject(sb, timestampB);
+        appendObject(sb, timestampC);
+        appendObject(sb, sourceIP);
+        appendObject(sb, sourcePort);
+        appendObject(sb, destIP);
+        appendObject(sb, destPort);
+        appendNumber(sb, Long.valueOf(seqNumber));
+        appendObject(sb, EL_messageId);
+        appendObject(sb, EL_correlationId);
+        appendObject(sb, SourceAddr);
+        appendObject(sb, DestAddr);
+        appendObject(sb, OrigNetworkId);
+        appendObject(sb, NetworkId);
+
+
+        CdrDetailedGenerator.generateDetailedCdr(sb.toString());
+
+
+
+        /*generateDetailedCdr(sms.isMcDeliveryReceipt(), sms.getShortMessageText(), sms.getTlvSet(), sms.getTimestampA(),
                 sms.getTimestampB(), sms.getTimestampC(), sms.getMessageId(), sms.getOrigEsmeName(), eventType, errorCode,
                 messageType, statusCode, mprocRuleId, sourceAddrAndPort, destAddrAndPort, seqNumber, generateReceiptCdr,
-                generateDetailedCdr);
+                generateDetailedCdr);*/
     }
 
     public static void generateDetailedCdr(boolean mcDeliveryReceipt, String shortMessageText, TlvSet tlvSet, Long tsA,
@@ -109,6 +240,21 @@ public class CdrDetailedGenerator {
         if (tsC != null && tsC != 0)
             timestampC = DATE_FORMAT.format(tsC);
 
+       /* SmsExposureLayerData objSmsExposureLayerData = null;
+        boolean exposureLayerDataSet = false;
+        if(smsEvent.getExposureLayerData() != null){
+            objSmsExposureLayerData = new SmsExposureLayerData(smsEvent.getExposureLayerData());
+            exposureLayerDataSet = true;
+        }*/
+
+
+        String EL_messageId = "";
+        String EL_correlationId = "";
+        String SourceAddr = "";
+        String DestAddr = "";
+        int OrigNetworkId = -1;
+        int NetworkId = -1;
+
         StringBuilder sb = new StringBuilder();
         appendObject(sb, timestamp);
         appendObject(sb, eventType);
@@ -128,6 +274,13 @@ public class CdrDetailedGenerator {
         appendObject(sb, destIP);
         appendObject(sb, destPort);
         appendNumber(sb, Long.valueOf(seqNumber));
+        appendObject(sb, EL_messageId);
+        appendObject(sb, EL_correlationId);
+        appendObject(sb, SourceAddr);
+        appendObject(sb, DestAddr);
+        appendObject(sb, OrigNetworkId);
+        appendObject(sb, NetworkId);
+
 
         CdrDetailedGenerator.generateDetailedCdr(sb.toString());
     }

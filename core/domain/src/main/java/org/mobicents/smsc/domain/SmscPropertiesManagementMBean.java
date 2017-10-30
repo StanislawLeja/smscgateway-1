@@ -22,11 +22,11 @@
 
 package org.mobicents.smsc.domain;
 
-import java.util.Map;
-
 import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.restcomm.smpp.GenerateType;
 import org.restcomm.smpp.SmppEncoding;
+
+import java.util.Map;
 
 /**
  * 
@@ -168,6 +168,10 @@ public interface SmscPropertiesManagementMBean {
 	public boolean getGenerateDetailedCdr();
 
 	public void setGenerateDetailedCdr(boolean generateDetailedCdr);
+
+    public boolean getGenerateFinalCdr();
+
+    public void setGenerateFinalCdr(boolean generateFinalCdr);
 
     public boolean getGenerateTempFailureCdr();
 

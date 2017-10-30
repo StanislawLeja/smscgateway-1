@@ -614,7 +614,16 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 										<option>false</option>
 									</select>
 								</span>                         
-							</div>	
+							</div>
+							<div id="div-generateFinalCdr" class="control-group">
+								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="The SMSC can be configured to generate final CDR logging. By default the SMSC will generate regular CDR only. However if you require the SMSC to generate final CDR, you have to set the parameter 'generatefinalcdr' to true.">
+									<span class="add-on">Generate final CDR</span>
+									<select id="generateFinalCdr" >
+										<option>true</option>
+										<option>false</option>
+									</select>
+								</span>
+							</div>
 							<div id="div-generateTempFailureCdr" class="control-group">
 								<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="The SMSC can be configured to generate CDR for a successful delivery case, a permanent failure case and a temporary failure case. This option allow to avoid of generating of CDR records for a temporary failure case.">
 									<span class="add-on">Generate CDR for a temporary failure case</span>
@@ -659,13 +668,13 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									<span class="add-on">Generate CDR in text file</span>
 									<br/>
 									<span class="add-on">None</span>
-									<input id="generateCdrNone" onClick="generateCdrCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>									
+									<input id="generateCdrNone" onClick="generateCdrCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;">
 									<span class="add-on">Datagram</span>
-									<input id="generateCdrDatagram" onClick="generateCdrCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>
+									<input id="generateCdrDatagram" onClick="generateCdrCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;">
 									<span class="add-on">Transactional</span>
-									<input id="generateCdrTransactional" onClick="generateCdrCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>
+									<input id="generateCdrTransactional" onClick="generateCdrCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;">
 									<span class="add-on">Store And Forward</span>
-									<input id="generateCdrSNF" onClick="generateCdrCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>							
+									<input id="generateCdrSNF" onClick="generateCdrCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;">
 								</span>                         
 							</div>	
 							&nbsp;	
@@ -674,14 +683,14 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 									<span class="add-on">Generate CDR in cassandra table</span>
 									<br/>
 									<span class="add-on">None</span>
-									<input id="generateArchiveTableNone" onClick="generateArchiveTableCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>									
+									<input id="generateArchiveTableNone" onClick="generateArchiveTableCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;">
 									<span class="add-on">Datagram</span>
-									<input id="generateArchiveTableDatagram" onClick="generateArchiveTableCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>
+									<input id="generateArchiveTableDatagram" onClick="generateArchiveTableCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;">
 									<span class="add-on">Transactional</span>
-									<input id="generateArchiveTableTransactional" onClick="generateArchiveTableCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>
+									<input id="generateArchiveTableTransactional" onClick="generateArchiveTableCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;">
 									<span class="add-on">Store And Forward</span>
-									<input id="generateArchiveTableSNF" onClick="generateArchiveTableCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;"></input>							
-								</span>                         
+									<input id="generateArchiveTableSNF" onClick="generateArchiveTableCheckBox()" type="checkbox" class="input-mini" style="margin-left:3px; margin-top:0px; margin-right:12px; text-align:center; width:30px; height:30px;">
+								</span>
 							</div>
 							&nbsp;													
 							<div class="control-group">
@@ -1105,6 +1114,12 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 											generateDetailedCdr.options[0].selected = true;
 										} else {
 											generateDetailedCdr.options[1].selected = true;
+										}
+										var generateFinalCdrTmp = response.value.generateFinalCdrTmp
+										if(generateFinalCdrTmp){
+											generateFinalCdrTmp.options[0].selected = true;
+										} else {
+											generateFinalCdrTmp.options[1].selected = true;
 										}
 										var generateTempFailureCdrTmp = response.value.GenerateTempFailureCdr
 										if(generateTempFailureCdrTmp){
@@ -2105,6 +2120,8 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 						var generateReceiptCdr = e1.options[e1.selectedIndex].text;
 						e1 = document.getElementById("generateDetailedCdr");
 						var generateDetailedCdr = e1.options[e1.selectedIndex].text;
+						e1 = document.getElementById("generateFinalCdr");
+						var generateFinalCdr = e1.options[e1.selectedIndex].text;
 						e1 = document.getElementById("generateTempFailureCdr");
 						var generateTempFailureCdr = e1.options[e1.selectedIndex].text;
                         e1 = document.getElementById("generateRejectionCdr");
@@ -2149,6 +2166,7 @@ day. If the Cassandra Database keeps tables for older days, then the administrat
 								[
 									{ type: "write", mbean: mbeanSearch, attribute: "GenerateReceiptCdr", value: generateReceiptCdr },
 									{ type: "write", mbean: mbeanSearch, attribute: "GenerateDetailedCdr", value: generateDetailedCdr },
+									{ type: "write", mbean: mbeanSearch, attribute: "GenerateFinalCdr", value: generateFinalCdr },
 									{ type: "write", mbean: mbeanSearch, attribute: "GenerateTempFailureCdr", value: generateTempFailureCdr },
                                     { type: "write", mbean: mbeanSearch, attribute: "GenerateRejectionCdr", value: generateRejectionCdr },
 									{ type: "write", mbean: mbeanSearch, attribute: "CalculateMsgPartsLenCdr", value: calculateMsgPartsLenCdr },

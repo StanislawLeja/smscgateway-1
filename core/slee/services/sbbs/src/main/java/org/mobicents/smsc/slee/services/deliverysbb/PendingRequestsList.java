@@ -39,15 +39,18 @@ public class PendingRequestsList implements Serializable {
     private boolean[] confirmations;
     private boolean[][] confirmationsExtra;
 
+    private byte[][][] udhData;
+
     public PendingRequestsList() {
     }
 
-    public PendingRequestsList(int[] sequenceNumbers, int[][] sequenceNumbersExtra) {
+    public PendingRequestsList(int[] sequenceNumbers, int[][] sequenceNumbersExtra,byte [][][] udhData) {
         this.sequenceNumbers = sequenceNumbers;
         this.sequenceNumbersExtra = sequenceNumbersExtra;
         this.confirmations = new boolean[sequenceNumbers.length];
         this.confirmationsExtra = new boolean[sequenceNumbers.length][];
         this.unconfirmedCnt = sequenceNumbers.length;
+        this.udhData = udhData;
 
         for (int i1 = 0; i1 < this.sequenceNumbers.length; i1++) {
             if (this.sequenceNumbersExtra[i1] != null)
@@ -62,6 +65,12 @@ public class PendingRequestsList implements Serializable {
                 this.confirmations[i1] = true;
                 res.sequenceNumberFound = true;
                 res.msgNum = i1;
+                //res.msgPartNumber = 1;
+                if(this.udhData[i1] != null){
+                    if(this.udhData[i1].length > 1){
+                        res.udhData = this.udhData[i1][udhData[i1].length-1];
+                    }
+                }
                 if (this.sequenceNumbersExtra[i1] != null)
                     res.splittedMessage = true;
                 if (isSent(i1)) {
@@ -78,6 +87,8 @@ public class PendingRequestsList implements Serializable {
                         res.sequenceNumberFound = true;
                         res.msgNum = i1;
                         res.splittedMessage = true;
+                        res.udhData = this.udhData[i1][i2];
+                        //res.msgPartNumber = i2+2;
                         if (isSent(i1)) {
                             res.confirmed = true;
                             this.unconfirmedCnt--;
@@ -90,6 +101,10 @@ public class PendingRequestsList implements Serializable {
         }
         return res;
     }
+
+
+
+
     
     //we have to find message by seq number without confirming it
     public ConfirmMessageInSendingPool find(int sequenceNumber) {
@@ -98,6 +113,11 @@ public class PendingRequestsList implements Serializable {
             if (this.sequenceNumbers[i1] == sequenceNumber && !this.confirmations[i1]) {
                 res.sequenceNumberFound = true;
                 res.msgNum = i1;
+                if(this.udhData[i1] != null){
+                    if(this.udhData[i1].length > 1){
+                        res.udhData = this.udhData[i1][udhData[i1].length-1];
+                    }
+                }
                 if (this.sequenceNumbersExtra[i1] != null)
                     res.splittedMessage = true;
                 return res;
@@ -108,6 +128,7 @@ public class PendingRequestsList implements Serializable {
                         res.sequenceNumberFound = true;
                         res.msgNum = i1;
                         res.splittedMessage = true;
+                        res.udhData = this.udhData[i1][i2];
                         return res;                        
                     }
                 }
@@ -115,6 +136,8 @@ public class PendingRequestsList implements Serializable {
         }
         return res;
     }
+
+
 
     public boolean isSent(int number) {
         if (number < 0 || number >= this.confirmations.length)

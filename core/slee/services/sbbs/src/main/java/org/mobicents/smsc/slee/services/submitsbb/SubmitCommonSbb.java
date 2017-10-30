@@ -22,34 +22,16 @@
 
 package org.mobicents.smsc.slee.services.submitsbb;
 
-import java.util.ArrayList;
-
-import javax.slee.ActivityContextInterface;
-import javax.slee.CreateException;
-import javax.slee.RolledBackContext;
-import javax.slee.Sbb;
-import javax.slee.SbbContext;
-import javax.slee.facilities.Tracer;
-import javax.slee.resource.ResourceAdaptorTypeID;
-
+import com.cloudhopper.smpp.SmppConstants;
+import com.cloudhopper.smpp.pdu.BaseSm;
+import com.cloudhopper.smpp.tlv.Tlv;
+import javolution.util.FastList;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorCode;
 import org.mobicents.slee.ChildRelationExt;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.PersistenceException;
-import org.mobicents.smsc.domain.MProcManagement;
-import org.mobicents.smsc.domain.SmscCongestionControl;
-import org.mobicents.smsc.domain.SmscPropertiesManagement;
-import org.mobicents.smsc.domain.SmscStatAggregator;
-import org.mobicents.smsc.domain.StoreAndForwordMode;
-import org.mobicents.smsc.library.CdrDetailedGenerator;
-import org.mobicents.smsc.library.EventType;
-import org.mobicents.smsc.library.CdrGenerator;
-import org.mobicents.smsc.library.ErrorCode;
-import org.mobicents.smsc.library.MessageUtil;
-import org.mobicents.smsc.library.Sms;
-import org.mobicents.smsc.library.SmsSetCache;
-import org.mobicents.smsc.library.SmscProcessingException;
-import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.domain.*;
+import org.mobicents.smsc.library.*;
 import org.mobicents.smsc.mproc.MProcRuleRaProvider;
 import org.mobicents.smsc.mproc.impl.MProcResult;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
@@ -60,11 +42,10 @@ import org.restcomm.smpp.Esme;
 import org.restcomm.smpp.EsmeManagement;
 import org.restcomm.smpp.parameter.TlvSet;
 
-import com.cloudhopper.smpp.SmppConstants;
-import com.cloudhopper.smpp.pdu.BaseSm;
-import com.cloudhopper.smpp.tlv.Tlv;
-
-import javolution.util.FastList;
+import javax.slee.*;
+import javax.slee.facilities.Tracer;
+import javax.slee.resource.ResourceAdaptorTypeID;
+import java.util.ArrayList;
 
 /**
  *
@@ -493,6 +474,10 @@ public abstract class SubmitCommonSbb implements Sbb {
                     aReason, smscPropertiesManagement.getGenerateReceiptCdr(),
                     MessageUtil.isNeedWriteArchiveMessage(anSms, smscPropertiesManagement.getGenerateCdr()), false, true,
                     smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr());
+            CdrFinalGenerator.generateFinalCdr(anSms, (anMProcResult.isMessageRejected() ? CdrGenerator.CDR_MPROC_REJECTED : CdrGenerator.CDR_MPROC_DROPPED),
+                    aReason, smscPropertiesManagement.getGenerateReceiptCdr(),
+                    false, true, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                    smscPropertiesManagement.getDelayParametersInCdr(), null, null, smscPropertiesManagement.getGenerateFinalCdr());
         }
         throw e;
     }

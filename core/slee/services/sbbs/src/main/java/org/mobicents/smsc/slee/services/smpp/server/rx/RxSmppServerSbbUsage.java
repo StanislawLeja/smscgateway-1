@@ -21,7 +21,7 @@
  */
 package org.mobicents.smsc.slee.services.smpp.server.rx;
 
-import org.mobicents.smsc.slee.services.smpp.server.SmppServerSbbUsage;
+import org.mobicents.smsc.slee.services.smpp.server.tx.SmppServerSbbUsage;
 
 /**
  * The Interface RxSmppServerSbbUsage.

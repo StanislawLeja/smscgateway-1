@@ -22,22 +22,8 @@
 
 package org.mobicents.smsc.slee.services.deliverysbb;
 
-import java.util.ArrayList;
-import java.util.Date;
-
-import javax.slee.ActivityContextInterface;
-import javax.slee.CreateException;
-import javax.slee.EventContext;
-import javax.slee.RolledBackContext;
-import javax.slee.Sbb;
-import javax.slee.SbbContext;
-import javax.slee.facilities.TimerEvent;
-import javax.slee.facilities.TimerFacility;
-import javax.slee.facilities.TimerID;
-import javax.slee.facilities.TimerOptions;
-import javax.slee.facilities.Tracer;
-import javax.slee.resource.ResourceAdaptorTypeID;
-
+import com.cloudhopper.smpp.SmppSession.Type;
+import javolution.util.FastList;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.mobicents.slee.SbbContextExt;
@@ -46,17 +32,7 @@ import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.MProcManagement;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.domain.StoreAndForwordMode;
-import org.mobicents.smsc.library.CdrDetailedGenerator;
-import org.mobicents.smsc.library.CdrGenerator;
-import org.mobicents.smsc.library.ErrorAction;
-import org.mobicents.smsc.library.ErrorCode;
-import org.mobicents.smsc.library.EventType;
-import org.mobicents.smsc.library.MessageDeliveryResultResponseInterface;
-import org.mobicents.smsc.library.MessageUtil;
-import org.mobicents.smsc.library.Sms;
-import org.mobicents.smsc.library.SmsSet;
-import org.mobicents.smsc.library.SmsSetCache;
-import org.mobicents.smsc.library.TargetAddress;
+import org.mobicents.smsc.library.*;
 import org.mobicents.smsc.mproc.MProcRuleRaProvider;
 import org.mobicents.smsc.mproc.ProcessingType;
 import org.mobicents.smsc.mproc.impl.MProcResult;
@@ -66,9 +42,11 @@ import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.restcomm.smpp.Esme;
 import org.restcomm.smpp.EsmeManagement;
 
-import com.cloudhopper.smpp.SmppSession.Type;
-
-import javolution.util.FastList;
+import javax.slee.*;
+import javax.slee.facilities.*;
+import javax.slee.resource.ResourceAdaptorTypeID;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  *
@@ -113,6 +91,9 @@ public abstract class DeliveryCommonSbb implements Sbb {
     private PendingRequestsList pendingRequestsList;
     private int[] sequenceNumbers;
     private int[][] sequenceNumbersExtra;
+
+    private byte[][][] udhData;
+
     private boolean pendingRequestsListIsLoaded;
     private boolean pendingRequestsListIsDirty;
 
@@ -460,6 +441,7 @@ public abstract class DeliveryCommonSbb implements Sbb {
             pendingRequestsListIsDirty = true;
             pendingRequestsList = null;
             sequenceNumbers = null;
+            udhData = null;
             sequenceNumbersExtra = null;
         }
     }
@@ -514,6 +496,8 @@ public abstract class DeliveryCommonSbb implements Sbb {
 
                     sequenceNumbers = new int[addedMessageCnt];
                     sequenceNumbersExtra = new int[addedMessageCnt][];
+
+                    udhData = new byte[addedMessageCnt][][];
 
                     if (gotMessageCnt > 0) {
                         currentMsgNum += gotMessageCnt;
@@ -589,6 +573,8 @@ public abstract class DeliveryCommonSbb implements Sbb {
 
                     sequenceNumbers = null;
                     sequenceNumbersExtra = null;
+
+                    udhData = null;
 
                     this.rescheduleDeliveryTimer();
 
@@ -732,11 +718,12 @@ public abstract class DeliveryCommonSbb implements Sbb {
      * @param sequenceNumberExtra Extra sequence numbers of a message (2, 3, ... message parts) for which we will be able of
      *        confirming
      */
-    protected void registerMessageInSendingPool(int numInSendingPool, int sequenceNumber, int[] sequenceNumberExtra) {
+    protected void registerMessageInSendingPool(int numInSendingPool, int sequenceNumber, int[] sequenceNumberExtra, byte[][] messagePartsNumber) {
         if (sequenceNumbers != null && sequenceNumbersExtra != null && numInSendingPool >= 0
                 && numInSendingPool < sequenceNumbers.length && numInSendingPool < sequenceNumbersExtra.length) {
             sequenceNumbers[numInSendingPool] = sequenceNumber;
             sequenceNumbersExtra[numInSendingPool] = sequenceNumberExtra;
+            udhData[numInSendingPool] = messagePartsNumber;
         }
     }
 
@@ -747,12 +734,13 @@ public abstract class DeliveryCommonSbb implements Sbb {
     protected void endRegisterMessageInSendingPool() {
         pendingRequestsListIsDirty = true;
         if (sequenceNumbers != null && sequenceNumbersExtra != null) {
-            pendingRequestsList = new PendingRequestsList(sequenceNumbers, sequenceNumbersExtra);
+            pendingRequestsList = new PendingRequestsList(sequenceNumbers, sequenceNumbersExtra,udhData);
         } else {
             pendingRequestsList = null;
         }
         sequenceNumbers = null;
         sequenceNumbersExtra = null;
+        udhData = null;
     }
 
     /**
@@ -778,8 +766,19 @@ public abstract class DeliveryCommonSbb implements Sbb {
             res.sms = getMessageInSendingPool(0);
         }
 
+        res.sms = setUDHInSMS(res.sms,res.udhData);
+
         return res;
     }
+
+    protected Sms setUDHInSMS(Sms sms , byte[] udhData){
+        if(sms.getReceiptLocalMessageId() == null && udhData != null){
+            sms.setEsmClass(67);
+            sms.setShortMessageBin(udhData);
+        }
+        return sms;
+    }
+
 
     // we need to get message by its id without confirming it
     protected ConfirmMessageInSendingPool getMessageInSendingPoolBySeqNumber(int sequenceNumber) {
@@ -1477,6 +1476,9 @@ public abstract class DeliveryCommonSbb implements Sbb {
                             MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()), false, true,
                             smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
                             smscPropertiesManagement.getDelayParametersInCdr());
+                    CdrFinalGenerator.generateFinalCdr(sms,  status, s1, smscPropertiesManagement.getGenerateReceiptCdr(),
+                            false, true, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                            smscPropertiesManagement.getDelayParametersInCdr(), null, null, smscPropertiesManagement.getGenerateFinalCdr());
                     return;
                 }
             }
@@ -1492,6 +1494,9 @@ public abstract class DeliveryCommonSbb implements Sbb {
             CdrGenerator.generateCdr(sms, status, s1, smscPropertiesManagement.getGenerateReceiptCdr(),
                     MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()), false, true,
                     smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr());
+            CdrFinalGenerator.generateFinalCdr(sms,  status, s1, smscPropertiesManagement.getGenerateReceiptCdr(),
+                    false, true, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                    smscPropertiesManagement.getDelayParametersInCdr(), null, null, smscPropertiesManagement.getGenerateFinalCdr());
             return;
         }
     }
@@ -1503,7 +1508,6 @@ public abstract class DeliveryCommonSbb implements Sbb {
             if (!this.isMessageConfirmedInSendingPool(i1)) {
                 Sms sms = this.getMessageInSendingPool(i1);
                 if (sms != null) {
-
                     CdrDetailedGenerator.generateDetailedCdr(sms, eventType, errorCode, messageType,
                             sms.getSmsSet().getSmppCommandStatus(), -1, null, destAddrAndPort, seqNumber,
                             smscPropertiesManagement.getGenerateReceiptCdr(),
@@ -1548,6 +1552,13 @@ public abstract class DeliveryCommonSbb implements Sbb {
                 seqNumber, smscPropertiesManagement.getGenerateReceiptCdr(), smscPropertiesManagement.getGenerateDetailedCdr());
     }
 
+    protected void generateFinalCDR(Sms sms, String status, String reason, boolean messageIsSplitted, boolean lastSegment,
+                               String destAddrAndPort) {
+        CdrFinalGenerator.generateFinalCdr(sms, status, reason, smscPropertiesManagement.getGenerateReceiptCdr(), messageIsSplitted,
+                lastSegment, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                smscPropertiesManagement.getDelayParametersInCdr(), null, destAddrAndPort, smscPropertiesManagement.getGenerateFinalCdr());
+    }
+
     /**
      * Generating CDRs for a message list
      * 
@@ -1560,6 +1571,9 @@ public abstract class DeliveryCommonSbb implements Sbb {
             CdrGenerator.generateCdr(sms, status, reason, smscPropertiesManagement.getGenerateReceiptCdr(),
                     MessageUtil.isNeedWriteArchiveMessage(sms, smscPropertiesManagement.getGenerateCdr()), false, true,
                     smscPropertiesManagement.getCalculateMsgPartsLenCdr(), smscPropertiesManagement.getDelayParametersInCdr());
+            CdrFinalGenerator.generateFinalCdr(sms, status, reason, smscPropertiesManagement.getGenerateReceiptCdr(), false,
+                    true, smscPropertiesManagement.getCalculateMsgPartsLenCdr(),
+                    smscPropertiesManagement.getDelayParametersInCdr(), null, null, smscPropertiesManagement.getGenerateFinalCdr());
         }
     }
 
@@ -1571,6 +1585,7 @@ public abstract class DeliveryCommonSbb implements Sbb {
                     smscPropertiesManagement.getGenerateReceiptCdr(), smscPropertiesManagement.getGenerateDetailedCdr());
         }
     }
+
 
     // *********
     // delivery receipts generating

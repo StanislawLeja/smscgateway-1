@@ -37,6 +37,19 @@ public class SmsExtraData {
     public static final String TIMESTAMP_A = "timestampA";
     public static final String TIMESTAMP_B = "timestampB";
     public static final String TIMESTAMP_C = "timestampC";
+    public static final String GW_INC_START = "gwIncStart";
+    public static final String GW_INC_STOP = "gwIncStop";
+    public static final String GW_QUE_START = "gwQueStart";
+    public static final String GW_QUE_STOP = "gwQueStop";
+    public static final String GW_OUT_START = "gwOutStart";
+    public static final String GW_OUT_STOP = "gwOutStop";
+    public static final String OC_DIA_START = "ocDiaStart";
+    public static final String OC_DIA_STOP = "ocDiaStop";
+    public static final String DEST_IP = "destIP";
+    public static final String DEST_PORT = "destPort";
+    public static final String SOURCE_IP = "sourceIP";
+    public static final String SOURCE_PORT = "sourcePort";
+
 
     public static final String ZERO_STRING = null;
 
@@ -48,9 +61,29 @@ public class SmsExtraData {
     private long timestampB;
     private long timestampC;
 
-    	public boolean isEmpty() {
+    private long gwIncStart;
+    private long gwIncStop;
+
+    private long gwQueStart;
+    private long gwQueStop;
+    private long gwOutStart;
+    private long gwOutStop;
+    private long ocDiaStart;
+    private long ocDiaStop;
+
+
+    private String destIP;
+    private String destPort;
+    private String sourceIP;
+    private String sourcePort;
+
+
+    public boolean isEmpty() {
         if (this.mprocNotes != null || this.originationType != null || this.receiptLocalMessageId != null 
-        		|| this.timestampA != 0 || this.timestampB != 0 || this.timestampC != 0 )
+        		|| this.timestampA != 0 || this.timestampB != 0 || this.timestampC != 0 || this.gwIncStart != 0
+                || this.gwIncStop != 0 || this.gwQueStart != 0 || this.gwQueStop != 0 || this.gwOutStart != 0
+                || this.gwOutStop != 0 || this.ocDiaStart != 0 || this.ocDiaStop != 0 || this.destIP != null
+                || this.destPort != null || this.sourceIP != null || this.sourcePort != null)
             return false;
         else
             return true;
@@ -63,6 +96,18 @@ public class SmsExtraData {
         timestampA = 0;
         timestampB = 0;
         timestampC = 0;
+        gwIncStart = 0;
+        gwIncStop = 0;
+        gwQueStart = 0;
+        gwQueStop = 0;
+        gwOutStart = 0;
+        gwOutStop = 0;
+        ocDiaStart = 0;
+        ocDiaStop = 0;
+        destIP = null;
+        destPort = null;
+        sourceIP = null;
+        sourcePort = null;
     }
 
     public String getMprocNotes() {
@@ -94,11 +139,12 @@ public class SmsExtraData {
 	}
 
 	public void setTimestampA(long timestampA) {
-		this.timestampA = timestampA;
+        this.timestampA = timestampA;
 	}
 
 	public long getTimestampB() {
 		return timestampB;
+
 	}
 
 	public void setTimestampB(long timestampB) {
@@ -148,6 +194,65 @@ public class SmsExtraData {
         	sb.append(timestampC);
         	sb.append(", ");
         }
+        if (gwIncStart != 0) {
+            sb.append("gwIncStart=");
+            sb.append(gwIncStart);
+            sb.append(", ");
+        }
+        if (gwIncStop != 0) {
+            sb.append("gwIncStop=");
+            sb.append(gwIncStop);
+            sb.append(", ");
+        }
+        if (gwQueStart != 0) {
+            sb.append("gwQueStart=");
+            sb.append(gwQueStart);
+            sb.append(", ");
+        }
+        if (gwQueStop != 0) {
+            sb.append("gwQueStop=");
+            sb.append(gwQueStop);
+            sb.append(", ");
+        }
+        if (gwOutStart != 0) {
+            sb.append("gwOutStart=");
+            sb.append(gwOutStart);
+            sb.append(", ");
+        }
+        if (gwOutStop != 0) {
+            sb.append("gwOutStop=");
+            sb.append(gwOutStop);
+            sb.append(", ");
+        }if (ocDiaStart != 0) {
+            sb.append("ocDiaStart=");
+            sb.append(ocDiaStart);
+            sb.append(", ");
+        }
+        if (ocDiaStop != 0) {
+            sb.append("ocDiaStop=");
+            sb.append(ocDiaStop);
+            sb.append(", ");
+        }
+        if (destIP != null) {
+            sb.append("destIP=");
+            sb.append(destIP);
+            sb.append(", ");
+        }
+        if (destPort != null) {
+            sb.append("destPort=");
+            sb.append(destPort);
+            sb.append(", ");
+        }
+        if (sourceIP != null) {
+            sb.append("sourceIP=");
+            sb.append(sourceIP);
+            sb.append(", ");
+        }
+        if (sourcePort != null) {
+            sb.append("sourcePort=");
+            sb.append(sourcePort);
+            sb.append(", ");
+        }
         sb.append("]");
 
         return sb.toString();
@@ -168,7 +273,19 @@ public class SmsExtraData {
             }
 
             extraData.mprocNotes = xml.get(MPROC_NOTES, String.class);
-            extraData.receiptLocalMessageId = xml.get(RECEIPT_LOCAL_MESSAGEID, Long.class);            
+            extraData.receiptLocalMessageId = xml.get(RECEIPT_LOCAL_MESSAGEID, Long.class);
+            extraData.gwIncStart = xml.get(GW_INC_START,Long.class);
+            extraData.gwIncStop = xml.get(GW_INC_STOP,Long.class);
+            extraData.gwQueStart = xml.get(GW_QUE_START,Long.class);
+            extraData.gwQueStop = xml.get(GW_QUE_STOP,Long.class);
+            extraData.gwOutStart = xml.get(GW_OUT_START,Long.class);
+            extraData.gwOutStop = xml.get(GW_OUT_STOP,Long.class);
+            extraData.ocDiaStart = xml.get(OC_DIA_START,Long.class);
+            extraData.ocDiaStop = xml.get(OC_DIA_STOP,Long.class);
+            extraData.destIP = xml.get(DEST_IP,String.class);
+            extraData.destPort = xml.get(DEST_PORT,String.class);
+            extraData.sourceIP = xml.get(SOURCE_IP,String.class);
+            extraData.sourcePort = xml.get(SOURCE_PORT,String.class);
         }
 
         @Override
@@ -183,7 +300,146 @@ public class SmsExtraData {
             if (extraData.receiptLocalMessageId != null) {
                 xml.add(extraData.receiptLocalMessageId, RECEIPT_LOCAL_MESSAGEID, Long.class);
             }
+
+           // if (extraData.gwIncStart != 0){
+                xml.add(extraData.gwIncStart, GW_INC_START, Long.class);
+           // }
+
+          //  if (extraData.gwIncStop != 0){
+                xml.add(extraData.gwIncStop, GW_INC_STOP, Long.class);
+           // }
+
+           // if (extraData.gwQueStart != 0){
+                xml.add(extraData.gwQueStart, GW_QUE_START, Long.class);
+          //  }
+
+          //  if (extraData.gwQueStop != 0){
+                xml.add(extraData.gwQueStop, GW_QUE_STOP, Long.class);
+         //   }
+
+         //   if (extraData.gwOutStart != 0){
+                xml.add(extraData.gwOutStart, GW_OUT_START, Long.class);
+         //   }
+
+         //   if (extraData.gwOutStop != 0){
+                xml.add(extraData.gwOutStop, GW_OUT_STOP, Long.class);
+         //   }
+
+         //   if (extraData.ocDiaStart != 0){
+                xml.add(extraData.ocDiaStart, OC_DIA_START, Long.class);
+         //   }
+
+         //   if (extraData.ocDiaStop != 0){
+                xml.add(extraData.ocDiaStop, OC_DIA_STOP, Long.class);
+         //   }
+            //   if (extraData.ocDiaStop != 0){
+                xml.add(extraData.destIP, DEST_IP, String.class);
+            //   }
+            //   if (extraData.ocDiaStop != 0){
+                xml.add(extraData.destPort, DEST_PORT, String.class);
+            //   }
+            //   if (extraData.ocDiaStop != 0){
+                xml.add(extraData.sourceIP, SOURCE_IP, String.class);
+            //   }
+            //   if (extraData.ocDiaStop != 0){
+                xml.add(extraData.sourcePort, SOURCE_PORT, String.class);
+            //   }
         }
     };
 
+    public long getGwIncStart() {
+        return gwIncStart;
+    }
+
+    public void setGwIncStart(long gwIncStart) {
+        this.gwIncStart = gwIncStart;
+    }
+
+    public long getGwIncStop() {
+        return gwIncStop;
+    }
+
+    public void setGwIncStop(long gwIncStop) {
+        this.gwIncStop = gwIncStop;
+    }
+
+    public long getGwQueStart() {
+        return gwQueStart;
+    }
+
+    public void setGwQueStart(long gwQueStart) {
+        this.gwQueStart = gwQueStart;
+    }
+
+    public long getGwQueStop() {
+        return gwQueStop;
+    }
+
+    public void setGwQueStop(long gwQueStop) {
+        this.gwQueStop = gwQueStop;
+    }
+
+    public long getGwOutStart() {
+        return gwOutStart;
+    }
+
+    public void setGwOutStart(long gwOutStart) {
+        this.gwOutStart = gwOutStart;
+    }
+
+    public long getGwOutStop() {
+        return gwOutStop;
+    }
+
+    public void setGwOutStop(long gwOutStop) {
+        this.gwOutStop = gwOutStop;
+    }
+
+    public long getOcDiaStart() {
+        return ocDiaStart;
+    }
+
+    public void setOcDiaStart(long ocDiaStart) {
+        this.ocDiaStart = ocDiaStart;
+    }
+
+    public long getOcDiaStop() {
+        return ocDiaStop;
+    }
+
+    public void setOcDiaStop(long ocDiaStop) {
+        this.ocDiaStop = ocDiaStop;
+    }
+
+    public String getDestIP() {
+        return destIP;
+    }
+
+    public void setDestIP(String destIP) {
+        this.destIP = destIP;
+    }
+
+    public String getDestPort() {
+        return destPort;
+    }
+
+    public void setDestPort(String destPort) {
+        this.destPort = destPort;
+    }
+
+    public String getSourceIP() {
+        return sourceIP;
+    }
+
+    public void setSourceIP(String sourceIP) {
+        this.sourceIP = sourceIP;
+    }
+
+    public String getSourcePort() {
+        return sourcePort;
+    }
+
+    public void setSourcePort(String sourcePort) {
+        this.sourcePort = sourcePort;
+    }
 }
