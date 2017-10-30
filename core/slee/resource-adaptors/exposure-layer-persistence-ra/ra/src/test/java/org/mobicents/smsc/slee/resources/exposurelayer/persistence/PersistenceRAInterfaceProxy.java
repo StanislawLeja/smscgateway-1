@@ -40,7 +40,7 @@ import java.util.UUID;
  * @author sergey vetyutnev
  * 
  */
-public class PersistenceRAInterfaceProxy extends DBOperations implements PersistenceRAInterface {
+public class PersistenceRAInterfaceProxy extends DBOperations {
 
     private static final Logger logger = Logger.getLogger(PersistenceRAInterfaceProxy.class);
 

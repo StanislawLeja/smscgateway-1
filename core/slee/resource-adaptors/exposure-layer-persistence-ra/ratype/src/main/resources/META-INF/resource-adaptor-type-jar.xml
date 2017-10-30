@@ -8,12 +8,12 @@
 	</description>
 	<resource-adaptor-type>
 		<description>Hector Client Resource Adaptor Type</description>
-		<resource-adaptor-type-name>PersistenceResourceAdaptorType</resource-adaptor-type-name>
+		<resource-adaptor-type-name>ExposureLayerPersistenceResourceAdaptorType</resource-adaptor-type-name>
 		<resource-adaptor-type-vendor>org.mobicents</resource-adaptor-type-vendor>
 		<resource-adaptor-type-version>1.0</resource-adaptor-type-version>
 
 		<library-ref>
-			<library-name>library-persistence</library-name>
+			<library-name>library-el-persistence</library-name>
 			<library-vendor>telestax</library-vendor>
 			<library-version>1.0</library-version>
 		</library-ref>
@@ -21,7 +21,7 @@
 		<resource-adaptor-type-classes>
 			<resource-adaptor-interface>
 				<resource-adaptor-interface-name>
-					PersistenceRAInterface
+					org.mobicents.smsc.slee.resources.exposurelayer.persistence.ExposureLayerPersistenceRAInterface
 				</resource-adaptor-interface-name>
 			</resource-adaptor-interface>
 		</resource-adaptor-type-classes>

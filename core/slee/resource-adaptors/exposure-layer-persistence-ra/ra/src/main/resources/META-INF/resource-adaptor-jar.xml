@@ -2,23 +2,23 @@
 
 <!DOCTYPE resource-adaptor-jar PUBLIC "-//Sun Microsystems, Inc.//DTD JAIN SLEE Resource Adaptor 1.1//EN" "http://java.sun.com/dtd/slee-resource-adaptor-jar_1_1.dtd">
 <resource-adaptor-jar>
-	<resource-adaptor id="persistence_ra">
-		<description>Persistence Resource Adaptor</description>
+	<resource-adaptor id="el_persistence_ra">
+		<description>Exposure Layer Persistence Resource Adaptor</description>
 		<resource-adaptor-name>
-			PersistenceResourceAdaptor
+			ExposureLayerPersistenceResourceAdaptor
 		</resource-adaptor-name>
 		<resource-adaptor-vendor>org.mobicents</resource-adaptor-vendor>
 		<resource-adaptor-version>1.0</resource-adaptor-version>
 
 		<resource-adaptor-type-ref>
-			<resource-adaptor-type-name>PersistenceResourceAdaptorType</resource-adaptor-type-name>
+			<resource-adaptor-type-name>ExposureLayerPersistenceResourceAdaptorType</resource-adaptor-type-name>
 			<resource-adaptor-type-vendor>org.mobicents</resource-adaptor-type-vendor>
 			<resource-adaptor-type-version>1.0</resource-adaptor-type-version>
 		</resource-adaptor-type-ref>
 		<resource-adaptor-classes>
 			<resource-adaptor-class>
 				<resource-adaptor-class-name>
-					PersistenceResourceAdaptor
+					org.mobicents.smsc.slee.resources.exposurelayer.persistence.ExposureLayerPersistenceResourceAdaptor
 				</resource-adaptor-class-name>
 			</resource-adaptor-class>
 		</resource-adaptor-classes>
