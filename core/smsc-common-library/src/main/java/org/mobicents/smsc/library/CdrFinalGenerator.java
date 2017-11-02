@@ -299,8 +299,7 @@ public class CdrFinalGenerator {
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
                 .append(T11 != 0 ? T11 : CdrFinalGenerator.CDR_EMPTY)
                 .append(CdrFinalGenerator.CDR_SEPARATOR)
-                .append(T12 != 0 ? T12 : CdrFinalGenerator.CDR_EMPTY)
-                .append(CdrFinalGenerator.CDR_SEPARATOR);
+                .append(T12 != 0 ? T12 : CdrFinalGenerator.CDR_EMPTY);
 
 
         CdrFinalGenerator.generateFinalCdr(sb.toString());
