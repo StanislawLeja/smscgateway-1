@@ -279,7 +279,7 @@ public class CdrDetailedGenerator {
         appendObject(sb, SourceAddr);
         appendObject(sb, DestAddr);
         appendObject(sb, OrigNetworkId);
-        appendObject(sb, NetworkId);
+        appendObjectLast(sb, NetworkId);
 
 
         CdrDetailedGenerator.generateDetailedCdr(sb.toString());
@@ -291,6 +291,10 @@ public class CdrDetailedGenerator {
     private static void appendObject(StringBuilder sb, Object obj) {
         sb.append(obj != null ? obj : CdrDetailedGenerator.CDR_EMPTY);
         sb.append(CdrGenerator.CDR_SEPARATOR);
+    }
+
+    private static void appendObjectLast(StringBuilder sb, Object obj) {
+        sb.append(obj != null ? obj : CdrDetailedGenerator.CDR_EMPTY);
     }
 
     private static void appendNumber(StringBuilder sb, Long num) {
