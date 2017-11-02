@@ -227,7 +227,11 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                 else if (event.getResponse() != null)
                     seqNumber = event.getResponse().getSequenceNumber();
 
-                this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "SendPduStatus: " + event,
+                String exceptionMessage = "";
+                if (event.getException() != null) {
+                    exceptionMessage = event.getException().getMessage();
+                }
+                this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "SendPduStatus: " + exceptionMessage,
                         EventType.OUT_SMPP_ERROR, seqNumber);
             } catch (Throwable e1) {
                 logger.severe("Exception in RxSmppServerSbb.onSendPduStatus(): " + e1.getMessage(), e1);
@@ -381,7 +385,7 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
             }
 
             logger.severe(
-                    String.format("\nonPduRequestTimeout : targetId=" + smsSet.getTargetId() + ", PduRequestTimeout=" + event));
+                    String.format("onPduRequestTimeout : targetId=" + smsSet.getTargetId() + ", PduRequestTimeout=" + event));
 
             this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR, "PduRequestTimeout: ",
                     EventType.OUT_SMPP_ERROR, event.getPduRequest().getSequenceNumber());
@@ -739,9 +743,14 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                             pendingMessages.add(currData);
                         } else {
                             SentItem sentItem = sendNextChunk(currData, smsSet, esme);
+
                             sms.setTimestampB(System.currentTimeMillis());
                             sms.setGwOutStart(System.currentTimeMillis());
+
+                            long t = System.currentTimeMillis();
+
                             sentSequenceNumber = sentItem.getRemoteSequenceNumber();
+                            sms.putMsgPartDeliveryTime(sentSequenceNumber, t);
                         }
 
 
@@ -814,9 +823,14 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                             pendingMessages.add(currData);
                         } else {
                             SentItem sentItem = sendNextChunk(currData, smsSet, esme);
+
                             sms.setTimestampB(System.currentTimeMillis());
                             sms.setGwOutStart(System.currentTimeMillis());
+
+                            long t = System.currentTimeMillis();
+
                             sentSequenceNumber = sentItem.getRemoteSequenceNumber();
+                            sms.putMsgPartDeliveryTime(sentSequenceNumber, t);
                         }
                         if (logger.isInfoEnabled()) {
                             logger.info(String.format("\nSent deliverSm to ESME: %s, msgNumInSendingPool: %d, sms=%s",
@@ -993,9 +1007,12 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
             smscStatAggregator.updateMsgOutSentAll();
             smscStatAggregator.updateMsgOutSentSmpp();
 
+            boolean destAddressLimitationEnabled = false;
             EsmeManagement esmeManagement = EsmeManagement.getInstance();
             Esme esme = esmeManagement.getEsmeByClusterName(smsSet.getDestClusterName());
-            boolean destAddressLimitationEnabled = esme.getDestAddrSendLimit() != 0;
+            if (esme != null) {
+                destAddressLimitationEnabled = esme.getDestAddrSendLimit() != 0;
+            }
 
             int realID = -1;
             Boolean sentListChanged = false;
@@ -1020,7 +1037,8 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
 
             if (realID == -1 || !confirmMessageInSendingPool.sequenceNumberFound) {
                 this.logger.severe("RxSmppServerSbb.handleResponse(): no sms in MessageInSendingPool: UnconfirmedCnt="
-                        + this.getUnconfirmedMessageCountInSendingPool() + ", sequenceNumber=" + event.getSequenceNumber());
+                        + this.getUnconfirmedMessageCountInSendingPool() + ", sequenceNumber=" + event.getSequenceNumber() 
+                        + ", realID=" + realID + ", confirmMessageInSendingPool=" + confirmMessageInSendingPool);
                 this.onDeliveryError(smsSet, ErrorAction.temporaryFailure, ErrorCode.SC_SYSTEM_ERROR,
                         "Received undefined SequenceNumber: " + event.getSequenceNumber() + ", SmsSet=" + smsSet,
                         EventType.OUT_SMPP_ERROR, realID);
@@ -1031,8 +1049,14 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
                 return;
             }
 
-            confirmMessageInSendingPool.sms.setTimestampC(System.currentTimeMillis());
+
             confirmMessageInSendingPool.sms.setGwOutStop(System.currentTimeMillis());
+
+            Sms sms = confirmMessageInSendingPool.sms;
+            if (sms != null) {
+                sms.setTimestampC(System.currentTimeMillis());
+            }
+
             if (destAddressLimitationEnabled) {
                 ChunkDataList dataList = retreivePendingChunks();
                 if (dataList != null && !dataList.getPendingList().isEmpty()) {
@@ -1055,9 +1079,8 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
             if (sentListChanged)
                 setSentChunks(list);
 
-            Sms sms = confirmMessageInSendingPool.sms;
             if (!confirmMessageInSendingPool.confirmed) {
-                this.generateCDR(sms, CdrGenerator.CDR_PARTIAL_ESME, CdrGenerator.CDR_SUCCESS_NO_REASON, true, false);
+                this.generateCDR(sms, CdrGenerator.CDR_PARTIAL_ESME, CdrGenerator.CDR_SUCCESS_NO_REASON, true, false, event.getSequenceNumber());
 
                 String messageType = esme.getSmppSessionType() == Type.CLIENT ? CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITSM
                         : CdrDetailedGenerator.CDR_MSG_TYPE_DELIVERSM;
@@ -1094,15 +1117,26 @@ public abstract class RxSmppServerSbb extends DeliveryCommonSbb implements Sbb {
             // success CDR generating
             boolean isPartial = MessageUtil.isSmsNotLastSegment(sms);
             this.generateCDR(sms, isPartial ? CdrGenerator.CDR_PARTIAL_ESME : CdrGenerator.CDR_SUCCESS_ESME,
-                    CdrGenerator.CDR_SUCCESS_NO_REASON, confirmMessageInSendingPool.splittedMessage, true);
+                    CdrGenerator.CDR_SUCCESS_NO_REASON, confirmMessageInSendingPool.splittedMessage, true, event.getSequenceNumber());
 
 
-
-            String messageType = esme.getSmppSessionType() == Type.CLIENT ? CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITSM
-                    : CdrDetailedGenerator.CDR_MSG_TYPE_DELIVERSM;
+            String messageType = null;
+            String remoteAddr = null;
+            if (esme != null) {
+                messageType = esme.getSmppSessionType() == Type.CLIENT ? CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITSM
+                        : CdrDetailedGenerator.CDR_MSG_TYPE_DELIVERSM;
+                remoteAddr = esme.getRemoteAddressAndPort();
+            }
+            if (messageType == null) {
+                if (event.getCommandId() == SmppConstants.CMD_ID_DELIVER_SM_RESP) {
+                    messageType = CdrDetailedGenerator.CDR_MSG_TYPE_DELIVERSM;
+                } else {
+                    messageType = CdrDetailedGenerator.CDR_MSG_TYPE_SUBMITSM;
+                }
+            }
 
             this.generateDetailedCDR(sms, EventType.OUT_SMPP_SENT, sms.getSmsSet().getStatus(), messageType, status,
-                    esme.getRemoteAddressAndPort(), event.getSequenceNumber());
+                    remoteAddr, event.getSequenceNumber());
 
             this.generateFinalCDR(sms, isPartial ? CdrGenerator.CDR_PARTIAL_ESME : CdrGenerator.CDR_SUCCESS_ESME,
                     CdrGenerator.CDR_SUCCESS_NO_REASON, confirmMessageInSendingPool.splittedMessage, true,

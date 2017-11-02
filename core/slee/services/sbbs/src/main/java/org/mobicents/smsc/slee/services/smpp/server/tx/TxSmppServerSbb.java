@@ -189,7 +189,7 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
         final TxSmppServerSbbUsage sbbu = getDefaultSbbUsageParameterSet();
         sbbu.incrementCounterErrorPduRequestTimeout(ONE);
         sbbu.samplePduRequestTimeout(0L);
-        logger.severe(String.format("\nonPduRequestTimeout : PduRequestTimeout=%s", event));
+        logger.severe(String.format("onPduRequestTimeout : PduRequestTimeout=%s", event));
         // TODO : Handle this
     }
 
@@ -1049,7 +1049,6 @@ public abstract class TxSmppServerSbb extends SubmitCommonSbb implements Sbb {
         }
 
         DeliverSmResp response = event.createResponse();
-        response.setMessageId(sms.getMessageIdText());
 
         // Lets send the Response with success here
         try {

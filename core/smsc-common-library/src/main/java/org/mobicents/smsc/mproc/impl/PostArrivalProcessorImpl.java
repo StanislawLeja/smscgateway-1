@@ -218,6 +218,22 @@ public class PostArrivalProcessorImpl implements PostArrivalProcessor {
         Sms sms = msg.getSmsContent();
         sms.setSourceAddr(newDigits);
     }
+    
+    @Override
+    public void updateMessageMtLocalSccpGt(MProcMessage message, String newMtLocalSccpGt) throws MProcRuleException {
+        MProcUtility.checkMtLocalSccpGt(newMtLocalSccpGt);
+        MProcMessageImpl msg = (MProcMessageImpl) message;
+        Sms sms = msg.getSmsContent();
+        sms.setMtLocalSccpGt(newMtLocalSccpGt);
+    }
+    
+    @Override
+    public void updateMessageMtRemoteSccpTt(MProcMessage message, Integer newMtRemoteSccpTt) throws MProcRuleException {
+        MProcUtility.checkMtRemoteSccpTt(newMtRemoteSccpTt);
+        MProcMessageImpl msg = (MProcMessageImpl) message;
+        Sms sms = msg.getSmsContent();
+        sms.setMtRemoteSccpTt(newMtRemoteSccpTt);
+    }
 
     @Override
     public void updateShortMessageText(MProcMessage message, String newShortMessageText) throws MProcRuleException {

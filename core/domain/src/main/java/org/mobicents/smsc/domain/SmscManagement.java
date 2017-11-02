@@ -22,6 +22,21 @@
 
 package org.mobicents.smsc.domain;
 
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+
 import javolution.text.TextBuilder;
 import javolution.util.FastList;
 import org.apache.log4j.Logger;
@@ -248,7 +263,10 @@ public class SmscManagement implements SmscManagementMBean {
                 + ",name=" + this.getName());
         this.registerMBean(this.httpUsersManagement, HttpUsersManagementMBean.class, true, httpUsersObjNname);
 
-        this.splitMessageCache = splitMessageCache.getInstance();
+
+        this.splitMessageCache = SplitMessageCache.getInstance();
+        this.splitMessageCache.start();
+
         ObjectName splitMessageCacheObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_SPLIT_MESSAGE_CACHE
                 + ",name=" + this.getName());
         this.registerMBean(this.splitMessageCache, SplitMessageCacheMBean.class,true,splitMessageCacheObjName);
@@ -346,10 +364,17 @@ public class SmscManagement implements SmscManagementMBean {
         this.smscDatabaseManagement = SmscDatabaseManagement.getInstance(this.name);
         this.smscDatabaseManagement.start();
 
+        // Step 14. Load counters from database into SmsSetCache
+        Date date = new Date();
+        ConcurrentHashMap<Long, AtomicLong> storedMessages = DBOperations.getInstance().c2_getStoredMessagesCounter(date); 
+        ConcurrentHashMap<Long, AtomicLong> sentMessages = DBOperations.getInstance().c2_getSentMessagesCounter(date);
+        SmsSetCache.getInstance().loadMessagesCountersFromDatabase(storedMessages, sentMessages);
+        
         ObjectName smscDatabaseManagementObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
                 + JMX_LAYER_SMSC_DATABASE_MANAGEMENT + ",name=" + this.getName());
         this.registerMBean(this.smscDatabaseManagement, SmscDatabaseManagement.class, true, smscDatabaseManagementObjName);
 
+        logger.warn("Started SmscManagemet " + name);
 	}
 
 	public void stop() throws Exception {
@@ -363,6 +388,11 @@ public class SmscManagement implements SmscManagementMBean {
         this.homeRoutingManagement.stop();
         ObjectName hrObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_HOME_ROUTING_MANAGEMENT + ",name=" + this.getName());
         this.unregisterMbean(hrObjNname);
+
+        this.splitMessageCache.stop();
+        ObjectName splitMessageCacheObjName = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer="
+                + JMX_LAYER_SPLIT_MESSAGE_CACHE + ",name=" + this.getName());
+        this.unregisterMbean(splitMessageCacheObjName);
 
         this.httpUsersManagement.stop();
         ObjectName httpUsersObjNname = new ObjectName(SmscManagement.JMX_DOMAIN + ":layer=" + JMX_LAYER_HTTPUSER_MANAGEMENT + ",name=" + this.getName());

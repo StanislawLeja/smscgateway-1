@@ -34,9 +34,12 @@ public class SmsExtraData {
     public static final String MPROC_NOTES = "mprocNotes";
     public static final String ORIGINATION_TYPE = "originationType";
     public static final String RECEIPT_LOCAL_MESSAGEID = "receiptLocalMessageId";
+    
+    //timestamps used for DetailedCDR
     public static final String TIMESTAMP_A = "timestampA";
     public static final String TIMESTAMP_B = "timestampB";
     public static final String TIMESTAMP_C = "timestampC";
+
     public static final String GW_INC_START = "gwIncStart";
     public static final String GW_INC_STOP = "gwIncStop";
     public static final String GW_QUE_START = "gwQueStart";
@@ -50,6 +53,10 @@ public class SmsExtraData {
     public static final String SOURCE_IP = "sourceIP";
     public static final String SOURCE_PORT = "sourcePort";
 
+
+    // global title and translation type for MT message
+    public static final String MT_LOCAL_SCCP_GT = "mtLocalSccpGt";
+    public static final String MT_REMOTE_SCCP_TT = "mtRemoteSccpTt";
 
     public static final String ZERO_STRING = null;
 
@@ -77,13 +84,18 @@ public class SmsExtraData {
     private String sourceIP;
     private String sourcePort;
 
+    private String mtLocalSccpGt;
+    private Integer mtRemoteSccpTt;
+
 
     public boolean isEmpty() {
         if (this.mprocNotes != null || this.originationType != null || this.receiptLocalMessageId != null 
         		|| this.timestampA != 0 || this.timestampB != 0 || this.timestampC != 0 || this.gwIncStart != 0
                 || this.gwIncStop != 0 || this.gwQueStart != 0 || this.gwQueStop != 0 || this.gwOutStart != 0
                 || this.gwOutStop != 0 || this.ocDiaStart != 0 || this.ocDiaStop != 0 || this.destIP != null
-                || this.destPort != null || this.sourceIP != null || this.sourcePort != null)
+                || this.destPort != null || this.sourceIP != null || this.sourcePort != null
+                || this.mtLocalSccpGt != null || this.mtRemoteSccpTt != null)
+
             return false;
         else
             return true;
@@ -108,6 +120,8 @@ public class SmsExtraData {
         destPort = null;
         sourceIP = null;
         sourcePort = null;
+        mtLocalSccpGt = null;
+        mtRemoteSccpTt = null;
     }
 
     public String getMprocNotes() {
@@ -155,9 +169,25 @@ public class SmsExtraData {
 		return timestampC;
 	}
 
-	public void setTimestampC(long timestampC) {
-		this.timestampC = timestampC;
-	}
+    public void setTimestampC(long timestampC) {
+        this.timestampC = timestampC;
+    }
+    
+    public void setMtLocalSccpGt(String mtLocalSccpGt) {
+        this.mtLocalSccpGt = mtLocalSccpGt;
+    }
+    
+    public String getMtLocalSccpGt() {
+        return mtLocalSccpGt;
+    }
+    
+    public void setMtRemoteSccpTt(Integer mtRemoteSccpTt) {
+        this.mtRemoteSccpTt = mtRemoteSccpTt;
+    }
+    
+    public Integer getMtRemoteSccpTt() {
+        return mtRemoteSccpTt;
+    }
 
     @Override
     public String toString() {
@@ -194,6 +224,7 @@ public class SmsExtraData {
         	sb.append(timestampC);
         	sb.append(", ");
         }
+
         if (gwIncStart != 0) {
             sb.append("gwIncStart=");
             sb.append(gwIncStart);
@@ -251,6 +282,17 @@ public class SmsExtraData {
         if (sourcePort != null) {
             sb.append("sourcePort=");
             sb.append(sourcePort);
+        }
+
+        if (mtLocalSccpGt != null) {
+            sb.append("mtLocalSccpGt=");
+            sb.append(mtLocalSccpGt);
+            sb.append(", ");
+        }
+
+        if (mtRemoteSccpTt != null) {
+            sb.append("mtRemoteSccpTt");
+            sb.append(mtRemoteSccpTt);
             sb.append(", ");
         }
         sb.append("]");
@@ -258,7 +300,8 @@ public class SmsExtraData {
         return sb.toString();
     }
 
-    protected static final XMLFormat<SmsExtraData> SMS_EXTRA_DATA_XML = new XMLFormat<SmsExtraData>(SmsExtraData.class) {
+
+        protected static final XMLFormat<SmsExtraData> SMS_EXTRA_DATA_XML = new XMLFormat<SmsExtraData>(SmsExtraData.class) {
 
         @Override
         public void read(javolution.xml.XMLFormat.InputElement xml, SmsExtraData extraData) throws XMLStreamException {
@@ -286,6 +329,12 @@ public class SmsExtraData {
             extraData.destPort = xml.get(DEST_PORT,String.class);
             extraData.sourceIP = xml.get(SOURCE_IP,String.class);
             extraData.sourcePort = xml.get(SOURCE_PORT,String.class);
+
+            extraData.receiptLocalMessageId = xml.get(RECEIPT_LOCAL_MESSAGEID, Long.class);
+
+            extraData.mtLocalSccpGt = xml.get(MT_LOCAL_SCCP_GT, String.class);
+            extraData.mtRemoteSccpTt = xml.get(MT_REMOTE_SCCP_TT, Integer.class);
+
         }
 
         @Override
@@ -344,6 +393,13 @@ public class SmsExtraData {
             //   if (extraData.ocDiaStop != 0){
                 xml.add(extraData.sourcePort, SOURCE_PORT, String.class);
             //   }
+
+            if (extraData.mtLocalSccpGt != null) {
+                xml.add(extraData.mtLocalSccpGt, MT_LOCAL_SCCP_GT, String.class);
+            }
+            if (extraData.mtRemoteSccpTt != null) {
+                xml.add(extraData.mtRemoteSccpTt, MT_REMOTE_SCCP_TT, Integer.class);
+            }
         }
     };
 

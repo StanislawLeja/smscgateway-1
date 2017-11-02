@@ -407,6 +407,20 @@
 					</span>				
 				</div>
 				
+				<div id="div-mtlocalsccp]gt" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Once rule matches, the target SMS's destination global title (GT) will be changed to one set with this command. Set this to -1 to keep original GT. Default value is -1.">
+						<span class="add-on">New GT for local SCCP address of MT  message</span>
+						<input id="mtlocalsccpgt" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Global Title for MT message" />
+					</span>				
+				</div>
+				
+				<div id="div-mtremotesccptt" class="control-group">
+					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Once rule matches, the target SMS's destination translation type (TT) will be changed to one set with this command. Set this to -1 to keep original TT. Default value is -1.">
+						<span class="add-on">New TT for remote SCCP address of MT message</span>
+						<input id="mtremotesccptt" type="text" class="input-mini" style="width: 120px; margin-right: 12px; text-align: center;" placeholder="Translation Type for MT message" />
+					</span>				
+				</div>
+				
 				<div id="div-makecopy" class="control-group">
 					<span class="input-prepend" data-toggle="tooltip" data-placement="bottom" title="Once rule match's, and makecopy is set to true, a new copy of SMS is created. If new SMS is created all above parameters like networkidmask, newnetworkid, newdestton, newdestnpi, adddestdigprefix, newsourceton, newsourcenpi, newsourceaddr will be applied to new SMS">
 						<span class="add-on">Make Copy</span>
@@ -720,6 +734,8 @@
 										var newsourcenpi = processRuleParameters(ruleparameters, "newsourcenpi");
 										var newsourceaddr = processRuleParameters(ruleparameters, "newsourceaddr");
 										var makecopy = processRuleParameters(ruleparameters, "makecopy");
+										var mtlocalsccpgt = processRuleParameters(ruleparameters, "mtlocalsccpgt");
+										var mtremotesccptt = processRuleParameters(ruleparameters, "mtremotesccptt");
 										if(makecopy=="-1") { makecopy = "false"; }
 										var hrbypass = processRuleParameters(ruleparameters, "hrbypass");
 										if(hrbypass=="-1") { hrbypass = "false"; }
@@ -1181,7 +1197,39 @@
 																			'</td>'+
 																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"NewSourceAddr"+']\').toggle(); $(\'input[id^='+id+"NewSourceAddr"+']\').focus();"></i>' +
 																			'</td>'+
-																		'</tr>'+	
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="Once rule matches, the target SMS\'s destination global title (GT) will be changed to one set with this command. Set this to -1 to keep original GT. Default value is -1.">'+
+																			'<td style="font-size: 0.9em;">New GT for local SCCP address of MT message</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'mtlocalsccpgt-input" class="control-group">'+
+																				'<span id="' + id +'mtlocalsccpgt-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + mtlocalsccpgt + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'mtlocalsccpgt\', \'' + id+"mtlocalsccpgt" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"mtlocalsccpgt"+']\').toggle(); $(\'input[id^='+id+"mtlocalsccpgt"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'mtlocalsccpgt-text">' + mtlocalsccpgt + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"mtlocalsccpgt"+']\').toggle(); $(\'input[id^='+id+"mtlocalsccpgt"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
+																		
+																		'<tr data-toggle="tooltip" title="Once rule matches, the target SMS\'s destination translation type (TT) will be changed to one set with this command. Set this to -1 to keep original TT. Default value is -1.">'+
+																			'<td style="font-size: 0.9em;">New TT for remote SCCP address of MT message</td>'+
+																			'<td style="font-size: 0.9em; padding: 0;">'+
+																				'<div id="div-' + id +'mtremotesccptt-input" class="control-group">'+
+																				'<span id="' + id +'mtremotesccptt-input" style="display: none;">'+
+																					'<input type="text" class="input-small" value="' + mtremotesccptt + '" /> ' +
+																					'<i class="icon-ok" style="cursor: pointer;" onclick="onModifyEsmeOk(\'' + id+ '\', \'mtremotesccptt\', \'' + id+"mtremotesccptt" + '\', \'true\')"></i> ' +
+																					'<i class="icon-remove" style="cursor: pointer;" onclick="$(\'[id^='+id+"mtremotesccptt"+']\').toggle(); $(\'input[id^='+id+"mtremotesccptt"+']\').focus();"></i>' + 
+																				'</span>'+
+																				'</div>' +
+																				'<span id="' +id + 'mtremotesccptt-text">' + mtremotesccptt + '</span>'+
+																			'</td>'+
+																			'<td><i class="icon-pencil" data-toggle="tooltip" title="Edit" style="cursor: pointer;" onclick="$(\'[id^='+id+"mtremotesccptt"+']\').toggle(); $(\'input[id^='+id+"mtremotesccptt"+']\').focus();"></i>' +
+																			'</td>'+
+																		'</tr>'+
 																		
 																		'<tr data-toggle="tooltip" title="Once rule match\'s, and makecopy is set to true, a new copy of SMS is created. If new SMS is created all above parameters like networkidmask, newnetworkid, newdestton, newdestnpi, adddestdigprefix, newsourceton, newsourcenpi, newsourceaddr will be applied to new SMS">'+
 																			'<td style="font-size: 0.9em;">Make Copy</td>'+
@@ -1724,6 +1772,20 @@
 			newsourceaddr = null;
 		} else {
 			parametersstring = parametersstring + " newsourceaddr "+newsourceaddr;
+		}
+		
+		var mtlocalsccpgt = $("#mtlocalsccpgt").val();
+		if(mtlocalsccpgt.trim() == "") {
+			mtlocalsccpgt = "-1";
+		} else {
+			parametersstring = parametersstring + " mtlocalsccpgt " + mtlocalsccpgt;
+		}
+		
+		var mtremotesccptt = $("#mtremotesccptt").val();
+		if(mtremotesccptt.trim() == "") {
+			mtremotesccptt = "-1";
+		} else {
+			parametersstring = parametersstring + " mtremotesccptt " + mtremotesccptt;
 		}
 
 		e = document.getElementById("makecopy");

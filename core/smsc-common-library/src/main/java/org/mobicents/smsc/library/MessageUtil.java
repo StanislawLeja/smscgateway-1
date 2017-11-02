@@ -39,7 +39,6 @@ import org.mobicents.protocols.ss7.sccp.parameter.ParameterFactory;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.smsc.mproc.DeliveryReceiptData;
 import org.mobicents.smsc.mproc.impl.DeliveryReceiptDataImpl;
-import org.mobicents.smsc.utils.SplitMessageCache;
 import org.mobicents.smsc.utils.SplitMessageData;
 import org.mobicents.smsc.utils.SplitMessageDataImpl;
 import org.restcomm.smpp.GenerateType;
@@ -746,11 +745,12 @@ public class MessageUtil {
         String[] namesList = new String[] { DELIVERY_ACK_ID, DELIVERY_ACK_SUB, DELIVERY_ACK_DLVRD, DELIVERY_ACK_SUBMIT_DATE,
                 DELIVERY_ACK_DONE_DATE, DELIVERY_ACK_STAT, DELIVERY_ACK_ERR, DELIVERY_ACK_TEXT, };
 
+        String lcMessage=msg.toLowerCase();
         int pos = 0;
         ArrayList<String> values = new ArrayList<String>(8);
         for (int i1 = 0; i1 < namesList.length; i1++) {
             String fieldName = namesList[i1];
-            int newPos = msg.indexOf(fieldName, pos);
+            int newPos = lcMessage.indexOf(fieldName, pos);
             if (newPos < 0) {
                 if (fieldName.equals(DELIVERY_ACK_TEXT))
                     break;
@@ -854,10 +854,10 @@ public class MessageUtil {
 
     public static SplitMessageData parseSplitMessageData(Sms smsEvent) {
         SplitMessageDataImpl splitMessageData = new SplitMessageDataImpl();
-        splitMessageData.getSplitMessageCache().removeOldReferenceNumbers();
 
-        if(((smsEvent.getEsmClass() >> 6) & 1)== 1
-                ){
+//        splitMessageData.getSplitMessageCache().removeOldReferenceNumbers();
+
+        if (((smsEvent.getEsmClass() >> 6) & 1) == 1) {
             splitMessageData.setMsgSplitInUse(true);
             switch (smsEvent.getShortMessageBin()[0]) {
                 case 5://6 fields 8bit
@@ -887,16 +887,22 @@ public class MessageUtil {
             } catch (TlvConvertException e) {
             }
         }
-        if(splitMessageData.isMsgSplitInUse() == true){
-            synchronized (splitMessageData){
-                int queueFlag =splitMessageData.getSplitMessageCache().checkExistenceOfReferenceNumberInCache(splitMessageData.getSplitedMessageReferenceNumber(),smsEvent);
-                if(queueFlag != 0){
-                    splitMessageData.setSplitedMessageID(splitMessageData.getSplitMessageCache().getMessageIdByReferenceNumber(splitMessageData.getSplitedMessageReferenceNumber(),smsEvent,(queueFlag > 1 ? true : false)));
-                }else{
-                    splitMessageData.getSplitMessageCache().addReferenceNumber(splitMessageData.getSplitedMessageReferenceNumber(), smsEvent,smsEvent.getMessageId());
-                    splitMessageData.setSplitedMessageID(smsEvent.getMessageId());
-                }
-            }
+
+        if (splitMessageData.isMsgSplitInUse() == true) {
+            splitMessageData.getSplitMessageCache().checkAndReferenceNumber(splitMessageData, smsEvent);
+
+//            synchronized (splitMessageData) {
+//                int queueFlag = splitMessageData.getSplitMessageCache().checkExistenceOfReferenceNumberInCache(
+//                        splitMessageData.getSplitedMessageReferenceNumber(), smsEvent);
+//                if (queueFlag != 0) {
+//                    splitMessageData.setSplitedMessageID(splitMessageData.getSplitMessageCache().getMessageIdByReferenceNumber(
+//                            splitMessageData.getSplitedMessageReferenceNumber(), smsEvent, (queueFlag > 1 ? true : false)));
+//                } else {
+//                    splitMessageData.getSplitMessageCache().addReferenceNumber(
+//                            splitMessageData.getSplitedMessageReferenceNumber(), smsEvent, smsEvent.getMessageId());
+//                    splitMessageData.setSplitedMessageID(smsEvent.getMessageId());
+//                }
+//            }
         }
 
         return splitMessageData;

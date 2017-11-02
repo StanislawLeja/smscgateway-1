@@ -21,8 +21,10 @@ SYNOPSIS
 	<percent value> newnetworkid <new networkId value> newdestton <new destination type of 
 	number> newdestnpi <new destination numbering plan indicator> adddestdigprefix <prefix 
 	value> addsourcedigprefix <prefix value> newsourceton <new source type of number> 
-	newsourcenpi <new source numbering plan indicator> newsourceaddr <new source address 
-	value> hrbypass <false | true> dropaftersri <false | true> newnetworkidaftersri 
+	newsourcenpi <new source numbering plan indicator> newsourceaddr <new source address value>
+	mtlocalsccpgt <new gt of a local sccp address of an mt message> mtremotesccptt 
+	<new tt for remote sccp address for mt message> makecopy <false | true>
+	hrbypass <false | true> dropaftersri <false | true> newnetworkidaftersri 
 	<networkId value> dropaftertempfail <false | true> newnetworkidaftertempfail <networkId
 	value> droponarrival <false | true> rejectonarrival <NONE | DEFAULT |
 	UNEXPECTED_DATA_VALUE | SYSTEM_FAILURE | THROTTLING | FACILITY_NOT_SUPPORTED>
@@ -223,6 +225,15 @@ PARAMETERS
 					
 	newsourceaddr		- Once rule match's, the target SMS's source number will be changed to one set here. 
 					Set this to -1 or null to keep original source number. 
+					Default value is -1.
+					This action is for Arrival trigger.
+						
+	mtlocalsccpgt 	- Once rule matches, the global title (GT) of local SCCP address will be changed for target 
+					SMS to one set with this command. Set this to -1 to keep original GT. Default value is "-1".
+					This action is for Arrival trigger.
+					
+	mtremotesccptt	- Once rule matches, the translation type (TT) of remote SCCP address will be changed
+					for target SMS to one set with this command. Set this to -1 to keep original TT. 
 					Default value is -1.
 					This action is for Arrival trigger.
 					

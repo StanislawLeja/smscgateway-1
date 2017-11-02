@@ -746,17 +746,19 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
             return;
         }
 
-		SccpAddress networkNodeSccpAddress = this.getMSCSccpAddress(networkNode);
+        Sms sms0 = smsSet.getSms(0);
+        Integer mtRemoteSccpTt = sms0.getMtRemoteSccpTt();
+        
+        SccpAddress networkNodeSccpAddress = this.getMSCSccpAddress(networkNode,mtRemoteSccpTt);
 
         IMSI imsi = this.mapParameterFactory.createIMSI(imsiData);
         SM_RP_DA sm_RP_DA = this.mapParameterFactory.createSM_RP_DA(imsi);
 		AddressString scAddress = this.getServiceCenterAddressString(networkId);
 		SM_RP_OA sm_RP_OA = this.mapParameterFactory.createSM_RP_OA_ServiceCentreAddressOA(scAddress);
 
-        Sms sms0 = smsSet.getSms(0);
-        if (sms0 != null)
-		    sms0.setMtServiceCenterAddress(scAddress.getAddress()); // we only set it for first sms in the list
-
+        if (sms0 != null) {
+		    sms0.setMtServiceCenterAddress(scAddress.getAddress()); // we only set it for first sms in the list		    
+        }
 
 		this.setNnn(networkNode);
 		this.setNetworkNode(networkNodeSccpAddress);
@@ -842,7 +844,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
         int messageSegmentNumber = this.getMessageSegmentNumber();
         SmsSignalInfo[] segments = this.getSegments();
         if (segments != null && messageSegmentNumber < segments.length - 1) {
-            this.generateCDR(sms, CdrGenerator.CDR_PARTIAL, CdrGenerator.CDR_SUCCESS_NO_REASON, true, false);
+            this.generateCDR(sms, CdrGenerator.CDR_PARTIAL, CdrGenerator.CDR_SUCCESS_NO_REASON, true, false, messageSegmentNumber);
 
             // we have more message parts to be sent yet
             messageSegmentNumber++;
@@ -878,7 +880,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
         // success CDR generating
         boolean isPartial = MessageUtil.isSmsNotLastSegment(sms);
         this.generateCDR(sms, isPartial ? CdrGenerator.CDR_PARTIAL : CdrGenerator.CDR_SUCCESS,
-                CdrGenerator.CDR_SUCCESS_NO_REASON, segments != null, true);
+                CdrGenerator.CDR_SUCCESS_NO_REASON, segments != null, true, messageSegmentNumber);
 
         // adding a success receipt if it is needed
         this.generateSuccessReceipt(smsSet, sms);
@@ -1060,8 +1062,19 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			boolean newDialog = false;
 			if (mapDialogSms == null) {
 				newDialog = true;
+				
+				String mtLocalSccpGt = sms.getMtLocalSccpGt();
+	            
+	            SccpAddress originSccpAddress;
+	            
+	            if (mtLocalSccpGt != null) {
+	                originSccpAddress = this.getServiceCenterSccpAddress(mtLocalSccpGt, networkId);
+	            } else {
+	                originSccpAddress = this.getServiceCenterSccpAddress(networkId);
+	            }
+	            
 				mapDialogSms = this.mapProvider.getMAPServiceSms().createNewDialog(mapApplicationContext,
-						this.getServiceCenterSccpAddress(networkId), null, this.getNetworkNode(), null);
+				        originSccpAddress, null, this.getNetworkNode(), null);
                 mapDialogSms.setNetworkId(networkId);
 
 				ActivityContextInterface mtFOSmsDialogACI = this.mapAcif.getActivityContextInterface(mapDialogSms);
@@ -1197,6 +1210,7 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 			}
 
 			mapDialogSms.send();
+			sms.putMsgPartDeliveryTime(getMessageSegmentNumber(), System.currentTimeMillis());
 
 		} catch (MAPException e) {
 			if (mapDialogSms != null)
@@ -1226,10 +1240,10 @@ public abstract class MtSbb extends MtCommonSbb implements MtForwardSmsInterface
 		}
 	}
 
-	private SccpAddress getMSCSccpAddress(ISDNAddressString networkNodeNumber) {
+	private SccpAddress getMSCSccpAddress(ISDNAddressString networkNodeNumber, Integer mtRemoteSccpTt) {
         return MessageUtil.getSccpAddress(sccpParameterFact, networkNodeNumber.getAddress(), networkNodeNumber.getAddressNature().getIndicator(),
                 networkNodeNumber.getNumberingPlan().getIndicator(), smscPropertiesManagement.getMscSsn(), smscPropertiesManagement.getGlobalTitleIndicator(),
-                smscPropertiesManagement.getTranslationType());
+                mtRemoteSccpTt != null ? mtRemoteSccpTt : smscPropertiesManagement.getTranslationType());
 	}
 
 	private AddressField getSmsTpduOriginatingAddress(int ton, int npi, String address) {

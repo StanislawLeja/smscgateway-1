@@ -580,6 +580,19 @@ public abstract class MtCommonSbb extends DeliveryCommonSbb implements Sbb, Repo
                     smscPropertiesManagement.getTranslationType());
         }
     }
+    
+    protected SccpAddress getServiceCenterSccpAddress(String mtLocalSccpGt, int networkId) {
+        if (mtLocalSccpGt == null) {
+            if (networkId == 0) {
+                mtLocalSccpGt = smscPropertiesManagement.getServiceCenterGt();
+            } else {
+                mtLocalSccpGt = smscPropertiesManagement.getServiceCenterGt(networkId);
+            }
+        }
+        
+        return MessageUtil.getSccpAddress(sccpParameterFact, mtLocalSccpGt, AddressNature.international_number.getIndicator(), NumberingPlan.ISDN.getIndicator(),
+                smscPropertiesManagement.getServiceCenterSsn(), smscPropertiesManagement.getGlobalTitleIndicator(), smscPropertiesManagement.getTranslationType());
+    }
 
     protected ISDNAddressString getCalledPartyISDNAddressString(String destinationAddress, int ton, int npi) {
         return this.mapParameterFactory.createISDNAddressString(AddressNature.getInstance(ton),
@@ -587,8 +600,13 @@ public abstract class MtCommonSbb extends DeliveryCommonSbb implements Sbb, Repo
     }
 
     protected SccpAddress convertAddressFieldToSCCPAddress(String address, int ton, int npi) {
+        return convertAddressFieldToSCCPAddress(address, ton, npi, null);
+    }
+    
+    protected SccpAddress convertAddressFieldToSCCPAddress(String address, int ton, int npi, Integer mtRemoteSccpTt) {
         return MessageUtil.getSccpAddress(sccpParameterFact, address, ton, npi, smscPropertiesManagement.getHlrSsn(),
-                smscPropertiesManagement.getGlobalTitleIndicator(), smscPropertiesManagement.getTranslationType());
+                smscPropertiesManagement.getGlobalTitleIndicator(), mtRemoteSccpTt != null ? mtRemoteSccpTt 
+                        : smscPropertiesManagement.getTranslationType());
     }
 
     protected MAPApplicationContext getSRIMAPApplicationContext(MAPApplicationContextVersion applicationContextVersion) {
