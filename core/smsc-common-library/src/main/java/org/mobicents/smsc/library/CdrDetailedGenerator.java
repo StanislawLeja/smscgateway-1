@@ -168,7 +168,7 @@ public class CdrDetailedGenerator {
         appendObject(sb, SourceAddr);
         appendObject(sb, DestAddr);
         appendObject(sb, OrigNetworkId);
-        appendObject(sb, NetworkId);
+        appendObjectLast(sb, NetworkId);
 
 
         CdrDetailedGenerator.generateDetailedCdr(sb.toString());
