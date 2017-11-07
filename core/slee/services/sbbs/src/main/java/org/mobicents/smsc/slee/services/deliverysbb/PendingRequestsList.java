@@ -66,9 +66,9 @@ public class PendingRequestsList implements Serializable {
                 res.sequenceNumberFound = true;
                 res.msgNum = i1;
                 //res.msgPartNumber = 1;
-                if(this.messagePartsNumbers[i1] != null){
-                    if(this.messagePartsNumbers[i1].length > 1){
-                        res.messagePartsNumbers = this.messagePartsNumbers[i1][messagePartsNumbers[i1].length-1];
+                if(this.udhData[i1] != null){
+                    if(this.udhData[i1].length > 1){
+                        res.udhData = this.udhData[i1][0];
                     }
                 }
                 if (this.sequenceNumbersExtra[i1] != null)
@@ -87,7 +87,7 @@ public class PendingRequestsList implements Serializable {
                         res.sequenceNumberFound = true;
                         res.msgNum = i1;
                         res.splittedMessage = true;
-                        res.messagePartsNumbers = this.messagePartsNumbers[i1][i2];
+                        res.udhData = this.udhData[i1][i2+1];
                         //res.msgPartNumber = i2+2;
                         if (isSent(i1)) {
                             res.confirmed = true;

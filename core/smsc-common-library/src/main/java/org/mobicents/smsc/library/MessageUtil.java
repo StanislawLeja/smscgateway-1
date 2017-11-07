@@ -861,15 +861,15 @@ public class MessageUtil {
             splitMessageData.setMsgSplitInUse(true);
             switch (smsEvent.getShortMessageBin()[0]) {
                 case 5://6 fields 8bit
-                    splitMessageData.setSplitedMessageReferenceNumber(Integer.parseInt(String.valueOf(smsEvent.getShortMessageBin()[3]),16));
-                    splitMessageData.setSplitedMessageParts(Integer.parseInt(String.valueOf(smsEvent.getShortMessageBin()[4]),16));
-                    splitMessageData.setSplitedMessagePartNumber(Integer.parseInt(String.valueOf(smsEvent.getShortMessageBin()[5]),16));
+                    splitMessageData.setSplitedMessageReferenceNumber(smsEvent.getShortMessageBin()[3]);
+                    splitMessageData.setSplitedMessageParts(smsEvent.getShortMessageBin()[4]);
+                    splitMessageData.setSplitedMessagePartNumber(smsEvent.getShortMessageBin()[5]);
                     break;
                 case 6://7 fields 16bit
-                    int octet1 = Integer.parseInt(String.valueOf(smsEvent.getShortMessageBin()[3]),16);
-                    int octet2 = Integer.parseInt(String.valueOf(smsEvent.getShortMessageBin()[4]),16);
+                    byte octet1 = smsEvent.getShortMessageBin()[3];
+                    byte octet2 = smsEvent.getShortMessageBin()[4];
                     splitMessageData.setSplitedMessageReferenceNumber((octet1 << 8) | octet2);
-                    splitMessageData.setSplitedMessageParts(Integer.parseInt(String.valueOf(smsEvent.getShortMessageBin()[5]),16));
+                    splitMessageData.setSplitedMessageParts(smsEvent.getShortMessageBin()[5]);
                     splitMessageData.setSplitedMessagePartNumber(smsEvent.getShortMessageBin()[6]);
                     break;
             }
