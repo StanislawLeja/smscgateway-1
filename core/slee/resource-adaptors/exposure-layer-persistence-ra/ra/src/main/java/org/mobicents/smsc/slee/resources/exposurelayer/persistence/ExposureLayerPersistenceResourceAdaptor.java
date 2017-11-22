@@ -24,7 +24,6 @@ package org.mobicents.smsc.slee.resources.exposurelayer.persistence;
 
 import org.apache.log4j.Logger;
 import org.mobicents.smsc.cassandra.DBOperations;
-import org.mobicents.smsc.library.CdrGenerator;
 
 import javax.slee.Address;
 import javax.slee.facilities.Tracer;
@@ -42,7 +41,7 @@ public class ExposureLayerPersistenceResourceAdaptor implements ResourceAdaptor 
 	private static final String CONF_CLUSTER_KEYSPACE = "cluster.keyspace";
 
 	private Tracer tracer = null;
-    private static final Logger logger = Logger.getLogger(CdrGenerator.class);
+    private static final Logger logger = Logger.getLogger(ExposureLayerPersistenceResourceAdaptor.class);
 	private ResourceAdaptorContext raContext = null;
 
     private DBOperations dbOperations_C2 = null;
@@ -55,14 +54,14 @@ public class ExposureLayerPersistenceResourceAdaptor implements ResourceAdaptor 
 	// private String keyspaceName = null;
 	// private String clusterName = null;
 
+
+
 	public ExposureLayerPersistenceResourceAdaptor() {
 		this.raSbbInterface = new ExposureLayerPersistenceRAInterface() {
 
-            public void upadateMessageStatus() {
+            public void upadateDlrState(DlrUpdateEntity dlrUpdateEntity) {
                 logger.info("Hi, it is me!");
-            }
-
-
+			}
 		};
 	}
 

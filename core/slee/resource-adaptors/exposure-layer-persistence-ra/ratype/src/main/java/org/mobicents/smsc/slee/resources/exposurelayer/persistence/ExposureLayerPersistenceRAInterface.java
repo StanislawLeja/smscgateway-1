@@ -29,5 +29,5 @@ package org.mobicents.smsc.slee.resources.exposurelayer.persistence;
  */
 public interface ExposureLayerPersistenceRAInterface {
 
-    void upadateMessageStatus();
+    void upadateDlrState(DlrUpdateEntity dlrUpdateEntity);
 }

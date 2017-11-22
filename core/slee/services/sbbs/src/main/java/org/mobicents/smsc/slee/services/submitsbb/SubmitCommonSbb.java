@@ -34,6 +34,7 @@ import org.mobicents.smsc.domain.*;
 import org.mobicents.smsc.library.*;
 import org.mobicents.smsc.mproc.MProcRuleRaProvider;
 import org.mobicents.smsc.mproc.impl.MProcResult;
+import org.mobicents.smsc.slee.resources.exposurelayer.persistence.ExposureLayerPersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.scheduler.SchedulerRaSbbInterface;
 import org.mobicents.smsc.slee.services.charging.ChargingMedium;
@@ -70,6 +71,7 @@ public abstract class SubmitCommonSbb implements Sbb {
     protected SbbContextExt sbbContext;
 
     protected PersistenceRAInterface persistence;
+    protected ExposureLayerPersistenceRAInterface elPersistence;
     protected SchedulerRaSbbInterface scheduler;
     private MProcRuleRaProvider itsMProcRa;
 

@@ -21,13 +21,8 @@
  */
 package org.mobicents.smsc.slee.services.util;
 
-import javax.slee.SLEEException;
-import javax.slee.facilities.Tracer;
-import javax.slee.resource.StartActivityException;
-
+import com.google.gson.JsonObject;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 import org.mobicents.slee.SbbContextExt;
 import org.mobicents.smsc.cassandra.PersistenceException;
 import org.mobicents.smsc.domain.HttpUserMBean;
@@ -36,18 +31,26 @@ import org.mobicents.smsc.domain.HttpUsersManagementMBean;
 import org.mobicents.smsc.domain.SmscPropertiesManagement;
 import org.mobicents.smsc.library.Sms;
 import org.mobicents.smsc.library.SmsExposureLayerData;
+import org.mobicents.smsc.slee.resources.exposurelayer.persistence.ExposureLayerPersistenceRAInterface;
 import org.mobicents.smsc.slee.resources.persistence.PersistenceRAInterface;
-import org.restcomm.slee.ra.httpclient.nio.ratype.HttpClientNIOResourceAdaptorSbbInterface;
-import org.restcomm.slee.ra.httpclient.nio.ratype.HttpClientNIOResourceAdaptorType;
+import org.mobicents.smsc.slee.resources.exposurelayer.persistence.DlrUpdateEntity;
 
-import com.google.gson.JsonObject;
+import javax.slee.SLEEException;
+import javax.slee.facilities.Tracer;
+import javax.slee.resource.ResourceAdaptorTypeID;
+
+
 
 /**
  * The Class DeliveryReceiptHttpNotification.
  */
 public final class DeliveryReceiptHttpNotification {
 
-    private static final String HTTP_CLIENT_NIO_RA_LINK = "HttpClientNIO";
+    //private static final String HTTP_CLIENT_NIO_RA_LINK = "HttpClientNIO";
+    private static final String El_PERSISTENCE_RA_LINK = "ExposureLayerPersistenceResourceAdaptor";
+
+    private static final ResourceAdaptorTypeID El_PERSISTENCE_RA_ID = new ResourceAdaptorTypeID(
+            "ExposureLayerPersistenceResourceAdaptorType", "org.mobicents", "1.0");
 
     private static final String PROPERTY_CORRELATION_ID = "correlationId";
     private static final String PROPERTY_DELIVERY_RECEIPT_STATUS = "deliveryReceiptStatus";
@@ -61,7 +64,8 @@ public final class DeliveryReceiptHttpNotification {
     private final String itsDeliveryReceiptApplicationSid;
     private final PersistenceRAInterface itsPersistenceRa;
     private final HttpUsersManagementMBean itsHttpUsersManagement;
-    private final HttpClientNIOResourceAdaptorSbbInterface itsHttpClientNio;
+    /*private final HttpClientNIOResourceAdaptorSbbInterface itsHttpClientNio;*/
+    private final ExposureLayerPersistenceRAInterface itsElDBO;
 
     /**
      * Instantiates a new delivery receipt HTTP notification.
@@ -77,9 +81,10 @@ public final class DeliveryReceiptHttpNotification {
         itsHttpUsersManagement = HttpUsersManagement.getInstance();
         itsDeliveryReceiptHttpMethod = getPost(anSmscProperties);
         itsDeliveryReceiptApplicationSid = anSmscProperties.getDeliveryReceiptHttpNotificationAppSid();
-        itsHttpClientNio = (HttpClientNIOResourceAdaptorSbbInterface) aContext
-                .getResourceAdaptorInterface(HttpClientNIOResourceAdaptorType.ID, HTTP_CLIENT_NIO_RA_LINK);
+       /* itsHttpClientNio = (HttpClientNIOResourceAdaptorSbbInterface) aContext
+                .getResourceAdaptorInterface(HttpClientNIOResourceAdaptorType.ID, HTTP_CLIENT_NIO_RA_LINK);*/
         itsPersistenceRa = aPersistenceRa;
+        itsElDBO = (ExposureLayerPersistenceRAInterface) aContext.getResourceAdaptorInterface(El_PERSISTENCE_RA_ID,El_PERSISTENCE_RA_LINK);
     }
 
     /**
@@ -89,9 +94,9 @@ public final class DeliveryReceiptHttpNotification {
      * @param aData the data
      */
     public void handleDeliveryReceiptData(final long aMessageId, final String aStatus) {
-        if (itsDeliveryReceiptHttpMethod == null) {
+        /*if (itsDeliveryReceiptHttpMethod == null) {
             return;
-        }
+        }*/
         final JsonObject json = new JsonObject();
         try {
             final Sms originalRequest = itsPersistenceRa.c2_getRecordArchiveForMessageId(aMessageId);
@@ -119,10 +124,16 @@ public final class DeliveryReceiptHttpNotification {
             if (itsDeliveryReceiptApplicationSid != null) {
                 json.addProperty(PROPERTY_EXPOSURE_LAYER_APPLICATION_SID, itsDeliveryReceiptApplicationSid);
             }
-            itsDeliveryReceiptHttpMethod.setEntity(new StringEntity(json.toString(), ContentType.APPLICATION_JSON));
-            itsHttpClientNio.execute(itsDeliveryReceiptHttpMethod, null, null);
-        } catch (NullPointerException | IllegalStateException | SLEEException | StartActivityException
-                | PersistenceException e) {
+            /*itsDeliveryReceiptHttpMethod.setEntity(new StringEntity(json.toString(), ContentType.APPLICATION_JSON));*/
+            /*itsHttpClientNio.execute(itsDeliveryReceiptHttpMethod, null, null);*/
+            DlrUpdateEntity dlrUpdateEntity = new DlrUpdateEntity();
+            dlrUpdateEntity.setCorrelationId(eld.getCorrelationId());
+            dlrUpdateEntity.setDeliveryReceiptStatus(aStatus);
+            dlrUpdateEntity.setExposureLayerMessageId(Long.getLong(eld.getMessageId()));//??
+            dlrUpdateEntity.setExposureLayerUserName(eld.getUserId());
+            dlrUpdateEntity.setOriginalRequestUserName(hu.getUserName());
+            itsElDBO.upadateDlrState(dlrUpdateEntity);
+        } catch (NullPointerException | IllegalStateException | SLEEException | PersistenceException e) {
             itsTracer.warning("Unable to report DR with HTTP. Message: " + e.getMessage() + ".", e);
         }
     }
